@@ -1,17 +1,17 @@
 import { motion } from "framer-motion";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
-import { Activity, TrendingUp } from "lucide-react";
+import { Activity } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState } from "react";
 
 const mockData = [
-  { name: 'Man', deliveries: 45, efficiency: 82, co2: 120 },
-  { name: 'Tir', deliveries: 52, efficiency: 85, co2: 115 },
-  { name: 'Ons', deliveries: 48, efficiency: 79, co2: 130 },
-  { name: 'Tor', deliveries: 61, efficiency: 88, co2: 105 },
-  { name: 'Fre', deliveries: 55, efficiency: 84, co2: 118 },
-  { name: 'Lør', deliveries: 38, efficiency: 90, co2: 95 },
-  { name: 'Søn', deliveries: 32, efficiency: 92, co2: 85 },
+  { name: 'Mon', deliveries: 45, efficiency: 82, co2: 120 },
+  { name: 'Tue', deliveries: 52, efficiency: 85, co2: 115 },
+  { name: 'Wed', deliveries: 48, efficiency: 79, co2: 130 },
+  { name: 'Thu', deliveries: 61, efficiency: 88, co2: 105 },
+  { name: 'Fri', deliveries: 55, efficiency: 84, co2: 118 },
+  { name: 'Sat', deliveries: 38, efficiency: 90, co2: 95 },
+  { name: 'Sun', deliveries: 32, efficiency: 92, co2: 85 },
 ];
 
 const CustomTooltip = ({ active, payload, label }) => {
@@ -21,8 +21,8 @@ const CustomTooltip = ({ active, payload, label }) => {
         <p className="text-sm font-medium text-white mb-2">{label}</p>
         {payload.map((entry, index) => (
           <p key={index} className="text-xs" style={{ color: entry.color }}>
-            {entry.name === 'deliveries' && 'Leveringer: '}
-            {entry.name === 'efficiency' && 'Effektivitet: '}
+            {entry.name === 'deliveries' && 'Deliveries: '}
+            {entry.name === 'efficiency' && 'Efficiency: '}
             {entry.name === 'co2' && 'CO₂: '}
             {entry.value}{entry.name === 'efficiency' ? '%' : entry.name === 'co2' ? ' kg' : ''}
           </p>
@@ -49,18 +49,18 @@ export default function PerformanceChart() {
               <Activity className="w-5 h-5 text-blue-400" />
             </div>
             <div>
-              <h3 className="font-semibold text-white">Præstationsanalyse</h3>
-              <p className="text-sm text-slate-500">Ugentlig oversigt</p>
+              <h3 className="font-semibold text-white">Performance Analysis</h3>
+              <p className="text-sm text-slate-500">Weekly overview</p>
             </div>
           </div>
           
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="bg-slate-800/50 border border-slate-700/50">
               <TabsTrigger value="deliveries" className="data-[state=active]:bg-blue-500/20 data-[state=active]:text-blue-400">
-                Leveringer
+                Deliveries
               </TabsTrigger>
               <TabsTrigger value="efficiency" className="data-[state=active]:bg-emerald-500/20 data-[state=active]:text-emerald-400">
-                Effektivitet
+                Efficiency
               </TabsTrigger>
               <TabsTrigger value="co2" className="data-[state=active]:bg-amber-500/20 data-[state=active]:text-amber-400">
                 CO₂

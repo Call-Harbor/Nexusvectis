@@ -6,7 +6,6 @@ import {
   Route, 
   Warehouse, 
   Bell, 
-  Settings,
   Globe,
   ChevronRight,
   Sparkles
@@ -15,10 +14,10 @@ import { cn } from "@/lib/utils";
 
 const navItems = [
   { name: "Dashboard", icon: LayoutDashboard, page: "Dashboard" },
-  { name: "Flåde", icon: Truck, page: "Fleet" },
-  { name: "Ruter", icon: Route, page: "Routes" },
-  { name: "Ressourcer", icon: Warehouse, page: "Resources" },
-  { name: "Alarmer", icon: Bell, page: "Alerts" },
+  { name: "Fleet", icon: Truck, page: "Fleet" },
+  { name: "Routes", icon: Route, page: "Routes" },
+  { name: "Resources", icon: Warehouse, page: "Resources" },
+  { name: "Alerts", icon: Bell, page: "Alerts" },
 ];
 
 export default function Layout({ children, currentPageName }) {
@@ -70,7 +69,7 @@ export default function Layout({ children, currentPageName }) {
               <Sparkles className="w-4 h-4 text-violet-400" />
               <span className="text-sm font-medium text-white">AI Status</span>
             </div>
-            <p className="text-xs text-slate-400">Systemet kører optimalt</p>
+            <p className="text-xs text-slate-400">System running optimally</p>
             <div className="flex items-center gap-2 mt-2">
               <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               <span className="text-xs text-emerald-400">Online</span>

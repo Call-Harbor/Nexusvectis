@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import { motion } from "framer-motion";
-import { Truck, Ship, Plane, Train, Navigation, Maximize2 } from "lucide-react";
+import { Navigation, Maximize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import "leaflet/dist/leaflet.css";
@@ -117,7 +117,7 @@ export default function FleetMap({ vehicles, selectedVehicle, onSelectVehicle })
             maintenance: 'bg-violet-500/20 text-violet-400 border-violet-500/30',
             offline: 'bg-slate-500/20 text-slate-400 border-slate-500/30',
           };
-          const labels = { active: 'Aktiv', idle: 'Standby', maintenance: 'Vedligehold', offline: 'Offline' };
+          const labels = { active: 'Active', idle: 'Standby', maintenance: 'Maintenance', offline: 'Offline' };
           return (
             <Badge key={status} variant="outline" className={`${colors[status]} backdrop-blur-xl`}>
               {labels[status]}: {count}
@@ -151,11 +151,11 @@ export default function FleetMap({ vehicles, selectedVehicle, onSelectVehicle })
             <Popup className="custom-popup">
               <div className="p-2 min-w-[200px]">
                 <h4 className="font-semibold text-slate-900">{vehicle.name}</h4>
-                <p className="text-sm text-slate-600">{vehicle.destination || 'Ingen destination'}</p>
+                <p className="text-sm text-slate-600">{vehicle.destination || 'No destination'}</p>
                 <div className="mt-2 flex items-center gap-2 text-xs text-slate-500">
-                  <span>Hastighed: {vehicle.speed || 0} km/t</span>
+                  <span>Speed: {vehicle.speed || 0} km/h</span>
                   <span>•</span>
-                  <span>Brændstof: {vehicle.fuel_level || 0}%</span>
+                  <span>Fuel: {vehicle.fuel_level || 0}%</span>
                 </div>
               </div>
             </Popup>

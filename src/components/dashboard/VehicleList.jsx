@@ -12,11 +12,11 @@ const vehicleIcons = {
 };
 
 const vehicleLabels = {
-  truck: "Lastbil",
-  ship: "Skib",
+  truck: "Truck",
+  ship: "Ship",
   drone: "Drone",
-  train: "Tog",
-  aircraft: "Fly",
+  train: "Train",
+  aircraft: "Aircraft",
 };
 
 const statusColors = {
@@ -27,9 +27,9 @@ const statusColors = {
 };
 
 const statusLabels = {
-  active: "Aktiv",
+  active: "Active",
   idle: "Standby",
-  maintenance: "Vedligehold",
+  maintenance: "Maintenance",
   offline: "Offline",
 };
 
@@ -42,8 +42,8 @@ export default function VehicleList({ vehicles, onSelectVehicle, selectedId }) {
             <Activity className="w-5 h-5 text-cyan-400" />
           </div>
           <div>
-            <h3 className="font-semibold text-white">Flådeoversigt</h3>
-            <p className="text-sm text-slate-500">{vehicles.length} enheder i netværket</p>
+            <h3 className="font-semibold text-white">Fleet Overview</h3>
+            <p className="text-sm text-slate-500">{vehicles.length} units in network</p>
           </div>
         </div>
       </div>
@@ -84,11 +84,11 @@ export default function VehicleList({ vehicles, onSelectVehicle, selectedId }) {
                   <div className="grid grid-cols-2 gap-3 text-sm">
                     <div className="flex items-center gap-2 text-slate-400">
                       <MapPin className="w-3.5 h-3.5" />
-                      <span className="truncate">{vehicle.destination || 'Ingen destination'}</span>
+                      <span className="truncate">{vehicle.destination || 'No destination'}</span>
                     </div>
                     <div className="flex items-center gap-2 text-slate-400">
                       <Clock className="w-3.5 h-3.5" />
-                      <span>{vehicle.speed || 0} km/t</span>
+                      <span>{vehicle.speed || 0} km/h</span>
                     </div>
                   </div>
 
@@ -96,7 +96,7 @@ export default function VehicleList({ vehicles, onSelectVehicle, selectedId }) {
                     <div className="flex items-center justify-between text-xs">
                       <div className="flex items-center gap-1 text-slate-500">
                         <Fuel className="w-3 h-3" />
-                        <span>Brændstof</span>
+                        <span>Fuel</span>
                       </div>
                       <span className={`font-medium ${vehicle.fuel_level < 20 ? 'text-rose-400' : vehicle.fuel_level < 50 ? 'text-amber-400' : 'text-emerald-400'}`}>
                         {vehicle.fuel_level || 0}%
@@ -116,7 +116,7 @@ export default function VehicleList({ vehicles, onSelectVehicle, selectedId }) {
         {vehicles.length === 0 && (
           <div className="p-8 text-center">
             <Truck className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-            <p className="text-slate-400">Ingen køretøjer registreret</p>
+            <p className="text-slate-400">No vehicles registered</p>
           </div>
         )}
       </div>

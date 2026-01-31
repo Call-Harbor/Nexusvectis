@@ -18,11 +18,11 @@ const alertColors = {
 };
 
 const categoryLabels = {
-  maintenance: "Vedligeholdelse",
-  delay: "Forsinkelse",
-  weather: "Vejr",
-  fuel: "Brændstof",
-  route: "Rute",
+  maintenance: "Maintenance",
+  delay: "Delay",
+  weather: "Weather",
+  fuel: "Fuel",
+  route: "Route",
   system: "System",
 };
 
@@ -38,8 +38,8 @@ export default function AlertPanel({ alerts, onMarkRead, onResolve }) {
               <AlertTriangle className="w-5 h-5 text-rose-400" />
             </div>
             <div>
-              <h3 className="font-semibold text-white">Aktive Alarmer</h3>
-              <p className="text-sm text-slate-500">{unreadAlerts.length} kræver opmærksomhed</p>
+              <h3 className="font-semibold text-white">Active Alerts</h3>
+              <p className="text-sm text-slate-500">{unreadAlerts.length} require attention</p>
             </div>
           </div>
         </div>
@@ -54,7 +54,7 @@ export default function AlertPanel({ alerts, onMarkRead, onResolve }) {
               className="p-8 text-center"
             >
               <CheckCircle className="w-12 h-12 text-emerald-400 mx-auto mb-3" />
-              <p className="text-slate-400">Alle systemer kører optimalt</p>
+              <p className="text-slate-400">All systems running optimally</p>
             </motion.div>
           ) : (
             unreadAlerts.map((alert, index) => {

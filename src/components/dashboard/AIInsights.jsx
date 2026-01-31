@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 
 export default function AIInsights({ vehicles, routes }) {
   // Calculate insights
-  const activeVehicles = vehicles.filter(v => v.status === 'active').length;
   const lowFuelVehicles = vehicles.filter(v => v.fuel_level < 20).length;
   const avgEfficiency = vehicles.length > 0 
     ? Math.round(vehicles.reduce((sum, v) => sum + (v.efficiency_score || 75), 0) / vehicles.length)
@@ -15,30 +14,30 @@ export default function AIInsights({ vehicles, routes }) {
   const insights = [
     {
       icon: TrendingUp,
-      title: "Ruteoptimering tilgængelig",
-      description: `${Math.max(3, Math.floor(routes.length * 0.3))} ruter kan optimeres for 12% lavere brændstofforbrug`,
-      action: "Optimer nu",
+      title: "Route Optimization Available",
+      description: `${Math.max(3, Math.floor(routes.length * 0.3))} routes can be optimized for 12% lower fuel consumption`,
+      action: "Optimize Now",
       color: "cyan",
     },
     {
       icon: Leaf,
-      title: "CO₂-reduktion mulig",
-      description: `Skift til elektriske enheder på 2 ruter kan spare ${Math.round(totalCO2 * 0.15)} kg CO₂ månedligt`,
-      action: "Se detaljer",
+      title: "CO₂ Reduction Possible",
+      description: `Switching to electric units on 2 routes can save ${Math.round(totalCO2 * 0.15)} kg CO₂ monthly`,
+      action: "View Details",
       color: "emerald",
     },
     ...(lowFuelVehicles > 0 ? [{
       icon: AlertTriangle,
-      title: "Brændstofalarm",
-      description: `${lowFuelVehicles} enheder har under 20% brændstof - koordiner optankning`,
-      action: "Planlæg tankning",
+      title: "Fuel Alert",
+      description: `${lowFuelVehicles} units have below 20% fuel - coordinate refueling`,
+      action: "Plan Refueling",
       color: "amber",
     }] : []),
     ...(delayedRoutes > 0 ? [{
       icon: Zap,
-      title: "Forsinkelseshåndtering",
-      description: `${delayedRoutes} forsinkede ruter kan omdirigeres automatisk`,
-      action: "Aktiver AI-routing",
+      title: "Delay Management",
+      description: `${delayedRoutes} delayed routes can be automatically rerouted`,
+      action: "Activate AI Routing",
       color: "violet",
     }] : []),
   ];
@@ -58,8 +57,8 @@ export default function AIInsights({ vehicles, routes }) {
             <Sparkles className="w-5 h-5 text-violet-400" />
           </div>
           <div>
-            <h3 className="font-semibold text-white">AI Indsigter</h3>
-            <p className="text-sm text-slate-500">Intelligent optimering i realtid</p>
+            <h3 className="font-semibold text-white">AI Insights</h3>
+            <p className="text-sm text-slate-500">Intelligent real-time optimization</p>
           </div>
         </div>
       </div>
@@ -96,7 +95,7 @@ export default function AIInsights({ vehicles, routes }) {
 
         <div className="pt-3 border-t border-slate-700/50">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-slate-500">Samlet effektivitetsscore</span>
+            <span className="text-slate-500">Overall Efficiency Score</span>
             <span className="font-semibold text-white">{avgEfficiency}%</span>
           </div>
           <div className="mt-2 h-2 rounded-full bg-slate-700 overflow-hidden">

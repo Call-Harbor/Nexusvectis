@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { 
-  Truck, Ship, Activity, Fuel, Route, AlertTriangle, 
-  Sparkles, Globe, BarChart3, Layers
+  Truck, Fuel, Route, AlertTriangle, 
+  Globe
 } from "lucide-react";
 
 import StatCard from "@/components/dashboard/StatCard";
@@ -40,8 +40,6 @@ export default function Dashboard() {
 
   // Calculate stats
   const activeVehicles = vehicles.filter(v => v.status === 'active').length;
-  const totalCapacity = vehicles.reduce((sum, v) => sum + (v.cargo_capacity || 0), 0);
-  const usedCapacity = vehicles.reduce((sum, v) => sum + (v.cargo_used || 0), 0);
   const avgFuel = vehicles.length > 0 
     ? Math.round(vehicles.reduce((sum, v) => sum + (v.fuel_level || 0), 0) / vehicles.length)
     : 0;
@@ -70,7 +68,7 @@ export default function Dashboard() {
             </div>
             <div>
               <h1 className="text-3xl font-bold text-white tracking-tight">NexusVectis</h1>
-              <p className="text-slate-400">AI-drevet logistikplatform • Realtidsoversigt</p>
+              <p className="text-slate-400">AI-Powered Logistics Platform • Real-time Overview</p>
             </div>
           </div>
         </motion.div>
@@ -78,32 +76,32 @@ export default function Dashboard() {
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <StatCard
-            title="Aktive Enheder"
+            title="Active Units"
             value={activeVehicles}
-            subtitle={`af ${vehicles.length} total`}
+            subtitle={`of ${vehicles.length} total`}
             icon={Truck}
             color="cyan"
-            trend="+12% denne uge"
+            trend="+12% this week"
             trendUp={true}
           />
           <StatCard
-            title="Aktive Ruter"
+            title="Active Routes"
             value={activeRoutes}
-            subtitle={`${routes.length} total planlagt`}
+            subtitle={`${routes.length} total planned`}
             icon={Route}
             color="emerald"
           />
           <StatCard
-            title="Gns. Brændstof"
+            title="Avg. Fuel Level"
             value={`${avgFuel}%`}
-            subtitle="På tværs af flåden"
+            subtitle="Across the fleet"
             icon={Fuel}
             color={avgFuel < 30 ? 'rose' : avgFuel < 50 ? 'amber' : 'blue'}
           />
           <StatCard
-            title="Aktive Alarmer"
+            title="Active Alerts"
             value={unresolvedAlerts}
-            subtitle="Kræver handling"
+            subtitle="Requires attention"
             icon={AlertTriangle}
             color={unresolvedAlerts > 5 ? 'rose' : unresolvedAlerts > 2 ? 'amber' : 'emerald'}
           />
