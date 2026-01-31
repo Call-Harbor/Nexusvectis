@@ -3,8 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  Warehouse, Plus, Search, MapPin, Fuel, Battery, Wrench, Ship,
-  CheckCircle, AlertCircle, X
+  Warehouse, Plus, Search, MapPin, Fuel, Battery, Wrench, Ship, X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,18 +21,18 @@ const typeIcons = {
   port: Ship,
 };
 const typeLabels = {
-  fuel_depot: "Brændstofdepot",
-  warehouse: "Lager",
-  charging_station: "Ladestation",
-  maintenance_hub: "Vedligeholdelsescenter",
-  port: "Havn",
+  fuel_depot: "Fuel Depot",
+  warehouse: "Warehouse",
+  charging_station: "Charging Station",
+  maintenance_hub: "Maintenance Hub",
+  port: "Port",
 };
 const statusColors = {
   operational: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
   limited: "bg-amber-500/20 text-amber-400 border-amber-500/30",
   offline: "bg-rose-500/20 text-rose-400 border-rose-500/30",
 };
-const statusLabels = { operational: "Operationel", limited: "Begrænset", offline: "Offline" };
+const statusLabels = { operational: "Operational", limited: "Limited", offline: "Offline" };
 
 export default function Resources() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -95,15 +94,15 @@ export default function Resources() {
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-white">Ressourcer</h1>
-            <p className="text-slate-400 mt-1">{resources.length} lokationer registreret</p>
+            <h1 className="text-3xl font-bold text-white">Resources</h1>
+            <p className="text-slate-400 mt-1">{resources.length} locations registered</p>
           </div>
           <Button 
             onClick={() => setShowAddDialog(true)}
-            className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600"
+            className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-black font-semibold"
           >
             <Plus className="w-4 h-4 mr-2" />
-            Tilføj Ressource
+            Add Resource
           </Button>
         </div>
 
@@ -137,7 +136,7 @@ export default function Resources() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
             <Input
-              placeholder="Søg efter ressource..."
+              placeholder="Search for resource..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 bg-slate-800/50 border-slate-700/50 text-white"
@@ -148,12 +147,12 @@ export default function Resources() {
               <SelectValue placeholder="Type" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Alle typer</SelectItem>
-              <SelectItem value="fuel_depot">Brændstofdepot</SelectItem>
-              <SelectItem value="warehouse">Lager</SelectItem>
-              <SelectItem value="charging_station">Ladestation</SelectItem>
-              <SelectItem value="maintenance_hub">Vedligeholdelse</SelectItem>
-              <SelectItem value="port">Havn</SelectItem>
+              <SelectItem value="all">All Types</SelectItem>
+              <SelectItem value="fuel_depot">Fuel Depot</SelectItem>
+              <SelectItem value="warehouse">Warehouse</SelectItem>
+              <SelectItem value="charging_station">Charging Station</SelectItem>
+              <SelectItem value="maintenance_hub">Maintenance Hub</SelectItem>
+              <SelectItem value="port">Port</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -190,7 +189,7 @@ export default function Resources() {
                       variant="ghost"
                       className="text-slate-400 hover:text-rose-400"
                       onClick={() => {
-                        if (confirm('Slet denne ressource?')) {
+                        if (confirm('Delete this resource?')) {
                           deleteMutation.mutate(resource.id);
                         }
                       }}
@@ -202,7 +201,7 @@ export default function Resources() {
                   <div className="space-y-3">
                     <div className="flex items-center gap-2 text-sm text-slate-400">
                       <MapPin className="w-4 h-4" />
-                      <span>{resource.location || 'Ingen lokation'}</span>
+                      <span>{resource.location || 'No location'}</span>
                     </div>
                     
                     <div className="flex items-center justify-between">
@@ -213,7 +212,7 @@ export default function Resources() {
 
                     <div>
                       <div className="flex justify-between text-xs mb-1">
-                        <span className="text-slate-500">Kapacitet</span>
+                        <span className="text-slate-500">Capacity</span>
                         <span className="text-slate-400">
                           {resource.current_level || 0} / {resource.capacity || 0}
                         </span>
@@ -222,7 +221,7 @@ export default function Resources() {
                         value={utilization} 
                         className="h-2 bg-slate-700"
                       />
-                      <p className="text-xs text-slate-500 mt-1">{utilization}% udnyttet</p>
+                      <p className="text-xs text-slate-500 mt-1">{utilization}% utilized</p>
                     </div>
                   </div>
                 </motion.div>
@@ -234,7 +233,7 @@ export default function Resources() {
         {filteredResources.length === 0 && (
           <div className="text-center py-12">
             <Warehouse className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-            <p className="text-slate-400">Ingen ressourcer matcher din søgning</p>
+            <p className="text-slate-400">No resources match your search</p>
           </div>
         )}
       </div>
@@ -243,16 +242,16 @@ export default function Resources() {
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
         <DialogContent className="bg-slate-900 border-slate-700 text-white">
           <DialogHeader>
-            <DialogTitle>Tilføj Ny Ressource</DialogTitle>
+            <DialogTitle>Add New Resource</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label>Navn</Label>
+              <Label>Name</Label>
               <Input
                 value={formData.name}
                 onChange={(e) => setFormData({...formData, name: e.target.value})}
                 className="bg-slate-800 border-slate-700"
-                placeholder="F.eks. Hovedlager København"
+                placeholder="e.g. Main Warehouse Copenhagen"
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -263,11 +262,11 @@ export default function Resources() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="warehouse">Lager</SelectItem>
-                    <SelectItem value="fuel_depot">Brændstofdepot</SelectItem>
-                    <SelectItem value="charging_station">Ladestation</SelectItem>
-                    <SelectItem value="maintenance_hub">Vedligeholdelse</SelectItem>
-                    <SelectItem value="port">Havn</SelectItem>
+                    <SelectItem value="warehouse">Warehouse</SelectItem>
+                    <SelectItem value="fuel_depot">Fuel Depot</SelectItem>
+                    <SelectItem value="charging_station">Charging Station</SelectItem>
+                    <SelectItem value="maintenance_hub">Maintenance Hub</SelectItem>
+                    <SelectItem value="port">Port</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -278,25 +277,25 @@ export default function Resources() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="operational">Operationel</SelectItem>
-                    <SelectItem value="limited">Begrænset</SelectItem>
+                    <SelectItem value="operational">Operational</SelectItem>
+                    <SelectItem value="limited">Limited</SelectItem>
                     <SelectItem value="offline">Offline</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
             <div>
-              <Label>Lokation</Label>
+              <Label>Location</Label>
               <Input
                 value={formData.location}
                 onChange={(e) => setFormData({...formData, location: e.target.value})}
                 className="bg-slate-800 border-slate-700"
-                placeholder="F.eks. København, Danmark"
+                placeholder="e.g. Copenhagen, Denmark"
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label>Kapacitet</Label>
+                <Label>Capacity</Label>
                 <Input
                   type="number"
                   value={formData.capacity}
@@ -305,7 +304,7 @@ export default function Resources() {
                 />
               </div>
               <div>
-                <Label>Nuværende niveau</Label>
+                <Label>Current Level</Label>
                 <Input
                   type="number"
                   value={formData.current_level}
@@ -315,11 +314,11 @@ export default function Resources() {
               </div>
             </div>
             <Button 
-              className="w-full bg-gradient-to-r from-amber-500 to-orange-500"
+              className="w-full bg-gradient-to-r from-amber-500 to-orange-500 text-black font-semibold"
               onClick={() => createMutation.mutate(formData)}
               disabled={!formData.name || createMutation.isPending}
             >
-              {createMutation.isPending ? 'Opretter...' : 'Opret Ressource'}
+              {createMutation.isPending ? 'Creating...' : 'Create Resource'}
             </Button>
           </div>
         </DialogContent>

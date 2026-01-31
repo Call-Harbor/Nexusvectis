@@ -3,8 +3,8 @@ import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  Bell, Plus, Search, AlertTriangle, Info, AlertCircle, CheckCircle,
-  Sparkles, Filter, X, Check
+  Plus, Search, AlertTriangle, Info, AlertCircle, CheckCircle,
+  Sparkles, X, Check
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,7 +15,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format } from "date-fns";
-import { da } from "date-fns/locale";
 
 const typeIcons = { info: Info, warning: AlertTriangle, critical: AlertCircle, success: CheckCircle };
 const typeColors = {
@@ -24,10 +23,10 @@ const typeColors = {
   critical: "bg-rose-500/20 text-rose-400 border-rose-500/30",
   success: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
 };
-const typeLabels = { info: "Information", warning: "Advarsel", critical: "Kritisk", success: "Succes" };
+const typeLabels = { info: "Information", warning: "Warning", critical: "Critical", success: "Success" };
 const categoryLabels = {
-  maintenance: "Vedligeholdelse", delay: "Forsinkelse", weather: "Vejr",
-  fuel: "Brændstof", route: "Rute", system: "System"
+  maintenance: "Maintenance", delay: "Delay", weather: "Weather",
+  fuel: "Fuel", route: "Route", system: "System"
 };
 
 export default function Alerts() {
@@ -101,25 +100,25 @@ export default function Alerts() {
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-white">Alarmer</h1>
-            <p className="text-slate-400 mt-1">{stats.unresolved} kræver handling</p>
+            <h1 className="text-3xl font-bold text-white">Alerts</h1>
+            <p className="text-slate-400 mt-1">{stats.unresolved} require action</p>
           </div>
           <Button 
             onClick={() => setShowAddDialog(true)}
-            className="bg-gradient-to-r from-rose-500 to-violet-500 hover:from-rose-600 hover:to-violet-600"
+            className="bg-gradient-to-r from-rose-500 to-violet-500 hover:from-rose-600 hover:to-violet-600 text-black font-semibold"
           >
             <Plus className="w-4 h-4 mr-2" />
-            Opret Alarm
+            Create Alert
           </Button>
         </div>
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           {[
-            { label: "Total Alarmer", value: stats.total, color: "slate" },
-            { label: "Uløste", value: stats.unresolved, color: "amber" },
-            { label: "Kritiske", value: stats.critical, color: "rose" },
-            { label: "I dag", value: stats.today, color: "blue" },
+            { label: "Total Alerts", value: stats.total },
+            { label: "Unresolved", value: stats.unresolved },
+            { label: "Critical", value: stats.critical },
+            { label: "Today", value: stats.today },
           ].map((stat, i) => (
             <motion.div
               key={stat.label}
@@ -139,7 +138,7 @@ export default function Alerts() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
             <Input
-              placeholder="Søg i alarmer..."
+              placeholder="Search alerts..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 bg-slate-800/50 border-slate-700/50 text-white"
@@ -148,13 +147,13 @@ export default function Alerts() {
           <Tabs value={statusFilter} onValueChange={setStatusFilter}>
             <TabsList className="bg-slate-800/50 border border-slate-700/50">
               <TabsTrigger value="unresolved" className="data-[state=active]:bg-amber-500/20 data-[state=active]:text-amber-400">
-                Uløste
+                Unresolved
               </TabsTrigger>
               <TabsTrigger value="resolved" className="data-[state=active]:bg-emerald-500/20 data-[state=active]:text-emerald-400">
-                Løste
+                Resolved
               </TabsTrigger>
               <TabsTrigger value="all" className="data-[state=active]:bg-slate-700 data-[state=active]:text-white">
-                Alle
+                All
               </TabsTrigger>
             </TabsList>
           </Tabs>
@@ -163,11 +162,11 @@ export default function Alerts() {
               <SelectValue placeholder="Type" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Alle typer</SelectItem>
+              <SelectItem value="all">All Types</SelectItem>
               <SelectItem value="info">Information</SelectItem>
-              <SelectItem value="warning">Advarsel</SelectItem>
-              <SelectItem value="critical">Kritisk</SelectItem>
-              <SelectItem value="success">Succes</SelectItem>
+              <SelectItem value="warning">Warning</SelectItem>
+              <SelectItem value="critical">Critical</SelectItem>
+              <SelectItem value="success">Success</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -207,7 +206,7 @@ export default function Alerts() {
                           {alert.is_resolved && (
                             <Badge variant="outline" className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
                               <Check className="w-3 h-3 mr-1" />
-                              Løst
+                              Resolved
                             </Badge>
                           )}
                         </div>
@@ -216,13 +215,13 @@ export default function Alerts() {
                           <div className="flex items-start gap-2 p-3 rounded-lg bg-violet-500/10 border border-violet-500/20">
                             <Sparkles className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
                             <div>
-                              <p className="text-xs font-medium text-violet-300 mb-1">AI Anbefaling</p>
+                              <p className="text-xs font-medium text-violet-300 mb-1">AI Recommendation</p>
                               <p className="text-xs text-violet-400">{alert.ai_recommendation}</p>
                             </div>
                           </div>
                         )}
                         <p className="text-xs text-slate-500 mt-2">
-                          {alert.created_date && format(new Date(alert.created_date), "d. MMMM yyyy 'kl.' HH:mm", { locale: da })}
+                          {alert.created_date && format(new Date(alert.created_date), "MMMM d, yyyy 'at' HH:mm")}
                         </p>
                       </div>
                     </div>
@@ -235,7 +234,7 @@ export default function Alerts() {
                           onClick={() => updateMutation.mutate({ id: alert.id, data: { is_resolved: true }})}
                         >
                           <Check className="w-4 h-4 mr-1" />
-                          Løst
+                          Resolve
                         </Button>
                       )}
                       <Button
@@ -243,7 +242,7 @@ export default function Alerts() {
                         variant="ghost"
                         className="text-slate-400 hover:text-rose-400"
                         onClick={() => {
-                          if (confirm('Slet denne alarm?')) {
+                          if (confirm('Delete this alert?')) {
                             deleteMutation.mutate(alert.id);
                           }
                         }}
@@ -261,7 +260,7 @@ export default function Alerts() {
         {filteredAlerts.length === 0 && (
           <div className="text-center py-12">
             <CheckCircle className="w-12 h-12 text-emerald-400 mx-auto mb-3" />
-            <p className="text-slate-400">Ingen alarmer matcher din søgning</p>
+            <p className="text-slate-400">No alerts match your search</p>
           </div>
         )}
       </div>
@@ -270,25 +269,25 @@ export default function Alerts() {
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
         <DialogContent className="bg-slate-900 border-slate-700 text-white">
           <DialogHeader>
-            <DialogTitle>Opret Ny Alarm</DialogTitle>
+            <DialogTitle>Create New Alert</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label>Titel</Label>
+              <Label>Title</Label>
               <Input
                 value={formData.title}
                 onChange={(e) => setFormData({...formData, title: e.target.value})}
                 className="bg-slate-800 border-slate-700"
-                placeholder="F.eks. Lavt brændstofniveau"
+                placeholder="e.g. Low Fuel Level"
               />
             </div>
             <div>
-              <Label>Besked</Label>
+              <Label>Message</Label>
               <Textarea
                 value={formData.message}
                 onChange={(e) => setFormData({...formData, message: e.target.value})}
                 className="bg-slate-800 border-slate-700"
-                placeholder="Beskriv alarmen..."
+                placeholder="Describe the alert..."
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -300,44 +299,44 @@ export default function Alerts() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="info">Information</SelectItem>
-                    <SelectItem value="warning">Advarsel</SelectItem>
-                    <SelectItem value="critical">Kritisk</SelectItem>
-                    <SelectItem value="success">Succes</SelectItem>
+                    <SelectItem value="warning">Warning</SelectItem>
+                    <SelectItem value="critical">Critical</SelectItem>
+                    <SelectItem value="success">Success</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div>
-                <Label>Kategori</Label>
+                <Label>Category</Label>
                 <Select value={formData.category} onValueChange={(v) => setFormData({...formData, category: v})}>
                   <SelectTrigger className="bg-slate-800 border-slate-700">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="system">System</SelectItem>
-                    <SelectItem value="maintenance">Vedligeholdelse</SelectItem>
-                    <SelectItem value="delay">Forsinkelse</SelectItem>
-                    <SelectItem value="weather">Vejr</SelectItem>
-                    <SelectItem value="fuel">Brændstof</SelectItem>
-                    <SelectItem value="route">Rute</SelectItem>
+                    <SelectItem value="maintenance">Maintenance</SelectItem>
+                    <SelectItem value="delay">Delay</SelectItem>
+                    <SelectItem value="weather">Weather</SelectItem>
+                    <SelectItem value="fuel">Fuel</SelectItem>
+                    <SelectItem value="route">Route</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
             <div>
-              <Label>AI Anbefaling (valgfri)</Label>
+              <Label>AI Recommendation (optional)</Label>
               <Textarea
                 value={formData.ai_recommendation}
                 onChange={(e) => setFormData({...formData, ai_recommendation: e.target.value})}
                 className="bg-slate-800 border-slate-700"
-                placeholder="Foreslået handling..."
+                placeholder="Suggested action..."
               />
             </div>
             <Button 
-              className="w-full bg-gradient-to-r from-rose-500 to-violet-500"
+              className="w-full bg-gradient-to-r from-rose-500 to-violet-500 text-black font-semibold"
               onClick={() => createMutation.mutate(formData)}
               disabled={!formData.title || !formData.message || createMutation.isPending}
             >
-              {createMutation.isPending ? 'Opretter...' : 'Opret Alarm'}
+              {createMutation.isPending ? 'Creating...' : 'Create Alert'}
             </Button>
           </div>
         </DialogContent>
