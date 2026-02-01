@@ -177,11 +177,12 @@ export default function Layout({ children, currentPageName }) {
               </Link>
             );
           })}
-        </div>
-      </nav>
+          </div>
+          </nav>
+          )}
 
-      {/* Main Content */}
-      <main className="flex-1 lg:ml-64 pt-16 lg:pt-0 pb-20 lg:pb-0">
+          {/* Main Content */}
+          <main className={`flex-1 ${!hideNav ? 'lg:ml-64 pt-16 lg:pt-0 pb-20 lg:pb-0' : ''}`}>
         {children}
       </main>
     </div>
