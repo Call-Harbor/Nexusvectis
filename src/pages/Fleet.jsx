@@ -33,7 +33,7 @@ export default function Fleet() {
   const [formData, setFormData] = useState({
     name: "TRUCK-001", type: "truck", status: "active", destination: "",
     fuel_level: 100, speed: 0, latitude: 55.6761, longitude: 12.5683,
-    signal_type: "GPS", signal_strength: 95, callsign: "", mmsi: "", icao: "", driver: ""
+    signal_type: "GPS", signal_strength: 95, callsign: "", mmsi: "", icao: "", driver: "", resource_id: ""
   });
 
   const queryClient = useQueryClient();
@@ -47,13 +47,46 @@ export default function Fleet() {
     },
   });
 
+  const { data: resources = [] } = useQuery({
+    queryKey: ['resources'],
+    queryFn: async () => {
+      const user = await base44.auth.me();
+      if (!user.organization_id) return [];
+      return await base44.entities.Resource.filter({ organization_id: user.organization_id });
+    },
+  });
+
   const createMutation = useMutation({
     mutationFn: async (data) => {
       const user = await base44.auth.me();
-      return await base44.entities.Vehicle.create({ ...data, organization_id: user.organization_id });
+      const vehicleData = { ...data, organization_id: user.organization_id };
+      
+      // Set position from selected resource
+      if (vehicleData.resource_id) {
+        const resource = resources.find(r => r.id === vehicleData.resource_id);
+        if (resource) {
+          vehicleData.latitude = resource.latitude;
+          vehicleData.longitude = resource.longitude;
+        }
+      }
+      
+      const newVehicle = await base44.entities.Vehicle.create(vehicleData);
+      
+      // Increment resource current_level
+      if (vehicleData.resource_id) {
+        const resource = resources.find(r => r.id === vehicleData.resource_id);
+        if (resource) {
+          await base44.entities.Resource.update(vehicleData.resource_id, {
+            current_level: (resource.current_level || 0) + 1
+          });
+        }
+      }
+      
+      return newVehicle;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['vehicles'] });
+      queryClient.invalidateQueries({ queryKey: ['resources'] });
       setShowAddDialog(false);
       resetForm();
     },
@@ -68,9 +101,23 @@ export default function Fleet() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => base44.entities.Vehicle.delete(id),
+    mutationFn: async (id) => {
+      const vehicle = vehicles.find(v => v.id === id);
+      await base44.entities.Vehicle.delete(id);
+      
+      // Decrement resource current_level
+      if (vehicle?.resource_id) {
+        const resource = resources.find(r => r.id === vehicle.resource_id);
+        if (resource) {
+          await base44.entities.Resource.update(vehicle.resource_id, {
+            current_level: Math.max(0, (resource.current_level || 1) - 1)
+          });
+        }
+      }
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['vehicles'] });
+      queryClient.invalidateQueries({ queryKey: ['resources'] });
       setSelectedVehicle(null);
     },
   });
@@ -80,7 +127,7 @@ export default function Fleet() {
     setFormData({
       name: `TRUCK-${String(nextNumber).padStart(3, '0')}`, type: "truck", status: "active", destination: "",
       fuel_level: 100, speed: 0, latitude: 55.6761, longitude: 12.5683,
-      signal_type: "GPS", signal_strength: 95, callsign: "", mmsi: "", icao: "", driver: ""
+      signal_type: "GPS", signal_strength: 95, callsign: "", mmsi: "", icao: "", driver: "", resource_id: ""
     });
   };
 
@@ -334,6 +381,22 @@ export default function Fleet() {
                 className="bg-slate-800 border-slate-700"
                 placeholder="e.g. John Smith"
               />
+            </div>
+
+            <div>
+              <Label>Start Position (Resource)</Label>
+              <Select value={formData.resource_id} onValueChange={(v) => setFormData({...formData, resource_id: v})}>
+                <SelectTrigger className="bg-slate-800 border-slate-700">
+                  <SelectValue placeholder="Select resource..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {resources.map(resource => (
+                    <SelectItem key={resource.id} value={resource.id}>
+                      {resource.name} ({resource.location || 'No location'}) - {resource.current_level || 0}/{resource.capacity || 0}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
