@@ -13,7 +13,7 @@ import LiveTrackingMap from "@/components/tracking/LiveTrackingMap";
 import VehicleDetailPanel from "@/components/tracking/VehicleDetailPanel";
 import FleetAnalytics from "@/components/tracking/FleetAnalytics";
 import AlertPanel from "@/components/dashboard/AlertPanel";
-import { useVehicleSimulation } from "@/hooks/useVehicleSimulation";
+import { useVehicleSimulation } from "@/components/tracking/useVehicleSimulation";
 
 export default function Dashboard() {
   const [selectedVehicle, setSelectedVehicle] = useState(null);
