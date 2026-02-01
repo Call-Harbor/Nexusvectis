@@ -9,53 +9,60 @@ Deno.serve(async (req) => {
             return Response.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        // Fetch live AIS data using AI with internet context
-        const aisData = await base44.integrations.Core.InvokeLLM({
-            prompt: `Get the current real-time AIS maritime traffic data from global shipping routes. Return JSON array of currently active ships with this exact structure for each vessel:
-{
-  "id": "ais_MMSI",
-  "mmsi": "Maritime Mobile Service Identity",
-  "name": "Vessel name",
-  "type": "ship",
-  "latitude": number,
-  "longitude": number,
-  "speed": number in knots,
-  "heading": number 0-360,
-  "destination": "Port name",
-  "lastUpdate": "ISO timestamp"
-}
-Include at least 30-50 vessels from different global regions (North Sea, Mediterranean, Atlantic, Pacific, Indian Ocean, etc). Get REAL current AIS data, not examples.`,
-            add_context_from_internet: true,
-            response_json_schema: {
-                type: "object",
-                properties: {
-                    traffic: {
-                        type: "array",
-                        items: {
-                            type: "object",
-                            properties: {
-                                id: { type: "string" },
-                                mmsi: { type: "string" },
-                                name: { type: "string" },
-                                type: { type: "string" },
-                                latitude: { type: "number" },
-                                longitude: { type: "number" },
-                                speed: { type: "number" },
-                                heading: { type: "number" },
-                                destination: { type: "string" },
-                                lastUpdate: { type: "string" }
-                            }
-                        }
-                    }
-                }
-            }
-        });
+        let aisTraffic = [];
 
-        const aisTraffic = (aisData.traffic || []).filter(v => 
-            v.latitude && v.longitude && 
-            v.latitude >= -90 && v.latitude <= 90 && 
-            v.longitude >= -180 && v.longitude <= 180
-        );
+        // Try Multiple AIS data sources
+        try {
+            // Try MarineTraffic Free API
+            const response = await fetch('https://services.marinetraffic.com/api/v8/json/position_reports?timespan=10&mmsi=all', {
+                signal: AbortSignal.timeout(8000)
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                aisTraffic = Object.values(data || {}).map(vessel => ({
+                    id: `ais_${vessel.MMSI}`,
+                    mmsi: vessel.MMSI,
+                    name: vessel.SHIPNAME || 'Unknown',
+                    type: 'ship',
+                    latitude: parseFloat(vessel.LAT),
+                    longitude: parseFloat(vessel.LON),
+                    speed: parseFloat(vessel.SOG) || 0,
+                    heading: parseFloat(vessel.COG) || 0,
+                    destination: vessel.DESTINATION || 'Unknown',
+                    lastUpdate: new Date().toISOString(),
+                })).filter(v => v.latitude && v.longitude && v.latitude >= -90 && v.latitude <= 90 && v.longitude >= -180 && v.longitude <= 180).slice(0, 100);
+            }
+        } catch (e) {
+            console.log('MarineTraffic API failed, trying OpenSeaMap...');
+        }
+
+        // Fallback to OpenSeaMap
+        if (aisTraffic.length === 0) {
+            try {
+                const response = await fetch('https://tiles.openseamap.org/vessels/latest.json', {
+                    signal: AbortSignal.timeout(8000)
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    aisTraffic = (data.features || []).map(feature => ({
+                        id: `ais_${feature.properties.mmsi}`,
+                        mmsi: feature.properties.mmsi,
+                        name: feature.properties.name || 'Unknown',
+                        type: 'ship',
+                        latitude: feature.geometry.coordinates[1],
+                        longitude: feature.geometry.coordinates[0],
+                        speed: feature.properties.sog || 0,
+                        heading: feature.properties.cog || 0,
+                        destination: feature.properties.destination || 'Unknown',
+                        lastUpdate: new Date().toISOString(),
+                    })).filter(v => v.latitude >= -90 && v.latitude <= 90 && v.longitude >= -180 && v.longitude <= 180).slice(0, 100);
+                }
+            } catch (e) {
+                console.log('OpenSeaMap also failed');
+            }
+        }
 
         return Response.json({ traffic: aisTraffic });
     } catch (error) {
