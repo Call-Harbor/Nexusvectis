@@ -31,7 +31,7 @@ export default function Fleet() {
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [formData, setFormData] = useState({
-    name: "", type: "truck", status: "active", destination: "",
+    name: "TRUCK-001", type: "truck", status: "active", destination: "",
     fuel_level: 100, speed: 0, latitude: 55.6761, longitude: 12.5683,
     signal_type: "GPS", signal_strength: 95, callsign: "", mmsi: "", icao: "", driver: ""
   });
@@ -69,8 +69,9 @@ export default function Fleet() {
   });
 
   const resetForm = () => {
+    const nextNumber = vehicles.filter(v => v.type === 'truck').length + 1;
     setFormData({
-      name: "", type: "truck", status: "active", destination: "",
+      name: `TRUCK-${String(nextNumber).padStart(3, '0')}`, type: "truck", status: "active", destination: "",
       fuel_level: 100, speed: 0, latitude: 55.6761, longitude: 12.5683,
       signal_type: "GPS", signal_strength: 95, callsign: "", mmsi: "", icao: "", driver: ""
     });
@@ -255,18 +256,23 @@ export default function Fleet() {
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label>Name</Label>
+              <Label>Name (Auto-generated)</Label>
               <Input
                 value={formData.name}
                 onChange={(e) => setFormData({...formData, name: e.target.value})}
                 className="bg-slate-800 border-slate-700"
-                placeholder="e.g. Truck-001"
+                placeholder="Auto-generated based on type"
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>Type</Label>
-                <Select value={formData.type} onValueChange={(v) => setFormData({...formData, type: v})}>
+                <Select value={formData.type} onValueChange={(v) => {
+                  const typePrefix = v.toUpperCase();
+                  const nextNumber = vehicles.filter(vehicle => vehicle.type === v).length + 1;
+                  const autoName = `${typePrefix}-${String(nextNumber).padStart(3, '0')}`;
+                  setFormData({...formData, type: v, name: autoName});
+                }}>
                   <SelectTrigger className="bg-slate-800 border-slate-700">
                     <SelectValue />
                   </SelectTrigger>
