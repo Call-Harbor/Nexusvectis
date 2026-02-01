@@ -152,11 +152,13 @@ export default function Layout({ children, currentPageName }) {
             alt="NexusVectis Logo" 
             className="h-16 w-auto"
           />
-        </div>
-      </header>
+          </div>
+          </header>
+          )}
 
-      {/* Mobile Bottom Nav */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/90 backdrop-blur-xl border-t border-slate-800/50 z-40 lg:hidden">
+          {/* Mobile Bottom Nav */}
+          {!hideNav && (
+          <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/90 backdrop-blur-xl border-t border-slate-800/50 z-40 lg:hidden">
         <div className="flex items-center justify-around py-2">
           {navItems.slice(0, 5).map((item) => {
             const isActive = currentPageName === item.page;
