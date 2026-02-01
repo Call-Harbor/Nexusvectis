@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import { 
@@ -25,7 +25,14 @@ L.Icon.Default.mergeOptions({
 });
 
 export default function AdminDashboard() {
+  const [markerCoordinates, setMarkerCoordinates] = useState({});
 
+  const geocodeMutation = useMutation({
+    mutationFn: async ({ city, country }) => {
+      const response = await base44.functions.invoke('geocodeCity', { city, country });
+      return response.data;
+    }
+  });
 
   // Check if user is authenticated
   const { data: currentUser, isLoading: userLoading } = useQuery({
@@ -89,26 +96,34 @@ export default function AdminDashboard() {
 
   const stats = calculateStats();
 
-  // City coordinates mapping
-  const cityCoordinates = {
-    'copenhagen': { lat: 55.6761, lng: 12.5683 },
-    'aarhus': { lat: 56.1629, lng: 10.2039 },
-    'odense': { lat: 55.4038, lng: 10.3822 },
-    'aalborg': { lat: 57.0488, lng: 9.9217 },
-    'esbjerg': { lat: 55.4668, lng: 8.4427 },
-    'randers': { lat: 56.4632, lng: 10.9297 },
-    'kolding': { lat: 55.4915, lng: 9.4699 },
-    'vejle': { lat: 55.7061, lng: 9.5347 },
-    'horsens': { lat: 55.8569, lng: 9.8731 },
-    'silkeborg': { lat: 56.1860, lng: 9.5541 },
-  };
+  // Geocode organizations
+  useEffect(() => {
+    organizations
+      .filter(org => org.headquarters_country && org.headquarters_city)
+      .forEach(org => {
+        const key = `${org.headquarters_city},${org.headquarters_country}`;
+        if (!markerCoordinates[key]) {
+          geocodeMutation.mutate({ 
+            city: org.headquarters_city, 
+            country: org.headquarters_country 
+          }, {
+            onSuccess: (data) => {
+              setMarkerCoordinates(prev => ({
+                ...prev,
+                [key]: { lat: data.lat, lng: data.lng }
+              }));
+            }
+          });
+        }
+      });
+  }, [organizations]);
 
   // Prepare map markers for organizations
   const organizationMarkers = organizations
     .filter(org => org.headquarters_country && org.headquarters_city)
     .map((org) => {
-      const cityKey = org.headquarters_city.toLowerCase();
-      const coords = cityCoordinates[cityKey] || { lat: 56, lng: 10 };
+      const key = `${org.headquarters_city},${org.headquarters_country}`;
+      const coords = markerCoordinates[key] || { lat: 20, lng: 0 };
       return {
         id: org.id,
         name: org.name,
@@ -257,7 +272,7 @@ export default function AdminDashboard() {
             animate={{ opacity: 1, scale: 1 }}
             className="rounded-2xl border border-slate-700/50 bg-slate-800/50 backdrop-blur-xl overflow-hidden h-96"
           >
-            <MapContainer center={[56, 12]} zoom={4} style={{ height: '100%', width: '100%' }}>
+            <MapContainer center={[20, 0]} zoom={2} style={{ height: '100%', width: '100%' }}>
               <TileLayer
                 url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
                 attribution="&copy; OpenStreetMap"
