@@ -44,11 +44,16 @@ export default function UserManagement() {
 
   // List users from same organization
   const { data: users = [], isLoading } = useQuery({
-    queryKey: ['users', currentUser?.organization_id],
+    queryKey: ['users', currentUser?.organization_id, currentUser?.data?.organization_id],
     queryFn: async () => {
-      if (!currentUser?.organization_id) return [];
+      const orgId = currentUser?.organization_id || currentUser?.data?.organization_id;
+      if (!orgId) return [];
+      
       const allUsers = await base44.entities.User.list();
-      const filteredUsers = allUsers.filter(u => u.organization_id === currentUser?.organization_id);
+      const filteredUsers = allUsers.filter(u => {
+        const userOrgId = u.organization_id || u.data?.organization_id;
+        return userOrgId === orgId;
+      });
       
       // Ensure current user is included
       const currentUserInList = filteredUsers.find(u => u.id === currentUser.id);
@@ -58,7 +63,7 @@ export default function UserManagement() {
       
       return filteredUsers;
     },
-    enabled: !!currentUser?.organization_id,
+    enabled: !!(currentUser?.organization_id || currentUser?.data?.organization_id),
     staleTime: 0,
   });
 
@@ -119,13 +124,10 @@ export default function UserManagement() {
     inviteMutation.mutate({ email: inviteEmail, role: inviteRole });
   };
 
-  // Determine admin based on their own organization's admin_email
+  // Determine admin based on organization's admin_email
   const usersWithOrgs = users.map(user => ({
     ...user,
-    isAdmin: user.organization_id ? (
-      // For users in the same org, check against the shared org's admin_email
-      organization?.id === user.organization_id && user.email === organization?.admin_email
-    ) : false
+    isAdmin: user.email === organization?.admin_email
   }));
 
   const adminUsers = usersWithOrgs.filter(u => u.isAdmin);
