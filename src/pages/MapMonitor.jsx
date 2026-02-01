@@ -50,6 +50,16 @@ export default function MapMonitor() {
     enabled: !!(currentUser?.organization_id || currentUser?.data?.organization_id),
   });
 
+  // Subscribe to real-time resource updates
+  useEffect(() => {
+    const unsubscribe = base44.entities.Resource.subscribe((event) => {
+      const queryClient = useQueryClient();
+      queryClient.invalidateQueries({ queryKey: ['resources'] });
+    });
+    
+    return unsubscribe;
+  }, []);
+
   if (!currentUser || vehiclesLoading) {
     return (
       <div className="w-full h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
