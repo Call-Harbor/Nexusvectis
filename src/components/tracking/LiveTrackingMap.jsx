@@ -297,7 +297,7 @@ export default function LiveTrackingMap({
       </div>
 
       {/* Signal Status Panel */}
-      {selectedVehicle && (
+      {selectedVehicle && (selectedVehicle.signal_strength || 0) > 0 && (
         <div className="absolute top-20 right-4 z-[1000] w-64">
           <div className="p-4 rounded-xl bg-slate-900/90 backdrop-blur-xl border border-slate-700/50">
             <div className="flex items-center gap-2 mb-3">
@@ -311,7 +311,7 @@ export default function LiveTrackingMap({
                   {[1,2,3,4,5].map(i => (
                     <div 
                       key={i} 
-                      className={`w-1 rounded-full ${i <= 4 ? 'bg-emerald-400' : 'bg-slate-600'}`}
+                      className={`w-1 rounded-full ${i <= Math.ceil((selectedVehicle.signal_strength || 0) / 20) ? 'bg-emerald-400' : 'bg-slate-600'}`}
                       style={{ height: `${i * 3 + 4}px` }}
                     />
                   ))}
@@ -328,7 +328,7 @@ export default function LiveTrackingMap({
                   ) : (
                     <>
                       <WifiOff className="w-3 h-3 mr-1" />
-                      Disconnected
+                      Weak Signal
                     </>
                   )}
                 </Badge>
