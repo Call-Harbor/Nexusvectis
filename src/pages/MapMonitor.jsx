@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import LiveTrackingMap from "@/components/tracking/LiveTrackingMap";
 import MapHeader from "@/components/tracking/MapHeader";
 import EnhancedVehiclePanel from "@/components/tracking/EnhancedVehiclePanel";
