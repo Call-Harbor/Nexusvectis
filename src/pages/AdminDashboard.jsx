@@ -89,18 +89,36 @@ export default function AdminDashboard() {
 
   const stats = calculateStats();
 
+  // City coordinates mapping
+  const cityCoordinates = {
+    'copenhagen': { lat: 55.6761, lng: 12.5683 },
+    'aarhus': { lat: 56.1629, lng: 10.2039 },
+    'odense': { lat: 55.4038, lng: 10.3822 },
+    'aalborg': { lat: 57.0488, lng: 9.9217 },
+    'esbjerg': { lat: 55.4668, lng: 8.4427 },
+    'randers': { lat: 56.4632, lng: 10.9297 },
+    'kolding': { lat: 55.4915, lng: 9.4699 },
+    'vejle': { lat: 55.7061, lng: 9.5347 },
+    'horsens': { lat: 55.8569, lng: 9.8731 },
+    'silkeborg': { lat: 56.1860, lng: 9.5541 },
+  };
+
   // Prepare map markers for organizations
   const organizationMarkers = organizations
     .filter(org => org.headquarters_country && org.headquarters_city)
-    .map((org, idx) => ({
-      id: org.id,
-      name: org.name,
-      country: org.headquarters_country,
-      city: org.headquarters_city,
-      lat: 55.6761 + (Math.random() - 0.5) * 0.1,
-      lng: 12.5683 + (Math.random() - 0.5) * 0.1,
-      vehicles: allVehicles.filter(v => v.organization_id === org.id).length
-    }));
+    .map((org) => {
+      const cityKey = org.headquarters_city.toLowerCase();
+      const coords = cityCoordinates[cityKey] || { lat: 56, lng: 10 };
+      return {
+        id: org.id,
+        name: org.name,
+        country: org.headquarters_country,
+        city: org.headquarters_city,
+        lat: coords.lat,
+        lng: coords.lng,
+        vehicles: allVehicles.filter(v => v.organization_id === org.id).length
+      };
+    });
 
   // Chart data for growth
   const growthData = [
