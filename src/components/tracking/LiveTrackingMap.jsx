@@ -110,7 +110,7 @@ const createVehicleIcon = (type, status, heading = 0, isSelected = false) => {
   });
 };
 
-function MapController({ selectedVehicle, followMode }) {
+function MapController({ selectedVehicle, followMode, isFullscreen }) {
   const map = useMap();
   
   useEffect(() => {
@@ -120,6 +120,12 @@ function MapController({ selectedVehicle, followMode }) {
       });
     }
   }, [selectedVehicle?.latitude, selectedVehicle?.longitude, followMode, map]);
+
+  useEffect(() => {
+    setTimeout(() => {
+      map.invalidateSize();
+    }, 300);
+  }, [isFullscreen, map]);
 
   return null;
 }
@@ -369,7 +375,7 @@ export default function LiveTrackingMap({
           url={mapStyles[mapStyle]}
         />
         
-        <MapController selectedVehicle={selectedVehicle} followMode={followMode} />
+        <MapController selectedVehicle={selectedVehicle} followMode={followMode} isFullscreen={isFullscreen} />
 
         {/* Vehicle Trails */}
         {showTrails && Object.entries(vehicleTrails).map(([vehicleId, positions]) => {
