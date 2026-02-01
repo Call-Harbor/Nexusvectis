@@ -147,7 +147,7 @@ function VehicleTrail({ positions, color }) {
 }
 
 export default function LiveTrackingMap({ 
-  vehicles, 
+  vehicles = [], 
   selectedVehicle, 
   onSelectVehicle,
   vehicleTrails = {},
@@ -163,7 +163,7 @@ export default function LiveTrackingMap({
   const [mapStyle, setMapStyle] = useState('dark');
   
   const validVehicles = vehicles.filter(v => 
-    v.latitude && v.longitude && visibleTypes[v.type]
+    v?.latitude && v?.longitude && visibleTypes[v.type]
   );
   
   const center = selectedVehicle?.latitude && selectedVehicle?.longitude
@@ -171,6 +171,18 @@ export default function LiveTrackingMap({
     : validVehicles.length > 0 
       ? [validVehicles[0].latitude, validVehicles[0].longitude]
       : [55.6761, 12.5683];
+
+  // Don't render map until we have valid data
+  if (!vehicles || vehicles.length === 0) {
+    return (
+      <div className="h-[600px] rounded-2xl border border-slate-700/50 bg-slate-900/50 backdrop-blur-xl flex items-center justify-center">
+        <div className="text-center">
+          <Satellite className="w-12 h-12 text-slate-600 mx-auto mb-3" />
+          <p className="text-slate-400">No vehicles to track</p>
+        </div>
+      </div>
+    );
+  }
 
   const mapStyles = {
     dark: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
