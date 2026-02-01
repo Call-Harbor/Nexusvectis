@@ -319,9 +319,18 @@ export default function LiveTrackingMap({
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-xs text-slate-400">Data Link</span>
-                <Badge variant="outline" className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 text-xs">
-                  <Wifi className="w-3 h-3 mr-1" />
-                  Connected
+                <Badge variant="outline" className={`${(selectedVehicle.signal_strength || 0) > 50 ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border-rose-500/30'} text-xs`}>
+                  {(selectedVehicle.signal_strength || 0) > 50 ? (
+                    <>
+                      <Wifi className="w-3 h-3 mr-1" />
+                      Connected
+                    </>
+                  ) : (
+                    <>
+                      <WifiOff className="w-3 h-3 mr-1" />
+                      Disconnected
+                    </>
+                  )}
                 </Badge>
               </div>
               <div className="flex items-center justify-between">
