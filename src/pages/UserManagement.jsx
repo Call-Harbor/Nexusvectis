@@ -48,28 +48,24 @@ export default function UserManagement() {
     queryKey: ['users', currentUser?.organization_id, currentUser?.data?.organization_id],
     queryFn: async () => {
       const orgId = currentUser?.organization_id || currentUser?.data?.organization_id;
-      if (!orgId) return [];
+      if (!orgId) return [currentUser]; // Return current user even without org
       
       const allUsers = await base44.entities.User.list();
-      console.log('All users:', allUsers);
-      console.log('Looking for org:', orgId);
       
+      // Get all users and filter by org, including current user
       const filteredUsers = allUsers.filter(u => {
         const userOrgId = u.organization_id || u.data?.organization_id;
-        console.log('User:', u.email, 'orgId:', userOrgId);
         return userOrgId === orgId;
       });
       
-      console.log('Filtered users:', filteredUsers);
-      
-      // Always include current user if they have an org
+      // Always ensure current user is in the list
       if (!filteredUsers.find(u => u.id === currentUser.id)) {
         return [currentUser, ...filteredUsers];
       }
       
       return filteredUsers;
     },
-    enabled: !!(currentUser?.organization_id || currentUser?.data?.organization_id),
+    enabled: !!currentUser,
     staleTime: 0,
   });
 
