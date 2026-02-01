@@ -235,10 +235,15 @@ export default function VehicleDetailPanel({ vehicle, onClose, telemetryHistory 
               <CheckCircle className="w-4 h-4 text-emerald-400" />
               <span className="text-xs text-slate-300">GPS Lock</span>
             </div>
-            {vehicle.signal_strength > 0 && (
+            {vehicle.signal_strength && vehicle.signal_strength > 0 ? (
               <div className="p-2 rounded-lg bg-slate-800/50 flex items-center gap-2">
                 <Wifi className={`w-4 h-4 ${vehicle.signal_strength > 50 ? 'text-emerald-400' : 'text-rose-400'}`} />
                 <span className="text-xs text-slate-300">{vehicle.signal_strength > 50 ? 'Connected' : 'Weak Signal'}</span>
+              </div>
+            ) : (
+              <div className="p-2 rounded-lg bg-slate-800/50 flex items-center gap-2">
+                <WifiOff className="w-4 h-4 text-rose-400" />
+                <span className="text-xs text-slate-300">No Signal</span>
               </div>
             )}
             <div className="p-2 rounded-lg bg-slate-800/50 flex items-center gap-2">
