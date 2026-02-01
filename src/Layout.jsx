@@ -32,30 +32,11 @@ export default function Layout({ children, currentPageName }) {
       <aside className="fixed left-0 top-0 h-full w-64 bg-slate-900/50 backdrop-blur-xl border-r border-slate-800/50 z-40 hidden lg:block">
         <div className="p-6">
           <Link to={createPageUrl("Dashboard")} className="flex items-center gap-3">
-            <div className="relative p-2 rounded-xl bg-gradient-to-br from-cyan-500/20 to-violet-500/20 border border-cyan-500/30">
-              <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none">
-                <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="url(#grad1)" opacity="0.8"/>
-                <path d="M2 17L12 22L22 17" stroke="url(#grad2)" strokeWidth="2" strokeLinecap="round"/>
-                <path d="M2 12L12 17L22 12" stroke="url(#grad2)" strokeWidth="2" strokeLinecap="round"/>
-                <defs>
-                  <linearGradient id="grad1" x1="2" y1="2" x2="22" y2="12">
-                    <stop offset="0%" stopColor="#06b6d4" />
-                    <stop offset="100%" stopColor="#8b5cf6" />
-                  </linearGradient>
-                  <linearGradient id="grad2" x1="2" y1="12" x2="22" y2="22">
-                    <stop offset="0%" stopColor="#06b6d4" />
-                    <stop offset="100%" stopColor="#8b5cf6" />
-                  </linearGradient>
-                </defs>
-              </svg>
-            </div>
-            <div>
-              <span className="font-bold text-white text-lg">NexusVectis</span>
-              <div className="flex items-center gap-1 text-xs text-slate-500">
-                <Sparkles className="w-3 h-3 text-violet-400" />
-                <span>AI Platform</span>
-              </div>
-            </div>
+            <img 
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/697e930c62bf3e3832b34edb/1c0bebde9_FullLogo_Transparent.png" 
+              alt="NexusVectis Logo" 
+              className="h-12 w-auto"
+            />
           </Link>
         </div>
 
@@ -130,26 +111,11 @@ export default function Layout({ children, currentPageName }) {
       {/* Mobile Header */}
       <header className="fixed top-0 left-0 right-0 h-16 bg-slate-900/80 backdrop-blur-xl border-b border-slate-800/50 z-40 lg:hidden">
         <div className="flex items-center justify-between h-full px-4">
-          <div className="flex items-center gap-3">
-            <div className="relative p-2 rounded-xl bg-gradient-to-br from-cyan-500/20 to-violet-500/20 border border-cyan-500/30">
-              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
-                <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="url(#grad1-mobile)" opacity="0.8"/>
-                <path d="M2 17L12 22L22 17" stroke="url(#grad2-mobile)" strokeWidth="2" strokeLinecap="round"/>
-                <path d="M2 12L12 17L22 12" stroke="url(#grad2-mobile)" strokeWidth="2" strokeLinecap="round"/>
-                <defs>
-                  <linearGradient id="grad1-mobile" x1="2" y1="2" x2="22" y2="12">
-                    <stop offset="0%" stopColor="#06b6d4" />
-                    <stop offset="100%" stopColor="#8b5cf6" />
-                  </linearGradient>
-                  <linearGradient id="grad2-mobile" x1="2" y1="12" x2="22" y2="22">
-                    <stop offset="0%" stopColor="#06b6d4" />
-                    <stop offset="100%" stopColor="#8b5cf6" />
-                  </linearGradient>
-                </defs>
-              </svg>
-            </div>
-            <span className="font-bold text-white">NexusVectis</span>
-          </div>
+          <img 
+            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/697e930c62bf3e3832b34edb/1c0bebde9_FullLogo_Transparent.png" 
+            alt="NexusVectis Logo" 
+            className="h-10 w-auto"
+          />
         </div>
       </header>
 
