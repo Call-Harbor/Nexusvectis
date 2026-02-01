@@ -39,6 +39,17 @@ export default function MapMonitor() {
     refetchInterval: 3000,
   });
 
+  // Fetch resources
+  const { data: resources = [] } = useQuery({
+    queryKey: ['resources', currentUser?.organization_id, currentUser?.data?.organization_id],
+    queryFn: async () => {
+      const orgId = currentUser?.organization_id || currentUser?.data?.organization_id;
+      if (!orgId) return [];
+      return base44.entities.Resource.filter({ organization_id: orgId });
+    },
+    enabled: !!(currentUser?.organization_id || currentUser?.data?.organization_id),
+  });
+
   if (!currentUser || vehiclesLoading) {
     return (
       <div className="w-full h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
@@ -54,6 +65,7 @@ export default function MapMonitor() {
       <div className="flex-1 w-full relative">
         <LiveTrackingMap
           vehicles={vehicles}
+          resources={resources}
           selectedVehicle={selectedVehicle}
           onSelectVehicle={setSelectedVehicle}
           vehicleTrails={vehicleTrails}

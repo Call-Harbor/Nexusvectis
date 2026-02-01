@@ -51,6 +51,15 @@ export default function Dashboard() {
     refetchInterval: 5000,
   });
 
+  const { data: resources = [] } = useQuery({
+    queryKey: ['resources'],
+    queryFn: async () => {
+      const user = await base44.auth.me();
+      if (!user.organization_id) return [];
+      return await base44.entities.Resource.filter({ organization_id: user.organization_id });
+    },
+  });
+
   const { data: routes = [] } = useQuery({
     queryKey: ['routes'],
     queryFn: () => base44.entities.Route.list(),
@@ -200,6 +209,7 @@ export default function Dashboard() {
               <div className="flex-1">
                 <LiveTrackingMap 
                   vehicles={vehicles}
+                  resources={resources}
                   selectedVehicle={selectedVehicle}
                   onSelectVehicle={(v) => {
                     setSelectedVehicle(v);
