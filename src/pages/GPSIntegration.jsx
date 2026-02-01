@@ -553,34 +553,69 @@ export default function GPSIntegration() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-3">
-                <div className="flex gap-3">
-                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-sm font-bold">1</div>
-                  <div>
-                    <h4 className="text-white font-medium">Copy Webhook URL</h4>
-                    <p className="text-sm text-slate-400">Get the URL from your app dashboard under Functions</p>
-                  </div>
-                </div>
-                <div className="flex gap-3">
-                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-sm font-bold">2</div>
-                  <div>
-                    <h4 className="text-white font-medium">Configure your GPS tracker</h4>
-                    <p className="text-sm text-slate-400">Set tracker to send HTTP POST to the webhook URL</p>
-                  </div>
-                </div>
-                <div className="flex gap-3">
-                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-sm font-bold">3</div>
-                  <div>
-                    <h4 className="text-white font-medium">Map vehicle_id</h4>
-                    <p className="text-sm text-slate-400">Ensure vehicle_id matches the vehicle name in Fleet</p>
-                  </div>
-                </div>
-                <div className="flex gap-3">
-                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-sm font-bold">4</div>
-                  <div>
-                    <h4 className="text-white font-medium">Test connection</h4>
-                    <p className="text-sm text-slate-400">Use the test tool above or send live data from the tracker</p>
-                  </div>
-                </div>
+                {activeMethod === "obd" ? (
+                  <>
+                    <div className="flex gap-3">
+                      <div className="flex-shrink-0 w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-sm font-bold">1</div>
+                      <div>
+                        <h4 className="text-white font-medium">Install OBD-II Reader</h4>
+                        <p className="text-sm text-slate-400">Connect Vimcar, Samsara, or compatible OBD-II device to vehicle</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-3">
+                      <div className="flex-shrink-0 w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-sm font-bold">2</div>
+                      <div>
+                        <h4 className="text-white font-medium">Configure Webhook</h4>
+                        <p className="text-sm text-slate-400">In OBD provider dashboard, set webhook URL above</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-3">
+                      <div className="flex-shrink-0 w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-sm font-bold">3</div>
+                      <div>
+                        <h4 className="text-white font-medium">Map VIN or Device ID</h4>
+                        <p className="text-sm text-slate-400">Ensure VIN or device_id matches vehicle in Fleet</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-3">
+                      <div className="flex-shrink-0 w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-sm font-bold">4</div>
+                      <div>
+                        <h4 className="text-white font-medium">Real-time Data</h4>
+                        <p className="text-sm text-slate-400">Live engine data, diagnostics, and position updates every 10-30s</p>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex gap-3">
+                      <div className="flex-shrink-0 w-6 h-6 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-sm font-bold">1</div>
+                      <div>
+                        <h4 className="text-white font-medium">Copy Webhook URL</h4>
+                        <p className="text-sm text-slate-400">Get the URL from your app dashboard under Functions</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-3">
+                      <div className="flex-shrink-0 w-6 h-6 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-sm font-bold">2</div>
+                      <div>
+                        <h4 className="text-white font-medium">Configure your GPS tracker</h4>
+                        <p className="text-sm text-slate-400">Set tracker to send HTTP POST to the webhook URL</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-3">
+                      <div className="flex-shrink-0 w-6 h-6 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-sm font-bold">3</div>
+                      <div>
+                        <h4 className="text-white font-medium">Map vehicle_id</h4>
+                        <p className="text-sm text-slate-400">Ensure vehicle_id matches the vehicle name in Fleet</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-3">
+                      <div className="flex-shrink-0 w-6 h-6 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-sm font-bold">4</div>
+                      <div>
+                        <h4 className="text-white font-medium">Test connection</h4>
+                        <p className="text-sm text-slate-400">Use the test tool above or send live data from the tracker</p>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             </CardContent>
           </Card>
