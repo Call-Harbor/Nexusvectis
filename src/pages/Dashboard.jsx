@@ -174,7 +174,11 @@ export default function Dashboard() {
 
   const { data: rawVehicles = [] } = useQuery({
     queryKey: ['vehicles'],
-    queryFn: () => base44.entities.Vehicle.list(),
+    queryFn: async () => {
+      const user = await base44.auth.me();
+      if (!user.organization_id) return [];
+      return await base44.entities.Vehicle.filter({ organization_id: user.organization_id });
+    },
     refetchInterval: 30000,
   });
 

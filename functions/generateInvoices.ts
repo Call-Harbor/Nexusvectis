@@ -27,7 +27,7 @@ Deno.serve(async (req) => {
     for (const org of organizations) {
       // Count vehicles for this organization
       const vehicles = await base44.asServiceRole.entities.Vehicle.filter({
-        created_by: org.admin_email
+        organization_id: org.id
       });
 
       const unitCount = vehicles.length;
