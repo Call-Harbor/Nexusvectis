@@ -52,14 +52,14 @@ import Alerts from './pages/Alerts';
 import Dashboard from './pages/Dashboard';
 import Fleet from './pages/Fleet';
 import GPSIntegration from './pages/GPSIntegration';
+import Invoices from './pages/Invoices';
+import MapMonitor from './pages/MapMonitor';
 import OrganizationSetup from './pages/OrganizationSetup';
 import Resources from './pages/Resources';
 import Routes from './pages/Routes';
 import Security from './pages/Security';
-import UserManagement from './pages/UserManagement';
 import Settings from './pages/Settings';
-import Invoices from './pages/Invoices';
-import MapMonitor from './pages/MapMonitor';
+import UserManagement from './pages/UserManagement';
 import __Layout from './Layout.jsx';
 
 
@@ -69,14 +69,14 @@ export const PAGES = {
     "Dashboard": Dashboard,
     "Fleet": Fleet,
     "GPSIntegration": GPSIntegration,
+    "Invoices": Invoices,
+    "MapMonitor": MapMonitor,
     "OrganizationSetup": OrganizationSetup,
     "Resources": Resources,
     "Routes": Routes,
     "Security": Security,
-    "UserManagement": UserManagement,
     "Settings": Settings,
-    "Invoices": Invoices,
-    "MapMonitor": MapMonitor,
+    "UserManagement": UserManagement,
 }
 
 export const pagesConfig = {
