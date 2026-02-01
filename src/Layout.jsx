@@ -179,7 +179,23 @@ export default function Layout({ children, currentPageName }) {
           {navItems.slice(0, 5).map((item) => {
             const isActive = currentPageName === item.page;
             const Icon = item.icon;
-            return (
+            const isMapMonitor = item.page === "MapMonitor";
+            
+            return isMapMonitor ? (
+              <a
+                key={item.name}
+                href={createPageUrl(item.page)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={cn(
+                  "flex flex-col items-center gap-1 py-2 px-3 rounded-lg transition-all",
+                  "text-slate-500"
+                )}
+              >
+                <Icon className="w-5 h-5" />
+                <span className="text-[10px] font-medium">{item.name}</span>
+              </a>
+            ) : (
               <Link
                 key={item.name}
                 to={createPageUrl(item.page)}
