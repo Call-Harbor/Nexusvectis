@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
@@ -32,7 +32,7 @@ export default function Fleet() {
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [formData, setFormData] = useState({
     name: "TRUCK-001", type: "truck", status: "active",
-    speed: 0, latitude: 55.6761, longitude: 12.5683,
+    speed: 0, latitude: 20, longitude: 0,
     signal_type: "GPS", signal_strength: 95, callsign: "", mmsi: "", icao: "", driver: "", resource_id: ""
   });
 
@@ -132,7 +132,7 @@ export default function Fleet() {
     const nextNumber = vehicles.filter(v => v.type === 'truck').length + 1;
     setFormData({
       name: `TRUCK-${String(nextNumber).padStart(3, '0')}`, type: "truck", status: "active",
-      speed: 0, latitude: 55.6761, longitude: 12.5683,
+      speed: 0, latitude: 20, longitude: 0,
       signal_type: "GPS", signal_strength: 95, callsign: "", mmsi: "", icao: "", driver: "", resource_id: ""
     });
   };

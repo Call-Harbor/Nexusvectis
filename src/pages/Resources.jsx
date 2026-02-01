@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Warehouse, Plus, Search, MapPin, Fuel, Battery, Wrench, Ship, X
@@ -40,10 +41,17 @@ export default function Resources() {
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [formData, setFormData] = useState({
     name: "", type: "warehouse", location: "", status: "operational",
-    capacity: 1000, latitude: 55.6761, longitude: 12.5683
+    capacity: 1000, latitude: 20, longitude: 0
   });
   const [searchingLocation, setSearchingLocation] = useState(false);
   const searchTimeoutRef = useRef(null);
+  
+  const geocodeMutation = useMutation({
+    mutationFn: async ({ city, country }) => {
+      const response = await base44.functions.invoke('geocodeCity', { city, country });
+      return response.data;
+    }
+  });
 
   const queryClient = useQueryClient();
 
@@ -86,7 +94,7 @@ export default function Resources() {
   const resetForm = () => {
     setFormData({
       name: "", type: "warehouse", location: "", status: "operational",
-      capacity: 1000, latitude: 55.6761, longitude: 12.5683
+      capacity: 1000, latitude: 20, longitude: 0
     });
   };
 
@@ -94,32 +102,21 @@ export default function Resources() {
     if (locationText.length < 2) return;
     
     setSearchingLocation(true);
-    try {
-      const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Get the latitude and longitude coordinates for the city/location: "${locationText}". Return ONLY valid JSON with this exact format: {"latitude": number, "longitude": number}. Use accurate GPS coordinates.`,
-        add_context_from_internet: true,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            latitude: { type: "number" },
-            longitude: { type: "number" }
-          },
-          required: ["latitude", "longitude"]
-        }
-      });
-      
-      if (result.latitude && result.longitude) {
+    const parts = locationText.split(',').map(p => p.trim());
+    const city = parts[0];
+    const country = parts[1] || '';
+    
+    geocodeMutation.mutate({ city, country }, {
+      onSuccess: (data) => {
         setFormData(prev => ({
           ...prev,
-          latitude: result.latitude,
-          longitude: result.longitude
+          latitude: data.lat,
+          longitude: data.lng
         }));
-      }
-    } catch (error) {
-      console.error('Location search error:', error);
-    } finally {
-      setSearchingLocation(false);
-    }
+        setSearchingLocation(false);
+      },
+      onError: () => setSearchingLocation(false)
+    });
   };
 
   const filteredResources = resources.filter(r => {
@@ -348,7 +345,7 @@ export default function Resources() {
                 />
               </div>
               {searchingLocation && <p className="text-xs text-slate-400 mt-1">Searching coordinates...</p>}
-              {formData.latitude !== 55.6761 || formData.longitude !== 12.5683 ? (
+              {formData.latitude !== 20 || formData.longitude !== 0 ? (
                 <p className="text-xs text-emerald-400 mt-1">📍 Coordinates: {formData.latitude.toFixed(4)}, {formData.longitude.toFixed(4)}</p>
               ) : (
                 <p className="text-xs text-slate-500 mt-1">Location coordinates will be set when you finish typing</p>
