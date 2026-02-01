@@ -464,28 +464,7 @@ export default function Fleet() {
               </div>
             )}
 
-            <div className="p-3 rounded-lg bg-slate-800/50 border border-slate-700/50">
-              <Label className="text-slate-400">Start Position (lat/lng)</Label>
-              <div className="grid grid-cols-2 gap-4 mt-2">
-                <Input
-                  type="number"
-                  step="0.0001"
-                  value={formData.latitude}
-                  onChange={(e) => setFormData({...formData, latitude: parseFloat(e.target.value) || 0})}
-                  className="bg-slate-800 border-slate-700"
-                  placeholder="Latitude"
-                />
-                <Input
-                  type="number"
-                  step="0.0001"
-                  value={formData.longitude}
-                  onChange={(e) => setFormData({...formData, longitude: parseFloat(e.target.value) || 0})}
-                  className="bg-slate-800 border-slate-700"
-                  placeholder="Longitude"
-                />
-              </div>
-              <p className="text-xs text-slate-500 mt-2">Default: Copenhagen (55.6761, 12.5683)</p>
-            </div>
+
 
             <div className="grid grid-cols-2 gap-4">
               <div>
