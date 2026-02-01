@@ -25,6 +25,8 @@ export default function UserManagement() {
     queryKey: ['currentUser'],
     queryFn: async () => {
       const user = await base44.auth.me();
+      console.log('Current user:', user);
+      console.log('User org_id from currentUser:', user?.organization_id || user?.data?.organization_id);
       setCurrentUser(user);
       return user;
     },
