@@ -42,13 +42,26 @@ export default function Routes() {
 
   const queryClient = useQueryClient();
 
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+
   const { data: routes = [] } = useQuery({
-    queryKey: ['routes'],
-    queryFn: () => base44.entities.Route.list(),
+    queryKey: ['routes', currentUser?.organization_id, currentUser?.data?.organization_id],
+    queryFn: async () => {
+      const orgId = currentUser?.organization_id || currentUser?.data?.organization_id;
+      if (!orgId) return [];
+      return base44.entities.Route.filter({ organization_id: orgId });
+    },
+    enabled: !!(currentUser?.organization_id || currentUser?.data?.organization_id),
   });
 
   const createMutation = useMutation({
-    mutationFn: (data) => base44.entities.Route.create(data),
+    mutationFn: (data) => {
+      const orgId = currentUser?.organization_id || currentUser?.data?.organization_id;
+      return base44.entities.Route.create({ ...data, organization_id: orgId });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['routes'] });
       setShowAddDialog(false);
