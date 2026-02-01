@@ -51,6 +51,26 @@ export default function MapMonitor() {
     enabled: !!(currentUser?.organization_id || currentUser?.data?.organization_id),
   });
 
+  // Fetch external AIS traffic
+  const { data: aisData = {} } = useQuery({
+    queryKey: ['aisTraffic'],
+    queryFn: async () => {
+      const res = await base44.functions.invoke('getAISTraffic', {});
+      return res.data || {};
+    },
+    refetchInterval: 10000,
+  });
+
+  // Fetch external aircraft traffic
+  const { data: aircraftData = {} } = useQuery({
+    queryKey: ['aircraftTraffic'],
+    queryFn: async () => {
+      const res = await base44.functions.invoke('getAircraftTraffic', {});
+      return res.data || {};
+    },
+    refetchInterval: 10000,
+  });
+
   // Subscribe to real-time updates
   useEffect(() => {
     const unsubVehicles = base44.entities.Vehicle.subscribe(() => {
@@ -91,6 +111,8 @@ export default function MapMonitor() {
           selectedVehicle={selectedVehicle}
           onSelectVehicle={setSelectedVehicle}
           vehicleTrails={vehicleTrails}
+          externalShips={aisData.traffic || []}
+          externalAircraft={aircraftData.traffic || []}
         />
 
         {/* Left Panels: Alerts & Insights */}
