@@ -43,6 +43,7 @@ export default function Resources() {
     capacity: 1000, latitude: 55.6761, longitude: 12.5683
   });
   const [searchingLocation, setSearchingLocation] = useState(false);
+  const searchTimeoutRef = React.useRef(null);
 
   const queryClient = useQueryClient();
 
@@ -89,39 +90,45 @@ export default function Resources() {
     });
   };
 
-  const handleLocationSearch = async (e) => {
+  const handleLocationSearch = (e) => {
     const locationText = e.target.value;
     setFormData({...formData, location: locationText});
+    
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
     
     if (locationText.length < 2) return;
     
     setSearchingLocation(true);
-    try {
-      const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Get the latitude and longitude coordinates for the city/location: "${locationText}". Return ONLY valid JSON with this exact format: {"latitude": number, "longitude": number}. Use accurate GPS coordinates.`,
-        add_context_from_internet: true,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            latitude: { type: "number" },
-            longitude: { type: "number" }
-          },
-          required: ["latitude", "longitude"]
+    searchTimeoutRef.current = setTimeout(async () => {
+      try {
+        const result = await base44.integrations.Core.InvokeLLM({
+          prompt: `Get the latitude and longitude coordinates for the city/location: "${locationText}". Return ONLY valid JSON with this exact format: {"latitude": number, "longitude": number}. Use accurate GPS coordinates.`,
+          add_context_from_internet: true,
+          response_json_schema: {
+            type: "object",
+            properties: {
+              latitude: { type: "number" },
+              longitude: { type: "number" }
+            },
+            required: ["latitude", "longitude"]
+          }
+        });
+        
+        if (result.latitude && result.longitude) {
+          setFormData(prev => ({
+            ...prev,
+            latitude: result.latitude,
+            longitude: result.longitude
+          }));
         }
-      });
-      
-      if (result.latitude && result.longitude) {
-        setFormData(prev => ({
-          ...prev,
-          latitude: result.latitude,
-          longitude: result.longitude
-        }));
+      } catch (error) {
+        console.error('Location search error:', error);
+      } finally {
+        setSearchingLocation(false);
       }
-    } catch (error) {
-      console.error('Location search error:', error);
-    } finally {
-      setSearchingLocation(false);
-    }
+    }, 800);
   };
 
   const filteredResources = resources.filter(r => {
