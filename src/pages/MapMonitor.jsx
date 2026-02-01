@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
-import { LiveTrackingMap } from "@/components/tracking/LiveTrackingMap";
+import LiveTrackingMap from "@/components/tracking/LiveTrackingMap";
 import { Loader2, MapPin } from "lucide-react";
 
 export default function MapMonitor() {
