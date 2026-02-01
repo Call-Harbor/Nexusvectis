@@ -23,9 +23,13 @@ export default function Security() {
 
   // Fetch recent audit logs
   const { data: auditLogs = [] } = useQuery({
-    queryKey: ['auditLogs'],
-    queryFn: () => base44.entities.SecurityAudit.list('-created_date', 50),
-    enabled: currentUser?.role === 'admin',
+    queryKey: ['auditLogs', currentUser?.organization_id, currentUser?.data?.organization_id],
+    queryFn: async () => {
+      const orgId = currentUser?.organization_id || currentUser?.data?.organization_id;
+      if (!orgId) return [];
+      return base44.entities.SecurityAudit.filter({ organization_id: orgId }, '-created_date', 50);
+    },
+    enabled: currentUser?.role === 'admin' && !!(currentUser?.organization_id || currentUser?.data?.organization_id),
   });
 
   if (currentUser?.role !== 'admin') {

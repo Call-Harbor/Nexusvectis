@@ -40,13 +40,26 @@ export default function Alerts() {
 
   const queryClient = useQueryClient();
 
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+
   const { data: alerts = [] } = useQuery({
-    queryKey: ['alerts'],
-    queryFn: () => base44.entities.Alert.list('-created_date'),
+    queryKey: ['alerts', currentUser?.organization_id, currentUser?.data?.organization_id],
+    queryFn: async () => {
+      const orgId = currentUser?.organization_id || currentUser?.data?.organization_id;
+      if (!orgId) return [];
+      return base44.entities.Alert.filter({ organization_id: orgId }, '-created_date');
+    },
+    enabled: !!(currentUser?.organization_id || currentUser?.data?.organization_id),
   });
 
   const createMutation = useMutation({
-    mutationFn: (data) => base44.entities.Alert.create(data),
+    mutationFn: (data) => {
+      const orgId = currentUser?.organization_id || currentUser?.data?.organization_id;
+      return base44.entities.Alert.create({ ...data, organization_id: orgId });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['alerts'] });
       setShowAddDialog(false);

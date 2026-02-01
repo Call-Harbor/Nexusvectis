@@ -13,24 +13,49 @@ export default function AIOptimization() {
   const [activeTab, setActiveTab] = useState("maintenance");
   const queryClient = useQueryClient();
 
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+
   const { data: vehicles = [] } = useQuery({
-    queryKey: ['vehicles'],
-    queryFn: () => base44.entities.Vehicle.list(),
+    queryKey: ['vehicles', currentUser?.organization_id, currentUser?.data?.organization_id],
+    queryFn: async () => {
+      const orgId = currentUser?.organization_id || currentUser?.data?.organization_id;
+      if (!orgId) return [];
+      return base44.entities.Vehicle.filter({ organization_id: orgId });
+    },
+    enabled: !!(currentUser?.organization_id || currentUser?.data?.organization_id),
   });
 
   const { data: maintenanceRecords = [] } = useQuery({
-    queryKey: ['maintenance'],
-    queryFn: () => base44.entities.Maintenance.list('-created_date'),
+    queryKey: ['maintenance', currentUser?.organization_id, currentUser?.data?.organization_id],
+    queryFn: async () => {
+      const orgId = currentUser?.organization_id || currentUser?.data?.organization_id;
+      if (!orgId) return [];
+      return base44.entities.Maintenance.filter({ organization_id: orgId }, '-created_date');
+    },
+    enabled: !!(currentUser?.organization_id || currentUser?.data?.organization_id),
   });
 
   const { data: exceptions = [] } = useQuery({
-    queryKey: ['exceptions'],
-    queryFn: () => base44.entities.Exception.list('-created_date'),
+    queryKey: ['exceptions', currentUser?.organization_id, currentUser?.data?.organization_id],
+    queryFn: async () => {
+      const orgId = currentUser?.organization_id || currentUser?.data?.organization_id;
+      if (!orgId) return [];
+      return base44.entities.Exception.filter({ organization_id: orgId }, '-created_date');
+    },
+    enabled: !!(currentUser?.organization_id || currentUser?.data?.organization_id),
   });
 
   const { data: shipments = [] } = useQuery({
-    queryKey: ['shipments'],
-    queryFn: () => base44.entities.Shipment.list('-created_date'),
+    queryKey: ['shipments', currentUser?.organization_id, currentUser?.data?.organization_id],
+    queryFn: async () => {
+      const orgId = currentUser?.organization_id || currentUser?.data?.organization_id;
+      if (!orgId) return [];
+      return base44.entities.Shipment.filter({ organization_id: orgId }, '-created_date');
+    },
+    enabled: !!(currentUser?.organization_id || currentUser?.data?.organization_id),
   });
 
   const resolveExceptionMutation = useMutation({
