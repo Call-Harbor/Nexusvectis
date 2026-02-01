@@ -140,10 +140,12 @@ export default function Layout({ children, currentPageName }) {
             </div>
           </div>
         </div>
-      </aside>
+        </aside>
+        )}
 
-      {/* Mobile Header */}
-      <header className="fixed top-0 left-0 right-0 h-16 bg-slate-900/80 backdrop-blur-xl border-b border-slate-800/50 z-40 lg:hidden">
+        {/* Mobile Header */}
+        {!hideNav && (
+        <header className="fixed top-0 left-0 right-0 h-16 bg-slate-900/80 backdrop-blur-xl border-b border-slate-800/50 z-40 lg:hidden">
         <div className="flex items-center justify-between h-full px-4">
           <img 
             src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/697e930c62bf3e3832b34edb/1c0bebde9_FullLogo_Transparent.png" 
