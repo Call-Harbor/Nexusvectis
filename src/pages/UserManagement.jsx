@@ -30,6 +30,17 @@ export default function UserManagement() {
     },
   });
 
+  // Get organization
+  const { data: organization } = useQuery({
+    queryKey: ['organization', currentUser?.organization_id],
+    queryFn: async () => {
+      if (!currentUser?.organization_id) return null;
+      const orgs = await base44.entities.Organization.filter({ id: currentUser.organization_id });
+      return orgs[0] || null;
+    },
+    enabled: !!currentUser?.organization_id,
+  });
+
   // List users from same organization
   const { data: users = [], isLoading } = useQuery({
     queryKey: ['users'],
@@ -87,8 +98,9 @@ export default function UserManagement() {
       return;
     }
 
-    // Only admins can invite other admins
-    if (inviteRole === "admin" && currentUser?.role !== "admin") {
+    // Only org admins can invite other admins
+    const isOrgAdmin = currentUser?.email === organization?.admin_email;
+    if (inviteRole === "admin" && !isOrgAdmin) {
       toast.error("Only admins can invite other admins");
       return;
     }
@@ -96,8 +108,8 @@ export default function UserManagement() {
     inviteMutation.mutate({ email: inviteEmail, role: inviteRole });
   };
 
-  const adminUsers = users.filter(u => u.role === 'admin');
-  const regularUsers = users.filter(u => u.role === 'user');
+  const adminUsers = users.filter(u => u.email === organization?.admin_email);
+  const regularUsers = users.filter(u => u.email !== organization?.admin_email);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6 lg:p-8">
@@ -284,7 +296,7 @@ export default function UserManagement() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="user">User</SelectItem>
-                  {currentUser?.role === "admin" && (
+                  {currentUser?.email === organization?.admin_email && (
                     <SelectItem value="admin">Admin</SelectItem>
                   )}
                 </SelectContent>
