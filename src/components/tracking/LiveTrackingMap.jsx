@@ -193,12 +193,16 @@ export default function LiveTrackingMap({
   selectedVehicle, 
   onSelectVehicle,
   vehicleTrails = {},
-  signalStatus = {}
+  signalStatus = {},
+  externalShips = [],
+  externalAircraft = []
 }) {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [followMode, setFollowMode] = useState(false);
   const [showTrails, setShowTrails] = useState(true);
   const [showSignalRange, setShowSignalRange] = useState(false);
+  const [showExternalShips, setShowExternalShips] = useState(false);
+  const [showExternalAircraft, setShowExternalAircraft] = useState(false);
   const [visibleTypes, setVisibleTypes] = useState({
     truck: true, ship: true, drone: true, train: true, aircraft: true
   });
@@ -315,6 +319,14 @@ export default function LiveTrackingMap({
             </DropdownMenuCheckboxItem>
             <DropdownMenuCheckboxItem checked={showSignalRange} onCheckedChange={setShowSignalRange}>
               Show Signal Range
+            </DropdownMenuCheckboxItem>
+            <DropdownMenuSeparator className="bg-slate-700" />
+            <DropdownMenuLabel>External Traffic</DropdownMenuLabel>
+            <DropdownMenuCheckboxItem checked={showExternalShips} onCheckedChange={setShowExternalShips}>
+              AIS Traffic (Ships)
+            </DropdownMenuCheckboxItem>
+            <DropdownMenuCheckboxItem checked={showExternalAircraft} onCheckedChange={setShowExternalAircraft}>
+              Aircraft Traffic
             </DropdownMenuCheckboxItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -501,6 +513,82 @@ export default function LiveTrackingMap({
                     <div>
                       <span className="text-slate-400">Location:</span>
                       <span className="ml-1 text-white">{resource.location}</span>
+                    </div>
+                  </div>
+                </div>
+              </Popup>
+            </Marker>
+          )
+        ))}
+
+        {/* External AIS Ships */}
+        {showExternalShips && externalShips.map(ship => (
+          ship?.latitude && ship?.longitude && (
+            <Marker
+              key={`ais-${ship.id}`}
+              position={[ship.latitude, ship.longitude]}
+              icon={createVehicleIcon('ship', 'active', ship.heading || 0, false)}
+            >
+              <Popup className="custom-popup">
+                <div className="p-3 min-w-[240px] bg-slate-900 text-white rounded-lg">
+                  <div className="flex items-center gap-2 mb-2">
+                    <h4 className="font-semibold">{ship.name}</h4>
+                    <span className="text-[10px] bg-blue-500 px-2 py-1 rounded">AIS</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div>
+                      <span className="text-slate-400">MMSI:</span>
+                      <span className="ml-1 text-white">{ship.mmsi}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400">Speed:</span>
+                      <span className="ml-1 text-white">{ship.speed} kts</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400">Heading:</span>
+                      <span className="ml-1 text-white">{ship.heading || 0}°</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400">Destination:</span>
+                      <span className="ml-1 text-white">{ship.destination}</span>
+                    </div>
+                  </div>
+                </div>
+              </Popup>
+            </Marker>
+          )
+        ))}
+
+        {/* External Aircraft */}
+        {showExternalAircraft && externalAircraft.map(aircraft => (
+          aircraft?.latitude && aircraft?.longitude && (
+            <Marker
+              key={`adsb-${aircraft.id}`}
+              position={[aircraft.latitude, aircraft.longitude]}
+              icon={createVehicleIcon('aircraft', 'active', aircraft.heading || 0, false)}
+            >
+              <Popup className="custom-popup">
+                <div className="p-3 min-w-[240px] bg-slate-900 text-white rounded-lg">
+                  <div className="flex items-center gap-2 mb-2">
+                    <h4 className="font-semibold">{aircraft.callsign}</h4>
+                    <span className="text-[10px] bg-orange-500 px-2 py-1 rounded">ADS-B</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div>
+                      <span className="text-slate-400">ICAO:</span>
+                      <span className="ml-1 text-white">{aircraft.icao}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400">Altitude:</span>
+                      <span className="ml-1 text-white">{aircraft.altitude} ft</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400">Speed:</span>
+                      <span className="ml-1 text-white">{aircraft.speed} kt</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400">Destination:</span>
+                      <span className="ml-1 text-white">{aircraft.destination}</span>
                     </div>
                   </div>
                 </div>
