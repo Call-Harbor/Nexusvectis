@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+import { createPageUrl } from "../utils";
 import { 
   Globe, Satellite, Radio, BarChart3,
   PanelRightOpen, PanelRightClose
@@ -153,6 +155,22 @@ export default function Dashboard() {
   const [showDetailPanel, setShowDetailPanel] = useState(true);
   const [activeTab, setActiveTab] = useState("tracking");
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
+
+  // Check if user has organization
+  useEffect(() => {
+    const checkOrganization = async () => {
+      try {
+        const user = await base44.auth.me();
+        if (!user.organization_id) {
+          navigate(createPageUrl("OrganizationSetup"));
+        }
+      } catch (error) {
+        console.error("Error checking organization:", error);
+      }
+    };
+    checkOrganization();
+  }, [navigate]);
 
   const { data: rawVehicles = [] } = useQuery({
     queryKey: ['vehicles'],

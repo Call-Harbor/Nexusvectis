@@ -30,16 +30,24 @@ export default function UserManagement() {
     },
   });
 
-  // List all users
+  // List users from same organization
   const { data: users = [], isLoading } = useQuery({
     queryKey: ['users'],
-    queryFn: () => base44.entities.User.list(),
+    queryFn: async () => {
+      const allUsers = await base44.entities.User.list();
+      return allUsers.filter(u => u.organization_id === currentUser?.organization_id);
+    },
+    enabled: !!currentUser,
   });
 
   // Invite user mutation
   const inviteMutation = useMutation({
     mutationFn: async ({ email, role }) => {
+      // Invite user
       await base44.users.inviteUser(email, role);
+      
+      // Set organization_id for invited user (will be set when they accept)
+      // Note: The invited user will need to be assigned to organization on first login
       
       // Log security audit
       await base44.functions.invoke('auditLog', {
@@ -47,7 +55,7 @@ export default function UserManagement() {
         resource_type: 'user',
         resource_id: email,
         status: 'success',
-        details: `Invited user with role: ${role}`,
+        details: `Invited user with role: ${role} to organization ${currentUser?.organization_id}`,
         severity: 'medium'
       }).catch(() => {}); // Don't fail if audit log fails
     },
