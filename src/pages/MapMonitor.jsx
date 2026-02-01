@@ -50,14 +50,27 @@ export default function MapMonitor() {
     enabled: !!(currentUser?.organization_id || currentUser?.data?.organization_id),
   });
 
-  // Subscribe to real-time resource updates
+  // Subscribe to real-time updates
   useEffect(() => {
-    const unsubscribe = base44.entities.Resource.subscribe((event) => {
-      const queryClient = useQueryClient();
+    const queryClient = useQueryClient();
+
+    const unsubVehicles = base44.entities.Vehicle.subscribe(() => {
+      queryClient.invalidateQueries({ queryKey: ['vehicles'] });
+    });
+
+    const unsubResources = base44.entities.Resource.subscribe(() => {
       queryClient.invalidateQueries({ queryKey: ['resources'] });
     });
-    
-    return unsubscribe;
+
+    const unsubRoutes = base44.entities.Route.subscribe(() => {
+      queryClient.invalidateQueries({ queryKey: ['routes'] });
+    });
+
+    return () => {
+      unsubVehicles();
+      unsubResources();
+      unsubRoutes();
+    };
   }, []);
 
   if (!currentUser || vehiclesLoading) {
