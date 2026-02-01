@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
@@ -74,6 +74,18 @@ export default function Routes() {
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.Route.delete(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['routes'] }),
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.Route.update(id, data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['routes'] }),
+  });
+
+  const geocodeMutation = useMutation({
+    mutationFn: async ({ city, country }) => {
+      const response = await base44.functions.invoke('geocodeCity', { city, country });
+      return response.data;
+    }
   });
 
   const resetForm = () => {
@@ -197,12 +209,20 @@ export default function Routes() {
                       <div>
                         <div className="flex items-center gap-2 mb-1">
                           <h3 className="font-semibold text-white">{route.name}</h3>
-                          {route.ai_optimized && (
-                            <Badge variant="outline" className="bg-violet-500/20 text-violet-400 border-violet-500/30">
-                              <Sparkles className="w-3 h-3 mr-1" />
-                              AI-Optimized
-                            </Badge>
-                          )}
+                          <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const newOptimized = !route.ai_optimized;
+                            updateMutation.mutate({ 
+                              id: route.id, 
+                              data: { ai_optimized: newOptimized }
+                            });
+                          }}
+                          className={`transition-all ${route.ai_optimized ? 'bg-violet-500/20 text-violet-400 border-violet-500/30' : 'bg-slate-500/20 text-slate-400 border-slate-500/30'} border rounded-full px-3 py-1 inline-flex items-center gap-1 text-sm`}
+                        >
+                          <Sparkles className="w-3 h-3" />
+                          {route.ai_optimized ? 'AI-Optimized' : 'Optimize'}
+                        </button>
                         </div>
                         <div className="flex items-center gap-2 text-sm text-slate-400">
                           <MapPin className="w-4 h-4" />
