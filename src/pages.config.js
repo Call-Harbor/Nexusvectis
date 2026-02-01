@@ -54,6 +54,7 @@ import Resources from './pages/Resources';
 import Routes from './pages/Routes';
 import AIOptimization from './pages/AIOptimization';
 import GPSIntegration from './pages/GPSIntegration';
+import Landing from './pages/Landing';
 import __Layout from './Layout.jsx';
 
 
@@ -65,6 +66,7 @@ export const PAGES = {
     "Routes": Routes,
     "AIOptimization": AIOptimization,
     "GPSIntegration": GPSIntegration,
+    "Landing": Landing,
 }
 
 export const pagesConfig = {
