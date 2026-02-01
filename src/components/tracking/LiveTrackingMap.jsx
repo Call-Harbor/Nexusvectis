@@ -296,6 +296,31 @@ export default function LiveTrackingMap({
         </Button>
       </div>
 
+      {/* Signal Status Panel - Only show when vehicle has signal */}
+      {selectedVehicle && selectedVehicle.signal_strength && selectedVehicle.signal_strength > 0 && (
+        <div className="absolute top-20 right-4 z-[1000] w-64">
+          <div className="p-4 rounded-xl bg-slate-900/90 backdrop-blur-xl border border-slate-700/50">
+            <div className="flex items-center gap-2 mb-3">
+              <Activity className="w-4 h-4 text-cyan-400" />
+              <span className="text-sm font-medium text-white">Signal</span>
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-slate-400">Strength</span>
+                <span className="text-xs text-white">{selectedVehicle.signal_strength}%</span>
+              </div>
+              <div className="flex items-center gap-1">
+                {[1,2,3,4,5].map(i => (
+                  <div 
+                    key={i} 
+                    className={`flex-1 h-1 rounded-full ${i <= Math.ceil(selectedVehicle.signal_strength / 20) ? 'bg-emerald-400' : 'bg-slate-600'}`}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Bottom Status Bar */}
       <div className="absolute bottom-4 left-4 right-4 z-[1000]">
