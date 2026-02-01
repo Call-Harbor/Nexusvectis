@@ -60,6 +60,7 @@ import Routes from './pages/Routes';
 import Security from './pages/Security';
 import Settings from './pages/Settings';
 import UserManagement from './pages/UserManagement';
+import Assignment from './pages/Assignment';
 import __Layout from './Layout.jsx';
 
 
@@ -77,6 +78,7 @@ export const PAGES = {
     "Security": Security,
     "Settings": Settings,
     "UserManagement": UserManagement,
+    "Assignment": Assignment,
 }
 
 export const pagesConfig = {
