@@ -40,7 +40,7 @@ export default function Resources() {
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [formData, setFormData] = useState({
     name: "", type: "warehouse", location: "", status: "operational",
-    capacity: 1000, current_level: 500, latitude: 55.6761, longitude: 12.5683
+    capacity: 1000, latitude: 55.6761, longitude: 12.5683
   });
 
   const queryClient = useQueryClient();
@@ -63,7 +63,11 @@ export default function Resources() {
   const createMutation = useMutation({
     mutationFn: (data) => {
       const orgId = currentUser?.organization_id || currentUser?.data?.organization_id;
-      return base44.entities.Resource.create({ ...data, organization_id: orgId });
+      return base44.entities.Resource.create({ 
+        ...data, 
+        organization_id: orgId,
+        current_level: 0
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['resources'] });
@@ -80,7 +84,7 @@ export default function Resources() {
   const resetForm = () => {
     setFormData({
       name: "", type: "warehouse", location: "", status: "operational",
-      capacity: 1000, current_level: 500, latitude: 55.6761, longitude: 12.5683
+      capacity: 1000, latitude: 55.6761, longitude: 12.5683
     });
   };
 
@@ -306,25 +310,14 @@ export default function Resources() {
                 placeholder="e.g. Copenhagen, Denmark"
               />
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Capacity</Label>
-                <Input
-                  type="number"
-                  value={formData.capacity}
-                  onChange={(e) => setFormData({...formData, capacity: parseInt(e.target.value) || 0})}
-                  className="bg-slate-800 border-slate-700"
-                />
-              </div>
-              <div>
-                <Label>Current Level</Label>
-                <Input
-                  type="number"
-                  value={formData.current_level}
-                  onChange={(e) => setFormData({...formData, current_level: parseInt(e.target.value) || 0})}
-                  className="bg-slate-800 border-slate-700"
-                />
-              </div>
+            <div>
+              <Label>Capacity</Label>
+              <Input
+                type="number"
+                value={formData.capacity}
+                onChange={(e) => setFormData({...formData, capacity: parseInt(e.target.value) || 0})}
+                className="bg-slate-800 border-slate-700"
+              />
             </div>
             <Button 
               className="w-full bg-gradient-to-r from-amber-500 to-orange-500 text-black font-semibold"
