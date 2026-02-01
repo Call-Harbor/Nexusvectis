@@ -221,6 +221,16 @@ export default function Fleet() {
                       <MapPin className="w-4 h-4" />
                       <span className="truncate">{vehicle.destination || 'No destination'}</span>
                     </div>
+                    {vehicle.route_id && (
+                      <div className="text-xs text-violet-300 bg-violet-500/10 px-2 py-1 rounded w-fit">
+                        Route assigned
+                      </div>
+                    )}
+                    {vehicle.resource_id && (
+                      <div className="text-xs text-emerald-300 bg-emerald-500/10 px-2 py-1 rounded w-fit">
+                        At resource
+                      </div>
+                    )}
                     <div className="flex items-center justify-between text-sm">
                       <div className="flex items-center gap-2 text-slate-400">
                         <Clock className="w-4 h-4" />
@@ -476,11 +486,23 @@ export default function Fleet() {
                     <p className="text-xs text-slate-500">Speed</p>
                     <p className="font-medium">{selectedVehicle.speed || 0} km/h</p>
                   </div>
-                </div>
-                <div className="p-3 rounded-lg bg-slate-800/50">
+                  </div>
+                  <div className="p-3 rounded-lg bg-slate-800/50">
                   <p className="text-xs text-slate-500">Destination</p>
                   <p className="font-medium">{selectedVehicle.destination || 'No destination'}</p>
-                </div>
+                  </div>
+                  {selectedVehicle.route_id && (
+                  <div className="p-3 rounded-lg bg-violet-500/10 border border-violet-500/20">
+                    <p className="text-xs text-violet-300">Assigned Route</p>
+                    <p className="font-medium text-violet-200">{selectedVehicle.route_id}</p>
+                  </div>
+                  )}
+                  {selectedVehicle.resource_id && (
+                  <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                    <p className="text-xs text-emerald-300">Current Resource</p>
+                    <p className="font-medium text-emerald-200">{selectedVehicle.resource_id}</p>
+                  </div>
+                  )}
                 <div className="flex gap-2">
                   <Button 
                     variant="outline" 
