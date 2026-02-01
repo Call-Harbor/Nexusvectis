@@ -52,7 +52,8 @@ export default function OrganizationSetup() {
         organization_id: org.id
       });
 
-      navigate(createPageUrl("Dashboard"));
+      // Reload to ensure all data is fresh
+      window.location.href = createPageUrl("Dashboard");
     } catch (error) {
       console.error("Error creating organization:", error);
       setCreating(false);

@@ -28,6 +28,7 @@ export default function UserManagement() {
       setCurrentUser(user);
       return user;
     },
+    staleTime: 0, // Always refetch
   });
 
   // Get organization
