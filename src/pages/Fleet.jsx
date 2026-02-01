@@ -31,7 +31,7 @@ export default function Fleet() {
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [formData, setFormData] = useState({
-    name: "TRUCK-001", type: "truck", status: "active", destination: "",
+    name: "TRUCK-001", type: "truck", status: "active",
     fuel_level: 100, speed: 0, latitude: 55.6761, longitude: 12.5683,
     signal_type: "GPS", signal_strength: 95, callsign: "", mmsi: "", icao: "", driver: "", resource_id: ""
   });
@@ -131,15 +131,14 @@ export default function Fleet() {
   const resetForm = () => {
     const nextNumber = vehicles.filter(v => v.type === 'truck').length + 1;
     setFormData({
-      name: `TRUCK-${String(nextNumber).padStart(3, '0')}`, type: "truck", status: "active", destination: "",
+      name: `TRUCK-${String(nextNumber).padStart(3, '0')}`, type: "truck", status: "active",
       fuel_level: 100, speed: 0, latitude: 55.6761, longitude: 12.5683,
       signal_type: "GPS", signal_strength: 95, callsign: "", mmsi: "", icao: "", driver: "", resource_id: ""
     });
   };
 
   const filteredVehicles = vehicles.filter(v => {
-    const matchesSearch = v.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          v.destination?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = v.name?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesType = typeFilter === "all" || v.type === typeFilter;
     const matchesStatus = statusFilter === "all" || v.status === statusFilter;
     return matchesSearch && matchesType && matchesStatus;
@@ -206,7 +205,7 @@ export default function Fleet() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
             <Input
-              placeholder="Search for unit or destination..."
+              placeholder="Search for unit..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 bg-slate-800/50 border-slate-700/50 text-white"
@@ -270,10 +269,6 @@ export default function Fleet() {
                   </div>
 
                   <div className="space-y-3">
-                    <div className="flex items-center gap-2 text-sm text-slate-400">
-                      <MapPin className="w-4 h-4" />
-                      <span className="truncate">{vehicle.destination || 'No destination'}</span>
-                    </div>
                     {vehicle.route_id && (
                       <div className="text-xs text-violet-300 bg-violet-500/10 px-2 py-1 rounded w-fit">
                         Route assigned
@@ -369,15 +364,6 @@ export default function Fleet() {
                   </SelectContent>
                 </Select>
               </div>
-            </div>
-            <div>
-              <Label>Destination</Label>
-              <Input
-                value={formData.destination}
-                onChange={(e) => setFormData({...formData, destination: e.target.value})}
-                className="bg-slate-800 border-slate-700"
-                placeholder="e.g. Copenhagen"
-              />
             </div>
             <div>
               <Label>Driver / Operator</Label>
@@ -511,10 +497,6 @@ export default function Fleet() {
                     <p className="text-xs text-slate-500">Speed</p>
                     <p className="font-medium">{selectedVehicle.speed || 0} km/h</p>
                   </div>
-                  </div>
-                  <div className="p-3 rounded-lg bg-slate-800/50">
-                  <p className="text-xs text-slate-500">Destination</p>
-                  <p className="font-medium">{selectedVehicle.destination || 'No destination'}</p>
                   </div>
                   {selectedVehicle.route_id && (
                   <div className="p-3 rounded-lg bg-violet-500/10 border border-violet-500/20">
