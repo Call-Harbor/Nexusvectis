@@ -6,8 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Building2, Key, User as UserIcon, Save, Loader2 } from "lucide-react";
+import { Building2, Key, User as UserIcon, Save, Loader2, Trash2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 export default function Settings() {
   const [user, setUser] = useState(null);
@@ -87,6 +88,20 @@ export default function Settings() {
       console.error(error);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const deleteAccount = async () => {
+    try {
+      await base44.entities.User.delete(user.id);
+      toast.success("Din konto er blevet slettet");
+      // Log out and redirect
+      setTimeout(() => {
+        base44.auth.logout();
+      }, 1000);
+    } catch (error) {
+      toast.error("Kunne ikke slette konto");
+      console.error(error);
     }
   };
 
@@ -199,63 +214,106 @@ export default function Settings() {
           </TabsContent>
 
           <TabsContent value="security">
-            <Card className="bg-slate-900/50 border-slate-800">
-              <CardHeader>
-                <CardTitle className="text-white">Skift adgangskode</CardTitle>
-                <CardDescription className="text-slate-400">
-                  Opdater din adgangskode
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label className="text-slate-300">Nuværende adgangskode</Label>
-                  <Input
-                    type="password"
-                    value={currentPassword}
-                    onChange={(e) => setCurrentPassword(e.target.value)}
-                    className="bg-slate-800/50 border-slate-700 text-white"
-                    placeholder="Indtast nuværende adgangskode"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-slate-300">Ny adgangskode</Label>
-                  <Input
-                    type="password"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    className="bg-slate-800/50 border-slate-700 text-white"
-                    placeholder="Indtast ny adgangskode (min. 8 tegn)"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-slate-300">Bekræft ny adgangskode</Label>
-                  <Input
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="bg-slate-800/50 border-slate-700 text-white"
-                    placeholder="Bekræft ny adgangskode"
-                  />
-                </div>
-                <Button
-                  onClick={changePassword}
-                  disabled={saving}
-                  className="bg-gradient-to-r from-cyan-600 to-violet-600 hover:from-cyan-500 hover:to-violet-500"
-                >
-                  {saving ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Opdaterer...
-                    </>
-                  ) : (
-                    <>
-                      <Key className="w-4 h-4 mr-2" />
-                      Opdater adgangskode
-                    </>
-                  )}
-                </Button>
-              </CardContent>
-            </Card>
+            <div className="space-y-6">
+              <Card className="bg-slate-900/50 border-slate-800">
+                <CardHeader>
+                  <CardTitle className="text-white">Skift adgangskode</CardTitle>
+                  <CardDescription className="text-slate-400">
+                    Opdater din adgangskode
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label className="text-slate-300">Nuværende adgangskode</Label>
+                    <Input
+                      type="password"
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                      className="bg-slate-800/50 border-slate-700 text-white"
+                      placeholder="Indtast nuværende adgangskode"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-slate-300">Ny adgangskode</Label>
+                    <Input
+                      type="password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      className="bg-slate-800/50 border-slate-700 text-white"
+                      placeholder="Indtast ny adgangskode (min. 8 tegn)"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-slate-300">Bekræft ny adgangskode</Label>
+                    <Input
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className="bg-slate-800/50 border-slate-700 text-white"
+                      placeholder="Bekræft ny adgangskode"
+                    />
+                  </div>
+                  <Button
+                    onClick={changePassword}
+                    disabled={saving}
+                    className="bg-gradient-to-r from-cyan-600 to-violet-600 hover:from-cyan-500 hover:to-violet-500"
+                  >
+                    {saving ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Opdaterer...
+                      </>
+                    ) : (
+                      <>
+                        <Key className="w-4 h-4 mr-2" />
+                        Opdater adgangskode
+                      </>
+                    )}
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-slate-900/50 border-red-900/50">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <AlertTriangle className="w-5 h-5 text-red-400" />
+                    Farezone
+                  </CardTitle>
+                  <CardDescription className="text-slate-400">
+                    Permanent slet din konto
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-slate-400 mb-4">
+                    Når du sletter din konto, vil alle dine data blive permanent fjernet. Denne handling kan ikke fortrydes.
+                  </p>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive" className="bg-red-600 hover:bg-red-700">
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Slet min konto
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent className="bg-slate-900 border-slate-700">
+                      <AlertDialogHeader>
+                        <AlertDialogTitle className="text-white">Er du helt sikker?</AlertDialogTitle>
+                        <AlertDialogDescription className="text-slate-400">
+                          Denne handling kan ikke fortrydes. Dette vil permanent slette din konto og fjerne alle dine data fra vores servere.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700">
+                          Annuller
+                        </AlertDialogCancel>
+                        <AlertDialogAction onClick={deleteAccount} className="bg-red-600 hover:bg-red-700">
+                          Ja, slet min konto
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
         </Tabs>
       </div>
