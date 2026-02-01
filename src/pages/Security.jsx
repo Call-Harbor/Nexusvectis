@@ -21,6 +21,18 @@ export default function Security() {
     },
   });
 
+  // Get organization
+  const { data: organization } = useQuery({
+    queryKey: ['organization', currentUser?.organization_id, currentUser?.data?.organization_id],
+    queryFn: async () => {
+      const orgId = currentUser?.organization_id || currentUser?.data?.organization_id;
+      if (!orgId) return null;
+      const orgs = await base44.entities.Organization.filter({ id: orgId });
+      return orgs[0] || null;
+    },
+    enabled: !!(currentUser?.organization_id || currentUser?.data?.organization_id),
+  });
+
   // Fetch recent audit logs
   const { data: auditLogs = [] } = useQuery({
     queryKey: ['auditLogs', currentUser?.organization_id, currentUser?.data?.organization_id],
@@ -29,10 +41,14 @@ export default function Security() {
       if (!orgId) return [];
       return base44.entities.SecurityAudit.filter({ organization_id: orgId }, '-created_date', 50);
     },
-    enabled: currentUser?.role === 'admin' && !!(currentUser?.organization_id || currentUser?.data?.organization_id),
+    enabled: !!(currentUser?.organization_id || currentUser?.data?.organization_id),
   });
 
-  if (currentUser?.role !== 'admin') {
+  const isAdmin = currentUser?.role === 'admin';
+  const orgId = currentUser?.organization_id || currentUser?.data?.organization_id;
+  const isOrgAdmin = currentUser?.email === organization?.admin_email;
+  
+  if (!isAdmin && !isOrgAdmin) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center p-6">
         <Card className="bg-slate-800/50 border-slate-700/50 max-w-md">
