@@ -202,8 +202,8 @@ export default function LiveTrackingMap({
     <motion.div 
       initial={{ opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
-      className={`relative rounded-2xl border border-slate-700/50 bg-slate-900/50 backdrop-blur-xl overflow-hidden ${
-        isFullscreen ? 'fixed inset-4 z-50' : 'h-[600px]'
+      className={`relative bg-slate-900/50 backdrop-blur-xl overflow-hidden ${
+        isFullscreen ? 'fixed inset-0 z-50' : 'w-full h-full rounded-2xl border border-slate-700/50'
       }`}
     >
       {/* Top Controls */}
