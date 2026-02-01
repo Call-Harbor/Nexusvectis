@@ -32,7 +32,8 @@ export default function Fleet() {
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [formData, setFormData] = useState({
     name: "", type: "truck", status: "active", destination: "",
-    fuel_level: 100, speed: 0, latitude: 55.6761, longitude: 12.5683
+    fuel_level: 100, speed: 0, latitude: 55.6761, longitude: 12.5683,
+    signal_type: "GPS", signal_strength: 95, callsign: "", mmsi: "", icao: "", driver: ""
   });
 
   const queryClient = useQueryClient();
@@ -70,7 +71,8 @@ export default function Fleet() {
   const resetForm = () => {
     setFormData({
       name: "", type: "truck", status: "active", destination: "",
-      fuel_level: 100, speed: 0, latitude: 55.6761, longitude: 12.5683
+      fuel_level: 100, speed: 0, latitude: 55.6761, longitude: 12.5683,
+      signal_type: "GPS", signal_strength: 95, callsign: "", mmsi: "", icao: "", driver: ""
     });
   };
 
@@ -301,13 +303,111 @@ export default function Fleet() {
                 placeholder="e.g. Copenhagen"
               />
             </div>
+            <div>
+              <Label>Driver / Operator</Label>
+              <Input
+                value={formData.driver}
+                onChange={(e) => setFormData({...formData, driver: e.target.value})}
+                className="bg-slate-800 border-slate-700"
+                placeholder="e.g. John Smith"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Signal Type</Label>
+                <Select value={formData.signal_type} onValueChange={(v) => setFormData({...formData, signal_type: v})}>
+                  <SelectTrigger className="bg-slate-800 border-slate-700">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="GPS">GPS</SelectItem>
+                    <SelectItem value="AIS">AIS (Ships)</SelectItem>
+                    <SelectItem value="ADS-B">ADS-B (Aircraft)</SelectItem>
+                    <SelectItem value="LoRa">LoRa (Drones)</SelectItem>
+                    <SelectItem value="RFID">RFID</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Signal Strength %</Label>
+                <Input
+                  type="number"
+                  value={formData.signal_strength}
+                  onChange={(e) => setFormData({...formData, signal_strength: parseInt(e.target.value) || 0})}
+                  className="bg-slate-800 border-slate-700"
+                  min="0" max="100"
+                />
+              </div>
+            </div>
+
+            {/* Conditional fields based on type */}
+            {formData.type === 'ship' && (
+              <div>
+                <Label>MMSI Number</Label>
+                <Input
+                  value={formData.mmsi}
+                  onChange={(e) => setFormData({...formData, mmsi: e.target.value})}
+                  className="bg-slate-800 border-slate-700"
+                  placeholder="e.g. 123456789"
+                />
+              </div>
+            )}
+
+            {formData.type === 'aircraft' && (
+              <div>
+                <Label>ICAO Code</Label>
+                <Input
+                  value={formData.icao}
+                  onChange={(e) => setFormData({...formData, icao: e.target.value})}
+                  className="bg-slate-800 border-slate-700"
+                  placeholder="e.g. 4B1234"
+                />
+              </div>
+            )}
+
+            {(formData.type === 'ship' || formData.type === 'aircraft') && (
+              <div>
+                <Label>Callsign</Label>
+                <Input
+                  value={formData.callsign}
+                  onChange={(e) => setFormData({...formData, callsign: e.target.value})}
+                  className="bg-slate-800 border-slate-700"
+                  placeholder="e.g. ALPHA-1"
+                />
+              </div>
+            )}
+
+            <div className="p-3 rounded-lg bg-slate-800/50 border border-slate-700/50">
+              <Label className="text-slate-400">Start Position (lat/lng)</Label>
+              <div className="grid grid-cols-2 gap-4 mt-2">
+                <Input
+                  type="number"
+                  step="0.0001"
+                  value={formData.latitude}
+                  onChange={(e) => setFormData({...formData, latitude: parseFloat(e.target.value) || 0})}
+                  className="bg-slate-800 border-slate-700"
+                  placeholder="Latitude"
+                />
+                <Input
+                  type="number"
+                  step="0.0001"
+                  value={formData.longitude}
+                  onChange={(e) => setFormData({...formData, longitude: parseFloat(e.target.value) || 0})}
+                  className="bg-slate-800 border-slate-700"
+                  placeholder="Longitude"
+                />
+              </div>
+              <p className="text-xs text-slate-500 mt-2">Default: Copenhagen (55.6761, 12.5683)</p>
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>Fuel %</Label>
                 <Input
                   type="number"
                   value={formData.fuel_level}
-                  onChange={(e) => setFormData({...formData, fuel_level: parseInt(e.target.value)})}
+                  onChange={(e) => setFormData({...formData, fuel_level: parseInt(e.target.value) || 0})}
                   className="bg-slate-800 border-slate-700"
                 />
               </div>
@@ -316,7 +416,7 @@ export default function Fleet() {
                 <Input
                   type="number"
                   value={formData.speed}
-                  onChange={(e) => setFormData({...formData, speed: parseInt(e.target.value)})}
+                  onChange={(e) => setFormData({...formData, speed: parseInt(e.target.value) || 0})}
                   className="bg-slate-800 border-slate-700"
                 />
               </div>
