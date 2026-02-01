@@ -2,9 +2,12 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import LiveTrackingMap from "@/components/tracking/LiveTrackingMap";
+import MapHeader from "@/components/tracking/MapHeader";
+import EnhancedVehiclePanel from "@/components/tracking/EnhancedVehiclePanel";
 import SmartInsights from "@/components/tracking/SmartInsights";
 import RealtimeAlerts from "@/components/tracking/RealtimeAlerts";
-import { Loader2, MapPin, X } from "lucide-react";
+import { Loader2, X } from "lucide-react";
+import { AnimatePresence } from "framer-motion";
 
 export default function MapMonitor() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -45,8 +48,10 @@ export default function MapMonitor() {
   }
 
   return (
-    <div className="fixed inset-0 bg-slate-950 flex flex-col">
-      <div className="flex-1 w-full h-full relative">
+    <div className="fixed inset-0 bg-slate-950 flex flex-col overflow-hidden">
+      <MapHeader vehicleCount={vehicles.length} activeCount={vehicles.filter(v => v.status === 'active').length} />
+
+      <div className="flex-1 w-full relative">
         <LiveTrackingMap
           vehicles={vehicles}
           selectedVehicle={selectedVehicle}
@@ -54,43 +59,32 @@ export default function MapMonitor() {
           vehicleTrails={vehicleTrails}
         />
 
-        {/* Smart Panels */}
-        <div className="absolute top-20 left-4 z-[999] space-y-3 pointer-events-auto">
+        {/* Left Panels: Alerts & Insights */}
+        <div className="absolute top-24 left-4 z-[999] space-y-3 pointer-events-auto max-w-sm">
           {showAlerts && (
-            <div className="relative">
-              <RealtimeAlerts
-                vehicles={vehicles}
-                onDismiss={(alertId) => {
-                  setDismissedAlerts(prev => new Set([...prev, alertId]));
-                  setTimeout(() => {
-                    setDismissedAlerts(prev => {
-                      const next = new Set(prev);
-                      next.delete(alertId);
-                      return next;
-                    });
-                  }, 5000);
-                }}
-              />
-              <button
-                onClick={() => setShowAlerts(false)}
-                className="absolute -top-2 -right-2 p-1 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-400 z-10"
-              >
-                <X className="w-3 h-3" />
-              </button>
-            </div>
+            <RealtimeAlerts
+              vehicles={vehicles}
+              onDismiss={(alertId) => {
+                setDismissedAlerts(prev => new Set([...prev, alertId]));
+              }}
+            />
           )}
 
           {showInsights && selectedVehicle && (
-            <div className="relative">
-              <SmartInsights vehicle={selectedVehicle} vehicles={vehicles} />
-              <button
-                onClick={() => setShowInsights(false)}
-                className="absolute -top-2 -right-2 p-1 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-400 z-10"
-              >
-                <X className="w-3 h-3" />
-              </button>
-            </div>
+            <SmartInsights vehicle={selectedVehicle} vehicles={vehicles} />
           )}
+        </div>
+
+        {/* Right Panel: Vehicle Details */}
+        <div className="absolute top-24 right-4 bottom-4 z-[999] pointer-events-auto">
+          <AnimatePresence>
+            {selectedVehicle && (
+              <EnhancedVehiclePanel
+                vehicle={selectedVehicle}
+                onClose={() => setSelectedVehicle(null)}
+              />
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </div>
