@@ -297,7 +297,7 @@ export default function LiveTrackingMap({
       </div>
 
       {/* Signal Status Panel */}
-      {selectedVehicle && (selectedVehicle.signal_strength || 0) > 0 && (
+      {selectedVehicle && selectedVehicle.signal_strength > 0 && (
         <div className="absolute top-20 right-4 z-[1000] w-64">
           <div className="p-4 rounded-xl bg-slate-900/90 backdrop-blur-xl border border-slate-700/50">
             <div className="flex items-center gap-2 mb-3">
@@ -311,7 +311,7 @@ export default function LiveTrackingMap({
                   {[1,2,3,4,5].map(i => (
                     <div 
                       key={i} 
-                      className={`w-1 rounded-full ${i <= Math.ceil((selectedVehicle.signal_strength || 0) / 20) ? 'bg-emerald-400' : 'bg-slate-600'}`}
+                      className={`w-1 rounded-full ${i <= Math.ceil(selectedVehicle.signal_strength / 20) ? 'bg-emerald-400' : 'bg-slate-600'}`}
                       style={{ height: `${i * 3 + 4}px` }}
                     />
                   ))}
@@ -319,8 +319,8 @@ export default function LiveTrackingMap({
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-xs text-slate-400">Data Link</span>
-                <Badge variant="outline" className={`${(selectedVehicle.signal_strength || 0) > 50 ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border-rose-500/30'} text-xs`}>
-                  {(selectedVehicle.signal_strength || 0) > 50 ? (
+                <Badge variant="outline" className={`${selectedVehicle.signal_strength > 50 ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border-rose-500/30'} text-xs`}>
+                  {selectedVehicle.signal_strength > 50 ? (
                     <>
                       <Wifi className="w-3 h-3 mr-1" />
                       Connected
