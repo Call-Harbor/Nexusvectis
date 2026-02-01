@@ -44,12 +44,14 @@ export default function UserManagement() {
 
   // List users from same organization
   const { data: users = [], isLoading } = useQuery({
-    queryKey: ['users'],
+    queryKey: ['users', currentUser?.organization_id],
     queryFn: async () => {
+      if (!currentUser?.organization_id) return [];
       const allUsers = await base44.entities.User.list();
       return allUsers.filter(u => u.organization_id === currentUser?.organization_id);
     },
-    enabled: !!currentUser,
+    enabled: !!currentUser?.organization_id,
+    staleTime: 0,
   });
 
   // Invite user mutation
@@ -109,8 +111,17 @@ export default function UserManagement() {
     inviteMutation.mutate({ email: inviteEmail, role: inviteRole });
   };
 
-  const adminUsers = users.filter(u => u.email === organization?.admin_email);
-  const regularUsers = users.filter(u => u.email !== organization?.admin_email);
+  // Determine admin based on their own organization's admin_email
+  const usersWithOrgs = users.map(user => ({
+    ...user,
+    isAdmin: user.organization_id ? (
+      // For users in the same org, check against the shared org's admin_email
+      organization?.id === user.organization_id && user.email === organization?.admin_email
+    ) : false
+  }));
+
+  const adminUsers = usersWithOrgs.filter(u => u.isAdmin);
+  const regularUsers = usersWithOrgs.filter(u => !u.isAdmin);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6 lg:p-8">
