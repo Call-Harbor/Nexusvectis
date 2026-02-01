@@ -15,6 +15,9 @@ import LiveTrackingMap from "@/components/tracking/LiveTrackingMap";
 import VehicleDetailPanel from "@/components/tracking/VehicleDetailPanel";
 import FleetAnalytics from "@/components/tracking/FleetAnalytics";
 import AlertPanel from "@/components/dashboard/AlertPanel";
+import AIInsightWidget from "@/components/ai/AIInsightWidget";
+import AIQuickActions from "@/components/ai/AIQuickActions";
+import AIAssistantBadge from "@/components/ai/AIAssistantBadge";
 
 export default function Dashboard() {
   const [selectedVehicle, setSelectedVehicle] = useState(null);
@@ -133,6 +136,8 @@ export default function Dashboard() {
         <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-violet-500/10 rounded-full blur-3xl" />
       </div>
 
+      <AIAssistantBadge />
+
       <div className="relative z-10 p-4 lg:p-6">
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
           <div className="space-y-6">
@@ -185,43 +190,60 @@ export default function Dashboard() {
         </motion.div>
 
         {activeTab === "tracking" ? (
-          <div className="flex gap-6">
-            <div className="flex-1">
-              <LiveTrackingMap 
-                vehicles={vehicles}
-                selectedVehicle={selectedVehicle}
-                onSelectVehicle={(v) => {
-                  setSelectedVehicle(v);
-                  setShowDetailPanel(true);
-                }}
-                vehicleTrails={vehicleTrails}
-              />
-            </div>
+          <div className="space-y-6">
+            <AIQuickActions 
+              onOptimize={() => {}} 
+              onPredict={() => {}} 
+              onAnalyze={() => {}}
+            />
+            <div className="flex gap-6">
+              <div className="flex-1">
+                <LiveTrackingMap 
+                  vehicles={vehicles}
+                  selectedVehicle={selectedVehicle}
+                  onSelectVehicle={(v) => {
+                    setSelectedVehicle(v);
+                    setShowDetailPanel(true);
+                  }}
+                  vehicleTrails={vehicleTrails}
+                />
+              </div>
 
-            <AnimatePresence>
-              {showDetailPanel && (
-                <motion.div
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 20 }}
-                  className="w-96 space-y-6 flex-shrink-0 hidden xl:block"
-                >
-                  {selectedVehicle && (
-                    <VehicleDetailPanel 
-                      vehicle={selectedVehicle}
-                      onClose={() => setSelectedVehicle(null)}
+              <AnimatePresence>
+                {showDetailPanel && (
+                  <motion.div
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 20 }}
+                    className="w-96 space-y-6 flex-shrink-0 hidden xl:block"
+                  >
+                    {selectedVehicle && (
+                      <>
+                        <VehicleDetailPanel 
+                          vehicle={selectedVehicle}
+                          onClose={() => setSelectedVehicle(null)}
+                        />
+                        <AIInsightWidget 
+                          entity_type="vehicle" 
+                          entity_id={selectedVehicle.id}
+                          compact
+                        />
+                      </>
+                    )}
+                    <AlertPanel 
+                      alerts={alerts}
+                      onResolve={(id) => resolveAlertMutation.mutate(id)}
                     />
-                  )}
-                  <AlertPanel 
-                    alerts={alerts}
-                    onResolve={(id) => resolveAlertMutation.mutate(id)}
-                  />
-                </motion.div>
-              )}
-            </AnimatePresence>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
         ) : (
-          <FleetAnalytics vehicles={vehicles} routes={routes} />
+          <div className="space-y-6">
+            <AIInsightWidget entity_type="fleet" entity_id="all" />
+            <FleetAnalytics vehicles={vehicles} routes={routes} />
+          </div>
         )}
       </div>
     </div>
