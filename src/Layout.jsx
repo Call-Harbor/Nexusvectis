@@ -11,7 +11,9 @@ import {
   Sparkles,
   Satellite,
   Users,
-  Shield
+  Shield,
+  Settings,
+  FileText
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -73,7 +75,7 @@ export default function Layout({ children, currentPageName }) {
               )}
             >
               <Users className={cn("w-5 h-5", currentPageName === "UserManagement" && "text-cyan-400")} />
-              <span>Users</span>
+              <span>Brugere</span>
               {currentPageName === "UserManagement" && <ChevronRight className="w-4 h-4 ml-auto text-cyan-400" />}
             </Link>
 
@@ -87,8 +89,36 @@ export default function Layout({ children, currentPageName }) {
               )}
             >
               <Shield className={cn("w-5 h-5", currentPageName === "Security" && "text-cyan-400")} />
-              <span>Security</span>
+              <span>Sikkerhed</span>
               {currentPageName === "Security" && <ChevronRight className="w-4 h-4 ml-auto text-cyan-400" />}
+            </Link>
+
+            <Link
+              to={createPageUrl("Invoices")}
+              className={cn(
+                "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all",
+                currentPageName === "Invoices"
+                  ? "bg-gradient-to-r from-cyan-500/20 to-violet-500/10 text-white border border-cyan-500/30" 
+                  : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+              )}
+            >
+              <FileText className={cn("w-5 h-5", currentPageName === "Invoices" && "text-cyan-400")} />
+              <span>Fakturaer</span>
+              {currentPageName === "Invoices" && <ChevronRight className="w-4 h-4 ml-auto text-cyan-400" />}
+            </Link>
+
+            <Link
+              to={createPageUrl("Settings")}
+              className={cn(
+                "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all",
+                currentPageName === "Settings"
+                  ? "bg-gradient-to-r from-cyan-500/20 to-violet-500/10 text-white border border-cyan-500/30" 
+                  : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+              )}
+            >
+              <Settings className={cn("w-5 h-5", currentPageName === "Settings" && "text-cyan-400")} />
+              <span>Indstillinger</span>
+              {currentPageName === "Settings" && <ChevronRight className="w-4 h-4 ml-auto text-cyan-400" />}
             </Link>
           </div>
         </nav>
