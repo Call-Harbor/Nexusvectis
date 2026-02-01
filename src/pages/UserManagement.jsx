@@ -48,7 +48,15 @@ export default function UserManagement() {
     queryFn: async () => {
       if (!currentUser?.organization_id) return [];
       const allUsers = await base44.entities.User.list();
-      return allUsers.filter(u => u.organization_id === currentUser?.organization_id);
+      const filteredUsers = allUsers.filter(u => u.organization_id === currentUser?.organization_id);
+      
+      // Ensure current user is included
+      const currentUserInList = filteredUsers.find(u => u.id === currentUser.id);
+      if (!currentUserInList) {
+        return [currentUser, ...filteredUsers];
+      }
+      
+      return filteredUsers;
     },
     enabled: !!currentUser?.organization_id,
     staleTime: 0,
