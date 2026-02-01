@@ -59,6 +59,7 @@ import Security from './pages/Security';
 import UserManagement from './pages/UserManagement';
 import Settings from './pages/Settings';
 import Invoices from './pages/Invoices';
+import MapMonitor from './pages/MapMonitor';
 import __Layout from './Layout.jsx';
 
 
@@ -75,6 +76,7 @@ export const PAGES = {
     "UserManagement": UserManagement,
     "Settings": Settings,
     "Invoices": Invoices,
+    "MapMonitor": MapMonitor,
 }
 
 export const pagesConfig = {
