@@ -10,6 +10,7 @@ import { Loader2, X } from "lucide-react";
 import { AnimatePresence } from "framer-motion";
 
 export default function MapMonitor() {
+  const queryClient = useQueryClient();
   const [currentUser, setCurrentUser] = useState(null);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [vehicleTrails, setVehicleTrails] = useState({});
@@ -52,8 +53,6 @@ export default function MapMonitor() {
 
   // Subscribe to real-time updates
   useEffect(() => {
-    const queryClient = useQueryClient();
-
     const unsubVehicles = base44.entities.Vehicle.subscribe(() => {
       queryClient.invalidateQueries({ queryKey: ['vehicles'] });
     });
@@ -71,7 +70,7 @@ export default function MapMonitor() {
       unsubResources();
       unsubRoutes();
     };
-  }, []);
+  }, [queryClient]);
 
   if (!currentUser || vehiclesLoading) {
     return (
