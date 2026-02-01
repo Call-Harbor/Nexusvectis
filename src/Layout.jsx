@@ -23,6 +23,7 @@ const navItems = [
   { name: "Routes", icon: Route, page: "Routes" },
   { name: "Resources", icon: Warehouse, page: "Resources" },
   { name: "Map Monitor", icon: Globe, page: "MapMonitor" },
+  { name: "Assignments", icon: Route, page: "Assignment" },
   { name: "AI Optimization", icon: Sparkles, page: "AIOptimization" },
   { name: "GPS Integration", icon: Satellite, page: "GPSIntegration" },
   { name: "Alerts", icon: Bell, page: "Alerts" },
