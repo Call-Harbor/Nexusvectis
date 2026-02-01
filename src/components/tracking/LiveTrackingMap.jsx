@@ -28,6 +28,47 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
+const createResourceIcon = (type, isSelected = false) => {
+  const colors = {
+    fuel_depot: { bg: '#ef4444', icon: '⛽' },
+    warehouse: { bg: '#3b82f6', icon: '📦' },
+    charging_station: { bg: '#10b981', icon: '🔌' },
+    maintenance_hub: { bg: '#f59e0b', icon: '🔧' },
+    port: { bg: '#06b6d4', icon: '⚓' },
+  };
+
+  const color = colors[type] || colors.warehouse;
+  const size = isSelected ? 44 : 36;
+
+  return L.divIcon({
+    className: 'custom-resource-marker',
+    html: `
+      <div style="
+        position: relative;
+        width: ${size}px;
+        height: ${size}px;
+      ">
+        <div style="
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(135deg, ${color.bg}, ${color.bg}dd);
+          border: 2px solid ${isSelected ? '#fff' : color.bg};
+          border-radius: 8px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.3), ${isSelected ? '0 0 0 2px rgba(255,255,255,0.3)' : ''};
+          font-size: 18px;
+        ">
+          ${color.icon}
+        </div>
+      </div>
+    `,
+    iconSize: [size, size],
+    iconAnchor: [size/2, size/2],
+  });
+};
+
 const createVehicleIcon = (type, status, heading = 0, isSelected = false) => {
   const colors = {
     active: { bg: '#10b981', glow: 'rgba(16, 185, 129, 0.4)' },
@@ -148,6 +189,7 @@ function VehicleTrail({ positions, color }) {
 
 export default function LiveTrackingMap({ 
   vehicles = [], 
+  resources = [],
   selectedVehicle, 
   onSelectVehicle,
   vehicleTrails = {},
@@ -173,12 +215,12 @@ export default function LiveTrackingMap({
       : [55.6761, 12.5683];
 
   // Don't render map until we have valid data
-  if (!vehicles || vehicles.length === 0) {
+  if ((!vehicles || vehicles.length === 0) && (!resources || resources.length === 0)) {
     return (
       <div className="h-[600px] rounded-2xl border border-slate-700/50 bg-slate-900/50 backdrop-blur-xl flex items-center justify-center">
         <div className="text-center">
           <Satellite className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-          <p className="text-slate-400">No vehicles to track</p>
+          <p className="text-slate-400">No vehicles or resources to track</p>
         </div>
       </div>
     );
@@ -428,6 +470,43 @@ export default function LiveTrackingMap({
               </div>
             </Popup>
           </Marker>
+        ))}
+
+        {/* Resource Markers */}
+        {resources && resources.map(resource => (
+          resource?.latitude && resource?.longitude && (
+            <Marker
+              key={`resource-${resource.id}`}
+              position={[resource.latitude, resource.longitude]}
+              icon={createResourceIcon(resource.type, selectedVehicle?.id === `resource-${resource.id}`)}
+            >
+              <Popup className="custom-popup">
+                <div className="p-3 min-w-[220px] bg-slate-900 text-white rounded-lg">
+                  <div className="flex items-center gap-2 mb-2">
+                    <h4 className="font-semibold">{resource.name}</h4>
+                  </div>
+                  <div className="space-y-1 text-xs">
+                    <div>
+                      <span className="text-slate-400">Type:</span>
+                      <span className="ml-1 text-white capitalize">{resource.type.replace(/_/g, ' ')}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400">Status:</span>
+                      <span className="ml-1 text-white capitalize">{resource.status}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400">Utilization:</span>
+                      <span className="ml-1 text-white">{resource.current_level || 0}/{resource.capacity || 0}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400">Location:</span>
+                      <span className="ml-1 text-white">{resource.location}</span>
+                    </div>
+                  </div>
+                </div>
+              </Popup>
+            </Marker>
+          )
         ))}
       </MapContainer>
     </motion.div>
