@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Truck, Ship, Plane, Train, Radio, Fuel, MapPin, Clock, Activity } from "lucide-react";
+import { Truck, Ship, Plane, Train, Radio, Fuel, MapPin, Clock, Activity, Wifi, WifiOff } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 
@@ -75,9 +75,18 @@ export default function VehicleList({ vehicles, onSelectVehicle, selectedId }) {
                         {statusLabels[vehicle.status]}
                       </Badge>
                     </div>
-                    <div className="flex items-center gap-1 text-emerald-400">
-                      <Radio className="w-3 h-3 animate-pulse" />
-                      <span className="text-xs">Live</span>
+                    <div className={`flex items-center gap-1 ${(vehicle.signal_strength || 0) > 50 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                      {(vehicle.signal_strength || 0) > 50 ? (
+                        <>
+                          <Wifi className="w-3 h-3" />
+                          <span className="text-xs">Signal</span>
+                        </>
+                      ) : (
+                        <>
+                          <WifiOff className="w-3 h-3" />
+                          <span className="text-xs">Weak</span>
+                        </>
+                      )}
                     </div>
                   </div>
 
