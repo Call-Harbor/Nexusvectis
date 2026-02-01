@@ -29,9 +29,12 @@ const navItems = [
 ];
 
 export default function Layout({ children, currentPageName }) {
+  const hideNav = currentPageName === "MapMonitor";
+
   return (
     <div className="min-h-screen bg-slate-950 flex">
       {/* Sidebar */}
+      {!hideNav && (
       <aside className="fixed left-0 top-0 h-full w-64 bg-slate-900/50 backdrop-blur-xl border-r border-slate-800/50 z-40 hidden lg:block">
         <div className="p-6">
           <Link to={createPageUrl("Dashboard")} className="flex items-center gap-3">
