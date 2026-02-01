@@ -8,7 +8,8 @@ import {
   Bell, 
   Globe,
   ChevronRight,
-  Sparkles
+  Sparkles,
+  Satellite
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -18,6 +19,7 @@ const navItems = [
   { name: "Routes", icon: Route, page: "Routes" },
   { name: "Resources", icon: Warehouse, page: "Resources" },
   { name: "AI Optimization", icon: Sparkles, page: "AIOptimization" },
+  { name: "GPS Integration", icon: Satellite, page: "GPSIntegration" },
   { name: "Alerts", icon: Bell, page: "Alerts" },
 ];
 
