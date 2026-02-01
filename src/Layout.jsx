@@ -17,6 +17,7 @@ const navItems = [
   { name: "Fleet", icon: Truck, page: "Fleet" },
   { name: "Routes", icon: Route, page: "Routes" },
   { name: "Resources", icon: Warehouse, page: "Resources" },
+  { name: "AI Optimization", icon: Sparkles, page: "AIOptimization" },
   { name: "Alerts", icon: Bell, page: "Alerts" },
 ];
 
