@@ -5,12 +5,14 @@ import { createPageUrl } from "../utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2, Loader2 } from "lucide-react";
+import { Building2, Loader2, Globe, MapPin } from "lucide-react";
 
 export default function OrganizationSetup() {
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [orgName, setOrgName] = useState("");
+  const [country, setCountry] = useState("");
+  const [city, setCity] = useState("");
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
 
@@ -37,14 +39,16 @@ export default function OrganizationSetup() {
   };
 
   const createOrganization = async () => {
-    if (!orgName.trim()) return;
+    if (!orgName.trim() || !country.trim() || !city.trim()) return;
 
     setCreating(true);
     try {
       // Create organization
       const org = await base44.entities.Organization.create({
         name: orgName,
-        admin_email: user.email
+        admin_email: user.email,
+        headquarters_country: country,
+        headquarters_city: city
       });
 
       // Update user with organization_id and set as admin
@@ -94,9 +98,35 @@ export default function OrganizationSetup() {
               className="bg-slate-800/50 border-slate-700 text-white"
             />
           </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-300">Land</label>
+              <div className="flex items-center gap-2">
+                <Globe className="w-4 h-4 text-slate-500" />
+                <Input
+                  placeholder="f.eks. Danmark"
+                  value={country}
+                  onChange={(e) => setCountry(e.target.value)}
+                  className="bg-slate-800/50 border-slate-700 text-white"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-300">By</label>
+              <div className="flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-slate-500" />
+                <Input
+                  placeholder="f.eks. København"
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  className="bg-slate-800/50 border-slate-700 text-white"
+                />
+              </div>
+            </div>
+          </div>
           <Button
             onClick={createOrganization}
-            disabled={!orgName.trim() || creating}
+            disabled={!orgName.trim() || !country.trim() || !city.trim() || creating}
             className="w-full bg-gradient-to-r from-cyan-600 to-violet-600 hover:from-cyan-500 hover:to-violet-500"
           >
             {creating ? (
