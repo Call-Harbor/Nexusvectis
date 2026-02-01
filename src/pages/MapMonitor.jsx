@@ -40,13 +40,15 @@ export default function MapMonitor() {
   }
 
   return (
-    <div className="w-full h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex flex-col">
-      <LiveTrackingMap
-        vehicles={vehicles}
-        selectedVehicle={selectedVehicle}
-        onSelectVehicle={setSelectedVehicle}
-        vehicleTrails={vehicleTrails}
-      />
+    <div className="fixed inset-0 bg-slate-950 flex flex-col">
+      <div className="flex-1 w-full h-full">
+        <LiveTrackingMap
+          vehicles={vehicles}
+          selectedVehicle={selectedVehicle}
+          onSelectVehicle={setSelectedVehicle}
+          vehicleTrails={vehicleTrails}
+        />
+      </div>
     </div>
   );
 }
