@@ -9,7 +9,8 @@ import {
   Globe,
   ChevronRight,
   Sparkles,
-  Satellite
+  Satellite,
+  Users
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -64,6 +65,22 @@ export default function Layout({ children, currentPageName }) {
               </Link>
             );
           })}
+
+          <div className="pt-4 mt-4 border-t border-slate-800/50">
+            <Link
+              to={createPageUrl("UserManagement")}
+              className={cn(
+                "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all",
+                currentPageName === "UserManagement"
+                  ? "bg-gradient-to-r from-cyan-500/20 to-violet-500/10 text-white border border-cyan-500/30" 
+                  : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+              )}
+            >
+              <Users className={cn("w-5 h-5", currentPageName === "UserManagement" && "text-cyan-400")} />
+              <span>Users</span>
+              {currentPageName === "UserManagement" && <ChevronRight className="w-4 h-4 ml-auto text-cyan-400" />}
+            </Link>
+          </div>
         </nav>
 
         <div className="absolute bottom-0 left-0 right-0 p-4">
