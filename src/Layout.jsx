@@ -10,7 +10,8 @@ import {
   ChevronRight,
   Sparkles,
   Satellite,
-  Users
+  Users,
+  Shield
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -66,7 +67,7 @@ export default function Layout({ children, currentPageName }) {
             );
           })}
 
-          <div className="pt-4 mt-4 border-t border-slate-800/50">
+          <div className="pt-4 mt-4 border-t border-slate-800/50 space-y-1">
             <Link
               to={createPageUrl("UserManagement")}
               className={cn(
@@ -79,6 +80,20 @@ export default function Layout({ children, currentPageName }) {
               <Users className={cn("w-5 h-5", currentPageName === "UserManagement" && "text-cyan-400")} />
               <span>Users</span>
               {currentPageName === "UserManagement" && <ChevronRight className="w-4 h-4 ml-auto text-cyan-400" />}
+            </Link>
+
+            <Link
+              to={createPageUrl("Security")}
+              className={cn(
+                "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all",
+                currentPageName === "Security"
+                  ? "bg-gradient-to-r from-cyan-500/20 to-violet-500/10 text-white border border-cyan-500/30" 
+                  : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+              )}
+            >
+              <Shield className={cn("w-5 h-5", currentPageName === "Security" && "text-cyan-400")} />
+              <span>Security</span>
+              {currentPageName === "Security" && <ChevronRight className="w-4 h-4 ml-auto text-cyan-400" />}
             </Link>
           </div>
         </nav>

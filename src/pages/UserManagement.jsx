@@ -40,6 +40,16 @@ export default function UserManagement() {
   const inviteMutation = useMutation({
     mutationFn: async ({ email, role }) => {
       await base44.users.inviteUser(email, role);
+      
+      // Log security audit
+      await base44.functions.invoke('auditLog', {
+        action: 'user_invited',
+        resource_type: 'user',
+        resource_id: email,
+        status: 'success',
+        details: `Invited user with role: ${role}`,
+        severity: 'medium'
+      }).catch(() => {}); // Don't fail if audit log fails
     },
     onSuccess: () => {
       toast.success("Invitation sent!");
@@ -50,6 +60,16 @@ export default function UserManagement() {
     },
     onError: (error) => {
       toast.error(error.message || "Failed to send invitation");
+      
+      // Log failed attempt
+      base44.functions.invoke('auditLog', {
+        action: 'user_invite_failed',
+        resource_type: 'user',
+        resource_id: inviteEmail,
+        status: 'failed',
+        details: error.message,
+        severity: 'high'
+      }).catch(() => {});
     },
   });
 
