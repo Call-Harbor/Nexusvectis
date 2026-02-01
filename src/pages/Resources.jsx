@@ -44,6 +44,7 @@ export default function Resources() {
     capacity: 1000, latitude: 20, longitude: 0
   });
   const [searchingLocation, setSearchingLocation] = useState(false);
+  const [searchError, setSearchError] = useState("");
   const searchTimeoutRef = useRef(null);
   
   const geocodeMutation = useMutation({
@@ -99,7 +100,10 @@ export default function Resources() {
   };
 
   const handleLocationSearch = async (locationText) => {
-    if (locationText.length < 2) return;
+    if (locationText.length < 2) {
+      setSearchError("");
+      return;
+    }
     
     const parts = locationText.split(',').map(p => p.trim());
     const city = parts[0];
@@ -108,6 +112,7 @@ export default function Resources() {
     if (!city) return;
     
     setSearchingLocation(true);
+    setSearchError("");
     geocodeMutation.mutate({ city, country }, {
       onSuccess: (data) => {
         setFormData(prev => ({
@@ -116,8 +121,12 @@ export default function Resources() {
           longitude: data.lng
         }));
         setSearchingLocation(false);
+        setSearchError("");
       },
-      onError: () => setSearchingLocation(false)
+      onError: (error) => {
+        setSearchingLocation(false);
+        setSearchError("City not found. Try another name.");
+      }
     });
   };
 
@@ -358,11 +367,13 @@ export default function Resources() {
                   placeholder="e.g. Copenhagen, Aarhus, Hamburg..."
                 />
               </div>
-              {searchingLocation && <p className="text-xs text-slate-400 mt-1">Searching coordinates...</p>}
-              {formData.latitude !== 20 || formData.longitude !== 0 ? (
-                <p className="text-xs text-emerald-400 mt-1">📍 Coordinates: {formData.latitude.toFixed(4)}, {formData.longitude.toFixed(4)}</p>
-              ) : (
-                <p className="text-xs text-slate-500 mt-1">Location coordinates will be set when you finish typing</p>
+              {searchingLocation && <p className="text-xs text-slate-400 mt-1">🔍 Searching...</p>}
+              {searchError && <p className="text-xs text-rose-400 mt-1">❌ {searchError}</p>}
+              {(formData.latitude !== 20 || formData.longitude !== 0) && !searchError && (
+                <p className="text-xs text-emerald-400 mt-1">✓ Coordinates: {formData.latitude.toFixed(4)}, {formData.longitude.toFixed(4)}</p>
+              )}
+              {formData.latitude === 20 && formData.longitude === 0 && !searchError && (
+                <p className="text-xs text-slate-500 mt-1">Type city name (e.g. Copenhagen or Copenhagen, Denmark)</p>
               )}
             </div>
             <div>
