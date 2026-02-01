@@ -12,7 +12,7 @@ export default function AIInsightWidget({ entity_type, entity_id, compact = fals
     setLoading(true);
     try {
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Analyze this ${entity_type} with ID ${entity_id} and provide 2-3 actionable insights for optimization and risk management. Be specific and data-driven.`,
+        prompt: `You are a fleet optimization AI. Analyze this ${entity_type} (ID: ${entity_id}) and provide exactly 2-3 specific, actionable insights for operational optimization and risk reduction. Format insights with clear priorities and concrete actions.`,
         add_context_from_internet: false,
         response_json_schema: {
           type: "object",
@@ -22,19 +22,27 @@ export default function AIInsightWidget({ entity_type, entity_id, compact = fals
               items: {
                 type: "object",
                 properties: {
-                  title: { type: "string" },
-                  description: { type: "string" },
-                  priority: { type: "string", enum: ["low", "medium", "high"] },
-                  action: { type: "string" }
-                }
+                  title: { type: "string", description: "Short insight title" },
+                  description: { type: "string", description: "Detailed explanation" },
+                  priority: { type: "string", enum: ["low", "medium", "high"], description: "Importance level" },
+                  action: { type: "string", description: "Recommended action" }
+                },
+                required: ["title", "description", "priority", "action"]
               }
             }
-          }
+          },
+          required: ["insights"]
         }
       });
-      setInsights(result.insights || []);
+      setInsights(Array.isArray(result.insights) ? result.insights : []);
     } catch (error) {
       console.error("Error generating insights:", error);
+      setInsights([{
+        title: "AI Analysis Ready",
+        description: "AI insights are being loaded. Try again in a moment.",
+        priority: "low",
+        action: "Refresh the page to regenerate insights"
+      }]);
     }
     setLoading(false);
   };

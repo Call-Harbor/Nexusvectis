@@ -2,27 +2,33 @@ import { motion } from "framer-motion";
 import { Sparkles, Zap, AlertTriangle, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export default function AIQuickActions({ onOptimize, onPredict, onAnalyze }) {
+export default function AIQuickActions({ onOptimize = () => {}, onPredict = () => {}, onAnalyze = () => {} }) {
   const actions = [
     {
       icon: TrendingUp,
       label: "Optimize Routes",
       description: "AI will suggest optimal routes",
-      onClick: onOptimize,
+      onClick: () => {
+        onOptimize?.();
+      },
       color: "from-cyan-500/20 to-cyan-500/5"
     },
     {
       icon: AlertTriangle,
       label: "Predictive Check",
       description: "Check for risks & issues",
-      onClick: onPredict,
+      onClick: () => {
+        onPredict?.();
+      },
       color: "from-amber-500/20 to-amber-500/5"
     },
     {
       icon: Zap,
       label: "Analyze Data",
       description: "Deep performance analysis",
-      onClick: onAnalyze,
+      onClick: () => {
+        onAnalyze?.();
+      },
       color: "from-violet-500/20 to-violet-500/5"
     }
   ];
