@@ -28,8 +28,9 @@ export default function Settings() {
       const currentUser = await base44.auth.me();
       setUser(currentUser);
       
-      if (currentUser.organization_id) {
-        const org = await base44.entities.Organization.filter({ id: currentUser.organization_id });
+      const orgId = currentUser.organization_id || currentUser.data?.organization_id;
+      if (orgId) {
+        const org = await base44.entities.Organization.filter({ id: orgId });
         if (org.length > 0) {
           setOrgName(org[0].name);
         }
@@ -45,9 +46,15 @@ export default function Settings() {
       return;
     }
 
+    const orgId = user.organization_id || user.data?.organization_id;
+    if (!orgId) {
+      toast.error("Organisation ID ikke fundet");
+      return;
+    }
+
     setSaving(true);
     try {
-      await base44.entities.Organization.update(user.organization_id, {
+      await base44.entities.Organization.update(orgId, {
         name: orgName
       });
       toast.success("Organisation opdateret");
