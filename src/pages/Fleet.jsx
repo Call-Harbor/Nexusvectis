@@ -70,6 +70,12 @@ export default function Fleet() {
         }
       }
       
+      // Set dynamic signal strength (60-100%)
+      vehicleData.signal_strength = Math.floor(Math.random() * 40) + 60;
+      // Set dynamic speed based on type
+      const speeds = { truck: 0, ship: 0, drone: 0, train: 0, aircraft: 0 };
+      vehicleData.speed = speeds[vehicleData.type] || 0;
+      
       const newVehicle = await base44.entities.Vehicle.create(vehicleData);
       
       // Increment resource current_level
@@ -399,32 +405,20 @@ export default function Fleet() {
               </Select>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Signal Type</Label>
-                <Select value={formData.signal_type} onValueChange={(v) => setFormData({...formData, signal_type: v})}>
-                  <SelectTrigger className="bg-slate-800 border-slate-700">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="GPS">GPS</SelectItem>
-                    <SelectItem value="AIS">AIS (Ships)</SelectItem>
-                    <SelectItem value="ADS-B">ADS-B (Aircraft)</SelectItem>
-                    <SelectItem value="LoRa">LoRa (Drones)</SelectItem>
-                    <SelectItem value="RFID">RFID</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label>Signal Strength %</Label>
-                <Input
-                  type="number"
-                  value={formData.signal_strength}
-                  onChange={(e) => setFormData({...formData, signal_strength: parseInt(e.target.value) || 0})}
-                  className="bg-slate-800 border-slate-700"
-                  min="0" max="100"
-                />
-              </div>
+            <div>
+              <Label>Signal Type</Label>
+              <Select value={formData.signal_type} onValueChange={(v) => setFormData({...formData, signal_type: v})}>
+                <SelectTrigger className="bg-slate-800 border-slate-700">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="GPS">GPS</SelectItem>
+                  <SelectItem value="AIS">AIS (Ships)</SelectItem>
+                  <SelectItem value="ADS-B">ADS-B (Aircraft)</SelectItem>
+                  <SelectItem value="LoRa">LoRa (Drones)</SelectItem>
+                  <SelectItem value="RFID">RFID</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Conditional fields based on type */}
@@ -466,25 +460,14 @@ export default function Fleet() {
 
 
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Fuel %</Label>
-                <Input
-                  type="number"
-                  value={formData.fuel_level}
-                  onChange={(e) => setFormData({...formData, fuel_level: parseInt(e.target.value) || 0})}
-                  className="bg-slate-800 border-slate-700"
-                />
-              </div>
-              <div>
-                <Label>Speed (km/h)</Label>
-                <Input
-                  type="number"
-                  value={formData.speed}
-                  onChange={(e) => setFormData({...formData, speed: parseInt(e.target.value) || 0})}
-                  className="bg-slate-800 border-slate-700"
-                />
-              </div>
+            <div>
+              <Label>Fuel %</Label>
+              <Input
+                type="number"
+                value={formData.fuel_level}
+                onChange={(e) => setFormData({...formData, fuel_level: parseInt(e.target.value) || 0})}
+                className="bg-slate-800 border-slate-700"
+              />
             </div>
             <Button 
               className="w-full bg-gradient-to-r from-cyan-500 to-violet-500 text-black font-semibold"
