@@ -33,13 +33,14 @@ export default function UserManagement() {
 
   // Get organization
   const { data: organization } = useQuery({
-    queryKey: ['organization', currentUser?.organization_id],
+    queryKey: ['organization', currentUser?.organization_id, currentUser?.data?.organization_id],
     queryFn: async () => {
-      if (!currentUser?.organization_id) return null;
-      const orgs = await base44.entities.Organization.filter({ id: currentUser.organization_id });
+      const orgId = currentUser?.organization_id || currentUser?.data?.organization_id;
+      if (!orgId) return null;
+      const orgs = await base44.entities.Organization.filter({ id: orgId });
       return orgs[0] || null;
     },
-    enabled: !!currentUser?.organization_id,
+    enabled: !!(currentUser?.organization_id || currentUser?.data?.organization_id),
   });
 
   // List users from same organization
