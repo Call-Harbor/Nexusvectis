@@ -180,7 +180,7 @@ export default function AdminDashboard() {
             </div>
             <h1 className="text-4xl font-bold text-white">NexusVectis Admin Board</h1>
           </div>
-          <p className="text-slate-400">Platform oversigt og systemstatistikker</p>
+          <p className="text-slate-400">Platform overview and system statistics</p>
         </div>
 
         {/* Main Stats Grid */}
@@ -192,7 +192,7 @@ export default function AdminDashboard() {
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-slate-400 text-sm">Organisationer</p>
+                <p className="text-slate-400 text-sm">Organizations</p>
                 <p className="text-2xl font-bold text-white mt-1">{stats.totalOrganizations}</p>
               </div>
               <Building2 className="w-8 h-8 text-blue-400 opacity-50" />
@@ -207,7 +207,7 @@ export default function AdminDashboard() {
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-slate-400 text-sm">Samlede enheder</p>
+                <p className="text-slate-400 text-sm">Total Units</p>
                 <p className="text-2xl font-bold text-white mt-1">{stats.totalVehicles}</p>
                 <p className="text-xs text-emerald-400 mt-1">+{stats.vehiclesLast30} (30d)</p>
               </div>
@@ -223,7 +223,7 @@ export default function AdminDashboard() {
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-slate-400 text-sm">Ressourcer</p>
+                <p className="text-slate-400 text-sm">Resources</p>
                 <p className="text-2xl font-bold text-white mt-1">{stats.totalResources}</p>
                 <p className="text-xs text-amber-400 mt-1">+{stats.resourcesLast30} (30d)</p>
               </div>
@@ -239,7 +239,7 @@ export default function AdminDashboard() {
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-slate-400 text-sm">Månedsomgang</p>
+                <p className="text-slate-400 text-sm">Monthly Revenue</p>
                 <p className="text-2xl font-bold text-white mt-1">{(stats.monthlyRevenue / 1000).toFixed(1)}k DKK</p>
               </div>
               <DollarSign className="w-8 h-8 text-green-400 opacity-50" />
@@ -254,7 +254,7 @@ export default function AdminDashboard() {
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-slate-400 text-sm">Gennemsn. pr org</p>
+                <p className="text-slate-400 text-sm">Avg per Org</p>
                 <p className="text-2xl font-bold text-white mt-1">
                   {stats.totalOrganizations > 0 ? (stats.totalVehicles / stats.totalOrganizations).toFixed(1) : '0'}
                 </p>
@@ -298,7 +298,7 @@ export default function AdminDashboard() {
             transition={{ delay: 0.1 }}
             className="rounded-2xl border border-slate-700/50 bg-slate-800/50 backdrop-blur-xl p-6"
           >
-            <h3 className="text-white font-semibold mb-4">Vækst (6 mdr)</h3>
+            <h3 className="text-white font-semibold mb-4">Growth (6 months)</h3>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={growthData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
@@ -308,8 +308,8 @@ export default function AdminDashboard() {
                   contentStyle={{ background: '#1e293b', border: '1px solid #475569', borderRadius: '8px' }}
                   labelStyle={{ color: '#e2e8f0' }}
                 />
-                <Bar dataKey="vehicles" fill="#06b6d4" name="Enheder" />
-                <Bar dataKey="resources" fill="#f59e0b" name="Ressourcer" />
+                <Bar dataKey="vehicles" fill="#06b6d4" name="Units" />
+                <Bar dataKey="resources" fill="#f59e0b" name="Resources" />
               </BarChart>
             </ResponsiveContainer>
           </motion.div>
@@ -323,7 +323,7 @@ export default function AdminDashboard() {
             animate={{ opacity: 1, scale: 1 }}
             className="rounded-2xl border border-slate-700/50 bg-slate-800/50 backdrop-blur-xl p-6"
           >
-            <h3 className="text-white font-semibold mb-4">Omsætning (seneste 6 mdr)</h3>
+            <h3 className="text-white font-semibold mb-4">Revenue (Last 6 months)</h3>
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={revenueData.length > 0 ? revenueData : growthData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
@@ -345,7 +345,7 @@ export default function AdminDashboard() {
             transition={{ delay: 0.1 }}
             className="rounded-2xl border border-slate-700/50 bg-slate-800/50 backdrop-blur-xl p-6"
           >
-            <h3 className="text-white font-semibold mb-4">Organisationer ({organizations.length})</h3>
+            <h3 className="text-white font-semibold mb-4">Organizations ({organizations.length})</h3>
             <div className="space-y-3 max-h-80 overflow-y-auto">
               {organizations.slice(0, 10).map((org) => {
                 const vehicleCount = allVehicles.filter(v => v.organization_id === org.id).length;
@@ -356,7 +356,7 @@ export default function AdminDashboard() {
                       <p className="text-xs text-slate-400">{org.headquarters_city}, {org.headquarters_country}</p>
                     </div>
                     <Badge variant="outline" className="bg-cyan-500/20 text-cyan-300 border-cyan-500/30">
-                      {vehicleCount} enheder
+                      {vehicleCount} units
                     </Badge>
                   </div>
                 );
@@ -371,13 +371,13 @@ export default function AdminDashboard() {
           animate={{ opacity: 1, scale: 1 }}
           className="rounded-2xl border border-slate-700/50 bg-slate-800/50 backdrop-blur-xl p-6"
         >
-          <h3 className="text-white font-semibold mb-4">Fakturaer (seneste)</h3>
+          <h3 className="text-white font-semibold mb-4">Invoices (Recent)</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { label: 'I alt', value: invoices.length, color: 'text-blue-400' },
-              { label: 'Betalt', value: invoices.filter(i => i.status === 'paid').length, color: 'text-green-400' },
-              { label: 'Afventer', value: invoices.filter(i => i.status === 'pending').length, color: 'text-amber-400' },
-              { label: 'Forfaldne', value: invoices.filter(i => i.status === 'overdue').length, color: 'text-red-400' },
+              { label: 'Total', value: invoices.length, color: 'text-blue-400' },
+              { label: 'Paid', value: invoices.filter(i => i.status === 'paid').length, color: 'text-green-400' },
+              { label: 'Pending', value: invoices.filter(i => i.status === 'pending').length, color: 'text-amber-400' },
+              { label: 'Overdue', value: invoices.filter(i => i.status === 'overdue').length, color: 'text-red-400' },
             ].map((item) => (
               <div key={item.label} className="p-4 rounded-lg bg-slate-900/50 border border-slate-700/30 text-center">
                 <p className={`text-2xl font-bold ${item.color}`}>{item.value}</p>

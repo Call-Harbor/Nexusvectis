@@ -81,16 +81,16 @@ export default function OrganizationSetup() {
               <Building2 className="w-8 h-8 text-cyan-400" />
             </div>
           </div>
-          <CardTitle className="text-2xl text-white">Opret din organisation</CardTitle>
+          <CardTitle className="text-2xl text-white">Create Your Organization</CardTitle>
           <CardDescription className="text-slate-400">
-            Du skal oprette en organisation for at fortsætte
+            You need to create an organization to continue
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-300">Organisations navn</label>
+            <label className="text-sm font-medium text-slate-300">Organization Name</label>
             <Input
-              placeholder="Indtast organisations navn"
+              placeholder="Enter organization name"
               value={orgName}
               onChange={(e) => setOrgName(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && createOrganization()}
@@ -99,11 +99,11 @@ export default function OrganizationSetup() {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-300">Land</label>
+              <label className="text-sm font-medium text-slate-300">Country</label>
               <div className="flex items-center gap-2">
                 <Globe className="w-4 h-4 text-slate-500" />
                 <Input
-                  placeholder="f.eks. Danmark"
+                  placeholder="e.g. Denmark"
                   value={country}
                   onChange={(e) => setCountry(e.target.value)}
                   className="bg-slate-800/50 border-slate-700 text-white"
@@ -111,11 +111,11 @@ export default function OrganizationSetup() {
               </div>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-300">By</label>
+              <label className="text-sm font-medium text-slate-300">City</label>
               <div className="flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-slate-500" />
                 <Input
-                  placeholder="f.eks. København"
+                  placeholder="e.g. Copenhagen"
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
                   className="bg-slate-800/50 border-slate-700 text-white"
@@ -131,10 +131,10 @@ export default function OrganizationSetup() {
             {creating ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Opretter...
+                Creating...
               </>
             ) : (
-              "Opret organisation"
+              "Create Organization"
             )}
           </Button>
         </CardContent>

@@ -49,10 +49,17 @@ export default function Layout({ children, currentPageName }) {
         </div>
 
         <nav className="px-3 space-y-1">
-          {navItems.map((item) => {
-            const isActive = currentPageName === item.page;
-            const Icon = item.icon;
-            const isMapMonitor = item.page === "MapMonitor";
+                  {navItems.map((item) => {
+                    const isActive = currentPageName === item.page;
+                    const Icon = item.icon;
+                    const isMapMonitor = item.page === "MapMonitor";
+                    const itemLabels = {
+                      'AdminDashboard': 'Admin Board',
+                      'UserManagement': 'Users',
+                      'Security': 'Security',
+                      'Invoices': 'Invoices',
+                      'Settings': 'Settings'
+                    };
             
             return isMapMonitor ? (
               <a
@@ -111,7 +118,7 @@ export default function Layout({ children, currentPageName }) {
               )}
             >
               <Users className={cn("w-5 h-5", currentPageName === "UserManagement" && "text-cyan-400")} />
-              <span>Brugere</span>
+              <span>Users</span>
               {currentPageName === "UserManagement" && <ChevronRight className="w-4 h-4 ml-auto text-cyan-400" />}
             </Link>
 
@@ -125,7 +132,7 @@ export default function Layout({ children, currentPageName }) {
               )}
             >
               <Shield className={cn("w-5 h-5", currentPageName === "Security" && "text-cyan-400")} />
-              <span>Sikkerhed</span>
+              <span>Security</span>
               {currentPageName === "Security" && <ChevronRight className="w-4 h-4 ml-auto text-cyan-400" />}
             </Link>
 
@@ -139,7 +146,7 @@ export default function Layout({ children, currentPageName }) {
               )}
             >
               <FileText className={cn("w-5 h-5", currentPageName === "Invoices" && "text-cyan-400")} />
-              <span>Fakturaer</span>
+              <span>Invoices</span>
               {currentPageName === "Invoices" && <ChevronRight className="w-4 h-4 ml-auto text-cyan-400" />}
             </Link>
 
@@ -153,7 +160,7 @@ export default function Layout({ children, currentPageName }) {
               )}
             >
               <Settings className={cn("w-5 h-5", currentPageName === "Settings" && "text-cyan-400")} />
-              <span>Indstillinger</span>
+              <span>Settings</span>
               {currentPageName === "Settings" && <ChevronRight className="w-4 h-4 ml-auto text-cyan-400" />}
             </Link>
           </div>
@@ -161,16 +168,16 @@ export default function Layout({ children, currentPageName }) {
 
         <div className="absolute bottom-0 left-0 right-0 p-4">
           <div className="p-4 rounded-xl bg-gradient-to-br from-violet-500/10 to-cyan-500/10 border border-violet-500/20">
-            <div className="flex items-center gap-2 mb-2">
-              <Sparkles className="w-4 h-4 text-violet-400" />
-              <span className="text-sm font-medium text-white">AI Status</span>
+              <div className="flex items-center gap-2 mb-2">
+                <Sparkles className="w-4 h-4 text-violet-400" />
+                <span className="text-sm font-medium text-white">AI Status</span>
+              </div>
+              <p className="text-xs text-slate-400">System operating normally</p>
+              <div className="flex items-center gap-2 mt-2">
+                <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="text-xs text-emerald-400">Online</span>
+              </div>
             </div>
-            <p className="text-xs text-slate-400">System running optimally</p>
-            <div className="flex items-center gap-2 mt-2">
-              <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-xs text-emerald-400">Online</span>
-            </div>
-          </div>
         </div>
       </aside>
       )}
