@@ -36,8 +36,7 @@ export default function AdminDashboard() {
   // Fetch all organizations
   const { data: organizations = [], isLoading: orgsLoading } = useQuery({
     queryKey: ['allOrganizations'],
-    queryFn: () => base44.entities.Organization.list(),
-    enabled: !authError
+    queryFn: () => base44.entities.Organization.list()
   });
 
   // Fetch all vehicles
