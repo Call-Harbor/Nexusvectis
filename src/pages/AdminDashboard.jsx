@@ -25,46 +25,37 @@ L.Icon.Default.mergeOptions({
 });
 
 export default function AdminDashboard() {
-  const [authError, setAuthError] = useState(false);
 
-  // Check if user is admin
+
+  // Check if user is authenticated
   const { data: currentUser, isLoading: userLoading } = useQuery({
     queryKey: ['currentUser'],
-    queryFn: async () => {
-      const user = await base44.auth.me();
-      if (user?.role !== 'admin') {
-        setAuthError(true);
-      }
-      return user;
-    }
+    queryFn: () => base44.auth.me()
   });
 
   // Fetch all organizations
   const { data: organizations = [], isLoading: orgsLoading } = useQuery({
     queryKey: ['allOrganizations'],
     queryFn: () => base44.entities.Organization.list(),
-    enabled: !authError && currentUser?.role === 'admin'
+    enabled: !authError
   });
 
   // Fetch all vehicles
   const { data: allVehicles = [] } = useQuery({
     queryKey: ['allVehicles'],
-    queryFn: () => base44.entities.Vehicle.list(),
-    enabled: !authError
+    queryFn: () => base44.entities.Vehicle.list()
   });
 
   // Fetch all resources
   const { data: allResources = [] } = useQuery({
     queryKey: ['allResources'],
-    queryFn: () => base44.entities.Resource.list(),
-    enabled: !authError
+    queryFn: () => base44.entities.Resource.list()
   });
 
   // Fetch invoices
   const { data: invoices = [] } = useQuery({
     queryKey: ['allInvoices'],
-    queryFn: () => base44.entities.Invoice.list(),
-    enabled: !authError
+    queryFn: () => base44.entities.Invoice.list()
   });
 
   // Calculate stats
@@ -139,19 +130,7 @@ export default function AdminDashboard() {
     );
   }
 
-  if (authError) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-950 p-6">
-        <Card className="bg-slate-900/50 border-red-500/30 max-w-md">
-          <CardContent className="pt-6 text-center">
-            <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-            <p className="text-white font-semibold">Adgang nægtet</p>
-            <p className="text-slate-400 text-sm mt-2">Du skal være administrator for at se dette board</p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6 lg:p-8">
