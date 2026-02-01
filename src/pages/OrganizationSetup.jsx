@@ -51,10 +51,9 @@ export default function OrganizationSetup() {
         headquarters_city: city
       });
 
-      // Update user with organization_id and set as admin
+      // Update user with organization_id
       await base44.auth.updateMe({
-        organization_id: org.id,
-        role: 'admin'
+        organization_id: org.id
       });
 
       // Reload to ensure all data is fresh
