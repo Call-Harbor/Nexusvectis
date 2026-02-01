@@ -101,11 +101,13 @@ export default function Resources() {
   const handleLocationSearch = async (locationText) => {
     if (locationText.length < 2) return;
     
-    setSearchingLocation(true);
     const parts = locationText.split(',').map(p => p.trim());
     const city = parts[0];
     const country = parts[1] || '';
     
+    if (!city) return;
+    
+    setSearchingLocation(true);
     geocodeMutation.mutate({ city, country }, {
       onSuccess: (data) => {
         setFormData(prev => ({
@@ -117,6 +119,19 @@ export default function Resources() {
       },
       onError: () => setSearchingLocation(false)
     });
+  };
+
+  const handleLocationChange = (e) => {
+    const newLocation = e.target.value;
+    setFormData({...formData, location: newLocation});
+    
+    // Clear timeout if exists
+    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+    
+    // Set new timeout for geocoding
+    searchTimeoutRef.current = setTimeout(() => {
+      handleLocationSearch(newLocation);
+    }, 800);
   };
 
   const filteredResources = resources.filter(r => {
@@ -337,8 +352,7 @@ export default function Resources() {
               <div className="flex gap-2">
                 <Input
                   value={formData.location}
-                  onChange={(e) => setFormData({...formData, location: e.target.value})}
-                  onBlur={() => handleLocationSearch(formData.location)}
+                  onChange={handleLocationChange}
                   disabled={searchingLocation}
                   className="bg-slate-800 border-slate-700 flex-1"
                   placeholder="e.g. Copenhagen, Aarhus, Hamburg..."
