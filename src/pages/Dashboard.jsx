@@ -1,26 +1,30 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
-  Truck, Fuel, Route, AlertTriangle, 
-  Globe
+  Globe, Activity, Satellite, Radio, BarChart3, Settings,
+  Maximize2, PanelRightOpen, PanelRightClose
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
-import StatCard from "@/components/dashboard/StatCard";
+import LiveTrackingMap from "@/components/tracking/LiveTrackingMap";
+import VehicleDetailPanel from "@/components/tracking/VehicleDetailPanel";
+import FleetAnalytics from "@/components/tracking/FleetAnalytics";
 import AlertPanel from "@/components/dashboard/AlertPanel";
-import VehicleList from "@/components/dashboard/VehicleList";
-import FleetMap from "@/components/dashboard/FleetMap";
-import AIInsights from "@/components/dashboard/AIInsights";
-import PerformanceChart from "@/components/dashboard/PerformanceChart";
+import { useVehicleSimulation } from "@/hooks/useVehicleSimulation";
 
 export default function Dashboard() {
   const [selectedVehicle, setSelectedVehicle] = useState(null);
+  const [showDetailPanel, setShowDetailPanel] = useState(true);
+  const [activeTab, setActiveTab] = useState("tracking");
   const queryClient = useQueryClient();
 
-  const { data: vehicles = [] } = useQuery({
+  const { data: rawVehicles = [] } = useQuery({
     queryKey: ['vehicles'],
     queryFn: () => base44.entities.Vehicle.list(),
+    refetchInterval: 30000, // Refetch every 30s for any external updates
   });
 
   const { data: routes = [] } = useQuery({
@@ -33,17 +37,36 @@ export default function Dashboard() {
     queryFn: () => base44.entities.Alert.list('-created_date'),
   });
 
+  // Use simulation hook for live movement
+  const { vehicles, vehicleTrails } = useVehicleSimulation(rawVehicles, 2000);
+
   const resolveAlertMutation = useMutation({
     mutationFn: (alertId) => base44.entities.Alert.update(alertId, { is_resolved: true }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['alerts'] }),
   });
 
-  // Calculate stats
+  // Auto-select first active vehicle
+  useEffect(() => {
+    if (!selectedVehicle && vehicles.length > 0) {
+      const activeVehicle = vehicles.find(v => v.status === 'active');
+      if (activeVehicle) setSelectedVehicle(activeVehicle);
+    }
+  }, [vehicles, selectedVehicle]);
+
+  // Update selected vehicle with latest data
+  useEffect(() => {
+    if (selectedVehicle) {
+      const updated = vehicles.find(v => v.id === selectedVehicle.id);
+      if (updated && (
+        updated.latitude !== selectedVehicle.latitude ||
+        updated.longitude !== selectedVehicle.longitude
+      )) {
+        setSelectedVehicle(updated);
+      }
+    }
+  }, [vehicles, selectedVehicle]);
+
   const activeVehicles = vehicles.filter(v => v.status === 'active').length;
-  const avgFuel = vehicles.length > 0 
-    ? Math.round(vehicles.reduce((sum, v) => sum + (v.fuel_level || 0), 0) / vehicles.length)
-    : 0;
-  const activeRoutes = routes.filter(r => r.status === 'active').length;
   const unresolvedAlerts = alerts.filter(a => !a.is_resolved).length;
 
   return (
@@ -52,87 +75,105 @@ export default function Dashboard() {
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl" />
         <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-violet-500/10 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-blue-500/5 rounded-full blur-3xl" />
       </div>
 
-      <div className="relative z-10 p-6 lg:p-8">
+      <div className="relative z-10 p-4 lg:p-6">
         {/* Header */}
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
+          className="mb-6"
         >
-          <div className="flex items-center gap-4 mb-2">
-            <div className="p-3 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-violet-500/20 border border-cyan-500/30">
-              <Globe className="w-8 h-8 text-cyan-400" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="p-3 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-violet-500/20 border border-cyan-500/30">
+                <Globe className="w-8 h-8 text-cyan-400" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-white tracking-tight">NexusVectis</h1>
+                <div className="flex items-center gap-3 mt-1">
+                  <div className="flex items-center gap-1">
+                    <Satellite className="w-4 h-4 text-cyan-400" />
+                    <span className="text-sm text-slate-400">Live Fleet Control</span>
+                  </div>
+                  <div className="h-4 w-px bg-slate-700" />
+                  <div className="flex items-center gap-1">
+                    <Radio className="w-3 h-3 text-emerald-400 animate-pulse" />
+                    <span className="text-sm text-emerald-400">{activeVehicles} units transmitting</span>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div>
-              <h1 className="text-3xl font-bold text-white tracking-tight">NexusVectis</h1>
-              <p className="text-slate-400">AI-Powered Logistics Platform • Real-time Overview</p>
+
+            <div className="flex items-center gap-3">
+              <Tabs value={activeTab} onValueChange={setActiveTab}>
+                <TabsList className="bg-slate-800/50 border border-slate-700/50">
+                  <TabsTrigger value="tracking" className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400">
+                    <Satellite className="w-4 h-4 mr-2" />
+                    Live Tracking
+                  </TabsTrigger>
+                  <TabsTrigger value="analytics" className="data-[state=active]:bg-violet-500/20 data-[state=active]:text-violet-400">
+                    <BarChart3 className="w-4 h-4 mr-2" />
+                    Analytics
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+
+              <Button
+                variant="outline"
+                size="sm"
+                className="bg-slate-800/50 border-slate-700/50 text-white"
+                onClick={() => setShowDetailPanel(!showDetailPanel)}
+              >
+                {showDetailPanel ? <PanelRightClose className="w-4 h-4" /> : <PanelRightOpen className="w-4 h-4" />}
+              </Button>
             </div>
           </div>
         </motion.div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <StatCard
-            title="Active Units"
-            value={activeVehicles}
-            subtitle={`of ${vehicles.length} total`}
-            icon={Truck}
-            color="cyan"
-            trend="+12% this week"
-            trendUp={true}
-          />
-          <StatCard
-            title="Active Routes"
-            value={activeRoutes}
-            subtitle={`${routes.length} total planned`}
-            icon={Route}
-            color="emerald"
-          />
-          <StatCard
-            title="Avg. Fuel Level"
-            value={`${avgFuel}%`}
-            subtitle="Across the fleet"
-            icon={Fuel}
-            color={avgFuel < 30 ? 'rose' : avgFuel < 50 ? 'amber' : 'blue'}
-          />
-          <StatCard
-            title="Active Alerts"
-            value={unresolvedAlerts}
-            subtitle="Requires attention"
-            icon={AlertTriangle}
-            color={unresolvedAlerts > 5 ? 'rose' : unresolvedAlerts > 2 ? 'amber' : 'emerald'}
-          />
-        </div>
+        {/* Main Content */}
+        {activeTab === "tracking" ? (
+          <div className="flex gap-6">
+            {/* Map Section */}
+            <div className={`flex-1 transition-all ${showDetailPanel ? '' : ''}`}>
+              <LiveTrackingMap 
+                vehicles={vehicles}
+                selectedVehicle={selectedVehicle}
+                onSelectVehicle={(v) => {
+                  setSelectedVehicle(v);
+                  setShowDetailPanel(true);
+                }}
+                vehicleTrails={vehicleTrails}
+              />
+            </div>
 
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-          {/* Left Column - Map and Chart */}
-          <div className="xl:col-span-2 space-y-6">
-            <FleetMap 
-              vehicles={vehicles}
-              selectedVehicle={selectedVehicle}
-              onSelectVehicle={setSelectedVehicle}
-            />
-            <PerformanceChart />
+            {/* Side Panels */}
+            <AnimatePresence>
+              {showDetailPanel && (
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  className="w-96 space-y-6 flex-shrink-0"
+                >
+                  {selectedVehicle && (
+                    <VehicleDetailPanel 
+                      vehicle={selectedVehicle}
+                      onClose={() => setSelectedVehicle(null)}
+                    />
+                  )}
+                  
+                  <AlertPanel 
+                    alerts={alerts}
+                    onResolve={(id) => resolveAlertMutation.mutate(id)}
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
-
-          {/* Right Column - Panels */}
-          <div className="space-y-6">
-            <VehicleList 
-              vehicles={vehicles}
-              selectedId={selectedVehicle?.id}
-              onSelectVehicle={setSelectedVehicle}
-            />
-            <AIInsights vehicles={vehicles} routes={routes} />
-            <AlertPanel 
-              alerts={alerts}
-              onResolve={(id) => resolveAlertMutation.mutate(id)}
-            />
-          </div>
-        </div>
+        ) : (
+          <FleetAnalytics vehicles={vehicles} routes={routes} />
+        )}
       </div>
     </div>
   );
