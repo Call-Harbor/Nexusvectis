@@ -13,7 +13,8 @@ import {
   Users,
   Shield,
   Settings,
-  FileText
+  FileText,
+  BarChart3
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -86,6 +87,20 @@ export default function Layout({ children, currentPageName }) {
           })}
 
           <div className="pt-4 mt-4 border-t border-slate-800/50 space-y-1">
+            <Link
+              to={createPageUrl("AdminDashboard")}
+              className={cn(
+                "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all",
+                currentPageName === "AdminDashboard"
+                  ? "bg-gradient-to-r from-red-500/20 to-orange-500/10 text-white border border-red-500/30" 
+                  : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+              )}
+            >
+              <BarChart3 className={cn("w-5 h-5", currentPageName === "AdminDashboard" && "text-red-400")} />
+              <span>Admin Board</span>
+              {currentPageName === "AdminDashboard" && <ChevronRight className="w-4 h-4 ml-auto text-red-400" />}
+            </Link>
+
             <Link
               to={createPageUrl("UserManagement")}
               className={cn(
