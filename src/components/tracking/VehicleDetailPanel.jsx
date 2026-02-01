@@ -236,12 +236,12 @@ export default function VehicleDetailPanel({ vehicle, onClose, telemetryHistory 
               <span className="text-xs text-slate-300">GPS Lock</span>
             </div>
             <div className="p-2 rounded-lg bg-slate-800/50 flex items-center gap-2">
-              <Wifi className="w-4 h-4 text-emerald-400" />
-              <span className="text-xs text-slate-300">Connected</span>
+              <Wifi className={`w-4 h-4 ${(vehicle.signal_strength || 0) > 50 ? 'text-emerald-400' : 'text-rose-400'}`} />
+              <span className="text-xs text-slate-300">{(vehicle.signal_strength || 0) > 50 ? 'Connected' : 'Weak Signal'}</span>
             </div>
             <div className="p-2 rounded-lg bg-slate-800/50 flex items-center gap-2">
               <Battery className="w-4 h-4 text-emerald-400" />
-              <span className="text-xs text-slate-300">Battery OK</span>
+              <span className="text-xs text-slate-300">{vehicle.fuel_level > 20 ? 'Battery OK' : 'Low Battery'}</span>
             </div>
           </div>
         </TabsContent>
