@@ -296,55 +296,6 @@ export default function LiveTrackingMap({
         </Button>
       </div>
 
-      {/* Signal Status Panel */}
-      {selectedVehicle && selectedVehicle.signal_strength > 0 && (
-        <div className="absolute top-20 right-4 z-[1000] w-64">
-          <div className="p-4 rounded-xl bg-slate-900/90 backdrop-blur-xl border border-slate-700/50">
-            <div className="flex items-center gap-2 mb-3">
-              <Activity className="w-4 h-4 text-cyan-400" />
-              <span className="text-sm font-medium text-white">Signal Status</span>
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-slate-400">GPS Signal</span>
-                <div className="flex items-center gap-1">
-                  {[1,2,3,4,5].map(i => (
-                    <div 
-                      key={i} 
-                      className={`w-1 rounded-full ${i <= Math.ceil(selectedVehicle.signal_strength / 20) ? 'bg-emerald-400' : 'bg-slate-600'}`}
-                      style={{ height: `${i * 3 + 4}px` }}
-                    />
-                  ))}
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-slate-400">Data Link</span>
-                <Badge variant="outline" className={`${selectedVehicle.signal_strength > 50 ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border-rose-500/30'} text-xs`}>
-                  {selectedVehicle.signal_strength > 50 ? (
-                    <>
-                      <Wifi className="w-3 h-3 mr-1" />
-                      Connected
-                    </>
-                  ) : (
-                    <>
-                      <WifiOff className="w-3 h-3 mr-1" />
-                      Weak Signal
-                    </>
-                  )}
-                </Badge>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-slate-400">Last Update</span>
-                <span className="text-xs text-white">2s ago</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-slate-400">Heading</span>
-                <span className="text-xs text-white">{selectedVehicle.heading || 0}°</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Bottom Status Bar */}
       <div className="absolute bottom-4 left-4 right-4 z-[1000]">
