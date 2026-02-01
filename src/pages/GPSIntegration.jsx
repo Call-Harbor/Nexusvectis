@@ -24,7 +24,7 @@ export default function GPSIntegration() {
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
     setCopied(true);
-    toast.success("Kopieret til udklipsholder!");
+    toast.success("Copied to clipboard!");
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -48,12 +48,12 @@ export default function GPSIntegration() {
       const result = await response.json();
       
       if (response.ok) {
-        toast.success("GPS data sendt successfully!");
+        toast.success("GPS data sent successfully!");
       } else {
-        toast.error(result.error || "Fejl ved afsendelse");
+        toast.error(result.error || "Error sending data");
       }
     } catch (error) {
-      toast.error("Kunne ikke sende data: " + error.message);
+      toast.error("Could not send data: " + error.message);
     }
   };
 
@@ -89,7 +89,7 @@ export default function GPSIntegration() {
             </div>
             <div>
               <h1 className="text-3xl font-bold text-white">GPS Integration</h1>
-              <p className="text-slate-400 mt-1">Tilslut dine GPS-trackere til NexusVectis</p>
+              <p className="text-slate-400 mt-1">Connect your GPS trackers to NexusVectis</p>
             </div>
           </div>
         </motion.div>
@@ -105,7 +105,7 @@ export default function GPSIntegration() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label className="text-slate-300">URL til GPS-tracker konfiguration:</Label>
+                <Label className="text-slate-300">GPS Tracker Configuration URL:</Label>
                 <div className="flex gap-2 mt-2">
                   <Input 
                     value={webhookUrl}
@@ -121,7 +121,7 @@ export default function GPSIntegration() {
                   </Button>
                 </div>
                 <p className="text-xs text-slate-500 mt-2">
-                  * Gå til din app dashboard → Code → Functions → gpsWebhook for den korrekte URL
+                  * Go to your app dashboard → Code → Functions → gpsWebhook for the correct URL
                 </p>
               </div>
             </CardContent>
@@ -133,7 +133,7 @@ export default function GPSIntegration() {
               <CardTitle className="text-white">JSON Payload Format</CardTitle>
             </CardHeader>
             <CardContent>
-              <Label className="text-slate-300 mb-2 block">Send GPS-data i dette format:</Label>
+              <Label className="text-slate-300 mb-2 block">Send GPS data in this format:</Label>
               <div className="relative">
                 <Textarea 
                   value={examplePayload}
@@ -150,13 +150,13 @@ export default function GPSIntegration() {
                 </Button>
               </div>
               <div className="mt-4 p-4 rounded-lg bg-violet-500/10 border border-violet-500/20">
-                <h4 className="text-sm font-medium text-violet-300 mb-2">Påkrævede felter:</h4>
+                <h4 className="text-sm font-medium text-violet-300 mb-2">Required fields:</h4>
                 <ul className="text-xs text-violet-400 space-y-1">
-                  <li>• <code>vehicle_id</code> - Skal matche Vehicle.name i databasen</li>
-                  <li>• <code>latitude</code> - GPS breddegrad (decimal format)</li>
-                  <li>• <code>longitude</code> - GPS længdegrad (decimal format)</li>
+                  <li>• <code>vehicle_id</code> - Must match Vehicle.name in database</li>
+                  <li>• <code>latitude</code> - GPS latitude (decimal format)</li>
+                  <li>• <code>longitude</code> - GPS longitude (decimal format)</li>
                 </ul>
-                <h4 className="text-sm font-medium text-violet-300 mt-3 mb-2">Valgfrie felter:</h4>
+                <h4 className="text-sm font-medium text-violet-300 mt-3 mb-2">Optional fields:</h4>
                 <ul className="text-xs text-violet-400 space-y-1">
                   <li>• <code>speed</code>, <code>heading</code>, <code>altitude</code>, <code>fuel_level</code>, <code>signal_strength</code></li>
                 </ul>
@@ -230,36 +230,36 @@ export default function GPSIntegration() {
           {/* Setup Instructions */}
           <Card className="bg-slate-800/50 border-slate-700/50">
             <CardHeader>
-              <CardTitle className="text-white">Opsætning Guide</CardTitle>
+              <CardTitle className="text-white">Setup Guide</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-3">
                 <div className="flex gap-3">
                   <div className="flex-shrink-0 w-6 h-6 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-sm font-bold">1</div>
                   <div>
-                    <h4 className="text-white font-medium">Kopiér Webhook URL</h4>
-                    <p className="text-sm text-slate-400">Tag URL'en fra din app dashboard under Functions</p>
+                    <h4 className="text-white font-medium">Copy Webhook URL</h4>
+                    <p className="text-sm text-slate-400">Get the URL from your app dashboard under Functions</p>
                   </div>
                 </div>
                 <div className="flex gap-3">
                   <div className="flex-shrink-0 w-6 h-6 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-sm font-bold">2</div>
                   <div>
-                    <h4 className="text-white font-medium">Konfigurer din GPS-tracker</h4>
-                    <p className="text-sm text-slate-400">Indstil tracker til at sende HTTP POST til webhook URL'en</p>
+                    <h4 className="text-white font-medium">Configure your GPS tracker</h4>
+                    <p className="text-sm text-slate-400">Set tracker to send HTTP POST to the webhook URL</p>
                   </div>
                 </div>
                 <div className="flex gap-3">
                   <div className="flex-shrink-0 w-6 h-6 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-sm font-bold">3</div>
                   <div>
                     <h4 className="text-white font-medium">Map vehicle_id</h4>
-                    <p className="text-sm text-slate-400">Sørg for at vehicle_id matcher navnet på køretøjet i Fleet</p>
+                    <p className="text-sm text-slate-400">Ensure vehicle_id matches the vehicle name in Fleet</p>
                   </div>
                 </div>
                 <div className="flex gap-3">
                   <div className="flex-shrink-0 w-6 h-6 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-sm font-bold">4</div>
                   <div>
-                    <h4 className="text-white font-medium">Test forbindelsen</h4>
-                    <p className="text-sm text-slate-400">Brug test-værktøjet ovenfor eller send live data fra trackeren</p>
+                    <h4 className="text-white font-medium">Test connection</h4>
+                    <p className="text-sm text-slate-400">Use the test tool above or send live data from the tracker</p>
                   </div>
                 </div>
               </div>
