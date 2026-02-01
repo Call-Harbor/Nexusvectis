@@ -32,7 +32,7 @@ export default function Fleet() {
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [formData, setFormData] = useState({
     name: "TRUCK-001", type: "truck", status: "active",
-    fuel_level: 100, speed: 0, latitude: 55.6761, longitude: 12.5683,
+    speed: 0, latitude: 55.6761, longitude: 12.5683,
     signal_type: "GPS", signal_strength: 95, callsign: "", mmsi: "", icao: "", driver: "", resource_id: ""
   });
 
@@ -132,7 +132,7 @@ export default function Fleet() {
     const nextNumber = vehicles.filter(v => v.type === 'truck').length + 1;
     setFormData({
       name: `TRUCK-${String(nextNumber).padStart(3, '0')}`, type: "truck", status: "active",
-      fuel_level: 100, speed: 0, latitude: 55.6761, longitude: 12.5683,
+      speed: 0, latitude: 55.6761, longitude: 12.5683,
       signal_type: "GPS", signal_strength: 95, callsign: "", mmsi: "", icao: "", driver: "", resource_id: ""
     });
   };
@@ -443,18 +443,6 @@ export default function Fleet() {
                 />
               </div>
             )}
-
-
-
-            <div>
-              <Label>Fuel %</Label>
-              <Input
-                type="number"
-                value={formData.fuel_level}
-                onChange={(e) => setFormData({...formData, fuel_level: parseInt(e.target.value) || 0})}
-                className="bg-slate-800 border-slate-700"
-              />
-            </div>
             <Button 
               className="w-full bg-gradient-to-r from-cyan-500 to-violet-500 text-black font-semibold"
               onClick={() => createMutation.mutate(formData)}
