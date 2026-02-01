@@ -13,6 +13,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import AIInsightWidget from "@/components/ai/AIInsightWidget";
+import AIAssistantBadge from "@/components/ai/AIAssistantBadge";
 
 const statusColors = {
   planned: "bg-slate-500/20 text-slate-400 border-slate-500/30",
@@ -104,13 +106,15 @@ export default function Routes() {
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-violet-500/10 rounded-full blur-3xl" />
       </div>
 
+      <AIAssistantBadge />
+
       <div className="relative z-10">
-        {/* Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-white">Route Management</h1>
-            <p className="text-slate-400 mt-1">{routes.length} routes registered</p>
-          </div>
+         {/* Header */}
+         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-8">
+           <div>
+             <h1 className="text-3xl font-bold text-white">Route Management</h1>
+             <p className="text-slate-400 mt-1">{routes.length} routes registered</p>
+           </div>
           <Button 
             onClick={() => setShowAddDialog(true)}
             className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-black font-semibold"
@@ -118,6 +122,11 @@ export default function Routes() {
             <Plus className="w-4 h-4 mr-2" />
             Create Route
           </Button>
+        </div>
+
+        {/* AI Route Insights */}
+        <div className="mb-6">
+          <AIInsightWidget entity_type="routes" entity_id="all" />
         </div>
 
         {/* Stats */}
