@@ -90,45 +90,36 @@ export default function Resources() {
     });
   };
 
-  const handleLocationSearch = (e) => {
-    const locationText = e.target.value;
-    setFormData({...formData, location: locationText});
-    
-    if (searchTimeoutRef.current) {
-      clearTimeout(searchTimeoutRef.current);
-    }
-    
+  const handleLocationSearch = async (locationText) => {
     if (locationText.length < 2) return;
     
     setSearchingLocation(true);
-    searchTimeoutRef.current = setTimeout(async () => {
-      try {
-        const result = await base44.integrations.Core.InvokeLLM({
-          prompt: `Get the latitude and longitude coordinates for the city/location: "${locationText}". Return ONLY valid JSON with this exact format: {"latitude": number, "longitude": number}. Use accurate GPS coordinates.`,
-          add_context_from_internet: true,
-          response_json_schema: {
-            type: "object",
-            properties: {
-              latitude: { type: "number" },
-              longitude: { type: "number" }
-            },
-            required: ["latitude", "longitude"]
-          }
-        });
-        
-        if (result.latitude && result.longitude) {
-          setFormData(prev => ({
-            ...prev,
-            latitude: result.latitude,
-            longitude: result.longitude
-          }));
+    try {
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `Get the latitude and longitude coordinates for the city/location: "${locationText}". Return ONLY valid JSON with this exact format: {"latitude": number, "longitude": number}. Use accurate GPS coordinates.`,
+        add_context_from_internet: true,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            latitude: { type: "number" },
+            longitude: { type: "number" }
+          },
+          required: ["latitude", "longitude"]
         }
-      } catch (error) {
-        console.error('Location search error:', error);
-      } finally {
-        setSearchingLocation(false);
+      });
+      
+      if (result.latitude && result.longitude) {
+        setFormData(prev => ({
+          ...prev,
+          latitude: result.latitude,
+          longitude: result.longitude
+        }));
       }
-    }, 800);
+    } catch (error) {
+      console.error('Location search error:', error);
+    } finally {
+      setSearchingLocation(false);
+    }
   };
 
   const filteredResources = resources.filter(r => {
@@ -346,18 +337,21 @@ export default function Resources() {
             </div>
             <div>
               <Label>Location (Search by city name)</Label>
-              <Input
-                value={formData.location}
-                onChange={handleLocationSearch}
-                disabled={searchingLocation}
-                className="bg-slate-800 border-slate-700"
-                placeholder="e.g. Copenhagen, Aarhus, Hamburg..."
-              />
+              <div className="flex gap-2">
+                <Input
+                  value={formData.location}
+                  onChange={(e) => setFormData({...formData, location: e.target.value})}
+                  onBlur={() => handleLocationSearch(formData.location)}
+                  disabled={searchingLocation}
+                  className="bg-slate-800 border-slate-700 flex-1"
+                  placeholder="e.g. Copenhagen, Aarhus, Hamburg..."
+                />
+              </div>
               {searchingLocation && <p className="text-xs text-slate-400 mt-1">Searching coordinates...</p>}
               {formData.latitude !== 55.6761 || formData.longitude !== 12.5683 ? (
                 <p className="text-xs text-emerald-400 mt-1">📍 Coordinates: {formData.latitude.toFixed(4)}, {formData.longitude.toFixed(4)}</p>
               ) : (
-                <p className="text-xs text-slate-500 mt-1">Enter location to auto-set coordinates</p>
+                <p className="text-xs text-slate-500 mt-1">Location coordinates will be set when you finish typing</p>
               )}
             </div>
             <div>
