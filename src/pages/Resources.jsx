@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
@@ -43,7 +43,7 @@ export default function Resources() {
     capacity: 1000, latitude: 55.6761, longitude: 12.5683
   });
   const [searchingLocation, setSearchingLocation] = useState(false);
-  const searchTimeoutRef = React.useRef(null);
+  const searchTimeoutRef = useRef(null);
 
   const queryClient = useQueryClient();
 
