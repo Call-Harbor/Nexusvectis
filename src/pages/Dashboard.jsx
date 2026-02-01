@@ -154,37 +154,20 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("tracking");
   const queryClient = useQueryClient();
 
-  const { data: user } = useQuery({
-    queryKey: ['user'],
-    queryFn: () => base44.auth.me(),
-  });
-
   const { data: rawVehicles = [] } = useQuery({
     queryKey: ['vehicles'],
-    queryFn: async () => {
-      if (!user) return [];
-      return base44.entities.Vehicle.filter({ created_by: user.email });
-    },
-    enabled: !!user,
+    queryFn: () => base44.entities.Vehicle.list(),
     refetchInterval: 30000,
   });
 
   const { data: routes = [] } = useQuery({
     queryKey: ['routes'],
-    queryFn: async () => {
-      if (!user) return [];
-      return base44.entities.Route.filter({ created_by: user.email });
-    },
-    enabled: !!user,
+    queryFn: () => base44.entities.Route.list(),
   });
 
   const { data: alerts = [] } = useQuery({
     queryKey: ['alerts'],
-    queryFn: async () => {
-      if (!user) return [];
-      return base44.entities.Alert.filter({ created_by: user.email }, '-created_date');
-    },
-    enabled: !!user,
+    queryFn: () => base44.entities.Alert.list('-created_date'),
   });
 
   const { vehicles, vehicleTrails } = useVehicleSimulation(rawVehicles, 2000);

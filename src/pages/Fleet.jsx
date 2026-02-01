@@ -38,18 +38,9 @@ export default function Fleet() {
 
   const queryClient = useQueryClient();
 
-  const { data: user } = useQuery({
-    queryKey: ['user'],
-    queryFn: () => base44.auth.me(),
-  });
-
   const { data: vehicles = [], isLoading } = useQuery({
     queryKey: ['vehicles'],
-    queryFn: async () => {
-      if (!user) return [];
-      return base44.entities.Vehicle.filter({ created_by: user.email });
-    },
-    enabled: !!user,
+    queryFn: () => base44.entities.Vehicle.list(),
   });
 
   const createMutation = useMutation({

@@ -42,18 +42,9 @@ export default function Routes() {
 
   const queryClient = useQueryClient();
 
-  const { data: user } = useQuery({
-    queryKey: ['user'],
-    queryFn: () => base44.auth.me(),
-  });
-
   const { data: routes = [] } = useQuery({
     queryKey: ['routes'],
-    queryFn: async () => {
-      if (!user) return [];
-      return base44.entities.Route.filter({ created_by: user.email });
-    },
-    enabled: !!user,
+    queryFn: () => base44.entities.Route.list(),
   });
 
   const createMutation = useMutation({
