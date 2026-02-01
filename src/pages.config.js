@@ -56,6 +56,7 @@ import Resources from './pages/Resources';
 import Routes from './pages/Routes';
 import Security from './pages/Security';
 import UserManagement from './pages/UserManagement';
+import OrganizationSetup from './pages/OrganizationSetup';
 import __Layout from './Layout.jsx';
 
 
@@ -69,6 +70,7 @@ export const PAGES = {
     "Routes": Routes,
     "Security": Security,
     "UserManagement": UserManagement,
+    "OrganizationSetup": OrganizationSetup,
 }
 
 export const pagesConfig = {
