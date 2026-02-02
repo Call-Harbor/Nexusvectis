@@ -5,7 +5,7 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
-export default function SmartInsights({ vehicle, vehicles = [] }) {
+export default function SmartInsights({ vehicle, vehicles = [], aiMode = false }) {
   if (!vehicle) return null;
 
   // Calculate insights

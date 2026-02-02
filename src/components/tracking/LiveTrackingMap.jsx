@@ -195,7 +195,8 @@ export default function LiveTrackingMap({
   vehicleTrails = {},
   signalStatus = {},
   externalShips = [],
-  externalAircraft = []
+  externalAircraft = [],
+  aiMode = false
 }) {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [followMode, setFollowMode] = useState(false);
@@ -203,11 +204,20 @@ export default function LiveTrackingMap({
   const [showSignalRange, setShowSignalRange] = useState(false);
   const [showExternalShips, setShowExternalShips] = useState(false);
   const [showExternalAircraft, setShowExternalAircraft] = useState(false);
-  const [aiMode, setAiMode] = useState(false);
   const [visibleTypes, setVisibleTypes] = useState({
     truck: true, ship: true, drone: true, train: true, aircraft: true
   });
   const [mapStyle, setMapStyle] = useState('dark');
+  
+  // Auto-enable features when AI Mode is on
+  useEffect(() => {
+    if (aiMode) {
+      setShowTrails(true);
+      setShowSignalRange(true);
+      setShowExternalShips(true);
+      setShowExternalAircraft(true);
+    }
+  }, [aiMode]);
   
   const validVehicles = vehicles.filter(v => 
     v?.latitude && v?.longitude && visibleTypes[v.type]
@@ -271,17 +281,18 @@ export default function LiveTrackingMap({
 
       {/* Right Controls */}
       <div className="absolute top-4 right-4 z-[1000] flex items-center gap-2">
-        <Button
-          size="sm"
-          variant="outline"
-          className={`bg-slate-900/90 border-slate-700/50 text-white hover:bg-slate-800 transition-all ${
-            aiMode ? 'bg-gradient-to-r from-violet-500/20 to-cyan-500/20 border-violet-500/50' : ''
-          }`}
-          onClick={() => setAiMode(!aiMode)}
-        >
-          <Zap className={`w-4 h-4 mr-2 ${aiMode ? 'text-violet-400' : ''}`} />
-          AI Mode
-        </Button>
+        {aiMode && (
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="px-3 py-2 rounded-lg bg-gradient-to-r from-violet-500/20 to-cyan-500/20 border border-violet-500/30 backdrop-blur-md"
+          >
+            <div className="flex items-center gap-2 text-xs text-white">
+              <div className="w-2 h-2 rounded-full bg-violet-400 animate-pulse" />
+              <span>AI Active</span>
+            </div>
+          </motion.div>
+        )}
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

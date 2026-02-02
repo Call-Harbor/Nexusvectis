@@ -119,21 +119,27 @@ export default function MapMonitor() {
           vehicleTrails={vehicleTrails}
           externalShips={aisData.traffic || []}
           externalAircraft={aircraftData.traffic || []}
+          aiMode={aiMode}
         />
 
         {/* Left Panels: Alerts & Insights */}
         <div className="absolute top-24 left-4 z-[999] space-y-3 pointer-events-auto max-w-sm">
-          {showAlerts && (
+          {(showAlerts || aiMode) && (
             <RealtimeAlerts
               vehicles={vehicles}
               onDismiss={(alertId) => {
                 setDismissedAlerts(prev => new Set([...prev, alertId]));
               }}
+              enhanced={aiMode}
             />
           )}
 
-          {showInsights && selectedVehicle && (
-            <SmartInsights vehicle={selectedVehicle} vehicles={vehicles} />
+          {(showInsights || aiMode) && selectedVehicle && (
+            <SmartInsights 
+              vehicle={selectedVehicle} 
+              vehicles={vehicles}
+              aiMode={aiMode}
+            />
           )}
         </div>
 
