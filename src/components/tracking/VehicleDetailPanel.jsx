@@ -241,9 +241,13 @@ export default function VehicleDetailPanel({ vehicle, onClose, telemetryHistory 
               <span className="text-xs text-slate-300">{vehicle.fuel_level > 20 ? 'Battery OK' : 'Low Battery'}</span>
             </div>
           </div>
-        </TabsContent>
+          </TabsContent>
 
-        <TabsContent value="route" className="mt-4 space-y-4">
+          <TabsContent value="route" className="mt-4 space-y-4">
+          <ETAPredictor vehicle_id={vehicle.id} />
+          </TabsContent>
+
+          <TabsContent value="old-route" className="mt-4 space-y-4">
           <div className="p-3 rounded-lg bg-slate-800/50">
             <div className="flex items-center gap-2 mb-3">
               <Navigation className="w-4 h-4 text-emerald-400" />

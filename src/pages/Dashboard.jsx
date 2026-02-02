@@ -18,6 +18,7 @@ import AlertPanel from "@/components/dashboard/AlertPanel";
 import AIInsightWidget from "@/components/ai/AIInsightWidget";
 import AIQuickActions from "@/components/ai/AIQuickActions";
 import AIAssistantBadge from "@/components/ai/AIAssistantBadge";
+import InventoryForecast from "@/components/ai/InventoryForecast";
 
 export default function Dashboard() {
   const [selectedVehicle, setSelectedVehicle] = useState(null);
@@ -255,7 +256,10 @@ export default function Dashboard() {
           </div>
         ) : (
           <div className="space-y-4 sm:space-y-6">
-            <AIInsightWidget entity_type="fleet" entity_id="all" />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+              <AIInsightWidget entity_type="fleet" entity_id="all" />
+              <InventoryForecast forecast_days={30} />
+            </div>
             <FleetAnalytics vehicles={vehicles} routes={routes} />
           </div>
         )}
