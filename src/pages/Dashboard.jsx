@@ -107,7 +107,7 @@ export default function Dashboard() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -4, boxShadow: '0 20px 40px rgba(0,0,0,0.3)' }}
-      className={`p-4 rounded-2xl backdrop-blur-xl border transition-all ${
+      className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl backdrop-blur-xl border transition-all ${
         color === 'cyan' 
           ? 'bg-gradient-to-br from-cyan-500/10 to-cyan-500/5 border-cyan-500/20' 
           : color === 'violet'
@@ -117,24 +117,24 @@ export default function Dashboard() {
           : 'bg-gradient-to-br from-amber-500/10 to-amber-500/5 border-amber-500/20'
       }`}
     >
-      <div className="flex items-start justify-between mb-3">
-        <div className={`p-2.5 rounded-xl ${
+      <div className="flex items-start justify-between mb-2 sm:mb-3">
+        <div className={`p-1.5 sm:p-2.5 rounded-lg sm:rounded-xl ${
           color === 'cyan' ? 'bg-cyan-500/20' 
           : color === 'violet' ? 'bg-violet-500/20'
           : color === 'emerald' ? 'bg-emerald-500/20'
           : 'bg-amber-500/20'
         }`}>
-          <Icon className={`w-5 h-5 ${
+          <Icon className={`w-4 h-4 sm:w-5 sm:h-5 ${
             color === 'cyan' ? 'text-cyan-400' 
             : color === 'violet' ? 'text-violet-400'
             : color === 'emerald' ? 'text-emerald-400'
             : 'text-amber-400'
           }`} />
         </div>
-        {trend && <TrendingUp className="w-4 h-4 text-emerald-400" />}
+        {trend && <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 text-emerald-400" />}
       </div>
-      <p className="text-slate-400 text-sm font-medium">{label}</p>
-      <p className="text-2xl font-bold text-white mt-1">{value}</p>
+      <p className="text-slate-400 text-xs sm:text-sm font-medium">{label}</p>
+      <p className="text-xl sm:text-2xl font-bold text-white mt-0.5 sm:mt-1">{value}</p>
     </motion.div>
   );
 
@@ -147,31 +147,33 @@ export default function Dashboard() {
 
       <AIAssistantBadge />
 
-      <div className="relative z-10 p-4 lg:p-6">
-        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-          <div className="space-y-6">
+      <div className="relative z-10 p-3 sm:p-4 lg:p-6">
+        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-6 lg:mb-8">
+          <div className="space-y-4 lg:space-y-6">
             {/* Header */}
-            <div className="flex items-center justify-between flex-wrap gap-4">
-              <div className="flex items-center gap-4">
-                <div className="p-3 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-violet-500/20 border border-cyan-500/30">
-                  <Globe className="w-8 h-8 text-cyan-400" />
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-gradient-to-br from-cyan-500/20 to-violet-500/20 border border-cyan-500/30">
+                  <Globe className="w-6 h-6 sm:w-8 sm:h-8 text-cyan-400" />
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold text-white tracking-tight">NexusVectis</h1>
-                  <p className="text-slate-400 text-sm mt-1">Advanced Fleet Intelligence Platform</p>
+                  <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">NexusVectis</h1>
+                  <p className="text-slate-400 text-xs sm:text-sm mt-0.5 sm:mt-1">Advanced Fleet Intelligence Platform</p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-3">
-                <Tabs value={activeTab} onValueChange={setActiveTab}>
-                  <TabsList className="bg-slate-800/50 border border-slate-700/50">
-                    <TabsTrigger value="tracking" className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400">
-                      <Satellite className="w-4 h-4 mr-2" />
-                      Live Tracking
+              <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 sm:flex-initial">
+                  <TabsList className="bg-slate-800/50 border border-slate-700/50 w-full">
+                    <TabsTrigger value="tracking" className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400 text-xs sm:text-sm flex-1 sm:flex-initial">
+                      <Satellite className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+                      <span className="hidden sm:inline">Live Tracking</span>
+                      <span className="sm:hidden">Tracking</span>
                     </TabsTrigger>
-                    <TabsTrigger value="analytics" className="data-[state=active]:bg-violet-500/20 data-[state=active]:text-violet-400">
-                      <BarChart3 className="w-4 h-4 mr-2" />
-                      Analytics
+                    <TabsTrigger value="analytics" className="data-[state=active]:bg-violet-500/20 data-[state=active]:text-violet-400 text-xs sm:text-sm flex-1 sm:flex-initial">
+                      <BarChart3 className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+                      <span className="hidden sm:inline">Analytics</span>
+                      <span className="sm:hidden">Stats</span>
                     </TabsTrigger>
                   </TabsList>
                 </Tabs>
@@ -179,7 +181,7 @@ export default function Dashboard() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="bg-slate-800/50 border-slate-700/50 text-white hover:bg-slate-700/50"
+                  className="bg-slate-800/50 border-slate-700/50 text-white hover:bg-slate-700/50 hidden lg:flex"
                   onClick={() => setShowDetailPanel(!showDetailPanel)}
                 >
                   {showDetailPanel ? <PanelRightClose className="w-4 h-4" /> : <PanelRightOpen className="w-4 h-4" />}
@@ -188,7 +190,7 @@ export default function Dashboard() {
             </div>
 
             {/* Live Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3 lg:gap-4">
               <StatCard icon={Activity} label="Active Units" value={activeVehicles} trend color="cyan" />
               <StatCard icon={Radio} label="Idle Units" value={idleVehicles} color="amber" />
               <StatCard icon={AlertTriangle} label="Offline" value={offlineVehicles} color="violet" />
@@ -199,14 +201,16 @@ export default function Dashboard() {
         </motion.div>
 
         {activeTab === "tracking" ? (
-          <div className="space-y-6">
-            <AIQuickActions 
-              onOptimize={() => {}} 
-              onPredict={() => {}} 
-              onAnalyze={() => {}}
-            />
-            <div className="flex gap-6">
-              <div className="flex-1">
+          <div className="space-y-4 sm:space-y-6">
+            <div className="hidden md:block">
+              <AIQuickActions 
+                onOptimize={() => {}} 
+                onPredict={() => {}} 
+                onAnalyze={() => {}}
+              />
+            </div>
+            <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
+              <div className="flex-1 min-h-[400px] sm:min-h-[500px] lg:min-h-[600px]">
                 <LiveTrackingMap 
                   vehicles={vehicles}
                   resources={resources}
@@ -225,7 +229,7 @@ export default function Dashboard() {
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: 20 }}
-                    className="w-96 space-y-6 flex-shrink-0 hidden xl:block"
+                    className="w-full lg:w-80 xl:w-96 space-y-4 sm:space-y-6 flex-shrink-0 hidden lg:block"
                   >
                     {selectedVehicle && (
                       <>
@@ -250,7 +254,7 @@ export default function Dashboard() {
             </div>
           </div>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             <AIInsightWidget entity_type="fleet" entity_id="all" />
             <FleetAnalytics vehicles={vehicles} routes={routes} />
           </div>
