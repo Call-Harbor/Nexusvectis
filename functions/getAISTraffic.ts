@@ -9,59 +9,57 @@ Deno.serve(async (req) => {
             return Response.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
+        const AISHUB_USERNAME = Deno.env.get("AISHUB_USERNAME");
+        
+        if (!AISHUB_USERNAME) {
+            return Response.json({ 
+                error: 'AISHub credentials not configured',
+                traffic: [] 
+            });
+        }
+
         let aisTraffic = [];
 
-        // Try Multiple AIS data sources
         try {
-            // Try MarineTraffic Free API
-            const response = await fetch('https://services.marinetraffic.com/api/v8/json/position_reports?timespan=10&mmsi=all', {
-                signal: AbortSignal.timeout(8000)
+            // AISHub API - free but requires registration at aishub.net
+            // Fetch vessels in a specific area (Baltic Sea region as example)
+            const latMin = 54.0;
+            const latMax = 58.0;
+            const lonMin = 10.0;
+            const lonMax = 15.0;
+            
+            const url = `http://data.aishub.net/ws.php?username=${AISHUB_USERNAME}&format=1&output=json&compress=0&latmin=${latMin}&latmax=${latMax}&lonmin=${lonMin}&lonmax=${lonMax}`;
+            
+            const response = await fetch(url, {
+                signal: AbortSignal.timeout(10000)
             });
             
             if (response.ok) {
                 const data = await response.json();
-                aisTraffic = Object.values(data || {}).map(vessel => ({
-                    id: `ais_${vessel.MMSI}`,
-                    mmsi: vessel.MMSI,
-                    name: vessel.SHIPNAME || 'Unknown',
-                    type: 'ship',
-                    latitude: parseFloat(vessel.LAT),
-                    longitude: parseFloat(vessel.LON),
-                    speed: parseFloat(vessel.SOG) || 0,
-                    heading: parseFloat(vessel.COG) || 0,
-                    destination: vessel.DESTINATION || 'Unknown',
-                    lastUpdate: new Date().toISOString(),
-                })).filter(v => v.latitude && v.longitude && v.latitude >= -90 && v.latitude <= 90 && v.longitude >= -180 && v.longitude <= 180).slice(0, 100);
+                
+                if (data[0] && data[0].ERROR === false && data[1]) {
+                    aisTraffic = data[1].map(vessel => ({
+                        id: `ais_${vessel.MMSI}`,
+                        mmsi: vessel.MMSI,
+                        name: vessel.NAME || 'Unknown',
+                        type: 'ship',
+                        latitude: parseFloat(vessel.LATITUDE),
+                        longitude: parseFloat(vessel.LONGITUDE),
+                        speed: parseFloat(vessel.SOG) || 0,
+                        heading: parseFloat(vessel.COG) || 0,
+                        destination: vessel.DESTINATION || 'Unknown',
+                        lastUpdate: new Date(vessel.TIME).toISOString(),
+                    })).filter(v => 
+                        v.latitude && v.longitude && 
+                        v.latitude >= -90 && v.latitude <= 90 && 
+                        v.longitude >= -180 && v.longitude <= 180
+                    ).slice(0, 100);
+                }
+            } else {
+                console.error('AISHub API error:', response.status);
             }
         } catch (e) {
-            console.log('MarineTraffic API failed, trying OpenSeaMap...');
-        }
-
-        // Fallback to OpenSeaMap
-        if (aisTraffic.length === 0) {
-            try {
-                const response = await fetch('https://tiles.openseamap.org/vessels/latest.json', {
-                    signal: AbortSignal.timeout(8000)
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    aisTraffic = (data.features || []).map(feature => ({
-                        id: `ais_${feature.properties.mmsi}`,
-                        mmsi: feature.properties.mmsi,
-                        name: feature.properties.name || 'Unknown',
-                        type: 'ship',
-                        latitude: feature.geometry.coordinates[1],
-                        longitude: feature.geometry.coordinates[0],
-                        speed: feature.properties.sog || 0,
-                        heading: feature.properties.cog || 0,
-                        destination: feature.properties.destination || 'Unknown',
-                        lastUpdate: new Date().toISOString(),
-                    })).filter(v => v.latitude >= -90 && v.latitude <= 90 && v.longitude >= -180 && v.longitude <= 180).slice(0, 100);
-                }
-            } catch (e) {
-                console.log('OpenSeaMap also failed');
-            }
+            console.error('AISHub API failed:', e.message);
         }
 
         return Response.json({ traffic: aisTraffic });
