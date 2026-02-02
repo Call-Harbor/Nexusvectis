@@ -64,18 +64,11 @@ export default function Layout({ children, currentPageName }) {
         </div>
 
         <nav className="px-3 space-y-1">
-                  {navItems.map((item) => {
-                    const isActive = currentPageName === item.page;
-                    const Icon = item.icon;
-                    const isMapMonitor = item.page === "MapMonitor";
-                    const itemLabels = {
-                      'AdminDashboard': 'Admin Board',
-                      'UserManagement': 'Users',
-                      'Security': 'Security',
-                      'Invoices': 'Invoices',
-                      'Settings': 'Settings'
-                    };
-            
+          {navItems.map((item) => {
+            const isActive = currentPageName === item.page;
+            const Icon = item.icon;
+            const isMapMonitor = item.page === "MapMonitor";
+    
             return isMapMonitor ? (
               <a
                 key={item.name}
@@ -108,77 +101,83 @@ export default function Layout({ children, currentPageName }) {
             );
           })}
 
-          <div className="pt-4 mt-4 border-t border-slate-800/50 space-y-1">
-            <Link
-              to={createPageUrl("AdminDashboard")}
-              className={cn(
-                "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all",
-                currentPageName === "AdminDashboard"
-                  ? "bg-gradient-to-r from-red-500/20 to-orange-500/10 text-white border border-red-500/30" 
-                  : "text-slate-400 hover:text-white hover:bg-slate-800/50"
-              )}
-            >
-              <BarChart3 className={cn("w-5 h-5", currentPageName === "AdminDashboard" && "text-red-400")} />
-              <span>Admin Board</span>
-              {currentPageName === "AdminDashboard" && <ChevronRight className="w-4 h-4 ml-auto text-red-400" />}
-            </Link>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                className={cn(
+                  "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all w-full",
+                  fleetMenuItems.some(item => item.page === currentPageName)
+                    ? "bg-gradient-to-r from-cyan-500/20 to-violet-500/10 text-white border border-cyan-500/30"
+                    : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+                )}
+              >
+                <Truck className={cn("w-5 h-5", fleetMenuItems.some(item => item.page === currentPageName) && "text-cyan-400")} />
+                <span>Fleet Management</span>
+                <ChevronDown className="w-4 h-4 ml-auto" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56 bg-slate-900 border-slate-800 text-white ml-3">
+              <DropdownMenuLabel>Fleet Management</DropdownMenuLabel>
+              <DropdownMenuSeparator className="bg-slate-800" />
+              {fleetMenuItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = currentPageName === item.page;
+                return (
+                  <DropdownMenuItem key={item.name} asChild>
+                    <Link
+                      to={createPageUrl(item.page)}
+                      className={cn(
+                        "flex items-center gap-3 cursor-pointer",
+                        isActive && "text-cyan-400"
+                      )}
+                    >
+                      <Icon className="w-4 h-4" />
+                      <span>{item.name}</span>
+                    </Link>
+                  </DropdownMenuItem>
+                );
+              })}
+            </DropdownMenuContent>
+          </DropdownMenu>
 
-            <Link
-              to={createPageUrl("UserManagement")}
-              className={cn(
-                "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all",
-                currentPageName === "UserManagement"
-                  ? "bg-gradient-to-r from-cyan-500/20 to-violet-500/10 text-white border border-cyan-500/30" 
-                  : "text-slate-400 hover:text-white hover:bg-slate-800/50"
-              )}
-            >
-              <Users className={cn("w-5 h-5", currentPageName === "UserManagement" && "text-cyan-400")} />
-              <span>Users</span>
-              {currentPageName === "UserManagement" && <ChevronRight className="w-4 h-4 ml-auto text-cyan-400" />}
-            </Link>
-
-            <Link
-              to={createPageUrl("Security")}
-              className={cn(
-                "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all",
-                currentPageName === "Security"
-                  ? "bg-gradient-to-r from-cyan-500/20 to-violet-500/10 text-white border border-cyan-500/30" 
-                  : "text-slate-400 hover:text-white hover:bg-slate-800/50"
-              )}
-            >
-              <Shield className={cn("w-5 h-5", currentPageName === "Security" && "text-cyan-400")} />
-              <span>Security</span>
-              {currentPageName === "Security" && <ChevronRight className="w-4 h-4 ml-auto text-cyan-400" />}
-            </Link>
-
-            <Link
-              to={createPageUrl("Invoices")}
-              className={cn(
-                "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all",
-                currentPageName === "Invoices"
-                  ? "bg-gradient-to-r from-cyan-500/20 to-violet-500/10 text-white border border-cyan-500/30" 
-                  : "text-slate-400 hover:text-white hover:bg-slate-800/50"
-              )}
-            >
-              <FileText className={cn("w-5 h-5", currentPageName === "Invoices" && "text-cyan-400")} />
-              <span>Invoices</span>
-              {currentPageName === "Invoices" && <ChevronRight className="w-4 h-4 ml-auto text-cyan-400" />}
-            </Link>
-
-            <Link
-              to={createPageUrl("Settings")}
-              className={cn(
-                "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all",
-                currentPageName === "Settings"
-                  ? "bg-gradient-to-r from-cyan-500/20 to-violet-500/10 text-white border border-cyan-500/30" 
-                  : "text-slate-400 hover:text-white hover:bg-slate-800/50"
-              )}
-            >
-              <Settings className={cn("w-5 h-5", currentPageName === "Settings" && "text-cyan-400")} />
-              <span>Settings</span>
-              {currentPageName === "Settings" && <ChevronRight className="w-4 h-4 ml-auto text-cyan-400" />}
-            </Link>
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                className={cn(
+                  "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all w-full",
+                  planningMenuItems.some(item => item.page === currentPageName)
+                    ? "bg-gradient-to-r from-cyan-500/20 to-violet-500/10 text-white border border-cyan-500/30"
+                    : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+                )}
+              >
+                <Route className={cn("w-5 h-5", planningMenuItems.some(item => item.page === currentPageName) && "text-cyan-400")} />
+                <span>Planning & Resources</span>
+                <ChevronDown className="w-4 h-4 ml-auto" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56 bg-slate-900 border-slate-800 text-white ml-3">
+              <DropdownMenuLabel>Planning & Resources</DropdownMenuLabel>
+              <DropdownMenuSeparator className="bg-slate-800" />
+              {planningMenuItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = currentPageName === item.page;
+                return (
+                  <DropdownMenuItem key={item.name} asChild>
+                    <Link
+                      to={createPageUrl(item.page)}
+                      className={cn(
+                        "flex items-center gap-3 cursor-pointer",
+                        isActive && "text-cyan-400"
+                      )}
+                    >
+                      <Icon className="w-4 h-4" />
+                      <span>{item.name}</span>
+                    </Link>
+                  </DropdownMenuItem>
+                );
+              })}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </nav>
 
         <div className="absolute bottom-0 left-0 right-0 p-4">
