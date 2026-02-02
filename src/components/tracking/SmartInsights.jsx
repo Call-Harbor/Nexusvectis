@@ -133,13 +133,20 @@ export default function SmartInsights({ vehicle, vehicles = [], aiMode = false }
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="w-96 rounded-2xl border border-slate-700/50 bg-slate-900/95 backdrop-blur-xl overflow-hidden"
+      className={`w-96 rounded-2xl border backdrop-blur-xl overflow-hidden ${
+        aiMode 
+          ? 'bg-gradient-to-br from-cyan-900/40 to-violet-900/40 border-cyan-500/30' 
+          : 'bg-slate-900/95 border-slate-700/50'
+      }`}
     >
       {/* Header */}
       <div className="p-4 border-b border-slate-700/50 bg-gradient-to-r from-slate-800/50 to-slate-900/50">
         <div className="flex items-center gap-2">
-          <Sparkles className="w-5 h-5 text-violet-400" />
-          <h3 className="font-semibold text-white">AI Insights</h3>
+          <Sparkles className={`w-5 h-5 ${aiMode ? 'text-cyan-400' : 'text-violet-400'}`} />
+          <h3 className="font-semibold text-white">{aiMode ? 'AI Insights' : 'Smart Insights'}</h3>
+          {aiMode && (
+            <span className="text-[10px] px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300">ENHANCED</span>
+          )}
           <span className="ml-auto text-xs text-slate-500">{vehicle.name}</span>
         </div>
       </div>

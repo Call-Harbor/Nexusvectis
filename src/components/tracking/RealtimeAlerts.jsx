@@ -5,7 +5,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export default function RealtimeAlerts({ vehicles = [], onDismiss = () => {} }) {
+export default function RealtimeAlerts({ vehicles = [], onDismiss = () => {}, enhanced = false }) {
   // Generate alerts from vehicles
   const generateAlerts = () => {
     const alerts = [];
@@ -85,14 +85,21 @@ export default function RealtimeAlerts({ vehicles = [], onDismiss = () => {} }) 
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="w-96 rounded-2xl border border-slate-700/50 bg-slate-900/95 backdrop-blur-xl overflow-hidden"
+      className={`w-96 rounded-2xl border backdrop-blur-xl overflow-hidden ${
+        enhanced 
+          ? 'bg-gradient-to-br from-violet-900/40 to-cyan-900/40 border-violet-500/30' 
+          : 'bg-slate-900/95 border-slate-700/50'
+      }`}
     >
       {/* Header */}
       <div className="p-4 border-b border-slate-700/50 bg-gradient-to-r from-slate-800/50 to-slate-900/50">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="w-5 h-5 text-amber-400" />
-            <h3 className="font-semibold text-white">Live Alerts</h3>
+            <AlertTriangle className={`w-5 h-5 ${enhanced ? 'text-violet-400' : 'text-amber-400'}`} />
+            <h3 className="font-semibold text-white">{enhanced ? 'AI Alerts' : 'Live Alerts'}</h3>
+            {enhanced && (
+              <span className="text-[10px] px-2 py-0.5 rounded bg-violet-500/20 text-violet-300">ENHANCED</span>
+            )}
           </div>
           <span className="text-xs text-slate-500">{alerts.length} active</span>
         </div>
