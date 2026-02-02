@@ -17,6 +17,7 @@ export default function MapMonitor() {
   const [showInsights, setShowInsights] = useState(true);
   const [showAlerts, setShowAlerts] = useState(true);
   const [dismissedAlerts, setDismissedAlerts] = useState(new Set());
+  const [aiMode, setAiMode] = useState(false);
 
   // Get current user
   useQuery({
@@ -102,7 +103,12 @@ export default function MapMonitor() {
 
   return (
     <div className="fixed inset-0 bg-slate-950 flex flex-col overflow-hidden">
-      <MapHeader vehicleCount={vehicles.length} activeCount={vehicles.filter(v => v.status === 'active').length} />
+      <MapHeader 
+        vehicleCount={vehicles.length} 
+        activeCount={vehicles.filter(v => v.status === 'active').length}
+        aiMode={aiMode}
+        onToggleAI={() => setAiMode(!aiMode)}
+      />
 
       <div className="flex-1 w-full relative">
         <LiveTrackingMap

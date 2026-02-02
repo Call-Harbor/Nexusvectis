@@ -1,8 +1,9 @@
 import { motion } from "framer-motion";
 import { Satellite, Radio, Zap } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
-export default function MapHeader({ vehicleCount, activeCount }) {
+export default function MapHeader({ vehicleCount, activeCount, aiMode, onToggleAI }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: -10 }}
@@ -37,12 +38,18 @@ export default function MapHeader({ vehicleCount, activeCount }) {
             </div>
           </div>
 
-          <div className="px-4 py-2.5 rounded-lg bg-slate-900/70 backdrop-blur-md border border-slate-700/50">
-            <div className="flex items-center gap-2">
-              <Zap className="w-4 h-4 text-violet-400" />
-              <span className="text-sm text-slate-300">AI Mode</span>
-            </div>
-          </div>
+          <Button
+            onClick={onToggleAI}
+            variant="outline"
+            className={`px-4 py-2.5 rounded-lg backdrop-blur-md border transition-all ${
+              aiMode 
+                ? 'bg-gradient-to-r from-violet-500/20 to-cyan-500/20 border-violet-500/50 hover:border-violet-500' 
+                : 'bg-slate-900/70 border-slate-700/50 hover:border-slate-600/50'
+            }`}
+          >
+            <Zap className={`w-4 h-4 mr-2 ${aiMode ? 'text-violet-400' : 'text-slate-400'}`} />
+            <span className="text-sm text-white">AI Mode</span>
+          </Button>
         </div>
       </div>
     </motion.div>
