@@ -11,27 +11,37 @@ import {
   ChevronRight,
   Sparkles,
   Satellite,
-  Users,
-  Shield,
-  Settings,
-  FileText,
-  BarChart3,
   Menu,
-  X
+  X,
+  ChevronDown
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const navItems = [
   { name: "Dashboard", icon: LayoutDashboard, page: "Dashboard" },
+  { name: "Fleet Monitor", icon: Globe, page: "MapMonitor" },
+  { name: "Alerts", icon: Bell, page: "Alerts" },
+];
+
+const fleetMenuItems = [
   { name: "Fleet", icon: Truck, page: "Fleet" },
+  { name: "Assignments", icon: Route, page: "Assignment" },
+  { name: "GPS Integration", icon: Satellite, page: "GPSIntegration" },
+];
+
+const planningMenuItems = [
   { name: "Routes", icon: Route, page: "Routes" },
   { name: "Resources", icon: Warehouse, page: "Resources" },
-  { name: "Fleet Monitor", icon: Globe, page: "MapMonitor" },
-  { name: "Assignments", icon: Route, page: "Assignment" },
   { name: "AI Optimization", icon: Sparkles, page: "AIOptimization" },
-  { name: "GPS Integration", icon: Satellite, page: "GPSIntegration" },
-  { name: "Alerts", icon: Bell, page: "Alerts" },
 ];
 
 export default function Layout({ children, currentPageName }) {
@@ -256,81 +266,52 @@ export default function Layout({ children, currentPageName }) {
                 );
               })}
 
-              <div className="pt-4 mt-4 border-t border-slate-800/50 space-y-2">
-                <Link
-                  to={createPageUrl("AdminDashboard")}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={cn(
-                    "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all",
-                    currentPageName === "AdminDashboard"
-                      ? "bg-gradient-to-r from-red-500/20 to-orange-500/10 text-white border border-red-500/30" 
-                      : "text-slate-400 hover:text-white hover:bg-slate-800/50"
-                  )}
-                >
-                  <BarChart3 className={cn("w-5 h-5", currentPageName === "AdminDashboard" && "text-red-400")} />
-                  <span>Admin Board</span>
-                  {currentPageName === "AdminDashboard" && <ChevronRight className="w-4 h-4 ml-auto text-red-400" />}
-                </Link>
+              <div className="pt-2 space-y-1">
+                <p className="px-4 py-2 text-xs font-semibold text-slate-500 uppercase">Fleet Management</p>
+                {fleetMenuItems.map((item) => {
+                  const isActive = currentPageName === item.page;
+                  const Icon = item.icon;
+                  return (
+                    <Link
+                      key={item.name}
+                      to={createPageUrl(item.page)}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={cn(
+                        "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all",
+                        isActive 
+                          ? "bg-gradient-to-r from-cyan-500/20 to-violet-500/10 text-white border border-cyan-500/30" 
+                          : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+                      )}
+                    >
+                      <Icon className={cn("w-5 h-5", isActive && "text-cyan-400")} />
+                      <span>{item.name}</span>
+                    </Link>
+                  );
+                })}
+              </div>
 
-                <Link
-                  to={createPageUrl("UserManagement")}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={cn(
-                    "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all",
-                    currentPageName === "UserManagement"
-                      ? "bg-gradient-to-r from-cyan-500/20 to-violet-500/10 text-white border border-cyan-500/30" 
-                      : "text-slate-400 hover:text-white hover:bg-slate-800/50"
-                  )}
-                >
-                  <Users className={cn("w-5 h-5", currentPageName === "UserManagement" && "text-cyan-400")} />
-                  <span>Users</span>
-                  {currentPageName === "UserManagement" && <ChevronRight className="w-4 h-4 ml-auto text-cyan-400" />}
-                </Link>
-
-                <Link
-                  to={createPageUrl("Security")}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={cn(
-                    "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all",
-                    currentPageName === "Security"
-                      ? "bg-gradient-to-r from-cyan-500/20 to-violet-500/10 text-white border border-cyan-500/30" 
-                      : "text-slate-400 hover:text-white hover:bg-slate-800/50"
-                  )}
-                >
-                  <Shield className={cn("w-5 h-5", currentPageName === "Security" && "text-cyan-400")} />
-                  <span>Security</span>
-                  {currentPageName === "Security" && <ChevronRight className="w-4 h-4 ml-auto text-cyan-400" />}
-                </Link>
-
-                <Link
-                  to={createPageUrl("Invoices")}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={cn(
-                    "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all",
-                    currentPageName === "Invoices"
-                      ? "bg-gradient-to-r from-cyan-500/20 to-violet-500/10 text-white border border-cyan-500/30" 
-                      : "text-slate-400 hover:text-white hover:bg-slate-800/50"
-                  )}
-                >
-                  <FileText className={cn("w-5 h-5", currentPageName === "Invoices" && "text-cyan-400")} />
-                  <span>Invoices</span>
-                  {currentPageName === "Invoices" && <ChevronRight className="w-4 h-4 ml-auto text-cyan-400" />}
-                </Link>
-
-                <Link
-                  to={createPageUrl("Settings")}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={cn(
-                    "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all",
-                    currentPageName === "Settings"
-                      ? "bg-gradient-to-r from-cyan-500/20 to-violet-500/10 text-white border border-cyan-500/30" 
-                      : "text-slate-400 hover:text-white hover:bg-slate-800/50"
-                  )}
-                >
-                  <Settings className={cn("w-5 h-5", currentPageName === "Settings" && "text-cyan-400")} />
-                  <span>Settings</span>
-                  {currentPageName === "Settings" && <ChevronRight className="w-4 h-4 ml-auto text-cyan-400" />}
-                </Link>
+              <div className="pt-2 space-y-1">
+                <p className="px-4 py-2 text-xs font-semibold text-slate-500 uppercase">Planning & Resources</p>
+                {planningMenuItems.map((item) => {
+                  const isActive = currentPageName === item.page;
+                  const Icon = item.icon;
+                  return (
+                    <Link
+                      key={item.name}
+                      to={createPageUrl(item.page)}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={cn(
+                        "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all",
+                        isActive 
+                          ? "bg-gradient-to-r from-cyan-500/20 to-violet-500/10 text-white border border-cyan-500/30" 
+                          : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+                      )}
+                    >
+                      <Icon className={cn("w-5 h-5", isActive && "text-cyan-400")} />
+                      <span>{item.name}</span>
+                    </Link>
+                  );
+                })}
               </div>
             </nav>
           </div>
@@ -341,7 +322,7 @@ export default function Layout({ children, currentPageName }) {
       {!hideNav && (
       <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/90 backdrop-blur-xl border-t border-slate-800/50 z-40 lg:hidden">
         <div className="flex items-center justify-around py-2">
-          {navItems.slice(0, 4).map((item) => {
+          {navItems.map((item) => {
             const isActive = currentPageName === item.page;
             const Icon = item.icon;
             const isMapMonitor = item.page === "MapMonitor";
@@ -370,7 +351,7 @@ export default function Layout({ children, currentPageName }) {
                 )}
               >
                 <Icon className="w-5 h-5" />
-                <span className="text-[10px] font-medium">{item.name}</span>
+                <span className="text-[10px] font-medium truncate max-w-[60px]">{item.name.split(' ')[0]}</span>
               </Link>
             );
           })}
