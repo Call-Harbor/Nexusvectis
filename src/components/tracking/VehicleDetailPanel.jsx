@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts";
+import ETAPredictor from "@/components/ai/ETAPredictor";
 
 const vehicleIcons = { truck: Truck, ship: Ship, drone: Plane, train: Train, aircraft: Plane };
 
@@ -102,7 +103,7 @@ export default function VehicleDetailPanel({ vehicle, onClose, telemetryHistory 
             Telemetry
           </TabsTrigger>
           <TabsTrigger value="route" className="flex-1 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400">
-            Route
+            ETA AI
           </TabsTrigger>
         </TabsList>
 
