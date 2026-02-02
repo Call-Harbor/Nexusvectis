@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { createPageUrl } from "./utils";
+import { useState } from "react";
 import { 
   LayoutDashboard, 
   Truck, 
@@ -14,9 +15,12 @@ import {
   Shield,
   Settings,
   FileText,
-  BarChart3
+  BarChart3,
+  Menu,
+  X
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 const navItems = [
   { name: "Dashboard", icon: LayoutDashboard, page: "Dashboard" },
@@ -32,6 +36,7 @@ const navItems = [
 
 export default function Layout({ children, currentPageName }) {
   const hideNav = currentPageName === "MapMonitor";
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-slate-950 flex">
@@ -184,26 +189,163 @@ export default function Layout({ children, currentPageName }) {
 
       {/* Mobile Header */}
       {!hideNav && (
-      <header className="fixed top-0 left-0 right-0 h-16 bg-slate-900/80 backdrop-blur-xl border-b border-slate-800/50 z-40 lg:hidden">
+      <header className="fixed top-0 left-0 right-0 h-16 bg-slate-900/80 backdrop-blur-xl border-b border-slate-800/50 z-50 lg:hidden">
         <div className="flex items-center justify-between h-full px-4">
           <img 
             src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/697e930c62bf3e3832b34edb/1c0bebde9_FullLogo_Transparent.png" 
             alt="NexusVectis Logo" 
-            className="h-16 w-auto"
+            className="h-12 w-auto"
           />
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="text-white"
+          >
+            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </Button>
         </div>
       </header>
+      )}
+
+      {/* Mobile Slide-out Menu */}
+      {!hideNav && mobileMenuOpen && (
+        <>
+          <div 
+            className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+            onClick={() => setMobileMenuOpen(false)}
+          />
+          <div className="fixed top-16 right-0 bottom-0 w-80 bg-slate-900/95 backdrop-blur-xl border-l border-slate-800/50 z-40 lg:hidden overflow-y-auto">
+            <nav className="p-4 space-y-2">
+              {navItems.map((item) => {
+                const isActive = currentPageName === item.page;
+                const Icon = item.icon;
+                const isMapMonitor = item.page === "MapMonitor";
+
+                return isMapMonitor ? (
+                  <a
+                    key={item.name}
+                    href={createPageUrl(item.page)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={cn(
+                      "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all",
+                      "text-slate-400 hover:text-white hover:bg-slate-800/50"
+                    )}
+                  >
+                    <Icon className="w-5 h-5" />
+                    <span>{item.name}</span>
+                  </a>
+                ) : (
+                  <Link
+                    key={item.name}
+                    to={createPageUrl(item.page)}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={cn(
+                      "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all",
+                      isActive 
+                        ? "bg-gradient-to-r from-cyan-500/20 to-violet-500/10 text-white border border-cyan-500/30" 
+                        : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+                    )}
+                  >
+                    <Icon className={cn("w-5 h-5", isActive && "text-cyan-400")} />
+                    <span>{item.name}</span>
+                    {isActive && <ChevronRight className="w-4 h-4 ml-auto text-cyan-400" />}
+                  </Link>
+                );
+              })}
+
+              <div className="pt-4 mt-4 border-t border-slate-800/50 space-y-2">
+                <Link
+                  to={createPageUrl("AdminDashboard")}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={cn(
+                    "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all",
+                    currentPageName === "AdminDashboard"
+                      ? "bg-gradient-to-r from-red-500/20 to-orange-500/10 text-white border border-red-500/30" 
+                      : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+                  )}
+                >
+                  <BarChart3 className={cn("w-5 h-5", currentPageName === "AdminDashboard" && "text-red-400")} />
+                  <span>Admin Board</span>
+                  {currentPageName === "AdminDashboard" && <ChevronRight className="w-4 h-4 ml-auto text-red-400" />}
+                </Link>
+
+                <Link
+                  to={createPageUrl("UserManagement")}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={cn(
+                    "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all",
+                    currentPageName === "UserManagement"
+                      ? "bg-gradient-to-r from-cyan-500/20 to-violet-500/10 text-white border border-cyan-500/30" 
+                      : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+                  )}
+                >
+                  <Users className={cn("w-5 h-5", currentPageName === "UserManagement" && "text-cyan-400")} />
+                  <span>Users</span>
+                  {currentPageName === "UserManagement" && <ChevronRight className="w-4 h-4 ml-auto text-cyan-400" />}
+                </Link>
+
+                <Link
+                  to={createPageUrl("Security")}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={cn(
+                    "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all",
+                    currentPageName === "Security"
+                      ? "bg-gradient-to-r from-cyan-500/20 to-violet-500/10 text-white border border-cyan-500/30" 
+                      : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+                  )}
+                >
+                  <Shield className={cn("w-5 h-5", currentPageName === "Security" && "text-cyan-400")} />
+                  <span>Security</span>
+                  {currentPageName === "Security" && <ChevronRight className="w-4 h-4 ml-auto text-cyan-400" />}
+                </Link>
+
+                <Link
+                  to={createPageUrl("Invoices")}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={cn(
+                    "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all",
+                    currentPageName === "Invoices"
+                      ? "bg-gradient-to-r from-cyan-500/20 to-violet-500/10 text-white border border-cyan-500/30" 
+                      : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+                  )}
+                >
+                  <FileText className={cn("w-5 h-5", currentPageName === "Invoices" && "text-cyan-400")} />
+                  <span>Invoices</span>
+                  {currentPageName === "Invoices" && <ChevronRight className="w-4 h-4 ml-auto text-cyan-400" />}
+                </Link>
+
+                <Link
+                  to={createPageUrl("Settings")}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={cn(
+                    "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all",
+                    currentPageName === "Settings"
+                      ? "bg-gradient-to-r from-cyan-500/20 to-violet-500/10 text-white border border-cyan-500/30" 
+                      : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+                  )}
+                >
+                  <Settings className={cn("w-5 h-5", currentPageName === "Settings" && "text-cyan-400")} />
+                  <span>Settings</span>
+                  {currentPageName === "Settings" && <ChevronRight className="w-4 h-4 ml-auto text-cyan-400" />}
+                </Link>
+              </div>
+            </nav>
+          </div>
+        </>
       )}
 
       {/* Mobile Bottom Nav */}
       {!hideNav && (
       <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/90 backdrop-blur-xl border-t border-slate-800/50 z-40 lg:hidden">
         <div className="flex items-center justify-around py-2">
-          {navItems.slice(0, 5).map((item) => {
+          {navItems.slice(0, 4).map((item) => {
             const isActive = currentPageName === item.page;
             const Icon = item.icon;
             const isMapMonitor = item.page === "MapMonitor";
-            
+
             return isMapMonitor ? (
               <a
                 key={item.name}
@@ -211,7 +353,7 @@ export default function Layout({ children, currentPageName }) {
                 target="_blank"
                 rel="noopener noreferrer"
                 className={cn(
-                  "flex flex-col items-center gap-1 py-2 px-3 rounded-lg transition-all",
+                  "flex flex-col items-center gap-1 py-2 px-2 rounded-lg transition-all",
                   "text-slate-500"
                 )}
               >
@@ -223,7 +365,7 @@ export default function Layout({ children, currentPageName }) {
                 key={item.name}
                 to={createPageUrl(item.page)}
                 className={cn(
-                  "flex flex-col items-center gap-1 py-2 px-3 rounded-lg transition-all",
+                  "flex flex-col items-center gap-1 py-2 px-2 rounded-lg transition-all",
                   isActive ? "text-cyan-400" : "text-slate-500"
                 )}
               >
@@ -232,6 +374,13 @@ export default function Layout({ children, currentPageName }) {
               </Link>
             );
           })}
+          <button
+            onClick={() => setMobileMenuOpen(true)}
+            className="flex flex-col items-center gap-1 py-2 px-2 rounded-lg transition-all text-slate-500"
+          >
+            <Menu className="w-5 h-5" />
+            <span className="text-[10px] font-medium">More</span>
+          </button>
         </div>
       </nav>
       )}
