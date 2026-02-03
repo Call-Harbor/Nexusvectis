@@ -27,7 +27,16 @@ const categoryLabels = {
 };
 
 export default function AlertPanel({ alerts, onMarkRead, onResolve }) {
-  const unreadAlerts = alerts.filter(a => !a.is_resolved).slice(0, 5);
+  // Remove duplicates based on title and message
+  const uniqueAlerts = alerts.reduce((acc, alert) => {
+    const key = `${alert.title}-${alert.message}`;
+    if (!acc.some(a => `${a.title}-${a.message}` === key)) {
+      acc.push(alert);
+    }
+    return acc;
+  }, []);
+
+  const unreadAlerts = uniqueAlerts.filter(a => !a.is_resolved).slice(0, 5);
 
   return (
     <div className="rounded-2xl border border-slate-700/50 bg-slate-900/50 backdrop-blur-xl overflow-hidden">
