@@ -346,7 +346,7 @@ export default function Landing() {
               
               <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
                 <Link to={createPageUrl("Dashboard")}>
-                  <Button size="lg" className="relative bg-white text-slate-900 hover:shadow-2xl hover:shadow-white/50 text-xl px-12 py-7 rounded-2xl font-bold group overflow-hidden">
+                  <Button size="lg" className="relative bg-white text-slate-900 text-xl px-12 py-7 rounded-2xl font-bold group overflow-hidden transition-transform hover:scale-105">
                     <span className="relative z-10 flex items-center">
                       Get Started Now
                       <ArrowRight className="w-6 h-6 ml-3 group-hover:translate-x-2 transition-transform" />
