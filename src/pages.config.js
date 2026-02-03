@@ -49,6 +49,7 @@
  */
 import AIOptimization from './pages/AIOptimization';
 import AdminDashboard from './pages/AdminDashboard';
+import AdminMonitor from './pages/AdminMonitor';
 import Alerts from './pages/Alerts';
 import Assignment from './pages/Assignment';
 import Dashboard from './pages/Dashboard';
@@ -64,13 +65,13 @@ import Routes from './pages/Routes';
 import Security from './pages/Security';
 import Settings from './pages/Settings';
 import UserManagement from './pages/UserManagement';
-import AdminMonitor from './pages/AdminMonitor';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
     "AIOptimization": AIOptimization,
     "AdminDashboard": AdminDashboard,
+    "AdminMonitor": AdminMonitor,
     "Alerts": Alerts,
     "Assignment": Assignment,
     "Dashboard": Dashboard,
@@ -86,7 +87,6 @@ export const PAGES = {
     "Security": Security,
     "Settings": Settings,
     "UserManagement": UserManagement,
-    "AdminMonitor": AdminMonitor,
 }
 
 export const pagesConfig = {

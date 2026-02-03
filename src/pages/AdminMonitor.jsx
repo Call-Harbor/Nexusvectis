@@ -95,119 +95,98 @@ export default function AdminMonitor() {
   ).length;
 
   return (
-    <div className="min-h-screen bg-slate-950">
-      <div className="relative">
-        <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-transparent to-violet-500/5" />
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwwLjAzKSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-30" />
+    <div className="h-screen w-screen bg-slate-950 overflow-hidden relative">
+      <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-transparent to-violet-500/5" />
+      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwwLjAzKSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-30" />
+
+      <div className="absolute top-4 left-4 right-4 z-20 flex items-center justify-between">
+        <div className="bg-slate-900/90 backdrop-blur-xl border border-slate-800 rounded-xl px-6 py-3">
+          <h1 className="text-xl font-bold text-white">Admin Monitor</h1>
+          <p className="text-sm text-slate-400">Global organization overview</p>
+        </div>
+        
+        <div className="flex gap-3">
+          <Card className="bg-slate-900/90 backdrop-blur-xl border-slate-800">
+            <CardContent className="p-3 flex items-center gap-3">
+              <Building2 className="w-4 h-4 text-cyan-400" />
+              <div>
+                <div className="text-lg font-bold text-white">{organizations.length}</div>
+                <div className="text-xs text-slate-400">Organizations</div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-slate-900/90 backdrop-blur-xl border-slate-800">
+            <CardContent className="p-3 flex items-center gap-3">
+              <Truck className="w-4 h-4 text-violet-400" />
+              <div>
+                <div className="text-lg font-bold text-white">{totalVehicles}</div>
+                <div className="text-xs text-slate-400">Vehicles</div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-slate-900/90 backdrop-blur-xl border-slate-800">
+            <CardContent className="p-3 flex items-center gap-3">
+              <Users className="w-4 h-4 text-emerald-400" />
+              <div>
+                <div className="text-lg font-bold text-white">{totalUsers}</div>
+                <div className="text-xs text-slate-400">Users</div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
-      <div className="relative z-10 p-4 sm:p-6 lg:p-8">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-white mb-2">Admin Monitor</h1>
-          <p className="text-slate-400">Global organization overview</p>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-          <Card className="bg-slate-900/50 border-slate-800">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-slate-400 flex items-center gap-2">
-                <Building2 className="w-4 h-4" />
-                Organizations
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-white">{organizations.length}</div>
-              <p className="text-xs text-slate-500 mt-1">{activeOrgs} with active vehicles</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-slate-900/50 border-slate-800">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-slate-400 flex items-center gap-2">
-                <Truck className="w-4 h-4" />
-                Total Vehicles
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-white">{totalVehicles}</div>
-              <p className="text-xs text-slate-500 mt-1">Across all organizations</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-slate-900/50 border-slate-800">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-slate-400 flex items-center gap-2">
-                <Users className="w-4 h-4" />
-                Total Users
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-white">{totalUsers}</div>
-              <p className="text-xs text-slate-500 mt-1">Platform-wide</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        <Card className="bg-slate-900/50 border-slate-800 overflow-hidden">
-          <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
-              <MapPin className="w-5 h-5 text-cyan-400" />
-              Organization Locations
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="h-[600px] relative">
-              {geocodedOrgs.length > 0 ? (
-                <MapContainer
-                  center={[20, 0]}
-                  zoom={2}
-                  className="h-full w-full"
-                  style={{ background: '#0f172a' }}
-                >
-                  <TileLayer
-                    url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                  />
-                  {geocodedOrgs.map((org) => (
-                    <CircleMarker
-                      key={org.id}
-                      center={[org.lat, org.lng]}
-                      radius={8}
-                      pathOptions={{
-                        fillColor: '#06b6d4',
-                        fillOpacity: 0.8,
-                        color: '#22d3ee',
-                        weight: 2
-                      }}
-                    >
-                      <Popup>
-                        <div className="p-2">
-                          <h3 className="font-semibold text-slate-900 mb-1">{org.name}</h3>
-                          <p className="text-sm text-slate-600 mb-2">
-                            {org.headquarters_city}, {org.headquarters_country}
-                          </p>
-                          <div className="flex items-center gap-2 text-xs">
-                            <Badge variant="outline" className="text-xs">
-                              <Truck className="w-3 h-3 mr-1" />
-                              {org.vehicleCount} vehicles
-                            </Badge>
-                          </div>
-                        </div>
-                      </Popup>
-                    </CircleMarker>
-                  ))}
-                </MapContainer>
-              ) : (
-                <div className="h-full flex items-center justify-center text-slate-400">
-                  <div className="text-center">
-                    <MapPin className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                    <p>Loading organization locations...</p>
+      <div className="h-full w-full">
+        {geocodedOrgs.length > 0 ? (
+          <MapContainer
+            center={[20, 0]}
+            zoom={2}
+            className="h-full w-full"
+            style={{ background: '#0f172a' }}
+          >
+            <TileLayer
+              url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            />
+            {geocodedOrgs.map((org) => (
+              <CircleMarker
+                key={org.id}
+                center={[org.lat, org.lng]}
+                radius={8}
+                pathOptions={{
+                  fillColor: '#06b6d4',
+                  fillOpacity: 0.8,
+                  color: '#22d3ee',
+                  weight: 2
+                }}
+              >
+                <Popup>
+                  <div className="p-2">
+                    <h3 className="font-semibold text-slate-900 mb-1">{org.name}</h3>
+                    <p className="text-sm text-slate-600 mb-2">
+                      {org.headquarters_city}, {org.headquarters_country}
+                    </p>
+                    <div className="flex items-center gap-2 text-xs">
+                      <Badge variant="outline" className="text-xs">
+                        <Truck className="w-3 h-3 mr-1" />
+                        {org.vehicleCount} vehicles
+                      </Badge>
+                    </div>
                   </div>
-                </div>
-              )}
+                </Popup>
+              </CircleMarker>
+            ))}
+          </MapContainer>
+        ) : (
+          <div className="h-full flex items-center justify-center text-slate-400">
+            <div className="text-center">
+              <MapPin className="w-12 h-12 mx-auto mb-2 opacity-50" />
+              <p>Loading organization locations...</p>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        )}
       </div>
     </div>
   );
