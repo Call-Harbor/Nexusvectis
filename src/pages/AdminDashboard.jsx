@@ -9,10 +9,12 @@ import {
 } from "recharts";
 import { 
   Globe, Truck, Warehouse, DollarSign, TrendingUp, AlertCircle,
-  Users, Building2, Loader2
+  Users, Building2, Loader2, ExternalLink
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { createPageUrl } from "../utils";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -195,13 +197,28 @@ export default function AdminDashboard() {
       <div className="relative z-10 max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 rounded-lg bg-red-500/20 border border-red-500/30">
-              <Globe className="w-6 h-6 text-red-400" />
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-3 mb-2">
+                <div className="p-2 rounded-lg bg-red-500/20 border border-red-500/30">
+                  <Globe className="w-6 h-6 text-red-400" />
+                </div>
+                <h1 className="text-4xl font-bold text-white">NexusVectis Admin Board</h1>
+              </div>
+              <p className="text-slate-400">Platform overview and system statistics</p>
             </div>
-            <h1 className="text-4xl font-bold text-white">NexusVectis Admin Board</h1>
+            <a
+              href={createPageUrl("AdminMonitor")}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Button className="bg-cyan-600 hover:bg-cyan-700 text-white gap-2">
+                <Globe className="w-4 h-4" />
+                Open Admin Monitor
+                <ExternalLink className="w-4 h-4" />
+              </Button>
+            </a>
           </div>
-          <p className="text-slate-400">Platform overview and system statistics</p>
         </div>
 
         {/* Main Stats Grid */}
