@@ -6,6 +6,7 @@ import MapHeader from "@/components/tracking/MapHeader";
 import EnhancedVehiclePanel from "@/components/tracking/EnhancedVehiclePanel";
 import SmartInsights from "@/components/tracking/SmartInsights";
 import RealtimeAlerts from "@/components/tracking/RealtimeAlerts";
+import AIControlPanel from "@/components/tracking/AIControlPanel";
 import { Loader2, X } from "lucide-react";
 import { AnimatePresence } from "framer-motion";
 
@@ -141,6 +142,17 @@ export default function MapMonitor() {
               aiMode={aiMode}
             />
           )}
+        </div>
+
+        {/* AI Control Panel (bottom-left when AI mode active) */}
+        <div className="absolute bottom-24 left-4 z-[999] pointer-events-auto">
+          <AIControlPanel 
+            vehicles={vehicles} 
+            aiMode={aiMode}
+            onApplyOptimization={(rec) => {
+              console.log('Applying optimization:', rec);
+            }}
+          />
         </div>
 
         {/* Right Panel: Vehicle Details */}
