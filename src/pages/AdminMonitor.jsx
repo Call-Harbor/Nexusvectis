@@ -25,17 +25,17 @@ export default function AdminMonitor() {
 
   const { data: organizations = [], isLoading: orgsLoading } = useQuery({
     queryKey: ['organizations'],
-    queryFn: () => base44.asServiceRole.entities.Organization.list(),
+    queryFn: () => base44.entities.Organization.list(),
   });
 
   const { data: vehicles = [], isLoading: vehiclesLoading } = useQuery({
     queryKey: ['allVehicles'],
-    queryFn: () => base44.asServiceRole.entities.Vehicle.list(),
+    queryFn: () => base44.entities.Vehicle.list(),
   });
 
   const { data: allUsers = [], isLoading: usersLoading } = useQuery({
     queryKey: ['allUsers'],
-    queryFn: () => base44.asServiceRole.entities.User.list(),
+    queryFn: () => base44.entities.User.list(),
   });
 
   useEffect(() => {
