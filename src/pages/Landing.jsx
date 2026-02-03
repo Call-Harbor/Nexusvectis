@@ -5,7 +5,7 @@ import {
   Truck, Globe, Zap, Shield, TrendingUp, Satellite,
   BarChart3, MapPin, Radio, ArrowRight, CheckCircle2, Sparkles, Brain, Orbit
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { base44 } from "@/api/base44Client";
 import { useEffect, useState } from "react";
 
 export default function Landing() {
@@ -118,17 +118,19 @@ export default function Landing() {
             className="h-14 w-auto"
           />
           <div className="flex items-center gap-4">
-            <Link to={createPageUrl("Dashboard")}>
-              <Button variant="ghost" className="text-white hover:bg-white/10">
-                Dashboard
-              </Button>
-            </Link>
-            <Link to={createPageUrl("Dashboard")}>
-              <Button className="bg-gradient-to-r from-cyan-500 to-violet-500 text-white transition-transform hover:scale-105">
-                Get Started
-                <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-              </Button>
-            </Link>
+            <button
+              onClick={() => base44.auth.redirectToLogin(createPageUrl("Dashboard"))}
+              className="text-white hover:bg-white/10 px-4 py-2 rounded-lg transition-colors"
+            >
+              Log In
+            </button>
+            <button
+              onClick={() => base44.auth.redirectToLogin(createPageUrl("Dashboard"))}
+              className="bg-gradient-to-r from-cyan-500 to-violet-500 text-white px-6 py-2 rounded-lg transition-transform hover:scale-105 flex items-center gap-2"
+            >
+              Get Started
+              <ArrowRight className="w-4 h-4" />
+            </button>
           </div>
         </div>
       </motion.header>
@@ -193,13 +195,14 @@ export default function Landing() {
               transition={{ delay: 0.7 }}
               className="flex flex-col sm:flex-row items-center justify-center gap-5"
             >
-              <Link to={createPageUrl("Dashboard")}>
-                <Button size="lg" className="bg-gradient-to-r from-cyan-500 via-violet-500 to-fuchsia-500 text-white text-lg px-10 py-6 rounded-2xl font-semibold group transition-transform hover:scale-105">
-                  <Brain className="w-5 h-5 mr-3 group-hover:scale-110 transition-transform" />
-                  Experience the Platform
-                  <ArrowRight className="w-5 h-5 ml-3 group-hover:translate-x-2 transition-transform" />
-                </Button>
-              </Link>
+              <button
+                onClick={() => base44.auth.redirectToLogin(createPageUrl("Dashboard"))}
+                className="bg-gradient-to-r from-cyan-500 via-violet-500 to-fuchsia-500 text-white text-lg px-10 py-6 rounded-2xl font-semibold group transition-transform hover:scale-105 flex items-center gap-3"
+              >
+                <Brain className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                Experience the Platform
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
+              </button>
             </motion.div>
           </motion.div>
 
@@ -334,12 +337,13 @@ export default function Landing() {
               </p>
               
               <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-                <Link to={createPageUrl("Dashboard")}>
-                  <Button size="lg" className="bg-white text-slate-900 text-xl px-12 py-7 rounded-2xl font-bold group transition-transform hover:scale-105">
-                    Get Started Now
-                    <ArrowRight className="w-6 h-6 ml-3 group-hover:translate-x-2 transition-transform" />
-                  </Button>
-                </Link>
+                <button
+                  onClick={() => base44.auth.redirectToLogin(createPageUrl("Dashboard"))}
+                  className="bg-white text-slate-900 text-xl px-12 py-7 rounded-2xl font-bold group transition-transform hover:scale-105 flex items-center gap-3"
+                >
+                  Get Started Now
+                  <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
+                </button>
               </div>
               
               <div className="flex items-center justify-center gap-6 mt-10 text-slate-400">

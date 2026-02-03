@@ -27,19 +27,24 @@ export default function Dashboard() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
-  // Check if user has organization
+  // Check if user is logged in and has organization
   useEffect(() => {
-    const checkOrganization = async () => {
+    const checkAuth = async () => {
       try {
+        const isAuth = await base44.auth.isAuthenticated();
+        if (!isAuth) {
+          navigate(createPageUrl("Landing"));
+          return;
+        }
         const user = await base44.auth.me();
         if (!user.organization_id) {
           navigate(createPageUrl("OrganizationSetup"));
         }
       } catch (error) {
-        console.error("Error checking organization:", error);
+        navigate(createPageUrl("Landing"));
       }
     };
-    checkOrganization();
+    checkAuth();
   }, [navigate]);
 
   const { data: vehicles = [] } = useQuery({

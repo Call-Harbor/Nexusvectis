@@ -54,7 +54,9 @@ import Assignment from './pages/Assignment';
 import Dashboard from './pages/Dashboard';
 import Fleet from './pages/Fleet';
 import GPSIntegration from './pages/GPSIntegration';
+import Home from './pages/Home';
 import Invoices from './pages/Invoices';
+import Landing from './pages/Landing';
 import MapMonitor from './pages/MapMonitor';
 import OrganizationSetup from './pages/OrganizationSetup';
 import Resources from './pages/Resources';
@@ -62,8 +64,6 @@ import Routes from './pages/Routes';
 import Security from './pages/Security';
 import Settings from './pages/Settings';
 import UserManagement from './pages/UserManagement';
-import Landing from './pages/Landing';
-import Home from './pages/Home';
 import __Layout from './Layout.jsx';
 
 
@@ -75,7 +75,9 @@ export const PAGES = {
     "Dashboard": Dashboard,
     "Fleet": Fleet,
     "GPSIntegration": GPSIntegration,
+    "Home": Home,
     "Invoices": Invoices,
+    "Landing": Landing,
     "MapMonitor": MapMonitor,
     "OrganizationSetup": OrganizationSetup,
     "Resources": Resources,
@@ -83,8 +85,6 @@ export const PAGES = {
     "Security": Security,
     "Settings": Settings,
     "UserManagement": UserManagement,
-    "Landing": Landing,
-    "Home": Home,
 }
 
 export const pagesConfig = {
