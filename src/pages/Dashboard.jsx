@@ -105,7 +105,10 @@ export default function Dashboard() {
   const avgEfficiency = vehicles.length > 0 
     ? Math.round(vehicles.reduce((acc, v) => acc + (v.efficiency_score || 0), 0) / vehicles.length)
     : 0;
-  const totalCo2 = vehicles.reduce((acc, v) => acc + (v.co2_emissions || 0), 0);
+  const avgFuelLevel = vehicles.length > 0 
+    ? Math.round(vehicles.reduce((acc, v) => acc + (v.fuel_level || 0), 0) / vehicles.length)
+    : 0;
+  const totalCo2 = Math.round(vehicles.reduce((acc, v) => acc + (v.co2_emissions || 0), 0) * 10) / 10;
   const criticalAlerts = alerts.filter(a => a.type === 'critical' && !a.is_resolved).length;
 
   const StatCard = ({ icon: Icon, label, value, trend, color }) => (
@@ -197,10 +200,10 @@ export default function Dashboard() {
 
             {/* Live Stats Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3 lg:gap-4">
-              <StatCard icon={Activity} label="Active Units" value={activeVehicles} trend color="cyan" />
-              <StatCard icon={Radio} label="Idle Units" value={idleVehicles} color="amber" />
-              <StatCard icon={AlertTriangle} label="Offline" value={offlineVehicles} color="violet" />
-              <StatCard icon={Zap} label="Avg Efficiency" value={`${avgEfficiency}%`} trend color="emerald" />
+              <StatCard icon={Activity} label="Active Units" value={`${activeVehicles}/${vehicles.length}`} trend color="cyan" />
+              <StatCard icon={Zap} label="Fleet Efficiency" value={`${avgEfficiency}%`} trend color="cyan" />
+              <StatCard icon={Radio} label="Avg. Fuel Level" value={`${avgFuelLevel}%`} color="amber" />
+              <StatCard icon={Activity} label="CO₂ Emissions" value={`${totalCo2}t`} color="violet" />
               <StatCard icon={AlertTriangle} label="Critical Alerts" value={criticalAlerts} color={criticalAlerts > 0 ? 'violet' : 'cyan'} />
             </div>
           </div>
