@@ -1,12 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { MapContainer, TileLayer, Marker, Popup, CircleMarker } from "react-leaflet";
-import { Building2, Users, Truck, MapPin } from "lucide-react";
+import { Building2, Users, Truck, MapPin, Globe } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -82,46 +83,87 @@ export default function AdminMonitor() {
   const isLoading = orgsLoading || vehiclesLoading || usersLoading;
 
   return (
-    <div className="h-screen w-screen bg-slate-950 overflow-hidden relative">
-      <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-transparent to-violet-500/5" />
-      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwwLjAzKSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-30" />
+    <div className="h-screen w-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 overflow-hidden relative">
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-violet-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
+      </div>
+      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwwLjA1KSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-40" />
 
-      <div className="absolute top-4 left-4 right-4 z-20 flex items-center justify-between">
-        <div className="bg-slate-900/90 backdrop-blur-xl border border-slate-800 rounded-xl px-6 py-3">
-          <h1 className="text-xl font-bold text-white">Admin Monitor</h1>
-          <p className="text-sm text-slate-400">Global organization overview</p>
-        </div>
+      <div className="absolute top-6 left-6 right-6 z-20 flex items-center justify-between">
+        <motion.div 
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="flex items-center gap-4"
+        >
+          <div className="p-3 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-violet-500/20 border border-cyan-500/30 shadow-lg shadow-cyan-500/20">
+            <Globe className="w-7 h-7 text-cyan-400" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-cyan-400 via-violet-400 to-cyan-400 bg-clip-text text-transparent">
+              Global Monitor
+            </h1>
+            <p className="text-sm text-slate-400 mt-0.5">Real-time platform overview</p>
+          </div>
+        </motion.div>
         
         <div className="flex gap-3">
-          <Card className="bg-slate-900/90 backdrop-blur-xl border-slate-800">
-            <CardContent className="p-3 flex items-center gap-3">
-              <Building2 className="w-4 h-4 text-cyan-400" />
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            whileHover={{ y: -2, boxShadow: '0 10px 30px rgba(6, 182, 212, 0.3)' }}
+            className="relative overflow-hidden bg-gradient-to-br from-cyan-500/10 to-slate-900/50 backdrop-blur-xl border border-cyan-500/30 rounded-xl px-4 py-3 group"
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <div className="relative flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-cyan-500/20">
+                <Building2 className="w-4 h-4 text-cyan-400" />
+              </div>
               <div>
-                <div className="text-lg font-bold text-white">{organizations.length}</div>
+                <div className="text-xl font-bold bg-gradient-to-br from-cyan-400 to-cyan-600 bg-clip-text text-transparent">{organizations.length}</div>
                 <div className="text-xs text-slate-400">Organizations</div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </motion.div>
 
-          <Card className="bg-slate-900/90 backdrop-blur-xl border-slate-800">
-            <CardContent className="p-3 flex items-center gap-3">
-              <Truck className="w-4 h-4 text-violet-400" />
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            whileHover={{ y: -2, boxShadow: '0 10px 30px rgba(139, 92, 246, 0.3)' }}
+            className="relative overflow-hidden bg-gradient-to-br from-violet-500/10 to-slate-900/50 backdrop-blur-xl border border-violet-500/30 rounded-xl px-4 py-3 group"
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-violet-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <div className="relative flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-violet-500/20">
+                <Truck className="w-4 h-4 text-violet-400" />
+              </div>
               <div>
-                <div className="text-lg font-bold text-white">{totalVehicles}</div>
+                <div className="text-xl font-bold bg-gradient-to-br from-violet-400 to-violet-600 bg-clip-text text-transparent">{totalVehicles}</div>
                 <div className="text-xs text-slate-400">Vehicles</div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </motion.div>
 
-          <Card className="bg-slate-900/90 backdrop-blur-xl border-slate-800">
-            <CardContent className="p-3 flex items-center gap-3">
-              <Users className="w-4 h-4 text-emerald-400" />
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            whileHover={{ y: -2, boxShadow: '0 10px 30px rgba(16, 185, 129, 0.3)' }}
+            className="relative overflow-hidden bg-gradient-to-br from-emerald-500/10 to-slate-900/50 backdrop-blur-xl border border-emerald-500/30 rounded-xl px-4 py-3 group"
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <div className="relative flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-emerald-500/20">
+                <Users className="w-4 h-4 text-emerald-400" />
+              </div>
               <div>
-                <div className="text-lg font-bold text-white">{totalUsers}</div>
+                <div className="text-xl font-bold bg-gradient-to-br from-emerald-400 to-emerald-600 bg-clip-text text-transparent">{totalUsers}</div>
                 <div className="text-xs text-slate-400">Users</div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </motion.div>
         </div>
       </div>
 
