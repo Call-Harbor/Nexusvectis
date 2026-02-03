@@ -26,19 +26,16 @@ export default function AdminMonitor() {
   const { data: organizations = [] } = useQuery({
     queryKey: ['organizations'],
     queryFn: () => base44.asServiceRole.entities.Organization.list(),
-    enabled: user?.role === 'admin',
   });
 
   const { data: vehicles = [] } = useQuery({
     queryKey: ['allVehicles'],
     queryFn: () => base44.asServiceRole.entities.Vehicle.list(),
-    enabled: user?.role === 'admin',
   });
 
   const { data: allUsers = [] } = useQuery({
     queryKey: ['allUsers'],
     queryFn: () => base44.asServiceRole.entities.User.list(),
-    enabled: user?.role === 'admin',
   });
 
   useEffect(() => {
@@ -75,18 +72,6 @@ export default function AdminMonitor() {
       geocodeOrganizations();
     }
   }, [organizations, vehicles]);
-
-  if (user?.role !== 'admin') {
-    return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
-        <Card className="bg-slate-900/50 border-slate-800">
-          <CardContent className="p-8 text-center">
-            <p className="text-slate-400">Access denied. Admin only.</p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   const totalVehicles = vehicles.length;
   const totalUsers = allUsers.length;
