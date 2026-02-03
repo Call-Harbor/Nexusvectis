@@ -10,7 +10,6 @@ import { cn } from "@/lib/utils";
 
 export default function AIControlPanel({ vehicles = [], onApplyOptimization, aiMode }) {
   const [loading, setLoading] = useState(false);
-  const [recommendations, setRecommendations] = useState([]);
   const [activeTab, setActiveTab] = useState('overview');
 
   // Generate AI recommendations
