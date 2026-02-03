@@ -23,17 +23,17 @@ export default function AdminMonitor() {
     queryFn: () => base44.auth.me(),
   });
 
-  const { data: organizations = [] } = useQuery({
+  const { data: organizations = [], isLoading: orgsLoading } = useQuery({
     queryKey: ['organizations'],
     queryFn: () => base44.asServiceRole.entities.Organization.list(),
   });
 
-  const { data: vehicles = [] } = useQuery({
+  const { data: vehicles = [], isLoading: vehiclesLoading } = useQuery({
     queryKey: ['allVehicles'],
     queryFn: () => base44.asServiceRole.entities.Vehicle.list(),
   });
 
-  const { data: allUsers = [] } = useQuery({
+  const { data: allUsers = [], isLoading: usersLoading } = useQuery({
     queryKey: ['allUsers'],
     queryFn: () => base44.asServiceRole.entities.User.list(),
   });
@@ -78,6 +78,8 @@ export default function AdminMonitor() {
   const activeOrgs = organizations.filter(org => 
     vehicles.some(v => v.organization_id === org.id)
   ).length;
+
+  const isLoading = orgsLoading || vehiclesLoading || usersLoading;
 
   return (
     <div className="h-screen w-screen bg-slate-950 overflow-hidden relative">
@@ -124,7 +126,14 @@ export default function AdminMonitor() {
       </div>
 
       <div className="h-full w-full">
-        {geocodedOrgs.length > 0 ? (
+        {isLoading ? (
+          <div className="h-full flex items-center justify-center text-slate-400">
+            <div className="text-center">
+              <MapPin className="w-12 h-12 mx-auto mb-2 opacity-50 animate-pulse" />
+              <p>Loading data...</p>
+            </div>
+          </div>
+        ) : geocodedOrgs.length > 0 ? (
           <MapContainer
             center={[20, 0]}
             zoom={2}
@@ -164,11 +173,19 @@ export default function AdminMonitor() {
               </CircleMarker>
             ))}
           </MapContainer>
+        ) : organizations.length === 0 ? (
+          <div className="h-full flex items-center justify-center text-slate-400">
+            <div className="text-center">
+              <Building2 className="w-12 h-12 mx-auto mb-2 opacity-50" />
+              <p>No organizations found</p>
+            </div>
+          </div>
         ) : (
           <div className="h-full flex items-center justify-center text-slate-400">
             <div className="text-center">
               <MapPin className="w-12 h-12 mx-auto mb-2 opacity-50" />
-              <p>Loading organization locations...</p>
+              <p>Geocoding organizations...</p>
+              <p className="text-xs mt-2">{organizations.length} organizations, {geocodedOrgs.length} geocoded</p>
             </div>
           </div>
         )}
