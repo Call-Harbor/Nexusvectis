@@ -135,15 +135,36 @@ export default function AdminDashboard() {
       };
     });
 
-  // Chart data for growth
-  const growthData = [
-    { name: 'Jan', vehicles: Math.floor(stats.totalVehicles * 0.3), resources: Math.floor(stats.totalResources * 0.2) },
-    { name: 'Feb', vehicles: Math.floor(stats.totalVehicles * 0.5), resources: Math.floor(stats.totalResources * 0.4) },
-    { name: 'Mar', vehicles: Math.floor(stats.totalVehicles * 0.7), resources: Math.floor(stats.totalResources * 0.6) },
-    { name: 'Apr', vehicles: Math.floor(stats.totalVehicles * 0.85), resources: Math.floor(stats.totalResources * 0.8) },
-    { name: 'May', vehicles: Math.floor(stats.totalVehicles * 0.95), resources: Math.floor(stats.totalResources * 0.9) },
-    { name: 'Jun', vehicles: stats.totalVehicles, resources: stats.totalResources }
-  ];
+  // Chart data for growth - last 6 months
+  const growthData = (() => {
+    const now = new Date();
+    const months = [];
+    
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const monthName = date.toLocaleString('en-US', { month: 'short' });
+      const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
+      const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59);
+      
+      const vehiclesInMonth = allVehicles.filter(v => {
+        const created = new Date(v.created_date);
+        return created >= monthStart && created <= monthEnd;
+      }).length;
+      
+      const resourcesInMonth = allResources.filter(r => {
+        const created = new Date(r.created_date);
+        return created >= monthStart && created <= monthEnd;
+      }).length;
+      
+      months.push({
+        name: monthName,
+        vehicles: vehiclesInMonth,
+        resources: resourcesInMonth
+      });
+    }
+    
+    return months;
+  })();
 
   // Revenue data
   const revenueData = invoices
