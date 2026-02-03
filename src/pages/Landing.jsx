@@ -194,7 +194,7 @@ export default function Landing() {
               className="flex flex-col sm:flex-row items-center justify-center gap-5"
             >
               <Link to={createPageUrl("Dashboard")}>
-                <Button size="lg" className="bg-gradient-to-r from-cyan-500 via-violet-500 to-fuchsia-500 hover:from-cyan-400 hover:via-violet-400 hover:to-fuchsia-400 text-white text-lg px-10 py-6 rounded-2xl font-semibold group transition-all hover:scale-105">
+                <Button size="lg" className="bg-gradient-to-r from-cyan-500 via-violet-500 to-fuchsia-500 text-white text-lg px-10 py-6 rounded-2xl font-semibold group transition-transform hover:scale-105">
                   <Brain className="w-5 h-5 mr-3 group-hover:scale-110 transition-transform" />
                   Experience the Platform
                   <ArrowRight className="w-5 h-5 ml-3 group-hover:translate-x-2 transition-transform" />
