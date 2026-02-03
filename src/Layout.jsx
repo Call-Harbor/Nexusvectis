@@ -56,7 +56,7 @@ const systemMenuItems = [
 ];
 
 export default function Layout({ children, currentPageName }) {
-  const hideNav = currentPageName === "MapMonitor";
+  const hideNav = currentPageName === "MapMonitor" || currentPageName === "Landing";
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
