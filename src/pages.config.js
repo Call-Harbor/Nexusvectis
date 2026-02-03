@@ -64,6 +64,7 @@ import Routes from './pages/Routes';
 import Security from './pages/Security';
 import Settings from './pages/Settings';
 import UserManagement from './pages/UserManagement';
+import AdminMonitor from './pages/AdminMonitor';
 import __Layout from './Layout.jsx';
 
 
@@ -85,6 +86,7 @@ export const PAGES = {
     "Security": Security,
     "Settings": Settings,
     "UserManagement": UserManagement,
+    "AdminMonitor": AdminMonitor,
 }
 
 export const pagesConfig = {

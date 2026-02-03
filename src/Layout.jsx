@@ -49,6 +49,7 @@ const planningMenuItems = [
 ];
 
 const systemMenuItems = [
+  { name: "Admin Monitor", icon: Globe, page: "AdminMonitor" },
   { name: "Users", icon: Users, page: "UserManagement" },
   { name: "Security", icon: Shield, page: "Security" },
   { name: "Invoices", icon: FileText, page: "Invoices" },
