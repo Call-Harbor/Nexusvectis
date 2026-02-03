@@ -124,7 +124,7 @@ export default function Landing() {
               </Button>
             </Link>
             <Link to={createPageUrl("Dashboard")}>
-              <Button className="bg-gradient-to-r from-cyan-500 to-violet-500 hover:from-cyan-400 hover:to-violet-400 text-white transition-all hover:scale-105">
+              <Button className="bg-gradient-to-r from-cyan-500 to-violet-500 text-white transition-transform hover:scale-105">
                 Get Started
                 <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
               </Button>
