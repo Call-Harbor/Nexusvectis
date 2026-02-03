@@ -92,11 +92,10 @@ export default function AdminMonitor() {
       <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwwLjA1KSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-40" />
 
       <div className="absolute top-6 left-6 right-6 z-[9999] flex items-center justify-between pointer-events-none">
-        <div className="pointer-events-auto">
         <motion.div 
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          className="flex items-center gap-4"
+          className="flex items-center gap-4 pointer-events-auto"
         >
           <div className="p-3 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-violet-500/20 border border-cyan-500/30 shadow-lg shadow-cyan-500/20">
             <Globe className="w-7 h-7 text-cyan-400" />
@@ -107,7 +106,7 @@ export default function AdminMonitor() {
             </h1>
             <p className="text-sm text-slate-400 mt-0.5">Real-time platform overview</p>
           </div>
-        </div>
+        </motion.div>
         
         <div className="flex gap-3 pointer-events-auto">
           <motion.div
