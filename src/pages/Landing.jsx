@@ -387,7 +387,7 @@ export default function Landing() {
             <img 
               src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/697e930c62bf3e3832b34edb/1c0bebde9_FullLogo_Transparent.png" 
               alt="NexusVectis Logo" 
-              className="h-10 w-auto opacity-60"
+              className="h-32 w-auto opacity-70"
             />
             <p className="text-slate-500 text-sm">&copy; 2026 NexusVectis. Shaping the future of logistics.</p>
           </div>
