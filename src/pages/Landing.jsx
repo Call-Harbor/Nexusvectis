@@ -1,13 +1,28 @@
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "../utils";
 import { 
   Truck, Globe, Zap, Shield, TrendingUp, Satellite,
-  BarChart3, MapPin, Radio, ArrowRight, CheckCircle2
+  BarChart3, MapPin, Radio, ArrowRight, CheckCircle2, Sparkles, Brain, Orbit
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useEffect, useState } from "react";
 
 export default function Landing() {
+  const { scrollY } = useScroll();
+  const y1 = useTransform(scrollY, [0, 300], [0, 100]);
+  const y2 = useTransform(scrollY, [0, 300], [0, -100]);
+  const opacity = useTransform(scrollY, [0, 200], [1, 0]);
+  
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      setMousePosition({ x: e.clientX, y: e.clientY });
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, []);
   const features = [
     {
       icon: Globe,
@@ -49,104 +64,206 @@ export default function Landing() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+    <div className="min-h-screen bg-black overflow-hidden relative">
+      {/* Animated Background */}
+      <div className="fixed inset-0 z-0">
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-violet-950/20 to-cyan-950/20" />
+        
+        {/* Floating Orbs */}
+        <motion.div
+          style={{ x: y1, y: y2 }}
+          className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl"
+          animate={{
+            scale: [1, 1.2, 1],
+            opacity: [0.3, 0.5, 0.3],
+          }}
+          transition={{ duration: 8, repeat: Infinity }}
+        />
+        <motion.div
+          style={{ x: y2, y: y1 }}
+          className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-violet-500/20 rounded-full blur-3xl"
+          animate={{
+            scale: [1.2, 1, 1.2],
+            opacity: [0.3, 0.5, 0.3],
+          }}
+          transition={{ duration: 10, repeat: Infinity }}
+        />
+        
+        {/* Grid Pattern */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.05)_1px,transparent_1px)] bg-[size:100px_100px]" />
+        
+        {/* Mouse Follow Glow */}
+        <motion.div
+          className="absolute w-96 h-96 rounded-full pointer-events-none"
+          style={{
+            background: "radial-gradient(circle, rgba(6,182,212,0.15) 0%, transparent 70%)",
+            x: mousePosition.x - 192,
+            y: mousePosition.y - 192,
+          }}
+          transition={{ type: "spring", damping: 30, stiffness: 200 }}
+        />
+      </div>
+
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-slate-900/80 backdrop-blur-xl border-b border-slate-800/50">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <img 
+      <motion.header 
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        className="fixed top-0 left-0 right-0 z-50 bg-black/20 backdrop-blur-2xl border-b border-white/5"
+      >
+        <div className="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
+          <motion.img 
+            whileHover={{ scale: 1.05 }}
             src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/697e930c62bf3e3832b34edb/1c0bebde9_FullLogo_Transparent.png" 
             alt="NexusVectis Logo" 
-            className="h-12 w-auto"
+            className="h-14 w-auto"
           />
           <div className="flex items-center gap-4">
             <Link to={createPageUrl("Dashboard")}>
-              <Button variant="ghost" className="text-white">
+              <Button variant="ghost" className="text-white hover:bg-white/10">
                 Dashboard
               </Button>
             </Link>
             <Link to={createPageUrl("Dashboard")}>
-              <Button className="bg-gradient-to-r from-cyan-500 to-violet-500 hover:from-cyan-600 hover:to-violet-600 text-white">
-                Get Started
-                <ArrowRight className="w-4 h-4 ml-2" />
+              <Button className="relative bg-gradient-to-r from-cyan-500 to-violet-500 hover:from-cyan-400 hover:to-violet-400 text-white shadow-lg shadow-cyan-500/50 overflow-hidden group">
+                <span className="relative z-10 flex items-center">
+                  Get Started
+                  <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                </span>
+                <div className="absolute inset-0 bg-gradient-to-r from-violet-500 to-cyan-500 opacity-0 group-hover:opacity-100 transition-opacity" />
               </Button>
             </Link>
           </div>
         </div>
-      </header>
+      </motion.header>
 
       {/* Hero Section */}
-      <section className="pt-32 pb-20 px-6">
+      <section className="relative pt-40 pb-32 px-6 z-10">
         <div className="max-w-7xl mx-auto">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center max-w-4xl mx-auto"
+            transition={{ duration: 0.8 }}
+            className="text-center max-w-5xl mx-auto"
           >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-cyan-500/10 to-violet-500/10 border border-cyan-500/30 mb-8">
-              <Satellite className="w-4 h-4 text-cyan-400" />
-              <span className="text-sm text-white">Next-Generation Fleet Intelligence</span>
-            </div>
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.2 }}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-cyan-500/10 to-violet-500/10 border border-cyan-500/30 backdrop-blur-xl mb-8 shadow-lg shadow-cyan-500/10"
+            >
+              <Orbit className="w-4 h-4 text-cyan-400 animate-spin" style={{ animationDuration: "3s" }} />
+              <span className="text-sm text-white font-medium">Next-Generation Fleet Intelligence Platform</span>
+              <Sparkles className="w-4 h-4 text-violet-400" />
+            </motion.div>
             
-            <h1 className="text-6xl font-bold text-white mb-6 leading-tight">
-              Track. Optimize. <br />
-              <span className="bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent">
-                Transform Your Fleet
+            <motion.h1 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="text-7xl md:text-8xl font-black text-white mb-8 leading-[1.1] tracking-tight"
+            >
+              The Future of
+              <br />
+              <span className="relative inline-block mt-2">
+                <span className="bg-gradient-to-r from-cyan-400 via-violet-400 to-fuchsia-400 bg-clip-text text-transparent animate-gradient">
+                  Logistics Intelligence
+                </span>
+                <motion.div
+                  className="absolute -inset-2 bg-gradient-to-r from-cyan-500/20 to-violet-500/20 blur-2xl -z-10"
+                  animate={{
+                    opacity: [0.5, 0.8, 0.5],
+                  }}
+                  transition={{ duration: 3, repeat: Infinity }}
+                />
               </span>
-            </h1>
+            </motion.h1>
             
-            <p className="text-xl text-slate-300 mb-12 max-w-3xl mx-auto leading-relaxed">
-              The most advanced multi-modal transport management platform. 
-              Real-time tracking, AI-powered insights, and predictive analytics for modern logistics.
-            </p>
+            <motion.p 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
+              className="text-xl md:text-2xl text-slate-300 mb-12 max-w-3xl mx-auto leading-relaxed font-light"
+            >
+              Real-time tracking meets artificial intelligence. 
+              <span className="text-cyan-400"> Monitor</span>,
+              <span className="text-violet-400"> optimize</span>, and
+              <span className="text-fuchsia-400"> transform</span> your entire fleet with unprecedented precision.
+            </motion.p>
 
-            <div className="flex items-center justify-center gap-4">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.7 }}
+              className="flex flex-col sm:flex-row items-center justify-center gap-5"
+            >
               <Link to={createPageUrl("Dashboard")}>
-                <Button size="lg" className="bg-gradient-to-r from-cyan-500 to-violet-500 hover:from-cyan-600 hover:to-violet-600 text-white text-lg px-8">
-                  Start Free Trial
-                  <ArrowRight className="w-5 h-5 ml-2" />
+                <Button size="lg" className="relative bg-gradient-to-r from-cyan-500 via-violet-500 to-fuchsia-500 hover:shadow-2xl hover:shadow-cyan-500/50 text-white text-lg px-10 py-6 rounded-2xl font-semibold group overflow-hidden">
+                  <span className="relative z-10 flex items-center">
+                    <Brain className="w-5 h-5 mr-3 group-hover:scale-110 transition-transform" />
+                    Experience the Platform
+                    <ArrowRight className="w-5 h-5 ml-3 group-hover:translate-x-2 transition-transform" />
+                  </span>
+                  <motion.div 
+                    className="absolute inset-0 bg-gradient-to-r from-fuchsia-500 via-violet-500 to-cyan-500"
+                    initial={{ x: "100%" }}
+                    whileHover={{ x: 0 }}
+                    transition={{ duration: 0.3 }}
+                  />
                 </Button>
               </Link>
-              <Link to={createPageUrl("MapMonitor")} target="_blank">
-                <Button size="lg" variant="outline" className="text-white border-slate-700 hover:bg-slate-800 text-lg px-8">
-                  View Live Demo
-                </Button>
-              </Link>
-            </div>
+            </motion.div>
           </motion.div>
 
           {/* Stats */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="grid grid-cols-2 lg:grid-cols-4 gap-8 mt-20 max-w-4xl mx-auto"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1 }}
+            className="grid grid-cols-2 lg:grid-cols-4 gap-6 mt-24 max-w-5xl mx-auto"
           >
             {stats.map((stat, idx) => (
-              <div key={idx} className="text-center">
-                <div className="text-4xl font-bold bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent mb-2">
-                  {stat.value}
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1 + idx * 0.1 }}
+                whileHover={{ scale: 1.05, y: -5 }}
+                className="relative group"
+              >
+                <div className="text-center p-6 rounded-2xl bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl border border-white/10 hover:border-cyan-500/50 transition-all">
+                  <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 to-violet-500/10 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity blur-xl" />
+                  <div className="relative">
+                    <div className="text-5xl font-black bg-gradient-to-br from-cyan-400 via-violet-400 to-fuchsia-400 bg-clip-text text-transparent mb-3">
+                      {stat.value}
+                    </div>
+                    <div className="text-sm text-slate-400 font-medium uppercase tracking-wider">{stat.label}</div>
+                  </div>
                 </div>
-                <div className="text-sm text-slate-400">{stat.label}</div>
-              </div>
+              </motion.div>
             ))}
           </motion.div>
         </div>
       </section>
 
       {/* Features Grid */}
-      <section className="py-20 px-6">
+      <section className="relative py-32 px-6 z-10">
         <div className="max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="text-center mb-16"
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-20"
           >
-            <h2 className="text-4xl font-bold text-white mb-4">
-              Everything You Need to Manage Your Fleet
+            <h2 className="text-5xl md:text-6xl font-bold text-white mb-6 leading-tight">
+              Power Your Operations with
+              <br />
+              <span className="bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent">
+                AI-Driven Intelligence
+              </span>
             </h2>
-            <p className="text-lg text-slate-400 max-w-2xl mx-auto">
-              Built for modern logistics operations with cutting-edge technology
+            <p className="text-xl text-slate-400 max-w-3xl mx-auto">
+              Every feature designed to give you unprecedented control and insight
             </p>
           </motion.div>
 
@@ -156,16 +273,24 @@ export default function Landing() {
               return (
                 <motion.div
                   key={idx}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4 + idx * 0.1 }}
-                  className="p-6 rounded-2xl bg-slate-900/50 backdrop-blur-xl border border-slate-800/50 hover:border-cyan-500/30 transition-all group"
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: idx * 0.1, duration: 0.5 }}
+                  whileHover={{ scale: 1.02, y: -5 }}
+                  className="relative p-8 rounded-3xl bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl border border-white/10 hover:border-cyan-500/50 transition-all group overflow-hidden"
                 >
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500/20 to-violet-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                    <Icon className="w-6 h-6 text-cyan-400" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-violet-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  
+                  <div className="relative">
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500/20 via-violet-500/20 to-fuchsia-500/20 flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all shadow-lg shadow-cyan-500/20">
+                      <Icon className="w-8 h-8 text-cyan-400" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-cyan-400 transition-colors">{feature.title}</h3>
+                    <p className="text-slate-400 leading-relaxed">{feature.description}</p>
                   </div>
-                  <h3 className="text-xl font-semibold text-white mb-2">{feature.title}</h3>
-                  <p className="text-slate-400 leading-relaxed">{feature.description}</p>
+                  
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-cyan-500/10 to-transparent rounded-full blur-2xl -z-10 group-hover:scale-150 transition-transform" />
                 </motion.div>
               );
             })}
@@ -174,34 +299,80 @@ export default function Landing() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 px-6">
+      <section className="relative py-32 px-6 z-10">
         <div className="max-w-7xl mx-auto">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
-            className="relative rounded-3xl bg-gradient-to-r from-cyan-500/10 to-violet-500/10 border border-cyan-500/30 p-12 overflow-hidden"
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="relative rounded-[3rem] bg-gradient-to-br from-cyan-500/10 via-violet-500/10 to-fuchsia-500/10 border border-cyan-500/30 p-16 md:p-20 overflow-hidden"
           >
-            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAwIDEwIEwgNDAgMTAgTSAxMCAwIEwgMTAgNDAgTSAwIDIwIEwgNDAgMjAgTSAyMCAwIEwgMjAgNDAgTSAwIDMwIEwgNDAgMzAgTSAzMCAwIEwgMzAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjAzIiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-50" />
+            {/* Animated Background Elements */}
+            <div className="absolute inset-0">
+              <motion.div
+                className="absolute top-0 left-0 w-full h-full"
+                animate={{
+                  backgroundPosition: ["0% 0%", "100% 100%"],
+                }}
+                transition={{ duration: 20, repeat: Infinity, repeatType: "reverse" }}
+                style={{
+                  backgroundImage: "radial-gradient(circle at 20% 50%, rgba(6, 182, 212, 0.1) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 50%)",
+                  backgroundSize: "200% 200%",
+                }}
+              />
+            </div>
             
-            <div className="relative z-10 text-center max-w-3xl mx-auto">
-              <h2 className="text-4xl font-bold text-white mb-4">
-                Ready to Transform Your Logistics?
+            <div className="relative z-10 text-center max-w-4xl mx-auto">
+              <motion.div
+                initial={{ scale: 0 }}
+                whileInView={{ scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.2, type: "spring" }}
+              >
+                <Sparkles className="w-16 h-16 text-cyan-400 mx-auto mb-6" />
+              </motion.div>
+              
+              <h2 className="text-5xl md:text-6xl font-black text-white mb-6 leading-tight">
+                Transform Your Fleet
+                <br />
+                <span className="bg-gradient-to-r from-cyan-400 via-violet-400 to-fuchsia-400 bg-clip-text text-transparent">
+                  Operations Today
+                </span>
               </h2>
-              <p className="text-xl text-slate-300 mb-8">
-                Join leading companies using NexusVectis to optimize their fleet operations
+              <p className="text-2xl text-slate-300 mb-12 font-light">
+                Join the future of intelligent logistics management
               </p>
               
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
                 <Link to={createPageUrl("Dashboard")}>
-                  <Button size="lg" className="bg-white text-slate-900 hover:bg-slate-100 text-lg px-8">
-                    Start Free Trial
-                    <ArrowRight className="w-5 h-5 ml-2" />
+                  <Button size="lg" className="relative bg-white text-slate-900 hover:shadow-2xl hover:shadow-white/50 text-xl px-12 py-7 rounded-2xl font-bold group overflow-hidden">
+                    <span className="relative z-10 flex items-center">
+                      Get Started Now
+                      <ArrowRight className="w-6 h-6 ml-3 group-hover:translate-x-2 transition-transform" />
+                    </span>
+                    <motion.div 
+                      className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-violet-400"
+                      initial={{ x: "-100%" }}
+                      whileHover={{ x: 0 }}
+                      transition={{ duration: 0.3 }}
+                    />
                   </Button>
                 </Link>
-                <div className="flex items-center gap-2 text-sm text-slate-400">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                  <span>No credit card required</span>
+              </div>
+              
+              <div className="flex items-center justify-center gap-6 mt-10 text-slate-400">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                  <span>Free trial</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                  <span>No credit card</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                  <span>Setup in minutes</span>
                 </div>
               </div>
             </div>
@@ -210,9 +381,16 @@ export default function Landing() {
       </section>
 
       {/* Footer */}
-      <footer className="py-12 px-6 border-t border-slate-800/50">
-        <div className="max-w-7xl mx-auto text-center text-slate-400">
-          <p>&copy; 2026 NexusVectis. All rights reserved.</p>
+      <footer className="relative py-16 px-6 border-t border-white/5 z-10">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <img 
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/697e930c62bf3e3832b34edb/1c0bebde9_FullLogo_Transparent.png" 
+              alt="NexusVectis Logo" 
+              className="h-10 w-auto opacity-60"
+            />
+            <p className="text-slate-500 text-sm">&copy; 2026 NexusVectis. Shaping the future of logistics.</p>
+          </div>
         </div>
       </footer>
     </div>
