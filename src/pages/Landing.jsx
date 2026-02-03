@@ -124,7 +124,7 @@ export default function Landing() {
               </Button>
             </Link>
             <Link to={createPageUrl("Dashboard")}>
-              <Button className="relative bg-gradient-to-r from-cyan-500 to-violet-500 hover:from-cyan-400 hover:to-violet-400 text-white shadow-lg shadow-cyan-500/50 overflow-hidden group">
+              <Button className="relative bg-gradient-to-r from-cyan-500 to-violet-500 hover:from-cyan-400 hover:to-violet-400 text-white overflow-hidden group transition-transform hover:scale-105">
                 <span className="relative z-10 flex items-center">
                   Get Started
                   <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
