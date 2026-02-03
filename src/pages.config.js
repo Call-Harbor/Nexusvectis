@@ -62,6 +62,7 @@ import Routes from './pages/Routes';
 import Security from './pages/Security';
 import Settings from './pages/Settings';
 import UserManagement from './pages/UserManagement';
+import Landing from './pages/Landing';
 import __Layout from './Layout.jsx';
 
 
@@ -81,6 +82,7 @@ export const PAGES = {
     "Security": Security,
     "Settings": Settings,
     "UserManagement": UserManagement,
+    "Landing": Landing,
 }
 
 export const pagesConfig = {
