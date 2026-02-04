@@ -1,16 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
   Bot, Box, Zap, Activity, GitBranch, Play, 
-  Pause, Settings, Mail, FileText, Bell, CheckCircle
+  Pause, Settings, Mail, FileText, Bell, CheckCircle, Clock
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "sonner";
 
 export default function WarehouseAutomation() {
   const [isSimulating, setIsSimulating] = useState(false);
@@ -21,10 +22,16 @@ export default function WarehouseAutomation() {
     inventory_alerts: false,
     shipment_tracking: true
   });
+  const [workflowLogs, setWorkflowLogs] = useState([]);
 
   const { data: resources = [] } = useQuery({
     queryKey: ['resources'],
     queryFn: () => base44.entities.Resource.list(),
+  });
+
+  const { data: shipments = [] } = useQuery({
+    queryKey: ['shipments'],
+    queryFn: () => base44.entities.Shipment.list(),
   });
 
   const roboticUnits = resources.length * 2; // Simulate AMR/cobots per warehouse
@@ -123,12 +130,102 @@ Provide realistic recommendations based on actual warehouse utilization.`,
     runSimulation.mutate();
   };
 
+  const executeWorkflow = useMutation({
+    mutationFn: async ({ workflow_type, data }) => {
+      const response = await base44.functions.invoke('workflowAutomation', {
+        workflow_type,
+        data
+      });
+      return response.data;
+    },
+    onSuccess: (data, variables) => {
+      const log = {
+        id: Date.now(),
+        workflow: variables.workflow_type,
+        timestamp: new Date().toISOString(),
+        result: data
+      };
+      setWorkflowLogs(prev => [log, ...prev].slice(0, 10));
+      toast.success(`Workflow executed: ${variables.workflow_type}`);
+    },
+    onError: (error) => {
+      toast.error(`Workflow failed: ${error.message}`);
+    }
+  });
+
   const toggleWorkflow = (workflow) => {
+    const newState = !activeWorkflows[workflow];
     setActiveWorkflows(prev => ({
       ...prev,
-      [workflow]: !prev[workflow]
+      [workflow]: newState
     }));
+    
+    if (newState) {
+      toast.success(`${workflow.replace(/_/g, ' ')} activated`);
+    } else {
+      toast.info(`${workflow.replace(/_/g, ' ')} deactivated`);
+    }
   };
+
+  const testWorkflow = async (workflowId) => {
+    const sampleShipment = shipments[0];
+    
+    switch (workflowId) {
+      case 'email_notifications':
+        if (sampleShipment) {
+          executeWorkflow.mutate({
+            workflow_type: 'email_notifications',
+            data: { shipment_id: sampleShipment.id }
+          });
+        } else {
+          toast.error('No shipments available for test');
+        }
+        break;
+      
+      case 'customs_processing':
+        if (sampleShipment) {
+          executeWorkflow.mutate({
+            workflow_type: 'customs_processing',
+            data: { shipment_id: sampleShipment.id }
+          });
+        } else {
+          toast.error('No shipments available for test');
+        }
+        break;
+      
+      case 'inventory_alerts':
+        executeWorkflow.mutate({
+          workflow_type: 'inventory_alerts',
+          data: {}
+        });
+        break;
+      
+      case 'shipment_tracking':
+        if (sampleShipment) {
+          executeWorkflow.mutate({
+            workflow_type: 'shipment_tracking',
+            data: { shipment_id: sampleShipment.id }
+          });
+        } else {
+          toast.error('No shipments available for test');
+        }
+        break;
+    }
+  };
+
+  // Auto-execute active workflows periodically
+  useEffect(() => {
+    if (!activeWorkflows.inventory_alerts) return;
+    
+    const interval = setInterval(() => {
+      executeWorkflow.mutate({
+        workflow_type: 'inventory_alerts',
+        data: {}
+      });
+    }, 60000); // Every minute
+    
+    return () => clearInterval(interval);
+  }, [activeWorkflows.inventory_alerts]);
 
   const workflowConfigs = [
     { id: 'email_notifications', name: 'Email Notifications', icon: Mail, description: 'Automated shipment status emails' },
@@ -384,58 +481,117 @@ Provide realistic recommendations based on actual warehouse utilization.`,
           </TabsContent>
 
           <TabsContent value="workflows" className="space-y-6">
-            <Card className="bg-slate-900/50 border-slate-700/50">
-              <CardHeader>
-                <CardTitle className="text-white">Automated Workflow Bots</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {workflowConfigs.map((workflow) => {
-                    const Icon = workflow.icon;
-                    const isActive = activeWorkflows[workflow.id];
-                    
-                    return (
-                      <div 
-                        key={workflow.id}
-                        className={`p-4 rounded-lg border transition-all ${
-                          isActive 
-                            ? 'bg-emerald-500/10 border-emerald-500/30' 
-                            : 'bg-slate-800/30 border-slate-700/50'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <div className={`p-2 rounded-lg ${
-                              isActive ? 'bg-emerald-500/20' : 'bg-slate-700/30'
-                            }`}>
-                              <Icon className={`w-5 h-5 ${
-                                isActive ? 'text-emerald-400' : 'text-slate-400'
-                              }`} />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card className="bg-slate-900/50 border-slate-700/50">
+                <CardHeader>
+                  <CardTitle className="text-white">Automated Workflow Bots</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {workflowConfigs.map((workflow) => {
+                      const Icon = workflow.icon;
+                      const isActive = activeWorkflows[workflow.id];
+                      
+                      return (
+                        <div 
+                          key={workflow.id}
+                          className={`p-4 rounded-lg border transition-all ${
+                            isActive 
+                              ? 'bg-emerald-500/10 border-emerald-500/30' 
+                              : 'bg-slate-800/30 border-slate-700/50'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-3">
+                              <div className={`p-2 rounded-lg ${
+                                isActive ? 'bg-emerald-500/20' : 'bg-slate-700/30'
+                              }`}>
+                                <Icon className={`w-5 h-5 ${
+                                  isActive ? 'text-emerald-400' : 'text-slate-400'
+                                }`} />
+                              </div>
+                              <div>
+                                <div className="font-medium text-white">{workflow.name}</div>
+                                <div className="text-sm text-slate-400">{workflow.description}</div>
+                              </div>
                             </div>
-                            <div>
-                              <div className="font-medium text-white">{workflow.name}</div>
-                              <div className="text-sm text-slate-400">{workflow.description}</div>
+                            <div className="flex items-center gap-3">
+                              {isActive && (
+                                <Badge variant="outline" className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
+                                  <CheckCircle className="w-3 h-3 mr-1" />
+                                  Active
+                                </Badge>
+                              )}
+                              <Switch
+                                checked={isActive}
+                                onCheckedChange={() => toggleWorkflow(workflow.id)}
+                              />
                             </div>
                           </div>
-                          <div className="flex items-center gap-3">
-                            {isActive && (
-                              <Badge variant="outline" className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
-                                <CheckCircle className="w-3 h-3 mr-1" />
-                                Active
-                              </Badge>
-                            )}
-                            <Switch
-                              checked={isActive}
-                              onCheckedChange={() => toggleWorkflow(workflow.id)}
-                            />
-                          </div>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="w-full"
+                            onClick={() => testWorkflow(workflow.id)}
+                            disabled={executeWorkflow.isPending}
+                          >
+                            <Zap className="w-3 h-3 mr-1" />
+                            Test Workflow
+                          </Button>
                         </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </CardContent>
-            </Card>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-slate-900/50 border-slate-700/50">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <Clock className="w-5 h-5 text-cyan-400" />
+                    Workflow Activity Log
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3 max-h-96 overflow-y-auto">
+                    <AnimatePresence>
+                      {workflowLogs.length === 0 ? (
+                        <div className="text-center py-8 text-slate-500">
+                          No workflow activity yet
+                        </div>
+                      ) : (
+                        workflowLogs.map((log) => (
+                          <motion.div
+                            key={log.id}
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: 20 }}
+                            className="p-3 rounded-lg bg-slate-800/50 border border-slate-700/50"
+                          >
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="font-medium text-white text-sm">
+                                {log.workflow.replace(/_/g, ' ')}
+                              </span>
+                              <span className="text-xs text-slate-500">
+                                {new Date(log.timestamp).toLocaleTimeString()}
+                              </span>
+                            </div>
+                            <div className="text-xs text-emerald-400">
+                              {log.result.message || 'Completed successfully'}
+                            </div>
+                            {log.result.alerts_created && (
+                              <div className="text-xs text-slate-400 mt-1">
+                                Alerts created: {log.result.alerts_created}
+                              </div>
+                            )}
+                          </motion.div>
+                        ))
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           <TabsContent value="fleet" className="space-y-6">
