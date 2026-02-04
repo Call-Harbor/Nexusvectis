@@ -27,66 +27,89 @@ export default function DemandForecasting() {
 
   const generateForecast = useMutation({
     mutationFn: async () => {
-      // Calculate real forecast based on actual data
-      const avgCapacity = resources.reduce((sum, r) => sum + ((r.current_level / r.capacity) * 100 || 0), 0) / resources.length;
+      // Calculate metrics from real data
+      const avgCapacity = resources.length > 0 
+        ? resources.reduce((sum, r) => sum + ((r.current_level / r.capacity) * 100 || 0), 0) / resources.length 
+        : 0;
       const inTransit = shipments.filter(s => s.status === 'in_transit').length;
       const pendingShipments = shipments.filter(s => s.status === 'pending').length;
+      const coldChainCount = shipments.filter(s => s.cargo_type === 'cold_chain').length;
       
-      // Generate 7-day forecast based on current trends
-      const daily_forecast = Array.from({ length: 7 }, (_, i) => {
-        const date = new Date();
-        date.setDate(date.getDate() + i);
-        const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
-        
-        // Calculate demand based on pending shipments and capacity trends
-        const baseDemand = 50 + (pendingShipments * 5);
-        const weekendFactor = (date.getDay() === 0 || date.getDay() === 6) ? 0.7 : 1.0;
-        const demand_level = Math.min(100, Math.round(baseDemand * weekendFactor + Math.random() * 10));
-        
-        return {
-          day: dayName,
-          demand_level,
-          confidence: Math.round(85 + Math.random() * 10)
-        };
-      });
-
-      // Generate replenishment alerts for low-stock resources
-      const replenishment_alerts = resources
-        .filter(r => (r.current_level / r.capacity) < 0.3)
-        .map(r => {
-          const daysUntilEmpty = Math.ceil((r.current_level / r.capacity) * 14);
-          const date = new Date();
-          date.setDate(date.getDate() + daysUntilEmpty);
-          
-          return {
-            item: r.name,
-            current_stock: r.current_level,
-            predicted_shortage_date: date.toLocaleDateString('en-US'),
-            recommended_order_quantity: Math.ceil(r.capacity * 0.7)
-          };
-        });
-
-      // Generate IoT sensor data from resources
-      const iot_sensor_data = resources.slice(0, 3).map(r => ({
-        sensor_type: 'Temperature Monitor',
-        location: r.name,
-        reading: Math.round(18 + Math.random() * 6),
-        status: (r.current_level / r.capacity) > 0.8 ? 'warning' : 'normal'
-      }));
-
-      // Calculate cost savings based on actual efficiency
-      const potentialSavingsPercent = Math.round(40 - (avgCapacity / 100 * 15));
+      // Get low-stock resources
+      const lowStockResources = resources.filter(r => (r.current_level / r.capacity) < 0.3);
       
-      return {
-        daily_forecast,
-        replenishment_alerts,
-        iot_sensor_data,
-        cost_savings: {
-          potential_savings_percent: potentialSavingsPercent,
-          stockout_prevention: Math.round(replenishment_alerts.length * 12),
-          overstock_reduction: Math.round((100 - avgCapacity) * 2)
+      const response = await base44.integrations.Core.InvokeLLM({
+        prompt: `Analyze real logistics data for demand forecasting:
+
+WAREHOUSE DATA:
+- ${resources.length} warehouses
+- Average capacity: ${avgCapacity.toFixed(1)}%
+- Low stock facilities: ${lowStockResources.length}
+${lowStockResources.map(r => `  * ${r.name}: ${r.current_level}/${r.capacity} (${((r.current_level/r.capacity)*100).toFixed(0)}%)`).join('\n')}
+
+SHIPMENT DATA:
+- Total shipments: ${shipments.length}
+- In transit: ${inTransit}
+- Pending: ${pendingShipments}
+- Cold chain: ${coldChainCount}
+
+Based on this REAL data, generate a 7-day demand forecast with:
+1. Daily demand predictions (consider pending shipments and current capacity)
+2. Replenishment alerts for facilities below 30% capacity
+3. IoT sensor readings for monitoring
+4. Cost savings opportunities based on actual utilization
+
+Use realistic values based on the actual data provided.`,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            daily_forecast: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  day: { type: "string" },
+                  demand_level: { type: "number" },
+                  confidence: { type: "number" }
+                }
+              }
+            },
+            replenishment_alerts: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  item: { type: "string" },
+                  current_stock: { type: "number" },
+                  predicted_shortage_date: { type: "string" },
+                  recommended_order_quantity: { type: "number" }
+                }
+              }
+            },
+            iot_sensor_data: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  sensor_type: { type: "string" },
+                  location: { type: "string" },
+                  reading: { type: "number" },
+                  status: { type: "string" }
+                }
+              }
+            },
+            cost_savings: {
+              type: "object",
+              properties: {
+                potential_savings_percent: { type: "number" },
+                stockout_prevention: { type: "number" },
+                overstock_reduction: { type: "number" }
+              }
+            }
+          }
         }
-      };
+      });
+      return response;
     },
     onSuccess: (data) => {
       setForecastData(data);

@@ -37,7 +37,7 @@ export default function GreenTMS() {
 
   const optimizeRoutes = useMutation({
     mutationFn: async () => {
-      // Calculate real optimization based on actual vehicle and route data
+      // Gather real fleet data
       const vehiclesByType = {
         truck: vehicles.filter(v => v.type === 'truck'),
         ship: vehicles.filter(v => v.type === 'ship'),
@@ -45,68 +45,96 @@ export default function GreenTMS() {
         train: vehicles.filter(v => v.type === 'train')
       };
 
-      // Generate carrier recommendations based on actual fleet
-      const carrier_recommendations = Object.entries(vehiclesByType)
+      const fleetSummary = Object.entries(vehiclesByType)
         .filter(([_, vehs]) => vehs.length > 0)
         .map(([type, vehs]) => {
-          const avgEmissions = vehs.reduce((sum, v) => sum + (v.co2_emissions || 0), 0) / vehs.length;
-          const reductionPotential = type === 'aircraft' ? 30 : type === 'truck' ? 20 : 15;
-          
-          return {
-            transport_mode: type,
-            current_carrier: 'Standard Fleet',
-            green_alternative: type === 'aircraft' ? 'Hybrid Aircraft' : type === 'ship' ? 'LNG-Powered Ship' : `Electric ${type}`,
-            co2_reduction_percent: reductionPotential,
-            cost_impact: reductionPotential > 25 ? '+8-12% initial, -15% operational' : '+5-8% initial, -10% operational'
-          };
-        });
+          const totalEmissions = vehs.reduce((sum, v) => sum + (v.co2_emissions || 0), 0);
+          return `- ${type}: ${vehs.length} vehicles, ${totalEmissions.toFixed(0)}kg CO2`;
+        })
+        .join('\n');
 
-      // Generate consolidation opportunities from routes
-      const consolidation_opportunities = routes.slice(0, 3).map((route, idx) => {
-        const baseTips = 5 + idx * 2;
-        return {
-          route_pair: `${route.origin} ↔ ${route.destination}`,
-          current_trips: baseTips,
-          optimized_trips: Math.ceil(baseTips * 0.7),
-          co2_saved_kg: Math.round((route.co2_estimate || 200) * 0.3)
-        };
-      });
+      const routeSummary = routes.slice(0, 5).map(r => 
+        `- ${r.origin} → ${r.destination} (${r.distance_km || 'N/A'}km, ${r.transport_type || 'truck'})`
+      ).join('\n');
 
-      // Generate multimodal suggestions for long routes
-      const multimodal_routes = routes
-        .filter(r => (r.distance_km || 0) > 500)
-        .slice(0, 3)
-        .map(route => ({
-          route_name: `${route.origin} → ${route.destination}`,
-          current_mode: route.transport_type || 'truck',
-          suggested_combination: 'Train (80%) + Truck (20%)',
-          co2_reduction_percent: 35
-        }));
+      const response = await base44.integrations.Core.InvokeLLM({
+        prompt: `Analyze REAL fleet data for green optimization:
 
-      // Calculate EU compliance
-      const targetReduction = totalCO2 * 0.15; // EU target: 15% reduction
-      const potentialReduction = totalCO2 * 0.12; // Current potential: 12%
-      const compliancePercent = Math.round((potentialReduction / targetReduction) * 100);
+CURRENT FLEET:
+${fleetSummary}
+Total CO2: ${totalCO2.toFixed(2)} kg
 
-      // Calculate total savings
-      const totalCO2Reduction = Math.round(totalCO2 * 0.12);
-      const costSavingsAnnual = Math.round((totalCO2Reduction / 1000) * 45); // €45 per tonne CO2
+ACTIVE ROUTES:
+${routeSummary}
 
-      return {
-        carrier_recommendations,
-        consolidation_opportunities,
-        multimodal_routes,
-        eu_compliance: {
-          total_emissions_reduction_target: Math.round(targetReduction),
-          current_vs_target_percent: compliancePercent,
-          compliance_status: compliancePercent >= 85 ? 'On Track' : 'Action Needed'
-        },
-        total_savings: {
-          co2_reduction_kg: totalCO2Reduction,
-          cost_savings_annual: costSavingsAnnual,
-          implementation_timeline: '6-12 months'
+Based on this REAL data, provide:
+1. Low-emission carrier alternatives for each transport mode in the fleet
+2. Route consolidation opportunities (identify similar routes that can be combined)
+3. Multimodal routing suggestions for routes over 500km
+4. EU compliance analysis (target: 15% CO2 reduction)
+5. Cost savings from implementing recommendations
+
+Provide realistic recommendations based on the actual fleet composition and routes.`,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            carrier_recommendations: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  transport_mode: { type: "string" },
+                  current_carrier: { type: "string" },
+                  green_alternative: { type: "string" },
+                  co2_reduction_percent: { type: "number" },
+                  cost_impact: { type: "string" }
+                }
+              }
+            },
+            consolidation_opportunities: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  route_pair: { type: "string" },
+                  current_trips: { type: "number" },
+                  optimized_trips: { type: "number" },
+                  co2_saved_kg: { type: "number" }
+                }
+              }
+            },
+            multimodal_routes: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  route_name: { type: "string" },
+                  current_mode: { type: "string" },
+                  suggested_combination: { type: "string" },
+                  co2_reduction_percent: { type: "number" }
+                }
+              }
+            },
+            eu_compliance: {
+              type: "object",
+              properties: {
+                total_emissions_reduction_target: { type: "number" },
+                current_vs_target_percent: { type: "number" },
+                compliance_status: { type: "string" }
+              }
+            },
+            total_savings: {
+              type: "object",
+              properties: {
+                co2_reduction_kg: { type: "number" },
+                cost_savings_annual: { type: "number" },
+                implementation_timeline: { type: "string" }
+              }
+            }
+          }
         }
-      };
+      });
+      return response;
     },
     onSuccess: (data) => {
       setOptimizationResult(data);
