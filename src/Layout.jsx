@@ -48,6 +48,12 @@ const planningMenuItems = [
   { name: "AI Optimization", icon: Sparkles, page: "AIOptimization" },
 ];
 
+const innovationMenuItems = [
+  { name: "Demand Forecasting", icon: Sparkles, page: "DemandForecasting" },
+  { name: "Green TMS", icon: Sparkles, page: "GreenTMS" },
+  { name: "Warehouse Automation", icon: Sparkles, page: "WarehouseAutomation" },
+];
+
 const systemMenuItems = [
   { name: "Users", icon: Users, page: "UserManagement" },
   { name: "Security", icon: Shield, page: "Security" },
@@ -170,6 +176,45 @@ export default function Layout({ children, currentPageName }) {
               <DropdownMenuLabel>Planning & Resources</DropdownMenuLabel>
               <DropdownMenuSeparator className="bg-slate-800" />
               {planningMenuItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = currentPageName === item.page;
+                return (
+                  <DropdownMenuItem key={item.name} asChild>
+                    <Link
+                      to={createPageUrl(item.page)}
+                      className={cn(
+                        "flex items-center gap-3 cursor-pointer",
+                        isActive && "text-cyan-400"
+                      )}
+                    >
+                      <Icon className="w-4 h-4" />
+                      <span>{item.name}</span>
+                    </Link>
+                  </DropdownMenuItem>
+                );
+              })}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                className={cn(
+                  "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all w-full",
+                  innovationMenuItems.some(item => item.page === currentPageName)
+                    ? "bg-gradient-to-r from-cyan-500/20 to-violet-500/10 text-white border border-cyan-500/30"
+                    : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+                )}
+              >
+                <Sparkles className={cn("w-5 h-5", innovationMenuItems.some(item => item.page === currentPageName) && "text-cyan-400")} />
+                <span>AI Innovation</span>
+                <ChevronDown className="w-4 h-4 ml-auto" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56 bg-slate-900 border-slate-800 text-white ml-3">
+              <DropdownMenuLabel>AI Innovation</DropdownMenuLabel>
+              <DropdownMenuSeparator className="bg-slate-800" />
+              {innovationMenuItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = currentPageName === item.page;
                 return (
@@ -342,6 +387,30 @@ export default function Layout({ children, currentPageName }) {
               <div className="pt-2 space-y-1">
                 <p className="px-4 py-2 text-xs font-semibold text-slate-500 uppercase">Planning & Resources</p>
                 {planningMenuItems.map((item) => {
+                  const isActive = currentPageName === item.page;
+                  const Icon = item.icon;
+                  return (
+                    <Link
+                      key={item.name}
+                      to={createPageUrl(item.page)}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={cn(
+                        "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all",
+                        isActive 
+                          ? "bg-gradient-to-r from-cyan-500/20 to-violet-500/10 text-white border border-cyan-500/30" 
+                          : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+                      )}
+                    >
+                      <Icon className={cn("w-5 h-5", isActive && "text-cyan-400")} />
+                      <span>{item.name}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+
+              <div className="pt-2 space-y-1">
+                <p className="px-4 py-2 text-xs font-semibold text-slate-500 uppercase">AI Innovation</p>
+                {innovationMenuItems.map((item) => {
                   const isActive = currentPageName === item.page;
                   const Icon = item.icon;
                   return (

@@ -65,6 +65,9 @@ import Routes from './pages/Routes';
 import Security from './pages/Security';
 import Settings from './pages/Settings';
 import UserManagement from './pages/UserManagement';
+import DemandForecasting from './pages/DemandForecasting';
+import GreenTMS from './pages/GreenTMS';
+import WarehouseAutomation from './pages/WarehouseAutomation';
 import __Layout from './Layout.jsx';
 
 
@@ -87,6 +90,9 @@ export const PAGES = {
     "Security": Security,
     "Settings": Settings,
     "UserManagement": UserManagement,
+    "DemandForecasting": DemandForecasting,
+    "GreenTMS": GreenTMS,
+    "WarehouseAutomation": WarehouseAutomation,
 }
 
 export const pagesConfig = {
