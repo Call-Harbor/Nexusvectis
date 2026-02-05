@@ -14,48 +14,125 @@ export default function Invoices() {
   const downloadInvoice = (invoice) => {
     const doc = new jsPDF();
     
-    // Header
-    doc.setFontSize(24);
-    doc.setTextColor(0, 149, 199);
-    doc.text('FAKTURA', 20, 30);
+    // Background color for header
+    doc.setFillColor(15, 23, 42); // slate-950
+    doc.rect(0, 0, 210, 50, 'F');
     
-    // Invoice details
+    // Company name/logo
+    doc.setFontSize(28);
+    doc.setTextColor(6, 182, 212); // cyan-400
+    doc.text('NexusVectis', 20, 25);
+    
     doc.setFontSize(10);
-    doc.setTextColor(100, 100, 100);
-    doc.text(`Fakturanummer: ${invoice.invoice_number}`, 20, 45);
-    doc.text(`Periode: ${invoice.period_month}`, 20, 52);
-    doc.text(`Status: ${statusLabels[invoice.status]}`, 20, 59);
+    doc.setTextColor(148, 163, 184); // slate-400
+    doc.text('AI-Powered Fleet Intelligence', 20, 35);
+    
+    // Invoice title
+    doc.setFontSize(16);
+    doc.setTextColor(255, 255, 255);
+    doc.text('FAKTURA', 150, 25);
+    
+    // Invoice number in box
+    doc.setFillColor(6, 182, 212, 0.2);
+    doc.setDrawColor(6, 182, 212);
+    doc.setLineWidth(0.5);
+    doc.roundedRect(145, 30, 50, 12, 2, 2, 'FD');
+    doc.setFontSize(10);
+    doc.setTextColor(255, 255, 255);
+    doc.text(invoice.invoice_number, 170, 38, { align: 'center' });
+    
+    // Invoice details section
+    doc.setFontSize(11);
+    doc.setTextColor(51, 65, 85); // slate-700
+    
+    doc.text('Fakturadetaljer:', 20, 65);
+    doc.setFontSize(10);
+    doc.setTextColor(100, 116, 139); // slate-500
+    
+    doc.text(`Periode:`, 20, 75);
+    doc.setTextColor(15, 23, 42);
+    doc.text(invoice.period_month, 60, 75);
+    
+    doc.setTextColor(100, 116, 139);
+    doc.text(`Status:`, 20, 82);
+    
+    // Status badge
+    const statusColors = {
+      pending: [234, 179, 8],
+      paid: [34, 197, 94],
+      overdue: [239, 68, 68],
+      cancelled: [148, 163, 184]
+    };
+    const color = statusColors[invoice.status] || statusColors.pending;
+    doc.setFillColor(color[0], color[1], color[2], 0.2);
+    doc.setDrawColor(color[0], color[1], color[2]);
+    doc.roundedRect(58, 77, 25, 7, 1, 1, 'FD');
+    doc.setTextColor(color[0], color[1], color[2]);
+    doc.setFontSize(9);
+    doc.text(statusLabels[invoice.status], 70.5, 81.5, { align: 'center' });
+    
+    doc.setFontSize(10);
+    doc.setTextColor(100, 116, 139);
     if (invoice.due_date) {
-      doc.text(`Forfaldsdato: ${moment(invoice.due_date).format('DD/MM/YYYY')}`, 20, 66);
+      doc.text(`Forfaldsdato:`, 20, 93);
+      doc.setTextColor(15, 23, 42);
+      doc.text(moment(invoice.due_date).format('DD/MM/YYYY'), 60, 93);
     }
     
-    // Line
-    doc.setDrawColor(200, 200, 200);
-    doc.line(20, 75, 190, 75);
+    // Specification section
+    doc.setDrawColor(203, 213, 225); // slate-300
+    doc.setLineWidth(0.3);
+    doc.line(20, 105, 190, 105);
     
-    // Specification table
     doc.setFontSize(12);
-    doc.setTextColor(0, 0, 0);
-    doc.text('SPECIFIKATION', 20, 85);
+    doc.setTextColor(15, 23, 42);
+    doc.text('Specifikation', 20, 115);
     
+    // Table header
+    doc.setFillColor(241, 245, 249); // slate-100
+    doc.rect(20, 120, 170, 10, 'F');
+    doc.setFontSize(9);
+    doc.setTextColor(71, 85, 105); // slate-600
+    doc.text('Beskrivelse', 25, 126);
+    doc.text('Antal', 120, 126, { align: 'right' });
+    doc.text('Pris', 145, 126, { align: 'right' });
+    doc.text('Total', 180, 126, { align: 'right' });
+    
+    // Line items
     doc.setFontSize(10);
+    doc.setTextColor(15, 23, 42);
+    
     const vehicleTotal = (invoice.vehicle_count || 0) * (invoice.vehicle_price_euro || 15);
+    doc.text('Køretøjer', 25, 138);
+    doc.text(`${invoice.vehicle_count || 0}`, 120, 138, { align: 'right' });
+    doc.text(`€${(invoice.vehicle_price_euro || 15).toFixed(2)}`, 145, 138, { align: 'right' });
+    doc.text(`€${vehicleTotal.toFixed(2)}`, 180, 138, { align: 'right' });
+    
     const resourceTotal = (invoice.resource_count || 0) * (invoice.resource_price_euro || 40);
+    doc.text('Ressourcer', 25, 148);
+    doc.text(`${invoice.resource_count || 0}`, 120, 148, { align: 'right' });
+    doc.text(`€${(invoice.resource_price_euro || 40).toFixed(2)}`, 145, 148, { align: 'right' });
+    doc.text(`€${resourceTotal.toFixed(2)}`, 180, 148, { align: 'right' });
     
-    doc.text(`${invoice.vehicle_count || 0} køretøjer × €${invoice.vehicle_price_euro || 15}`, 20, 95);
-    doc.text(`€${vehicleTotal.toFixed(2)}`, 160, 95);
+    // Subtotal line
+    doc.setDrawColor(203, 213, 225);
+    doc.line(20, 155, 190, 155);
     
-    doc.text(`${invoice.resource_count || 0} ressourcer × €${invoice.resource_price_euro || 40}`, 20, 102);
-    doc.text(`€${resourceTotal.toFixed(2)}`, 160, 102);
-    
-    // Total
-    doc.setDrawColor(200, 200, 200);
-    doc.line(20, 110, 190, 110);
+    // Total section with gradient effect
+    doc.setFillColor(6, 182, 212, 0.1);
+    doc.rect(120, 160, 70, 15, 'F');
     
     doc.setFontSize(14);
-    doc.setTextColor(0, 149, 199);
-    doc.text('TOTAL:', 20, 120);
-    doc.text(`€${invoice.total_amount.toFixed(2)}`, 160, 120);
+    doc.setTextColor(6, 182, 212);
+    doc.text('TOTAL:', 125, 170);
+    doc.setFontSize(16);
+    doc.text(`€${invoice.total_amount.toFixed(2)}`, 180, 170, { align: 'right' });
+    
+    // Footer
+    doc.setFontSize(8);
+    doc.setTextColor(148, 163, 184);
+    doc.text('NexusVectis ApS | CVR: 12345678', 105, 280, { align: 'center' });
+    doc.text('Email: billing@nexusvectis.com | Web: nexusvectis.com', 105, 285, { align: 'center' });
     
     // Save
     doc.save(`${invoice.invoice_number}.pdf`);
