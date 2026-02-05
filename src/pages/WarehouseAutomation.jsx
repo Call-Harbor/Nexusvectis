@@ -34,8 +34,10 @@ export default function WarehouseAutomation() {
     queryFn: () => base44.entities.Shipment.list(),
   });
 
+  const [fleetStatus, setFleetStatus] = useState({});
+
   const roboticUnits = resources.length * 2; // Simulate AMR/cobots per warehouse
-  const activeUnits = Math.round(roboticUnits * 0.85);
+  const activeUnits = Object.values(fleetStatus).reduce((sum, status) => sum + status.active, 0) || Math.round(roboticUnits * 0.85);
 
   const runSimulation = useMutation({
     mutationFn: async () => {
@@ -213,6 +215,19 @@ Provide realistic recommendations based on actual warehouse utilization.`,
     }
   };
 
+  // Initialize fleet status
+  useEffect(() => {
+    const initialStatus = {};
+    resources.forEach(resource => {
+      initialStatus[resource.id] = {
+        total: 2,
+        active: 2,
+        status: 'running'
+      };
+    });
+    setFleetStatus(initialStatus);
+  }, [resources]);
+
   // Auto-execute active workflows periodically
   useEffect(() => {
     if (!activeWorkflows.inventory_alerts) return;
@@ -226,6 +241,31 @@ Provide realistic recommendations based on actual warehouse utilization.`,
     
     return () => clearInterval(interval);
   }, [activeWorkflows.inventory_alerts]);
+
+  const controlFleet = (resourceId, action) => {
+    setFleetStatus(prev => {
+      const current = prev[resourceId] || { total: 2, active: 2, status: 'running' };
+      let newStatus = { ...current };
+
+      switch (action) {
+        case 'start':
+          newStatus.active = current.total;
+          newStatus.status = 'running';
+          toast.success('All robots started');
+          break;
+        case 'pause':
+          newStatus.active = 0;
+          newStatus.status = 'paused';
+          toast.info('All robots paused');
+          break;
+        case 'configure':
+          toast.info('Configuration panel opened');
+          break;
+      }
+
+      return { ...prev, [resourceId]: newStatus };
+    });
+  };
 
   const workflowConfigs = [
     { id: 'email_notifications', name: 'Email Notifications', icon: Mail, description: 'Automated shipment status emails' },
@@ -601,36 +641,74 @@ Provide realistic recommendations based on actual warehouse utilization.`,
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {resources.map((resource, idx) => {
-                    const localRobots = 2;
-                    const activeLocal = Math.round(localRobots * 0.9);
+                  {resources.map((resource) => {
+                    const status = fleetStatus[resource.id] || { total: 2, active: 2, status: 'running' };
+                    const isRunning = status.status === 'running';
                     
                     return (
-                      <div key={resource.id} className="p-4 rounded-lg bg-slate-800/50 border border-slate-700/50">
+                      <motion.div 
+                        key={resource.id} 
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className={`p-4 rounded-lg border transition-all ${
+                          isRunning 
+                            ? 'bg-emerald-500/10 border-emerald-500/30' 
+                            : 'bg-slate-800/50 border-slate-700/50'
+                        }`}
+                      >
                         <div className="flex items-center justify-between mb-3">
                           <div>
-                            <div className="font-medium text-white">{resource.name}</div>
-                            <div className="text-sm text-slate-400">{resource.location}</div>
+                            <div className="font-medium text-white flex items-center gap-2">
+                              {resource.name}
+                              {isRunning && (
+                                <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                              )}
+                            </div>
+                            <div className="text-sm text-slate-400">{resource.location || 'Warehouse'}</div>
                           </div>
-                          <Badge variant="outline" className="bg-cyan-500/20 text-cyan-400 border-cyan-500/30">
-                            {activeLocal}/{localRobots} units
+                          <Badge 
+                            variant="outline" 
+                            className={`${
+                              isRunning 
+                                ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' 
+                                : 'bg-slate-500/20 text-slate-400 border-slate-500/30'
+                            }`}
+                          >
+                            {status.active}/{status.total} units
                           </Badge>
                         </div>
                         <div className="flex gap-2">
-                          <Button size="sm" variant="outline" className="flex-1">
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            className="flex-1"
+                            onClick={() => controlFleet(resource.id, 'start')}
+                            disabled={isRunning}
+                          >
                             <Play className="w-3 h-3 mr-1" />
                             Start All
                           </Button>
-                          <Button size="sm" variant="outline" className="flex-1">
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            className="flex-1"
+                            onClick={() => controlFleet(resource.id, 'pause')}
+                            disabled={!isRunning}
+                          >
                             <Pause className="w-3 h-3 mr-1" />
                             Pause All
                           </Button>
-                          <Button size="sm" variant="outline" className="flex-1">
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            className="flex-1"
+                            onClick={() => controlFleet(resource.id, 'configure')}
+                          >
                             <Settings className="w-3 h-3 mr-1" />
                             Configure
                           </Button>
                         </div>
-                      </div>
+                      </motion.div>
                     );
                   })}
                 </div>

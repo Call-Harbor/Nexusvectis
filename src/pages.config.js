@@ -53,8 +53,10 @@ import AdminMonitor from './pages/AdminMonitor';
 import Alerts from './pages/Alerts';
 import Assignment from './pages/Assignment';
 import Dashboard from './pages/Dashboard';
+import DemandForecasting from './pages/DemandForecasting';
 import Fleet from './pages/Fleet';
 import GPSIntegration from './pages/GPSIntegration';
+import GreenTMS from './pages/GreenTMS';
 import Home from './pages/Home';
 import Invoices from './pages/Invoices';
 import Landing from './pages/Landing';
@@ -65,8 +67,6 @@ import Routes from './pages/Routes';
 import Security from './pages/Security';
 import Settings from './pages/Settings';
 import UserManagement from './pages/UserManagement';
-import DemandForecasting from './pages/DemandForecasting';
-import GreenTMS from './pages/GreenTMS';
 import WarehouseAutomation from './pages/WarehouseAutomation';
 import __Layout from './Layout.jsx';
 
@@ -78,8 +78,10 @@ export const PAGES = {
     "Alerts": Alerts,
     "Assignment": Assignment,
     "Dashboard": Dashboard,
+    "DemandForecasting": DemandForecasting,
     "Fleet": Fleet,
     "GPSIntegration": GPSIntegration,
+    "GreenTMS": GreenTMS,
     "Home": Home,
     "Invoices": Invoices,
     "Landing": Landing,
@@ -90,8 +92,6 @@ export const PAGES = {
     "Security": Security,
     "Settings": Settings,
     "UserManagement": UserManagement,
-    "DemandForecasting": DemandForecasting,
-    "GreenTMS": GreenTMS,
     "WarehouseAutomation": WarehouseAutomation,
 }
 
