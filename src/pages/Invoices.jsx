@@ -6,36 +6,59 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { FileText, Download, Calendar, DollarSign, Loader2, Receipt } from "lucide-react";
 import moment from "moment";
+import { jsPDF } from "jspdf";
 
 export default function Invoices() {
   const [user, setUser] = useState(null);
 
   const downloadInvoice = (invoice) => {
-    const content = `
-FAKTURA
-
-Fakturanummer: ${invoice.invoice_number}
-Periode: ${invoice.period_month}
-Status: ${statusLabels[invoice.status]}
-
-SPECIFIKATION:
-${invoice.vehicle_count || 0} køretøjer × €${invoice.vehicle_price_euro || 15} = €${(invoice.vehicle_count || 0) * (invoice.vehicle_price_euro || 15)}
-${invoice.resource_count || 0} ressourcer × €${invoice.resource_price_euro || 40} = €${(invoice.resource_count || 0) * (invoice.resource_price_euro || 40)}
-
-TOTAL: €${invoice.total_amount}
-
-${invoice.due_date ? `Forfaldsdato: ${moment(invoice.due_date).format('DD/MM/YYYY')}` : ''}
-    `.trim();
-
-    const blob = new Blob([content], { type: 'text/plain' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${invoice.invoice_number}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-    a.remove();
+    const doc = new jsPDF();
+    
+    // Header
+    doc.setFontSize(24);
+    doc.setTextColor(0, 149, 199);
+    doc.text('FAKTURA', 20, 30);
+    
+    // Invoice details
+    doc.setFontSize(10);
+    doc.setTextColor(100, 100, 100);
+    doc.text(`Fakturanummer: ${invoice.invoice_number}`, 20, 45);
+    doc.text(`Periode: ${invoice.period_month}`, 20, 52);
+    doc.text(`Status: ${statusLabels[invoice.status]}`, 20, 59);
+    if (invoice.due_date) {
+      doc.text(`Forfaldsdato: ${moment(invoice.due_date).format('DD/MM/YYYY')}`, 20, 66);
+    }
+    
+    // Line
+    doc.setDrawColor(200, 200, 200);
+    doc.line(20, 75, 190, 75);
+    
+    // Specification table
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    doc.text('SPECIFIKATION', 20, 85);
+    
+    doc.setFontSize(10);
+    const vehicleTotal = (invoice.vehicle_count || 0) * (invoice.vehicle_price_euro || 15);
+    const resourceTotal = (invoice.resource_count || 0) * (invoice.resource_price_euro || 40);
+    
+    doc.text(`${invoice.vehicle_count || 0} køretøjer × €${invoice.vehicle_price_euro || 15}`, 20, 95);
+    doc.text(`€${vehicleTotal.toFixed(2)}`, 160, 95);
+    
+    doc.text(`${invoice.resource_count || 0} ressourcer × €${invoice.resource_price_euro || 40}`, 20, 102);
+    doc.text(`€${resourceTotal.toFixed(2)}`, 160, 102);
+    
+    // Total
+    doc.setDrawColor(200, 200, 200);
+    doc.line(20, 110, 190, 110);
+    
+    doc.setFontSize(14);
+    doc.setTextColor(0, 149, 199);
+    doc.text('TOTAL:', 20, 120);
+    doc.text(`€${invoice.total_amount.toFixed(2)}`, 160, 120);
+    
+    // Save
+    doc.save(`${invoice.invoice_number}.pdf`);
   };
 
   const { data: currentUser, isLoading: userLoading } = useQuery({
