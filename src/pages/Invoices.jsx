@@ -10,6 +10,34 @@ import moment from "moment";
 export default function Invoices() {
   const [user, setUser] = useState(null);
 
+  const downloadInvoice = (invoice) => {
+    const content = `
+FAKTURA
+
+Fakturanummer: ${invoice.invoice_number}
+Periode: ${invoice.period_month}
+Status: ${statusLabels[invoice.status]}
+
+SPECIFIKATION:
+${invoice.vehicle_count || 0} køretøjer × €${invoice.vehicle_price_euro || 15} = €${(invoice.vehicle_count || 0) * (invoice.vehicle_price_euro || 15)}
+${invoice.resource_count || 0} ressourcer × €${invoice.resource_price_euro || 40} = €${(invoice.resource_count || 0) * (invoice.resource_price_euro || 40)}
+
+TOTAL: €${invoice.total_amount}
+
+${invoice.due_date ? `Forfaldsdato: ${moment(invoice.due_date).format('DD/MM/YYYY')}` : ''}
+    `.trim();
+
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${invoice.invoice_number}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    a.remove();
+  };
+
   const { data: currentUser, isLoading: userLoading } = useQuery({
     queryKey: ['currentUser'],
     queryFn: async () => {
@@ -152,6 +180,7 @@ export default function Invoices() {
                           size="sm"
                           variant="outline"
                           className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700"
+                          onClick={() => downloadInvoice(invoice)}
                         >
                           <Download className="w-4 h-4" />
                         </Button>
