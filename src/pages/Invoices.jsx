@@ -134,7 +134,7 @@ export default function Invoices() {
                             </div>
                             <span>•</span>
                             <span>
-                              {invoice.vehicle_count || 0} vehicles × €{invoice.vehicle_price_euro || 15} + {invoice.resource_count || 0} resources × €{invoice.resource_price_euro || 40}
+                              {invoice.vehicle_count || 0} køretøjer × €{invoice.vehicle_price_euro || 15} + {invoice.resource_count || 0} ressourcer × €{invoice.resource_price_euro || 40}
                             </span>
                           </div>
                         </div>
