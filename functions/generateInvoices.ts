@@ -25,14 +25,24 @@ Deno.serve(async (req) => {
     const generatedInvoices = [];
 
     for (const org of organizations) {
-      // Count vehicles for this organization
+      // Count vehicles and resources for this organization
       const vehicles = await base44.asServiceRole.entities.Vehicle.filter({
         organization_id: org.id
       });
+      
+      const resources = await base44.asServiceRole.entities.Resource.filter({
+        organization_id: org.id
+      });
 
-      const unitCount = vehicles.length;
-      const pricePerUnit = 200;
-      const totalAmount = unitCount * pricePerUnit;
+      const vehicleCount = vehicles.length;
+      const resourceCount = resources.length;
+      
+      const vehiclePriceEuro = 15;
+      const resourcePriceEuro = 40;
+      
+      const vehicleTotal = vehicleCount * vehiclePriceEuro;
+      const resourceTotal = resourceCount * resourcePriceEuro;
+      const totalAmount = vehicleTotal + resourceTotal;
 
       // Check if invoice already exists for this period
       const existingInvoices = await base44.asServiceRole.entities.Invoice.filter({
@@ -53,8 +63,10 @@ Deno.serve(async (req) => {
         organization_id: org.id,
         invoice_number: invoiceNumber,
         period_month: periodMonth,
-        unit_count: unitCount,
-        price_per_unit: pricePerUnit,
+        vehicle_count: vehicleCount,
+        resource_count: resourceCount,
+        vehicle_price_euro: vehiclePriceEuro,
+        resource_price_euro: resourcePriceEuro,
         total_amount: totalAmount,
         status: 'pending',
         due_date: dueDateStr
@@ -72,9 +84,9 @@ Deno.serve(async (req) => {
             <p>Hej,</p>
             <p>Din faktura for ${periodMonth} er klar.</p>
             <p><strong>Fakturanummer:</strong> ${invoiceNumber}</p>
-            <p><strong>Antal enheder:</strong> ${unitCount}</p>
-            <p><strong>Pris pr. enhed:</strong> ${pricePerUnit} kr</p>
-            <p><strong>Total beløb:</strong> ${totalAmount} kr</p>
+            <p><strong>Vehicles:</strong> ${vehicleCount} × €${vehiclePriceEuro} = €${vehicleTotal}</p>
+            <p><strong>Resources:</strong> ${resourceCount} × €${resourcePriceEuro} = €${resourceTotal}</p>
+            <p><strong>Total beløb:</strong> €${totalAmount}</p>
             <p><strong>Forfaldsdato:</strong> ${dueDateStr}</p>
             <p>Log ind på din konto for at se fakturaen.</p>
           `

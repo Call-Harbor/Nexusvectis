@@ -72,7 +72,7 @@ export default function Invoices() {
               <DollarSign className="h-4 w-4 text-cyan-400" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-white">{totalAmount.toLocaleString('da-DK')} kr</div>
+              <div className="text-2xl font-bold text-white">€{totalAmount.toLocaleString('da-DK')}</div>
             </CardContent>
           </Card>
 
@@ -82,7 +82,7 @@ export default function Invoices() {
               <Receipt className="h-4 w-4 text-yellow-400" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-white">{pendingAmount.toLocaleString('da-DK')} kr</div>
+              <div className="text-2xl font-bold text-white">€{pendingAmount.toLocaleString('da-DK')}</div>
             </CardContent>
           </Card>
 
@@ -133,19 +133,21 @@ export default function Invoices() {
                               <span>{invoice.period_month}</span>
                             </div>
                             <span>•</span>
-                            <span>{invoice.unit_count} enheder × {invoice.price_per_unit} kr</span>
+                            <span>
+                              {invoice.vehicle_count || 0} vehicles × €{invoice.vehicle_price_euro || 15} + {invoice.resource_count || 0} resources × €{invoice.resource_price_euro || 40}
+                            </span>
                           </div>
                         </div>
                       </div>
                       <div className="flex items-center gap-4">
-                        <div className="text-right">
-                          <div className="text-xl font-bold text-white">{invoice.total_amount.toLocaleString('da-DK')} kr</div>
-                          {invoice.due_date && (
-                            <div className="text-xs text-slate-400">
-                              Forfald: {moment(invoice.due_date).format('DD/MM/YYYY')}
-                            </div>
-                          )}
-                        </div>
+                       <div className="text-right">
+                         <div className="text-xl font-bold text-white">€{invoice.total_amount.toLocaleString('da-DK')}</div>
+                         {invoice.due_date && (
+                           <div className="text-xs text-slate-400">
+                             Forfald: {moment(invoice.due_date).format('DD/MM/YYYY')}
+                           </div>
+                         )}
+                       </div>
                         <Button
                           size="sm"
                           variant="outline"
