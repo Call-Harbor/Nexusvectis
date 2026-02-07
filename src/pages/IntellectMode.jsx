@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { MapContainer, TileLayer, Marker, Polyline, Popup } from 'react-leaflet';
-import 'react-leaflet/dist/leaflet.css';
 
 const HologramWindow = ({ id, title, icon: Icon, children, position, onClose, onMinimize, isMinimized }) => {
   const [isDragging, setIsDragging] = useState(false);
