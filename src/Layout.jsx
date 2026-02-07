@@ -282,7 +282,14 @@ export default function Layout({ children, currentPageName }) {
           </DropdownMenu>
         </nav>
 
-        <div className="absolute bottom-0 left-0 right-0 p-4">
+        <div className="absolute bottom-0 left-0 right-0 p-4 space-y-3">
+          <Button
+            onClick={() => navigate(createPageUrl("IntellectMode"))}
+            className="w-full bg-gradient-to-r from-cyan-500 to-violet-500 hover:from-cyan-600 hover:to-violet-600 border-0"
+          >
+            <Zap className="w-4 h-4 mr-2" />
+            FLEET AI Mode
+          </Button>
           <div className="p-4 rounded-xl bg-gradient-to-br from-violet-500/10 to-cyan-500/10 border border-violet-500/20">
               <div className="flex items-center gap-2 mb-2">
                 <Sparkles className="w-4 h-4 text-violet-400" />
