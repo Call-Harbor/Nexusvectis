@@ -68,8 +68,9 @@ NOW:
    - drone: 60 km/h
 6. Calculate CO2: distance × factor (ship=0.02, truck=0.8, train=0.04, aircraft=0.9, drone=0.3)
 
-Ensure coordinates are ACCURATE and the route is PHYSICALLY POSSIBLE for ${transport_type}.`,
-      add_context_from_internet: false,
+Ensure coordinates are ACCURATE and the route is PHYSICALLY POSSIBLE for ${transport_type}.
+
+Route info: ${routeSearch.route_type}, crosses: ${routeSearch.main_bodies_crossed?.join(', ')}`,
       add_context_from_internet: true,
       response_json_schema: {
         type: "object",
