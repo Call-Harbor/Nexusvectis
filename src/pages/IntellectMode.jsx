@@ -2,9 +2,11 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
+import { useNavigate } from "react-router-dom";
+import { createPageUrl } from "../utils";
 import { 
   Sparkles, Send, Mic, Brain, Zap, TrendingUp, AlertTriangle, 
-  Truck, Route, Package, Activity, Maximize2, Minimize2, X 
+  Truck, Route, Package, Activity, Maximize2, Minimize2, X, LayoutDashboard 
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -104,6 +106,7 @@ export default function IntellectMode() {
   const [minimizedWindows, setMinimizedWindows] = useState(new Set());
   const messagesEndRef = useRef(null);
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -584,6 +587,13 @@ export default function IntellectMode() {
             </div>
             
             <div className="flex items-center gap-4">
+              <Button
+                onClick={() => navigate(createPageUrl("Dashboard"))}
+                className="bg-slate-800 hover:bg-slate-700 border border-slate-700"
+              >
+                <LayoutDashboard className="w-4 h-4 mr-2" />
+                Exit FLEET AI
+              </Button>
               <div className="flex items-center gap-2 px-4 py-2 bg-emerald-500/20 rounded-full border border-emerald-500/40">
                 <Activity className="w-4 h-4 text-emerald-400 animate-pulse" />
                 <span className="text-emerald-400 text-sm font-semibold">System Operational</span>
