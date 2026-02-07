@@ -97,7 +97,7 @@ const HologramWindow = ({ id, title, icon: Icon, children, position, onClose, on
 export default function IntellectMode() {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([
-    { role: "system", content: "🧠 Intellect Mode aktiveret. Jeg kan åbne vinduer for flåde, ruter, alarmer og KPIs ved kommando." }
+    { role: "system", content: "⚡ FLEET AI online. Specialized logistics intelligence ready. Command me to open windows, create routes, manage fleet operations, or answer strategic questions." }
   ]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [activeWindows, setActiveWindows] = useState([]);
@@ -156,7 +156,7 @@ export default function IntellectMode() {
 
   const openWindow = (type, position = { x: 100 + Math.random() * 200, y: 100 + Math.random() * 200 }) => {
     if (activeWindows.find(w => w.type === type)) {
-      toast.info(`${type} vindue er allerede åbent`);
+      toast.info(`${type} window already open`);
       return;
     }
     setActiveWindows(prev => [...prev, { type, id: Date.now(), position }]);
@@ -194,8 +194,8 @@ export default function IntellectMode() {
       const userData = await base44.entities.User.filter({ email: currentUser.email });
       const orgId = userData?.[0]?.organization_id;
 
-      // Mistral AI analyserer ALLE kommandoer
-      setMessages(prev => [...prev, { role: "system", content: "🧠 Mistral AI analyserer..." }]);
+      // FLEET AI analyzes ALL commands
+      setMessages(prev => [...prev, { role: "system", content: "⚡ FLEET analyzing..." }]);
       
       const mistralResponse = await base44.functions.invoke('mistralCommand', {
         command: input,
@@ -221,7 +221,7 @@ export default function IntellectMode() {
             openWindow(parameters.window_type);
             setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
           } else {
-            setMessages(prev => [...prev, { role: "system", content: `❌ Ugyldigt vindue: ${parameters.window_type}. Brug: fleet, alerts, routes, eller shipments` }]);
+            setMessages(prev => [...prev, { role: "system", content: `❌ Invalid window: ${parameters.window_type}. Use: fleet, alerts, routes, or shipments` }]);
           }
           break;
 
@@ -231,7 +231,7 @@ export default function IntellectMode() {
           break;
 
         case "CREATE_ROUTE":
-          setMessages(prev => [...prev, { role: "system", content: "🔄 Planlægger rute..." }]);
+          setMessages(prev => [...prev, { role: "system", content: "🔄 Planning route..." }]);
           const routePlan = await base44.functions.invoke('planRoute', {
             origin: parameters.origin,
             destination: parameters.destination,
@@ -393,7 +393,7 @@ export default function IntellectMode() {
           if (parameters.delete_all) {
             await Promise.all(routes.map(r => base44.entities.Route.delete(r.id)));
             queryClient.invalidateQueries({ queryKey: ['routes-intellect'] });
-            setMessages(prev => [...prev, { role: "system", content: `✅ Slettede ${routes.length} ruter` }]);
+            setMessages(prev => [...prev, { role: "system", content: `✅ Deleted ${routes.length} routes` }]);
           }
           break;
 
@@ -401,7 +401,7 @@ export default function IntellectMode() {
           if (parameters.delete_all) {
             await Promise.all(vehicles.map(v => base44.entities.Vehicle.delete(v.id)));
             queryClient.invalidateQueries({ queryKey: ['vehicles-intellect'] });
-            setMessages(prev => [...prev, { role: "system", content: `✅ Slettede ${vehicles.length} køretøjer` }]);
+            setMessages(prev => [...prev, { role: "system", content: `✅ Deleted ${vehicles.length} vehicles` }]);
           }
           break;
 
@@ -430,7 +430,7 @@ export default function IntellectMode() {
       case "fleet":
         return (
           <div className="space-y-3">
-            <div className="text-cyan-400 text-sm font-semibold mb-2">Aktive Køretøjer ({vehicles.length})</div>
+            <div className="text-cyan-400 text-sm font-semibold mb-2">Active Vehicles ({vehicles.length})</div>
             {vehicles.slice(0, 5).map(vehicle => (
               <div key={vehicle.id} className="p-3 bg-slate-800/50 rounded-lg border border-slate-700/50">
                 <div className="flex items-center justify-between mb-1">
@@ -453,7 +453,7 @@ export default function IntellectMode() {
       case "alerts":
         return (
           <div className="space-y-3">
-            <div className="text-amber-400 text-sm font-semibold mb-2">Aktive Alarmer ({alerts.length})</div>
+            <div className="text-amber-400 text-sm font-semibold mb-2">Active Alerts ({alerts.length})</div>
             {alerts.slice(0, 5).map(alert => (
               <div key={alert.id} className="p-3 bg-slate-800/50 rounded-lg border border-amber-500/30">
                 <div className="flex items-center gap-2 mb-1">
@@ -464,7 +464,7 @@ export default function IntellectMode() {
               </div>
             ))}
             {alerts.length === 0 && (
-              <div className="text-slate-400 text-center py-4">Ingen aktive alarmer</div>
+              <div className="text-slate-400 text-center py-4">No active alerts</div>
             )}
           </div>
         );
@@ -472,7 +472,7 @@ export default function IntellectMode() {
       case "routes":
         return (
           <div className="space-y-3 max-h-[500px] overflow-y-auto">
-            <div className="text-violet-400 text-sm font-semibold mb-2">Aktive Ruter ({routes.length})</div>
+            <div className="text-violet-400 text-sm font-semibold mb-2">Active Routes ({routes.length})</div>
             {routes.slice(0, 5).map(route => (
               <div key={route.id} className="space-y-2">
                 <div className="p-3 bg-slate-800/50 rounded-lg border border-slate-700/50">
@@ -528,7 +528,7 @@ export default function IntellectMode() {
       case "shipments":
         return (
           <div className="space-y-3">
-            <div className="text-blue-400 text-sm font-semibold mb-2">Forsendelser ({shipments.length})</div>
+            <div className="text-blue-400 text-sm font-semibold mb-2">Shipments ({shipments.length})</div>
             {shipments.slice(0, 5).map(shipment => (
               <div key={shipment.id} className="p-3 bg-slate-800/50 rounded-lg border border-slate-700/50">
                 <div className="flex items-center justify-between mb-1">
@@ -576,17 +576,17 @@ export default function IntellectMode() {
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-                  Intellect Mode
+                  FLEET AI
                   <Sparkles className="w-5 h-5 text-cyan-400 animate-pulse" />
                 </h1>
-                <p className="text-cyan-400 text-sm">AI-Styret Flådestyring</p>
+                <p className="text-cyan-400 text-sm">Elite Logistics Intelligence</p>
               </div>
             </div>
             
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2 px-4 py-2 bg-emerald-500/20 rounded-full border border-emerald-500/40">
                 <Activity className="w-4 h-4 text-emerald-400 animate-pulse" />
-                <span className="text-emerald-400 text-sm font-semibold">Systemet Operationelt</span>
+                <span className="text-emerald-400 text-sm font-semibold">System Operational</span>
               </div>
             </div>
           </div>
@@ -601,10 +601,10 @@ export default function IntellectMode() {
                 key={window.id}
                 id={window.id}
                 title={
-                  window.type === 'fleet' ? 'Flåde' :
-                  window.type === 'alerts' ? 'Alarmer' :
-                  window.type === 'routes' ? 'Ruter' :
-                  window.type === 'shipments' ? 'Forsendelser' : ''
+                  window.type === 'fleet' ? 'Fleet' :
+                  window.type === 'alerts' ? 'Alerts' :
+                  window.type === 'routes' ? 'Routes' :
+                  window.type === 'shipments' ? 'Shipments' : ''
                 }
                 icon={
                   window.type === 'fleet' ? Truck :
@@ -630,37 +630,37 @@ export default function IntellectMode() {
               className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center"
             >
               <Brain className="w-24 h-24 text-cyan-500/30 mx-auto mb-6 animate-pulse" />
-              <h2 className="text-2xl font-bold text-white mb-4">Intellect Mode Standby</h2>
-              <p className="text-slate-400 mb-6">Brug kommandoer nedenfor til at aktivere hologram vinduer</p>
-              
+              <h2 className="text-2xl font-bold text-white mb-4">FLEET AI Standby</h2>
+              <p className="text-slate-400 mb-6">Command me to activate hologram windows and manage operations</p>
+
               <div className="flex flex-wrap gap-3 justify-center">
                 <Button
                   onClick={() => openWindow('fleet')}
                   className="bg-cyan-500/20 border-2 border-cyan-500/40 hover:bg-cyan-500/30 text-cyan-400"
                 >
                   <Truck className="w-4 h-4 mr-2" />
-                  Åbn Flåde
+                  Open Fleet
                 </Button>
                 <Button
                   onClick={() => openWindow('alerts')}
                   className="bg-amber-500/20 border-2 border-amber-500/40 hover:bg-amber-500/30 text-amber-400"
                 >
                   <AlertTriangle className="w-4 h-4 mr-2" />
-                  Åbn Alarmer
+                  Open Alerts
                 </Button>
                 <Button
                   onClick={() => openWindow('routes')}
                   className="bg-violet-500/20 border-2 border-violet-500/40 hover:bg-violet-500/30 text-violet-400"
                 >
                   <Route className="w-4 h-4 mr-2" />
-                  Åbn Ruter
+                  Open Routes
                 </Button>
                 <Button
                   onClick={() => openWindow('shipments')}
                   className="bg-blue-500/20 border-2 border-blue-500/40 hover:bg-blue-500/30 text-blue-400"
                 >
                   <Package className="w-4 h-4 mr-2" />
-                  Åbn Forsendelser
+                  Open Shipments
                 </Button>
               </div>
             </motion.div>
@@ -699,7 +699,7 @@ export default function IntellectMode() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && processCommand()}
-                placeholder="Indtast kommando (f.eks. 'åbn flåde', 'vis alarmer')..."
+                placeholder="Enter command (e.g., 'open fleet', 'show alerts', 'create route from Copenhagen to Berlin')..."
                 disabled={isProcessing}
                 className="flex-1 px-6 py-4 bg-slate-900/50 border-2 border-cyan-500/30 rounded-2xl text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-500 backdrop-blur-xl"
               />
@@ -717,7 +717,7 @@ export default function IntellectMode() {
             </div>
 
             <div className="mt-3 text-xs text-slate-500 text-center">
-              Eksempler: "lav en skibs route fra copenhagen til london" • "sæt alle køretøjer til maintenance" • "hvor mange forsendelser er delayed?" • "opret 3 trucks med høj fuel"
+              Examples: "create ship route from Copenhagen to London" • "set all vehicles to maintenance" • "how many shipments are delayed?" • "create 3 trucks with high fuel"
             </div>
           </div>
         </div>
