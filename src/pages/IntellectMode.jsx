@@ -190,7 +190,10 @@ export default function IntellectMode() {
     setIsProcessing(true);
 
     try {
-      // Parse commands
+      const userData = await base44.entities.User.filter({ email: currentUser.email });
+      const orgId = userData?.[0]?.organization_id;
+
+      // Parse commands - WINDOW CONTROLS
       if (userMsg.includes("åbn flåde") || userMsg.includes("vis køretøjer") || userMsg.includes("fleet")) {
         openWindow("fleet");
         setMessages(prev => [...prev, { role: "system", content: "✅ Åbner flåde-vindue" }]);
@@ -211,17 +214,152 @@ export default function IntellectMode() {
         setActiveWindows([]);
         setMessages(prev => [...prev, { role: "system", content: "✅ Lukker alle vinduer" }]);
       }
+      // CREATE ROUTE COMMAND
+      else if (userMsg.includes("lav") && userMsg.includes("route")) {
+        setMessages(prev => [...prev, { role: "system", content: "🔄 Planlægger rute med AI..." }]);
+        
+        const routeAnalysis = await base44.integrations.Core.InvokeLLM({
+          prompt: `Ekstrahér route information fra denne kommando: "${input}"
+          
+Find:
+- Origin (fra/from)
+- Destination (til/to)
+- Transport type (skib/ship, truck/lastbil, fly/aircraft, tog/train, drone)
+
+Output JSON format.`,
+          response_json_schema: {
+            type: "object",
+            properties: {
+              origin: { type: "string" },
+              destination: { type: "string" },
+              transport_type: { type: "string" }
+            }
+          }
+        });
+
+        const { origin, destination, transport_type } = routeAnalysis;
+        
+        const routePlan = await base44.functions.invoke('planRoute', {
+          origin,
+          destination,
+          transport_type: transport_type || 'ship'
+        });
+
+        if (routePlan.data.success) {
+          const newRoute = await base44.entities.Route.create({
+            organization_id: orgId,
+            name: `${origin} → ${destination}`,
+            origin,
+            destination,
+            waypoints: routePlan.data.route_data.waypoints,
+            distance_km: routePlan.data.route_data.distance_km,
+            estimated_duration_hours: routePlan.data.route_data.estimated_duration_hours,
+            transport_type: transport_type || 'ship',
+            co2_estimate: routePlan.data.route_data.co2_estimate,
+            ai_optimized: true,
+            status: 'planned'
+          });
+
+          setMessages(prev => [...prev, { 
+            role: "system", 
+            content: `✅ Route oprettet: ${origin} → ${destination} (${routePlan.data.route_data.distance_km} km, ${routePlan.data.route_data.estimated_duration_hours.toFixed(1)}t)` 
+          }]);
+          openWindow("routes");
+        }
+      }
+      // CREATE VEHICLE COMMAND
+      else if (userMsg.includes("lav") && (userMsg.includes("køretøj") || userMsg.includes("vehicle"))) {
+        setMessages(prev => [...prev, { role: "system", content: "🔄 Opretter køretøj..." }]);
+        
+        const vehicleData = await base44.integrations.Core.InvokeLLM({
+          prompt: `Ekstrahér køretøj information fra: "${input}". Find navn og type (truck/ship/aircraft/train/drone).`,
+          response_json_schema: {
+            type: "object",
+            properties: {
+              name: { type: "string" },
+              type: { type: "string" }
+            }
+          }
+        });
+
+        const newVehicle = await base44.entities.Vehicle.create({
+          organization_id: orgId,
+          name: vehicleData.name || `Vehicle-${Date.now()}`,
+          type: vehicleData.type || 'truck',
+          status: 'active',
+          fuel_level: 100
+        });
+
+        setMessages(prev => [...prev, { 
+          role: "system", 
+          content: `✅ Køretøj oprettet: ${newVehicle.name} (${newVehicle.type})` 
+        }]);
+        openWindow("fleet");
+      }
+      // CREATE SHIPMENT COMMAND
+      else if (userMsg.includes("lav") && (userMsg.includes("forsendelse") || userMsg.includes("shipment"))) {
+        setMessages(prev => [...prev, { role: "system", content: "🔄 Opretter forsendelse..." }]);
+        
+        const shipmentData = await base44.integrations.Core.InvokeLLM({
+          prompt: `Ekstrahér forsendelse info fra: "${input}". Find origin, destination.`,
+          response_json_schema: {
+            type: "object",
+            properties: {
+              origin: { type: "string" },
+              destination: { type: "string" }
+            }
+          }
+        });
+
+        const newShipment = await base44.entities.Shipment.create({
+          organization_id: orgId,
+          tracking_number: `SHIP-${Date.now()}`,
+          origin: shipmentData.origin || 'Unknown',
+          destination: shipmentData.destination || 'Unknown',
+          status: 'pending',
+          priority: 'normal'
+        });
+
+        setMessages(prev => [...prev, { 
+          role: "system", 
+          content: `✅ Forsendelse oprettet: ${newShipment.tracking_number}` 
+        }]);
+        openWindow("shipments");
+      }
+      // DELETE COMMANDS
+      else if (userMsg.includes("slet") || userMsg.includes("delete")) {
+        if (userMsg.includes("alarm") || userMsg.includes("alert")) {
+          const unresolvedAlerts = alerts.filter(a => !a.is_resolved);
+          if (unresolvedAlerts.length > 0) {
+            await base44.entities.Alert.update(unresolvedAlerts[0].id, { is_resolved: true, resolved_at: new Date().toISOString() });
+            setMessages(prev => [...prev, { role: "system", content: "✅ Alarm løst" }]);
+          } else {
+            setMessages(prev => [...prev, { role: "system", content: "ℹ️ Ingen alarmer at løse" }]);
+          }
+        } else {
+          setMessages(prev => [...prev, { role: "system", content: "⚠️ Præciser hvad der skal slettes (alarm/route/vehicle)" }]);
+        }
+      }
       else {
         // AI response for complex queries
         const response = await base44.integrations.Core.InvokeLLM({
           prompt: `Du er Intellect Mode AI for NexusVectis TMS. Analyser brugerens kommando og svar kort og præcist.
 
 Tilgængelige kommandoer:
+VINDUER:
 - "åbn flåde/køretøjer" - viser flåde-vindue
 - "åbn alarmer/advarsler" - viser alarm-vindue  
 - "åbn ruter" - viser rute-vindue
 - "åbn forsendelser/pakker" - viser forsendelses-vindue
 - "luk alt" - lukker alle vinduer
+
+OPRETTE:
+- "lav mig en [type] route fra [A] til [B]" - opretter ny route
+- "lav et køretøj [navn]" - opretter nyt køretøj
+- "lav en forsendelse fra [A] til [B]" - opretter forsendelse
+
+SLETTE:
+- "slet alarm" - løser ældste alarm
 
 Hvis brugeren spørger om data, giv konkret svar baseret på disse facts:
 - Antal køretøjer: ${vehicles.length}
@@ -237,7 +375,8 @@ Svar kort på dansk (max 2 sætninger).`
         setMessages(prev => [...prev, { role: "assistant", content: response }]);
       }
     } catch (error) {
-      setMessages(prev => [...prev, { role: "system", content: "❌ Fejl ved behandling af kommando" }]);
+      console.error('Command error:', error);
+      setMessages(prev => [...prev, { role: "system", content: `❌ Fejl: ${error.message}` }]);
     } finally {
       setIsProcessing(false);
     }
@@ -502,7 +641,7 @@ Svar kort på dansk (max 2 sætninger).`
             </div>
 
             <div className="mt-3 text-xs text-slate-500 text-center">
-              Prøv: "åbn flåde" • "vis alarmer" • "åbn ruter" • "luk alt"
+              Prøv: "åbn flåde" • "lav mig en skibs route fra copenhagen til london" • "lav et køretøj Atlantic Carrier" • "slet alarm"
             </div>
           </div>
         </div>
