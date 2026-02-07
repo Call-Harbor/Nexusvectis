@@ -19,17 +19,20 @@ STEP 1: Search Google Maps/web for the ACTUAL route:
 - Look at the real route shown
 - Note major points along the way
 
-STEP 2: Create waypoints (6-10 points):
+STEP 2: Create waypoints (${transport_type === 'ship' ? '8-15' : '6-10'} points):
 - Start at ${origin} (get real coordinates)
 - Add major intermediate points on the route
 - End at ${destination} (get real coordinates)
 
-${transport_type === 'ship' ? `SHIP RULES:
-- Ships ONLY sail on water (seas, oceans, canals)
-- Follow real shipping lanes
-- Include straits/canals (Kiel Canal, English Channel, etc.)
-- NO straight lines across land
-- Example: Copenhagen→London = around Denmark via North Sea` : ''}
+${transport_type === 'ship' ? `SHIP RULES - CRITICAL:
+- Ships ONLY sail on water (seas, oceans, canals, straits)
+- Follow REAL shipping lanes that curve around coastlines
+- Add MORE waypoints to curve routes around land masses
+- Include straits/canals (Kiel Canal, English Channel, Strait of Gibraltar, etc.)
+- NO straight lines across land - routes must bend around coastlines
+- Example: Copenhagen→London = 8-10 waypoints curving around Denmark through North Sea
+- Example: Barcelona→Naples = 10+ waypoints following Mediterranean coastline
+- Use enough waypoints so lines between them stay in water` : ''}
 ${transport_type === 'truck' ? `TRUCK RULES:
 - Follow major highways (E-roads, motorways)
 - Include cities/junctions as waypoints

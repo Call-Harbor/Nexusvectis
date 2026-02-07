@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { MapContainer, TileLayer, Marker, Polyline, useMapEvents } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Polyline, useMapEvents, useMap } from 'react-leaflet';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -65,6 +65,66 @@ function MapClickHandler({ onMapClick, isAddMode }) {
   return null;
 }
 
+// Draggable Midpoint Markers
+function EditablePolyline({ waypoints, onAddWaypoint }) {
+  const map = useMap();
+  const [midpoints, setMidpoints] = useState([]);
+  const [hoveredMidpoint, setHoveredMidpoint] = useState(null);
+
+  useEffect(() => {
+    if (waypoints.length < 2) {
+      setMidpoints([]);
+      return;
+    }
+
+    const mids = [];
+    for (let i = 0; i < waypoints.length - 1; i++) {
+      const start = waypoints[i];
+      const end = waypoints[i + 1];
+      const midLat = (start.lat + end.lat) / 2;
+      const midLng = (start.lng + end.lng) / 2;
+      mids.push({ lat: midLat, lng: midLng, insertIndex: i + 1 });
+    }
+    setMidpoints(mids);
+  }, [waypoints]);
+
+  const createMidpointIcon = (isHovered) => {
+    return L.divIcon({
+      className: 'midpoint-marker',
+      html: `<div class="${isHovered ? 'scale-125' : 'scale-100'} transition-transform w-4 h-4 rounded-full bg-cyan-400 border-2 border-white shadow-lg opacity-${isHovered ? '100' : '60'}"></div>`,
+      iconSize: [16, 16],
+      iconAnchor: [8, 8],
+    });
+  };
+
+  return (
+    <>
+      <Polyline
+        positions={waypoints.map(w => [w.lat, w.lng])}
+        color="#06b6d4"
+        weight={4}
+        opacity={0.8}
+      />
+      {midpoints.map((mid, idx) => (
+        <Marker
+          key={`mid-${idx}`}
+          position={[mid.lat, mid.lng]}
+          icon={createMidpointIcon(hoveredMidpoint === idx)}
+          draggable={true}
+          eventHandlers={{
+            mouseover: () => setHoveredMidpoint(idx),
+            mouseout: () => setHoveredMidpoint(null),
+            dragend: (e) => {
+              const pos = e.target.getLatLng();
+              onAddWaypoint(mid.insertIndex, pos);
+            }
+          }}
+        />
+      ))}
+    </>
+  );
+}
+
 export default function AdvancedRouteEditor({ initialWaypoints = [], onSave, onCancel }) {
   const [waypoints, setWaypoints] = useState(
     initialWaypoints.length > 0 ? initialWaypoints : []
@@ -95,6 +155,17 @@ export default function AdvancedRouteEditor({ initialWaypoints = [], onSave, onC
 
   const handleDelete = (index) => {
     setWaypoints(waypoints.filter((_, i) => i !== index));
+  };
+
+  const handleAddWaypoint = (insertIndex, latlng) => {
+    const newWaypoint = {
+      lat: latlng.lat,
+      lng: latlng.lng,
+      name: `Stop ${waypoints.length + 1}`
+    };
+    const updated = [...waypoints];
+    updated.splice(insertIndex, 0, newWaypoint);
+    setWaypoints(updated);
   };
 
   const handleNameChange = (index, newName) => {
@@ -138,6 +209,13 @@ export default function AdvancedRouteEditor({ initialWaypoints = [], onSave, onC
             />
             <MapClickHandler onMapClick={handleMapClick} isAddMode={isAddMode} />
             
+            {waypoints.length > 1 && (
+              <EditablePolyline 
+                waypoints={waypoints} 
+                onAddWaypoint={handleAddWaypoint}
+              />
+            )}
+            
             {waypoints.map((waypoint, idx) => (
               <DraggableMarker
                 key={idx}
@@ -149,14 +227,6 @@ export default function AdvancedRouteEditor({ initialWaypoints = [], onSave, onC
                 isLast={idx === waypoints.length - 1}
               />
             ))}
-            
-            {waypoints.length > 1 && (
-              <Polyline
-                positions={waypoints.map(w => [w.lat, w.lng])}
-                color="#06b6d4"
-                weight={3}
-              />
-            )}
           </MapContainer>
         </div>
         
