@@ -245,8 +245,13 @@ EKSEMPLER:
       // Udfør handlingen
       switch (action) {
         case "OPEN_WINDOW":
-          openWindow(parameters.window_type);
-          setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
+          const validWindows = ['fleet', 'alerts', 'routes', 'shipments'];
+          if (parameters.window_type && validWindows.includes(parameters.window_type)) {
+            openWindow(parameters.window_type);
+            setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
+          } else {
+            setMessages(prev => [...prev, { role: "system", content: `❌ Ugyldigt vindue: ${parameters.window_type}. Brug: fleet, alerts, routes, eller shipments` }]);
+          }
           break;
 
         case "CLOSE_WINDOWS":
