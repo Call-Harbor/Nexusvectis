@@ -11,66 +11,46 @@ Deno.serve(async (req) => {
 
     const { origin, destination, transport_type } = await req.json();
 
-    // Step 1: Search for the actual route using web search
-    const routeSearch = await base44.integrations.Core.InvokeLLM({
-      prompt: `Search Google Maps RIGHT NOW for the route from ${origin} to ${destination} ${transport_type === 'ship' ? 'by sea/maritime route' : transport_type === 'truck' ? 'by road/driving' : transport_type === 'train' ? 'by train/rail' : transport_type === 'aircraft' ? 'by plane/flight' : 'direct route'}.
-
-INSTRUCTIONS:
-1. Go to Google Maps and search "${origin} to ${destination}"
-2. Look at the ACTUAL route shown on the map
-3. Write down EVERY major city, port, strait, canal, or junction the route passes through
-4. Get the EXACT coordinates (latitude, longitude) for each point
-
-${transport_type === 'ship' ? `
-FOR SHIPS: Look for maritime/sea routes. Ships sail ONLY on water (seas, straits, canals).
-- Check sites like MarineTraffic or VesselFinder for actual shipping routes
-- Identify which bodies of water are crossed (North Sea, Baltic Sea, English Channel, etc.)
-- Note important passages (Kiel Canal, Dover Strait, Skagerrak, etc.)
-` : ''}
-
-Return ONLY the list of waypoints with names and coordinates that the actual route passes through.`,
-      add_context_from_internet: true,
-      response_json_schema: {
-        type: "object",
-        properties: {
-          waypoints_found: {
-            type: "array",
-            items: {
-              type: "object",
-              properties: {
-                name: { type: "string" },
-                lat: { type: "number" },
-                lng: { type: "number" },
-                description: { type: "string" }
-              }
-            }
-          },
-          route_type: { type: "string" },
-          main_bodies_crossed: { type: "array", items: { type: "string" } }
-        }
-      }
-    });
-
-    // Step 2: Validate and calculate distances
     const response = await base44.integrations.Core.InvokeLLM({
-      prompt: `You found these waypoints: ${JSON.stringify(routeSearch.waypoints_found)}
+      prompt: `Plan a realistic ${transport_type} route from ${origin} to ${destination}.
 
-NOW:
-1. Verify each waypoint is on the actual route from ${origin} to ${destination}
-2. Remove any waypoints that don't make sense
-3. Calculate the REAL distance in km between consecutive waypoints (use geographic distance formula)
-4. Sum up total distance
-5. Calculate duration based on transport speed:
-   - ship: 25 km/h
-   - truck: 80 km/h  
-   - train: 120 km/h
-   - aircraft: 800 km/h
-   - drone: 60 km/h
-6. Calculate CO2: distance × factor (ship=0.02, truck=0.8, train=0.04, aircraft=0.9, drone=0.3)
+STEP 1: Search Google Maps/web for the ACTUAL route:
+- Type "${origin} to ${destination}" in Google Maps
+- Look at the real route shown
+- Note major points along the way
 
-Ensure coordinates are ACCURATE and the route is PHYSICALLY POSSIBLE for ${transport_type}.
+STEP 2: Create waypoints (6-10 points):
+- Start at ${origin} (get real coordinates)
+- Add major intermediate points on the route
+- End at ${destination} (get real coordinates)
 
-Route info: ${routeSearch.route_type}, crosses: ${routeSearch.main_bodies_crossed?.join(', ')}`,
+${transport_type === 'ship' ? `SHIP RULES:
+- Ships ONLY sail on water (seas, oceans, canals)
+- Follow real shipping lanes
+- Include straits/canals (Kiel Canal, English Channel, etc.)
+- NO straight lines across land
+- Example: Copenhagen→London = around Denmark via North Sea` : ''}
+${transport_type === 'truck' ? `TRUCK RULES:
+- Follow major highways (E-roads, motorways)
+- Include cities/junctions as waypoints
+- Use bridges/ferries where needed` : ''}
+${transport_type === 'train' ? `TRAIN RULES:
+- Follow existing rail networks only
+- Include major train stations
+- Use rail bridges/tunnels
+- If no rail exists, say "NO ROUTE"` : ''}
+
+STEP 3: Verify waypoints are:
+- On the actual route (not random)
+- In correct order
+- Have accurate coordinates
+
+STEP 4: Calculate:
+- Distance (km): sum of all segments
+- Duration: distance ÷ speed (ship=25, truck=80, train=120, aircraft=800 km/h)
+- CO2: distance × factor (ship=0.02, truck=0.8, train=0.04, aircraft=0.9 kg/km)
+
+Be precise and realistic. Use web search to get accurate data.`,
       add_context_from_internet: true,
       response_json_schema: {
         type: "object",
