@@ -24,14 +24,27 @@ export default function WarehouseAutomation() {
   });
   const [workflowLogs, setWorkflowLogs] = useState([]);
 
+  const { data: user } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me()
+  });
+
   const { data: resources = [] } = useQuery({
-    queryKey: ['resources'],
-    queryFn: () => base44.entities.Resource.list(),
+    queryKey: ['resources', user?.organization_id],
+    queryFn: async () => {
+      if (!user?.organization_id) return [];
+      return await base44.entities.Resource.filter({ organization_id: user.organization_id });
+    },
+    enabled: !!user?.organization_id
   });
 
   const { data: shipments = [] } = useQuery({
-    queryKey: ['shipments'],
-    queryFn: () => base44.entities.Shipment.list(),
+    queryKey: ['shipments', user?.organization_id],
+    queryFn: async () => {
+      if (!user?.organization_id) return [];
+      return await base44.entities.Shipment.filter({ organization_id: user.organization_id });
+    },
+    enabled: !!user?.organization_id
   });
 
   const [fleetStatus, setFleetStatus] = useState({});
@@ -273,6 +286,28 @@ Provide realistic recommendations based on actual warehouse utilization.`,
     { id: 'inventory_alerts', name: 'Inventory Alerts', icon: Bell, description: 'Low stock notifications' },
     { id: 'shipment_tracking', name: 'Shipment Tracking', icon: Activity, description: 'Real-time tracking updates' }
   ];
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
+        <div className="text-center">
+          <Bot className="w-12 h-12 text-cyan-400 mx-auto mb-4 animate-pulse" />
+          <p className="text-slate-400">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user.organization_id) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
+        <div className="text-center">
+          <Bot className="w-12 h-12 text-cyan-400 mx-auto mb-4" />
+          <p className="text-slate-400">No organization assigned</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6">
