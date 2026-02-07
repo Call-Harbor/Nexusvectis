@@ -168,7 +168,7 @@ const apiEndpoints = [
         path: "/api/functions/exportData",
         description: "Export entity data in JSON or CSV format",
         params: { entity_type: "Vehicle/Route/Shipment/Alert/...", format: "json/csv", filters: {} },
-        response: { success: true, count: 100, data: [...] }
+        response: { success: true, count: 100, data: "Array of entities" }
       }
     ]
   }
