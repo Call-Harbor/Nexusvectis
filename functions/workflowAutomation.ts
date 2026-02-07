@@ -45,8 +45,8 @@ Generated: ${new Date().toISOString()}`;
 
       case 'inventory_alerts':
         // Check inventory levels and send alerts
-        const resources = await base44.entities.Resource.list();
-        const lowStock = resources.filter(r => (r.current_level / r.capacity) < 0.3);
+        const resources = await base44.entities.Resource.filter({ organization_id: user.organization_id });
+        const lowStock = resources.filter(r => r.capacity && r.current_level && (r.current_level / r.capacity) < 0.3);
         
         if (lowStock.length > 0) {
           for (const resource of lowStock) {
