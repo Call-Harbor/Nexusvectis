@@ -236,6 +236,9 @@ export default function Layout({ children, currentPageName }) {
                     >
                       <Icon className="w-4 h-4" />
                       <span>{item.name}</span>
+                      {item.page === "IntellectMode" && (
+                        <Badge className="ml-auto bg-amber-500/20 text-amber-400 border-amber-500/40 text-[10px] font-semibold">BETA</Badge>
+                      )}
                     </Link>
                   </DropdownMenuItem>
                 );
@@ -443,6 +446,9 @@ export default function Layout({ children, currentPageName }) {
                     >
                       <Icon className={cn("w-5 h-5", isActive && "text-cyan-400")} />
                       <span>{item.name}</span>
+                      {item.page === "IntellectMode" && (
+                        <Badge className="ml-auto bg-amber-500/20 text-amber-400 border-amber-500/40 text-[10px] font-semibold">BETA</Badge>
+                      )}
                     </Link>
                   );
                 })}
