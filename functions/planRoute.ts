@@ -59,13 +59,23 @@ ${transport_type === 'ship' ? `
 - Semi-direct routing with necessary stops
 `}
 
-STEP 3 - BUILD THE ROUTE:
+STEP 3 - CHECK LIVE CONDITIONS:
+- Search for CURRENT weather conditions between ${origin} and ${destination}
+- Check for road works, construction, or infrastructure disruptions on the route
+- Look for traffic incidents, strikes, or delays affecting ${transport_type}
+- Check maritime conditions if ship (storms, port closures, ice)
+- Check rail disruptions if train (track work, signal failures)
+- Check airspace restrictions if aircraft
+
+STEP 4 - BUILD THE ROUTE:
 - Start at ${origin} (find exact coordinates)
 - Plan 4-8 intermediate waypoints that physically make sense
+- AVOID areas with severe weather, closures, or major disruptions
+- Choose alternative routes if main route is blocked or dangerous
 - End at ${destination} (find exact coordinates)
 - Each segment must be physically possible for ${transport_type}
 
-STEP 4 - VERIFY:
+STEP 5 - VERIFY:
 - Check: Can you actually ${transport_type === 'ship' ? 'sail' : transport_type === 'train' ? 'take a train' : transport_type === 'truck' ? 'drive' : 'fly'} from waypoint 1 to waypoint 2? 
 - Check: Is there continuous ${transport_type === 'ship' ? 'water' : transport_type === 'train' ? 'rail' : transport_type === 'truck' ? 'road' : 'air'} between each pair?
 - If not, REVISE the route
