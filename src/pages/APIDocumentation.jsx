@@ -249,6 +249,16 @@ export default function APIDocumentation() {
   
   const queryClient = useQueryClient();
 
+  // Fetch user organization
+  const { data: organizationData } = useQuery({
+    queryKey: ['user-organization'],
+    queryFn: async () => {
+      const user = await base44.auth.me();
+      const userData = await base44.entities.User.filter({ email: user.email });
+      return userData?.[0] || null;
+    }
+  });
+
   // Fetch API keys
   const { data: apiKeys = [], isLoading: keysLoading } = useQuery({
     queryKey: ['api-keys'],
@@ -375,11 +385,46 @@ export default function APIDocumentation() {
           </div>
         </motion.div>
 
+        {/* Organization Info */}
+        {organizationData?.organization_id && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="mb-8"
+          >
+            <Card className="bg-gradient-to-br from-cyan-500/10 to-violet-500/10 border-cyan-500/30">
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-white font-semibold mb-1">Organization ID</h3>
+                    <p className="text-slate-400 text-sm mb-3">Use this ID in your API requests</p>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => {
+                      navigator.clipboard.writeText(organizationData.organization_id);
+                      toast.success("Organization ID copied!");
+                    }}
+                    className="text-cyan-400 hover:text-cyan-300"
+                  >
+                    <Copy className="w-4 h-4" />
+                  </Button>
+                </div>
+                <div className="bg-slate-900/50 p-4 rounded-lg border border-slate-700/50">
+                  <code className="text-cyan-400 text-lg">{organizationData.organization_id}</code>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+
         {/* API Key Management */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
+          transition={{ delay: 0.12 }}
           className="mb-8"
         >
           <Card className="bg-slate-800/50 border-slate-700/50">
