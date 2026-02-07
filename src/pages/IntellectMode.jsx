@@ -581,6 +581,7 @@ export default function IntellectMode() {
                 <h1 className="text-2xl font-bold text-white flex items-center gap-2">
                   FLEET AI
                   <Sparkles className="w-5 h-5 text-cyan-400 animate-pulse" />
+                  <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/40 text-xs font-semibold">BETA</Badge>
                 </h1>
                 <p className="text-cyan-400 text-sm">Elite Logistics Intelligence</p>
               </div>
