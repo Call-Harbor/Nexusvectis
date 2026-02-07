@@ -82,10 +82,17 @@ STEP 6 - VERIFY:
 
 STEP 7 - CALCULATE:
 - Total distance in km (sum of all segments)
-- Duration based on average speed: ship=30km/h, truck=80km/h, train=120km/h, aircraft=800km/h, drone=60km/h
+- Duration: Adjust base speed for conditions (bad weather = slower, traffic = delays)
+  Base speeds: ship=30km/h, truck=80km/h, train=120km/h, aircraft=800km/h, drone=60km/h
 - CO2 emissions: ship=0.02, truck=0.8, aircraft=0.9, train=0.04, drone=0.3 kg per km
+- Add delay estimates from disruptions (e.g., +2h for storm, +1h for road work)
 
-Output a route that is GEOGRAPHICALLY ACCURATE and PHYSICALLY POSSIBLE for ${transport_type} transport.`,
+STEP 8 - DOCUMENT CONDITIONS:
+- In route_description, mention any weather, disruptions, or delays found
+- Explain why certain routes were chosen or avoided
+- Note any real-time conditions affecting the route
+
+Output a route that is GEOGRAPHICALLY ACCURATE, PHYSICALLY POSSIBLE, and OPTIMIZED for CURRENT CONDITIONS for ${transport_type} transport.`,
       add_context_from_internet: true,
       response_json_schema: {
         type: "object",
