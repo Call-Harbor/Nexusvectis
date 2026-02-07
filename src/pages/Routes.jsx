@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
 import { 
   Route, Plus, Search, MapPin, Clock, Sparkles, 
-  ArrowRight, Truck, Ship, Plane, Train, Leaf, X, Map
+  ArrowRight, Truck, Ship, Plane, Train, Leaf, X, Map, Edit
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -86,6 +86,7 @@ export default function Routes() {
   const [selectedRoute, setSelectedRoute] = useState(null);
   const [showRouteDialog, setShowRouteDialog] = useState(false);
   const [showAdvancedEditor, setShowAdvancedEditor] = useState(false);
+  const [editingRoute, setEditingRoute] = useState(null);
 
   const planRouteMutation = useMutation({
     mutationFn: async ({ origin, destination, transport_type }) => {
@@ -288,6 +289,17 @@ export default function Routes() {
                        }}
                       >
                        <Map className="w-4 h-4" />
+                      </Button>
+                      <Button
+                       size="sm"
+                       variant="outline"
+                       className="text-violet-400 border-violet-500/30 hover:bg-violet-500/20"
+                       onClick={() => {
+                         setEditingRoute(route);
+                         setShowAdvancedEditor(true);
+                       }}
+                      >
+                       <Edit className="w-4 h-4" />
                       </Button>
                       <Button
                        size="sm"
@@ -521,13 +533,16 @@ export default function Routes() {
       </Dialog>
 
       {/* Advanced Route Editor Dialog */}
-      <Dialog open={showAdvancedEditor} onOpenChange={setShowAdvancedEditor}>
+      <Dialog open={showAdvancedEditor} onOpenChange={(open) => {
+        setShowAdvancedEditor(open);
+        if (!open) setEditingRoute(null);
+      }}>
         <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-4xl">
           <DialogHeader>
-            <DialogTitle>Advanced Route Editor</DialogTitle>
+            <DialogTitle>{editingRoute ? `Edit Route: ${editingRoute.name}` : 'Advanced Route Editor'}</DialogTitle>
           </DialogHeader>
           <AdvancedRouteEditor
-            initialWaypoints={formData.waypoints || []}
+            initialWaypoints={editingRoute?.waypoints || formData.waypoints || []}
             onSave={(waypoints) => {
               // Calculate distance and duration based on waypoints
               const distance = waypoints.length > 1 
@@ -535,16 +550,34 @@ export default function Routes() {
                 : 0;
               const duration = Math.round(distance / 80);
               
-              setFormData({
-                ...formData,
-                waypoints,
-                distance_km: distance,
-                estimated_duration_hours: duration,
-                co2_estimate: Math.round(distance * 0.8)
-              });
+              if (editingRoute) {
+                // Update existing route
+                updateMutation.mutate({
+                  id: editingRoute.id,
+                  data: {
+                    waypoints,
+                    distance_km: distance,
+                    estimated_duration_hours: duration,
+                    co2_estimate: Math.round(distance * 0.8)
+                  }
+                });
+                setEditingRoute(null);
+              } else {
+                // Update form data for new route
+                setFormData({
+                  ...formData,
+                  waypoints,
+                  distance_km: distance,
+                  estimated_duration_hours: duration,
+                  co2_estimate: Math.round(distance * 0.8)
+                });
+              }
               setShowAdvancedEditor(false);
             }}
-            onCancel={() => setShowAdvancedEditor(false)}
+            onCancel={() => {
+              setShowAdvancedEditor(false);
+              setEditingRoute(null);
+            }}
           />
         </DialogContent>
       </Dialog>
