@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Code2, Key, Zap, BookOpen, Copy, Check, ExternalLink, Shield, Clock } from "lucide-react";
+import { Code2, Key, Zap, BookOpen, Copy, Check, ExternalLink, Shield, Clock, TrendingUp, Activity, Eye, EyeOff, Plus, Trash2 } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { base44 } from "@/api/base44Client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -240,6 +242,57 @@ trackVehicle();`
 export default function APIDocumentation() {
   const [copiedCode, setCopiedCode] = useState(null);
   const [selectedEndpoint, setSelectedEndpoint] = useState(null);
+  const [showNewKeyDialog, setShowNewKeyDialog] = useState(false);
+  const [newKeyName, setNewKeyName] = useState("");
+  const [generatedKey, setGeneratedKey] = useState(null);
+  const [revealedKeys, setRevealedKeys] = useState({});
+  
+  const queryClient = useQueryClient();
+
+  // Fetch API keys
+  const { data: apiKeys = [], isLoading: keysLoading } = useQuery({
+    queryKey: ['api-keys'],
+    queryFn: async () => {
+      const user = await base44.auth.me();
+      const userData = await base44.entities.User.filter({ email: user.email });
+      if (!userData?.[0]?.organization_id) return [];
+      return await base44.entities.APIKey.filter({ organization_id: userData[0].organization_id });
+    }
+  });
+
+  // Fetch usage stats
+  const { data: usageStats, isLoading: statsLoading } = useQuery({
+    queryKey: ['api-usage-stats'],
+    queryFn: async () => {
+      const response = await base44.functions.invoke('getAPIUsageStats', {});
+      return response.data;
+    }
+  });
+
+  // Generate API key
+  const generateKeyMutation = useMutation({
+    mutationFn: async (name) => {
+      const response = await base44.functions.invoke('generateAPIKey', { name });
+      return response.data;
+    },
+    onSuccess: (data) => {
+      setGeneratedKey(data);
+      queryClient.invalidateQueries(['api-keys']);
+      setNewKeyName("");
+      toast.success("API key generated successfully");
+    }
+  });
+
+  // Revoke API key
+  const revokeKeyMutation = useMutation({
+    mutationFn: async (keyId) => {
+      await base44.entities.APIKey.update(keyId, { status: 'revoked' });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['api-keys']);
+      toast.success("API key revoked");
+    }
+  });
 
   const copyToClipboard = (text, id) => {
     navigator.clipboard.writeText(text);
@@ -322,11 +375,210 @@ export default function APIDocumentation() {
           </div>
         </motion.div>
 
-        {/* Getting Started */}
+        {/* API Key Management */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
+          className="mb-8"
+        >
+          <Card className="bg-slate-800/50 border-slate-700/50">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <Key className="w-5 h-5 text-cyan-400" />
+                    API Keys
+                  </CardTitle>
+                  <CardDescription className="text-slate-400">
+                    Manage your API authentication keys
+                  </CardDescription>
+                </div>
+                <Button
+                  onClick={() => setShowNewKeyDialog(true)}
+                  className="bg-gradient-to-r from-cyan-500 to-violet-500 hover:from-cyan-600 hover:to-violet-600"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Generate New Key
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {keysLoading ? (
+                <div className="text-slate-400 text-center py-4">Loading keys...</div>
+              ) : apiKeys.length === 0 ? (
+                <div className="text-slate-400 text-center py-8">
+                  No API keys yet. Generate your first key to get started.
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {apiKeys.map((key) => (
+                    <div
+                      key={key.id}
+                      className="flex items-center justify-between p-4 bg-slate-900/50 rounded-lg border border-slate-700/50"
+                    >
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <h4 className="text-white font-semibold">{key.name}</h4>
+                          <Badge className={key.status === 'active' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-red-500/20 text-red-400 border-red-500/30'}>
+                            {key.status}
+                          </Badge>
+                        </div>
+                        <code className="text-sm text-slate-400">{key.key_prefix}••••••••••••••••••••</code>
+                        {key.last_used && (
+                          <p className="text-xs text-slate-500 mt-1">Last used: {new Date(key.last_used).toLocaleString()}</p>
+                        )}
+                      </div>
+                      {key.status === 'active' && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => revokeKeyMutation.mutate(key.id)}
+                          className="text-red-400 hover:text-red-300"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Generate Key Dialog */}
+              {showNewKeyDialog && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="bg-slate-800 border border-slate-700 rounded-xl p-6 max-w-md w-full"
+                  >
+                    <h3 className="text-xl font-bold text-white mb-4">Generate New API Key</h3>
+                    {!generatedKey ? (
+                      <>
+                        <input
+                          type="text"
+                          placeholder="Key name (e.g., Production API)"
+                          value={newKeyName}
+                          onChange={(e) => setNewKeyName(e.target.value)}
+                          className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white mb-4"
+                        />
+                        <div className="flex gap-3">
+                          <Button
+                            variant="outline"
+                            onClick={() => {
+                              setShowNewKeyDialog(false);
+                              setNewKeyName("");
+                            }}
+                            className="flex-1"
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            onClick={() => generateKeyMutation.mutate(newKeyName)}
+                            disabled={!newKeyName || generateKeyMutation.isPending}
+                            className="flex-1 bg-gradient-to-r from-cyan-500 to-violet-500"
+                          >
+                            Generate
+                          </Button>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4 mb-4">
+                          <p className="text-amber-400 text-sm mb-2">⚠️ Save this key securely - it won't be shown again!</p>
+                          <div className="bg-slate-950 p-3 rounded-lg flex items-center justify-between">
+                            <code className="text-emerald-400 text-sm break-all">{generatedKey.api_key}</code>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => {
+                                navigator.clipboard.writeText(generatedKey.api_key);
+                                toast.success("API key copied!");
+                              }}
+                            >
+                              <Copy className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                        <Button
+                          onClick={() => {
+                            setGeneratedKey(null);
+                            setShowNewKeyDialog(false);
+                          }}
+                          className="w-full"
+                        >
+                          Done
+                        </Button>
+                      </>
+                    )}
+                  </motion.div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Usage Statistics */}
+        {usageStats?.success && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="mb-8"
+          >
+            <Card className="bg-slate-800/50 border-slate-700/50">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5 text-violet-400" />
+                  API Usage Statistics
+                </CardTitle>
+                <CardDescription className="text-slate-400">
+                  Monitor your API usage and performance
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                  <div className="p-4 bg-slate-900/50 rounded-lg border border-slate-700/50">
+                    <div className="text-slate-400 text-sm mb-1">Total Calls</div>
+                    <div className="text-2xl font-bold text-white">{usageStats.stats.total_calls.toLocaleString()}</div>
+                  </div>
+                  <div className="p-4 bg-slate-900/50 rounded-lg border border-slate-700/50">
+                    <div className="text-slate-400 text-sm mb-1">Error Rate</div>
+                    <div className="text-2xl font-bold text-white">{usageStats.stats.error_rate}%</div>
+                  </div>
+                  <div className="p-4 bg-slate-900/50 rounded-lg border border-slate-700/50">
+                    <div className="text-slate-400 text-sm mb-1">Avg Response</div>
+                    <div className="text-2xl font-bold text-white">{usageStats.stats.avg_response_time_ms}ms</div>
+                  </div>
+                  <div className="p-4 bg-slate-900/50 rounded-lg border border-slate-700/50">
+                    <div className="text-slate-400 text-sm mb-1">Errors</div>
+                    <div className="text-2xl font-bold text-white">{usageStats.stats.error_count}</div>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="text-white font-semibold mb-3">Top Endpoints</h4>
+                  <div className="space-y-2">
+                    {usageStats.stats.top_endpoints.map((endpoint, idx) => (
+                      <div key={idx} className="flex items-center justify-between p-3 bg-slate-900/30 rounded-lg">
+                        <code className="text-sm text-slate-400">{endpoint.endpoint}</code>
+                        <Badge className="bg-cyan-500/20 text-cyan-400 border-cyan-500/30">
+                          {endpoint.count} calls
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+
+        {/* Getting Started */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
           className="mb-8"
         >
           <Card className="bg-slate-800/50 border-slate-700/50">
@@ -384,7 +636,7 @@ export default function APIDocumentation() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
+          transition={{ delay: 0.25 }}
           className="mb-8"
         >
           <Card className="bg-slate-800/50 border-slate-700/50">
