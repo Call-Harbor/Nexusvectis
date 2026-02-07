@@ -9,6 +9,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { MapContainer, TileLayer, Marker, Polyline, Popup } from 'react-leaflet';
+import 'react-leaflet/dist/leaflet.css';
 
 const HologramWindow = ({ id, title, icon: Icon, children, position, onClose, onMinimize, isMinimized }) => {
   const [isDragging, setIsDragging] = useState(false);
@@ -84,7 +86,7 @@ const HologramWindow = ({ id, title, icon: Icon, children, position, onClose, on
           </div>
           
           {/* Content */}
-          <div className="p-4 max-h-96 overflow-y-auto">
+          <div className="p-4">
             {children}
           </div>
         </div>
@@ -463,22 +465,55 @@ Output JSON med:
 
       case "routes":
         return (
-          <div className="space-y-3">
+          <div className="space-y-3 max-h-[500px] overflow-y-auto">
             <div className="text-violet-400 text-sm font-semibold mb-2">Aktive Ruter ({routes.length})</div>
             {routes.slice(0, 5).map(route => (
-              <div key={route.id} className="p-3 bg-slate-800/50 rounded-lg border border-slate-700/50">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-white font-medium">{route.name}</span>
-                  <Badge className={
-                    route.status === 'active' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' :
-                    'bg-slate-500/20 text-slate-400 border-slate-500/30'
-                  }>
-                    {route.status}
-                  </Badge>
+              <div key={route.id} className="space-y-2">
+                <div className="p-3 bg-slate-800/50 rounded-lg border border-slate-700/50">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-white font-medium">{route.name}</span>
+                    <Badge className={
+                      route.status === 'active' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' :
+                      'bg-slate-500/20 text-slate-400 border-slate-500/30'
+                    }>
+                      {route.status}
+                    </Badge>
+                  </div>
+                  <div className="text-xs text-slate-400">
+                    {route.origin} → {route.destination}
+                    {route.distance_km && ` • ${route.distance_km} km`}
+                  </div>
                 </div>
-                <div className="text-xs text-slate-400">
-                  {route.origin} → {route.destination}
-                </div>
+                
+                {route.waypoints && route.waypoints.length > 0 && (
+                  <div className="h-48 rounded-lg overflow-hidden border border-violet-500/30">
+                    <MapContainer
+                      center={[route.waypoints[0].lat, route.waypoints[0].lng]}
+                      zoom={5}
+                      style={{ height: '100%', width: '100%' }}
+                      scrollWheelZoom={false}
+                    >
+                      <TileLayer
+                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        attribution='&copy; OpenStreetMap'
+                      />
+                      <Polyline
+                        positions={route.waypoints.map(wp => [wp.lat, wp.lng])}
+                        color="#8b5cf6"
+                        weight={3}
+                      />
+                      {route.waypoints.map((wp, idx) => (
+                        <Marker key={idx} position={[wp.lat, wp.lng]}>
+                          <Popup>
+                            <div className="text-sm">
+                              <strong>{wp.name || `Point ${idx + 1}`}</strong>
+                            </div>
+                          </Popup>
+                        </Marker>
+                      ))}
+                    </MapContainer>
+                  </div>
+                )}
               </div>
             ))}
           </div>
