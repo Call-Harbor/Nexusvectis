@@ -27,16 +27,21 @@ ${transport_type === 'ship' ? `
 - Include highway junctions and major cities as waypoints
 - Routes must follow existing road infrastructure
 ` : transport_type === 'train' ? `
-- Follow existing rail networks and major rail lines
+- TRAINS CANNOT LEAVE RAIL TRACKS - only existing rail networks allowed
+- Follow major European rail corridors (e.g., trans-European railways)
 - Include major train stations and rail hubs as waypoints
-- Routes must follow actual railway infrastructure
+- Routes must follow actual railway infrastructure that exists
+- Consider connections, transfers at major rail junctions
 ` : transport_type === 'aircraft' ? `
-- Use typical flight corridors and air routes
-- Include major airports or air waypoints
-- Can fly direct but consider typical aviation routes
+- AIRCRAFT FLY IN STRAIGHT LINES at high altitude (unless avoiding restricted airspace)
+- Include major airports as origin/destination and potential fuel stops
+- Can mostly fly direct but include realistic waypoints for very long routes
+- Consider typical commercial flight paths between major airports
 ` : `
-- Consider drone flight regulations and no-fly zones
-- Include recharge/rest stops if needed for long distances
+- DRONES fly at low altitude and need line-of-sight or pre-approved corridors
+- Include recharge stations every 50-150km depending on payload
+- Must avoid restricted airspace (military zones, airports)
+- Route should be semi-direct but with necessary stops for battery/fuel
 `}
 
 Requirements:
