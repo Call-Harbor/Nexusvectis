@@ -436,9 +436,20 @@ JSON output:`,
           if (open_window) openWindow(open_window);
           break;
 
-        case "DELETE_ENTITY":
-          // Kun tillad sletning af test data eller med eksplicit bekræftelse
-          setMessages(prev => [...prev, { role: "system", content: `⚠️ ${message}` }]);
+        case "DELETE_ROUTES":
+          if (parameters.delete_all) {
+            await Promise.all(routes.map(r => base44.entities.Route.delete(r.id)));
+            queryClient.invalidateQueries({ queryKey: ['routes-intellect'] });
+            setMessages(prev => [...prev, { role: "system", content: `✅ Slettede ${routes.length} ruter` }]);
+          }
+          break;
+
+        case "DELETE_VEHICLES":
+          if (parameters.delete_all) {
+            await Promise.all(vehicles.map(v => base44.entities.Vehicle.delete(v.id)));
+            queryClient.invalidateQueries({ queryKey: ['vehicles-intellect'] });
+            setMessages(prev => [...prev, { role: "system", content: `✅ Slettede ${vehicles.length} køretøjer` }]);
+          }
           break;
 
         case "QUERY_DATA":
