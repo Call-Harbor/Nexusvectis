@@ -2,9 +2,10 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
+import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
 import { 
   Route, Plus, Search, MapPin, Clock, Sparkles, 
-  ArrowRight, Truck, Ship, Plane, Train, Leaf, X
+  ArrowRight, Truck, Ship, Plane, Train, Leaf, X, Map
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -81,10 +82,28 @@ export default function Routes() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['routes'] }),
   });
 
-  const geocodeMutation = useMutation({
-    mutationFn: async ({ city, country }) => {
-      const response = await base44.functions.invoke('geocodeCity', { city, country });
+  const [selectedRoute, setSelectedRoute] = useState(null);
+  const [showRouteDialog, setShowRouteDialog] = useState(false);
+
+  const planRouteMutation = useMutation({
+    mutationFn: async ({ origin, destination, transport_type }) => {
+      const response = await base44.functions.invoke('planRoute', { 
+        origin, 
+        destination, 
+        transport_type 
+      });
       return response.data;
+    },
+    onSuccess: (data) => {
+      if (data.route_data) {
+        setFormData(prev => ({
+          ...prev,
+          waypoints: data.route_data.waypoints,
+          distance_km: data.route_data.distance_km,
+          estimated_duration_hours: data.route_data.estimated_duration_hours,
+          co2_estimate: data.route_data.co2_estimate
+        }));
+      }
     }
   });
 
@@ -258,16 +277,27 @@ export default function Routes() {
                         )}
                       </div>
                       <Button
-                        size="sm"
-                        variant="ghost"
-                        className="text-slate-400 hover:text-rose-400"
-                        onClick={() => {
-                          if (confirm('Delete this route?')) {
-                            deleteMutation.mutate(route.id);
-                          }
-                        }}
+                       size="sm"
+                       variant="outline"
+                       className="text-cyan-400 border-cyan-500/30 hover:bg-cyan-500/20"
+                       onClick={() => {
+                         setSelectedRoute(route);
+                         setShowRouteDialog(true);
+                       }}
                       >
-                        <X className="w-4 h-4" />
+                       <Map className="w-4 h-4" />
+                      </Button>
+                      <Button
+                       size="sm"
+                       variant="ghost"
+                       className="text-slate-400 hover:text-rose-400"
+                       onClick={() => {
+                         if (confirm('Delete this route?')) {
+                           deleteMutation.mutate(route.id);
+                         }
+                       }}
+                      >
+                       <X className="w-4 h-4" />
                       </Button>
                     </div>
                   </div>
@@ -372,6 +402,24 @@ export default function Routes() {
                 />
               </div>
             </div>
+            <Button
+              className="w-full bg-gradient-to-r from-violet-500 to-purple-500 hover:from-violet-600 hover:to-purple-600 text-white font-semibold mb-3"
+              onClick={() => planRouteMutation.mutate({
+                origin: formData.origin,
+                destination: formData.destination,
+                transport_type: formData.transport_type
+              })}
+              disabled={!formData.origin || !formData.destination || planRouteMutation.isPending}
+            >
+              <Sparkles className="w-4 h-4 mr-2" />
+              {planRouteMutation.isPending ? 'Planning Route...' : 'AI Plan Route'}
+            </Button>
+            {formData.waypoints?.length > 0 && (
+              <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-sm">
+                <div className="text-emerald-400 font-medium mb-1">Route Planned!</div>
+                <div className="text-slate-300">{formData.waypoints.length} waypoints, {formData.distance_km} km, {formData.estimated_duration_hours}h</div>
+              </div>
+            )}
             <div className="flex items-center justify-between p-3 rounded-lg bg-slate-800/50">
               <div className="flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-violet-400" />
@@ -390,6 +438,74 @@ export default function Routes() {
               {createMutation.isPending ? 'Creating...' : 'Create Route'}
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Route Visualization Dialog */}
+      <Dialog open={showRouteDialog} onOpenChange={setShowRouteDialog}>
+        <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>Route Visualization: {selectedRoute?.name}</DialogTitle>
+          </DialogHeader>
+          {selectedRoute?.waypoints?.length > 0 ? (
+            <div className="space-y-4">
+              <div className="h-96 rounded-lg overflow-hidden border border-slate-700">
+                <MapContainer
+                  center={[selectedRoute.waypoints[0].lat, selectedRoute.waypoints[0].lng]}
+                  zoom={6}
+                  style={{ height: '100%', width: '100%' }}
+                >
+                  <TileLayer
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                  />
+                  {selectedRoute.waypoints.map((waypoint, idx) => (
+                    <Marker key={idx} position={[waypoint.lat, waypoint.lng]}>
+                      <Popup>{waypoint.name}</Popup>
+                    </Marker>
+                  ))}
+                  <Polyline
+                    positions={selectedRoute.waypoints.map(w => [w.lat, w.lng])}
+                    color="#06b6d4"
+                    weight={3}
+                  />
+                </MapContainer>
+              </div>
+              <div className="grid grid-cols-3 gap-4">
+                <div className="p-3 rounded-lg bg-slate-800/50">
+                  <div className="text-2xl font-bold text-white">{selectedRoute.distance_km} km</div>
+                  <div className="text-xs text-slate-400">Total Distance</div>
+                </div>
+                <div className="p-3 rounded-lg bg-slate-800/50">
+                  <div className="text-2xl font-bold text-white">{selectedRoute.estimated_duration_hours}h</div>
+                  <div className="text-xs text-slate-400">Duration</div>
+                </div>
+                <div className="p-3 rounded-lg bg-slate-800/50">
+                  <div className="text-2xl font-bold text-emerald-400">{selectedRoute.co2_estimate} kg</div>
+                  <div className="text-xs text-slate-400">CO₂ Emissions</div>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <div className="text-sm font-medium text-slate-400">Waypoints:</div>
+                {selectedRoute.waypoints.map((waypoint, idx) => (
+                  <div key={idx} className="flex items-center gap-2 text-sm">
+                    <div className="w-6 h-6 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-xs">
+                      {idx + 1}
+                    </div>
+                    <span className="text-white">{waypoint.name}</span>
+                    <span className="text-slate-500 text-xs">
+                      ({waypoint.lat.toFixed(4)}, {waypoint.lng.toFixed(4)})
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="py-12 text-center text-slate-400">
+              <Map className="w-12 h-12 mx-auto mb-3 opacity-50" />
+              <p>No route data available. Use "AI Plan Route" when creating a route.</p>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
