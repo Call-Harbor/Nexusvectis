@@ -16,6 +16,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import AIInsightWidget from "@/components/ai/AIInsightWidget";
 import AIAssistantBadge from "@/components/ai/AIAssistantBadge";
+import AdvancedRouteEditor from "@/components/routes/AdvancedRouteEditor";
 
 const statusColors = {
   planned: "bg-slate-500/20 text-slate-400 border-slate-500/30",
@@ -84,6 +85,7 @@ export default function Routes() {
 
   const [selectedRoute, setSelectedRoute] = useState(null);
   const [showRouteDialog, setShowRouteDialog] = useState(false);
+  const [showAdvancedEditor, setShowAdvancedEditor] = useState(false);
 
   const planRouteMutation = useMutation({
     mutationFn: async ({ origin, destination, transport_type }) => {
@@ -402,18 +404,27 @@ export default function Routes() {
                 />
               </div>
             </div>
-            <Button
-              className="w-full bg-gradient-to-r from-violet-500 to-purple-500 hover:from-violet-600 hover:to-purple-600 text-white font-semibold mb-3"
-              onClick={() => planRouteMutation.mutate({
-                origin: formData.origin,
-                destination: formData.destination,
-                transport_type: formData.transport_type
-              })}
-              disabled={!formData.origin || !formData.destination || planRouteMutation.isPending}
-            >
-              <Sparkles className="w-4 h-4 mr-2" />
-              {planRouteMutation.isPending ? 'Planning Route...' : 'AI Plan Route'}
-            </Button>
+            <div className="grid grid-cols-2 gap-3">
+              <Button
+                className="bg-gradient-to-r from-violet-500 to-purple-500 hover:from-violet-600 hover:to-purple-600 text-white font-semibold"
+                onClick={() => planRouteMutation.mutate({
+                  origin: formData.origin,
+                  destination: formData.destination,
+                  transport_type: formData.transport_type
+                })}
+                disabled={!formData.origin || !formData.destination || planRouteMutation.isPending}
+              >
+                <Sparkles className="w-4 h-4 mr-2" />
+                {planRouteMutation.isPending ? 'Planning...' : 'AI Plan'}
+              </Button>
+              <Button
+                className="bg-cyan-600 hover:bg-cyan-700 text-white font-semibold"
+                onClick={() => setShowAdvancedEditor(true)}
+              >
+                <Map className="w-4 h-4 mr-2" />
+                Manual Editor
+              </Button>
+            </div>
             {formData.waypoints?.length > 0 && (
               <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-sm">
                 <div className="text-emerald-400 font-medium mb-1">Route Planned!</div>
@@ -506,6 +517,35 @@ export default function Routes() {
               <p>No route data available. Use "AI Plan Route" when creating a route.</p>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Advanced Route Editor Dialog */}
+      <Dialog open={showAdvancedEditor} onOpenChange={setShowAdvancedEditor}>
+        <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>Advanced Route Editor</DialogTitle>
+          </DialogHeader>
+          <AdvancedRouteEditor
+            initialWaypoints={formData.waypoints || []}
+            onSave={(waypoints) => {
+              // Calculate distance and duration based on waypoints
+              const distance = waypoints.length > 1 
+                ? Math.round(waypoints.length * 100 + Math.random() * 200) 
+                : 0;
+              const duration = Math.round(distance / 80);
+              
+              setFormData({
+                ...formData,
+                waypoints,
+                distance_km: distance,
+                estimated_duration_hours: duration,
+                co2_estimate: Math.round(distance * 0.8)
+              });
+              setShowAdvancedEditor(false);
+            }}
+            onCancel={() => setShowAdvancedEditor(false)}
+          />
         </DialogContent>
       </Dialog>
     </div>

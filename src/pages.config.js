@@ -68,9 +68,9 @@ import Resources from './pages/Resources';
 import Routes from './pages/Routes';
 import Security from './pages/Security';
 import Settings from './pages/Settings';
+import Shipments from './pages/Shipments';
 import UserManagement from './pages/UserManagement';
 import WarehouseAutomation from './pages/WarehouseAutomation';
-import Shipments from './pages/Shipments';
 import __Layout from './Layout.jsx';
 
 
@@ -96,9 +96,9 @@ export const PAGES = {
     "Routes": Routes,
     "Security": Security,
     "Settings": Settings,
+    "Shipments": Shipments,
     "UserManagement": UserManagement,
     "WarehouseAutomation": WarehouseAutomation,
-    "Shipments": Shipments,
 }
 
 export const pagesConfig = {
