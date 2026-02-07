@@ -68,6 +68,7 @@ import Security from './pages/Security';
 import Settings from './pages/Settings';
 import UserManagement from './pages/UserManagement';
 import WarehouseAutomation from './pages/WarehouseAutomation';
+import APIDocumentation from './pages/APIDocumentation';
 import __Layout from './Layout.jsx';
 
 
@@ -93,6 +94,7 @@ export const PAGES = {
     "Settings": Settings,
     "UserManagement": UserManagement,
     "WarehouseAutomation": WarehouseAutomation,
+    "APIDocumentation": APIDocumentation,
 }
 
 export const pagesConfig = {
