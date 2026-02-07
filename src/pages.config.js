@@ -69,6 +69,7 @@ import Security from './pages/Security';
 import Settings from './pages/Settings';
 import UserManagement from './pages/UserManagement';
 import WarehouseAutomation from './pages/WarehouseAutomation';
+import IntellectMode from './pages/IntellectMode';
 import __Layout from './Layout.jsx';
 
 
@@ -95,6 +96,7 @@ export const PAGES = {
     "Settings": Settings,
     "UserManagement": UserManagement,
     "WarehouseAutomation": WarehouseAutomation,
+    "IntellectMode": IntellectMode,
 }
 
 export const pagesConfig = {

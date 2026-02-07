@@ -49,6 +49,7 @@ const planningMenuItems = [
 ];
 
 const innovationMenuItems = [
+  { name: "Intellect Mode", icon: Sparkles, page: "IntellectMode" },
   { name: "Demand Forecasting", icon: Sparkles, page: "DemandForecasting" },
   { name: "Green TMS", icon: Sparkles, page: "GreenTMS" },
   { name: "Warehouse Automation", icon: Sparkles, page: "WarehouseAutomation" },
@@ -63,7 +64,7 @@ const systemMenuItems = [
 ];
 
 export default function Layout({ children, currentPageName }) {
-  const hideNav = currentPageName === "MapMonitor" || currentPageName === "AdminMonitor" || currentPageName === "Landing" || currentPageName === "Home";
+  const hideNav = currentPageName === "MapMonitor" || currentPageName === "AdminMonitor" || currentPageName === "Landing" || currentPageName === "Home" || currentPageName === "IntellectMode";
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
