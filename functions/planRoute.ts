@@ -11,88 +11,78 @@ Deno.serve(async (req) => {
 
     const { origin, destination, transport_type } = await req.json();
 
-    // Use LLM to plan the route with real geographic data
+    // Use LLM with web search to get REAL, ACCURATE geographic route planning
     const response = await base44.integrations.Core.InvokeLLM({
-      prompt: `You are an expert logistics route planner with deep knowledge of European geography and transport infrastructure.
+      prompt: `You are a professional maritime/logistics route planner. Plan a REALISTIC route from ${origin} to ${destination} using ${transport_type}.
 
-TASK: Plan a realistic route from ${origin} to ${destination} using ${transport_type} transport.
+🔴 CRITICAL REQUIREMENTS - READ CAREFULLY:
 
-STEP 1 - UNDERSTAND THE GEOGRAPHY:
-- Look up the actual locations of ${origin} and ${destination}
-- Identify what bodies of water, land masses, and infrastructure exist between them
-- Consider the physical constraints of ${transport_type} transport
+1. SEARCH THE WEB FIRST:
+   - Search Google Maps for the exact route from ${origin} to ${destination}
+   - Look at REAL shipping lanes, roads, or rail tracks
+   - Use actual geographic data - DO NOT guess or make up coordinates
 
-STEP 2 - APPLY TRANSPORT-SPECIFIC RULES:
+2. TRANSPORT RULES - FOLLOW PHYSICS:
 ${transport_type === 'ship' ? `
-🚢 SHIPS - WATER ONLY RULES:
-- Ships sail ONLY on seas, oceans, rivers, and canals - NEVER over land
-- Between ports, verify there is a continuous water route
-- Example: Copenhagen to London = sail through Øresund → Kattegat → Skagerrak → North Sea → English Channel
-- Must go AROUND peninsulas (e.g., around Jutland, not through it)
-- Each waypoint must be a real port accessible by previous waypoint via water
-- Use: Kiel Canal (Baltic to North Sea), English Channel, North Sea routes, Baltic Sea routes
-- NO straight lines across land - follow the coastline and shipping lanes
+   🚢 SHIPS SAIL ON WATER ONLY:
+   - Ships CANNOT cross land - they must follow seas, straits, and canals
+   - Example Copenhagen→London: 
+     * Sail AROUND Denmark through Kattegat, Skagerrak, North Sea
+     * OR use Kiel Canal shortcut (Baltic→North Sea)
+     * Then English Channel to London
+   - Each waypoint = a real port or passage (Kiel Canal, Dover Strait, etc.)
+   - Follow actual shipping routes you find on Google Maps or MarineTraffic
 ` : transport_type === 'truck' ? `
-🚛 TRUCKS - ROAD ONLY RULES:
-- Follow highways and major road networks (E-roads, motorways)
-- Include highway junctions and cities as waypoints
-- Route must follow existing paved roads
-- Consider ferry crossings where needed (e.g., Denmark to Sweden via Øresund Bridge or ferry)
+   🚛 TRUCKS USE ROADS:
+   - Follow E-roads and highways (E45, E20, A1, M1, etc.)
+   - Include real cities/junctions as waypoints
+   - Use bridges/ferries where needed (Øresund Bridge, Great Belt Bridge)
+   - Look up the actual highway route on Google Maps
 ` : transport_type === 'train' ? `
-🚂 TRAINS - RAIL ONLY RULES:
-- Trains run ONLY on existing railway tracks - cannot deviate
-- NO straight lines across water unless there's a rail bridge/tunnel (Øresund Bridge, Great Belt Bridge, Channel Tunnel)
-- Route must follow the actual rail network curves and connections
-- Include major train stations as waypoints (e.g., Hamburg Hbf, Copenhagen Central, Malmö Central)
-- Example: Aarhus to Hamburg = follow rail through Fredericia → cross Great Belt → through Zealand → Øresund Bridge → Swedish rail → back to German rail
-- If no direct rail exists, the route is NOT POSSIBLE
+   🚂 TRAINS USE RAIL TRACKS:
+   - Follow existing rail networks only
+   - Include real train stations (Hamburg Hbf, Brussels-Zuid, etc.)
+   - Use rail bridges/tunnels (Øresund Bridge, Channel Tunnel)
+   - If no rail connection exists, say "NO RAIL ROUTE AVAILABLE"
 ` : transport_type === 'aircraft' ? `
-✈️ AIRCRAFT - AIR ONLY RULES:
-- Aircraft fly in relatively straight lines at high altitude
-- Include major airports as origin/destination
-- Can add 1-2 waypoints for very long distances (fuel stops or air corridors)
-- Much simpler routing than ground/sea transport
+   ✈️ AIRCRAFT FLY DIRECT:
+   - Planes fly relatively straight (great circle route)
+   - Include departure/arrival airports
+   - Add 1 waypoint for very long routes
 ` : `
-🚁 DRONES - LOW ALTITUDE RULES:
-- Drones fly low and need recharge stations every 50-150km
-- Must avoid restricted airspace (airports, military zones)
-- Semi-direct routing with necessary stops
+   🚁 DRONES:
+   - Low altitude, need stops every 100km
+   - Relatively direct with charging stops
 `}
 
-STEP 3 - CHECK LIVE CONDITIONS:
-- Search for CURRENT weather conditions between ${origin} and ${destination}
-- Check for road works, construction, or infrastructure disruptions on the route
-- Look for traffic incidents, strikes, or delays affecting ${transport_type}
-- Check maritime conditions if ship (storms, port closures, ice)
-- Check rail disruptions if train (track work, signal failures)
-- Check airspace restrictions if aircraft
+3. GET ACCURATE COORDINATES:
+   - Search for REAL coordinates of each city/port/waypoint
+   - Double-check they are correct (London ≈ 51.5°N, Copenhagen ≈ 55.7°N)
+   - DO NOT invent coordinates
 
-STEP 4 - BUILD THE ROUTE:
-- Start at ${origin} (find exact coordinates)
-- Plan 4-8 intermediate waypoints that physically make sense
-- AVOID areas with severe weather, closures, or major disruptions
-- Choose alternative routes if main route is blocked or dangerous
-- End at ${destination} (find exact coordinates)
-- Each segment must be physically possible for ${transport_type}
+4. WAYPOINTS (5-10 points):
+   - Start: ${origin} (search exact coordinates)
+   - Middle: Real geographic points on the route (ports, straits, cities, junctions)
+   - End: ${destination} (search exact coordinates)
+   ${transport_type === 'ship' ? '- For ships: Include major passages like "Skaw (tip of Denmark)", "Kiel Canal exit", "Dover Strait"' : ''}
 
-STEP 6 - VERIFY:
-- Check: Can you actually ${transport_type === 'ship' ? 'sail' : transport_type === 'train' ? 'take a train' : transport_type === 'truck' ? 'drive' : 'fly'} from waypoint 1 to waypoint 2? 
-- Check: Is there continuous ${transport_type === 'ship' ? 'water' : transport_type === 'train' ? 'rail' : transport_type === 'truck' ? 'road' : 'air'} between each pair?
-- If not, REVISE the route
+5. CALCULATE REALISTIC VALUES:
+   - Distance: Measure the ACTUAL route distance in km
+   - Duration: Use realistic speeds (ship=25km/h, truck=80km/h, train=120km/h, aircraft=800km/h)
+   - CO2: distance × emission_factor (ship=0.02, truck=0.8, train=0.04, aircraft=0.9 kg/km)
 
-STEP 7 - CALCULATE:
-- Total distance in km (sum of all segments)
-- Duration: Adjust base speed for conditions (bad weather = slower, traffic = delays)
-  Base speeds: ship=30km/h, truck=80km/h, train=120km/h, aircraft=800km/h, drone=60km/h
-- CO2 emissions: ship=0.02, truck=0.8, aircraft=0.9, train=0.04, drone=0.3 kg per km
-- Add delay estimates from disruptions (e.g., +2h for storm, +1h for road work)
+6. DESCRIPTION:
+   - Explain the route clearly: which waters/roads/rails are used
+   - Mention any interesting passages (Kiel Canal, Channel Tunnel, etc.)
+   - Keep it factual and professional
 
-STEP 8 - DOCUMENT CONDITIONS:
-- In route_description, mention any weather, disruptions, or delays found
-- Explain why certain routes were chosen or avoided
-- Note any real-time conditions affecting the route
+🚨 FINAL CHECK BEFORE OUTPUT:
+- Is every waypoint actually on the route? (not random points)
+- Can ${transport_type} physically travel between each consecutive waypoint?
+- Are coordinates realistic? (Europe = 40-70°N, -10 to 30°E)
+- Does the route make geographic sense?
 
-Output a route that is GEOGRAPHICALLY ACCURATE, PHYSICALLY POSSIBLE, and OPTIMIZED for CURRENT CONDITIONS for ${transport_type} transport.`,
+If you're not confident, SEARCH GOOGLE MAPS for "${origin} to ${destination} by ${transport_type}" and use that route.`,
       add_context_from_internet: true,
       response_json_schema: {
         type: "object",
