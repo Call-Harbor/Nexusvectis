@@ -13,56 +13,69 @@ Deno.serve(async (req) => {
 
     // Use LLM to plan the route with real geographic data
     const response = await base44.integrations.Core.InvokeLLM({
-      prompt: `You are a logistics route planner. Plan a precise route from ${origin} to ${destination} for ${transport_type} transport.
+      prompt: `You are an expert logistics route planner with deep knowledge of European geography and transport infrastructure.
 
-CRITICAL REQUIREMENTS FOR ${transport_type.toUpperCase()}:
+TASK: Plan a realistic route from ${origin} to ${destination} using ${transport_type} transport.
+
+STEP 1 - UNDERSTAND THE GEOGRAPHY:
+- Look up the actual locations of ${origin} and ${destination}
+- Identify what bodies of water, land masses, and infrastructure exist between them
+- Consider the physical constraints of ${transport_type} transport
+
+STEP 2 - APPLY TRANSPORT-SPECIFIC RULES:
 ${transport_type === 'ship' ? `
-- SHIPS CAN ONLY SAIL ON WATER - ABSOLUTELY NO CROSSING LAND OR INLAND AREAS
-- Route must follow seas, oceans, navigable rivers, straits, and maritime canals ONLY
-- Must sail AROUND landmasses and peninsulas (e.g., sail around Jutland/Denmark via Skagerrak, not through land)
-- Each waypoint must be a real port or coastal location accessible by water
-- VERIFY that you can sail from one waypoint to the next without crossing land
-- Use major shipping lanes: North Sea, English Channel, Baltic Sea routes, etc.
-- Include canals when relevant (Kiel Canal between Baltic and North Sea, for example)
-- Route should realistically follow coastal shipping patterns
+🚢 SHIPS - WATER ONLY RULES:
+- Ships sail ONLY on seas, oceans, rivers, and canals - NEVER over land
+- Between ports, verify there is a continuous water route
+- Example: Copenhagen to London = sail through Øresund → Kattegat → Skagerrak → North Sea → English Channel
+- Must go AROUND peninsulas (e.g., around Jutland, not through it)
+- Each waypoint must be a real port accessible by previous waypoint via water
+- Use: Kiel Canal (Baltic to North Sea), English Channel, North Sea routes, Baltic Sea routes
+- NO straight lines across land - follow the coastline and shipping lanes
 ` : transport_type === 'truck' ? `
-- Follow major highways and road networks
-- Include highway junctions and major cities as waypoints
-- Routes must follow existing road infrastructure
+🚛 TRUCKS - ROAD ONLY RULES:
+- Follow highways and major road networks (E-roads, motorways)
+- Include highway junctions and cities as waypoints
+- Route must follow existing paved roads
+- Consider ferry crossings where needed (e.g., Denmark to Sweden via Øresund Bridge or ferry)
 ` : transport_type === 'train' ? `
-- TRAINS CANNOT LEAVE RAIL TRACKS OR CROSS WATER (except via bridges/tunnels like Öresund)
-- Follow ONLY existing rail networks with actual physical tracks
-- Route must follow land-based rail corridors - NO straight lines across water
-- Include major train stations as waypoints along the actual rail route
-- Consider realistic connections via existing rail infrastructure
-- If water crossing needed, verify bridge/tunnel exists (e.g., Öresund Bridge, Channel Tunnel)
-- Route should follow the curvature of rail lines, not straight lines
+🚂 TRAINS - RAIL ONLY RULES:
+- Trains run ONLY on existing railway tracks - cannot deviate
+- NO straight lines across water unless there's a rail bridge/tunnel (Øresund Bridge, Great Belt Bridge, Channel Tunnel)
+- Route must follow the actual rail network curves and connections
+- Include major train stations as waypoints (e.g., Hamburg Hbf, Copenhagen Central, Malmö Central)
+- Example: Aarhus to Hamburg = follow rail through Fredericia → cross Great Belt → through Zealand → Øresund Bridge → Swedish rail → back to German rail
+- If no direct rail exists, the route is NOT POSSIBLE
 ` : transport_type === 'aircraft' ? `
-- AIRCRAFT FLY IN STRAIGHT LINES at high altitude (unless avoiding restricted airspace)
-- Include major airports as origin/destination and potential fuel stops
-- Can mostly fly direct but include realistic waypoints for very long routes
-- Consider typical commercial flight paths between major airports
+✈️ AIRCRAFT - AIR ONLY RULES:
+- Aircraft fly in relatively straight lines at high altitude
+- Include major airports as origin/destination
+- Can add 1-2 waypoints for very long distances (fuel stops or air corridors)
+- Much simpler routing than ground/sea transport
 ` : `
-- DRONES fly at low altitude and need line-of-sight or pre-approved corridors
-- Include recharge stations every 50-150km depending on payload
-- Must avoid restricted airspace (military zones, airports)
-- Route should be semi-direct but with necessary stops for battery/fuel
+🚁 DRONES - LOW ALTITUDE RULES:
+- Drones fly low and need recharge stations every 50-150km
+- Must avoid restricted airspace (airports, military zones)
+- Semi-direct routing with necessary stops
 `}
 
-Requirements:
-1. Return EXACT coordinates for waypoints that follow ${transport_type} infrastructure
-2. Include 4-8 realistic intermediate stops/waypoints
-3. Calculate accurate distance and duration based on transport type
-4. Ensure route is physically possible for ${transport_type}
+STEP 3 - BUILD THE ROUTE:
+- Start at ${origin} (find exact coordinates)
+- Plan 4-8 intermediate waypoints that physically make sense
+- End at ${destination} (find exact coordinates)
+- Each segment must be physically possible for ${transport_type}
 
-Transport type emissions factors:
-- truck: 0.8 kg CO2 per km
-- ship: 0.02 kg CO2 per km  
-- aircraft: 0.9 kg CO2 per km
-- train: 0.04 kg CO2 per km
-- drone: 0.3 kg CO2 per km
+STEP 4 - VERIFY:
+- Check: Can you actually ${transport_type === 'ship' ? 'sail' : transport_type === 'train' ? 'take a train' : transport_type === 'truck' ? 'drive' : 'fly'} from waypoint 1 to waypoint 2? 
+- Check: Is there continuous ${transport_type === 'ship' ? 'water' : transport_type === 'train' ? 'rail' : transport_type === 'truck' ? 'road' : 'air'} between each pair?
+- If not, REVISE the route
 
-Provide a realistic, geographically accurate route that is ACTUALLY POSSIBLE for ${transport_type}.`,
+STEP 5 - CALCULATE:
+- Total distance in km (sum of all segments)
+- Duration based on average speed: ship=30km/h, truck=80km/h, train=120km/h, aircraft=800km/h, drone=60km/h
+- CO2 emissions: ship=0.02, truck=0.8, aircraft=0.9, train=0.04, drone=0.3 kg per km
+
+Output a route that is GEOGRAPHICALLY ACCURATE and PHYSICALLY POSSIBLE for ${transport_type} transport.`,
       add_context_from_internet: true,
       response_json_schema: {
         type: "object",
