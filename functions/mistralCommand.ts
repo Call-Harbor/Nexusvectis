@@ -25,13 +25,14 @@ TILGÆNGELIGE ACTIONS:
 4. CREATE_VEHICLE - Opret nyt køretøj (kræver name, type)
 5. CREATE_SHIPMENT - Opret forsendelse (kræver origin, destination)
 6. CREATE_ALERT - Opret alarm (kræver title, message)
-7. UPDATE_VEHICLES - Opdater køretøjer (update_all: true, updates: {status, fuel_level, etc})
-8. UPDATE_ROUTES - Opdater ruter (update_all: true, updates: {status, priority})
-9. UPDATE_SHIPMENTS - Opdater forsendelser (tracking_number, updates: {status})
-10. UPDATE_ALERTS - Løs alarmer (resolve_all: true)
-11. DELETE_ROUTES - Slet ruter (delete_all: true)
-12. DELETE_VEHICLES - Slet køretøjer (delete_all: true)
-13. ANSWER - Besvar spørgsmål med information
+7. CREATE_CUSTOMER - Opret kunde (kræver name, email eller phone)
+8. UPDATE_VEHICLES - Opdater køretøjer (update_all: true, updates: {status, fuel_level, etc})
+9. UPDATE_ROUTES - Opdater ruter (update_all: true, updates: {status, priority})
+10. UPDATE_SHIPMENTS - Opdater forsendelser (tracking_number, updates: {status})
+11. UPDATE_ALERTS - Løs alarmer (resolve_all: true)
+12. DELETE_ROUTES - Slet ruter (delete_all: true)
+13. DELETE_VEHICLES - Slet køretøjer (delete_all: true)
+14. ANSWER - Besvar spørgsmål med information
 
 VINDUER (kun disse 4):
 - fleet/flåde → "fleet"

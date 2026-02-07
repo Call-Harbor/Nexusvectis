@@ -17,7 +17,8 @@ import {
   Settings,
   Users,
   Shield,
-  FileText
+  FileText,
+  Package
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -39,6 +40,7 @@ const navItems = [
 const fleetMenuItems = [
   { name: "Fleet", icon: Truck, page: "Fleet" },
   { name: "Assignments", icon: Route, page: "Assignment" },
+  { name: "Shipments", icon: Package, page: "Shipments" },
   { name: "GPS Integration", icon: Satellite, page: "GPSIntegration" },
 ];
 

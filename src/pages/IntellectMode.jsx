@@ -304,6 +304,23 @@ export default function IntellectMode() {
           if (open_window) openWindow(open_window);
           break;
 
+        case "CREATE_CUSTOMER":
+          await base44.entities.Customer.create({
+            organization_id: orgId,
+            name: parameters.name,
+            email: parameters.email,
+            phone: parameters.phone,
+            company: parameters.company,
+            address: parameters.address,
+            city: parameters.city,
+            country: parameters.country,
+            customer_type: parameters.customer_type || 'individual',
+            status: 'active'
+          });
+          queryClient.invalidateQueries({ queryKey: ['customers'] });
+          setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
+          break;
+
         case "UPDATE_ALERTS":
           if (parameters.resolve_all) {
             const unresolvedAlerts = alerts.filter(a => !a.is_resolved);
