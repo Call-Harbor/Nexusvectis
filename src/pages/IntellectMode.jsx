@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { 
   Sparkles, Send, Mic, Brain, Zap, TrendingUp, AlertTriangle, 
@@ -102,6 +102,7 @@ export default function IntellectMode() {
   const [activeWindows, setActiveWindows] = useState([]);
   const [minimizedWindows, setMinimizedWindows] = useState(new Set());
   const messagesEndRef = useRef(null);
+  const queryClient = useQueryClient();
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -276,6 +277,7 @@ Output JSON med:
               status: parameters.status || 'planned',
               priority: parameters.priority || 'normal'
             });
+            queryClient.invalidateQueries({ queryKey: ['routes-intellect'] });
             setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
             if (open_window) openWindow(open_window);
           }
@@ -290,6 +292,7 @@ Output JSON med:
             fuel_level: parameters.fuel_level || 100,
             driver: parameters.driver
           });
+          queryClient.invalidateQueries({ queryKey: ['vehicles-intellect'] });
           setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
           if (open_window) openWindow(open_window);
           break;
@@ -305,6 +308,7 @@ Output JSON med:
             cargo_type: parameters.cargo_type || 'general',
             weight_kg: parameters.weight_kg
           });
+          queryClient.invalidateQueries({ queryKey: ['shipments-intellect'] });
           setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
           if (open_window) openWindow(open_window);
           break;
@@ -319,6 +323,7 @@ Output JSON med:
             is_read: false,
             is_resolved: false
           });
+          queryClient.invalidateQueries({ queryKey: ['alerts-intellect'] });
           setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
           if (open_window) openWindow(open_window);
           break;
@@ -334,6 +339,7 @@ Output JSON med:
                 })
               )
             );
+            queryClient.invalidateQueries({ queryKey: ['alerts-intellect'] });
             setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
           }
           break;
@@ -349,11 +355,13 @@ Output JSON med:
                 base44.entities.Vehicle.update(v.id, parameters.updates)
               )
             );
+            queryClient.invalidateQueries({ queryKey: ['vehicles-intellect'] });
             setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
           } else if (parameters.vehicle_name) {
             const vehicle = vehicles.find(v => v.name.toLowerCase().includes(parameters.vehicle_name.toLowerCase()));
             if (vehicle) {
               await base44.entities.Vehicle.update(vehicle.id, parameters.updates);
+              queryClient.invalidateQueries({ queryKey: ['vehicles-intellect'] });
               setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
             }
           }
@@ -370,6 +378,7 @@ Output JSON med:
                 base44.entities.Route.update(r.id, parameters.updates)
               )
             );
+            queryClient.invalidateQueries({ queryKey: ['routes-intellect'] });
             setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
           }
           if (open_window) openWindow(open_window);
@@ -380,6 +389,7 @@ Output JSON med:
             const shipment = shipments.find(s => s.tracking_number === parameters.tracking_number);
             if (shipment) {
               await base44.entities.Shipment.update(shipment.id, parameters.updates);
+              queryClient.invalidateQueries({ queryKey: ['shipments-intellect'] });
               setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
             }
           }
