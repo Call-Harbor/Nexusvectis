@@ -326,6 +326,27 @@ Output JSON format.`,
         }]);
         openWindow("shipments");
       }
+      // BULK UPDATE COMMANDS
+      else if ((userMsg.includes("sæt alle") || userMsg.includes("set all")) && userMsg.includes("alarm")) {
+        if (userMsg.includes("løst") || userMsg.includes("resolved")) {
+          setMessages(prev => [...prev, { role: "system", content: "🔄 Løser alle alarmer..." }]);
+          const unresolvedAlerts = alerts.filter(a => !a.is_resolved);
+          
+          await Promise.all(
+            unresolvedAlerts.map(alert => 
+              base44.entities.Alert.update(alert.id, { 
+                is_resolved: true, 
+                resolved_at: new Date().toISOString() 
+              })
+            )
+          );
+          
+          setMessages(prev => [...prev, { 
+            role: "system", 
+            content: `✅ ${unresolvedAlerts.length} alarmer løst` 
+          }]);
+        }
+      }
       // DELETE COMMANDS
       else if (userMsg.includes("slet") || userMsg.includes("delete")) {
         if (userMsg.includes("alarm") || userMsg.includes("alert")) {
@@ -358,7 +379,8 @@ OPRETTE:
 - "lav et køretøj [navn]" - opretter nyt køretøj
 - "lav en forsendelse fra [A] til [B]" - opretter forsendelse
 
-SLETTE:
+OPDATERE/SLETTE:
+- "sæt alle alarmer til løst" - løser alle aktive alarmer
 - "slet alarm" - løser ældste alarm
 
 Hvis brugeren spørger om data, giv konkret svar baseret på disse facts:
@@ -641,7 +663,7 @@ Svar kort på dansk (max 2 sætninger).`
             </div>
 
             <div className="mt-3 text-xs text-slate-500 text-center">
-              Prøv: "åbn flåde" • "lav mig en skibs route fra copenhagen til london" • "lav et køretøj Atlantic Carrier" • "slet alarm"
+              Prøv: "åbn flåde" • "lav mig en skibs route fra copenhagen til london" • "sæt alle alarmer til løst" • "lav et køretøj Atlantic Carrier"
             </div>
           </div>
         </div>
