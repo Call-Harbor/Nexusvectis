@@ -184,7 +184,6 @@ export default function IntellectMode() {
   const processCommand = async () => {
     if (!input.trim() || isProcessing) return;
 
-    const userMsg = input.toLowerCase();
     setMessages(prev => [...prev, { role: "user", content: input }]);
     setInput("");
     setIsProcessing(true);
@@ -193,209 +192,213 @@ export default function IntellectMode() {
       const userData = await base44.entities.User.filter({ email: currentUser.email });
       const orgId = userData?.[0]?.organization_id;
 
-      // Parse commands - WINDOW CONTROLS
-      if (userMsg.includes("åbn flåde") || userMsg.includes("vis køretøjer") || userMsg.includes("fleet")) {
-        openWindow("fleet");
-        setMessages(prev => [...prev, { role: "system", content: "✅ Åbner flåde-vindue" }]);
-      } 
-      else if (userMsg.includes("åbn alarmer") || userMsg.includes("vis advarsler") || userMsg.includes("alerts")) {
-        openWindow("alerts");
-        setMessages(prev => [...prev, { role: "system", content: "✅ Åbner alarm-vindue" }]);
-      }
-      else if (userMsg.includes("åbn ruter") || userMsg.includes("vis ruter") || userMsg.includes("routes")) {
-        openWindow("routes");
-        setMessages(prev => [...prev, { role: "system", content: "✅ Åbner rute-vindue" }]);
-      }
-      else if (userMsg.includes("åbn forsendelser") || userMsg.includes("vis pakker") || userMsg.includes("shipments")) {
-        openWindow("shipments");
-        setMessages(prev => [...prev, { role: "system", content: "✅ Åbner forsendelses-vindue" }]);
-      }
-      else if (userMsg.includes("luk alt") || userMsg.includes("close all")) {
-        setActiveWindows([]);
-        setMessages(prev => [...prev, { role: "system", content: "✅ Lukker alle vinduer" }]);
-      }
-      // CREATE ROUTE COMMAND
-      else if (userMsg.includes("lav") && userMsg.includes("route")) {
-        setMessages(prev => [...prev, { role: "system", content: "🔄 Planlægger rute med AI..." }]);
-        
-        const routeAnalysis = await base44.integrations.Core.InvokeLLM({
-          prompt: `Ekstrahér route information fra denne kommando: "${input}"
-          
-Find:
-- Origin (fra/from)
-- Destination (til/to)
-- Transport type (skib/ship, truck/lastbil, fly/aircraft, tog/train, drone)
+      setMessages(prev => [...prev, { role: "system", content: "🧠 Analyserer kommando..." }]);
 
-Output JSON format.`,
-          response_json_schema: {
-            type: "object",
-            properties: {
-              origin: { type: "string" },
-              destination: { type: "string" },
-              transport_type: { type: "string" }
-            }
+      // AI analyserer kommandoen og beslutter handling
+      const analysis = await base44.integrations.Core.InvokeLLM({
+        prompt: `Du er Intellect Mode AI - en intelligent flådestyringssystem.
+
+NUVÆRENDE SYSTEM STATUS:
+- Køretøjer: ${vehicles.length} (${vehicles.filter(v => v.status === 'active').length} aktive)
+- Alarmer: ${alerts.length} uløste
+- Ruter: ${routes.length} (${routes.filter(r => r.status === 'active').length} aktive)
+- Forsendelser: ${shipments.length} (${shipments.filter(s => s.status === 'in_transit').length} i transit)
+
+BRUGERENS KOMMANDO: "${input}"
+
+Analyser kommandoen og beslut hvilken handling der skal udføres.
+
+MULIGE HANDLINGER:
+1. OPEN_WINDOW: Åbn hologram vindue (fleet/alerts/routes/shipments)
+2. CLOSE_WINDOWS: Luk alle vinduer
+3. CREATE_ROUTE: Opret ny rute med origin, destination, transport_type
+4. CREATE_VEHICLE: Opret nyt køretøj med navn, type
+5. CREATE_SHIPMENT: Opret forsendelse med origin, destination, priority
+6. CREATE_ALERT: Opret alarm med title, message, type
+7. UPDATE_VEHICLES: Opdater køretøjer (f.eks. status, fuel_level for specifikke eller alle)
+8. UPDATE_ALERTS: Opdater alarmer (f.eks. løs alle, løs specifikke)
+9. UPDATE_ROUTES: Opdater ruter (f.eks. status til active/completed)
+10. UPDATE_SHIPMENTS: Opdater forsendelser (f.eks. status)
+11. DELETE_ENTITY: Slet entity (angiv type og kriterier)
+12. QUERY_DATA: Besvar spørgsmål om data
+13. COMPLEX_OPERATION: Udfør kompleks operation (beskriv step by step)
+
+Output JSON med:
+- action: handling type
+- parameters: alle nødvendige parametre
+- message: brugervenlig besked om hvad der sker
+- open_window: (optional) vindue der skal åbnes efter handlingen`,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            action: { type: "string" },
+            parameters: { type: "object" },
+            message: { type: "string" },
+            open_window: { type: "string" }
           }
-        });
+        }
+      });
 
-        const { origin, destination, transport_type } = routeAnalysis;
-        
-        const routePlan = await base44.functions.invoke('planRoute', {
-          origin,
-          destination,
-          transport_type: transport_type || 'ship'
-        });
+      const { action, parameters, message, open_window } = analysis;
 
-        if (routePlan.data.success) {
-          const newRoute = await base44.entities.Route.create({
-            organization_id: orgId,
-            name: `${origin} → ${destination}`,
-            origin,
-            destination,
-            waypoints: routePlan.data.route_data.waypoints,
-            distance_km: routePlan.data.route_data.distance_km,
-            estimated_duration_hours: routePlan.data.route_data.estimated_duration_hours,
-            transport_type: transport_type || 'ship',
-            co2_estimate: routePlan.data.route_data.co2_estimate,
-            ai_optimized: true,
-            status: 'planned'
+      // Udfør handlingen
+      switch (action) {
+        case "OPEN_WINDOW":
+          openWindow(parameters.window_type);
+          setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
+          break;
+
+        case "CLOSE_WINDOWS":
+          setActiveWindows([]);
+          setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
+          break;
+
+        case "CREATE_ROUTE":
+          setMessages(prev => [...prev, { role: "system", content: "🔄 Planlægger rute..." }]);
+          const routePlan = await base44.functions.invoke('planRoute', {
+            origin: parameters.origin,
+            destination: parameters.destination,
+            transport_type: parameters.transport_type || 'ship'
           });
 
-          setMessages(prev => [...prev, { 
-            role: "system", 
-            content: `✅ Route oprettet: ${origin} → ${destination} (${routePlan.data.route_data.distance_km} km, ${routePlan.data.route_data.estimated_duration_hours.toFixed(1)}t)` 
-          }]);
-          openWindow("routes");
-        }
-      }
-      // CREATE VEHICLE COMMAND
-      else if (userMsg.includes("lav") && (userMsg.includes("køretøj") || userMsg.includes("vehicle"))) {
-        setMessages(prev => [...prev, { role: "system", content: "🔄 Opretter køretøj..." }]);
-        
-        const vehicleData = await base44.integrations.Core.InvokeLLM({
-          prompt: `Ekstrahér køretøj information fra: "${input}". Find navn og type (truck/ship/aircraft/train/drone).`,
-          response_json_schema: {
-            type: "object",
-            properties: {
-              name: { type: "string" },
-              type: { type: "string" }
+          if (routePlan.data.success) {
+            await base44.entities.Route.create({
+              organization_id: orgId,
+              name: `${parameters.origin} → ${parameters.destination}`,
+              origin: parameters.origin,
+              destination: parameters.destination,
+              waypoints: routePlan.data.route_data.waypoints,
+              distance_km: routePlan.data.route_data.distance_km,
+              estimated_duration_hours: routePlan.data.route_data.estimated_duration_hours,
+              transport_type: parameters.transport_type || 'ship',
+              co2_estimate: routePlan.data.route_data.co2_estimate,
+              ai_optimized: true,
+              status: parameters.status || 'planned',
+              priority: parameters.priority || 'normal'
+            });
+            setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
+            if (open_window) openWindow(open_window);
+          }
+          break;
+
+        case "CREATE_VEHICLE":
+          await base44.entities.Vehicle.create({
+            organization_id: orgId,
+            name: parameters.name || `Vehicle-${Date.now()}`,
+            type: parameters.type || 'truck',
+            status: parameters.status || 'active',
+            fuel_level: parameters.fuel_level || 100,
+            driver: parameters.driver
+          });
+          setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
+          if (open_window) openWindow(open_window);
+          break;
+
+        case "CREATE_SHIPMENT":
+          await base44.entities.Shipment.create({
+            organization_id: orgId,
+            tracking_number: `SHIP-${Date.now()}`,
+            origin: parameters.origin,
+            destination: parameters.destination,
+            status: parameters.status || 'pending',
+            priority: parameters.priority || 'normal',
+            cargo_type: parameters.cargo_type || 'general',
+            weight_kg: parameters.weight_kg
+          });
+          setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
+          if (open_window) openWindow(open_window);
+          break;
+
+        case "CREATE_ALERT":
+          await base44.entities.Alert.create({
+            organization_id: orgId,
+            title: parameters.title,
+            message: parameters.message,
+            type: parameters.alert_type || 'warning',
+            category: parameters.category || 'system',
+            is_read: false,
+            is_resolved: false
+          });
+          setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
+          if (open_window) openWindow(open_window);
+          break;
+
+        case "UPDATE_ALERTS":
+          if (parameters.resolve_all) {
+            const unresolvedAlerts = alerts.filter(a => !a.is_resolved);
+            await Promise.all(
+              unresolvedAlerts.map(alert => 
+                base44.entities.Alert.update(alert.id, { 
+                  is_resolved: true, 
+                  resolved_at: new Date().toISOString() 
+                })
+              )
+            );
+            setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
+          }
+          break;
+
+        case "UPDATE_VEHICLES":
+          if (parameters.update_all) {
+            const targetVehicles = parameters.filter ? 
+              vehicles.filter(v => v.status === parameters.filter.status) : 
+              vehicles;
+            
+            await Promise.all(
+              targetVehicles.map(v => 
+                base44.entities.Vehicle.update(v.id, parameters.updates)
+              )
+            );
+            setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
+          } else if (parameters.vehicle_name) {
+            const vehicle = vehicles.find(v => v.name.toLowerCase().includes(parameters.vehicle_name.toLowerCase()));
+            if (vehicle) {
+              await base44.entities.Vehicle.update(vehicle.id, parameters.updates);
+              setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
             }
           }
-        });
+          if (open_window) openWindow(open_window);
+          break;
 
-        const newVehicle = await base44.entities.Vehicle.create({
-          organization_id: orgId,
-          name: vehicleData.name || `Vehicle-${Date.now()}`,
-          type: vehicleData.type || 'truck',
-          status: 'active',
-          fuel_level: 100
-        });
+        case "UPDATE_ROUTES":
+          if (parameters.update_all) {
+            const targetRoutes = routes.filter(r => 
+              !parameters.current_status || r.status === parameters.current_status
+            );
+            await Promise.all(
+              targetRoutes.map(r => 
+                base44.entities.Route.update(r.id, parameters.updates)
+              )
+            );
+            setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
+          }
+          if (open_window) openWindow(open_window);
+          break;
 
-        setMessages(prev => [...prev, { 
-          role: "system", 
-          content: `✅ Køretøj oprettet: ${newVehicle.name} (${newVehicle.type})` 
-        }]);
-        openWindow("fleet");
-      }
-      // CREATE SHIPMENT COMMAND
-      else if (userMsg.includes("lav") && (userMsg.includes("forsendelse") || userMsg.includes("shipment"))) {
-        setMessages(prev => [...prev, { role: "system", content: "🔄 Opretter forsendelse..." }]);
-        
-        const shipmentData = await base44.integrations.Core.InvokeLLM({
-          prompt: `Ekstrahér forsendelse info fra: "${input}". Find origin, destination.`,
-          response_json_schema: {
-            type: "object",
-            properties: {
-              origin: { type: "string" },
-              destination: { type: "string" }
+        case "UPDATE_SHIPMENTS":
+          if (parameters.tracking_number) {
+            const shipment = shipments.find(s => s.tracking_number === parameters.tracking_number);
+            if (shipment) {
+              await base44.entities.Shipment.update(shipment.id, parameters.updates);
+              setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
             }
           }
-        });
+          if (open_window) openWindow(open_window);
+          break;
 
-        const newShipment = await base44.entities.Shipment.create({
-          organization_id: orgId,
-          tracking_number: `SHIP-${Date.now()}`,
-          origin: shipmentData.origin || 'Unknown',
-          destination: shipmentData.destination || 'Unknown',
-          status: 'pending',
-          priority: 'normal'
-        });
+        case "DELETE_ENTITY":
+          // Kun tillad sletning af test data eller med eksplicit bekræftelse
+          setMessages(prev => [...prev, { role: "system", content: `⚠️ ${message}` }]);
+          break;
 
-        setMessages(prev => [...prev, { 
-          role: "system", 
-          content: `✅ Forsendelse oprettet: ${newShipment.tracking_number}` 
-        }]);
-        openWindow("shipments");
+        case "QUERY_DATA":
+        case "COMPLEX_OPERATION":
+        default:
+          setMessages(prev => [...prev, { role: "assistant", content: message }]);
+          if (open_window) openWindow(open_window);
+          break;
       }
-      // BULK UPDATE COMMANDS
-      else if ((userMsg.includes("sæt alle") || userMsg.includes("set all")) && userMsg.includes("alarm")) {
-        if (userMsg.includes("løst") || userMsg.includes("resolved")) {
-          setMessages(prev => [...prev, { role: "system", content: "🔄 Løser alle alarmer..." }]);
-          const unresolvedAlerts = alerts.filter(a => !a.is_resolved);
-          
-          await Promise.all(
-            unresolvedAlerts.map(alert => 
-              base44.entities.Alert.update(alert.id, { 
-                is_resolved: true, 
-                resolved_at: new Date().toISOString() 
-              })
-            )
-          );
-          
-          setMessages(prev => [...prev, { 
-            role: "system", 
-            content: `✅ ${unresolvedAlerts.length} alarmer løst` 
-          }]);
-        }
-      }
-      // DELETE COMMANDS
-      else if (userMsg.includes("slet") || userMsg.includes("delete")) {
-        if (userMsg.includes("alarm") || userMsg.includes("alert")) {
-          const unresolvedAlerts = alerts.filter(a => !a.is_resolved);
-          if (unresolvedAlerts.length > 0) {
-            await base44.entities.Alert.update(unresolvedAlerts[0].id, { is_resolved: true, resolved_at: new Date().toISOString() });
-            setMessages(prev => [...prev, { role: "system", content: "✅ Alarm løst" }]);
-          } else {
-            setMessages(prev => [...prev, { role: "system", content: "ℹ️ Ingen alarmer at løse" }]);
-          }
-        } else {
-          setMessages(prev => [...prev, { role: "system", content: "⚠️ Præciser hvad der skal slettes (alarm/route/vehicle)" }]);
-        }
-      }
-      else {
-        // AI response for complex queries
-        const response = await base44.integrations.Core.InvokeLLM({
-          prompt: `Du er Intellect Mode AI for NexusVectis TMS. Analyser brugerens kommando og svar kort og præcist.
 
-Tilgængelige kommandoer:
-VINDUER:
-- "åbn flåde/køretøjer" - viser flåde-vindue
-- "åbn alarmer/advarsler" - viser alarm-vindue  
-- "åbn ruter" - viser rute-vindue
-- "åbn forsendelser/pakker" - viser forsendelses-vindue
-- "luk alt" - lukker alle vinduer
-
-OPRETTE:
-- "lav mig en [type] route fra [A] til [B]" - opretter ny route
-- "lav et køretøj [navn]" - opretter nyt køretøj
-- "lav en forsendelse fra [A] til [B]" - opretter forsendelse
-
-OPDATERE/SLETTE:
-- "sæt alle alarmer til løst" - løser alle aktive alarmer
-- "slet alarm" - løser ældste alarm
-
-Hvis brugeren spørger om data, giv konkret svar baseret på disse facts:
-- Antal køretøjer: ${vehicles.length}
-- Aktive alarmer: ${alerts.length}
-- Aktive ruter: ${routes.filter(r => r.status === 'active').length}
-- Forsendelser i transit: ${shipments.filter(s => s.status === 'in_transit').length}
-
-Brugerens kommando: ${input}
-
-Svar kort på dansk (max 2 sætninger).`
-        });
-
-        setMessages(prev => [...prev, { role: "assistant", content: response }]);
-      }
     } catch (error) {
       console.error('Command error:', error);
       setMessages(prev => [...prev, { role: "system", content: `❌ Fejl: ${error.message}` }]);
@@ -663,7 +666,7 @@ Svar kort på dansk (max 2 sætninger).`
             </div>
 
             <div className="mt-3 text-xs text-slate-500 text-center">
-              Prøv: "åbn flåde" • "lav mig en skibs route fra copenhagen til london" • "sæt alle alarmer til løst" • "lav et køretøj Atlantic Carrier"
+              Eksempler: "lav en skibs route fra copenhagen til london" • "sæt alle køretøjer til maintenance" • "hvor mange forsendelser er delayed?" • "opret 3 trucks med høj fuel"
             </div>
           </div>
         </div>
