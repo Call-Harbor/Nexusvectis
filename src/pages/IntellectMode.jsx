@@ -405,9 +405,13 @@ OUTPUT:
           break;
 
         case "QUERY_DATA":
-        case "COMPLEX_OPERATION":
-        default:
+        case "ANSWER":
           setMessages(prev => [...prev, { role: "assistant", content: message }]);
+          if (open_window) openWindow(open_window);
+          break;
+
+        default:
+          setMessages(prev => [...prev, { role: "assistant", content: message || "Kommando udført." }]);
           if (open_window) openWindow(open_window);
           break;
       }
