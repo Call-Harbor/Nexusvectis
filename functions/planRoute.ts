@@ -17,11 +17,14 @@ Deno.serve(async (req) => {
 
 CRITICAL REQUIREMENTS FOR ${transport_type.toUpperCase()}:
 ${transport_type === 'ship' ? `
-- SHIPS CANNOT TRAVEL THROUGH LAND - only water routes allowed
-- Follow actual shipping lanes through seas, oceans, straits, and canals
-- Include major ports as waypoints (e.g., Rotterdam, Hamburg, Copenhagen ports)
-- Route MUST go around land masses via coastlines and international waters
-- Consider canals like Kiel Canal, English Channel, etc.
+- SHIPS CAN ONLY SAIL ON WATER - ABSOLUTELY NO CROSSING LAND OR INLAND AREAS
+- Route must follow seas, oceans, navigable rivers, straits, and maritime canals ONLY
+- Must sail AROUND landmasses and peninsulas (e.g., sail around Jutland/Denmark via Skagerrak, not through land)
+- Each waypoint must be a real port or coastal location accessible by water
+- VERIFY that you can sail from one waypoint to the next without crossing land
+- Use major shipping lanes: North Sea, English Channel, Baltic Sea routes, etc.
+- Include canals when relevant (Kiel Canal between Baltic and North Sea, for example)
+- Route should realistically follow coastal shipping patterns
 ` : transport_type === 'truck' ? `
 - Follow major highways and road networks
 - Include highway junctions and major cities as waypoints
