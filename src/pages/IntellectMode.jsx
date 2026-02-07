@@ -194,88 +194,24 @@ export default function IntellectMode() {
       const userData = await base44.entities.User.filter({ email: currentUser.email });
       const orgId = userData?.[0]?.organization_id;
 
-      // Simple keyword-based parsing først
-      const lowerInput = input.toLowerCase();
-      let action, parameters = {}, message, open_window;
+      // Mistral AI analyserer ALLE kommandoer
+      setMessages(prev => [...prev, { role: "system", content: "🧠 Mistral AI analyserer..." }]);
+      
+      const mistralResponse = await base44.functions.invoke('mistralCommand', {
+        command: input,
+        context: {
+          vehicles_count: vehicles.length,
+          alerts_count: alerts.length,
+          routes_count: routes.length,
+          shipments_count: shipments.length,
+          vehicles: vehicles.slice(0, 3).map(v => ({ name: v.name, type: v.type, status: v.status })),
+          alerts: alerts.slice(0, 3).map(a => ({ title: a.title, type: a.type })),
+          routes: routes.slice(0, 3).map(r => ({ name: r.name, status: r.status })),
+          shipments: shipments.slice(0, 3).map(s => ({ tracking_number: s.tracking_number, status: s.status }))
+        }
+      });
 
-      // Åbn vinduer
-      if ((lowerInput.includes('åbn') || lowerInput.includes('vis') || lowerInput.includes('show') || lowerInput.includes('open')) && 
-          (lowerInput.includes('flåde') || lowerInput.includes('fleet'))) {
-        action = "OPEN_WINDOW";
-        parameters = { window_type: "fleet" };
-        message = "Åbner flåde vindue";
-        open_window = "fleet";
-      } else if ((lowerInput.includes('åbn') || lowerInput.includes('vis')) && 
-                 (lowerInput.includes('alarm') || lowerInput.includes('alert'))) {
-        action = "OPEN_WINDOW";
-        parameters = { window_type: "alerts" };
-        message = "Åbner alarm vindue";
-        open_window = "alerts";
-      } else if ((lowerInput.includes('åbn') || lowerInput.includes('vis')) && 
-                 (lowerInput.includes('rute') || lowerInput.includes('route'))) {
-        action = "OPEN_WINDOW";
-        parameters = { window_type: "routes" };
-        message = "Åbner rute vindue";
-        open_window = "routes";
-      } else if ((lowerInput.includes('åbn') || lowerInput.includes('vis')) && 
-                 (lowerInput.includes('forsendelse') || lowerInput.includes('shipment'))) {
-        action = "OPEN_WINDOW";
-        parameters = { window_type: "shipments" };
-        message = "Åbner forsendelses vindue";
-        open_window = "shipments";
-      }
-      // Luk vinduer
-      else if (lowerInput.includes('luk') || lowerInput.includes('close')) {
-        action = "CLOSE_WINDOWS";
-        message = "Lukker alle vinduer";
-      }
-      // Slet ruter
-      else if ((lowerInput.includes('slet') || lowerInput.includes('delete') || lowerInput.includes('fjern')) && 
-               (lowerInput.includes('rute') || lowerInput.includes('route'))) {
-        action = "DELETE_ROUTES";
-        parameters = { delete_all: true };
-        message = `Sletter ${routes.length} ruter...`;
-      }
-      // Slet køretøjer
-      else if ((lowerInput.includes('slet') || lowerInput.includes('delete')) && 
-               (lowerInput.includes('køretøj') || lowerInput.includes('vehicle') || lowerInput.includes('truck'))) {
-        action = "DELETE_VEHICLES";
-        parameters = { delete_all: true };
-        message = `Sletter ${vehicles.length} køretøjer...`;
-      }
-      // API oplysninger
-      else if (lowerInput.includes('api')) {
-        action = "ANSWER";
-        message = `API INFO:\nEndpoint: https://your-app.base44.com/api\nAPI Keys: Gå til Settings > API Documentation\nDokumentation: Se API Docs page`;
-        open_window = null;
-      }
-      // Brug AI for alt andet
-      else {
-        setMessages(prev => [...prev, { role: "system", content: "🧠 Analyserer..." }]);
-        const analysis = await base44.integrations.Core.InvokeLLM({
-          prompt: `Kommando: "${input}"
-
-Data: ${vehicles.length} køretøjer, ${alerts.length} alarmer, ${routes.length} ruter, ${shipments.length} forsendelser
-
-Hvis det handler om:
-- Oprette rute: action="CREATE_ROUTE", parameters={origin, destination, transport_type}
-- Oprette køretøj: action="CREATE_VEHICLE", parameters={name, type}
-- Besvar spørgsmål: action="ANSWER", message="svar her"
-
-JSON output:`,
-          response_json_schema: {
-            type: "object",
-            properties: {
-              action: { type: "string" },
-              parameters: { type: "object" },
-              message: { type: "string" }
-            }
-          }
-        });
-        action = analysis.action;
-        parameters = analysis.parameters;
-        message = analysis.message;
-      }
+      const { action, parameters, message, open_window } = mistralResponse.data;
 
       // Udfør handlingen
       switch (action) {

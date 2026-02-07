@@ -59,6 +59,7 @@ import Fleet from './pages/Fleet';
 import GPSIntegration from './pages/GPSIntegration';
 import GreenTMS from './pages/GreenTMS';
 import Home from './pages/Home';
+import IntellectMode from './pages/IntellectMode';
 import Invoices from './pages/Invoices';
 import Landing from './pages/Landing';
 import MapMonitor from './pages/MapMonitor';
@@ -69,7 +70,6 @@ import Security from './pages/Security';
 import Settings from './pages/Settings';
 import UserManagement from './pages/UserManagement';
 import WarehouseAutomation from './pages/WarehouseAutomation';
-import IntellectMode from './pages/IntellectMode';
 import __Layout from './Layout.jsx';
 
 
@@ -86,6 +86,7 @@ export const PAGES = {
     "GPSIntegration": GPSIntegration,
     "GreenTMS": GreenTMS,
     "Home": Home,
+    "IntellectMode": IntellectMode,
     "Invoices": Invoices,
     "Landing": Landing,
     "MapMonitor": MapMonitor,
@@ -96,7 +97,6 @@ export const PAGES = {
     "Settings": Settings,
     "UserManagement": UserManagement,
     "WarehouseAutomation": WarehouseAutomation,
-    "IntellectMode": IntellectMode,
 }
 
 export const pagesConfig = {
