@@ -194,53 +194,88 @@ export default function IntellectMode() {
       const userData = await base44.entities.User.filter({ email: currentUser.email });
       const orgId = userData?.[0]?.organization_id;
 
-      setMessages(prev => [...prev, { role: "system", content: "🧠 Analyserer kommando..." }]);
+      // Simple keyword-based parsing først
+      const lowerInput = input.toLowerCase();
+      let action, parameters = {}, message, open_window;
 
-      // AI analyserer kommandoen og beslutter handling
-      const analysis = await base44.integrations.Core.InvokeLLM({
-        prompt: `Du er Intellect Mode AI for flådestyring. Analyser kommandoen og returner JSON.
+      // Åbn vinduer
+      if ((lowerInput.includes('åbn') || lowerInput.includes('vis') || lowerInput.includes('show') || lowerInput.includes('open')) && 
+          (lowerInput.includes('flåde') || lowerInput.includes('fleet'))) {
+        action = "OPEN_WINDOW";
+        parameters = { window_type: "fleet" };
+        message = "Åbner flåde vindue";
+        open_window = "fleet";
+      } else if ((lowerInput.includes('åbn') || lowerInput.includes('vis')) && 
+                 (lowerInput.includes('alarm') || lowerInput.includes('alert'))) {
+        action = "OPEN_WINDOW";
+        parameters = { window_type: "alerts" };
+        message = "Åbner alarm vindue";
+        open_window = "alerts";
+      } else if ((lowerInput.includes('åbn') || lowerInput.includes('vis')) && 
+                 (lowerInput.includes('rute') || lowerInput.includes('route'))) {
+        action = "OPEN_WINDOW";
+        parameters = { window_type: "routes" };
+        message = "Åbner rute vindue";
+        open_window = "routes";
+      } else if ((lowerInput.includes('åbn') || lowerInput.includes('vis')) && 
+                 (lowerInput.includes('forsendelse') || lowerInput.includes('shipment'))) {
+        action = "OPEN_WINDOW";
+        parameters = { window_type: "shipments" };
+        message = "Åbner forsendelses vindue";
+        open_window = "shipments";
+      }
+      // Luk vinduer
+      else if (lowerInput.includes('luk') || lowerInput.includes('close')) {
+        action = "CLOSE_WINDOWS";
+        message = "Lukker alle vinduer";
+      }
+      // Slet ruter
+      else if ((lowerInput.includes('slet') || lowerInput.includes('delete') || lowerInput.includes('fjern')) && 
+               (lowerInput.includes('rute') || lowerInput.includes('route'))) {
+        action = "DELETE_ROUTES";
+        parameters = { delete_all: true };
+        message = `Sletter ${routes.length} ruter...`;
+      }
+      // Slet køretøjer
+      else if ((lowerInput.includes('slet') || lowerInput.includes('delete')) && 
+               (lowerInput.includes('køretøj') || lowerInput.includes('vehicle') || lowerInput.includes('truck'))) {
+        action = "DELETE_VEHICLES";
+        parameters = { delete_all: true };
+        message = `Sletter ${vehicles.length} køretøjer...`;
+      }
+      // API oplysninger
+      else if (lowerInput.includes('api')) {
+        action = "ANSWER";
+        message = `API INFO:\nEndpoint: https://your-app.base44.com/api\nAPI Keys: Gå til Settings > API Documentation\nDokumentation: Se API Docs page`;
+        open_window = null;
+      }
+      // Brug AI for alt andet
+      else {
+        setMessages(prev => [...prev, { role: "system", content: "🧠 Analyserer..." }]);
+        const analysis = await base44.integrations.Core.InvokeLLM({
+          prompt: `Kommando: "${input}"
 
-SYSTEM: ${vehicles.length} køretøjer, ${alerts.length} alarmer, ${routes.length} ruter, ${shipments.length} forsendelser
+Data: ${vehicles.length} køretøjer, ${alerts.length} alarmer, ${routes.length} ruter, ${shipments.length} forsendelser
 
-KOMMANDO: "${input}"
+Hvis det handler om:
+- Oprette rute: action="CREATE_ROUTE", parameters={origin, destination, transport_type}
+- Oprette køretøj: action="CREATE_VEHICLE", parameters={name, type}
+- Besvar spørgsmål: action="ANSWER", message="svar her"
 
-REGLER:
-1. Åbn KUN vinduer når bruger siger "åbn/vis/show" + ET AF: fleet, flåde, alerts, alarmer, routes, ruter, shipments, forsendelser
-2. For API/KPI/stats spørgsmål: ANSWER action med info i message - IKKE vindue
-3. For create actions: Brug CREATE_ROUTE/VEHICLE/SHIPMENT/ALERT
-4. For update/slet: Brug UPDATE_X actions
-5. Alt andet: ANSWER action
-
-VINDUER (kun disse 4):
-- fleet/flåde → fleet vindue
-- alerts/alarmer → alerts vindue  
-- routes/ruter → routes vindue
-- shipments/forsendelser → shipments vindue
-
-OUTPUT JSON:
-{
-  "action": "OPEN_WINDOW|ANSWER|CREATE_ROUTE|CREATE_VEHICLE|UPDATE_VEHICLES|etc",
-  "parameters": {"window_type": "fleet"} eller {},
-  "message": "Kort besked til bruger",
-  "open_window": "fleet" (KUN hvis OPEN_WINDOW action og valid type)
-}
-
-EKSEMPLER:
-"åbn flåde" → action: OPEN_WINDOW, parameters: {window_type: "fleet"}, open_window: "fleet"
-"vis API" → action: ANSWER, message: "For API docs, gå til Settings > API Documentation"
-"hvor mange trucks?" → action: ANSWER, message: "Du har X trucks, Y aktive"`,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            action: { type: "string" },
-            parameters: { type: "object" },
-            message: { type: "string" },
-            open_window: { type: "string" }
+JSON output:`,
+          response_json_schema: {
+            type: "object",
+            properties: {
+              action: { type: "string" },
+              parameters: { type: "object" },
+              message: { type: "string" }
+            }
           }
-        }
-      });
-
-      const { action, parameters, message, open_window } = analysis;
+        });
+        action = analysis.action;
+        parameters = analysis.parameters;
+        message = analysis.message;
+      }
 
       // Udfør handlingen
       switch (action) {
