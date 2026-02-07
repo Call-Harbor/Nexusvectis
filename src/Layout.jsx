@@ -289,6 +289,7 @@ export default function Layout({ children, currentPageName }) {
           >
             <Zap className="w-4 h-4 mr-2" />
             FLEET AI Mode
+            <Badge className="ml-2 bg-amber-500/30 text-amber-300 border-amber-500/50 text-[10px] font-bold">BETA</Badge>
           </Button>
           <div className="p-4 rounded-xl bg-gradient-to-br from-violet-500/10 to-cyan-500/10 border border-violet-500/20">
               <div className="flex items-center gap-2 mb-2">
