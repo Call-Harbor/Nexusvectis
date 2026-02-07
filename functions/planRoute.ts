@@ -75,12 +75,12 @@ STEP 4 - BUILD THE ROUTE:
 - End at ${destination} (find exact coordinates)
 - Each segment must be physically possible for ${transport_type}
 
-STEP 5 - VERIFY:
+STEP 6 - VERIFY:
 - Check: Can you actually ${transport_type === 'ship' ? 'sail' : transport_type === 'train' ? 'take a train' : transport_type === 'truck' ? 'drive' : 'fly'} from waypoint 1 to waypoint 2? 
 - Check: Is there continuous ${transport_type === 'ship' ? 'water' : transport_type === 'train' ? 'rail' : transport_type === 'truck' ? 'road' : 'air'} between each pair?
 - If not, REVISE the route
 
-STEP 5 - CALCULATE:
+STEP 7 - CALCULATE:
 - Total distance in km (sum of all segments)
 - Duration based on average speed: ship=30km/h, truck=80km/h, train=120km/h, aircraft=800km/h, drone=60km/h
 - CO2 emissions: ship=0.02, truck=0.8, aircraft=0.9, train=0.04, drone=0.3 kg per km
