@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import PredictiveMaintenance from "@/components/ai/PredictiveMaintenance";
 import ExceptionManagement from "@/components/ai/ExceptionManagement";
 import ColdChainMonitor from "@/components/shipments/ColdChainMonitor";
+import AIChat from "@/components/ai/AIChat";
 
 export default function AIOptimization() {
   const [activeTab, setActiveTab] = useState("maintenance");
@@ -404,6 +405,9 @@ export default function AIOptimization() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* AI Chat Assistant */}
+      <AIChat />
     </div>
   );
 }
