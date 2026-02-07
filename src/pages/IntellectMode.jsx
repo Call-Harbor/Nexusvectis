@@ -198,9 +198,9 @@ export default function IntellectMode() {
 
       // AI analyserer kommandoen og beslutter handling
       const analysis = await base44.integrations.Core.InvokeLLM({
-        prompt: `Du er Intellect Mode AI - en intelligent flådestyringssystem.
+        prompt: `Du er Intellect Mode AI - en FOKUSERET flådestyringssystem der IKKE åbner vinduer med mindre brugeren SPECIFIKT beder om det.
 
-NUVÆRENDE SYSTEM STATUS:
+SYSTEM STATUS:
 - Køretøjer: ${vehicles.length} (${vehicles.filter(v => v.status === 'active').length} aktive)
 - Alarmer: ${alerts.length} uløste
 - Ruter: ${routes.length} (${routes.filter(r => r.status === 'active').length} aktive)
@@ -208,28 +208,30 @@ NUVÆRENDE SYSTEM STATUS:
 
 BRUGERENS KOMMANDO: "${input}"
 
-Analyser kommandoen og beslut hvilken handling der skal udføres.
+🚨 VIGTIG REGEL: Åbn IKKE vinduer (open_window) med mindre:
+- Brugeren EKSPLICIT siger "åbn", "vis", "show", "open" + entitetstype
+- Brugeren spørger om at SE data (ikke bare svare på spørgsmål)
+- Når du OPRETTER noget NYT (CREATE actions)
 
-MULIGE HANDLINGER:
-1. OPEN_WINDOW: Åbn hologram vindue (fleet/alerts/routes/shipments)
-2. CLOSE_WINDOWS: Luk alle vinduer
-3. CREATE_ROUTE: Opret ny rute med origin, destination, transport_type
-4. CREATE_VEHICLE: Opret nyt køretøj med navn, type
-5. CREATE_SHIPMENT: Opret forsendelse med origin, destination, priority
-6. CREATE_ALERT: Opret alarm med title, message, type
-7. UPDATE_VEHICLES: Opdater køretøjer (f.eks. status, fuel_level for specifikke eller alle)
-8. UPDATE_ALERTS: Opdater alarmer (f.eks. løs alle, løs specifikke)
-9. UPDATE_ROUTES: Opdater ruter (f.eks. status til active/completed)
-10. UPDATE_SHIPMENTS: Opdater forsendelser (f.eks. status)
-11. DELETE_ENTITY: Slet entity (angiv type og kriterier)
-12. QUERY_DATA: Besvar spørgsmål om data
-13. COMPLEX_OPERATION: Udfør kompleks operation (beskriv step by step)
+HANDLINGER:
+1. OPEN_WINDOW: Kun når bruger beder om det - parameter: window_type (fleet/alerts/routes/shipments)
+2. CLOSE_WINDOWS: Luk vinduer
+3. CREATE_ROUTE: Opret rute (origin, destination, transport_type, status, priority)
+4. CREATE_VEHICLE: Opret køretøj (name, type, status, fuel_level, driver)
+5. CREATE_SHIPMENT: Opret forsendelse (origin, destination, status, priority, cargo_type, weight_kg)
+6. CREATE_ALERT: Opret alarm (title, message, alert_type, category)
+7. UPDATE_VEHICLES: Opdater køretøjer (update_all, filter, vehicle_name, updates)
+8. UPDATE_ALERTS: Opdater alarmer (resolve_all)
+9. UPDATE_ROUTES: Opdater ruter (update_all, current_status, updates)
+10. UPDATE_SHIPMENTS: Opdater forsendelser (tracking_number, updates)
+11. QUERY_DATA: Besvar spørgsmål - GIV SVAR DIREKTE i message
+12. ANSWER: Generel besked til bruger
 
-Output JSON med:
+OUTPUT:
 - action: handling type
-- parameters: alle nødvendige parametre
-- message: brugervenlig besked om hvad der sker
-- open_window: (optional) vindue der skal åbnes efter handlingen`,
+- parameters: {} (nødvendige parametre)
+- message: klar, præcis besked til bruger
+- open_window: UDELAD helt med mindre det er EKSPLICIT ønsket`,
         response_json_schema: {
           type: "object",
           properties: {
