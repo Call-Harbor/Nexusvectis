@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "./utils";
 import { useState } from "react";
 import { 
@@ -18,7 +18,8 @@ import {
   Users,
   Shield,
   FileText,
-  Package
+  Package,
+  Zap
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -68,6 +69,8 @@ const systemMenuItems = [
 export default function Layout({ children, currentPageName }) {
   const hideNav = currentPageName === "MapMonitor" || currentPageName === "AdminMonitor" || currentPageName === "Landing" || currentPageName === "Home" || currentPageName === "IntellectMode";
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const navigate = useNavigate();
+  const isIntellectMode = currentPageName === "IntellectMode";
 
   return (
     <div className="min-h-screen bg-slate-950 flex">
