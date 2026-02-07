@@ -27,11 +27,13 @@ ${transport_type === 'ship' ? `
 - Include highway junctions and major cities as waypoints
 - Routes must follow existing road infrastructure
 ` : transport_type === 'train' ? `
-- TRAINS CANNOT LEAVE RAIL TRACKS - only existing rail networks allowed
-- Follow major European rail corridors (e.g., trans-European railways)
-- Include major train stations and rail hubs as waypoints
-- Routes must follow actual railway infrastructure that exists
-- Consider connections, transfers at major rail junctions
+- TRAINS CANNOT LEAVE RAIL TRACKS OR CROSS WATER (except via bridges/tunnels like Öresund)
+- Follow ONLY existing rail networks with actual physical tracks
+- Route must follow land-based rail corridors - NO straight lines across water
+- Include major train stations as waypoints along the actual rail route
+- Consider realistic connections via existing rail infrastructure
+- If water crossing needed, verify bridge/tunnel exists (e.g., Öresund Bridge, Channel Tunnel)
+- Route should follow the curvature of rail lines, not straight lines
 ` : transport_type === 'aircraft' ? `
 - AIRCRAFT FLY IN STRAIGHT LINES at high altitude (unless avoiding restricted airspace)
 - Include major airports as origin/destination and potential fuel stops
