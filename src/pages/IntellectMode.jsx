@@ -198,40 +198,37 @@ export default function IntellectMode() {
 
       // AI analyserer kommandoen og beslutter handling
       const analysis = await base44.integrations.Core.InvokeLLM({
-        prompt: `Du er Intellect Mode AI - en FOKUSERET flådestyringssystem der IKKE åbner vinduer med mindre brugeren SPECIFIKT beder om det.
+        prompt: `Du er Intellect Mode AI for flådestyring. Analyser kommandoen og returner JSON.
 
-SYSTEM STATUS:
-- Køretøjer: ${vehicles.length} (${vehicles.filter(v => v.status === 'active').length} aktive)
-- Alarmer: ${alerts.length} uløste
-- Ruter: ${routes.length} (${routes.filter(r => r.status === 'active').length} aktive)
-- Forsendelser: ${shipments.length} (${shipments.filter(s => s.status === 'in_transit').length} i transit)
+SYSTEM: ${vehicles.length} køretøjer, ${alerts.length} alarmer, ${routes.length} ruter, ${shipments.length} forsendelser
 
-BRUGERENS KOMMANDO: "${input}"
+KOMMANDO: "${input}"
 
-🚨 VIGTIG REGEL: Åbn IKKE vinduer (open_window) med mindre:
-- Brugeren EKSPLICIT siger "åbn", "vis", "show", "open" + entitetstype
-- Brugeren spørger om at SE data (ikke bare svare på spørgsmål)
-- Når du OPRETTER noget NYT (CREATE actions)
+REGLER:
+1. Åbn KUN vinduer når bruger siger "åbn/vis/show" + ET AF: fleet, flåde, alerts, alarmer, routes, ruter, shipments, forsendelser
+2. For API/KPI/stats spørgsmål: ANSWER action med info i message - IKKE vindue
+3. For create actions: Brug CREATE_ROUTE/VEHICLE/SHIPMENT/ALERT
+4. For update/slet: Brug UPDATE_X actions
+5. Alt andet: ANSWER action
 
-HANDLINGER:
-1. OPEN_WINDOW: Kun når bruger beder om det - parameter: window_type (fleet/alerts/routes/shipments)
-2. CLOSE_WINDOWS: Luk vinduer
-3. CREATE_ROUTE: Opret rute (origin, destination, transport_type, status, priority)
-4. CREATE_VEHICLE: Opret køretøj (name, type, status, fuel_level, driver)
-5. CREATE_SHIPMENT: Opret forsendelse (origin, destination, status, priority, cargo_type, weight_kg)
-6. CREATE_ALERT: Opret alarm (title, message, alert_type, category)
-7. UPDATE_VEHICLES: Opdater køretøjer (update_all, filter, vehicle_name, updates)
-8. UPDATE_ALERTS: Opdater alarmer (resolve_all)
-9. UPDATE_ROUTES: Opdater ruter (update_all, current_status, updates)
-10. UPDATE_SHIPMENTS: Opdater forsendelser (tracking_number, updates)
-11. QUERY_DATA: Besvar spørgsmål - GIV SVAR DIREKTE i message
-12. ANSWER: Generel besked til bruger
+VINDUER (kun disse 4):
+- fleet/flåde → fleet vindue
+- alerts/alarmer → alerts vindue  
+- routes/ruter → routes vindue
+- shipments/forsendelser → shipments vindue
 
-OUTPUT:
-- action: handling type
-- parameters: {} (nødvendige parametre)
-- message: klar, præcis besked til bruger
-- open_window: UDELAD helt med mindre det er EKSPLICIT ønsket`,
+OUTPUT JSON:
+{
+  "action": "OPEN_WINDOW|ANSWER|CREATE_ROUTE|CREATE_VEHICLE|UPDATE_VEHICLES|etc",
+  "parameters": {"window_type": "fleet"} eller {},
+  "message": "Kort besked til bruger",
+  "open_window": "fleet" (KUN hvis OPEN_WINDOW action og valid type)
+}
+
+EKSEMPLER:
+"åbn flåde" → action: OPEN_WINDOW, parameters: {window_type: "fleet"}, open_window: "fleet"
+"vis API" → action: ANSWER, message: "For API docs, gå til Settings > API Documentation"
+"hvor mange trucks?" → action: ANSWER, message: "Du har X trucks, Y aktive"`,
         response_json_schema: {
           type: "object",
           properties: {
