@@ -17,6 +17,18 @@ export default function Settings() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [saving, setSaving] = useState(false);
+  const [invoiceSettings, setInvoiceSettings] = useState({
+    company_name: "NexusVectis ApS",
+    vat_number: "",
+    company_address: "",
+    company_country: "Denmark",
+    company_email: "",
+    company_phone: "",
+    bank_account: "",
+    bank_swift: "",
+    company_registration: ""
+  });
+  const [invoiceSettingsId, setInvoiceSettingsId] = useState(null);
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -34,6 +46,13 @@ export default function Settings() {
         if (org.length > 0) {
           setOrgName(org[0].name);
         }
+      }
+      
+      // Load invoice settings
+      const settings = await base44.entities.InvoiceSettings.list();
+      if (settings.length > 0) {
+        setInvoiceSettings(settings[0]);
+        setInvoiceSettingsId(settings[0].id);
       }
     } catch (error) {
       console.error("Error loading user data:", error);
@@ -60,6 +79,29 @@ export default function Settings() {
       toast.success("Organisation opdateret");
     } catch (error) {
       toast.error("Kunne ikke opdatere organisation");
+      console.error(error);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const updateInvoiceSettings = async () => {
+    if (!invoiceSettings.company_name.trim() || !invoiceSettings.vat_number.trim()) {
+      toast.error("Firmanavn og CVR-nummer er påkrævet");
+      return;
+    }
+
+    setSaving(true);
+    try {
+      if (invoiceSettingsId) {
+        await base44.entities.InvoiceSettings.update(invoiceSettingsId, invoiceSettings);
+      } else {
+        const created = await base44.entities.InvoiceSettings.create(invoiceSettings);
+        setInvoiceSettingsId(created.id);
+      }
+      toast.success("Faktura indstillinger opdateret");
+    } catch (error) {
+      toast.error("Kunne ikke opdatere faktura indstillinger");
       console.error(error);
     } finally {
       setSaving(false);
@@ -138,6 +180,12 @@ export default function Settings() {
               <Building2 className="w-4 h-4 mr-2" />
               Organisation
             </TabsTrigger>
+            {user?.role === 'admin' && (
+              <TabsTrigger value="invoice" className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400">
+                <Building2 className="w-4 h-4 mr-2" />
+                Faktura
+              </TabsTrigger>
+            )}
             <TabsTrigger value="security" className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400">
               <Key className="w-4 h-4 mr-2" />
               Sikkerhed
@@ -213,6 +261,130 @@ export default function Settings() {
                     <>
                       <Save className="w-4 h-4 mr-2" />
                       Gem ændringer
+                    </>
+                  )}
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="invoice">
+            <Card className="bg-slate-900/50 border-slate-800">
+              <CardHeader>
+                <CardTitle className="text-white">NexusVectis Firma Oplysninger</CardTitle>
+                <CardDescription className="text-slate-400">
+                  Oplysninger der bruges på fakturaer
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-slate-300">Firmanavn *</Label>
+                    <Input
+                      value={invoiceSettings.company_name}
+                      onChange={(e) => setInvoiceSettings({...invoiceSettings, company_name: e.target.value})}
+                      className="bg-slate-800/50 border-slate-700 text-white"
+                      placeholder="NexusVectis ApS"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-slate-300">CVR/VAT Nummer *</Label>
+                    <Input
+                      value={invoiceSettings.vat_number}
+                      onChange={(e) => setInvoiceSettings({...invoiceSettings, vat_number: e.target.value})}
+                      className="bg-slate-800/50 border-slate-700 text-white"
+                      placeholder="DK12345678"
+                    />
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label className="text-slate-300">Adresse *</Label>
+                  <Input
+                    value={invoiceSettings.company_address}
+                    onChange={(e) => setInvoiceSettings({...invoiceSettings, company_address: e.target.value})}
+                    className="bg-slate-800/50 border-slate-700 text-white"
+                    placeholder="Vesterbrogade 123, 1620 København V, Denmark"
+                  />
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-slate-300">Land *</Label>
+                    <Input
+                      value={invoiceSettings.company_country}
+                      onChange={(e) => setInvoiceSettings({...invoiceSettings, company_country: e.target.value})}
+                      className="bg-slate-800/50 border-slate-700 text-white"
+                      placeholder="Denmark"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-slate-300">CVR Registreringsnummer</Label>
+                    <Input
+                      value={invoiceSettings.company_registration}
+                      onChange={(e) => setInvoiceSettings({...invoiceSettings, company_registration: e.target.value})}
+                      className="bg-slate-800/50 border-slate-700 text-white"
+                      placeholder="12345678"
+                    />
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-slate-300">Email</Label>
+                    <Input
+                      value={invoiceSettings.company_email}
+                      onChange={(e) => setInvoiceSettings({...invoiceSettings, company_email: e.target.value})}
+                      className="bg-slate-800/50 border-slate-700 text-white"
+                      placeholder="invoices@nexusvectis.com"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-slate-300">Telefon</Label>
+                    <Input
+                      value={invoiceSettings.company_phone}
+                      onChange={(e) => setInvoiceSettings({...invoiceSettings, company_phone: e.target.value})}
+                      className="bg-slate-800/50 border-slate-700 text-white"
+                      placeholder="+45 12 34 56 78"
+                    />
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-slate-300">Bankkonto (IBAN)</Label>
+                    <Input
+                      value={invoiceSettings.bank_account}
+                      onChange={(e) => setInvoiceSettings({...invoiceSettings, bank_account: e.target.value})}
+                      className="bg-slate-800/50 border-slate-700 text-white"
+                      placeholder="DK1234567890123456"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-slate-300">SWIFT/BIC</Label>
+                    <Input
+                      value={invoiceSettings.bank_swift}
+                      onChange={(e) => setInvoiceSettings({...invoiceSettings, bank_swift: e.target.value})}
+                      className="bg-slate-800/50 border-slate-700 text-white"
+                      placeholder="DABADKKK"
+                    />
+                  </div>
+                </div>
+                
+                <Button
+                  onClick={updateInvoiceSettings}
+                  disabled={saving}
+                  className="bg-gradient-to-r from-cyan-600 to-violet-600 hover:from-cyan-500 hover:to-violet-500"
+                >
+                  {saving ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Gemmer...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4 mr-2" />
+                      Gem Faktura Indstillinger
                     </>
                   )}
                 </Button>

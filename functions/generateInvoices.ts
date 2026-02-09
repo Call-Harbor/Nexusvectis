@@ -14,14 +14,6 @@ const TAX_RULES = {
   'Italy': { vat_rate: 22, requires_vat_id: true, payment_terms_days: 30 }
 };
 
-// Seller information (NexusVectis)
-const SELLER_INFO = {
-  name: 'NexusVectis ApS',
-  vat_number: 'DK12345678',
-  address: 'Vesterbrogade 123, 1620 København V, Denmark',
-  country: 'Denmark'
-};
-
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -31,6 +23,24 @@ Deno.serve(async (req) => {
     if (user?.role !== 'admin') {
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
+
+    // Get seller information from InvoiceSettings
+    const invoiceSettings = await base44.asServiceRole.entities.InvoiceSettings.list();
+    const SELLER_INFO = invoiceSettings.length > 0 ? {
+      name: invoiceSettings[0].company_name,
+      vat_number: invoiceSettings[0].vat_number,
+      address: invoiceSettings[0].company_address,
+      country: invoiceSettings[0].company_country,
+      email: invoiceSettings[0].company_email,
+      phone: invoiceSettings[0].company_phone,
+      bank_account: invoiceSettings[0].bank_account,
+      bank_swift: invoiceSettings[0].bank_swift
+    } : {
+      name: 'NexusVectis ApS',
+      vat_number: 'DK12345678',
+      address: 'Vesterbrogade 123, 1620 København V, Denmark',
+      country: 'Denmark'
+    };
 
     // Get all organizations
     const organizations = await base44.asServiceRole.entities.Organization.list();
