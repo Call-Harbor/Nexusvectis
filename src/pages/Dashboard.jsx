@@ -37,7 +37,8 @@ export default function Dashboard() {
           return;
         }
         const user = await base44.auth.me();
-        if (!user.organization_id) {
+        const orgId = user?.organization_id || user?.data?.organization_id;
+        if (!orgId) {
           navigate(createPageUrl("OrganizationSetup"));
         }
       } catch (error) {
@@ -51,8 +52,9 @@ export default function Dashboard() {
     queryKey: ['vehicles'],
     queryFn: async () => {
       const user = await base44.auth.me();
-      if (!user.organization_id) return [];
-      return await base44.entities.Vehicle.filter({ organization_id: user.organization_id });
+      const orgId = user?.organization_id || user?.data?.organization_id;
+      if (!orgId) return [];
+      return await base44.entities.Vehicle.filter({ organization_id: orgId });
     },
     refetchInterval: 5000,
   });
@@ -61,8 +63,9 @@ export default function Dashboard() {
     queryKey: ['resources'],
     queryFn: async () => {
       const user = await base44.auth.me();
-      if (!user.organization_id) return [];
-      return await base44.entities.Resource.filter({ organization_id: user.organization_id });
+      const orgId = user?.organization_id || user?.data?.organization_id;
+      if (!orgId) return [];
+      return await base44.entities.Resource.filter({ organization_id: orgId });
     },
   });
 

@@ -26,7 +26,8 @@ export default function OrganizationSetup() {
       setUser(currentUser);
 
       // Check if user already has organization
-      if (currentUser.organization_id) {
+      const orgId = currentUser?.organization_id || currentUser?.data?.organization_id;
+      if (orgId) {
         navigate(createPageUrl("Dashboard"));
         return;
       }
