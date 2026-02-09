@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import { 
@@ -9,12 +9,15 @@ import {
 } from "recharts";
 import { 
   Globe, Truck, Warehouse, DollarSign, TrendingUp, AlertCircle,
-  Users, Building2, Loader2, ExternalLink
+  Users, Building2, Loader2, ExternalLink, Save, FileText
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { createPageUrl } from "../utils";
+import { toast } from "sonner";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -28,6 +31,20 @@ L.Icon.Default.mergeOptions({
 
 export default function AdminDashboard() {
   const [markerCoordinates, setMarkerCoordinates] = useState({});
+  const [invoiceSettings, setInvoiceSettings] = useState({
+    company_name: "NexusVectis ApS",
+    vat_number: "",
+    company_address: "",
+    company_country: "Denmark",
+    company_email: "",
+    company_phone: "",
+    bank_account: "",
+    bank_swift: "",
+    company_registration: ""
+  });
+  const [invoiceSettingsId, setInvoiceSettingsId] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const queryClient = useQueryClient();
 
   const geocodeMutation = useMutation({
     mutationFn: async ({ city, country }) => {
@@ -65,6 +82,44 @@ export default function AdminDashboard() {
     queryKey: ['allInvoices'],
     queryFn: () => base44.entities.Invoice.list()
   });
+
+  // Fetch invoice settings
+  const { data: invoiceSettingsData } = useQuery({
+    queryKey: ['invoiceSettings'],
+    queryFn: async () => {
+      const settings = await base44.entities.InvoiceSettings.list();
+      if (settings.length > 0) {
+        setInvoiceSettings(settings[0]);
+        setInvoiceSettingsId(settings[0].id);
+        return settings[0];
+      }
+      return null;
+    }
+  });
+
+  const updateInvoiceSettings = async () => {
+    if (!invoiceSettings.company_name.trim() || !invoiceSettings.vat_number.trim()) {
+      toast.error("Company name and VAT number are required");
+      return;
+    }
+
+    setSaving(true);
+    try {
+      if (invoiceSettingsId) {
+        await base44.entities.InvoiceSettings.update(invoiceSettingsId, invoiceSettings);
+      } else {
+        const created = await base44.entities.InvoiceSettings.create(invoiceSettings);
+        setInvoiceSettingsId(created.id);
+      }
+      queryClient.invalidateQueries(['invoiceSettings']);
+      toast.success("Invoice settings updated successfully");
+    } catch (error) {
+      toast.error("Failed to update invoice settings");
+      console.error(error);
+    } finally {
+      setSaving(false);
+    }
+  };
 
   // Calculate stats
   const calculateStats = () => {
@@ -403,27 +458,113 @@ export default function AdminDashboard() {
           </motion.div>
         </div>
 
-        {/* Invoice Status */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="rounded-2xl border border-slate-700/50 bg-slate-800/50 backdrop-blur-xl p-6"
-        >
-          <h3 className="text-white font-semibold mb-4">Invoices (Recent)</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[
-              { label: 'Total', value: invoices.length, color: 'text-blue-400' },
-              { label: 'Paid', value: invoices.filter(i => i.status === 'paid').length, color: 'text-green-400' },
-              { label: 'Pending', value: invoices.filter(i => i.status === 'pending').length, color: 'text-amber-400' },
-              { label: 'Overdue', value: invoices.filter(i => i.status === 'overdue').length, color: 'text-red-400' },
-            ].map((item) => (
-              <div key={item.label} className="p-4 rounded-lg bg-slate-900/50 border border-slate-700/30 text-center">
-                <p className={`text-2xl font-bold ${item.color}`}>{item.value}</p>
-                <p className="text-xs text-slate-400 mt-1">{item.label}</p>
+        {/* Invoice Status and Company Settings */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="rounded-2xl border border-slate-700/50 bg-slate-800/50 backdrop-blur-xl p-6"
+          >
+            <h3 className="text-white font-semibold mb-4">Invoices (Recent)</h3>
+            <div className="grid grid-cols-2 gap-4">
+              {[
+                { label: 'Total', value: invoices.length, color: 'text-blue-400' },
+                { label: 'Paid', value: invoices.filter(i => i.status === 'paid').length, color: 'text-green-400' },
+                { label: 'Pending', value: invoices.filter(i => i.status === 'pending').length, color: 'text-amber-400' },
+                { label: 'Overdue', value: invoices.filter(i => i.status === 'overdue').length, color: 'text-red-400' },
+              ].map((item) => (
+                <div key={item.label} className="p-4 rounded-lg bg-slate-900/50 border border-slate-700/30 text-center">
+                  <p className={`text-2xl font-bold ${item.color}`}>{item.value}</p>
+                  <p className="text-xs text-slate-400 mt-1">{item.label}</p>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* Invoice Company Settings */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.1 }}
+            className="rounded-2xl border border-slate-700/50 bg-slate-800/50 backdrop-blur-xl p-6"
+          >
+            <div className="flex items-center gap-2 mb-4">
+              <FileText className="w-5 h-5 text-cyan-400" />
+              <h3 className="text-white font-semibold">Invoice Company Info</h3>
+            </div>
+            <div className="space-y-3 max-h-80 overflow-y-auto">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-slate-400 text-xs">Company Name</Label>
+                  <Input
+                    value={invoiceSettings.company_name}
+                    onChange={(e) => setInvoiceSettings({...invoiceSettings, company_name: e.target.value})}
+                    className="bg-slate-900/50 border-slate-700 text-white text-sm h-8"
+                    placeholder="NexusVectis ApS"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-slate-400 text-xs">VAT Number</Label>
+                  <Input
+                    value={invoiceSettings.vat_number}
+                    onChange={(e) => setInvoiceSettings({...invoiceSettings, vat_number: e.target.value})}
+                    className="bg-slate-900/50 border-slate-700 text-white text-sm h-8"
+                    placeholder="DK12345678"
+                  />
+                </div>
               </div>
-            ))}
-          </div>
-        </motion.div>
+              
+              <div className="space-y-1">
+                <Label className="text-slate-400 text-xs">Address</Label>
+                <Input
+                  value={invoiceSettings.company_address}
+                  onChange={(e) => setInvoiceSettings({...invoiceSettings, company_address: e.target.value})}
+                  className="bg-slate-900/50 border-slate-700 text-white text-sm h-8"
+                  placeholder="Full address"
+                />
+              </div>
+              
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-slate-400 text-xs">Email</Label>
+                  <Input
+                    value={invoiceSettings.company_email}
+                    onChange={(e) => setInvoiceSettings({...invoiceSettings, company_email: e.target.value})}
+                    className="bg-slate-900/50 border-slate-700 text-white text-sm h-8"
+                    placeholder="invoice@company.com"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-slate-400 text-xs">Phone</Label>
+                  <Input
+                    value={invoiceSettings.company_phone}
+                    onChange={(e) => setInvoiceSettings({...invoiceSettings, company_phone: e.target.value})}
+                    className="bg-slate-900/50 border-slate-700 text-white text-sm h-8"
+                    placeholder="+45 12 34 56 78"
+                  />
+                </div>
+              </div>
+              
+              <Button
+                onClick={updateInvoiceSettings}
+                disabled={saving}
+                className="w-full bg-gradient-to-r from-cyan-600 to-violet-600 hover:from-cyan-500 hover:to-violet-500 h-8 text-sm"
+              >
+                {saving ? (
+                  <>
+                    <Loader2 className="w-3 h-3 mr-2 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-3 h-3 mr-2" />
+                    Save Settings
+                  </>
+                )}
+              </Button>
+            </div>
+          </motion.div>
+        </div>
       </div>
     </div>
   );
