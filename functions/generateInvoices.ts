@@ -1,5 +1,27 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
+// Country-specific VAT rates and legal requirements
+const TAX_RULES = {
+  'Denmark': { vat_rate: 25, requires_vat_id: true, payment_terms_days: 14 },
+  'Germany': { vat_rate: 19, requires_vat_id: true, payment_terms_days: 14 },
+  'Sweden': { vat_rate: 25, requires_vat_id: true, payment_terms_days: 30 },
+  'Norway': { vat_rate: 25, requires_vat_id: true, payment_terms_days: 14 },
+  'USA': { vat_rate: 0, requires_vat_id: false, payment_terms_days: 30 },
+  'UK': { vat_rate: 20, requires_vat_id: true, payment_terms_days: 30 },
+  'Netherlands': { vat_rate: 21, requires_vat_id: true, payment_terms_days: 14 },
+  'France': { vat_rate: 20, requires_vat_id: true, payment_terms_days: 30 },
+  'Spain': { vat_rate: 21, requires_vat_id: true, payment_terms_days: 30 },
+  'Italy': { vat_rate: 22, requires_vat_id: true, payment_terms_days: 30 }
+};
+
+// Seller information (NexusVectis)
+const SELLER_INFO = {
+  name: 'NexusVectis ApS',
+  vat_number: 'DK12345678',
+  address: 'Vesterbrogade 123, 1620 København V, Denmark',
+  country: 'Denmark'
+};
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -16,11 +38,7 @@ Deno.serve(async (req) => {
     const currentDate = new Date();
     const lastMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
     const periodMonth = `${lastMonth.getFullYear()}-${String(lastMonth.getMonth() + 1).padStart(2, '0')}`;
-    
-    // Due date: 14 days from now
-    const dueDate = new Date();
-    dueDate.setDate(dueDate.getDate() + 14);
-    const dueDateStr = dueDate.toISOString().split('T')[0];
+    const issueDate = currentDate.toISOString().split('T')[0];
 
     const generatedInvoices = [];
 
@@ -42,7 +60,52 @@ Deno.serve(async (req) => {
       
       const vehicleTotal = vehicleCount * vehiclePriceEuro;
       const resourceTotal = resourceCount * resourcePriceEuro;
-      const totalAmount = vehicleTotal + resourceTotal;
+      
+      // Determine tax rules based on buyer country
+      const buyerCountry = org.headquarters_country || 'Denmark';
+      const taxRules = TAX_RULES[buyerCountry] || TAX_RULES['Denmark'];
+      
+      // Calculate VAT
+      const subtotal = vehicleTotal + resourceTotal;
+      const isEUCrossBorder = buyerCountry !== 'Denmark' && taxRules.requires_vat_id;
+      const reverseCharge = isEUCrossBorder; // EU B2B reverse charge
+      const vatRate = reverseCharge ? 0 : taxRules.vat_rate;
+      const vatAmount = (subtotal * vatRate) / 100;
+      const totalAmount = subtotal + vatAmount;
+      
+      // Due date based on country
+      const dueDate = new Date();
+      dueDate.setDate(dueDate.getDate() + taxRules.payment_terms_days);
+      const dueDateStr = dueDate.toISOString().split('T')[0];
+      
+      // Create line items
+      const lineItems = [];
+      if (vehicleCount > 0) {
+        lineItems.push({
+          description: 'Fleet Management - Vehicles',
+          quantity: vehicleCount,
+          unit_price: vehiclePriceEuro,
+          total: vehicleTotal
+        });
+      }
+      if (resourceCount > 0) {
+        lineItems.push({
+          description: 'Fleet Management - Resources',
+          quantity: resourceCount,
+          unit_price: resourcePriceEuro,
+          total: resourceTotal
+        });
+      }
+      
+      // Legal notes based on country
+      let legalNotes = '';
+      if (reverseCharge) {
+        legalNotes = 'Reverse charge - VAT is payable by the recipient according to EU Directive 2006/112/EC Article 196.';
+      } else if (taxRules.requires_vat_id) {
+        legalNotes = `VAT included at ${vatRate}% rate according to ${buyerCountry} tax legislation.`;
+      } else {
+        legalNotes = 'No VAT applied - service provided to non-EU entity.';
+      }
 
       // Check if invoice already exists for this period
       const existingInvoices = await base44.asServiceRole.entities.Invoice.filter({
@@ -55,40 +118,114 @@ Deno.serve(async (req) => {
         continue;
       }
 
-      // Generate invoice number
-      const invoiceNumber = `INV-${org.id.slice(0, 8)}-${periodMonth.replace('-', '')}`;
+      // Generate invoice number with year prefix (legal requirement in many countries)
+      const invoiceNumber = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${org.id.slice(0, 8)}`;
 
-      // Create invoice
+      // Create invoice with all legally required fields
       const invoice = await base44.asServiceRole.entities.Invoice.create({
         organization_id: org.id,
         invoice_number: invoiceNumber,
         period_month: periodMonth,
+        issue_date: issueDate,
         vehicle_count: vehicleCount,
         resource_count: resourceCount,
         vehicle_price_euro: vehiclePriceEuro,
         resource_price_euro: resourcePriceEuro,
+        subtotal: subtotal,
+        vat_rate: vatRate,
+        vat_amount: vatAmount,
         total_amount: totalAmount,
         status: 'pending',
-        due_date: dueDateStr
+        due_date: dueDateStr,
+        payment_terms: `Net ${taxRules.payment_terms_days} days`,
+        currency: 'EUR',
+        seller_name: SELLER_INFO.name,
+        seller_vat_number: SELLER_INFO.vat_number,
+        seller_address: SELLER_INFO.address,
+        seller_country: SELLER_INFO.country,
+        buyer_name: org.name,
+        buyer_country: buyerCountry,
+        buyer_address: org.headquarters_city ? `${org.headquarters_city}, ${buyerCountry}` : buyerCountry,
+        line_items: lineItems,
+        reverse_charge: reverseCharge,
+        notes: legalNotes
       });
 
       generatedInvoices.push(invoice);
 
       // Send email notification to organization admin
       try {
+        const vatDisplay = reverseCharge 
+          ? '<p><strong>VAT:</strong> Reverse charge applies - VAT is payable by recipient</p>'
+          : `<p><strong>VAT (${vatRate}%):</strong> €${vatAmount.toFixed(2)}</p>`;
+        
         await base44.asServiceRole.integrations.Core.SendEmail({
           to: org.admin_email,
-          subject: `Ny faktura fra NexusVectis - ${periodMonth}`,
+          subject: `New Invoice from NexusVectis - ${periodMonth}`,
           body: `
-            <h2>Ny faktura</h2>
-            <p>Hej,</p>
-            <p>Din faktura for ${periodMonth} er klar.</p>
-            <p><strong>Fakturanummer:</strong> ${invoiceNumber}</p>
-            <p><strong>Vehicles:</strong> ${vehicleCount} × €${vehiclePriceEuro} = €${vehicleTotal}</p>
-            <p><strong>Resources:</strong> ${resourceCount} × €${resourcePriceEuro} = €${resourceTotal}</p>
-            <p><strong>Total beløb:</strong> €${totalAmount}</p>
-            <p><strong>Forfaldsdato:</strong> ${dueDateStr}</p>
-            <p>Log ind på din konto for at se fakturaen.</p>
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h2 style="color: #0ea5e9;">New Invoice</h2>
+              <p>Hello,</p>
+              <p>Your invoice for ${periodMonth} is ready.</p>
+              
+              <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                <p><strong>Invoice Number:</strong> ${invoiceNumber}</p>
+                <p><strong>Issue Date:</strong> ${issueDate}</p>
+                <p><strong>Due Date:</strong> ${dueDateStr}</p>
+                <p><strong>Payment Terms:</strong> Net ${taxRules.payment_terms_days} days</p>
+              </div>
+              
+              <h3>Invoice Details</h3>
+              <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                  <tr style="background: #e2e8f0;">
+                    <th style="padding: 10px; text-align: left;">Description</th>
+                    <th style="padding: 10px; text-align: right;">Qty</th>
+                    <th style="padding: 10px; text-align: right;">Price</th>
+                    <th style="padding: 10px; text-align: right;">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${vehicleCount > 0 ? `
+                  <tr>
+                    <td style="padding: 10px; border-bottom: 1px solid #e2e8f0;">Fleet Management - Vehicles</td>
+                    <td style="padding: 10px; text-align: right; border-bottom: 1px solid #e2e8f0;">${vehicleCount}</td>
+                    <td style="padding: 10px; text-align: right; border-bottom: 1px solid #e2e8f0;">€${vehiclePriceEuro}</td>
+                    <td style="padding: 10px; text-align: right; border-bottom: 1px solid #e2e8f0;">€${vehicleTotal.toFixed(2)}</td>
+                  </tr>
+                  ` : ''}
+                  ${resourceCount > 0 ? `
+                  <tr>
+                    <td style="padding: 10px; border-bottom: 1px solid #e2e8f0;">Fleet Management - Resources</td>
+                    <td style="padding: 10px; text-align: right; border-bottom: 1px solid #e2e8f0;">${resourceCount}</td>
+                    <td style="padding: 10px; text-align: right; border-bottom: 1px solid #e2e8f0;">€${resourcePriceEuro}</td>
+                    <td style="padding: 10px; text-align: right; border-bottom: 1px solid #e2e8f0;">€${resourceTotal.toFixed(2)}</td>
+                  </tr>
+                  ` : ''}
+                </tbody>
+              </table>
+              
+              <div style="margin-top: 20px; text-align: right;">
+                <p><strong>Subtotal:</strong> €${subtotal.toFixed(2)}</p>
+                ${vatDisplay}
+                <p style="font-size: 18px; font-weight: bold; color: #0ea5e9;"><strong>Total Amount:</strong> €${totalAmount.toFixed(2)}</p>
+              </div>
+              
+              ${reverseCharge ? `
+              <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; margin-top: 20px;">
+                <p style="margin: 0; color: #92400e;">
+                  <strong>Reverse Charge:</strong> VAT is payable by the recipient according to EU Directive 2006/112/EC Article 196.
+                </p>
+              </div>
+              ` : ''}
+              
+              <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b;">
+                <p><strong>Seller:</strong> ${SELLER_INFO.name} | ${SELLER_INFO.vat_number}</p>
+                <p>${SELLER_INFO.address}</p>
+              </div>
+              
+              <p style="margin-top: 20px;">Log in to your account to view the full invoice details.</p>
+            </div>
           `
         });
       } catch (emailError) {
