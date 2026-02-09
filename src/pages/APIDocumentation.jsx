@@ -255,7 +255,8 @@ export default function APIDocumentation() {
     queryFn: async () => {
       const user = await base44.auth.me();
       const userData = await base44.entities.User.filter({ email: user.email });
-      return userData?.[0] || null;
+      const orgId = userData?.[0]?.organization_id || userData?.[0]?.data?.organization_id || user?.organization_id || user?.data?.organization_id;
+      return { organization_id: orgId };
     }
   });
 
