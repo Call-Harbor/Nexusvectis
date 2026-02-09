@@ -88,12 +88,26 @@ export default function Invoices() {
     
     doc.setFontSize(8);
     doc.setTextColor(148, 163, 184);
-    const buyerLines = (invoice.buyer_address || '').split(',');
     yOffset = boxY + 20;
-    buyerLines.forEach(line => {
-      doc.text(line.trim(), 113, yOffset);
+    
+    // Display full address
+    if (invoice.buyer_address) {
+      const buyerLines = invoice.buyer_address.split(',');
+      buyerLines.forEach(line => {
+        if (line.trim()) {
+          doc.text(line.trim(), 113, yOffset);
+          yOffset += 4;
+        }
+      });
+    }
+    
+    // Display country if not already in address
+    if (invoice.buyer_country && (!invoice.buyer_address || !invoice.buyer_address.includes(invoice.buyer_country))) {
+      doc.text(invoice.buyer_country, 113, yOffset);
       yOffset += 4;
-    });
+    }
+    
+    // Display VAT number
     if (invoice.buyer_vat_number) {
       doc.text(`VAT: ${invoice.buyer_vat_number}`, 113, yOffset);
     }

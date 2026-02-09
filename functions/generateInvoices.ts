@@ -155,7 +155,8 @@ Deno.serve(async (req) => {
         seller_country: SELLER_INFO.country,
         buyer_name: org.name,
         buyer_country: buyerCountry,
-        buyer_address: org.headquarters_city ? `${org.headquarters_city}, ${buyerCountry}` : buyerCountry,
+        buyer_address: org.address || (org.headquarters_city ? `${org.headquarters_city}, ${buyerCountry}` : buyerCountry),
+        buyer_vat_number: org.vat_number || org.company_registration || '',
         line_items: lineItems,
         reverse_charge: reverseCharge,
         notes: legalNotes
