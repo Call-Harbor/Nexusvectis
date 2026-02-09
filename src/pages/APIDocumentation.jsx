@@ -266,8 +266,9 @@ export default function APIDocumentation() {
     queryFn: async () => {
       const user = await base44.auth.me();
       const userData = await base44.entities.User.filter({ email: user.email });
-      if (!userData?.[0]?.organization_id) return [];
-      return await base44.entities.APIKey.filter({ organization_id: userData[0].organization_id });
+      const orgId = userData?.[0]?.organization_id || userData?.[0]?.data?.organization_id || user?.organization_id || user?.data?.organization_id;
+      if (!orgId) return [];
+      return await base44.entities.APIKey.filter({ organization_id: orgId });
     }
   });
 
