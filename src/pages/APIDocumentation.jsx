@@ -253,10 +253,23 @@ export default function APIDocumentation() {
   const { data: organizationData } = useQuery({
     queryKey: ['user-organization'],
     queryFn: async () => {
-      const user = await base44.auth.me();
-      const userData = await base44.entities.User.filter({ email: user.email });
-      const orgId = userData?.[0]?.organization_id || userData?.[0]?.data?.organization_id || user?.organization_id || user?.data?.organization_id;
-      return { organization_id: orgId };
+      try {
+        const user = await base44.auth.me();
+        
+        // Try to get organization_id from user directly first
+        let orgId = user?.organization_id || user?.data?.organization_id;
+        
+        // If not found, fetch from User entity
+        if (!orgId) {
+          const userData = await base44.entities.User.filter({ email: user.email });
+          orgId = userData?.[0]?.organization_id || userData?.[0]?.data?.organization_id;
+        }
+        
+        return { organization_id: orgId };
+      } catch (error) {
+        console.error('Error fetching organization:', error);
+        return { organization_id: null };
+      }
     }
   });
 
