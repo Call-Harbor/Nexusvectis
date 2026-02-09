@@ -39,11 +39,12 @@ export default function AdminInvoices() {
 
   const cancelInvoiceMutation = useMutation({
     mutationFn: async (invoiceId) => {
-      await base44.entities.Invoice.update(invoiceId, { status: 'cancelled' });
+      const response = await base44.functions.invoke('cancelInvoiceWithCreditNote', { invoice_id: invoiceId });
+      return response.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['admin-invoices']);
-      toast.success("Invoice cancelled");
+      toast.success("Invoice cancelled and credit note sent");
     }
   });
 
