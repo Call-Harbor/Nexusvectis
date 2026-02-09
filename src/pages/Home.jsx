@@ -115,7 +115,7 @@ export default function Home() {
             whileHover={{ scale: 1.05 }}
             src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/697e930c62bf3e3832b34edb/bc9d40ccc_FullLogo_Transparent1.png" 
             alt="NexusVectis Logo" 
-            className="h-14 w-auto"
+            className="h-20 w-auto"
           />
           <div className="flex items-center gap-4">
             <Link to={createPageUrl("Dashboard")}>
@@ -368,7 +368,7 @@ export default function Home() {
             <img 
               src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/697e930c62bf3e3832b34edb/bc9d40ccc_FullLogo_Transparent1.png" 
               alt="NexusVectis Logo" 
-              className="h-32 w-auto opacity-70"
+              className="h-48 w-auto opacity-70"
             />
             <p className="text-slate-500 text-sm">&copy; 2026 NexusVectis. Shaping the future of logistics.</p>
           </div>

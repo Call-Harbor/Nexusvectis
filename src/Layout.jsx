@@ -97,7 +97,7 @@ export default function Layout({ children, currentPageName }) {
             <img 
               src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/697e930c62bf3e3832b34edb/bc9d40ccc_FullLogo_Transparent1.png" 
               alt="NexusVectis Logo" 
-              className="h-24 w-auto"
+              className="h-32 w-auto"
             />
           </Link>
         </div>
@@ -331,7 +331,7 @@ export default function Layout({ children, currentPageName }) {
           <img 
             src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/697e930c62bf3e3832b34edb/bc9d40ccc_FullLogo_Transparent1.png" 
             alt="NexusVectis Logo" 
-            className="h-12 w-auto"
+            className="h-16 w-auto"
           />
           <Button
             variant="ghost"
