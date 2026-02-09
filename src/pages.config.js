@@ -71,6 +71,7 @@ import Settings from './pages/Settings';
 import Shipments from './pages/Shipments';
 import UserManagement from './pages/UserManagement';
 import WarehouseAutomation from './pages/WarehouseAutomation';
+import AdminInvoices from './pages/AdminInvoices';
 import __Layout from './Layout.jsx';
 
 
@@ -99,6 +100,7 @@ export const PAGES = {
     "Shipments": Shipments,
     "UserManagement": UserManagement,
     "WarehouseAutomation": WarehouseAutomation,
+    "AdminInvoices": AdminInvoices,
 }
 
 export const pagesConfig = {

@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "./utils";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { base44 } from "@/api/base44Client";
 import { 
   LayoutDashboard, 
   Truck, 
@@ -63,6 +64,7 @@ const systemMenuItems = [
   { name: "Users", icon: Users, page: "UserManagement" },
   { name: "Security", icon: Shield, page: "Security" },
   { name: "Invoices", icon: FileText, page: "Invoices" },
+  { name: "Admin Invoices", icon: FileText, page: "AdminInvoices", adminOnly: true },
   { name: "API Docs", icon: FileText, page: "APIDocumentation" },
   { name: "Settings", icon: Settings, page: "Settings" },
 ];
@@ -70,8 +72,21 @@ const systemMenuItems = [
 export default function Layout({ children, currentPageName }) {
   const hideNav = currentPageName === "MapMonitor" || currentPageName === "AdminMonitor" || currentPageName === "Landing" || currentPageName === "Home" || currentPageName === "IntellectMode";
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [user, setUser] = useState(null);
   const navigate = useNavigate();
   const isIntellectMode = currentPageName === "IntellectMode";
+
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const currentUser = await base44.auth.me();
+        setUser(currentUser);
+      } catch (error) {
+        console.error('Error loading user:', error);
+      }
+    };
+    loadUser();
+  }, []);
 
   return (
     <div className="min-h-screen bg-slate-950 flex">
@@ -264,7 +279,7 @@ export default function Layout({ children, currentPageName }) {
             <DropdownMenuContent className="w-56 bg-slate-900 border-slate-800 text-white ml-3">
               <DropdownMenuLabel>System & Settings</DropdownMenuLabel>
               <DropdownMenuSeparator className="bg-slate-800" />
-              {systemMenuItems.map((item) => {
+              {systemMenuItems.filter(item => !item.adminOnly || user?.role === 'admin').map((item) => {
                 const Icon = item.icon;
                 const isActive = currentPageName === item.page;
                 return (
@@ -456,7 +471,7 @@ export default function Layout({ children, currentPageName }) {
 
               <div className="pt-2 space-y-1">
                 <p className="px-4 py-2 text-xs font-semibold text-slate-500 uppercase">System & Settings</p>
-                {systemMenuItems.map((item) => {
+                {systemMenuItems.filter(item => !item.adminOnly || user?.role === 'admin').map((item) => {
                   const isActive = currentPageName === item.page;
                   const Icon = item.icon;
                   return (
