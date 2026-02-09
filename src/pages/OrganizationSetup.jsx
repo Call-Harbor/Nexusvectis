@@ -13,6 +13,8 @@ export default function OrganizationSetup() {
   const [orgName, setOrgName] = useState("");
   const [country, setCountry] = useState("");
   const [city, setCity] = useState("");
+  const [address, setAddress] = useState("");
+  const [vatNumber, setVatNumber] = useState("");
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
 
@@ -40,7 +42,7 @@ export default function OrganizationSetup() {
   };
 
   const createOrganization = async () => {
-    if (!orgName.trim() || !country.trim() || !city.trim()) return;
+    if (!orgName.trim() || !country.trim() || !city.trim() || !address.trim() || !vatNumber.trim()) return;
 
     setCreating(true);
     try {
@@ -49,7 +51,9 @@ export default function OrganizationSetup() {
         name: orgName,
         admin_email: user.email,
         headquarters_country: country,
-        headquarters_city: city
+        headquarters_city: city,
+        address: address,
+        vat_number: vatNumber
       });
 
       // Update user with organization_id
@@ -84,7 +88,7 @@ export default function OrganizationSetup() {
           </div>
           <CardTitle className="text-2xl text-white">Create Your Organization</CardTitle>
           <CardDescription className="text-slate-400">
-            You need to create an organization to continue
+            Enter your company details for invoicing
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -98,9 +102,18 @@ export default function OrganizationSetup() {
               className="bg-slate-800/50 border-slate-700 text-white"
             />
           </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-slate-300">Full Business Address *</label>
+            <Input
+              placeholder="Street, Postal Code, City"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              className="bg-slate-800/50 border-slate-700 text-white"
+            />
+          </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-300">Country</label>
+              <label className="text-sm font-medium text-slate-300">Country *</label>
               <div className="flex items-center gap-2">
                 <Globe className="w-4 h-4 text-slate-500" />
                 <Input
@@ -112,7 +125,7 @@ export default function OrganizationSetup() {
               </div>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-300">City</label>
+              <label className="text-sm font-medium text-slate-300">City *</label>
               <div className="flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-slate-500" />
                 <Input
@@ -124,9 +137,18 @@ export default function OrganizationSetup() {
               </div>
             </div>
           </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-slate-300">VAT/CVR Number *</label>
+            <Input
+              placeholder="e.g. DK12345678"
+              value={vatNumber}
+              onChange={(e) => setVatNumber(e.target.value)}
+              className="bg-slate-800/50 border-slate-700 text-white"
+            />
+          </div>
           <Button
             onClick={createOrganization}
-            disabled={!orgName.trim() || !country.trim() || !city.trim() || creating}
+            disabled={!orgName.trim() || !country.trim() || !city.trim() || !address.trim() || !vatNumber.trim() || creating}
             className="w-full bg-gradient-to-r from-cyan-600 to-violet-600 hover:from-cyan-500 hover:to-violet-500"
           >
             {creating ? (
