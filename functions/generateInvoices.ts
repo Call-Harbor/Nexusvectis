@@ -74,16 +74,27 @@ Deno.serve(async (req) => {
         return usageDate >= periodStart && usageDate < periodEnd && usage.success;
       }).length;
 
+      // Count API calls for current period
+      const allAPIUsage = await base44.asServiceRole.entities.APIUsage.filter({ 
+        organization_id: org.id 
+      });
+      const apiCalls = allAPIUsage.filter(usage => {
+        const usageDate = new Date(usage.created_date);
+        return usageDate >= periodStart && usageDate < periodEnd && usage.status_code < 400;
+      }).length;
+
       const vehicleCount = vehicles.length;
       const resourceCount = resources.length;
       
       const vehiclePriceEuro = 15;
       const resourcePriceEuro = 40;
       const fleetAIPricePer100 = 5;
+      const apiPricePer100 = 5;
       
       const vehicleTotal = vehicleCount * vehiclePriceEuro;
       const resourceTotal = resourceCount * resourcePriceEuro;
       const fleetAITotal = Math.ceil(fleetAICommands / 100) * fleetAIPricePer100;
+      const apiTotal = Math.ceil(apiCalls / 100) * apiPricePer100;
       
       // Determine tax rules based on buyer country
       const buyerCountry = org.headquarters_country || 'Denmark';
