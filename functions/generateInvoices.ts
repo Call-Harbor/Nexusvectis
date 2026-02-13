@@ -184,6 +184,8 @@ Deno.serve(async (req) => {
         resource_price_euro: resourcePriceEuro,
         fleetai_commands: fleetAICommands,
         fleetai_price_per_100: fleetAIPricePer100,
+        api_calls: apiCalls,
+        api_price_per_100: apiPricePer100,
         subtotal: subtotal,
         vat_rate: vatRate,
         vat_amount: vatAmount,
