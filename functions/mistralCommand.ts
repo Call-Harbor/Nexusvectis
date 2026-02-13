@@ -130,14 +130,23 @@ EXAMPLES:
     if (file_urls && file_urls.length > 0) {
       console.log('🖼️ Processing with files, using InvokeLLM');
       
-      const enhancedPrompt = `${systemPrompt}
+      const enhancedPrompt = `CRITICAL INSTRUCTION: ${file_urls.length} FILE(S) ARE ATTACHED TO THIS REQUEST VIA file_urls PARAMETER. THE FILES EXIST AND ARE AVAILABLE TO YOU RIGHT NOW.
+
+${systemPrompt}
 
 USER COMMAND: "${command}"
 
-IMPORTANT: YOU HAVE ${file_urls.length} FILE(S) ATTACHED RIGHT NOW. 
-The files are ALREADY provided to you through file_urls parameter.
-DO NOT say files are missing - analyze the attached files and describe what you see.
-Extract any relevant data (text, numbers, vehicle info, damage assessment, etc.) and incorporate it into your response.
+REPEAT: YOU HAVE ${file_urls.length} FILE(S) ATTACHED RIGHT NOW VIA file_urls.
+FILES ARE: ${file_urls.join(', ')}
+
+YOU MUST:
+1. ANALYZE the attached files immediately
+2. DESCRIBE what you see in detail
+3. NEVER say files are missing or ask user to attach files
+4. Extract relevant data from the files
+5. Incorporate file analysis into your response
+
+If you say files are missing when file_urls exist, you are WRONG.
 
 Context data: ${JSON.stringify(context)}`;
 
