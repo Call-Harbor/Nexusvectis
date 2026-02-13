@@ -322,12 +322,15 @@ export default function IntellectMode() {
       // Udfør handlingen
       switch (action) {
         case "OPEN_WINDOW":
-          const validWindows = ['fleet', 'alerts', 'routes', 'shipments'];
+          const validWindows = ['fleet', 'alerts', 'routes', 'shipments', 'dashboard', 'settings', 
+                                'aioptimization', 'invoices', 'apidocs', 'resources', 
+                                'warehouseautomation', 'demandforecasting', 'greentms', 
+                                'gpsintegration', 'assignment'];
           if (parameters.window_type && validWindows.includes(parameters.window_type)) {
             openWindow(parameters.window_type);
             setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
           } else {
-            setMessages(prev => [...prev, { role: "system", content: `❌ Invalid window: ${parameters.window_type}. Use: fleet, alerts, routes, or shipments` }]);
+            setMessages(prev => [...prev, { role: "system", content: `❌ Invalid window type` }]);
           }
           break;
 
@@ -591,6 +594,34 @@ export default function IntellectMode() {
   }), [vehicles, alerts, routes, shipments]);
 
   const renderWindowContent = useCallback((type) => {
+    // For page iframes
+    if (['dashboard', 'settings', 'aioptimization', 'invoices', 'apidocs', 'resources', 
+         'warehouseautomation', 'demandforecasting', 'greentms', 'gpsintegration', 'assignment'].includes(type)) {
+      const pageMap = {
+        'dashboard': 'Dashboard',
+        'settings': 'Settings',
+        'aioptimization': 'AIOptimization',
+        'invoices': 'Invoices',
+        'apidocs': 'APIDocumentation',
+        'resources': 'Resources',
+        'warehouseautomation': 'WarehouseAutomation',
+        'demandforecasting': 'DemandForecasting',
+        'greentms': 'GreenTMS',
+        'gpsintegration': 'GPSIntegration',
+        'assignment': 'Assignment'
+      };
+      
+      return (
+        <div className="w-full h-[500px]">
+          <iframe 
+            src={createPageUrl(pageMap[type])}
+            className="w-full h-full rounded-lg"
+            title={pageMap[type]}
+          />
+        </div>
+      );
+    }
+
     switch (type) {
       case "fleet":
         return (
@@ -777,7 +808,18 @@ export default function IntellectMode() {
                   window.type === 'fleet' ? 'Fleet' :
                   window.type === 'alerts' ? 'Alerts' :
                   window.type === 'routes' ? 'Routes' :
-                  window.type === 'shipments' ? 'Shipments' : ''
+                  window.type === 'shipments' ? 'Shipments' :
+                  window.type === 'dashboard' ? 'Dashboard' :
+                  window.type === 'settings' ? 'Settings' :
+                  window.type === 'aioptimization' ? 'AI Optimization' :
+                  window.type === 'invoices' ? 'Invoices' :
+                  window.type === 'apidocs' ? 'API Docs' :
+                  window.type === 'resources' ? 'Resources' :
+                  window.type === 'warehouseautomation' ? 'Warehouse Automation' :
+                  window.type === 'demandforecasting' ? 'Demand Forecasting' :
+                  window.type === 'greentms' ? 'Green TMS' :
+                  window.type === 'gpsintegration' ? 'GPS Integration' :
+                  window.type === 'assignment' ? 'Assignments' : ''
                 }
                 icon={
                   window.type === 'fleet' ? Truck :

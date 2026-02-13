@@ -88,11 +88,24 @@ AVAILABLE ACTIONS:
 14. DELETE_VEHICLES - Delete vehicles (delete_all: true)
 14. ANSWER - Answer questions with expert logistics insights
 
-WINDOWS (only these 4):
-- fleet → "fleet" (synonyms: flåde, flotte, flotille, buque, schiffe, navires, vehicles, køretøjer, fahrzeuge)
-- alerts → "alerts" (synonyms: advarsler, alarmer, warnungen, alertes, avisos, notifications)
-- routes → "routes" (synonyms: ruter, rutas, routen, itinéraires, paths, stier)
-- shipments → "shipments" (synonyms: forsendelser, sendungen, envíos, expéditions, leveringer)
+AVAILABLE WINDOWS:
+- fleet → "fleet" (synonyms: flåde, flotte, flotille, vehicles, køretøjer, fahrzeuge)
+- alerts → "alerts" (synonyms: advarsler, alarmer, warnungen, notifications)
+- routes → "routes" (synonyms: ruter, rutas, routen, paths)
+- shipments → "shipments" (synonyms: forsendelser, sendungen, envíos, leveringer)
+- dashboard → "dashboard" (synonyms: oversigt, instrumentbræt, tablero, armaturenbrett)
+- settings → "settings" (synonyms: indstillinger, konfiguration, ajustes, einstellungen)
+- aioptimization → "aioptimization" (synonyms: ai, optimization, optimering)
+- invoices → "invoices" (synonyms: fakturaer, rechnungen, facturas)
+- apidocs → "apidocs" (synonyms: api, documentation, dokumentation)
+- resources → "resources" (synonyms: ressourcer, ressourcen, recursos, warehouses, ports)
+- warehouseautomation → "warehouseautomation" (synonyms: warehouse, lager, automation)
+- demandforecasting → "demandforecasting" (synonyms: demand, forecast, prognose)
+- greentms → "greentms" (synonyms: green, sustainability, bæredygtighed, co2)
+- gpsintegration → "gpsintegration" (synonyms: gps, tracking, sporing)
+- assignment → "assignment" (synonyms: assignments, tildeling, opgaver, tasks)
+
+NOTE: Do NOT allow opening admin pages (UserManagement, AdminInvoices, AdminMonitor, AdminDashboard)
 
 RULES:
 - ALWAYS respond in the SAME language as the user's command (Danish→Danish, English→English, etc.)
