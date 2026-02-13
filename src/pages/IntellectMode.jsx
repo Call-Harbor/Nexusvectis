@@ -68,22 +68,7 @@ const HologramWindow = React.memo(({ id, title, icon: Icon, children, position, 
   }, [isDragging, handlePointerMove, handlePointerUp, isMobile]);
 
   if (isMinimized) {
-    return (
-      <motion.div
-        initial={{ scale: 0, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0, opacity: 0 }}
-        className="fixed bottom-20 left-4 z-40"
-      >
-        <Button
-          onClick={onMinimize}
-          className="bg-gradient-to-r from-cyan-500/30 to-violet-500/30 border-2 border-cyan-500/50 backdrop-blur-xl hover:from-cyan-500/40 hover:to-violet-500/40 shadow-lg shadow-cyan-500/20 text-xs sm:text-sm"
-        >
-          <Icon className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-cyan-400" />
-          <span className="text-white font-medium">{title}</span>
-        </Button>
-      </motion.div>
-    );
+    return null;
   }
 
   return (
