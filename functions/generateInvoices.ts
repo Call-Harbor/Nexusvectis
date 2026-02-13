@@ -260,10 +260,18 @@ Deno.serve(async (req) => {
                   ` : ''}
                   ${fleetAICommands > 0 ? `
                   <tr>
-                    <td style="padding: 10px; border-bottom: 1px solid #e2e8f0;">FLEET AI Commands (${fleetAICommands} commands)</td>
+                    <td style="padding: 10px; border-bottom: 1px solid #e2e8f0;">FLEET AI IntellectMode (${fleetAICommands} commands)</td>
                     <td style="padding: 10px; text-align: right; border-bottom: 1px solid #e2e8f0;">${Math.ceil(fleetAICommands / 100)}</td>
                     <td style="padding: 10px; text-align: right; border-bottom: 1px solid #e2e8f0;">€${fleetAIPricePer100}</td>
                     <td style="padding: 10px; text-align: right; border-bottom: 1px solid #e2e8f0;">€${fleetAITotal.toFixed(2)}</td>
+                  </tr>
+                  ` : ''}
+                  ${apiCalls > 0 ? `
+                  <tr>
+                    <td style="padding: 10px; border-bottom: 1px solid #e2e8f0;">REST API Calls (${apiCalls} calls)</td>
+                    <td style="padding: 10px; text-align: right; border-bottom: 1px solid #e2e8f0;">${Math.ceil(apiCalls / 100)}</td>
+                    <td style="padding: 10px; text-align: right; border-bottom: 1px solid #e2e8f0;">€${apiPricePer100}</td>
+                    <td style="padding: 10px; text-align: right; border-bottom: 1px solid #e2e8f0;">€${apiTotal.toFixed(2)}</td>
                   </tr>
                   ` : ''}
                 </tbody>
