@@ -363,6 +363,16 @@ export default function IntellectMode() {
           base44.functions.invoke('mistralCommand', payload),
           new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 30000))
         ]);
+
+        // Also log for API usage tracking
+        try {
+          await base44.functions.invoke('fleetAICalculations', {
+            calculation_type: 'FLEET_PERFORMANCE',
+            params: { vehicles, alerts, routes, shipments }
+          });
+        } catch (e) {
+          console.error('Calculation logging failed:', e);
+        }
         
         // Remove streaming placeholder
         setMessages(prev => prev.filter((_, idx) => idx !== streamingMsgIndex));
