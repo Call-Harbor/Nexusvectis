@@ -10,6 +10,7 @@ export default function APIDocumentation() {
   const [showApiKey, setShowApiKey] = useState(false);
 
   const apiEndpoints = [
+    // Fleet AI Calculations
     {
       id: "route-optimization",
       name: "Route Optimization",
@@ -32,6 +33,274 @@ export default function APIDocumentation() {
         total_cost_eur: 432.1,
         co2_kg: 34.14,
         efficiency_score: 78.5,
+      },
+    },
+    // Vehicle Management
+    {
+      id: "track-vehicle",
+      name: "Track Vehicle",
+      method: "POST",
+      endpoint: "/api/v1/track/vehicle",
+      description: "Get real-time location and status of a vehicle",
+      params: {
+        vehicle_id: "SHIP-001",
+        include_history: true,
+        history_hours: 24,
+      },
+      response: {
+        vehicle_id: "SHIP-001",
+        latitude: 55.6761,
+        longitude: 12.5683,
+        status: "active",
+        speed_kmh: 45,
+        fuel_level: 87,
+        eta: "2026-02-14T14:30:00Z",
+        location_history: [],
+      },
+    },
+    {
+      id: "batch-update-vehicles",
+      name: "Batch Update Vehicles",
+      method: "PUT",
+      endpoint: "/api/v1/vehicles/batch",
+      description: "Update multiple vehicles at once",
+      params: {
+        updates: [
+          { vehicle_id: "TRUCK-001", status: "maintenance", fuel_level: 50 },
+          { vehicle_id: "TRUCK-002", status: "active", destination: "Aarhus" },
+        ],
+      },
+      response: {
+        updated_count: 2,
+        success: true,
+        updated_vehicles: [],
+      },
+    },
+    // Shipment Management
+    {
+      id: "create-shipment",
+      name: "Create Shipment",
+      method: "POST",
+      endpoint: "/api/v1/shipments",
+      description: "Create a new shipment",
+      params: {
+        tracking_number: "SHIP-AUTO",
+        origin: "Copenhagen",
+        destination: "Hamburg",
+        cargo_type: "general",
+        weight_kg: 5000,
+        priority: "high",
+      },
+      response: {
+        tracking_number: "SHIP-20260213-001",
+        status: "pending",
+        created_date: "2026-02-13T10:00:00Z",
+        eta: "2026-02-14T16:00:00Z",
+      },
+    },
+    {
+      id: "track-shipment",
+      name: "Track Shipment",
+      method: "GET",
+      endpoint: "/api/v1/shipments/{tracking_number}",
+      description: "Get detailed shipment tracking information",
+      params: {
+        tracking_number: "SHIP-20260213-001",
+      },
+      response: {
+        tracking_number: "SHIP-20260213-001",
+        status: "in_transit",
+        current_location: { lat: 55.6761, lng: 12.5683 },
+        eta: "2026-02-14T16:00:00Z",
+        eta_confidence: 92,
+        temperature: 18,
+        humidity: 65,
+      },
+    },
+    {
+      id: "update-shipment",
+      name: "Update Shipment",
+      method: "PUT",
+      endpoint: "/api/v1/shipments/{tracking_number}",
+      description: "Update shipment status or details",
+      params: {
+        tracking_number: "SHIP-20260213-001",
+        status: "delivered",
+        delivery_date: "2026-02-14",
+      },
+      response: {
+        success: true,
+        tracking_number: "SHIP-20260213-001",
+        status: "delivered",
+      },
+    },
+    // Route Management
+    {
+      id: "plan-route",
+      name: "Plan Route",
+      method: "POST",
+      endpoint: "/api/v1/routes/plan",
+      description: "Plan an optimized route for vehicle transport",
+      params: {
+        origin: "Copenhagen",
+        destination: "Stockholm",
+        vehicle_type: "truck",
+        waypoints: ["Malmö", "Helsingborg"],
+      },
+      response: {
+        route_id: "ROUTE-001",
+        distance_km: 650,
+        duration_hours: 8.5,
+        waypoints: [],
+        co2_estimate: 78,
+      },
+    },
+    {
+      id: "assign-vehicle-to-route",
+      name: "Assign Vehicle to Route",
+      method: "POST",
+      endpoint: "/api/v1/assignments",
+      description: "Assign a vehicle to a specific route",
+      params: {
+        vehicle_id: "TRUCK-001",
+        route_id: "ROUTE-001",
+        driver: "John Doe",
+      },
+      response: {
+        assignment_id: "ASSIGN-001",
+        vehicle_id: "TRUCK-001",
+        route_id: "ROUTE-001",
+        status: "assigned",
+      },
+    },
+    // Analytics & Reporting
+    {
+      id: "fleet-analytics",
+      name: "Fleet Analytics",
+      method: "GET",
+      endpoint: "/api/v1/analytics/fleet",
+      description: "Get comprehensive fleet performance analytics",
+      params: {
+        period_days: 30,
+        include_metrics: ["efficiency", "cost", "emissions"],
+      },
+      response: {
+        period: "30_days",
+        total_vehicles: 45,
+        active_vehicles: 38,
+        total_distance_km: 125000,
+        avg_efficiency: 82,
+        total_fuel_cost: 45000,
+        total_co2_kg: 15000,
+      },
+    },
+    {
+      id: "route-performance",
+      name: "Route Performance",
+      method: "GET",
+      endpoint: "/api/v1/analytics/routes",
+      description: "Analyze performance metrics for routes",
+      params: {
+        period_days: 30,
+        include_delays: true,
+      },
+      response: {
+        total_routes: 120,
+        on_time_percent: 94,
+        avg_delay_minutes: 8.5,
+        cost_per_route: 450,
+        efficiency_score: 85,
+      },
+    },
+    {
+      id: "shipment-metrics",
+      name: "Shipment Metrics",
+      method: "GET",
+      endpoint: "/api/v1/analytics/shipments",
+      description: "Get shipment delivery metrics and KPIs",
+      params: {
+        period_days: 30,
+        status_filter: "delivered",
+      },
+      response: {
+        total_shipments: 850,
+        delivered_on_time: 799,
+        on_time_percent: 94,
+        avg_transit_time_hours: 36,
+        temperature_compliance: 99.5,
+      },
+    },
+    {
+      id: "calculate-kpis",
+      name: "Calculate KPIs",
+      method: "POST",
+      endpoint: "/api/v1/analytics/kpis",
+      description: "Calculate custom KPIs for your logistics operations",
+      params: {
+        metrics: ["on_time_delivery", "cost_per_km", "efficiency", "sustainability"],
+        period_days: 30,
+      },
+      response: {
+        on_time_delivery: 94,
+        cost_per_km: 1.23,
+        efficiency_score: 82,
+        sustainability_score: 78,
+      },
+    },
+    // Alerts & Monitoring
+    {
+      id: "get-alerts",
+      name: "Get Alerts",
+      method: "GET",
+      endpoint: "/api/v1/alerts",
+      description: "Retrieve active alerts and issues",
+      params: {
+        status: "unresolved",
+        category: "all",
+        limit: 50,
+      },
+      response: {
+        alerts: [
+          { id: "ALERT-001", title: "Fuel Low", type: "warning", vehicle_id: "TRUCK-001" },
+        ],
+        total: 5,
+        unresolved: 5,
+      },
+    },
+    {
+      id: "create-alert",
+      name: "Create Alert",
+      method: "POST",
+      endpoint: "/api/v1/alerts",
+      description: "Create a new alert or issue",
+      params: {
+        title: "Emergency Maintenance Required",
+        message: "Vehicle requires immediate attention",
+        type: "critical",
+        vehicle_id: "TRUCK-001",
+      },
+      response: {
+        alert_id: "ALERT-NEW-001",
+        created_date: "2026-02-13T10:00:00Z",
+        status: "open",
+      },
+    },
+    // Data Export
+    {
+      id: "export-data",
+      name: "Export Data",
+      method: "POST",
+      endpoint: "/api/v1/export",
+      description: "Export fleet data in various formats",
+      params: {
+        format: "csv",
+        data_type: "shipments",
+        period_days: 30,
+      },
+      response: {
+        file_url: "https://api.nexusvectis.com/files/export-123.csv",
+        format: "csv",
+        records: 850,
       },
     },
     {
