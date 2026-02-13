@@ -782,7 +782,7 @@ export default function IntellectMode() {
 
       <div className="relative z-10 h-screen flex flex-col">
         {/* Header */}
-        <div className="p-3 sm:p-4 lg:p-6 border-b border-cyan-500/20 backdrop-blur-xl bg-slate-900/20">
+        <div className="p-3 sm:p-4 lg:p-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 max-w-7xl mx-auto">
             <div className="flex items-center gap-2 sm:gap-3 lg:gap-4">
               <div className="p-2 sm:p-2.5 lg:p-3 rounded-xl lg:rounded-2xl bg-gradient-to-br from-cyan-500/30 to-violet-500/30 border-2 border-cyan-500/50 shadow-lg shadow-cyan-500/30 relative overflow-hidden group">
