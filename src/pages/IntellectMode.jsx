@@ -210,8 +210,13 @@ export default function IntellectMode() {
     setIsUploading(true);
     try {
       const uploadPromises = files.map(async (file) => {
-        const { data } = await base44.integrations.Core.UploadFile({ file });
-        return { name: file.name, url: data.file_url, type: file.type };
+        const response = await base44.integrations.Core.UploadFile({ file });
+        const fileUrl = response?.data?.file_url || response?.file_url;
+        if (!fileUrl) {
+          console.error('Invalid upload response:', response);
+          throw new Error('Upload failed - no file URL returned');
+        }
+        return { name: file.name, url: fileUrl, type: file.type };
       });
 
       const newFiles = await Promise.all(uploadPromises);
@@ -223,7 +228,7 @@ export default function IntellectMode() {
       toast.success(`✅ Uploaded ${files.length} file(s) - Ready to send`);
     } catch (error) {
       console.error('Upload error:', error);
-      toast.error('File upload failed');
+      toast.error(`File upload failed: ${error.message}`);
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -267,8 +272,8 @@ export default function IntellectMode() {
 
     while (attempts < maxRetries) {
       try {
-        const userData = await base44.entities.User.filter({ email: currentUser.email });
-        const orgId = userData?.[0]?.organization_id;
+        const user = await base44.auth.me();
+        const orgId = user?.organization_id;
 
         // FLEET AI analyzes ALL commands
         setMessages(prev => [...prev, { role: "system", content: "⚡ FLEET analyzing..." }]);
