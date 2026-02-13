@@ -854,31 +854,32 @@ export default function IntellectMode() {
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Uploaded Files */}
-            {uploadedFiles.length > 0 && (
-              <div className="mb-3 flex flex-wrap gap-2">
-                {uploadedFiles.map((file, idx) => (
-                  <motion.div
-                    key={idx}
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="flex items-center gap-2 px-3 py-2 bg-cyan-500/10 border border-cyan-500/30 rounded-lg text-xs"
-                  >
-                    <FileText className="w-4 h-4 text-cyan-400" />
-                    <span className="text-slate-300">{file.name}</span>
-                    <button
-                      onClick={() => removeFile(idx)}
-                      className="text-slate-400 hover:text-red-400 transition-colors"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </motion.div>
-                ))}
-              </div>
-            )}
-
             {/* Input */}
-            <div className="flex gap-3">
+            <div className="space-y-3">
+              {/* Uploaded Files Preview */}
+              {uploadedFiles.length > 0 && (
+                <div className="flex flex-wrap gap-2 p-3 bg-slate-800/30 rounded-xl border border-cyan-500/20">
+                  {uploadedFiles.map((file, idx) => (
+                    <motion.div
+                      key={idx}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="flex items-center gap-2 px-3 py-2 bg-cyan-500/20 border border-cyan-500/40 rounded-lg"
+                    >
+                      <FileText className="w-4 h-4 text-cyan-400" />
+                      <span className="text-white text-sm font-medium">{file.name}</span>
+                      <button
+                        onClick={() => removeFile(idx)}
+                        className="text-slate-400 hover:text-red-400 transition-colors ml-1"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+
+              <div className="flex gap-3">
               <input
                 type="text"
                 value={input}
@@ -958,6 +959,7 @@ export default function IntellectMode() {
                   <Send className="w-5 h-5" />
                 )}
               </Button>
+              </div>
             </div>
 
             <div className="mt-3 text-xs text-slate-500 text-center">
