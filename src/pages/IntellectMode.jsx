@@ -6,7 +6,8 @@ import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "../utils";
 import { 
   Sparkles, Send, Mic, Brain, Zap, TrendingUp, AlertTriangle, 
-  Truck, Route, Package, Activity, Maximize2, Minimize2, X, LayoutDashboard, Paperclip, FileText 
+  Truck, Route, Package, Activity, Maximize2, Minimize2, X, LayoutDashboard, Paperclip, FileText,
+  Settings, Warehouse, Satellite
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -825,7 +826,18 @@ export default function IntellectMode() {
                   window.type === 'fleet' ? Truck :
                   window.type === 'alerts' ? AlertTriangle :
                   window.type === 'routes' ? Route :
-                  window.type === 'shipments' ? Package : Activity
+                  window.type === 'shipments' ? Package :
+                  window.type === 'dashboard' ? LayoutDashboard :
+                  window.type === 'settings' ? Settings :
+                  window.type === 'aioptimization' ? Sparkles :
+                  window.type === 'invoices' ? FileText :
+                  window.type === 'apidocs' ? FileText :
+                  window.type === 'resources' ? Warehouse :
+                  window.type === 'warehouseautomation' ? Warehouse :
+                  window.type === 'demandforecasting' ? TrendingUp :
+                  window.type === 'greentms' ? Activity :
+                  window.type === 'gpsintegration' ? Satellite :
+                  window.type === 'assignment' ? Route : Activity
                 }
                 position={window.position}
                 onClose={() => closeWindow(window.id)}
