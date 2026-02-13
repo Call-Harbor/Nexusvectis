@@ -15,10 +15,46 @@ import { toast } from "sonner";
 import { MapContainer, TileLayer, Marker, Polyline, Popup } from 'react-leaflet';
 
 const HologramWindow = React.memo(({ id, title, icon: Icon, children, position, onClose, onMinimize, isMinimized }) => {
-  const [isDragging, setIsDragging] = useState(false);
   const [pos, setPos] = useState(position);
   const [size, setSize] = useState({ width: 480, height: 600 });
-  const dragRef = useRef(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const headerRef = useRef(null);
+
+  const handleMouseDown = (e) => {
+    if (e.target === headerRef.current || headerRef.current.contains(e.target)) {
+      const rect = e.currentTarget.getBoundingClientRect();
+      setDragOffset({
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+      });
+      setIsDragging(true);
+    }
+  };
+
+  const handleMouseMove = useCallback((e) => {
+    if (isDragging) {
+      setPos({
+        x: e.clientX - dragOffset.x,
+        y: e.clientY - dragOffset.y
+      });
+    }
+  }, [isDragging, dragOffset]);
+
+  const handleMouseUp = useCallback(() => {
+    setIsDragging(false);
+  }, []);
+
+  useEffect(() => {
+    if (isDragging) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+      return () => {
+        window.removeEventListener('mousemove', handleMouseMove);
+        window.removeEventListener('mouseup', handleMouseUp);
+      };
+    }
+  }, [isDragging, handleMouseMove, handleMouseUp]);
 
   if (isMinimized) {
     return (
@@ -47,13 +83,7 @@ const HologramWindow = React.memo(({ id, title, icon: Icon, children, position, 
       transition={{ type: "spring", damping: 25, stiffness: 300 }}
       style={{ left: pos.x, top: pos.y, width: size.width, height: size.height }}
       className="fixed z-50 resize overflow-auto"
-      drag
-      dragMomentum={false}
-      onDragStart={() => setIsDragging(true)}
-      onDragEnd={(e, info) => {
-        setIsDragging(false);
-        setPos({ x: pos.x + info.offset.x, y: pos.y + info.offset.y });
-      }}
+      onMouseDown={handleMouseDown}
     >
       <div className="bg-slate-900/60 backdrop-blur-2xl rounded-2xl border-2 border-cyan-500/40 shadow-2xl shadow-cyan-500/30 overflow-hidden h-full flex flex-col">
         {/* Enhanced Hologram effect */}
@@ -63,7 +93,7 @@ const HologramWindow = React.memo(({ id, title, icon: Icon, children, position, 
         
         <div className="relative">
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-cyan-500/30 cursor-move bg-slate-900/40">
+          <div ref={headerRef} className="flex items-center justify-between p-4 border-b border-cyan-500/30 cursor-move bg-slate-900/40">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-gradient-to-br from-cyan-500/30 to-violet-500/30 border border-cyan-500/50 shadow-lg shadow-cyan-500/20">
                 <Icon className="w-4 h-4 text-cyan-300" />
