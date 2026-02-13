@@ -29,10 +29,10 @@ const HologramWindow = React.memo(({ id, title, icon: Icon, children, position, 
       >
         <Button
           onClick={onMinimize}
-          className="bg-cyan-500/20 border border-cyan-500/50 backdrop-blur-xl hover:bg-cyan-500/30"
+          className="bg-gradient-to-r from-cyan-500/30 to-violet-500/30 border-2 border-cyan-500/50 backdrop-blur-xl hover:from-cyan-500/40 hover:to-violet-500/40 shadow-lg shadow-cyan-500/20"
         >
-          <Icon className="w-4 h-4 mr-2" />
-          {title}
+          <Icon className="w-4 h-4 mr-2 text-cyan-400" />
+          <span className="text-white font-medium">{title}</span>
         </Button>
       </motion.div>
     );
@@ -40,9 +40,10 @@ const HologramWindow = React.memo(({ id, title, icon: Icon, children, position, 
 
   return (
     <motion.div
-      initial={{ scale: 0.8, opacity: 0, y: 50 }}
+      initial={{ scale: 0.9, opacity: 0, y: 20 }}
       animate={{ scale: 1, opacity: 1, y: 0 }}
-      exit={{ scale: 0.8, opacity: 0, y: 50 }}
+      exit={{ scale: 0.9, opacity: 0, y: 20 }}
+      transition={{ type: "spring", damping: 25, stiffness: 300 }}
       style={{ left: pos.x, top: pos.y }}
       className="fixed z-50 w-96"
       drag
@@ -53,26 +54,27 @@ const HologramWindow = React.memo(({ id, title, icon: Icon, children, position, 
         setPos({ x: pos.x + info.offset.x, y: pos.y + info.offset.y });
       }}
     >
-      <div className="bg-slate-900/40 backdrop-blur-2xl rounded-2xl border-2 border-cyan-500/30 shadow-2xl shadow-cyan-500/20 overflow-hidden">
-        {/* Hologram effect border */}
+      <div className="bg-slate-900/60 backdrop-blur-2xl rounded-2xl border-2 border-cyan-500/40 shadow-2xl shadow-cyan-500/30 overflow-hidden">
+        {/* Enhanced Hologram effect */}
         <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-cyan-500/20 via-transparent to-violet-500/20 pointer-events-none" />
-        <div className="absolute inset-0 rounded-2xl animate-pulse bg-gradient-to-r from-transparent via-cyan-500/10 to-transparent pointer-events-none" />
+        <div className="absolute inset-0 rounded-2xl animate-pulse bg-gradient-to-r from-transparent via-cyan-500/15 to-transparent pointer-events-none" style={{ animationDuration: '3s' }} />
+        <div className="absolute inset-0 rounded-2xl bg-[radial-gradient(circle_at_50%_0%,rgba(6,182,212,0.15),transparent_50%)] pointer-events-none" />
         
         <div className="relative">
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-cyan-500/30 cursor-move">
-            <div className="flex items-center gap-2">
-              <div className="p-2 rounded-lg bg-cyan-500/20 border border-cyan-500/40">
-                <Icon className="w-4 h-4 text-cyan-400" />
+          <div className="flex items-center justify-between p-4 border-b border-cyan-500/30 cursor-move bg-slate-900/40">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-gradient-to-br from-cyan-500/30 to-violet-500/30 border border-cyan-500/50 shadow-lg shadow-cyan-500/20">
+                <Icon className="w-4 h-4 text-cyan-300" />
               </div>
-              <span className="text-white font-semibold">{title}</span>
+              <span className="text-white font-semibold tracking-wide">{title}</span>
             </div>
             <div className="flex gap-2">
               <Button
                 size="icon"
                 variant="ghost"
                 onClick={onMinimize}
-                className="h-8 w-8 text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/20"
+                className="h-8 w-8 text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/20 transition-all"
               >
                 <Minimize2 className="w-4 h-4" />
               </Button>
@@ -80,7 +82,7 @@ const HologramWindow = React.memo(({ id, title, icon: Icon, children, position, 
                 size="icon"
                 variant="ghost"
                 onClick={onClose}
-                className="h-8 w-8 text-red-400 hover:text-red-300 hover:bg-red-500/20"
+                className="h-8 w-8 text-red-400 hover:text-red-300 hover:bg-red-500/20 transition-all"
               >
                 <X className="w-4 h-4" />
               </Button>
@@ -88,7 +90,7 @@ const HologramWindow = React.memo(({ id, title, icon: Icon, children, position, 
           </div>
           
           {/* Content */}
-          <div className="p-4">
+          <div className="p-4 max-h-[600px] overflow-y-auto">
             {children}
           </div>
         </div>
@@ -100,8 +102,17 @@ const HologramWindow = React.memo(({ id, title, icon: Icon, children, position, 
 export default function IntellectMode() {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([
-    { role: "system", content: "⚡ FLEET AI online. Specialized logistics intelligence ready. Command me to open windows, create routes, manage fleet operations, or answer strategic questions." }
+    { role: "system", content: "⚡ FLEET AI online. Specialized logistics intelligence ready. Command me to open windows, create routes, manage fleet operations, analyze files, or answer strategic questions." }
   ]);
+
+  const quickCommands = [
+    { icon: Globe, label: "Open Dashboard", command: "åbn dashboard", color: "cyan" },
+    { icon: Truck, label: "Show Fleet Status", command: "vis flåde status", color: "violet" },
+    { icon: Route, label: "Open Route Editor", command: "åbn route editor", color: "emerald" },
+    { icon: AlertTriangle, label: "Check Alerts", command: "vis advarsler", color: "amber" },
+    { icon: Sparkles, label: "AI Optimization", command: "åbn ai optimization", color: "cyan" },
+    { icon: Package, label: "Track Shipments", command: "vis forsendelser", color: "blue" },
+  ];
   const [isProcessing, setIsProcessing] = useState(false);
   const [activeWindows, setActiveWindows] = useState([]);
   const [minimizedWindows, setMinimizedWindows] = useState(new Set());
@@ -112,6 +123,7 @@ export default function IntellectMode() {
   const [streamingMessage, setStreamingMessage] = useState("");
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(true);
   const messagesEndRef = useRef(null);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -902,8 +914,49 @@ export default function IntellectMode() {
         </div>
 
         {/* Command Interface */}
-        <div className="p-6 border-t border-cyan-500/20 backdrop-blur-xl bg-slate-900/40">
+        <div className="p-6 border-t border-cyan-500/20 backdrop-blur-xl bg-slate-900/60">
           <div className="max-w-4xl mx-auto">
+            {/* Quick Commands */}
+            {showSuggestions && messages.length <= 1 && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-4 grid grid-cols-2 sm:grid-cols-3 gap-2"
+              >
+                {quickCommands.map((cmd, idx) => (
+                  <motion.button
+                    key={idx}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: idx * 0.05 }}
+                    onClick={() => {
+                      setInput(cmd.command);
+                      setShowSuggestions(false);
+                    }}
+                    className={`p-3 rounded-xl border-2 backdrop-blur-xl transition-all text-left hover:scale-105 ${
+                      cmd.color === 'cyan' ? 'bg-cyan-500/10 border-cyan-500/30 hover:bg-cyan-500/20 hover:border-cyan-500/50' :
+                      cmd.color === 'violet' ? 'bg-violet-500/10 border-violet-500/30 hover:bg-violet-500/20 hover:border-violet-500/50' :
+                      cmd.color === 'emerald' ? 'bg-emerald-500/10 border-emerald-500/30 hover:bg-emerald-500/20 hover:border-emerald-500/50' :
+                      cmd.color === 'amber' ? 'bg-amber-500/10 border-amber-500/30 hover:bg-amber-500/20 hover:border-amber-500/50' :
+                      'bg-blue-500/10 border-blue-500/30 hover:bg-blue-500/20 hover:border-blue-500/50'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 mb-1">
+                      <cmd.icon className={`w-4 h-4 ${
+                        cmd.color === 'cyan' ? 'text-cyan-400' :
+                        cmd.color === 'violet' ? 'text-violet-400' :
+                        cmd.color === 'emerald' ? 'text-emerald-400' :
+                        cmd.color === 'amber' ? 'text-amber-400' :
+                        'text-blue-400'
+                      }`} />
+                      <span className="text-white text-xs font-semibold">{cmd.label}</span>
+                    </div>
+                    <p className="text-[10px] text-slate-400">"{cmd.command}"</p>
+                  </motion.button>
+                ))}
+              </motion.div>
+            )}
+
             {/* Messages */}
             <div className="mb-4 max-h-48 overflow-y-auto space-y-2">
               {messages.slice(-5).map((msg, idx) => (
@@ -913,13 +966,13 @@ export default function IntellectMode() {
                   animate={{ opacity: 1, x: 0 }}
                   className="space-y-1"
                 >
-                  <div className={`text-sm ${
-                    msg.role === 'user' ? 'text-cyan-400' :
-                    msg.role === 'system' ? 'text-emerald-400' :
-                    'text-slate-300'
+                  <div className={`text-sm p-3 rounded-lg backdrop-blur-xl ${
+                    msg.role === 'user' ? 'bg-cyan-500/10 border border-cyan-500/20 text-cyan-300' :
+                    msg.role === 'system' ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-300' :
+                    'bg-slate-800/50 border border-slate-700/50 text-slate-200'
                   }`}>
-                    <span className="font-semibold">
-                      {msg.role === 'user' ? '> ' : msg.role === 'system' ? '⚡ ' : '🧠 '}
+                    <span className="font-semibold mr-1">
+                      {msg.role === 'user' ? '>' : msg.role === 'system' ? '⚡' : '🧠'}
                     </span>
                     {msg.streaming ? (
                       <span className="animate-pulse">{msg.content || 'Thinking...'}</span>
@@ -943,11 +996,11 @@ export default function IntellectMode() {
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  className="text-sm text-slate-300"
+                  className="text-sm p-3 rounded-lg bg-violet-500/10 border border-violet-500/20 text-violet-300"
                 >
-                  <span className="font-semibold">🧠 </span>
+                  <span className="font-semibold mr-1">🧠</span>
                   <span>{streamingMessage}</span>
-                  <span className="animate-pulse">▊</span>
+                  <span className="animate-pulse ml-1">▊</span>
                 </motion.div>
               )}
               <div ref={messagesEndRef} />
@@ -955,19 +1008,21 @@ export default function IntellectMode() {
 
             {/* Input */}
             <div className="space-y-3">
-              {/* Uploaded Files Preview - Always visible when files exist */}
+              {/* Uploaded Files Preview */}
               <AnimatePresence>
                 {uploadedFiles.length > 0 && (
                   <motion.div
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
-                    className="p-4 bg-gradient-to-r from-cyan-500/10 to-violet-500/10 rounded-2xl border-2 border-cyan-500/30"
+                    className="p-4 bg-gradient-to-r from-cyan-500/20 to-violet-500/20 rounded-2xl border-2 border-cyan-500/40 backdrop-blur-xl shadow-lg shadow-cyan-500/10"
                   >
                     <div className="flex items-center gap-2 mb-3">
-                      <Paperclip className="w-4 h-4 text-cyan-400" />
-                      <span className="text-cyan-400 text-sm font-semibold">
-                        {uploadedFiles.length} file(s) attached - Will be sent with your command
+                      <div className="p-1.5 rounded-lg bg-cyan-500/30">
+                        <Paperclip className="w-4 h-4 text-cyan-300" />
+                      </div>
+                      <span className="text-cyan-300 text-sm font-semibold">
+                        {uploadedFiles.length} fil(er) vedhæftet • Sendes med din kommando
                       </span>
                     </div>
                     <div className="flex flex-wrap gap-2">
@@ -976,15 +1031,16 @@ export default function IntellectMode() {
                           key={idx}
                           initial={{ opacity: 0, scale: 0.8 }}
                           animate={{ opacity: 1, scale: 1 }}
-                          className="flex items-center gap-2 px-3 py-2 bg-cyan-500/30 border-2 border-cyan-500/50 rounded-lg shadow-lg"
+                          whileHover={{ scale: 1.05 }}
+                          className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-cyan-500/40 to-violet-500/40 border-2 border-cyan-500/60 rounded-xl shadow-lg backdrop-blur-xl"
                         >
-                          <FileText className="w-5 h-5 text-cyan-300" />
-                          <span className="text-white text-sm font-medium">{file.name}</span>
+                          <FileText className="w-4 h-4 text-cyan-200" />
+                          <span className="text-white text-xs font-medium max-w-[150px] truncate">{file.name}</span>
                           <button
                             onClick={() => removeFile(idx)}
-                            className="text-slate-300 hover:text-red-400 transition-colors ml-2"
+                            className="text-slate-300 hover:text-red-300 transition-colors ml-1 p-1 hover:bg-red-500/20 rounded"
                           >
-                            <X className="w-5 h-5" />
+                            <X className="w-4 h-4" />
                           </button>
                         </motion.div>
                       ))}
@@ -997,9 +1053,13 @@ export default function IntellectMode() {
               <input
                 type="text"
                 value={input}
-                onChange={(e) => setInput(e.target.value)}
+                onChange={(e) => {
+                  setInput(e.target.value);
+                  if (e.target.value) setShowSuggestions(false);
+                }}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
                     processCommand();
                   } else if (e.key === 'ArrowUp' && commandHistory.length > 0) {
                     e.preventDefault();
@@ -1013,9 +1073,9 @@ export default function IntellectMode() {
                     setInput(commandHistory[commandHistory.length - 1 - newIndex] || '');
                   }
                 }}
-                placeholder="Enter command (e.g., 'open fleet', 'show alerts', 'create route from Copenhagen to Berlin')..."
+                placeholder="Indtast kommando... (f.eks. 'åbn flåde', 'vis advarsler', 'analyser vedhæftede filer')"
                 disabled={isProcessing}
-                className="flex-1 px-6 py-4 bg-slate-900/50 border-2 border-cyan-500/30 rounded-2xl text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-500 backdrop-blur-xl"
+                className="flex-1 px-6 py-4 bg-slate-900/60 border-2 border-cyan-500/40 rounded-2xl text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-400 focus:shadow-lg focus:shadow-cyan-500/20 backdrop-blur-xl transition-all"
               />
               <input
                 ref={fileInputRef}
@@ -1028,19 +1088,19 @@ export default function IntellectMode() {
               <Button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isProcessing || isUploading}
-                className={`px-6 border-2 rounded-2xl transition-all ${
+                className={`px-6 border-2 rounded-2xl transition-all shadow-lg ${
                   isUploading 
-                    ? 'bg-cyan-500/30 border-cyan-500/60 animate-pulse' 
-                    : 'bg-cyan-500/20 hover:bg-cyan-500/30 border-cyan-500/40'
+                    ? 'bg-gradient-to-r from-cyan-500/40 to-violet-500/40 border-cyan-500/60 animate-pulse shadow-cyan-500/30' 
+                    : 'bg-gradient-to-r from-cyan-500/20 to-violet-500/20 hover:from-cyan-500/30 hover:to-violet-500/30 border-cyan-500/40 hover:border-cyan-500/60 shadow-cyan-500/20'
                 }`}
               >
                 {isUploading ? (
                   <div className="flex items-center gap-2">
-                    <Sparkles className="w-5 h-5 animate-spin text-cyan-400" />
-                    <span className="text-xs text-cyan-400">Uploading...</span>
+                    <Sparkles className="w-5 h-5 animate-spin text-cyan-300" />
+                    <span className="text-xs text-cyan-300">Uploader...</span>
                   </div>
                 ) : (
-                  <Paperclip className="w-5 h-5 text-cyan-400" />
+                  <Paperclip className="w-5 h-5 text-cyan-300" />
                 )}
               </Button>
               <Button
@@ -1076,20 +1136,26 @@ export default function IntellectMode() {
               <Button
                 onClick={processCommand}
                 disabled={isProcessing || !input.trim()}
-                className="px-8 bg-gradient-to-r from-cyan-500 to-violet-500 hover:from-cyan-600 hover:to-violet-600 rounded-2xl"
+                className="px-8 bg-gradient-to-r from-cyan-500 to-violet-500 hover:from-cyan-600 hover:to-violet-600 rounded-2xl shadow-lg shadow-cyan-500/30 hover:shadow-xl hover:shadow-cyan-500/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isProcessing ? (
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <div className="flex items-center gap-2">
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  </div>
                 ) : (
                   <Send className="w-5 h-5" />
                 )}
               </Button>
               </div>
-            </div>
+              </div>
 
-            <div className="mt-3 text-xs text-slate-500 text-center">
-              Examples: "create ship route from Copenhagen to London" • "set all vehicles to maintenance" • "how many shipments are delayed?" • "create 3 trucks with high fuel"
-            </div>
+              <div className="mt-3 flex items-center justify-between text-xs text-slate-500">
+              <div className="flex items-center gap-2">
+                <Zap className="w-3 h-3 text-cyan-500" />
+                <span>Tryk Enter for at sende • ↑↓ for historik</span>
+              </div>
+              <span className="text-slate-600">{uploadedFiles.length > 0 ? `${uploadedFiles.length} fil(er) klar` : 'Vedhæft filer for AI analyse'}</span>
+              </div>
           </div>
         </div>
       </div>
