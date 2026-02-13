@@ -128,8 +128,21 @@ EXAMPLES:
     let result;
     
     if (file_urls && file_urls.length > 0) {
+      console.log('🖼️ Processing with files, using InvokeLLM');
+      
+      const enhancedPrompt = `${systemPrompt}
+
+USER COMMAND: "${command}"
+
+IMPORTANT: YOU HAVE ${file_urls.length} FILE(S) ATTACHED RIGHT NOW. 
+The files are ALREADY provided to you through file_urls parameter.
+DO NOT say files are missing - analyze the attached files and describe what you see.
+Extract any relevant data (text, numbers, vehicle info, damage assessment, etc.) and incorporate it into your response.
+
+Context data: ${JSON.stringify(context)}`;
+
       const llmResponse = await base44.integrations.Core.InvokeLLM({
-        prompt: `${systemPrompt}\n\nUser command: "${command}"\n\nContext: ${JSON.stringify(context)}`,
+        prompt: enhancedPrompt,
         file_urls: file_urls,
         add_context_from_internet: false,
         response_json_schema: {
@@ -143,6 +156,8 @@ EXAMPLES:
           required: ['action', 'message']
         }
       });
+      
+      console.log('✅ InvokeLLM response received');
       result = llmResponse;
     } else {
       // Use direct Mistral API for text-only commands
