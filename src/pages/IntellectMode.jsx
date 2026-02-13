@@ -450,6 +450,22 @@ export default function IntellectMode() {
           if (open_window) openWindow(open_window);
           break;
 
+        case "UPDATE_ROUTE":
+          if (parameters.route_name) {
+            const route = routes.find(r => 
+              r.name.toLowerCase().includes(parameters.route_name.toLowerCase())
+            );
+            if (route) {
+              await base44.entities.Route.update(route.id, parameters.updates);
+              queryClient.invalidateQueries({ queryKey: ['routes-intellect'] });
+              setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
+            } else {
+              setMessages(prev => [...prev, { role: "system", content: `❌ Route not found: ${parameters.route_name}` }]);
+            }
+          }
+          if (open_window) openWindow(open_window);
+          break;
+
         case "UPDATE_ROUTES":
           if (parameters.update_all) {
             const targetRoutes = routes.filter(r => 
