@@ -104,6 +104,10 @@ export default function IntellectMode() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [activeWindows, setActiveWindows] = useState([]);
   const [minimizedWindows, setMinimizedWindows] = useState(new Set());
+  const [commandHistory, setCommandHistory] = useState([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
+  const [isListening, setIsListening] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
   const messagesEndRef = useRef(null);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -189,32 +193,52 @@ export default function IntellectMode() {
   const processCommand = async () => {
     if (!input.trim() || isProcessing) return;
 
-    setMessages(prev => [...prev, { role: "user", content: input }]);
+    const currentCommand = input;
+    
+    // Save to history
+    setCommandHistory(prev => [...prev, currentCommand]);
+    setHistoryIndex(-1);
+
+    // Track analytics
+    base44.analytics.track({
+      eventName: "fleet_ai_command_sent",
+      properties: { command_length: currentCommand.length }
+    });
+
+    setMessages(prev => [...prev, { role: "user", content: currentCommand }]);
     setInput("");
     setIsProcessing(true);
 
-    try {
-      const userData = await base44.entities.User.filter({ email: currentUser.email });
-      const orgId = userData?.[0]?.organization_id;
+    const maxRetries = 3;
+    let attempts = 0;
 
-      // FLEET AI analyzes ALL commands
-      setMessages(prev => [...prev, { role: "system", content: "⚡ FLEET analyzing..." }]);
-      
-      const mistralResponse = await base44.functions.invoke('mistralCommand', {
-        command: input,
-        context: {
-          vehicles_count: vehicles.length,
-          alerts_count: alerts.length,
-          routes_count: routes.length,
-          shipments_count: shipments.length,
-          vehicles: vehicles.slice(0, 3).map(v => ({ name: v.name, type: v.type, status: v.status })),
-          alerts: alerts.slice(0, 3).map(a => ({ title: a.title, type: a.type })),
-          routes: routes.slice(0, 3).map(r => ({ name: r.name, status: r.status })),
-          shipments: shipments.slice(0, 3).map(s => ({ tracking_number: s.tracking_number, status: s.status }))
-        }
-      });
+    while (attempts < maxRetries) {
+      try {
+        const userData = await base44.entities.User.filter({ email: currentUser.email });
+        const orgId = userData?.[0]?.organization_id;
 
-      const { action, parameters, message, open_window } = mistralResponse.data;
+        // FLEET AI analyzes ALL commands
+        setMessages(prev => [...prev, { role: "system", content: "⚡ FLEET analyzing..." }]);
+        
+        const mistralResponse = await Promise.race([
+          base44.functions.invoke('mistralCommand', {
+            command: currentCommand,
+            context: {
+              vehicles_count: vehicles.length,
+              alerts_count: alerts.length,
+              routes_count: routes.length,
+              shipments_count: shipments.length,
+              vehicles: vehicles.slice(0, 3).map(v => ({ name: v.name, type: v.type, status: v.status })),
+              alerts: alerts.slice(0, 3).map(a => ({ title: a.title, type: a.type })),
+              routes: routes.slice(0, 3).map(r => ({ name: r.name, status: r.status })),
+              shipments: shipments.slice(0, 3).map(s => ({ tracking_number: s.tracking_number, status: s.status }))
+            }
+          }),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 30000))
+        ]);
+
+        const { action, parameters, message, open_window } = mistralResponse.data;
+        setRetryCount(0);
 
       // Udfør handlingen
       switch (action) {
@@ -412,20 +436,52 @@ export default function IntellectMode() {
         case "ANSWER":
           setMessages(prev => [...prev, { role: "assistant", content: message }]);
           if (open_window) openWindow(open_window);
+          
+          base44.analytics.track({
+            eventName: "fleet_ai_query_answered",
+            properties: { action }
+          });
           break;
 
         default:
-          setMessages(prev => [...prev, { role: "assistant", content: message || "Kommando udført." }]);
+          setMessages(prev => [...prev, { role: "assistant", content: message || "Command executed." }]);
           if (open_window) openWindow(open_window);
           break;
       }
 
-    } catch (error) {
-      console.error('Command error:', error);
-      setMessages(prev => [...prev, { role: "system", content: `❌ Fejl: ${error.message}` }]);
-    } finally {
-      setIsProcessing(false);
+      // Track successful command
+      base44.analytics.track({
+        eventName: "fleet_ai_command_success",
+        properties: { action, command: currentCommand }
+      });
+
+        break;
+      } catch (error) {
+        attempts++;
+        console.error(`Command error (attempt ${attempts}/${maxRetries}):`, error);
+        
+        if (attempts >= maxRetries) {
+          setMessages(prev => [...prev, { 
+            role: "system", 
+            content: `❌ Error: ${error.message}. Please try again or rephrase your command.` 
+          }]);
+          
+          base44.analytics.track({
+            eventName: "fleet_ai_command_failed",
+            properties: { error: error.message, attempts }
+          });
+          break;
+        } else {
+          setMessages(prev => [...prev, { 
+            role: "system", 
+            content: `⚠️ Retrying (${attempts}/${maxRetries})...` 
+          }]);
+          await new Promise(resolve => setTimeout(resolve, 1000 * attempts));
+        }
+      }
     }
+    
+    setIsProcessing(false);
   };
 
   const renderWindowContent = (type) => {
@@ -446,7 +502,7 @@ export default function IntellectMode() {
                   </Badge>
                 </div>
                 <div className="text-xs text-slate-400">
-                  {vehicle.type} • {vehicle.fuel_level}% brændstof
+                  {vehicle.type} • {vehicle.fuel_level}% fuel
                 </div>
               </div>
             ))}
@@ -709,11 +765,55 @@ export default function IntellectMode() {
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && processCommand()}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    processCommand();
+                  } else if (e.key === 'ArrowUp' && commandHistory.length > 0) {
+                    e.preventDefault();
+                    const newIndex = historyIndex < commandHistory.length - 1 ? historyIndex + 1 : historyIndex;
+                    setHistoryIndex(newIndex);
+                    setInput(commandHistory[commandHistory.length - 1 - newIndex] || '');
+                  } else if (e.key === 'ArrowDown' && historyIndex > 0) {
+                    e.preventDefault();
+                    const newIndex = historyIndex - 1;
+                    setHistoryIndex(newIndex);
+                    setInput(commandHistory[commandHistory.length - 1 - newIndex] || '');
+                  }
+                }}
                 placeholder="Enter command (e.g., 'open fleet', 'show alerts', 'create route from Copenhagen to Berlin')..."
                 disabled={isProcessing}
                 className="flex-1 px-6 py-4 bg-slate-900/50 border-2 border-cyan-500/30 rounded-2xl text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-500 backdrop-blur-xl"
               />
+              <Button
+                onClick={async () => {
+                  if (!('webkitSpeechRecognition' in window)) {
+                    toast.error('Voice input not supported in this browser');
+                    return;
+                  }
+                  
+                  const recognition = new (window as any).webkitSpeechRecognition();
+                  recognition.lang = 'en-US';
+                  recognition.continuous = false;
+                  recognition.interimResults = false;
+                  
+                  recognition.onstart = () => setIsListening(true);
+                  recognition.onend = () => setIsListening(false);
+                  recognition.onresult = (event: any) => {
+                    const transcript = event.results[0][0].transcript;
+                    setInput(transcript);
+                  };
+                  recognition.onerror = () => {
+                    toast.error('Voice input failed');
+                    setIsListening(false);
+                  };
+                  
+                  recognition.start();
+                }}
+                disabled={isProcessing}
+                className={`px-6 ${isListening ? 'bg-red-500 hover:bg-red-600' : 'bg-slate-800 hover:bg-slate-700'} rounded-2xl`}
+              >
+                <Mic className="w-5 h-5" />
+              </Button>
               <Button
                 onClick={processCommand}
                 disabled={isProcessing || !input.trim()}

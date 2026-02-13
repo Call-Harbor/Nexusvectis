@@ -1,5 +1,10 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
+// Simple rate limiting
+const rateLimitMap = new Map();
+const RATE_LIMIT = 30; // max 30 requests per minute
+const RATE_WINDOW = 60000; // 1 minute
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -9,7 +14,27 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Rate limiting
+    const userId = user.id;
+    const now = Date.now();
+    const userRequests = rateLimitMap.get(userId) || [];
+    const recentRequests = userRequests.filter((time: number) => now - time < RATE_WINDOW);
+    
+    if (recentRequests.length >= RATE_LIMIT) {
+      return Response.json({ 
+        error: 'Rate limit exceeded. Please wait before sending more commands.' 
+      }, { status: 429 });
+    }
+    
+    recentRequests.push(now);
+    rateLimitMap.set(userId, recentRequests);
+
     const { command, context } = await req.json();
+    
+    // Input validation
+    if (!command || typeof command !== 'string' || command.length > 1000) {
+      return Response.json({ error: 'Invalid command format' }, { status: 400 });
+    }
     
     const mistralApiKey = Deno.env.get("MISTRAL_API_KEY");
     if (!mistralApiKey) {
@@ -63,8 +88,8 @@ OUTPUT FORMAT (JSON):
 {
   "action": "ACTION_NAME",
   "parameters": {...},
-  "message": "Kort besked til bruger",
-  "open_window": "window_type" (kun hvis OPEN_WINDOW)
+  "message": "Brief message to user",
+  "open_window": "window_type" (only if OPEN_WINDOW)
 }`;
 
     const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
@@ -86,14 +111,38 @@ OUTPUT FORMAT (JSON):
 
     if (!response.ok) {
       const error = await response.text();
-      return Response.json({ error: `Mistral API error: ${error}` }, { status: 500 });
+      console.error('Mistral API error:', error);
+      
+      // Fallback response
+      return Response.json({
+        action: 'ANSWER',
+        parameters: {},
+        message: 'AI temporarily unavailable. Please try again in a moment.',
+        open_window: null
+      });
     }
 
     const data = await response.json();
+    
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      throw new Error('Invalid response from Mistral API');
+    }
+    
     const result = JSON.parse(data.choices[0].message.content);
+
+    // Validate response structure
+    if (!result.action || !result.message) {
+      throw new Error('Invalid AI response format');
+    }
 
     return Response.json(result);
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    console.error('Command processing error:', error);
+    return Response.json({ 
+      action: 'ANSWER',
+      parameters: {},
+      message: `Error: ${error.message}. Please rephrase your command.`,
+      open_window: null
+    }, { status: 200 }); // Return 200 to avoid retry loops
   }
 });
