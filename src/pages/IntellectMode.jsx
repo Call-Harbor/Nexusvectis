@@ -642,32 +642,52 @@ export default function IntellectMode() {
   }), [vehicles, alerts, routes, shipments]);
 
   const renderWindowContent = useCallback((type) => {
-    const pageMap = {
-      'dashboard': 'Dashboard',
-      'settings': 'Settings',
-      'aioptimization': 'AIOptimization',
-      'invoices': 'Invoices',
-      'apidocs': 'APIDocumentation',
-      'resources': 'Resources',
-      'warehouseautomation': 'WarehouseAutomation',
-      'demandforecasting': 'DemandForecasting',
-      'greentms': 'GreenTMS',
-      'gpsintegration': 'GPSIntegration',
-      'assignment': 'Assignment',
-      'routeeditor': 'Routes',
-      'fleet': 'Fleet',
-      'alerts': 'Alerts',
-      'routes': 'Routes',
-      'shipments': 'Shipments'
-    };
-    
-    return (
-      <iframe 
-        src={`${createPageUrl(pageMap[type])}?hologram=true`}
-        className="w-full h-full border-0"
-        title={pageMap[type]}
-      />
-    );
+    // For full page iframes
+    if (['dashboard', 'settings', 'aioptimization', 'invoices', 'apidocs', 'resources', 
+         'warehouseautomation', 'demandforecasting', 'greentms', 'gpsintegration', 'assignment', 'routeeditor'].includes(type)) {
+      const pageMap = {
+        'dashboard': 'Dashboard',
+        'settings': 'Settings',
+        'aioptimization': 'AIOptimization',
+        'invoices': 'Invoices',
+        'apidocs': 'APIDocumentation',
+        'resources': 'Resources',
+        'warehouseautomation': 'WarehouseAutomation',
+        'demandforecasting': 'DemandForecasting',
+        'greentms': 'GreenTMS',
+        'gpsintegration': 'GPSIntegration',
+        'assignment': 'Assignment',
+        'routeeditor': 'Routes'
+      };
+      
+      return (
+        <iframe 
+          src={`${createPageUrl(pageMap[type])}?hologram=true`}
+          className="w-full h-full border-0"
+          title={pageMap[type]}
+        />
+      );
+    }
+
+    // For fleet/alerts/routes/shipments - open as full page iframes
+    if (['fleet', 'alerts', 'routes', 'shipments'].includes(type)) {
+      const pageMap = {
+        'fleet': 'Fleet',
+        'alerts': 'Alerts',
+        'routes': 'Routes',
+        'shipments': 'Shipments'
+      };
+      
+      return (
+        <iframe 
+          src={`${createPageUrl(pageMap[type])}?hologram=true`}
+          className="w-full h-full border-0"
+          title={pageMap[type]}
+        />
+      );
+    }
+
+    return null;
   }, []);
 
   return (
