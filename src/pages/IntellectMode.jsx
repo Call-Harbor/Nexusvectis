@@ -91,7 +91,7 @@ const HologramWindow = React.memo(({ id, title, icon: Icon, children, position, 
         <div className="absolute inset-0 rounded-2xl animate-pulse bg-gradient-to-r from-transparent via-cyan-500/15 to-transparent pointer-events-none" style={{ animationDuration: '3s' }} />
         <div className="absolute inset-0 rounded-2xl bg-[radial-gradient(circle_at_50%_0%,rgba(6,182,212,0.15),transparent_50%)] pointer-events-none" />
         
-        <div className="relative">
+        <div className="relative flex flex-col h-full">
           {/* Header */}
           <div ref={headerRef} className="flex items-center justify-between p-4 border-b border-cyan-500/30 cursor-move bg-slate-900/40">
             <div className="flex items-center gap-3">
@@ -121,7 +121,7 @@ const HologramWindow = React.memo(({ id, title, icon: Icon, children, position, 
           </div>
           
           {/* Content */}
-          <div className="flex-1 overflow-hidden">
+          <div className="flex-1 overflow-hidden min-h-0">
             {children}
           </div>
         </div>
