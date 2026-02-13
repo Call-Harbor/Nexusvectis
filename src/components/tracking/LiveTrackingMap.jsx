@@ -264,28 +264,28 @@ export default function LiveTrackingMap({
       }`}
     >
       {/* Top Controls */}
-      <div className="absolute top-4 left-4 z-[1000] flex items-center gap-3">
-        <div className="px-4 py-2 rounded-xl bg-slate-900/90 backdrop-blur-xl border border-slate-700/50">
-          <div className="flex items-center gap-3">
-            <Satellite className="w-4 h-4 text-cyan-400" />
-            <span className="text-sm font-medium text-white">Live Tracking</span>
+      <div className="absolute top-2 sm:top-4 left-2 sm:left-4 z-[1000] flex items-center gap-2 sm:gap-3">
+        <div className="px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl bg-slate-900/90 backdrop-blur-xl border border-slate-700/50">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Satellite className="w-3 h-3 sm:w-4 sm:h-4 text-cyan-400" />
+            <span className="text-xs sm:text-sm font-medium text-white hidden sm:inline">Live Tracking</span>
             <div className="flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-xs text-emerald-400">LIVE</span>
+              <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="text-[10px] sm:text-xs text-emerald-400">LIVE</span>
             </div>
-            <div className="h-4 w-px bg-slate-700" />
-            <span className="text-xs text-slate-400">{validVehicles.length} units</span>
+            <div className="h-3 sm:h-4 w-px bg-slate-700" />
+            <span className="text-[10px] sm:text-xs text-slate-400">{validVehicles.length}</span>
           </div>
         </div>
       </div>
 
       {/* Right Controls */}
-      <div className="absolute top-4 right-4 z-[1000] flex items-center gap-2">
+      <div className="absolute top-2 sm:top-4 right-2 sm:right-4 z-[1000] flex items-center gap-1 sm:gap-2">
         {aiMode && (
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="px-3 py-2 rounded-lg bg-gradient-to-r from-violet-500/20 to-cyan-500/20 border border-violet-500/30 backdrop-blur-md"
+            className="px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg bg-gradient-to-r from-violet-500/20 to-cyan-500/20 border border-violet-500/30 backdrop-blur-md hidden sm:flex"
           >
             <div className="flex items-center gap-2 text-xs text-white">
               <div className="w-2 h-2 rounded-full bg-violet-400 animate-pulse" />
@@ -299,10 +299,10 @@ export default function LiveTrackingMap({
             <Button
               size="sm"
               variant="outline"
-              className="bg-slate-900/90 border-slate-700/50 text-white hover:bg-slate-800"
+              className="bg-slate-900/90 border-slate-700/50 text-white hover:bg-slate-800 h-8 px-2 sm:px-3"
             >
-              <Layers className="w-4 h-4 mr-2" />
-              Layers
+              <Layers className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Layers</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="bg-slate-900 border-slate-700 text-white">
@@ -358,26 +358,26 @@ export default function LiveTrackingMap({
         <Button
           size="sm"
           variant="outline"
-          className={`bg-slate-900/90 border-slate-700/50 text-white hover:bg-slate-800 ${followMode ? 'bg-cyan-500/20 border-cyan-500/50' : ''}`}
+          className={`bg-slate-900/90 border-slate-700/50 text-white hover:bg-slate-800 h-8 w-8 sm:w-auto sm:px-3 p-0 sm:p-2 ${followMode ? 'bg-cyan-500/20 border-cyan-500/50' : ''}`}
           onClick={() => setFollowMode(!followMode)}
         >
-          <Navigation className={`w-4 h-4 ${followMode ? 'text-cyan-400' : ''}`} />
+          <Navigation className={`w-3 h-3 sm:w-4 sm:h-4 ${followMode ? 'text-cyan-400' : ''}`} />
         </Button>
 
         <Button
           size="sm"
           variant="outline"
-          className="bg-slate-900/90 border-slate-700/50 text-white hover:bg-slate-800"
+          className="bg-slate-900/90 border-slate-700/50 text-white hover:bg-slate-800 h-8 w-8 sm:w-auto sm:px-3 p-0 sm:p-2"
           onClick={() => setIsFullscreen(!isFullscreen)}
         >
-          {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+          {isFullscreen ? <Minimize2 className="w-3 h-3 sm:w-4 sm:h-4" /> : <Maximize2 className="w-3 h-3 sm:w-4 sm:h-4" />}
         </Button>
       </div>
 
       {/* Bottom Status Bar */}
-      <div className="absolute bottom-4 left-4 right-4 z-[1000]">
-        <div className="flex items-center justify-between">
-          <div className="flex gap-2">
+      <div className="absolute bottom-2 sm:bottom-4 left-2 sm:left-4 right-2 sm:right-4 z-[1000]">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex gap-1 sm:gap-2 flex-wrap">
             {Object.entries(visibleTypes).filter(([_, v]) => v).map(([type]) => {
               const count = vehicles.filter(v => v.type === type && v.status === 'active').length;
               const total = vehicles.filter(v => v.type === type).length;
@@ -385,28 +385,33 @@ export default function LiveTrackingMap({
                 <Badge 
                   key={type} 
                   variant="outline" 
-                  className="backdrop-blur-xl bg-slate-900/80"
+                  className="backdrop-blur-xl bg-slate-900/80 text-[10px] sm:text-xs px-1.5 sm:px-2.5 py-0.5"
                   style={{ borderColor: typeColors[type], color: typeColors[type] }}
                 >
-                  <span className="capitalize">{type}</span>: {count}/{total}
+                  <span className="capitalize hidden sm:inline">{type}</span>
+                  <span className="capitalize sm:hidden">{type.charAt(0)}</span>
+                  : {count}/{total}
                 </Badge>
               );
             })}
           </div>
           
-          <div className="px-3 py-1.5 rounded-lg bg-slate-900/90 backdrop-blur-xl border border-slate-700/50">
-            <div className="flex items-center gap-4 text-xs">
+          <div className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-slate-900/90 backdrop-blur-xl border border-slate-700/50 hidden sm:block">
+            <div className="flex items-center gap-2 sm:gap-4 text-[10px] sm:text-xs">
               <div className="flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                <span className="text-slate-400">Active: {vehicles.filter(v => v.status === 'active').length}</span>
+                <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-400" />
+                <span className="text-slate-400 hidden sm:inline">Active: {vehicles.filter(v => v.status === 'active').length}</span>
+                <span className="text-slate-400 sm:hidden">{vehicles.filter(v => v.status === 'active').length}</span>
               </div>
               <div className="flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-amber-400" />
-                <span className="text-slate-400">Idle: {vehicles.filter(v => v.status === 'idle').length}</span>
+                <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-amber-400" />
+                <span className="text-slate-400 hidden sm:inline">Idle: {vehicles.filter(v => v.status === 'idle').length}</span>
+                <span className="text-slate-400 sm:hidden">{vehicles.filter(v => v.status === 'idle').length}</span>
               </div>
               <div className="flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-rose-400" />
-                <span className="text-slate-400">Offline: {vehicles.filter(v => v.status === 'offline').length}</span>
+                <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-rose-400" />
+                <span className="text-slate-400 hidden sm:inline">Offline: {vehicles.filter(v => v.status === 'offline').length}</span>
+                <span className="text-slate-400 sm:hidden">{vehicles.filter(v => v.status === 'offline').length}</span>
               </div>
             </div>
           </div>
