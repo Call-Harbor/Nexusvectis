@@ -62,21 +62,35 @@ Deno.serve(async (req) => {
         organization_id: org.id
       });
 
+      // Count FLEET AI usage for current period
+      const periodStart = new Date(lastMonth);
+      const periodEnd = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+      
+      const allFleetAIUsage = await base44.asServiceRole.entities.FleetAIUsage.filter({ 
+        organization_id: org.id 
+      });
+      const fleetAICommands = allFleetAIUsage.filter(usage => {
+        const usageDate = new Date(usage.created_date);
+        return usageDate >= periodStart && usageDate < periodEnd && usage.success;
+      }).length;
+
       const vehicleCount = vehicles.length;
       const resourceCount = resources.length;
       
       const vehiclePriceEuro = 15;
       const resourcePriceEuro = 40;
+      const fleetAIPricePer100 = 5;
       
       const vehicleTotal = vehicleCount * vehiclePriceEuro;
       const resourceTotal = resourceCount * resourcePriceEuro;
+      const fleetAITotal = Math.ceil(fleetAICommands / 100) * fleetAIPricePer100;
       
       // Determine tax rules based on buyer country
       const buyerCountry = org.headquarters_country || 'Denmark';
       const taxRules = TAX_RULES[buyerCountry] || TAX_RULES['Denmark'];
       
       // Calculate VAT
-      const subtotal = vehicleTotal + resourceTotal;
+      const subtotal = vehicleTotal + resourceTotal + fleetAITotal;
       const isEUCrossBorder = buyerCountry !== 'Denmark' && taxRules.requires_vat_id;
       const reverseCharge = isEUCrossBorder; // EU B2B reverse charge
       const vatRate = reverseCharge ? 0 : taxRules.vat_rate;
@@ -104,6 +118,14 @@ Deno.serve(async (req) => {
           quantity: resourceCount,
           unit_price: resourcePriceEuro,
           total: resourceTotal
+        });
+      }
+      if (fleetAICommands > 0) {
+        lineItems.push({
+          description: `FLEET AI Commands (${fleetAICommands} commands)`,
+          quantity: Math.ceil(fleetAICommands / 100),
+          unit_price: fleetAIPricePer100,
+          total: fleetAITotal
         });
       }
       
@@ -141,6 +163,8 @@ Deno.serve(async (req) => {
         resource_count: resourceCount,
         vehicle_price_euro: vehiclePriceEuro,
         resource_price_euro: resourcePriceEuro,
+        fleetai_commands: fleetAICommands,
+        fleetai_price_per_100: fleetAIPricePer100,
         subtotal: subtotal,
         vat_rate: vatRate,
         vat_amount: vatAmount,
@@ -211,6 +235,14 @@ Deno.serve(async (req) => {
                     <td style="padding: 10px; text-align: right; border-bottom: 1px solid #e2e8f0;">${resourceCount}</td>
                     <td style="padding: 10px; text-align: right; border-bottom: 1px solid #e2e8f0;">€${resourcePriceEuro}</td>
                     <td style="padding: 10px; text-align: right; border-bottom: 1px solid #e2e8f0;">€${resourceTotal.toFixed(2)}</td>
+                  </tr>
+                  ` : ''}
+                  ${fleetAICommands > 0 ? `
+                  <tr>
+                    <td style="padding: 10px; border-bottom: 1px solid #e2e8f0;">FLEET AI Commands (${fleetAICommands} commands)</td>
+                    <td style="padding: 10px; text-align: right; border-bottom: 1px solid #e2e8f0;">${Math.ceil(fleetAICommands / 100)}</td>
+                    <td style="padding: 10px; text-align: right; border-bottom: 1px solid #e2e8f0;">€${fleetAIPricePer100}</td>
+                    <td style="padding: 10px; text-align: right; border-bottom: 1px solid #e2e8f0;">€${fleetAITotal.toFixed(2)}</td>
                   </tr>
                   ` : ''}
                 </tbody>
