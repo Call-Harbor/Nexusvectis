@@ -1,889 +1,413 @@
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { Code2, Key, Zap, BookOpen, Copy, Check, ExternalLink, Shield, Clock, TrendingUp, Activity, Eye, EyeOff, Plus, Trash2 } from "lucide-react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import React, { useState } from "react";
+import { Copy, Key, Zap, TrendingUp, CheckCircle2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 
-const apiEndpoints = [
-  {
-    category: "Analytics & KPIs",
-    description: "Comprehensive metrics and performance indicators",
-    endpoints: [
-      {
-        name: "Calculate KPIs",
-        method: "POST",
-        path: "/api/functions/calculateKPIs",
-        description: "Get all key performance indicators for your organization",
-        params: { organization_id: "string", period: "string (month/week/day)" },
-        response: { success: true, kpis: { fleet_utilization: 85.2, on_time_delivery_rate: 92.5, "...": "..." } }
-      },
-      {
-        name: "Fleet Analytics",
-        method: "POST",
-        path: "/api/functions/getFleetAnalytics",
-        description: "Detailed fleet performance and utilization metrics",
-        params: { organization_id: "string", transport_type: "string (optional)" },
-        response: { success: true, analytics: { total_fleet_size: 150, by_transport_type: {}, "...": "..." } }
-      },
-      {
-        name: "Route Performance",
-        method: "POST",
-        path: "/api/functions/getRoutePerformance",
-        description: "Route efficiency and optimization metrics",
-        params: { organization_id: "string" },
-        response: { success: true, performance: { total_routes: 85, ai_optimization_rate: 67.5, "...": "..." } }
-      },
-      {
-        name: "Shipment Metrics",
-        method: "POST",
-        path: "/api/functions/getShipmentMetrics",
-        description: "Delivery performance and shipment statistics",
-        params: { organization_id: "string" },
-        response: { success: true, metrics: { total_shipments: 1250, on_time_rate: 93.2, "...": "..." } }
-      },
-      {
-        name: "Resource Utilization",
-        method: "POST",
-        path: "/api/functions/getResourceUtilization",
-        description: "Warehouse and resource capacity metrics",
-        params: { organization_id: "string" },
-        response: { success: true, utilization: { total_resources: 25, overall_utilization_rate: 78.3, "...": "..." } }
-      },
-      {
-        name: "Cost Analysis",
-        method: "POST",
-        path: "/api/functions/getCostAnalysis",
-        description: "Financial analysis and cost breakdown",
-        params: { organization_id: "string", currency: "string (EUR/USD)" },
-        response: { success: true, analysis: { total_costs: { total: "125450.00", "...": "..." }, "...": "..." } }
-      }
-    ]
-  },
-  {
-    category: "Vehicle Management",
-    description: "Track and manage your fleet in real-time",
-    endpoints: [
-      {
-        name: "Track Vehicle",
-        method: "POST",
-        path: "/api/functions/trackVehicle",
-        description: "Get real-time position and status of a vehicle",
-        params: { vehicle_id: "string", organization_id: "string (optional)" },
-        response: { success: true, vehicle: { id: "...", position: { latitude: 55.6761, longitude: 12.5683 }, "...": "..." } }
-      },
-      {
-        name: "Batch Update Vehicles",
-        method: "POST",
-        path: "/api/functions/batchUpdateVehicles",
-        description: "Update multiple vehicles in a single request",
-        params: { vehicles: [{ id: "string", latitude: "number", longitude: "number", "...": "..." }] },
-        response: { success: true, total: 10, succeeded: 9, failed: 1, results: {} }
-      },
-      {
-        name: "Assign Vehicle to Route",
-        method: "POST",
-        path: "/api/functions/assignVehicleToRoute",
-        description: "Assign a vehicle to a specific route",
-        params: { vehicle_id: "string", route_id: "string", driver_name: "string (optional)" },
-        response: { success: true, assignment: { vehicle: {}, route: {}, eta: "..." } }
-      }
-    ]
-  },
-  {
-    category: "Shipment Operations",
-    description: "Create, track and manage shipments",
-    endpoints: [
-      {
-        name: "Create Shipment",
-        method: "POST",
-        path: "/api/functions/createShipment",
-        description: "Create a new shipment",
-        params: { origin: "string", destination: "string", cargo_type: "string", weight_kg: "number", "...": "..." },
-        response: { success: true, shipment: { id: "...", tracking_number: "TRK123456", status: "pending" } }
-      },
-      {
-        name: "Update Shipment",
-        method: "POST",
-        path: "/api/functions/updateShipment",
-        description: "Update shipment status or details",
-        params: { shipment_id: "string OR tracking_number", status: "string", "...": "..." },
-        response: { success: true, shipment: { id: "...", status: "in_transit", "...": "..." } }
-      },
-      {
-        name: "Track Shipment",
-        method: "POST",
-        path: "/api/functions/trackShipment",
-        description: "Track shipment by tracking number",
-        params: { tracking_number: "string" },
-        response: { success: true, tracking: { status: "in_transit", vehicle: {}, eta: "...", "...": "..." } }
-      }
-    ]
-  },
-  {
-    category: "Route Optimization",
-    description: "AI-powered route planning and optimization",
-    endpoints: [
-      {
-        name: "Optimize Route",
-        method: "POST",
-        path: "/api/functions/optimizeRoute",
-        description: "Get AI-optimized route with real-time conditions",
-        params: { origin: "string", destination: "string", transport_type: "truck/ship/train/aircraft/drone" },
-        response: { success: true, route: { waypoints: [], distance_km: 450, estimated_duration_hours: 5.5, "...": "..." } }
-      }
-    ]
-  },
-  {
-    category: "Alerts & Monitoring",
-    description: "Real-time alerts and notifications",
-    endpoints: [
-      {
-        name: "Get Alerts",
-        method: "POST",
-        path: "/api/functions/getAlerts",
-        description: "Retrieve alerts with optional filters",
-        params: { type: "info/warning/critical (optional)", is_resolved: "boolean (optional)", limit: "number" },
-        response: { success: true, count: 15, alerts: [{ id: "...", title: "...", type: "critical", "...": "..." }] }
-      },
-      {
-        name: "Create Alert",
-        method: "POST",
-        path: "/api/functions/createAlert",
-        description: "Create a new alert",
-        params: { title: "string", message: "string", type: "info/warning/critical", category: "string" },
-        response: { success: true, alert: { id: "...", title: "...", created_date: "..." } }
-      }
-    ]
-  },
-  {
-    category: "Data Export",
-    description: "Export data in various formats",
-    endpoints: [
-      {
-        name: "Export Data",
-        method: "POST",
-        path: "/api/functions/exportData",
-        description: "Export entity data in JSON or CSV format",
-        params: { entity_type: "Vehicle/Route/Shipment/Alert/...", format: "json/csv", filters: {} },
-        response: { success: true, count: 100, data: "Array of entities" }
-      }
-    ]
-  }
-];
-
-const codeExamples = {
-  curl: `curl -X POST https://your-app.base44.com/api/functions/trackVehicle \\
-  -H "Authorization: Bearer YOUR_API_KEY" \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "vehicle_id": "veh_123456",
-    "organization_id": "org_abc"
-  }'`,
-  javascript: `const response = await fetch('https://your-app.base44.com/api/functions/trackVehicle', {
-  method: 'POST',
-  headers: {
-    'Authorization': 'Bearer YOUR_API_KEY',
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({
-    vehicle_id: 'veh_123456',
-    organization_id: 'org_abc'
-  })
-});
-
-const data = await response.json();
-console.log(data);`,
-  python: `import requests
-
-url = 'https://your-app.base44.com/api/functions/trackVehicle'
-headers = {
-    'Authorization': 'Bearer YOUR_API_KEY',
-    'Content-Type': 'application/json'
-}
-payload = {
-    'vehicle_id': 'veh_123456',
-    'organization_id': 'org_abc'
-}
-
-response = requests.post(url, json=payload, headers=headers)
-data = response.json()
-print(data)`,
-  node: `const axios = require('axios');
-
-const trackVehicle = async () => {
-  try {
-    const response = await axios.post(
-      'https://your-app.base44.com/api/functions/trackVehicle',
-      {
-        vehicle_id: 'veh_123456',
-        organization_id: 'org_abc'
-      },
-      {
-        headers: {
-          'Authorization': 'Bearer YOUR_API_KEY',
-          'Content-Type': 'application/json'
-        }
-      }
-    );
-    console.log(response.data);
-  } catch (error) {
-    console.error(error);
-  }
-};
-
-trackVehicle();`
-};
-
 export default function APIDocumentation() {
-  const [copiedCode, setCopiedCode] = useState(null);
-  const [selectedEndpoint, setSelectedEndpoint] = useState(null);
-  const [showNewKeyDialog, setShowNewKeyDialog] = useState(false);
-  const [newKeyName, setNewKeyName] = useState("");
-  const [generatedKey, setGeneratedKey] = useState(null);
-  const [revealedKeys, setRevealedKeys] = useState({});
-  
-  const queryClient = useQueryClient();
+  const [selectedExample, setSelectedExample] = useState("route-optimization");
+  const [showApiKey, setShowApiKey] = useState(false);
 
-  // Fetch user organization
-  const { data: organizationData } = useQuery({
-    queryKey: ['user-organization'],
-    queryFn: async () => {
-      try {
-        const user = await base44.auth.me();
-        
-        // Try to get organization_id from user directly first
-        let orgId = user?.organization_id || user?.data?.organization_id;
-        
-        // If not found, fetch from User entity
-        if (!orgId) {
-          const userData = await base44.entities.User.filter({ email: user.email });
-          orgId = userData?.[0]?.organization_id || userData?.[0]?.data?.organization_id;
-        }
-        
-        return { organization_id: orgId };
-      } catch (error) {
-        console.error('Error fetching organization:', error);
-        return { organization_id: null };
-      }
-    }
-  });
-
-  // Fetch API keys
-  const { data: apiKeys = [], isLoading: keysLoading } = useQuery({
-    queryKey: ['api-keys'],
-    queryFn: async () => {
-      const user = await base44.auth.me();
-      const userData = await base44.entities.User.filter({ email: user.email });
-      const orgId = userData?.[0]?.organization_id || userData?.[0]?.data?.organization_id || user?.organization_id || user?.data?.organization_id;
-      if (!orgId) return [];
-      return await base44.entities.APIKey.filter({ organization_id: orgId });
-    }
-  });
-
-  // Fetch usage stats
-  const { data: usageStats, isLoading: statsLoading } = useQuery({
-    queryKey: ['api-usage-stats'],
-    queryFn: async () => {
-      const response = await base44.functions.invoke('getAPIUsageStats', {});
-      return response.data;
-    }
-  });
-
-  // Generate API key
-  const generateKeyMutation = useMutation({
-    mutationFn: async (name) => {
-      const response = await base44.functions.invoke('generateAPIKey', { name });
-      return response.data;
+  const apiEndpoints = [
+    {
+      id: "route-optimization",
+      name: "Route Optimization",
+      method: "POST",
+      endpoint: "/api/v1/calculate",
+      description: "Calculate optimal routes with cost, time, and emissions analysis",
+      params: {
+        calculation_type: "ROUTE_OPTIMIZATION",
+        params: {
+          origin: "Copenhagen",
+          destination: "Aarhus",
+          vehicle_type: "truck",
+          constraints: { fuel_price: 1.5, hourly_rate: 25 },
+        },
+      },
+      response: {
+        distance_km: 284.5,
+        duration_hours: 3.56,
+        fuel_cost_eur: 342.6,
+        total_cost_eur: 432.1,
+        co2_kg: 34.14,
+        efficiency_score: 78.5,
+      },
     },
-    onSuccess: (data) => {
-      setGeneratedKey(data);
-      queryClient.invalidateQueries(['api-keys']);
-      setNewKeyName("");
-      toast.success("API key generated successfully");
-    }
-  });
-
-  // Revoke API key
-  const revokeKeyMutation = useMutation({
-    mutationFn: async (keyId) => {
-      await base44.entities.APIKey.update(keyId, { status: 'revoked' });
+    {
+      id: "cost-analysis",
+      name: "Cost Analysis",
+      method: "POST",
+      endpoint: "/api/v1/calculate",
+      description: "Comprehensive vehicle cost analysis including maintenance and depreciation",
+      params: {
+        calculation_type: "COST_ANALYSIS",
+        params: {
+          vehicle_type: "truck",
+          annual_miles: 50000,
+          age_years: 3,
+          maintenance_records: [],
+        },
+      },
+      response: {
+        fuel_cost_eur: 60000,
+        maintenance_cost_eur: 8500,
+        insurance_cost_eur: 2000,
+        depreciation_eur: 4000,
+        total_annual_cost_eur: 74500,
+        cost_per_km_eur: 0.93,
+      },
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries(['api-keys']);
-      toast.success("API key revoked");
-    }
-  });
+    {
+      id: "maintenance-prediction",
+      name: "Predictive Maintenance",
+      method: "POST",
+      endpoint: "/api/v1/predict",
+      description: "Predict maintenance needs with failure probability and recommendations",
+      params: {
+        prediction_type: "failure",
+        data: {
+          vehicle_sensors: { vibration_level: 0.45, temperature: 95 },
+          maintenance_history: [],
+          vehicle_age_years: 5,
+        },
+      },
+      response: {
+        fault_probability_percent: 65,
+        days_until_failure: 187,
+        next_maintenance_date: "2026-09-10",
+        recommended_inspections: "WEEKLY",
+        estimated_repair_cost_eur: 12500,
+        critical_alert: false,
+      },
+    },
+    {
+      id: "inventory-forecast",
+      name: "Inventory Forecasting",
+      method: "POST",
+      endpoint: "/api/v1/predict",
+      description: "Forecast inventory levels and optimize stock management",
+      params: {
+        prediction_type: "demand",
+        data: {
+          current_level: 5000,
+          consumption_rate: 200,
+          lead_time_days: 7,
+          safety_stock: 1000,
+        },
+      },
+      response: {
+        current_inventory: 5000,
+        daily_consumption: 6.67,
+        forecast_days: 14,
+        forecasted_level: 4906,
+        reorder_point: 1047,
+        should_reorder: false,
+      },
+    },
+    {
+      id: "co2-emissions",
+      name: "CO₂ Emissions Calculation",
+      method: "POST",
+      endpoint: "/api/v1/calculate",
+      description: "Calculate carbon emissions with sustainability scoring",
+      params: {
+        calculation_type: "CO2_EMISSIONS",
+        params: {
+          vehicle_type: "ship",
+          distance_km: 1500,
+          routes: [],
+          shipments: [{ weight_kg: 50000 }],
+        },
+      },
+      response: {
+        base_emissions_kg: 30,
+        weight_adjusted_emissions_kg: 37.5,
+        emissions_per_km: 0.025,
+        equivalent_trees_needed: 2,
+        carbon_offset_cost_eur: 1.88,
+        sustainability_score: 87.5,
+      },
+    },
+    {
+      id: "fleet-performance",
+      name: "Fleet Performance Analysis",
+      method: "POST",
+      endpoint: "/api/v1/analyze",
+      description: "Analyze overall fleet performance metrics and KPIs",
+      params: {
+        analysis_type: "performance",
+        data: {
+          vehicles: [],
+          routes: [],
+          shipments: [],
+          time_period_days: 30,
+        },
+      },
+      response: {
+        fleet_size: 45,
+        active_vehicles: 38,
+        utilization_percent: 84,
+        average_efficiency_score: 82,
+        completed_shipments: 1250,
+        on_time_delivery_percent: 94,
+        performance_trend: "EXCELLENT",
+      },
+    },
+  ];
 
-  const copyToClipboard = (text, id) => {
-    navigator.clipboard.writeText(text);
-    setCopiedCode(id);
-    toast.success("Copied to clipboard!");
-    setTimeout(() => setCopiedCode(null), 2000);
+  const codeExamples = {
+    curl: (endpoint) => `curl -X POST https://api.nexusvectis.com${endpoint.endpoint} \\
+  -H "Content-Type: application/json" \\
+  -H "X-API-Key: sk_live_YOUR_API_KEY" \\
+  -d '${JSON.stringify(endpoint.params, null, 2)}'`,
+    python: (endpoint) => `import requests
+
+api_key = "sk_live_YOUR_API_KEY"
+headers = {
+    "Content-Type": "application/json",
+    "X-API-Key": api_key
+}
+
+data = ${JSON.stringify(endpoint.params, null, 2)}
+
+response = requests.post(
+    "https://api.nexusvectis.com${endpoint.endpoint}",
+    json=data,
+    headers=headers
+)
+
+print(response.json())`,
+    javascript: (endpoint) => `const apiKey = "sk_live_YOUR_API_KEY";
+const data = ${JSON.stringify(endpoint.params, null, 2)};
+
+fetch("https://api.nexusvectis.com${endpoint.endpoint}", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "X-API-Key": apiKey
+  },
+  body: JSON.stringify(data)
+})
+.then(res => res.json())
+.then(data => console.log(data))
+.catch(err => console.error(err));`,
   };
 
+  const selected = apiEndpoints.find((e) => e.id === selectedExample);
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6 lg:p-8">
-      {/* Background effects */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-violet-500/10 rounded-full blur-3xl" />
-      </div>
-
-      <div className="relative z-10 max-w-7xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6">
+      <div className="max-w-7xl mx-auto space-y-8">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-12"
-        >
-          <div className="flex items-center gap-4 mb-4">
-            <div className="p-4 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-violet-500/20 border border-cyan-500/30">
-              <Code2 className="w-10 h-10 text-cyan-400" />
-            </div>
+        <div className="space-y-4">
+          <h1 className="text-4xl font-bold text-white">Fleet AI API Documentation</h1>
+          <p className="text-slate-400 text-lg">Advanced logistics calculations and AI-powered optimization endpoints</p>
+        </div>
+
+        {/* Quick Start */}
+        <Card className="bg-slate-800/50 border-cyan-500/30 backdrop-blur-xl">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-cyan-400">
+              <Key className="w-5 h-5" />
+              Quick Start
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
             <div>
-              <h1 className="text-4xl font-bold text-white">API Documentation</h1>
-              <p className="text-slate-400 mt-2 text-lg">Complete REST API reference for NexusVectis TMS</p>
+              <label className="text-sm text-slate-400 mb-2 block">Your API Key</label>
+              <div className="flex gap-2">
+                <input
+                  type={showApiKey ? "text" : "password"}
+                  value="sk_live_1234567890abcdefghijk"
+                  readOnly
+                  className="flex-1 px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white font-mono text-sm"
+                />
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    navigator.clipboard.writeText("sk_live_1234567890abcdefghijk");
+                    toast.success("API key copied");
+                  }}
+                  className="bg-slate-900 border-slate-700 text-cyan-400"
+                >
+                  <Copy className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowApiKey(!showApiKey)}
+                  className="bg-slate-900 border-slate-700"
+                >
+                  {showApiKey ? "Hide" : "Show"}
+                </Button>
+              </div>
             </div>
+            <div className="grid grid-cols-3 gap-4 pt-4">
+              <div className="p-3 bg-slate-900/50 rounded-lg border border-slate-700">
+                <div className="text-sm text-slate-400">API Version</div>
+                <div className="text-lg font-mono text-cyan-400">v1</div>
+              </div>
+              <div className="p-3 bg-slate-900/50 rounded-lg border border-slate-700">
+                <div className="text-sm text-slate-400">Rate Limit</div>
+                <div className="text-lg font-mono text-emerald-400">10,000/month</div>
+              </div>
+              <div className="p-3 bg-slate-900/50 rounded-lg border border-slate-700">
+                <div className="text-sm text-slate-400">Base URL</div>
+                <div className="text-lg font-mono text-violet-400">api.nexusvectis.com</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Endpoints */}
+        <div className="space-y-4">
+          <h2 className="text-2xl font-bold text-white">Available Endpoints</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {apiEndpoints.map((endpoint) => (
+              <button
+                key={endpoint.id}
+                onClick={() => setSelectedExample(endpoint.id)}
+                className={`p-4 rounded-xl border-2 text-left transition-all ${
+                  selected?.id === endpoint.id
+                    ? "bg-cyan-500/20 border-cyan-500 shadow-lg shadow-cyan-500/20"
+                    : "bg-slate-800/50 border-slate-700 hover:border-cyan-500/50"
+                }`}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="font-semibold text-white">{endpoint.name}</h3>
+                  <span className="px-2 py-1 bg-violet-500/20 rounded text-xs text-violet-400 font-mono">
+                    {endpoint.method}
+                  </span>
+                </div>
+                <p className="text-sm text-slate-400">{endpoint.description}</p>
+              </button>
+            ))}
           </div>
+        </div>
 
-          {/* Quick Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
-            <Card className="bg-slate-800/50 border-slate-700/50">
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-3">
-                  <Zap className="w-8 h-8 text-cyan-400" />
-                  <div>
-                    <div className="text-2xl font-bold text-white">16</div>
-                    <div className="text-sm text-slate-400">Endpoints</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="bg-slate-800/50 border-slate-700/50">
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-3">
-                  <Shield className="w-8 h-8 text-emerald-400" />
-                  <div>
-                    <div className="text-2xl font-bold text-white">OAuth 2.0</div>
-                    <div className="text-sm text-slate-400">Secure Auth</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="bg-slate-800/50 border-slate-700/50">
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-3">
-                  <Clock className="w-8 h-8 text-violet-400" />
-                  <div>
-                    <div className="text-2xl font-bold text-white">Real-time</div>
-                    <div className="text-sm text-slate-400">Live Data</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="bg-slate-800/50 border-slate-700/50">
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-3">
-                  <BookOpen className="w-8 h-8 text-amber-400" />
-                  <div>
-                    <div className="text-2xl font-bold text-white">JSON</div>
-                    <div className="text-sm text-slate-400">REST API</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </motion.div>
-
-        {/* Organization Info */}
-        {organizationData?.organization_id && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="mb-8"
-          >
-            <Card className="bg-gradient-to-br from-cyan-500/10 to-violet-500/10 border-cyan-500/30">
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-white font-semibold mb-1">Organization ID</h3>
-                    <p className="text-slate-400 text-sm mb-3">Use this ID in your API requests</p>
-                  </div>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => {
-                      navigator.clipboard.writeText(organizationData.organization_id);
-                      toast.success("Organization ID copied!");
-                    }}
-                    className="text-cyan-400 hover:text-cyan-300"
-                  >
-                    <Copy className="w-4 h-4" />
-                  </Button>
-                </div>
-                <div className="bg-slate-900/50 p-4 rounded-lg border border-slate-700/50">
-                  <code className="text-cyan-400 text-lg">{organizationData.organization_id}</code>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
-
-        {/* API Key Management */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.12 }}
-          className="mb-8"
-        >
-          <Card className="bg-slate-800/50 border-slate-700/50">
+        {/* Selected Endpoint Details */}
+        {selected && (
+          <Card className="bg-slate-800/50 border-cyan-500/30 backdrop-blur-xl">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-white flex items-center gap-2">
-                    <Key className="w-5 h-5 text-cyan-400" />
-                    API Keys
-                  </CardTitle>
-                  <CardDescription className="text-slate-400">
-                    Manage your API authentication keys
-                  </CardDescription>
+                  <CardTitle className="text-cyan-400">{selected.name}</CardTitle>
+                  <CardDescription className="text-slate-400">{selected.description}</CardDescription>
                 </div>
-                <Button
-                  onClick={() => setShowNewKeyDialog(true)}
-                  className="bg-gradient-to-r from-cyan-500 to-violet-500 hover:from-cyan-600 hover:to-violet-600"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Generate New Key
-                </Button>
+                <span className="px-3 py-1 bg-emerald-500/20 rounded text-sm text-emerald-400 font-mono">
+                  {selected.method}
+                </span>
               </div>
             </CardHeader>
-            <CardContent className="space-y-4">
-              {keysLoading ? (
-                <div className="text-slate-400 text-center py-4">Loading keys...</div>
-              ) : apiKeys.length === 0 ? (
-                <div className="text-slate-400 text-center py-8">
-                  No API keys yet. Generate your first key to get started.
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {apiKeys.map((key) => (
-                    <div
-                      key={key.id}
-                      className="flex items-center justify-between p-4 bg-slate-900/50 rounded-lg border border-slate-700/50"
-                    >
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h4 className="text-white font-semibold">{key.name}</h4>
-                          <Badge className={key.status === 'active' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-red-500/20 text-red-400 border-red-500/30'}>
-                            {key.status}
-                          </Badge>
-                        </div>
-                        <code className="text-sm text-slate-400">{key.key_prefix}••••••••••••••••••••</code>
-                        {key.last_used && (
-                          <p className="text-xs text-slate-500 mt-1">Last used: {new Date(key.last_used).toLocaleString()}</p>
-                        )}
-                      </div>
-                      {key.status === 'active' && (
+            <CardContent className="space-y-6">
+              {/* Endpoint */}
+              <div>
+                <label className="text-sm font-semibold text-slate-300 mb-2 block">Endpoint</label>
+                <code className="block bg-slate-900 p-3 rounded-lg text-cyan-400 font-mono text-sm overflow-x-auto">
+                  {selected.endpoint}
+                </code>
+              </div>
+
+              {/* Code Examples */}
+              <div>
+                <label className="text-sm font-semibold text-slate-300 mb-2 block">Code Examples</label>
+                <Tabs defaultValue="curl" className="w-full">
+                  <TabsList className="bg-slate-900/50 border-slate-700">
+                    <TabsTrigger value="curl">cURL</TabsTrigger>
+                    <TabsTrigger value="python">Python</TabsTrigger>
+                    <TabsTrigger value="javascript">JavaScript</TabsTrigger>
+                  </TabsList>
+                  {Object.keys(codeExamples).map((lang) => (
+                    <TabsContent key={lang} value={lang} className="mt-2">
+                      <div className="relative">
+                        <pre className="bg-slate-900 p-4 rounded-lg text-slate-300 font-mono text-xs overflow-x-auto max-h-80">
+                          {codeExamples[lang](selected)}
+                        </pre>
                         <Button
                           size="sm"
                           variant="ghost"
-                          onClick={() => revokeKeyMutation.mutate(key.id)}
-                          className="text-red-400 hover:text-red-300"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Generate Key Dialog */}
-              {showNewKeyDialog && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="bg-slate-800 border border-slate-700 rounded-xl p-6 max-w-md w-full"
-                  >
-                    <h3 className="text-xl font-bold text-white mb-4">Generate New API Key</h3>
-                    {!generatedKey ? (
-                      <>
-                        <input
-                          type="text"
-                          placeholder="Key name (e.g., Production API)"
-                          value={newKeyName}
-                          onChange={(e) => setNewKeyName(e.target.value)}
-                          className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white mb-4"
-                        />
-                        <div className="flex gap-3">
-                          <Button
-                            variant="outline"
-                            onClick={() => {
-                              setShowNewKeyDialog(false);
-                              setNewKeyName("");
-                            }}
-                            className="flex-1"
-                          >
-                            Cancel
-                          </Button>
-                          <Button
-                            onClick={() => generateKeyMutation.mutate(newKeyName)}
-                            disabled={!newKeyName || generateKeyMutation.isPending}
-                            className="flex-1 bg-gradient-to-r from-cyan-500 to-violet-500"
-                          >
-                            Generate
-                          </Button>
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4 mb-4">
-                          <p className="text-amber-400 text-sm mb-2">⚠️ Save this key securely - it won't be shown again!</p>
-                          <div className="bg-slate-950 p-3 rounded-lg flex items-center justify-between">
-                            <code className="text-emerald-400 text-sm break-all">{generatedKey.api_key}</code>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => {
-                                navigator.clipboard.writeText(generatedKey.api_key);
-                                toast.success("API key copied!");
-                              }}
-                            >
-                              <Copy className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </div>
-                        <Button
                           onClick={() => {
-                            setGeneratedKey(null);
-                            setShowNewKeyDialog(false);
+                            navigator.clipboard.writeText(codeExamples[lang](selected));
+                            toast.success("Code copied");
                           }}
-                          className="w-full"
+                          className="absolute top-2 right-2 text-cyan-400 hover:bg-slate-800"
                         >
-                          Done
+                          <Copy className="w-4 h-4" />
                         </Button>
-                      </>
-                    )}
-                  </motion.div>
+                      </div>
+                    </TabsContent>
+                  ))}
+                </Tabs>
+              </div>
+
+              {/* Request/Response */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-semibold text-slate-300 mb-2 block">Request Body</label>
+                  <pre className="bg-slate-900 p-3 rounded-lg text-slate-400 font-mono text-xs overflow-x-auto max-h-64">
+                    {JSON.stringify(selected.params, null, 2)}
+                  </pre>
                 </div>
-              )}
+                <div>
+                  <label className="text-sm font-semibold text-slate-300 mb-2 block">Response</label>
+                  <pre className="bg-slate-900 p-3 rounded-lg text-slate-400 font-mono text-xs overflow-x-auto max-h-64">
+                    {JSON.stringify(selected.response, null, 2)}
+                  </pre>
+                </div>
+              </div>
             </CardContent>
           </Card>
-        </motion.div>
-
-        {/* Usage Statistics */}
-        {usageStats?.success && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15 }}
-            className="mb-8"
-          >
-            <Card className="bg-slate-800/50 border-slate-700/50">
-              <CardHeader>
-                <CardTitle className="text-white flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5 text-violet-400" />
-                  API Usage Statistics
-                </CardTitle>
-                <CardDescription className="text-slate-400">
-                  Monitor your API usage and performance
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                  <div className="p-4 bg-slate-900/50 rounded-lg border border-slate-700/50">
-                    <div className="text-slate-400 text-sm mb-1">Total Calls</div>
-                    <div className="text-2xl font-bold text-white">{usageStats.stats.total_calls.toLocaleString()}</div>
-                  </div>
-                  <div className="p-4 bg-slate-900/50 rounded-lg border border-slate-700/50">
-                    <div className="text-slate-400 text-sm mb-1">Error Rate</div>
-                    <div className="text-2xl font-bold text-white">{usageStats.stats.error_rate}%</div>
-                  </div>
-                  <div className="p-4 bg-slate-900/50 rounded-lg border border-slate-700/50">
-                    <div className="text-slate-400 text-sm mb-1">Avg Response</div>
-                    <div className="text-2xl font-bold text-white">{usageStats.stats.avg_response_time_ms}ms</div>
-                  </div>
-                  <div className="p-4 bg-slate-900/50 rounded-lg border border-slate-700/50">
-                    <div className="text-slate-400 text-sm mb-1">Errors</div>
-                    <div className="text-2xl font-bold text-white">{usageStats.stats.error_count}</div>
-                  </div>
-                </div>
-
-                <div>
-                  <h4 className="text-white font-semibold mb-3">Top Endpoints</h4>
-                  <div className="space-y-2">
-                    {usageStats.stats.top_endpoints.map((endpoint, idx) => (
-                      <div key={idx} className="flex items-center justify-between p-3 bg-slate-900/30 rounded-lg">
-                        <code className="text-sm text-slate-400">{endpoint.endpoint}</code>
-                        <Badge className="bg-cyan-500/20 text-cyan-400 border-cyan-500/30">
-                          {endpoint.count} calls
-                        </Badge>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
         )}
 
-        {/* Getting Started */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="mb-8"
-        >
-          <Card className="bg-slate-800/50 border-slate-700/50">
-            <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2">
-                <Key className="w-5 h-5 text-cyan-400" />
-                Getting Started
-              </CardTitle>
-              <CardDescription className="text-slate-400">
-                Authentication and base URL configuration
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <h3 className="text-white font-semibold mb-2">Base URL</h3>
-                <div className="bg-slate-900/50 p-4 rounded-lg border border-slate-700/50 flex items-center justify-between">
-                  <code className="text-cyan-400">https://your-app.base44.com</code>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => copyToClipboard('https://your-app.base44.com', 'base-url')}
-                    className="text-slate-400 hover:text-white"
-                  >
-                    {copiedCode === 'base-url' ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                  </Button>
-                </div>
+        {/* Error Handling */}
+        <Card className="bg-slate-800/50 border-amber-500/30 backdrop-blur-xl">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-amber-400">
+              <AlertCircle className="w-5 h-5" />
+              Error Handling
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <div className="p-3 bg-slate-900/50 rounded-lg border border-slate-700">
+                <div className="font-mono text-sm text-red-400 mb-1">400 Bad Request</div>
+                <p className="text-sm text-slate-400">Invalid parameters or missing required fields</p>
               </div>
-
-              <div>
-                <h3 className="text-white font-semibold mb-2">Authentication</h3>
-                <p className="text-slate-400 text-sm mb-3">
-                  Include your API key in the Authorization header of every request:
-                </p>
-                <div className="bg-slate-900/50 p-4 rounded-lg border border-slate-700/50">
-                  <code className="text-emerald-400">Authorization: Bearer YOUR_API_KEY</code>
-                </div>
+              <div className="p-3 bg-slate-900/50 rounded-lg border border-slate-700">
+                <div className="font-mono text-sm text-red-400 mb-1">401 Unauthorized</div>
+                <p className="text-sm text-slate-400">Missing or invalid API key</p>
               </div>
-
-              <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4">
-                <div className="flex items-start gap-3">
-                  <Key className="w-5 h-5 text-amber-400 mt-0.5" />
-                  <div>
-                    <h4 className="text-amber-400 font-semibold mb-1">Get Your API Key</h4>
-                    <p className="text-slate-300 text-sm">
-                      Navigate to Dashboard → Settings → API Keys to generate your authentication token.
-                    </p>
-                  </div>
-                </div>
+              <div className="p-3 bg-slate-900/50 rounded-lg border border-slate-700">
+                <div className="font-mono text-sm text-red-400 mb-1">429 Too Many Requests</div>
+                <p className="text-sm text-slate-400">Rate limit exceeded. Upgrade your plan for higher limits</p>
               </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        {/* Code Examples */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.25 }}
-          className="mb-8"
-        >
-          <Card className="bg-slate-800/50 border-slate-700/50">
-            <CardHeader>
-              <CardTitle className="text-white">Quick Start Examples</CardTitle>
-              <CardDescription className="text-slate-400">
-                Example requests in different programming languages
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Tabs defaultValue="curl" className="w-full">
-                <TabsList className="bg-slate-900/50 border border-slate-700/50">
-                  <TabsTrigger value="curl">cURL</TabsTrigger>
-                  <TabsTrigger value="javascript">JavaScript</TabsTrigger>
-                  <TabsTrigger value="python">Python</TabsTrigger>
-                  <TabsTrigger value="node">Node.js</TabsTrigger>
-                </TabsList>
-                {Object.entries(codeExamples).map(([lang, code]) => (
-                  <TabsContent key={lang} value={lang}>
-                    <div className="relative">
-                      <pre className="bg-slate-950 p-4 rounded-lg overflow-x-auto border border-slate-700/50">
-                        <code className="text-sm text-slate-300">{code}</code>
-                      </pre>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => copyToClipboard(code, `code-${lang}`)}
-                        className="absolute top-2 right-2 text-slate-400 hover:text-white"
-                      >
-                        {copiedCode === `code-${lang}` ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                      </Button>
-                    </div>
-                  </TabsContent>
-                ))}
-              </Tabs>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        {/* API Endpoints */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="space-y-6"
-        >
-          <h2 className="text-2xl font-bold text-white mb-4">API Endpoints</h2>
-          
-          {apiEndpoints.map((category, catIndex) => (
-            <Card key={catIndex} className="bg-slate-800/50 border-slate-700/50">
-              <CardHeader>
-                <CardTitle className="text-white">{category.category}</CardTitle>
-                <CardDescription className="text-slate-400">{category.description}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {category.endpoints.map((endpoint, endIndex) => (
-                  <div
-                    key={endIndex}
-                    className="border border-slate-700/50 rounded-lg p-4 bg-slate-900/30 hover:bg-slate-900/50 transition-colors"
-                  >
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex items-center gap-3">
-                        <Badge className={`
-                          ${endpoint.method === 'POST' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : ''}
-                          ${endpoint.method === 'GET' ? 'bg-blue-500/20 text-blue-400 border-blue-500/30' : ''}
-                          ${endpoint.method === 'PUT' ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' : ''}
-                          ${endpoint.method === 'DELETE' ? 'bg-red-500/20 text-red-400 border-red-500/30' : ''}
-                        `}>
-                          {endpoint.method}
-                        </Badge>
-                        <h3 className="text-white font-semibold">{endpoint.name}</h3>
-                      </div>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => setSelectedEndpoint(selectedEndpoint === `${catIndex}-${endIndex}` ? null : `${catIndex}-${endIndex}`)}
-                        className="text-cyan-400 hover:text-cyan-300"
-                      >
-                        {selectedEndpoint === `${catIndex}-${endIndex}` ? 'Hide' : 'Details'}
-                      </Button>
-                    </div>
-                    
-                    <div className="mb-3">
-                      <code className="text-sm text-slate-400 bg-slate-950 px-3 py-1.5 rounded">
-                        {endpoint.path}
-                      </code>
-                    </div>
-                    
-                    <p className="text-slate-400 text-sm mb-3">{endpoint.description}</p>
-
-                    {selectedEndpoint === `${catIndex}-${endIndex}` && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="space-y-4 mt-4 pt-4 border-t border-slate-700/50"
-                      >
-                        <div>
-                          <h4 className="text-white font-semibold mb-2 text-sm">Parameters</h4>
-                          <div className="bg-slate-950 p-3 rounded-lg">
-                            <pre className="text-xs text-slate-300 overflow-x-auto">
-                              {JSON.stringify(endpoint.params, null, 2)}
-                            </pre>
-                          </div>
-                        </div>
-
-                        <div>
-                          <h4 className="text-white font-semibold mb-2 text-sm">Response Example</h4>
-                          <div className="bg-slate-950 p-3 rounded-lg">
-                            <pre className="text-xs text-slate-300 overflow-x-auto">
-                              {JSON.stringify(endpoint.response, null, 2)}
-                            </pre>
-                          </div>
-                        </div>
-                      </motion.div>
-                    )}
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          ))}
-        </motion.div>
-
-        {/* Rate Limits & Best Practices */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="mt-8 grid md:grid-cols-2 gap-6"
-        >
-          <Card className="bg-slate-800/50 border-slate-700/50">
-            <CardHeader>
-              <CardTitle className="text-white">Rate Limits</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 text-slate-300">
-              <div className="flex justify-between">
-                <span>Standard API calls:</span>
-                <span className="text-white font-semibold">1000 req/hour</span>
+              <div className="p-3 bg-slate-900/50 rounded-lg border border-slate-700">
+                <div className="font-mono text-sm text-red-400 mb-1">500 Server Error</div>
+                <p className="text-sm text-slate-400">Internal server error. Our team has been notified</p>
               </div>
-              <div className="flex justify-between">
-                <span>Batch operations:</span>
-                <span className="text-white font-semibold">100 req/hour</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Real-time tracking:</span>
-                <span className="text-white font-semibold">5000 req/hour</span>
-              </div>
-            </CardContent>
-          </Card>
+            </div>
+          </CardContent>
+        </Card>
 
-          <Card className="bg-slate-800/50 border-slate-700/50">
-            <CardHeader>
-              <CardTitle className="text-white">Error Codes</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 text-slate-300 text-sm">
-              <div><span className="text-emerald-400 font-mono">200</span> - Success</div>
-              <div><span className="text-amber-400 font-mono">400</span> - Bad Request</div>
-              <div><span className="text-red-400 font-mono">401</span> - Unauthorized</div>
-              <div><span className="text-red-400 font-mono">404</span> - Not Found</div>
-              <div><span className="text-red-400 font-mono">429</span> - Rate Limit Exceeded</div>
-              <div><span className="text-red-400 font-mono">500</span> - Server Error</div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        {/* Support */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="mt-8"
-        >
-          <Card className="bg-gradient-to-br from-cyan-500/10 to-violet-500/10 border-cyan-500/30">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-xl font-bold text-white mb-2">Need Help?</h3>
-                  <p className="text-slate-400">Contact our developer support team for assistance</p>
-                </div>
-                <Button className="bg-gradient-to-r from-cyan-500 to-violet-500 hover:from-cyan-600 hover:to-violet-600">
-                  <ExternalLink className="w-4 h-4 mr-2" />
-                  Contact Support
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
+        {/* Features */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {[
+            { icon: Zap, title: "Real-time Calculations", desc: "Instant results for all logistics computations" },
+            { icon: TrendingUp, title: "Predictive Analytics", desc: "ML-powered forecasting and optimization" },
+            { icon: CheckCircle2, title: "99.9% Uptime", desc: "Enterprise-grade reliability and support" },
+          ].map((feature, i) => {
+            const Icon = feature.icon;
+            return (
+              <Card key={i} className="bg-slate-800/50 border-slate-700 backdrop-blur-xl">
+                <CardContent className="pt-6">
+                  <Icon className="w-8 h-8 text-cyan-400 mb-3" />
+                  <h3 className="font-semibold text-white mb-2">{feature.title}</h3>
+                  <p className="text-sm text-slate-400">{feature.desc}</p>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
