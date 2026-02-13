@@ -215,9 +215,14 @@ export default function IntellectMode() {
       });
 
       const newFiles = await Promise.all(uploadPromises);
-      setUploadedFiles(prev => [...prev, ...newFiles]);
-      toast.success(`Uploaded ${files.length} file(s)`);
+      setUploadedFiles(prev => {
+        const updated = [...prev, ...newFiles];
+        console.log('📎 Files uploaded:', updated);
+        return updated;
+      });
+      toast.success(`✅ Uploaded ${files.length} file(s) - Ready to send`);
     } catch (error) {
+      console.error('Upload error:', error);
       toast.error('File upload failed');
     } finally {
       setIsUploading(false);
@@ -856,28 +861,43 @@ export default function IntellectMode() {
 
             {/* Input */}
             <div className="space-y-3">
-              {/* Uploaded Files Preview */}
-              {uploadedFiles.length > 0 && (
-                <div className="flex flex-wrap gap-2 p-3 bg-slate-800/30 rounded-xl border border-cyan-500/20">
-                  {uploadedFiles.map((file, idx) => (
-                    <motion.div
-                      key={idx}
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="flex items-center gap-2 px-3 py-2 bg-cyan-500/20 border border-cyan-500/40 rounded-lg"
-                    >
-                      <FileText className="w-4 h-4 text-cyan-400" />
-                      <span className="text-white text-sm font-medium">{file.name}</span>
-                      <button
-                        onClick={() => removeFile(idx)}
-                        className="text-slate-400 hover:text-red-400 transition-colors ml-1"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </motion.div>
-                  ))}
-                </div>
-              )}
+              {/* Uploaded Files Preview - Always visible when files exist */}
+              <AnimatePresence>
+                {uploadedFiles.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="p-4 bg-gradient-to-r from-cyan-500/10 to-violet-500/10 rounded-2xl border-2 border-cyan-500/30"
+                  >
+                    <div className="flex items-center gap-2 mb-3">
+                      <Paperclip className="w-4 h-4 text-cyan-400" />
+                      <span className="text-cyan-400 text-sm font-semibold">
+                        {uploadedFiles.length} file(s) attached - Will be sent with your command
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {uploadedFiles.map((file, idx) => (
+                        <motion.div
+                          key={idx}
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          className="flex items-center gap-2 px-3 py-2 bg-cyan-500/30 border-2 border-cyan-500/50 rounded-lg shadow-lg"
+                        >
+                          <FileText className="w-5 h-5 text-cyan-300" />
+                          <span className="text-white text-sm font-medium">{file.name}</span>
+                          <button
+                            onClick={() => removeFile(idx)}
+                            className="text-slate-300 hover:text-red-400 transition-colors ml-2"
+                          >
+                            <X className="w-5 h-5" />
+                          </button>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               <div className="flex gap-3">
               <input
