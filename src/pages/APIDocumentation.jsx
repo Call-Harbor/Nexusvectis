@@ -646,10 +646,7 @@ fetch("https://api.nexusvectis.com${endpoint.endpoint}", {
                 <div className="font-mono text-sm text-red-400 mb-1">401 Unauthorized</div>
                 <p className="text-sm text-slate-400">Missing or invalid API key</p>
               </div>
-              <div className="p-3 bg-slate-900/50 rounded-lg border border-slate-700">
-                <div className="font-mono text-sm text-red-400 mb-1">429 Too Many Requests</div>
-                <p className="text-sm text-slate-400">Rate limit exceeded. Upgrade your plan for higher limits</p>
-              </div>
+
               <div className="p-3 bg-slate-900/50 rounded-lg border border-slate-700">
                 <div className="font-mono text-sm text-red-400 mb-1">500 Server Error</div>
                 <p className="text-sm text-slate-400">Internal server error. Our team has been notified</p>
