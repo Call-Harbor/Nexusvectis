@@ -17,6 +17,7 @@ import { MapContainer, TileLayer, Marker, Polyline, Popup } from 'react-leaflet'
 const HologramWindow = React.memo(({ id, title, icon: Icon, children, position, onClose, onMinimize, isMinimized }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [pos, setPos] = useState(position);
+  const [size, setSize] = useState({ width: 480, height: 600 });
   const dragRef = useRef(null);
 
   if (isMinimized) {
@@ -44,8 +45,8 @@ const HologramWindow = React.memo(({ id, title, icon: Icon, children, position, 
       animate={{ scale: 1, opacity: 1, y: 0 }}
       exit={{ scale: 0.9, opacity: 0, y: 20 }}
       transition={{ type: "spring", damping: 25, stiffness: 300 }}
-      style={{ left: pos.x, top: pos.y }}
-      className="fixed z-50 w-96"
+      style={{ left: pos.x, top: pos.y, width: size.width, height: size.height }}
+      className="fixed z-50 resize overflow-auto"
       drag
       dragMomentum={false}
       onDragStart={() => setIsDragging(true)}
@@ -54,7 +55,7 @@ const HologramWindow = React.memo(({ id, title, icon: Icon, children, position, 
         setPos({ x: pos.x + info.offset.x, y: pos.y + info.offset.y });
       }}
     >
-      <div className="bg-slate-900/60 backdrop-blur-2xl rounded-2xl border-2 border-cyan-500/40 shadow-2xl shadow-cyan-500/30 overflow-hidden">
+      <div className="bg-slate-900/60 backdrop-blur-2xl rounded-2xl border-2 border-cyan-500/40 shadow-2xl shadow-cyan-500/30 overflow-hidden h-full flex flex-col">
         {/* Enhanced Hologram effect */}
         <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-cyan-500/20 via-transparent to-violet-500/20 pointer-events-none" />
         <div className="absolute inset-0 rounded-2xl animate-pulse bg-gradient-to-r from-transparent via-cyan-500/15 to-transparent pointer-events-none" style={{ animationDuration: '3s' }} />
@@ -90,7 +91,7 @@ const HologramWindow = React.memo(({ id, title, icon: Icon, children, position, 
           </div>
           
           {/* Content */}
-          <div className="p-4 max-h-[600px] overflow-y-auto">
+          <div className="p-4 flex-1 overflow-y-auto">
             {children}
           </div>
         </div>
@@ -630,10 +631,10 @@ export default function IntellectMode() {
       };
       
       return (
-        <div className="w-full h-[500px]">
+        <div className="w-full h-full">
           <iframe 
-            src={createPageUrl(pageMap[type])}
-            className="w-full h-full rounded-lg"
+            src={`${createPageUrl(pageMap[type])}?hologram=true`}
+            className="w-full h-full rounded-lg border-0"
             title={pageMap[type]}
           />
         </div>

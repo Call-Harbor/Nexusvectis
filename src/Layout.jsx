@@ -69,7 +69,8 @@ const systemMenuItems = [
 ];
 
 export default function Layout({ children, currentPageName }) {
-  const hideNav = currentPageName === "MapMonitor" || currentPageName === "AdminMonitor" || currentPageName === "Landing" || currentPageName === "Home" || currentPageName === "IntellectMode";
+  const isHologram = new URLSearchParams(window.location.search).get('hologram') === 'true';
+  const hideNav = isHologram || currentPageName === "MapMonitor" || currentPageName === "AdminMonitor" || currentPageName === "Landing" || currentPageName === "Home" || currentPageName === "IntellectMode";
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
