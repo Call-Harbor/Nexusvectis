@@ -32,6 +32,13 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const { command, context, file_urls } = body;
     
+    console.log('📨 Request received:', { 
+      command, 
+      has_file_urls: !!file_urls, 
+      file_count: file_urls?.length || 0,
+      file_urls 
+    });
+    
     // Input validation
     if (!command || typeof command !== 'string' || command.length > 1000) {
       return Response.json({ error: 'Invalid command format' }, { status: 400 });
