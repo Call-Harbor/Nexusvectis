@@ -121,7 +121,7 @@ const HologramWindow = React.memo(({ id, title, icon: Icon, children, position, 
           </div>
           
           {/* Content */}
-          <div className="p-4 flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-hidden">
             {children}
           </div>
         </div>
@@ -642,7 +642,7 @@ export default function IntellectMode() {
   }), [vehicles, alerts, routes, shipments]);
 
   const renderWindowContent = useCallback((type) => {
-    // For page iframes
+    // For page iframes - return without wrapper to fill entire content area
     if (['dashboard', 'settings', 'aioptimization', 'invoices', 'apidocs', 'resources', 
          'warehouseautomation', 'demandforecasting', 'greentms', 'gpsintegration', 'assignment', 'routeeditor'].includes(type)) {
       const pageMap = {
@@ -661,20 +661,18 @@ export default function IntellectMode() {
       };
       
       return (
-        <div className="w-full h-full">
-          <iframe 
-            src={`${createPageUrl(pageMap[type])}?hologram=true`}
-            className="w-full h-full rounded-lg border-0"
-            title={pageMap[type]}
-          />
-        </div>
+        <iframe 
+          src={`${createPageUrl(pageMap[type])}?hologram=true`}
+          className="w-full h-full border-0"
+          title={pageMap[type]}
+        />
       );
     }
 
     switch (type) {
       case "fleet":
         return (
-          <div className="space-y-3">
+          <div className="space-y-3 p-4 overflow-y-auto h-full">
             <div className="text-cyan-400 text-sm font-semibold mb-2">Active Vehicles ({vehicles.length})</div>
             {vehicles.slice(0, 5).map(vehicle => (
               <div key={vehicle.id} className="p-3 bg-slate-800/50 rounded-lg border border-slate-700/50">
@@ -697,7 +695,7 @@ export default function IntellectMode() {
       
       case "alerts":
         return (
-          <div className="space-y-3">
+          <div className="space-y-3 p-4 overflow-y-auto h-full">
             <div className="text-amber-400 text-sm font-semibold mb-2">Active Alerts ({alerts.length})</div>
             {alerts.slice(0, 5).map(alert => (
               <div key={alert.id} className="p-3 bg-slate-800/50 rounded-lg border border-amber-500/30">
@@ -716,7 +714,7 @@ export default function IntellectMode() {
 
       case "routes":
         return (
-          <div className="space-y-3 max-h-[500px] overflow-y-auto">
+          <div className="space-y-3 p-4 overflow-y-auto h-full">
             <div className="text-violet-400 text-sm font-semibold mb-2">Active Routes ({routes.length})</div>
             {routes.slice(0, 5).map(route => (
               <div key={route.id} className="space-y-2">
@@ -772,7 +770,7 @@ export default function IntellectMode() {
 
       case "shipments":
         return (
-          <div className="space-y-3">
+          <div className="space-y-3 p-4 overflow-y-auto h-full">
             <div className="text-blue-400 text-sm font-semibold mb-2">Shipments ({shipments.length})</div>
             {shipments.slice(0, 5).map(shipment => (
               <div key={shipment.id} className="p-3 bg-slate-800/50 rounded-lg border border-slate-700/50">
