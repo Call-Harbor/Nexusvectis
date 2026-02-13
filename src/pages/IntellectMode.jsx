@@ -747,14 +747,14 @@ export default function IntellectMode() {
       {/* Enhanced Animated background */}
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-gradient-to-br from-cyan-950/30 via-slate-950 to-violet-950/30" />
+        
+        {/* Grid background overlay */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.08)_1px,transparent_1px)] bg-[size:50px_50px]" />
 
         {/* Multiple animated orbs */}
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl animate-pulse" />
         <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-violet-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
         <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
-
-        {/* Animated grid overlay */}
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.08)_1px,transparent_1px)] bg-[size:50px_50px] animate-pulse" style={{ animationDuration: '4s' }} />
 
         {/* Scan lines effect */}
         <div className="absolute inset-0 bg-[linear-gradient(transparent_50%,rgba(6,182,212,0.03)_50%)] bg-[size:100%_4px] pointer-events-none" />
@@ -901,7 +901,7 @@ export default function IntellectMode() {
         </div>
 
         {/* Command Interface */}
-        <div className="p-3 sm:p-4 lg:p-6 border-t border-cyan-500/20 backdrop-blur-xl bg-slate-900/60 bg-[linear-gradient(rgba(6,182,212,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.08)_1px,transparent_1px)] bg-[size:50px_50px]">
+        <div className="p-3 sm:p-4 lg:p-6 border-t border-cyan-500/20 backdrop-blur-xl bg-slate-900/20">
           <div className="max-w-4xl mx-auto">
             {/* Quick Commands */}
             {showSuggestions && messages.length <= 1 && (
