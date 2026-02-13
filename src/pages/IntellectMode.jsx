@@ -642,160 +642,33 @@ export default function IntellectMode() {
   }), [vehicles, alerts, routes, shipments]);
 
   const renderWindowContent = useCallback((type) => {
-    // For page iframes - return without wrapper to fill entire content area
-    if (['dashboard', 'settings', 'aioptimization', 'invoices', 'apidocs', 'resources', 
-         'warehouseautomation', 'demandforecasting', 'greentms', 'gpsintegration', 'assignment', 'routeeditor'].includes(type)) {
-      const pageMap = {
-        'dashboard': 'Dashboard',
-        'settings': 'Settings',
-        'aioptimization': 'AIOptimization',
-        'invoices': 'Invoices',
-        'apidocs': 'APIDocumentation',
-        'resources': 'Resources',
-        'warehouseautomation': 'WarehouseAutomation',
-        'demandforecasting': 'DemandForecasting',
-        'greentms': 'GreenTMS',
-        'gpsintegration': 'GPSIntegration',
-        'assignment': 'Assignment',
-        'routeeditor': 'Routes'
-      };
-      
-      return (
-        <iframe 
-          src={`${createPageUrl(pageMap[type])}?hologram=true`}
-          className="w-full h-full border-0"
-          title={pageMap[type]}
-        />
-      );
-    }
-
-    switch (type) {
-      case "fleet":
-        return (
-          <div className="space-y-3 p-4 overflow-y-auto h-full">
-            <div className="text-cyan-400 text-sm font-semibold mb-2">Active Vehicles ({vehicles.length})</div>
-            {vehicles.slice(0, 5).map(vehicle => (
-              <div key={vehicle.id} className="p-3 bg-slate-800/50 rounded-lg border border-slate-700/50">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-white font-medium">{vehicle.name}</span>
-                  <Badge className={
-                    vehicle.status === 'active' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' :
-                    'bg-slate-500/20 text-slate-400 border-slate-500/30'
-                  }>
-                    {vehicle.status}
-                  </Badge>
-                </div>
-                <div className="text-xs text-slate-400">
-                  {vehicle.type} • {vehicle.fuel_level}% fuel
-                </div>
-              </div>
-            ))}
-          </div>
-        );
-      
-      case "alerts":
-        return (
-          <div className="space-y-3 p-4 overflow-y-auto h-full">
-            <div className="text-amber-400 text-sm font-semibold mb-2">Active Alerts ({alerts.length})</div>
-            {alerts.slice(0, 5).map(alert => (
-              <div key={alert.id} className="p-3 bg-slate-800/50 rounded-lg border border-amber-500/30">
-                <div className="flex items-center gap-2 mb-1">
-                  <AlertTriangle className="w-4 h-4 text-amber-400" />
-                  <span className="text-white font-medium">{alert.title}</span>
-                </div>
-                <div className="text-xs text-slate-400">{alert.message}</div>
-              </div>
-            ))}
-            {alerts.length === 0 && (
-              <div className="text-slate-400 text-center py-4">No active alerts</div>
-            )}
-          </div>
-        );
-
-      case "routes":
-        return (
-          <div className="space-y-3 p-4 overflow-y-auto h-full">
-            <div className="text-violet-400 text-sm font-semibold mb-2">Active Routes ({routes.length})</div>
-            {routes.slice(0, 5).map(route => (
-              <div key={route.id} className="space-y-2">
-                <div className="p-3 bg-slate-800/50 rounded-lg border border-slate-700/50">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-white font-medium">{route.name}</span>
-                    <Badge className={
-                      route.status === 'active' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' :
-                      'bg-slate-500/20 text-slate-400 border-slate-500/30'
-                    }>
-                      {route.status}
-                    </Badge>
-                  </div>
-                  <div className="text-xs text-slate-400">
-                    {route.origin} → {route.destination}
-                    {route.distance_km && ` • ${route.distance_km} km`}
-                  </div>
-                </div>
-                
-                {route.waypoints && route.waypoints.length > 0 && (
-                  <div className="h-48 rounded-lg overflow-hidden border border-violet-500/30">
-                    <MapContainer
-                      center={[route.waypoints[0].lat, route.waypoints[0].lng]}
-                      zoom={5}
-                      style={{ height: '100%', width: '100%' }}
-                      scrollWheelZoom={false}
-                    >
-                      <TileLayer
-                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                        attribution='&copy; OpenStreetMap'
-                      />
-                      <Polyline
-                        positions={route.waypoints.map(wp => [wp.lat, wp.lng])}
-                        color="#8b5cf6"
-                        weight={3}
-                      />
-                      {route.waypoints.map((wp, idx) => (
-                        <Marker key={idx} position={[wp.lat, wp.lng]}>
-                          <Popup>
-                            <div className="text-sm">
-                              <strong>{wp.name || `Point ${idx + 1}`}</strong>
-                            </div>
-                          </Popup>
-                        </Marker>
-                      ))}
-                    </MapContainer>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        );
-
-      case "shipments":
-        return (
-          <div className="space-y-3 p-4 overflow-y-auto h-full">
-            <div className="text-blue-400 text-sm font-semibold mb-2">Shipments ({shipments.length})</div>
-            {shipments.slice(0, 5).map(shipment => (
-              <div key={shipment.id} className="p-3 bg-slate-800/50 rounded-lg border border-slate-700/50">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-white font-medium">{shipment.tracking_number}</span>
-                  <Badge className={
-                    shipment.status === 'in_transit' ? 'bg-blue-500/20 text-blue-400 border-blue-500/30' :
-                    shipment.status === 'delivered' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' :
-                    'bg-slate-500/20 text-slate-400 border-slate-500/30'
-                  }>
-                    {shipment.status}
-                  </Badge>
-                </div>
-                <div className="text-xs text-slate-400">
-                  {shipment.origin} → {shipment.destination}
-                </div>
-              </div>
-            ))}
-          </div>
-        );
-      
-      default:
-        return null;
-    }
-  }, [vehicles, alerts, routes, shipments]);
+    const pageMap = {
+      'dashboard': 'Dashboard',
+      'settings': 'Settings',
+      'aioptimization': 'AIOptimization',
+      'invoices': 'Invoices',
+      'apidocs': 'APIDocumentation',
+      'resources': 'Resources',
+      'warehouseautomation': 'WarehouseAutomation',
+      'demandforecasting': 'DemandForecasting',
+      'greentms': 'GreenTMS',
+      'gpsintegration': 'GPSIntegration',
+      'assignment': 'Assignment',
+      'routeeditor': 'Routes',
+      'fleet': 'Fleet',
+      'alerts': 'Alerts',
+      'routes': 'Routes',
+      'shipments': 'Shipments'
+    };
+    
+    return (
+      <iframe 
+        src={`${createPageUrl(pageMap[type])}?hologram=true`}
+        className="w-full h-full border-0"
+        title={pageMap[type]}
+      />
+    );
+  }, []);
 
   return (
     <div className="min-h-screen bg-black relative overflow-hidden">
