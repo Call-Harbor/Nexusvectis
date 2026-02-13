@@ -244,7 +244,15 @@ export default function IntellectMode() {
       properties: { command_length: currentCommand.length, has_files: uploadedFiles.length > 0 }
     });
 
-    setMessages(prev => [...prev, { role: "user", content: currentCommand }]);
+    // Show command with files in chat
+    const userMessage = {
+      role: "user",
+      content: currentCommand,
+      files: uploadedFiles.length > 0 ? uploadedFiles : undefined
+    };
+    setMessages(prev => [...prev, userMessage]);
+    
+    const currentFiles = [...uploadedFiles];
     setInput("");
     setUploadedFiles([]);
     setIsProcessing(true);
@@ -268,7 +276,7 @@ export default function IntellectMode() {
         const mistralResponse = await Promise.race([
           base44.functions.invoke('mistralCommand', {
             command: currentCommand,
-            file_urls: uploadedFiles.length > 0 ? uploadedFiles.map(f => f.url) : undefined,
+            file_urls: currentFiles.length > 0 ? currentFiles.map(f => f.url) : undefined,
             context: {
               vehicles_count: vehicles.length,
               alerts_count: alerts.length,
@@ -798,25 +806,37 @@ export default function IntellectMode() {
         <div className="p-6 border-t border-cyan-500/20 backdrop-blur-xl bg-slate-900/40">
           <div className="max-w-4xl mx-auto">
             {/* Messages */}
-            <div className="mb-4 max-h-32 overflow-y-auto space-y-2">
-              {messages.slice(-3).map((msg, idx) => (
+            <div className="mb-4 max-h-48 overflow-y-auto space-y-2">
+              {messages.slice(-5).map((msg, idx) => (
                 <motion.div
                   key={idx}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  className={`text-sm ${
+                  className="space-y-1"
+                >
+                  <div className={`text-sm ${
                     msg.role === 'user' ? 'text-cyan-400' :
                     msg.role === 'system' ? 'text-emerald-400' :
                     'text-slate-300'
-                  }`}
-                >
-                  <span className="font-semibold">
-                    {msg.role === 'user' ? '> ' : msg.role === 'system' ? '⚡ ' : '🧠 '}
-                  </span>
-                  {msg.streaming ? (
-                    <span className="animate-pulse">{msg.content || 'Thinking...'}</span>
-                  ) : (
-                    msg.content
+                  }`}>
+                    <span className="font-semibold">
+                      {msg.role === 'user' ? '> ' : msg.role === 'system' ? '⚡ ' : '🧠 '}
+                    </span>
+                    {msg.streaming ? (
+                      <span className="animate-pulse">{msg.content || 'Thinking...'}</span>
+                    ) : (
+                      msg.content
+                    )}
+                  </div>
+                  {msg.files && msg.files.length > 0 && (
+                    <div className="flex flex-wrap gap-1 ml-4">
+                      {msg.files.map((file, i) => (
+                        <div key={i} className="flex items-center gap-1 px-2 py-1 bg-cyan-500/10 border border-cyan-500/20 rounded text-[10px]">
+                          <FileText className="w-3 h-3 text-cyan-400" />
+                          <span className="text-slate-400">{file.name}</span>
+                        </div>
+                      ))}
+                    </div>
                   )}
                 </motion.div>
               ))}
