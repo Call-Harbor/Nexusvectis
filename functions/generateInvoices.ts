@@ -99,9 +99,9 @@ Deno.serve(async (req) => {
       // Determine tax rules based on buyer country
       const buyerCountry = org.headquarters_country || 'Denmark';
       const taxRules = TAX_RULES[buyerCountry] || TAX_RULES['Denmark'];
-      
+
       // Calculate VAT
-      const subtotal = vehicleTotal + resourceTotal + fleetAITotal;
+      const subtotal = vehicleTotal + resourceTotal + fleetAITotal + apiTotal;
       const isEUCrossBorder = buyerCountry !== 'Denmark' && taxRules.requires_vat_id;
       const reverseCharge = isEUCrossBorder; // EU B2B reverse charge
       const vatRate = reverseCharge ? 0 : taxRules.vat_rate;
