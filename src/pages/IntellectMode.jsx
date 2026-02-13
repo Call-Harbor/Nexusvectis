@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "../utils";
 import { 
   Sparkles, Send, Mic, Brain, Zap, TrendingUp, AlertTriangle, 
-  Truck, Route, Package, Activity, Maximize2, Minimize2, X, LayoutDashboard 
+  Truck, Route, Package, Activity, Maximize2, Minimize2, X, LayoutDashboard, Paperclip, FileText 
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -203,6 +203,32 @@ export default function IntellectMode() {
     });
   }, []);
 
+  const handleFileUpload = async (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
+
+    setIsUploading(true);
+    try {
+      const uploadPromises = files.map(async (file) => {
+        const { data } = await base44.integrations.Core.UploadFile({ file });
+        return { name: file.name, url: data.file_url, type: file.type };
+      });
+
+      const newFiles = await Promise.all(uploadPromises);
+      setUploadedFiles(prev => [...prev, ...newFiles]);
+      toast.success(`Uploaded ${files.length} file(s)`);
+    } catch (error) {
+      toast.error('File upload failed');
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const removeFile = (index) => {
+    setUploadedFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
   const processCommand = async () => {
     if (!input.trim() || isProcessing) return;
 
@@ -215,11 +241,12 @@ export default function IntellectMode() {
     // Track analytics
     base44.analytics.track({
       eventName: "fleet_ai_command_sent",
-      properties: { command_length: currentCommand.length }
+      properties: { command_length: currentCommand.length, has_files: uploadedFiles.length > 0 }
     });
 
     setMessages(prev => [...prev, { role: "user", content: currentCommand }]);
     setInput("");
+    setUploadedFiles([]);
     setIsProcessing(true);
 
     const maxRetries = 3;
@@ -807,6 +834,29 @@ export default function IntellectMode() {
               <div ref={messagesEndRef} />
             </div>
 
+            {/* Uploaded Files */}
+            {uploadedFiles.length > 0 && (
+              <div className="mb-3 flex flex-wrap gap-2">
+                {uploadedFiles.map((file, idx) => (
+                  <motion.div
+                    key={idx}
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="flex items-center gap-2 px-3 py-2 bg-cyan-500/10 border border-cyan-500/30 rounded-lg text-xs"
+                  >
+                    <FileText className="w-4 h-4 text-cyan-400" />
+                    <span className="text-slate-300">{file.name}</span>
+                    <button
+                      onClick={() => removeFile(idx)}
+                      className="text-slate-400 hover:text-red-400 transition-colors"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </motion.div>
+                ))}
+              </div>
+            )}
+
             {/* Input */}
             <div className="flex gap-3">
               <input
@@ -832,6 +882,21 @@ export default function IntellectMode() {
                 disabled={isProcessing}
                 className="flex-1 px-6 py-4 bg-slate-900/50 border-2 border-cyan-500/30 rounded-2xl text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-500 backdrop-blur-xl"
               />
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                onChange={handleFileUpload}
+                className="hidden"
+                accept="*/*"
+              />
+              <Button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isProcessing || isUploading}
+                className="px-6 bg-cyan-500/20 hover:bg-cyan-500/30 border-2 border-cyan-500/40 rounded-2xl"
+              >
+                {isUploading ? <Sparkles className="w-5 h-5 animate-spin" /> : <Paperclip className="w-5 h-5" />}
+              </Button>
               <Button
                 onClick={async () => {
                   if (!('webkitSpeechRecognition' in window)) {

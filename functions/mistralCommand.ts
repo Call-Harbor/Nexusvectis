@@ -29,7 +29,8 @@ Deno.serve(async (req) => {
     recentRequests.push(now);
     rateLimitMap.set(userId, recentRequests);
 
-    const { command, context } = await req.json();
+    const body = await req.json();
+    const { command, context, file_urls } = body;
     
     // Input validation
     if (!command || typeof command !== 'string' || command.length > 1000) {
@@ -90,6 +91,8 @@ RULES:
 CURRENT DATA:
 ${JSON.stringify(context, null, 2)}
 
+${file_urls && file_urls.length > 0 ? `\nATTACHED FILES: ${file_urls.length} file(s) provided by user. Analyze them and extract relevant information for the command.` : ''}
+
 OUTPUT FORMAT (JSON):
 {
   "action": "ACTION_NAME",
@@ -103,43 +106,65 @@ EXAMPLES:
 - "show me alerts" → action: OPEN_WINDOW, parameters: {window_type: "alerts"}, message: "Opening alerts window", open_window: "alerts"
 - "zeige mir die routen" → action: OPEN_WINDOW, parameters: {window_type: "routes"}, message: "Routen-Fenster wird geöffnet", open_window: "routes"`;
 
-    const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${mistralApiKey}`
-      },
-      body: JSON.stringify({
-        model: 'mistral-large-latest',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: command }
-        ],
-        response_format: { type: 'json_object' },
-        temperature: 0.3
-      })
-    });
-
-    if (!response.ok) {
-      const error = await response.text();
-      console.error('Mistral API error:', error);
-      
-      // Fallback response
-      return Response.json({
-        action: 'ANSWER',
-        parameters: {},
-        message: 'AI temporarily unavailable. Please try again in a moment.',
-        open_window: null
+    // Use InvokeLLM if files are attached (supports vision/files)
+    let result;
+    
+    if (file_urls && file_urls.length > 0) {
+      const llmResponse = await base44.integrations.Core.InvokeLLM({
+        prompt: `${systemPrompt}\n\nUser command: "${command}"\n\nContext: ${JSON.stringify(context)}`,
+        file_urls: file_urls,
+        add_context_from_internet: false,
+        response_json_schema: {
+          type: 'object',
+          properties: {
+            action: { type: 'string' },
+            parameters: { type: 'object' },
+            message: { type: 'string' },
+            open_window: { type: 'string' }
+          },
+          required: ['action', 'message']
+        }
       });
-    }
+      result = llmResponse;
+    } else {
+      // Use direct Mistral API for text-only commands
+      const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${mistralApiKey}`
+        },
+        body: JSON.stringify({
+          model: 'mistral-large-latest',
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: command }
+          ],
+          response_format: { type: 'json_object' },
+          temperature: 0.3
+        })
+      });
 
-    const data = await response.json();
-    
-    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-      throw new Error('Invalid response from Mistral API');
+      if (!response.ok) {
+        const error = await response.text();
+        console.error('Mistral API error:', error);
+        
+        return Response.json({
+          action: 'ANSWER',
+          parameters: {},
+          message: 'AI temporarily unavailable. Please try again in a moment.',
+          open_window: null
+        });
+      }
+
+      const data = await response.json();
+      
+      if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+        throw new Error('Invalid response from Mistral API');
+      }
+      
+      result = JSON.parse(data.choices[0].message.content);
     }
-    
-    const result = JSON.parse(data.choices[0].message.content);
 
     // Validate response structure
     if (!result.action || !result.message) {
