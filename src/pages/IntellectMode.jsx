@@ -914,9 +914,20 @@ export default function IntellectMode() {
               <Button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isProcessing || isUploading}
-                className="px-6 bg-cyan-500/20 hover:bg-cyan-500/30 border-2 border-cyan-500/40 rounded-2xl"
+                className={`px-6 border-2 rounded-2xl transition-all ${
+                  isUploading 
+                    ? 'bg-cyan-500/30 border-cyan-500/60 animate-pulse' 
+                    : 'bg-cyan-500/20 hover:bg-cyan-500/30 border-cyan-500/40'
+                }`}
               >
-                {isUploading ? <Sparkles className="w-5 h-5 animate-spin" /> : <Paperclip className="w-5 h-5" />}
+                {isUploading ? (
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 animate-spin text-cyan-400" />
+                    <span className="text-xs text-cyan-400">Uploading...</span>
+                  </div>
+                ) : (
+                  <Paperclip className="w-5 h-5 text-cyan-400" />
+                )}
               </Button>
               <Button
                 onClick={async () => {
