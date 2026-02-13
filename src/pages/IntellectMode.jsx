@@ -278,21 +278,32 @@ export default function IntellectMode() {
         const streamingMsgIndex = messages.length + 1;
         setMessages(prev => [...prev, { role: "assistant", content: "", streaming: true }]);
         
+        console.log('🚀 Sending to AI:', { 
+          command: currentCommand, 
+          files: currentFiles.length,
+          file_urls: currentFiles.map(f => f.url)
+        });
+
+        const payload = {
+          command: currentCommand,
+          context: {
+            vehicles_count: vehicles.length,
+            alerts_count: alerts.length,
+            routes_count: routes.length,
+            shipments_count: shipments.length,
+            vehicles: vehicles.slice(0, 3).map(v => ({ name: v.name, type: v.type, status: v.status })),
+            alerts: alerts.slice(0, 3).map(a => ({ title: a.title, type: a.type })),
+            routes: routes.slice(0, 3).map(r => ({ name: r.name, status: r.status })),
+            shipments: shipments.slice(0, 3).map(s => ({ tracking_number: s.tracking_number, status: s.status }))
+          }
+        };
+
+        if (currentFiles.length > 0) {
+          payload.file_urls = currentFiles.map(f => f.url);
+        }
+
         const mistralResponse = await Promise.race([
-          base44.functions.invoke('mistralCommand', {
-            command: currentCommand,
-            file_urls: currentFiles.length > 0 ? currentFiles.map(f => f.url) : undefined,
-            context: {
-              vehicles_count: vehicles.length,
-              alerts_count: alerts.length,
-              routes_count: routes.length,
-              shipments_count: shipments.length,
-              vehicles: vehicles.slice(0, 3).map(v => ({ name: v.name, type: v.type, status: v.status })),
-              alerts: alerts.slice(0, 3).map(a => ({ title: a.title, type: a.type })),
-              routes: routes.slice(0, 3).map(r => ({ name: r.name, status: r.status })),
-              shipments: shipments.slice(0, 3).map(s => ({ tracking_number: s.tracking_number, status: s.status }))
-            }
-          }),
+          base44.functions.invoke('mistralCommand', payload),
           new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 30000))
         ]);
         
