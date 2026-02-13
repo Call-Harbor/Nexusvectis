@@ -72,11 +72,12 @@ AVAILABLE ACTIONS:
 6. CREATE_ALERT - Create alert (requires title, message)
 7. CREATE_CUSTOMER - Create customer (requires name, email or phone)
 8. UPDATE_VEHICLES - Update vehicles (update_all: true, updates: {status, fuel_level, etc})
-9. UPDATE_ROUTES - Update routes (update_all: true, updates: {status, priority})
-10. UPDATE_SHIPMENTS - Update shipments (tracking_number, updates: {status})
-11. UPDATE_ALERTS - Resolve alerts (resolve_all: true)
-12. DELETE_ROUTES - Delete routes (delete_all: true)
-13. DELETE_VEHICLES - Delete vehicles (delete_all: true)
+9. UPDATE_ROUTE - Update specific route (route_name: part of name, updates: {status, priority, etc})
+10. UPDATE_ROUTES - Update all routes (update_all: true, updates: {status, priority})
+11. UPDATE_SHIPMENTS - Update shipments (tracking_number, updates: {status})
+12. UPDATE_ALERTS - Resolve alerts (resolve_all: true)
+13. DELETE_ROUTES - Delete routes (delete_all: true)
+14. DELETE_VEHICLES - Delete vehicles (delete_all: true)
 14. ANSWER - Answer questions with expert logistics insights
 
 WINDOWS (only these 4):
