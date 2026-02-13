@@ -19,9 +19,19 @@ const HologramWindow = React.memo(({ id, title, icon: Icon, children, position, 
   const [size, setSize] = useState({ width: 480, height: 600 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [isMobile, setIsMobile] = useState(false);
   const headerRef = useRef(null);
 
-  const handleMouseDown = (e) => {
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  const handlePointerDown = (e) => {
     if (e.target === headerRef.current || headerRef.current.contains(e.target)) {
       const rect = e.currentTarget.getBoundingClientRect();
       setDragOffset({
@@ -32,29 +42,29 @@ const HologramWindow = React.memo(({ id, title, icon: Icon, children, position, 
     }
   };
 
-  const handleMouseMove = useCallback((e) => {
-    if (isDragging) {
+  const handlePointerMove = useCallback((e) => {
+    if (isDragging && !isMobile) {
       setPos({
         x: e.clientX - dragOffset.x,
         y: e.clientY - dragOffset.y
       });
     }
-  }, [isDragging, dragOffset]);
+  }, [isDragging, dragOffset, isMobile]);
 
-  const handleMouseUp = useCallback(() => {
+  const handlePointerUp = useCallback(() => {
     setIsDragging(false);
   }, []);
 
   useEffect(() => {
-    if (isDragging) {
-      window.addEventListener('mousemove', handleMouseMove);
-      window.addEventListener('mouseup', handleMouseUp);
+    if (isDragging && !isMobile) {
+      window.addEventListener('pointermove', handlePointerMove);
+      window.addEventListener('pointerup', handlePointerUp);
       return () => {
-        window.removeEventListener('mousemove', handleMouseMove);
-        window.removeEventListener('mouseup', handleMouseUp);
+        window.removeEventListener('pointermove', handlePointerMove);
+        window.removeEventListener('pointerup', handlePointerUp);
       };
     }
-  }, [isDragging, handleMouseMove, handleMouseUp]);
+  }, [isDragging, handlePointerMove, handlePointerUp, isMobile]);
 
   if (isMinimized) {
     return (
@@ -66,9 +76,9 @@ const HologramWindow = React.memo(({ id, title, icon: Icon, children, position, 
       >
         <Button
           onClick={onMinimize}
-          className="bg-gradient-to-r from-cyan-500/30 to-violet-500/30 border-2 border-cyan-500/50 backdrop-blur-xl hover:from-cyan-500/40 hover:to-violet-500/40 shadow-lg shadow-cyan-500/20"
+          className="bg-gradient-to-r from-cyan-500/30 to-violet-500/30 border-2 border-cyan-500/50 backdrop-blur-xl hover:from-cyan-500/40 hover:to-violet-500/40 shadow-lg shadow-cyan-500/20 text-xs sm:text-sm"
         >
-          <Icon className="w-4 h-4 mr-2 text-cyan-400" />
+          <Icon className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-cyan-400" />
           <span className="text-white font-medium">{title}</span>
         </Button>
       </motion.div>
@@ -81,9 +91,9 @@ const HologramWindow = React.memo(({ id, title, icon: Icon, children, position, 
       animate={{ scale: 1, opacity: 1, y: 0 }}
       exit={{ scale: 0.9, opacity: 0, y: 20 }}
       transition={{ type: "spring", damping: 25, stiffness: 300 }}
-      style={{ left: pos.x, top: pos.y, width: size.width, height: size.height }}
-      className="fixed z-50 resize overflow-auto"
-      onMouseDown={handleMouseDown}
+      style={isMobile ? {} : { left: pos.x, top: pos.y, width: size.width, height: size.height }}
+      className={isMobile ? "fixed inset-4 z-50" : "fixed z-50 resize overflow-auto"}
+      onPointerDown={handlePointerDown}
     >
       <div className="bg-slate-900/60 backdrop-blur-2xl rounded-2xl border-2 border-cyan-500/40 shadow-2xl shadow-cyan-500/30 overflow-hidden h-full flex flex-col">
         {/* Enhanced Hologram effect */}
@@ -93,29 +103,29 @@ const HologramWindow = React.memo(({ id, title, icon: Icon, children, position, 
         
         <div className="relative flex flex-col h-full">
           {/* Header */}
-          <div ref={headerRef} className="flex items-center justify-between p-4 border-b border-cyan-500/30 cursor-move bg-slate-900/40">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-gradient-to-br from-cyan-500/30 to-violet-500/30 border border-cyan-500/50 shadow-lg shadow-cyan-500/20">
-                <Icon className="w-4 h-4 text-cyan-300" />
+          <div ref={headerRef} className="flex items-center justify-between p-3 sm:p-4 border-b border-cyan-500/30 cursor-move touch-none bg-slate-900/40">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="p-1.5 sm:p-2 rounded-lg bg-gradient-to-br from-cyan-500/30 to-violet-500/30 border border-cyan-500/50 shadow-lg shadow-cyan-500/20">
+                <Icon className="w-3 h-3 sm:w-4 sm:h-4 text-cyan-300" />
               </div>
-              <span className="text-white font-semibold tracking-wide">{title}</span>
+              <span className="text-white font-semibold tracking-wide text-sm sm:text-base">{title}</span>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-1 sm:gap-2">
               <Button
                 size="icon"
                 variant="ghost"
                 onClick={onMinimize}
-                className="h-8 w-8 text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/20 transition-all"
+                className="h-7 w-7 sm:h-8 sm:w-8 text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/20 transition-all"
               >
-                <Minimize2 className="w-4 h-4" />
+                <Minimize2 className="w-3 h-3 sm:w-4 sm:h-4" />
               </Button>
               <Button
                 size="icon"
                 variant="ghost"
                 onClick={onClose}
-                className="h-8 w-8 text-red-400 hover:text-red-300 hover:bg-red-500/20 transition-all"
+                className="h-7 w-7 sm:h-8 sm:w-8 text-red-400 hover:text-red-300 hover:bg-red-500/20 transition-all"
               >
-                <X className="w-4 h-4" />
+                <X className="w-3 h-3 sm:w-4 sm:h-4" />
               </Button>
             </div>
           </div>
@@ -704,33 +714,34 @@ export default function IntellectMode() {
 
       <div className="relative z-10 h-screen flex flex-col">
         {/* Header */}
-        <div className="p-6 border-b border-cyan-500/20 backdrop-blur-xl bg-slate-900/20">
-          <div className="flex items-center justify-between max-w-7xl mx-auto">
-            <div className="flex items-center gap-4">
-              <div className="p-3 rounded-2xl bg-gradient-to-br from-cyan-500/30 to-violet-500/30 border-2 border-cyan-500/50 shadow-lg shadow-cyan-500/30">
-                <Brain className="w-8 h-8 text-cyan-400" />
+        <div className="p-3 sm:p-4 lg:p-6 border-b border-cyan-500/20 backdrop-blur-xl bg-slate-900/20">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 max-w-7xl mx-auto">
+            <div className="flex items-center gap-2 sm:gap-3 lg:gap-4">
+              <div className="p-2 sm:p-2.5 lg:p-3 rounded-xl lg:rounded-2xl bg-gradient-to-br from-cyan-500/30 to-violet-500/30 border-2 border-cyan-500/50 shadow-lg shadow-cyan-500/30">
+                <Brain className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 text-cyan-400" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+                <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-white flex items-center gap-1.5 sm:gap-2">
                   FLEET AI
-                  <Sparkles className="w-5 h-5 text-cyan-400 animate-pulse" />
-                  <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/40 text-xs font-semibold">BETA</Badge>
+                  <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-cyan-400 animate-pulse" />
+                  <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/40 text-[10px] sm:text-xs font-semibold">BETA</Badge>
                 </h1>
-                <p className="text-cyan-400 text-sm">Elite Logistics Intelligence</p>
+                <p className="text-cyan-400 text-xs sm:text-sm">Elite Logistics Intelligence</p>
               </div>
             </div>
-            
-            <div className="flex items-center gap-4">
+
+            <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 w-full sm:w-auto">
               <Button
                 onClick={() => navigate(createPageUrl("Dashboard"))}
-                className="bg-slate-800 hover:bg-slate-700 border border-slate-700"
+                className="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs sm:text-sm flex-1 sm:flex-initial"
               >
-                <LayoutDashboard className="w-4 h-4 mr-2" />
-                Exit FLEET AI
+                <LayoutDashboard className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Exit FLEET AI</span>
+                <span className="sm:hidden">Exit</span>
               </Button>
-              <div className="flex items-center gap-2 px-4 py-2 bg-emerald-500/20 rounded-full border border-emerald-500/40">
-                <Activity className="w-4 h-4 text-emerald-400 animate-pulse" />
-                <span className="text-emerald-400 text-sm font-semibold">System Operational</span>
+              <div className="hidden sm:flex items-center gap-2 px-3 lg:px-4 py-1.5 lg:py-2 bg-emerald-500/20 rounded-full border border-emerald-500/40">
+                <Activity className="w-3 h-3 lg:w-4 lg:h-4 text-emerald-400 animate-pulse" />
+                <span className="text-emerald-400 text-xs lg:text-sm font-semibold">System Operational</span>
               </div>
             </div>
           </div>
@@ -805,14 +816,14 @@ export default function IntellectMode() {
         </div>
 
         {/* Command Interface */}
-        <div className="p-6 border-t border-cyan-500/20 backdrop-blur-xl bg-slate-900/60">
+        <div className="p-3 sm:p-4 lg:p-6 border-t border-cyan-500/20 backdrop-blur-xl bg-slate-900/60">
           <div className="max-w-4xl mx-auto">
             {/* Quick Commands */}
             {showSuggestions && messages.length <= 1 && (
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mb-4 grid grid-cols-2 sm:grid-cols-3 gap-2"
+                className="mb-3 sm:mb-4 grid grid-cols-2 sm:grid-cols-3 gap-2"
               >
                 {quickCommands.map((cmd, idx) => (
                   <motion.button
@@ -824,32 +835,32 @@ export default function IntellectMode() {
                       setInput(cmd.command);
                       setShowSuggestions(false);
                     }}
-                    className={`p-3 rounded-xl border-2 backdrop-blur-xl transition-all text-left hover:scale-105 ${
+                    className={`p-2 sm:p-3 rounded-lg sm:rounded-xl border-2 backdrop-blur-xl transition-all text-left active:scale-95 sm:hover:scale-105 ${
                       cmd.color === 'cyan' ? 'bg-cyan-500/10 border-cyan-500/30 hover:bg-cyan-500/20 hover:border-cyan-500/50' :
                       cmd.color === 'violet' ? 'bg-violet-500/10 border-violet-500/30 hover:bg-violet-500/20 hover:border-violet-500/50' :
                       cmd.color === 'emerald' ? 'bg-emerald-500/10 border-emerald-500/30 hover:bg-emerald-500/20 hover:border-emerald-500/50' :
                       cmd.color === 'amber' ? 'bg-amber-500/10 border-amber-500/30 hover:bg-amber-500/20 hover:border-amber-500/50' :
                       'bg-blue-500/10 border-blue-500/30 hover:bg-blue-500/20 hover:border-blue-500/50'
                     }`}
-                  >
-                    <div className="flex items-center gap-2 mb-1">
-                      <cmd.icon className={`w-4 h-4 ${
+                    >
+                    <div className="flex items-center gap-1.5 sm:gap-2 mb-0.5 sm:mb-1">
+                      <cmd.icon className={`w-3 h-3 sm:w-4 sm:h-4 ${
                         cmd.color === 'cyan' ? 'text-cyan-400' :
                         cmd.color === 'violet' ? 'text-violet-400' :
                         cmd.color === 'emerald' ? 'text-emerald-400' :
                         cmd.color === 'amber' ? 'text-amber-400' :
                         'text-blue-400'
                       }`} />
-                      <span className="text-white text-xs font-semibold">{cmd.label}</span>
+                      <span className="text-white text-[11px] sm:text-xs font-semibold">{cmd.label}</span>
                     </div>
-                    <p className="text-[10px] text-slate-400">"{cmd.command}"</p>
-                  </motion.button>
+                    <p className="text-[9px] sm:text-[10px] text-slate-400">"{cmd.command}"</p>
+                    </motion.button>
                 ))}
               </motion.div>
             )}
 
             {/* Messages */}
-            <div className="mb-4 max-h-48 overflow-y-auto space-y-2">
+            <div className="mb-3 sm:mb-4 max-h-32 sm:max-h-48 overflow-y-auto space-y-1.5 sm:space-y-2">
               {messages.slice(-5).map((msg, idx) => (
                 <motion.div
                   key={idx}
@@ -940,7 +951,7 @@ export default function IntellectMode() {
                 )}
               </AnimatePresence>
 
-              <div className="flex gap-3">
+              <div className="flex gap-2 sm:gap-3">
               <input
                 type="text"
                 value={input}
@@ -966,7 +977,7 @@ export default function IntellectMode() {
                 }}
                 placeholder="Enter command... (e.g. 'open fleet', 'check alerts', 'analyze attached files')"
                 disabled={isProcessing}
-                className="flex-1 px-6 py-4 bg-slate-900/60 border-2 border-cyan-500/40 rounded-2xl text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-400 focus:shadow-lg focus:shadow-cyan-500/20 backdrop-blur-xl transition-all"
+                className="flex-1 px-3 py-2.5 sm:px-4 sm:py-3 lg:px-6 lg:py-4 bg-slate-900/60 border-2 border-cyan-500/40 rounded-xl sm:rounded-2xl text-sm sm:text-base text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-400 focus:shadow-lg focus:shadow-cyan-500/20 backdrop-blur-xl transition-all"
               />
               <input
                 ref={fileInputRef}
@@ -979,19 +990,20 @@ export default function IntellectMode() {
               <Button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isProcessing || isUploading}
-                className={`px-6 border-2 rounded-2xl transition-all shadow-lg ${
+                size="sm"
+                className={`px-3 sm:px-4 lg:px-6 border-2 rounded-xl sm:rounded-2xl transition-all shadow-lg ${
                   isUploading 
                     ? 'bg-gradient-to-r from-cyan-500/40 to-violet-500/40 border-cyan-500/60 animate-pulse shadow-cyan-500/30' 
                     : 'bg-gradient-to-r from-cyan-500/20 to-violet-500/20 hover:from-cyan-500/30 hover:to-violet-500/30 border-cyan-500/40 hover:border-cyan-500/60 shadow-cyan-500/20'
                 }`}
               >
                 {isUploading ? (
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="w-5 h-5 animate-spin text-cyan-300" />
-                    <span className="text-xs text-cyan-300">Uploading...</span>
+                  <div className="flex items-center gap-1.5 sm:gap-2">
+                    <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 animate-spin text-cyan-300" />
+                    <span className="text-xs text-cyan-300 hidden sm:inline">Uploading...</span>
                   </div>
                 ) : (
-                  <Paperclip className="w-5 h-5 text-cyan-300" />
+                  <Paperclip className="w-4 h-4 sm:w-5 sm:h-5 text-cyan-300" />
                 )}
               </Button>
               <Button
@@ -1000,12 +1012,12 @@ export default function IntellectMode() {
                     toast.error('Voice input not supported in this browser');
                     return;
                   }
-                  
+
                   const recognition = new window.webkitSpeechRecognition();
                   recognition.lang = 'en-US';
                   recognition.continuous = false;
                   recognition.interimResults = false;
-                  
+
                   recognition.onstart = () => setIsListening(true);
                   recognition.onend = () => setIsListening(false);
                   recognition.onresult = (event) => {
@@ -1016,25 +1028,27 @@ export default function IntellectMode() {
                     toast.error('Voice input failed');
                     setIsListening(false);
                   };
-                  
+
                   recognition.start();
                 }}
                 disabled={isProcessing}
-                className={`px-6 ${isListening ? 'bg-red-500 hover:bg-red-600' : 'bg-slate-800 hover:bg-slate-700'} rounded-2xl`}
+                size="sm"
+                className={`px-3 sm:px-4 lg:px-6 ${isListening ? 'bg-red-500 hover:bg-red-600' : 'bg-slate-800 hover:bg-slate-700'} rounded-xl sm:rounded-2xl hidden sm:flex`}
               >
-                <Mic className="w-5 h-5" />
+                <Mic className="w-4 h-4 sm:w-5 sm:h-5" />
               </Button>
               <Button
                 onClick={processCommand}
                 disabled={isProcessing || !input.trim()}
-                className="px-8 bg-gradient-to-r from-cyan-500 to-violet-500 hover:from-cyan-600 hover:to-violet-600 rounded-2xl shadow-lg shadow-cyan-500/30 hover:shadow-xl hover:shadow-cyan-500/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                size="sm"
+                className="px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-cyan-500 to-violet-500 hover:from-cyan-600 hover:to-violet-600 rounded-xl sm:rounded-2xl shadow-lg shadow-cyan-500/30 hover:shadow-xl hover:shadow-cyan-500/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isProcessing ? (
                   <div className="flex items-center gap-2">
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   </div>
                 ) : (
-                  <Send className="w-5 h-5" />
+                  <Send className="w-4 h-4 sm:w-5 sm:h-5" />
                 )}
               </Button>
               </div>
