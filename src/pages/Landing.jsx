@@ -381,7 +381,7 @@ export default function Landing() {
       </section>
 
       {/* Footer */}
-      <footer className="relative py-16 px-6 border-t border-white/5 z-10">
+      <footer className="relative py-16 px-6 border-t border-white/5 z-10 bg-[linear-gradient(rgba(6,182,212,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.05)_1px,transparent_1px)] bg-[size:100px_100px]">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <img 
