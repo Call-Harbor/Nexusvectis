@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "../utils";
 import { 
   Truck, Globe, Zap, Shield, TrendingUp, Satellite,
-  BarChart3, MapPin, Radio, ArrowRight, CheckCircle2, Sparkles, Brain, Orbit
+  BarChart3, MapPin, Radio, ArrowRight, CheckCircle2, Sparkles, Brain, Orbit, Package
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useEffect, useState } from "react";
@@ -26,40 +26,55 @@ export default function Landing() {
   const features = [
     {
       icon: Globe,
-      title: "Live Fleet Tracking",
-      description: "Real-time monitoring of all vehicles with GPS, AIS, and ADS-B integration"
+      title: "Live Fleet Monitoring",
+      description: "Real-time tracking af vehicles, ships og aircraft med GPS, AIS og ADS-B integration"
+    },
+    {
+      icon: Sparkles,
+      title: "FLEET AI Mode",
+      description: "AI-drevet kommando-system til naturlig styring af hele din flåde"
     },
     {
       icon: Zap,
-      title: "AI-Powered Optimization",
-      description: "Smart route planning and predictive maintenance to maximize efficiency"
+      title: "Route Optimization",
+      description: "Intelligent ruteplanlægning med AI-optimering og trafikdata integration"
+    },
+    {
+      icon: TrendingUp,
+      title: "Demand Forecasting",
+      description: "Forudsig transportbehov og optimer ressourceallokering med machine learning"
+    },
+    {
+      icon: BarChart3,
+      title: "Fleet Analytics",
+      description: "Avancerede KPI dashboards med brændstofforbrug, CO₂ emissioner og performance"
     },
     {
       icon: Satellite,
-      title: "Multi-Modal Transport",
-      description: "Track trucks, ships, aircraft, trains, and drones from one platform"
+      title: "Warehouse Automation",
+      description: "AI-styret lageroptimering, picking automation og inventar forecasting"
+    },
+    {
+      icon: Brain,
+      title: "Predictive Maintenance",
+      description: "Forudsi vedligeholdelse og reducer nedetid med AI anomali-detektion"
+    },
+    {
+      icon: MapPin,
+      title: "Green TMS",
+      description: "Sustainability tracking, carbon footprint analyse og grøn transport planlægning"
     },
     {
       icon: Shield,
       title: "Enterprise Security",
-      description: "SOC 2 compliant with audit logging and role-based access control"
-    },
-    {
-      icon: BarChart3,
-      title: "Advanced Analytics",
-      description: "Deep insights into fleet performance, fuel efficiency, and CO2 emissions"
-    },
-    {
-      icon: Radio,
-      title: "Global Coverage",
-      description: "Worldwide tracking with multiple signal types and automatic failover"
+      description: "Audit logging, API access control og compliance management"
     }
   ];
 
   const stats = [
-    { value: "99.9%", label: "Uptime" },
-    { value: "50ms", label: "Latency" },
-    { value: "24/7", label: "Support" },
+    { value: "AI", label: "Powered" },
+    { value: "Real-time", label: "Tracking" },
+    { value: "Multi-modal", label: "Transport" },
     { value: "Global", label: "Coverage" }
   ];
 
