@@ -7,7 +7,7 @@ import { createPageUrl } from "../utils";
 import { 
   Sparkles, Send, Mic, Brain, Zap, TrendingUp, AlertTriangle, 
   Truck, Route, Package, Activity, Maximize2, Minimize2, X, LayoutDashboard, Paperclip, FileText,
-  Settings, Warehouse, Satellite
+  Settings, Warehouse, Satellite, Globe
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
