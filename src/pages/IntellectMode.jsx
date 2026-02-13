@@ -176,6 +176,7 @@ export default function IntellectMode() {
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(true);
+  const [creditsData, setCreditsData] = useState(null);
   const messagesEndRef = useRef(null);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -186,6 +187,25 @@ export default function IntellectMode() {
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
+
+  // Fetch FLEET AI credits
+  const { data: credits } = useQuery({
+    queryKey: ['fleetai-credits'],
+    queryFn: async () => {
+      const userData = await base44.entities.User.filter({ email: currentUser.email });
+      if (!userData?.[0]?.organization_id) return null;
+      const orgCredits = await base44.entities.FleetAICredits.filter({ organization_id: userData[0].organization_id });
+      return orgCredits?.[0] || null;
+    },
+    enabled: !!currentUser,
+    refetchInterval: 30000,
+  });
+
+  useEffect(() => {
+    if (credits) {
+      setCreditsData(credits);
+    }
+  }, [credits]);
 
   const { data: vehicles = [] } = useQuery({
     queryKey: ['vehicles-intellect'],
@@ -307,6 +327,18 @@ export default function IntellectMode() {
   const processCommand = async () => {
     if (!input.trim() || isProcessing) return;
 
+    // Check credits
+    if (creditsData) {
+      const remainingCredits = creditsData.total_credits - (creditsData.used_credits || 0);
+      if (remainingCredits <= 0) {
+        toast.error('❌ Insufficient FLEET AI credits. Please purchase more credits to continue.');
+        return;
+      }
+      if (remainingCredits < 10) {
+        toast.warning(`⚠️ Low credits: ${remainingCredits} remaining`);
+      }
+    }
+
     const currentCommand = input;
     
     // Save to history
@@ -383,6 +415,33 @@ export default function IntellectMode() {
 
         const { action, parameters, message, open_window } = mistralResponse.data;
         setRetryCount(0);
+
+        // Log usage and deduct credits
+        const estimatedTokens = currentCommand.length * 0.75 + (message?.length || 0) * 0.75;
+        const creditsUsed = Math.ceil(estimatedTokens / 100);
+
+        try {
+          await base44.entities.FleetAIUsage.create({
+            organization_id: user.organization_id,
+            user_email: user.email,
+            command: currentCommand,
+            action: action,
+            tokens_used: Math.round(estimatedTokens),
+            cost_credits: creditsUsed,
+            success: true
+          });
+
+          // Update credits
+          if (creditsData) {
+            const newUsedCredits = (creditsData.used_credits || 0) + creditsUsed;
+            await base44.entities.FleetAICredits.update(creditsData.id, {
+              used_credits: newUsedCredits
+            });
+            queryClient.invalidateQueries({ queryKey: ['fleetai-credits'] });
+          }
+        } catch (logError) {
+          console.error('Failed to log usage:', logError);
+        }
 
       // Udfør handlingen
       switch (action) {
@@ -626,6 +685,23 @@ export default function IntellectMode() {
       } catch (error) {
         attempts++;
         console.error(`Command error (attempt ${attempts}/${maxRetries}):`, error);
+
+        // Log failed usage
+        try {
+          const user = await base44.auth.me();
+          await base44.entities.FleetAIUsage.create({
+            organization_id: user.organization_id,
+            user_email: user.email,
+            command: currentCommand,
+            action: 'ERROR',
+            tokens_used: 0,
+            cost_credits: 0,
+            success: false,
+            error_message: error.message
+          });
+        } catch (logError) {
+          console.error('Failed to log error:', logError);
+        }
         
         if (attempts >= maxRetries) {
           setMessages(prev => [...prev, { 
@@ -777,11 +853,23 @@ export default function IntellectMode() {
                 <span className="hidden sm:inline">Exit FLEET AI</span>
                 <span className="sm:hidden">Exit</span>
               </Button>
-              <div className="hidden sm:flex items-center gap-2 px-3 lg:px-4 py-1.5 lg:py-2 bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 rounded-full border border-emerald-500/50 shadow-lg shadow-emerald-500/20 relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-emerald-400/10 to-transparent animate-pulse" />
-                <Activity className="w-3 h-3 lg:w-4 lg:h-4 text-emerald-400 animate-pulse relative z-10" />
-                <span className="text-emerald-400 text-xs lg:text-sm font-semibold relative z-10">System Operational</span>
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping absolute right-2" />
+              <div className="flex items-center gap-2 sm:gap-3">
+                {creditsData && (
+                  <div className="px-3 lg:px-4 py-1.5 lg:py-2 bg-gradient-to-r from-violet-500/20 to-cyan-500/20 rounded-full border border-violet-500/50 shadow-lg shadow-violet-500/20">
+                    <div className="flex items-center gap-2">
+                      <Zap className="w-3 h-3 lg:w-4 lg:h-4 text-violet-400" />
+                      <span className="text-violet-400 text-xs lg:text-sm font-bold">
+                        {creditsData.total_credits - (creditsData.used_credits || 0)} Credits
+                      </span>
+                    </div>
+                  </div>
+                )}
+                <div className="hidden sm:flex items-center gap-2 px-3 lg:px-4 py-1.5 lg:py-2 bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 rounded-full border border-emerald-500/50 shadow-lg shadow-emerald-500/20 relative overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-emerald-400/10 to-transparent animate-pulse" />
+                  <Activity className="w-3 h-3 lg:w-4 lg:h-4 text-emerald-400 animate-pulse relative z-10" />
+                  <span className="text-emerald-400 text-xs lg:text-sm font-semibold relative z-10">System Operational</span>
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping absolute right-2" />
+                </div>
               </div>
             </div>
           </div>
