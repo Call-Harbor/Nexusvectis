@@ -869,7 +869,7 @@ export default function IntellectMode() {
             ))}
           </AnimatePresence>
 
-          {/* Quick Actions */}
+          {/* Standby Message */}
           {activeWindows.length === 0 && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -878,38 +878,7 @@ export default function IntellectMode() {
             >
               <Brain className="w-24 h-24 text-cyan-500/30 mx-auto mb-6 animate-pulse" />
               <h2 className="text-2xl font-bold text-white mb-4">FLEET AI Standby</h2>
-              <p className="text-slate-400 mb-6">Command me to activate hologram windows and manage operations</p>
-
-              <div className="flex flex-wrap gap-3 justify-center">
-                <Button
-                  onClick={() => openWindow('fleet')}
-                  className="bg-cyan-500/20 border-2 border-cyan-500/40 hover:bg-cyan-500/30 text-cyan-400"
-                >
-                  <Truck className="w-4 h-4 mr-2" />
-                  Open Fleet
-                </Button>
-                <Button
-                  onClick={() => openWindow('alerts')}
-                  className="bg-amber-500/20 border-2 border-amber-500/40 hover:bg-amber-500/30 text-amber-400"
-                >
-                  <AlertTriangle className="w-4 h-4 mr-2" />
-                  Open Alerts
-                </Button>
-                <Button
-                  onClick={() => openWindow('routes')}
-                  className="bg-violet-500/20 border-2 border-violet-500/40 hover:bg-violet-500/30 text-violet-400"
-                >
-                  <Route className="w-4 h-4 mr-2" />
-                  Open Routes
-                </Button>
-                <Button
-                  onClick={() => openWindow('shipments')}
-                  className="bg-blue-500/20 border-2 border-blue-500/40 hover:bg-blue-500/30 text-blue-400"
-                >
-                  <Package className="w-4 h-4 mr-2" />
-                  Open Shipments
-                </Button>
-              </div>
+              <p className="text-slate-400">Command me to activate hologram windows and manage operations</p>
             </motion.div>
           )}
         </div>
