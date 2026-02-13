@@ -300,6 +300,7 @@ export default function IntellectMode() {
 
         if (currentFiles.length > 0) {
           payload.file_urls = currentFiles.map(f => f.url);
+          console.log('📤 Sending files:', payload.file_urls);
         }
 
         const mistralResponse = await Promise.race([
