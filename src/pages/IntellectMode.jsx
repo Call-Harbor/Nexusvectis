@@ -730,29 +730,24 @@ export default function IntellectMode() {
 
         {/* Floating particles */}
         <div className="absolute inset-0 overflow-hidden">
-          {[...Array(20)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute w-1 h-1 bg-cyan-400/30 rounded-full"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animation: `float ${5 + Math.random() * 10}s linear infinite`,
-                animationDelay: `${Math.random() * 5}s`
-              }}
-            />
-          ))}
+          {[...Array(20)].map((_, i) => {
+            const randomX = Math.random() * 100 - 50;
+            return (
+              <div
+                key={i}
+                className="absolute w-1 h-1 bg-cyan-400/30 rounded-full animate-float-particle"
+                style={{
+                  left: `${Math.random() * 100}%`,
+                  top: `${Math.random() * 100}%`,
+                  animationDuration: `${5 + Math.random() * 10}s`,
+                  animationDelay: `${Math.random() * 5}s`,
+                  '--float-x': `${randomX}px`
+                }}
+              />
+            );
+          })}
         </div>
-      </div>
-
-      <style jsx>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0) translateX(0); opacity: 0; }
-          10% { opacity: 0.3; }
-          90% { opacity: 0.3; }
-          50% { transform: translateY(-100vh) translateX(${Math.random() * 100 - 50}px); }
-        }
-      `}</style>
+        </div>
 
       <div className="relative z-10 h-screen flex flex-col">
         {/* Header */}
@@ -855,9 +850,8 @@ export default function IntellectMode() {
             >
               <div className="relative">
                 <div className="absolute inset-0 blur-3xl bg-cyan-500/20 animate-pulse" />
-                <Brain className="w-24 h-24 text-cyan-400 mx-auto mb-6 relative z-10" style={{ 
-                  filter: 'drop-shadow(0 0 20px rgba(6,182,212,0.5))',
-                  animation: 'float 3s ease-in-out infinite'
+                <Brain className="w-24 h-24 text-cyan-400 mx-auto mb-6 relative z-10 animate-float-slow" style={{ 
+                  filter: 'drop-shadow(0 0 20px rgba(6,182,212,0.5))'
                 }} />
               </div>
               <h2 className="text-2xl font-bold mb-4">
@@ -871,14 +865,7 @@ export default function IntellectMode() {
                 <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" style={{ animationDelay: '0.2s' }} />
                 <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" style={{ animationDelay: '0.4s' }} />
               </div>
-            </motion.div>
-
-            <style jsx>{`
-              @keyframes float {
-                0%, 100% { transform: translateY(0); }
-                50% { transform: translateY(-20px); }
-              }
-            `}</style>
+              </motion.div>
           )}
         </div>
 
