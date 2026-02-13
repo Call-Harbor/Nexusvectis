@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "../utils";
+import ReactMarkdown from "react-markdown";
 import { 
   Sparkles, Send, Mic, Brain, Zap, TrendingUp, AlertTriangle, 
   Truck, Route, Package, Activity, Maximize2, Minimize2, X, LayoutDashboard, Paperclip, FileText,
@@ -962,6 +963,10 @@ export default function IntellectMode() {
                     </span>
                     {msg.streaming ? (
                       <span className="animate-pulse">{msg.content || 'Thinking...'}</span>
+                    ) : msg.role === 'assistant' ? (
+                      <div className="prose prose-sm prose-invert max-w-none prose-p:my-2 prose-headings:my-2 prose-ul:my-1 prose-ol:my-1 prose-li:my-0.5">
+                        <ReactMarkdown>{msg.content}</ReactMarkdown>
+                      </div>
                     ) : (
                       msg.content
                     )}
