@@ -901,7 +901,7 @@ export default function IntellectMode() {
         </div>
 
         {/* Command Interface */}
-        <div className="p-3 sm:p-4 lg:p-6 border-t border-cyan-500/20 backdrop-blur-xl bg-slate-900/20 bg-[linear-gradient(rgba(6,182,212,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.08)_1px,transparent_1px)] bg-[size:50px_50px]">
+        <div className="p-3 sm:p-4 lg:p-6 border-t border-cyan-500/20 backdrop-blur-xl bg-[linear-gradient(rgba(6,182,212,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.08)_1px,transparent_1px)] bg-[size:50px_50px]">
           <div className="max-w-4xl mx-auto">
             {/* Quick Commands */}
             {showSuggestions && messages.length <= 1 && (
