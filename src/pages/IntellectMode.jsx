@@ -326,7 +326,7 @@ export default function IntellectMode() {
           const validWindows = ['fleet', 'alerts', 'routes', 'shipments', 'dashboard', 'settings', 
                                 'aioptimization', 'invoices', 'apidocs', 'resources', 
                                 'warehouseautomation', 'demandforecasting', 'greentms', 
-                                'gpsintegration', 'assignment'];
+                                'gpsintegration', 'assignment', 'routeeditor'];
           if (parameters.window_type && validWindows.includes(parameters.window_type)) {
             openWindow(parameters.window_type);
             setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
@@ -483,6 +483,10 @@ export default function IntellectMode() {
             } else {
               setMessages(prev => [...prev, { role: "system", content: `❌ Route not found: ${parameters.route_name}` }]);
             }
+          } else if (parameters.route_id) {
+            await base44.entities.Route.update(parameters.route_id, parameters.updates);
+            queryClient.invalidateQueries({ queryKey: ['routes-intellect'] });
+            setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
           }
           if (open_window) openWindow(open_window);
           break;
@@ -597,7 +601,7 @@ export default function IntellectMode() {
   const renderWindowContent = useCallback((type) => {
     // For page iframes
     if (['dashboard', 'settings', 'aioptimization', 'invoices', 'apidocs', 'resources', 
-         'warehouseautomation', 'demandforecasting', 'greentms', 'gpsintegration', 'assignment'].includes(type)) {
+         'warehouseautomation', 'demandforecasting', 'greentms', 'gpsintegration', 'assignment', 'routeeditor'].includes(type)) {
       const pageMap = {
         'dashboard': 'Dashboard',
         'settings': 'Settings',
@@ -609,7 +613,8 @@ export default function IntellectMode() {
         'demandforecasting': 'DemandForecasting',
         'greentms': 'GreenTMS',
         'gpsintegration': 'GPSIntegration',
-        'assignment': 'Assignment'
+        'assignment': 'Assignment',
+        'routeeditor': 'Routes'
       };
       
       return (
@@ -820,7 +825,8 @@ export default function IntellectMode() {
                   window.type === 'demandforecasting' ? 'Demand Forecasting' :
                   window.type === 'greentms' ? 'Green TMS' :
                   window.type === 'gpsintegration' ? 'GPS Integration' :
-                  window.type === 'assignment' ? 'Assignments' : ''
+                  window.type === 'assignment' ? 'Assignments' :
+                  window.type === 'routeeditor' ? 'Route Editor' : ''
                 }
                 icon={
                   window.type === 'fleet' ? Truck :
@@ -837,7 +843,8 @@ export default function IntellectMode() {
                   window.type === 'demandforecasting' ? TrendingUp :
                   window.type === 'greentms' ? Activity :
                   window.type === 'gpsintegration' ? Satellite :
-                  window.type === 'assignment' ? Route : Activity
+                  window.type === 'assignment' ? Route :
+                  window.type === 'routeeditor' ? Route : Activity
                 }
                 position={window.position}
                 onClose={() => closeWindow(window.id)}
