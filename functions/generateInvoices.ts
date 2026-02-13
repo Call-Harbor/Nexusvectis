@@ -133,10 +133,18 @@ Deno.serve(async (req) => {
       }
       if (fleetAICommands > 0) {
         lineItems.push({
-          description: `FLEET AI Commands (${fleetAICommands} commands)`,
+          description: `FLEET AI IntellectMode (${fleetAICommands} commands)`,
           quantity: Math.ceil(fleetAICommands / 100),
           unit_price: fleetAIPricePer100,
           total: fleetAITotal
+        });
+      }
+      if (apiCalls > 0) {
+        lineItems.push({
+          description: `REST API Calls (${apiCalls} calls)`,
+          quantity: Math.ceil(apiCalls / 100),
+          unit_price: apiPricePer100,
+          total: apiTotal
         });
       }
       
