@@ -517,8 +517,8 @@ fetch("https://api.nexusvectis.com${endpoint.endpoint}", {
                 <div className="text-lg font-mono text-cyan-400">v1</div>
               </div>
               <div className="p-3 bg-slate-900/50 rounded-lg border border-slate-700">
-                <div className="text-sm text-slate-400">Rate Limit</div>
-                <div className="text-lg font-mono text-emerald-400">10,000/month</div>
+                <div className="text-sm text-slate-400">Billing</div>
+                <div className="text-lg font-mono text-emerald-400">Pay-as-you-go</div>
               </div>
               <div className="p-3 bg-slate-900/50 rounded-lg border border-slate-700">
                 <div className="text-sm text-slate-400">Base URL</div>
