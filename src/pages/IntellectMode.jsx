@@ -109,10 +109,13 @@ export default function IntellectMode() {
   const [isListening, setIsListening] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
   const [streamingMessage, setStreamingMessage] = useState("");
+  const [uploadedFiles, setUploadedFiles] = useState([]);
+  const [isUploading, setIsUploading] = useState(false);
   const messagesEndRef = useRef(null);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const abortControllerRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -238,6 +241,7 @@ export default function IntellectMode() {
         const mistralResponse = await Promise.race([
           base44.functions.invoke('mistralCommand', {
             command: currentCommand,
+            file_urls: uploadedFiles.length > 0 ? uploadedFiles.map(f => f.url) : undefined,
             context: {
               vehicles_count: vehicles.length,
               alerts_count: alerts.length,
