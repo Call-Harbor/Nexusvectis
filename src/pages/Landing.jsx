@@ -27,47 +27,47 @@ export default function Landing() {
     {
       icon: Globe,
       title: "Live Fleet Monitoring",
-      description: "Real-time tracking af vehicles, ships og aircraft med GPS, AIS og ADS-B integration"
+      description: "Real-time tracking of vehicles, ships and aircraft with GPS, AIS and ADS-B integration"
     },
     {
       icon: Sparkles,
       title: "FLEET AI Mode",
-      description: "AI-drevet kommando-system til naturlig styring af hele din flåde"
+      description: "AI-powered command system for natural language fleet control and operations"
     },
     {
       icon: Zap,
       title: "Route Optimization",
-      description: "Intelligent ruteplanlægning med AI-optimering og trafikdata integration"
+      description: "Intelligent route planning with AI optimization and real-time traffic data"
     },
     {
       icon: TrendingUp,
       title: "Demand Forecasting",
-      description: "Forudsig transportbehov og optimer ressourceallokering med machine learning"
+      description: "Predict transport demand and optimize resource allocation with machine learning"
     },
     {
       icon: BarChart3,
       title: "Fleet Analytics",
-      description: "Avancerede KPI dashboards med brændstofforbrug, CO₂ emissioner og performance"
+      description: "Advanced KPI dashboards with fuel consumption, CO₂ emissions and performance metrics"
     },
     {
       icon: Satellite,
       title: "Warehouse Automation",
-      description: "AI-styret lageroptimering, picking automation og inventar forecasting"
+      description: "AI-driven warehouse optimization, picking automation and inventory forecasting"
     },
     {
       icon: Brain,
       title: "Predictive Maintenance",
-      description: "Forudsi vedligeholdelse og reducer nedetid med AI anomali-detektion"
+      description: "Predict maintenance needs and reduce downtime with AI anomaly detection"
     },
     {
       icon: MapPin,
       title: "Green TMS",
-      description: "Sustainability tracking, carbon footprint analyse og grøn transport planlægning"
+      description: "Sustainability tracking, carbon footprint analysis and green transport planning"
     },
     {
       icon: Shield,
       title: "Enterprise Security",
-      description: "Audit logging, API access control og compliance management"
+      description: "Audit logging, API access control and compliance management"
     }
   ];
 
