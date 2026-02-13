@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { MapContainer, TileLayer, Marker, Polyline, Popup } from 'react-leaflet';
 
-const HologramWindow = ({ id, title, icon: Icon, children, position, onClose, onMinimize, isMinimized }) => {
+const HologramWindow = React.memo(({ id, title, icon: Icon, children, position, onClose, onMinimize, isMinimized }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [pos, setPos] = useState(position);
   const dragRef = useRef(null);
@@ -94,7 +94,7 @@ const HologramWindow = ({ id, title, icon: Icon, children, position, onClose, on
       </div>
     </motion.div>
   );
-};
+});
 
 export default function IntellectMode() {
   const [input, setInput] = useState("");
@@ -108,9 +108,11 @@ export default function IntellectMode() {
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [isListening, setIsListening] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
+  const [streamingMessage, setStreamingMessage] = useState("");
   const messagesEndRef = useRef(null);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const abortControllerRef = useRef(null);
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -124,7 +126,9 @@ export default function IntellectMode() {
       if (!userData?.[0]?.organization_id) return [];
       return base44.entities.Vehicle.filter({ organization_id: userData[0].organization_id });
     },
-    enabled: !!currentUser
+    enabled: !!currentUser,
+    refetchInterval: 10000,
+    staleTime: 5000
   });
 
   const { data: alerts = [] } = useQuery({
@@ -134,7 +138,9 @@ export default function IntellectMode() {
       if (!userData?.[0]?.organization_id) return [];
       return base44.entities.Alert.filter({ organization_id: userData[0].organization_id, is_resolved: false });
     },
-    enabled: !!currentUser
+    enabled: !!currentUser,
+    refetchInterval: 15000,
+    staleTime: 5000
   });
 
   const { data: routes = [] } = useQuery({
@@ -144,7 +150,9 @@ export default function IntellectMode() {
       if (!userData?.[0]?.organization_id) return [];
       return base44.entities.Route.filter({ organization_id: userData[0].organization_id });
     },
-    enabled: !!currentUser
+    enabled: !!currentUser,
+    refetchInterval: 15000,
+    staleTime: 5000
   });
 
   const { data: shipments = [] } = useQuery({
@@ -154,31 +162,33 @@ export default function IntellectMode() {
       if (!userData?.[0]?.organization_id) return [];
       return base44.entities.Shipment.filter({ organization_id: userData[0].organization_id });
     },
-    enabled: !!currentUser
+    enabled: !!currentUser,
+    refetchInterval: 15000,
+    staleTime: 5000
   });
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, streamingMessage]);
 
-  const openWindow = (type, position = { x: 100 + Math.random() * 200, y: 100 + Math.random() * 200 }) => {
+  const openWindow = useCallback((type, position = { x: 100 + Math.random() * 200, y: 100 + Math.random() * 200 }) => {
     if (activeWindows.find(w => w.type === type)) {
       toast.info(`${type} window already open`);
       return;
     }
     setActiveWindows(prev => [...prev, { type, id: Date.now(), position }]);
-  };
+  }, [activeWindows]);
 
-  const closeWindow = (id) => {
+  const closeWindow = useCallback((id) => {
     setActiveWindows(prev => prev.filter(w => w.id !== id));
     setMinimizedWindows(prev => {
       const next = new Set(prev);
       next.delete(id);
       return next;
     });
-  };
+  }, []);
 
-  const toggleMinimize = (id) => {
+  const toggleMinimize = useCallback((id) => {
     setMinimizedWindows(prev => {
       const next = new Set(prev);
       if (next.has(id)) {
@@ -188,7 +198,7 @@ export default function IntellectMode() {
       }
       return next;
     });
-  };
+  }, []);
 
   const processCommand = async () => {
     if (!input.trim() || isProcessing) return;
@@ -219,6 +229,11 @@ export default function IntellectMode() {
 
         // FLEET AI analyzes ALL commands
         setMessages(prev => [...prev, { role: "system", content: "⚡ FLEET analyzing..." }]);
+        setStreamingMessage("");
+        
+        // Start streaming response
+        const streamingMsgIndex = messages.length + 1;
+        setMessages(prev => [...prev, { role: "assistant", content: "", streaming: true }]);
         
         const mistralResponse = await Promise.race([
           base44.functions.invoke('mistralCommand', {
@@ -236,6 +251,9 @@ export default function IntellectMode() {
           }),
           new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 30000))
         ]);
+        
+        // Remove streaming placeholder
+        setMessages(prev => prev.filter((_, idx) => idx !== streamingMsgIndex));
 
         const { action, parameters, message, open_window } = mistralResponse.data;
         setRetryCount(0);
@@ -484,7 +502,18 @@ export default function IntellectMode() {
     setIsProcessing(false);
   };
 
-  const renderWindowContent = (type) => {
+  const contextData = useMemo(() => ({
+    vehicles_count: vehicles.length,
+    alerts_count: alerts.length,
+    routes_count: routes.length,
+    shipments_count: shipments.length,
+    vehicles: vehicles.slice(0, 3).map(v => ({ name: v.name, type: v.type, status: v.status })),
+    alerts: alerts.slice(0, 3).map(a => ({ title: a.title, type: a.type })),
+    routes: routes.slice(0, 3).map(r => ({ name: r.name, status: r.status })),
+    shipments: shipments.slice(0, 3).map(s => ({ tracking_number: s.tracking_number, status: s.status }))
+  }), [vehicles, alerts, routes, shipments]);
+
+  const renderWindowContent = useCallback((type) => {
     switch (type) {
       case "fleet":
         return (
@@ -611,7 +640,7 @@ export default function IntellectMode() {
       default:
         return null;
     }
-  };
+  }, [vehicles, alerts, routes, shipments]);
 
   return (
     <div className="min-h-screen bg-black relative overflow-hidden">
@@ -753,9 +782,24 @@ export default function IntellectMode() {
                   <span className="font-semibold">
                     {msg.role === 'user' ? '> ' : msg.role === 'system' ? '⚡ ' : '🧠 '}
                   </span>
-                  {msg.content}
+                  {msg.streaming ? (
+                    <span className="animate-pulse">{msg.content || 'Thinking...'}</span>
+                  ) : (
+                    msg.content
+                  )}
                 </motion.div>
               ))}
+              {streamingMessage && (
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="text-sm text-slate-300"
+                >
+                  <span className="font-semibold">🧠 </span>
+                  <span>{streamingMessage}</span>
+                  <span className="animate-pulse">▊</span>
+                </motion.div>
+              )}
               <div ref={messagesEndRef} />
             </div>
 
