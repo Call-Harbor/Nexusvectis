@@ -791,14 +791,14 @@ export default function IntellectMode() {
                     return;
                   }
                   
-                  const recognition = new (window as any).webkitSpeechRecognition();
+                  const recognition = new window.webkitSpeechRecognition();
                   recognition.lang = 'en-US';
                   recognition.continuous = false;
                   recognition.interimResults = false;
                   
                   recognition.onstart = () => setIsListening(true);
                   recognition.onend = () => setIsListening(false);
-                  recognition.onresult = (event: any) => {
+                  recognition.onresult = (event) => {
                     const transcript = event.results[0][0].transcript;
                     setInput(transcript);
                   };
