@@ -1,10 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
-const RATE_LIMITS = {
-  free: 100,
-  professional: 10000,
-  enterprise: 100000,
-};
+// Rate limits removed - all API usage is metered and billed monthly based on actual consumption
 
 Deno.serve(async (req) => {
   // Handle CORS
