@@ -137,12 +137,12 @@ export default function IntellectMode() {
   ]);
 
   const quickCommands = [
-    { icon: Globe, label: "Open Dashboard", command: "åbn dashboard", color: "cyan" },
-    { icon: Truck, label: "Show Fleet Status", command: "vis flåde status", color: "violet" },
-    { icon: Route, label: "Open Route Editor", command: "åbn route editor", color: "emerald" },
-    { icon: AlertTriangle, label: "Check Alerts", command: "vis advarsler", color: "amber" },
-    { icon: Sparkles, label: "AI Optimization", command: "åbn ai optimization", color: "cyan" },
-    { icon: Package, label: "Track Shipments", command: "vis forsendelser", color: "blue" },
+    { icon: Globe, label: "Open Dashboard", command: "open dashboard", color: "cyan" },
+    { icon: Truck, label: "Show Fleet Status", command: "show fleet status", color: "violet" },
+    { icon: Route, label: "Open Route Editor", command: "open route editor", color: "emerald" },
+    { icon: AlertTriangle, label: "Check Alerts", command: "check alerts", color: "amber" },
+    { icon: Sparkles, label: "AI Optimization", command: "open ai optimization", color: "cyan" },
+    { icon: Package, label: "Track Shipments", command: "show shipments", color: "blue" },
   ];
   const [isProcessing, setIsProcessing] = useState(false);
   const [activeWindows, setActiveWindows] = useState([]);
@@ -913,7 +913,7 @@ export default function IntellectMode() {
                         <Paperclip className="w-4 h-4 text-cyan-300" />
                       </div>
                       <span className="text-cyan-300 text-sm font-semibold">
-                        {uploadedFiles.length} fil(er) vedhæftet • Sendes med din kommando
+                        {uploadedFiles.length} file(s) attached • Will be sent with your command
                       </span>
                     </div>
                     <div className="flex flex-wrap gap-2">
@@ -964,7 +964,7 @@ export default function IntellectMode() {
                     setInput(commandHistory[commandHistory.length - 1 - newIndex] || '');
                   }
                 }}
-                placeholder="Indtast kommando... (f.eks. 'åbn flåde', 'vis advarsler', 'analyser vedhæftede filer')"
+                placeholder="Enter command... (e.g. 'open fleet', 'check alerts', 'analyze attached files')"
                 disabled={isProcessing}
                 className="flex-1 px-6 py-4 bg-slate-900/60 border-2 border-cyan-500/40 rounded-2xl text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-400 focus:shadow-lg focus:shadow-cyan-500/20 backdrop-blur-xl transition-all"
               />
@@ -988,7 +988,7 @@ export default function IntellectMode() {
                 {isUploading ? (
                   <div className="flex items-center gap-2">
                     <Sparkles className="w-5 h-5 animate-spin text-cyan-300" />
-                    <span className="text-xs text-cyan-300">Uploader...</span>
+                    <span className="text-xs text-cyan-300">Uploading...</span>
                   </div>
                 ) : (
                   <Paperclip className="w-5 h-5 text-cyan-300" />
@@ -1043,9 +1043,9 @@ export default function IntellectMode() {
               <div className="mt-3 flex items-center justify-between text-xs text-slate-500">
               <div className="flex items-center gap-2">
                 <Zap className="w-3 h-3 text-cyan-500" />
-                <span>Tryk Enter for at sende • ↑↓ for historik</span>
+                <span>Press Enter to send • ↑↓ for history</span>
               </div>
-              <span className="text-slate-600">{uploadedFiles.length > 0 ? `${uploadedFiles.length} fil(er) klar` : 'Vedhæft filer for AI analyse'}</span>
+              <span className="text-slate-600">{uploadedFiles.length > 0 ? `${uploadedFiles.length} file(s) ready` : 'Attach files for AI analysis'}</span>
               </div>
           </div>
         </div>
