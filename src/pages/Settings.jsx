@@ -12,6 +12,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 
 export default function Settings() {
   const [user, setUser] = useState(null);
+  const [organization, setOrganization] = useState(null);
   const [orgName, setOrgName] = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -51,6 +52,7 @@ export default function Settings() {
       if (orgId) {
         const org = await base44.entities.Organization.filter({ id: orgId });
         if (org.length > 0) {
+          setOrganization(org[0]);
           setOrgName(org[0].name);
         }
       }
@@ -198,7 +200,7 @@ export default function Settings() {
               <Building2 className="w-4 h-4 mr-2" />
               Organization
             </TabsTrigger>
-            {user?.role === 'admin' && (
+            {(user?.role === 'admin' || organization?.admin_email === user?.email) && (
               <TabsTrigger value="invoice" className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400">
                 <Building2 className="w-4 h-4 mr-2" />
                 Invoice
