@@ -2,7 +2,7 @@ import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { UserPlus, Users, Mail, Shield, User, Trash2 } from "lucide-react";
+import { UserPlus, Users, Mail, Shield, User, Trash2, Search, Calendar, Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,12 +11,15 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
+import moment from "moment";
 
 export default function UserManagement() {
   const [showInviteDialog, setShowInviteDialog] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState("user");
   const [currentUser, setCurrentUser] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [roleFilter, setRoleFilter] = useState("all");
 
   const queryClient = useQueryClient();
 
@@ -134,8 +137,22 @@ export default function UserManagement() {
     isAdmin: user.email === organization?.admin_email
   }));
 
-  const adminUsers = usersWithOrgs.filter(u => u.isAdmin);
-  const regularUsers = usersWithOrgs.filter(u => !u.isAdmin);
+  // Filter users
+  const filteredUsers = usersWithOrgs.filter(user => {
+    const matchesSearch = 
+      user.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesRole = 
+      roleFilter === "all" ||
+      (roleFilter === "admin" && user.isAdmin) ||
+      (roleFilter === "user" && !user.isAdmin);
+    
+    return matchesSearch && matchesRole;
+  });
+
+  const adminUsers = filteredUsers.filter(u => u.isAdmin);
+  const regularUsers = filteredUsers.filter(u => !u.isAdmin);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6 lg:p-8">
@@ -158,6 +175,32 @@ export default function UserManagement() {
             <UserPlus className="w-4 h-4 mr-2" />
             Invite User
           </Button>
+        </div>
+
+        {/* Search and Filters */}
+        <div className="flex gap-4 mb-6 flex-wrap">
+          <div className="flex-1 min-w-64 relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Input
+              placeholder="Search users..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 bg-slate-800/50 border-slate-700 text-white"
+            />
+          </div>
+          <div className="flex gap-2">
+            {["all", "admin", "user"].map((role) => (
+              <Button
+                key={role}
+                onClick={() => setRoleFilter(role)}
+                variant={roleFilter === role ? "default" : "outline"}
+                className={roleFilter === role ? "bg-cyan-600" : "border-slate-700 text-slate-300"}
+                size="sm"
+              >
+                {role === "all" ? "All Users" : role === "admin" ? "Admins" : "Users"}
+              </Button>
+            ))}
+          </div>
         </div>
 
         {/* Stats */}
@@ -228,15 +271,21 @@ export default function UserManagement() {
                 {adminUsers.map((user) => (
                   <div
                     key={user.id}
-                    className="flex items-center justify-between p-4 rounded-lg bg-slate-900/50 border border-slate-700/30"
+                    className="flex items-center justify-between p-4 rounded-lg bg-slate-900/50 border border-slate-700/30 hover:border-cyan-500/50 transition-colors"
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 flex-1">
                       <div className="p-2 rounded-full bg-violet-500/20">
                         <Shield className="w-4 h-4 text-violet-400" />
                       </div>
-                      <div>
+                      <div className="flex-1">
                         <p className="text-white font-medium">{user.full_name || 'No name'}</p>
                         <p className="text-sm text-slate-400">{user.email}</p>
+                        {user.created_date && (
+                          <p className="text-xs text-slate-500 mt-1 flex items-center gap-1">
+                            <Calendar className="w-3 h-3" />
+                            Joined {moment(user.created_date).format('MMM DD, YYYY')}
+                          </p>
+                        )}
                       </div>
                     </div>
                     <Badge className="bg-violet-500/20 text-violet-400 border-violet-500/30">
@@ -261,15 +310,21 @@ export default function UserManagement() {
                 {regularUsers.map((user) => (
                   <div
                     key={user.id}
-                    className="flex items-center justify-between p-4 rounded-lg bg-slate-900/50 border border-slate-700/30"
+                    className="flex items-center justify-between p-4 rounded-lg bg-slate-900/50 border border-slate-700/30 hover:border-cyan-500/50 transition-colors"
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 flex-1">
                       <div className="p-2 rounded-full bg-cyan-500/20">
                         <User className="w-4 h-4 text-cyan-400" />
                       </div>
-                      <div>
+                      <div className="flex-1">
                         <p className="text-white font-medium">{user.full_name || 'No name'}</p>
                         <p className="text-sm text-slate-400">{user.email}</p>
+                        {user.created_date && (
+                          <p className="text-xs text-slate-500 mt-1 flex items-center gap-1">
+                            <Calendar className="w-3 h-3" />
+                            Joined {moment(user.created_date).format('MMM DD, YYYY')}
+                          </p>
+                        )}
                       </div>
                     </div>
                     <Badge className="bg-slate-700/50 text-slate-300 border-slate-600/50">
@@ -281,10 +336,10 @@ export default function UserManagement() {
             </Card>
           )}
 
-          {users.length === 0 && !isLoading && (
+          {filteredUsers.length === 0 && !isLoading && (
             <div className="text-center py-12">
               <Users className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-              <p className="text-slate-400">No users yet</p>
+              <p className="text-slate-400">{searchTerm || roleFilter !== "all" ? "No users match your search" : "No users yet"}</p>
             </div>
           )}
         </div>
