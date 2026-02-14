@@ -200,10 +200,16 @@ export default function Settings() {
               <Building2 className="w-4 h-4 mr-2" />
               Organization
             </TabsTrigger>
-            {(user?.role === 'admin' || organization?.admin_email === user?.email) && (
+            {organization && (
+              <TabsTrigger value="billing" className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400">
+                <Building2 className="w-4 h-4 mr-2" />
+                Billing Info
+              </TabsTrigger>
+            )}
+            {user?.role === 'admin' && (
               <TabsTrigger value="invoice" className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400">
                 <Building2 className="w-4 h-4 mr-2" />
-                Invoice
+                Invoice Settings
               </TabsTrigger>
             )}
             <TabsTrigger value="security" className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400">
@@ -281,6 +287,109 @@ export default function Settings() {
                     <>
                       <Save className="w-4 h-4 mr-2" />
                       Save Changes
+                    </>
+                  )}
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="billing">
+            <Card className="bg-slate-900/50 border-slate-800">
+              <CardHeader>
+                <CardTitle className="text-white">Billing Information</CardTitle>
+                <CardDescription className="text-slate-400">
+                  Your company details for invoicing
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-slate-300">Company Name</Label>
+                    <Input
+                      value={organization?.name || ""}
+                      onChange={(e) => setOrganization({...organization, name: e.target.value})}
+                      className="bg-slate-800/50 border-slate-700 text-white"
+                      placeholder="Company name"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-slate-300">VAT Number</Label>
+                    <Input
+                      value={organization?.vat_number || ""}
+                      onChange={(e) => setOrganization({...organization, vat_number: e.target.value})}
+                      className="bg-slate-800/50 border-slate-700 text-white"
+                      placeholder="VAT/CVR number"
+                    />
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label className="text-slate-300">Address</Label>
+                  <Input
+                    value={organization?.address || ""}
+                    onChange={(e) => setOrganization({...organization, address: e.target.value})}
+                    className="bg-slate-800/50 border-slate-700 text-white"
+                    placeholder="Full address"
+                  />
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-slate-300">City</Label>
+                    <Input
+                      value={organization?.headquarters_city || ""}
+                      onChange={(e) => setOrganization({...organization, headquarters_city: e.target.value})}
+                      className="bg-slate-800/50 border-slate-700 text-white"
+                      placeholder="City"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-slate-300">Country</Label>
+                    <Input
+                      value={organization?.headquarters_country || ""}
+                      onChange={(e) => setOrganization({...organization, headquarters_country: e.target.value})}
+                      className="bg-slate-800/50 border-slate-700 text-white"
+                      placeholder="Country"
+                    />
+                  </div>
+                </div>
+                
+                <Button
+                  onClick={async () => {
+                    if (!organization?.name || !organization?.vat_number || !organization?.address) {
+                      toast.error("Company name, VAT number and address are required");
+                      return;
+                    }
+                    setSaving(true);
+                    try {
+                      await base44.entities.Organization.update(organization.id, {
+                        name: organization.name,
+                        vat_number: organization.vat_number,
+                        address: organization.address,
+                        headquarters_city: organization.headquarters_city,
+                        headquarters_country: organization.headquarters_country
+                      });
+                      toast.success("Billing information updated");
+                    } catch (error) {
+                      toast.error("Could not update billing information");
+                      console.error(error);
+                    } finally {
+                      setSaving(false);
+                    }
+                  }}
+                  disabled={saving}
+                  className="bg-gradient-to-r from-cyan-600 to-violet-600 hover:from-cyan-500 hover:to-violet-500"
+                >
+                  {saving ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4 mr-2" />
+                      Save Billing Info
                     </>
                   )}
                 </Button>
