@@ -298,26 +298,26 @@ export default function Settings() {
           <TabsContent value="billing">
             <Card className="bg-slate-900/50 border-slate-800">
               <CardHeader>
-                <CardTitle className="text-white">Faktura Oplysninger</CardTitle>
+                <CardTitle className="text-white">Invoice Information</CardTitle>
                 <CardDescription className="text-slate-400">
-                  Tilpas dine fakturadetaljer og standardværdier
+                  Customize your invoice details and default values
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div>
-                  <h3 className="text-sm font-semibold text-cyan-400 mb-3">Grundlæggende Information</h3>
+                  <h3 className="text-sm font-semibold text-cyan-400 mb-3">Basic Information</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label className="text-slate-300">Firmanavn</Label>
+                      <Label className="text-slate-300">Company Name</Label>
                       <Input
                         value={organization?.name || ""}
                         onChange={(e) => setOrganization({...organization, name: e.target.value})}
                         className="bg-slate-800/50 border-slate-700 text-white"
-                        placeholder="Firmanavn"
+                        placeholder="Company name"
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-slate-300">CVR/VAT Nummer</Label>
+                      <Label className="text-slate-300">CVR/VAT Number</Label>
                       <Input
                         value={organization?.vat_number || ""}
                         onChange={(e) => setOrganization({...organization, vat_number: e.target.value})}
@@ -326,55 +326,55 @@ export default function Settings() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-slate-300">Registreringsnummer</Label>
+                      <Label className="text-slate-300">Registration Number</Label>
                       <Input
                         value={organization?.settings?.company_registration || ""}
                         onChange={(e) => setOrganization({...organization, settings: {...organization?.settings, company_registration: e.target.value}})}
                         className="bg-slate-800/50 border-slate-700 text-white"
-                        placeholder="CVR nummer"
+                        placeholder="Company registration number"
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-slate-300">Afdeling</Label>
+                      <Label className="text-slate-300">Department</Label>
                       <Input
                         value={organization?.settings?.department || ""}
                         onChange={(e) => setOrganization({...organization, settings: {...organization?.settings, department: e.target.value}})}
                         className="bg-slate-800/50 border-slate-700 text-white"
-                        placeholder="F.eks. Logistik"
+                        placeholder="e.g. Logistics"
                       />
                     </div>
                   </div>
                 </div>
 
                 <div>
-                  <h3 className="text-sm font-semibold text-cyan-400 mb-3">Adresse</h3>
+                  <h3 className="text-sm font-semibold text-cyan-400 mb-3">Address</h3>
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <Label className="text-slate-300">Fuld Adresse</Label>
+                      <Label className="text-slate-300">Full Address</Label>
                       <Input
                         value={organization?.address || ""}
                         onChange={(e) => setOrganization({...organization, address: e.target.value})}
                         className="bg-slate-800/50 border-slate-700 text-white"
-                        placeholder="Vejnavn og nummer"
+                        placeholder="Street and number"
                       />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label className="text-slate-300">By</Label>
+                        <Label className="text-slate-300">City</Label>
                         <Input
                           value={organization?.headquarters_city || ""}
                           onChange={(e) => setOrganization({...organization, headquarters_city: e.target.value})}
                           className="bg-slate-800/50 border-slate-700 text-white"
-                          placeholder="By"
+                          placeholder="City"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label className="text-slate-300">Land</Label>
+                        <Label className="text-slate-300">Country</Label>
                         <Input
                           value={organization?.headquarters_country || ""}
                           onChange={(e) => setOrganization({...organization, headquarters_country: e.target.value})}
                           className="bg-slate-800/50 border-slate-700 text-white"
-                          placeholder="Land"
+                          placeholder="Country"
                         />
                       </div>
                     </div>
@@ -382,7 +382,7 @@ export default function Settings() {
                 </div>
 
                 <div>
-                  <h3 className="text-sm font-semibold text-cyan-400 mb-3">Kontaktinformation</h3>
+                  <h3 className="text-sm font-semibold text-cyan-400 mb-3">Contact Information</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label className="text-slate-300">Email</Label>
@@ -390,11 +390,11 @@ export default function Settings() {
                         value={organization?.settings?.company_email || ""}
                         onChange={(e) => setOrganization({...organization, settings: {...organization?.settings, company_email: e.target.value}})}
                         className="bg-slate-800/50 border-slate-700 text-white"
-                        placeholder="kontakt@firma.dk"
+                        placeholder="contact@company.com"
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-slate-300">Telefon</Label>
+                      <Label className="text-slate-300">Phone</Label>
                       <Input
                         value={organization?.settings?.company_phone || ""}
                         onChange={(e) => setOrganization({...organization, settings: {...organization?.settings, company_phone: e.target.value}})}
@@ -403,22 +403,22 @@ export default function Settings() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-slate-300">Hjemmeside</Label>
+                      <Label className="text-slate-300">Website</Label>
                       <Input
                         value={organization?.settings?.website || ""}
                         onChange={(e) => setOrganization({...organization, settings: {...organization?.settings, website: e.target.value}})}
                         className="bg-slate-800/50 border-slate-700 text-white"
-                        placeholder="www.firma.dk"
+                        placeholder="www.company.com"
                       />
                     </div>
                   </div>
                 </div>
 
                 <div>
-                  <h3 className="text-sm font-semibold text-cyan-400 mb-3">Betalingsinformation</h3>
+                  <h3 className="text-sm font-semibold text-cyan-400 mb-3">Payment Information</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label className="text-slate-300">Bankkonto (IBAN)</Label>
+                      <Label className="text-slate-300">Bank Account (IBAN)</Label>
                       <Input
                         value={organization?.settings?.bank_account || ""}
                         onChange={(e) => setOrganization({...organization, settings: {...organization?.settings, bank_account: e.target.value}})}
@@ -436,16 +436,16 @@ export default function Settings() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-slate-300">Standard Betalingsbetingelser</Label>
+                      <Label className="text-slate-300">Default Payment Terms</Label>
                       <Input
                         value={organization?.settings?.default_payment_terms || ""}
                         onChange={(e) => setOrganization({...organization, settings: {...organization?.settings, default_payment_terms: e.target.value}})}
                         className="bg-slate-800/50 border-slate-700 text-white"
-                        placeholder="Net 14 dage"
+                        placeholder="Net 14 days"
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-slate-300">Standard Valuta</Label>
+                      <Label className="text-slate-300">Default Currency</Label>
                       <Input
                         value={organization?.settings?.default_currency || "EUR"}
                         onChange={(e) => setOrganization({...organization, settings: {...organization?.settings, default_currency: e.target.value}})}
@@ -455,22 +455,22 @@ export default function Settings() {
                     </div>
                   </div>
                   <div className="space-y-2 mt-4">
-                    <Label className="text-slate-300">Betalingsinstruktioner</Label>
+                    <Label className="text-slate-300">Payment Instructions</Label>
                     <Textarea
                       value={organization?.settings?.payment_instructions || ""}
                       onChange={(e) => setOrganization({...organization, settings: {...organization?.settings, payment_instructions: e.target.value}})}
                       className="bg-slate-800/50 border-slate-700 text-white"
-                      placeholder="Betalingsinstruktioner der vises på fakturaer..."
+                      placeholder="Payment instructions shown on invoices..."
                       rows={3}
                     />
                   </div>
                 </div>
 
                 <div>
-                  <h3 className="text-sm font-semibold text-cyan-400 mb-3">Bogføringsoplysninger</h3>
+                  <h3 className="text-sm font-semibold text-cyan-400 mb-3">Accounting Information</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label className="text-slate-300">Kontonummer</Label>
+                      <Label className="text-slate-300">Account Number</Label>
                       <Input
                         value={organization?.settings?.accounting_account || ""}
                         onChange={(e) => setOrganization({...organization, settings: {...organization?.settings, accounting_account: e.target.value}})}
@@ -479,7 +479,7 @@ export default function Settings() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-slate-300">Omkostningscenter</Label>
+                      <Label className="text-slate-300">Cost Center</Label>
                       <Input
                         value={organization?.settings?.cost_center || ""}
                         onChange={(e) => setOrganization({...organization, settings: {...organization?.settings, cost_center: e.target.value}})}
@@ -488,7 +488,7 @@ export default function Settings() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-slate-300">Projektnummer</Label>
+                      <Label className="text-slate-300">Project Number</Label>
                       <Input
                         value={organization?.settings?.project_number || ""}
                         onChange={(e) => setOrganization({...organization, settings: {...organization?.settings, project_number: e.target.value}})}
@@ -497,7 +497,7 @@ export default function Settings() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-slate-300">Reference/Bilagsnummer</Label>
+                      <Label className="text-slate-300">Reference Number</Label>
                       <Input
                         value={organization?.settings?.reference_number || ""}
                         onChange={(e) => setOrganization({...organization, settings: {...organization?.settings, reference_number: e.target.value}})}
@@ -509,43 +509,43 @@ export default function Settings() {
                 </div>
 
                 <div>
-                  <h3 className="text-sm font-semibold text-cyan-400 mb-3">Tilpassede Felter</h3>
+                  <h3 className="text-sm font-semibold text-cyan-400 mb-3">Custom Fields</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label className="text-slate-300">Felt 1 Label</Label>
+                      <Label className="text-slate-300">Field 1 Label</Label>
                       <Input
                         value={organization?.settings?.custom_field_1_label || ""}
                         onChange={(e) => setOrganization({...organization, settings: {...organization?.settings, custom_field_1_label: e.target.value}})}
                         className="bg-slate-800/50 border-slate-700 text-white"
-                        placeholder="F.eks. 'Indkøbsordre'"
+                        placeholder="e.g. 'Purchase Order'"
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-slate-300">Felt 2 Label</Label>
+                      <Label className="text-slate-300">Field 2 Label</Label>
                       <Input
                         value={organization?.settings?.custom_field_2_label || ""}
                         onChange={(e) => setOrganization({...organization, settings: {...organization?.settings, custom_field_2_label: e.target.value}})}
                         className="bg-slate-800/50 border-slate-700 text-white"
-                        placeholder="F.eks. 'Kontrakt'"
+                        placeholder="e.g. 'Contract'"
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-slate-300">Felt 3 Label</Label>
+                      <Label className="text-slate-300">Field 3 Label</Label>
                       <Input
                         value={organization?.settings?.custom_field_3_label || ""}
                         onChange={(e) => setOrganization({...organization, settings: {...organization?.settings, custom_field_3_label: e.target.value}})}
                         className="bg-slate-800/50 border-slate-700 text-white"
-                        placeholder="F.eks. 'Projekt ID'"
+                        placeholder="e.g. 'Project ID'"
                       />
                     </div>
                   </div>
                 </div>
 
                 <div>
-                  <h3 className="text-sm font-semibold text-cyan-400 mb-3">Faktura Layout</h3>
+                  <h3 className="text-sm font-semibold text-cyan-400 mb-3">Invoice Layout</h3>
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <Label className="text-slate-300">Faktura Præfiks</Label>
+                      <Label className="text-slate-300">Invoice Prefix</Label>
                       <Input
                         value={organization?.settings?.invoice_prefix || ""}
                         onChange={(e) => setOrganization({...organization, settings: {...organization?.settings, invoice_prefix: e.target.value}})}
@@ -554,12 +554,12 @@ export default function Settings() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-slate-300">Footer Tekst</Label>
+                      <Label className="text-slate-300">Footer Text</Label>
                       <Textarea
                         value={organization?.settings?.invoice_footer_text || ""}
                         onChange={(e) => setOrganization({...organization, settings: {...organization?.settings, invoice_footer_text: e.target.value}})}
                         className="bg-slate-800/50 border-slate-700 text-white"
-                        placeholder="Tekst der vises i bunden af fakturaer..."
+                        placeholder="Text shown at the bottom of invoices..."
                         rows={3}
                       />
                     </div>
@@ -569,7 +569,7 @@ export default function Settings() {
                 <Button
                   onClick={async () => {
                     if (!organization?.name || !organization?.vat_number || !organization?.address) {
-                      toast.error("Firmanavn, CVR nummer og adresse er påkrævet");
+                      toast.error("Company name, VAT number and address are required");
                       return;
                     }
                     setSaving(true);
@@ -582,9 +582,9 @@ export default function Settings() {
                         headquarters_country: organization.headquarters_country,
                         settings: organization.settings
                       });
-                      toast.success("Faktura oplysninger opdateret");
+                      toast.success("Invoice information updated");
                     } catch (error) {
-                      toast.error("Kunne ikke opdatere oplysninger");
+                      toast.error("Could not update information");
                       console.error(error);
                     } finally {
                       setSaving(false);
@@ -596,12 +596,12 @@ export default function Settings() {
                   {saving ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Gemmer...
+                      Saving...
                     </>
                   ) : (
                     <>
                       <Save className="w-4 h-4 mr-2" />
-                      Gem Oplysninger
+                      Save Information
                     </>
                   )}
                 </Button>
