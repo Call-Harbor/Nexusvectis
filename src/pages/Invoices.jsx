@@ -1,15 +1,24 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { FileText, Download, Calendar, DollarSign, Loader2, Receipt } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { FileText, Download, Calendar, DollarSign, Loader2, Receipt, Search, X, CheckCircle, Ban } from "lucide-react";
 import moment from "moment";
 import { jsPDF } from "jspdf";
+import { toast } from "sonner";
 
 export default function Invoices() {
   const [user, setUser] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [dateFilter, setDateFilter] = useState("all");
+  const [selectedInvoices, setSelectedInvoices] = useState(new Set());
+  const queryClient = useQueryClient();
 
   const downloadInvoice = (invoice) => {
     const doc = new jsPDF();
@@ -298,9 +307,88 @@ export default function Invoices() {
     );
   }
 
-  const totalAmount = invoices.reduce((sum, inv) => sum + (inv.total_amount || 0), 0);
-  const pendingAmount = invoices.filter(inv => inv.status === 'pending').reduce((sum, inv) => sum + (inv.total_amount || 0), 0);
-  const paidCount = invoices.filter(inv => inv.status === 'paid').length;
+  const markAsPaid = useMutation({
+    mutationFn: async (invoiceIds) => {
+      return Promise.all(
+        invoiceIds.map(id => 
+          base44.entities.Invoice.update(id, { 
+            status: 'paid',
+            paid_date: new Date().toISOString()
+          })
+        )
+      );
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['invoices'] });
+      setSelectedInvoices(new Set());
+      toast.success("Invoices marked as paid");
+    }
+  });
+
+  const cancelInvoices = useMutation({
+    mutationFn: async (invoiceIds) => {
+      return Promise.all(
+        invoiceIds.map(id => 
+          base44.entities.Invoice.update(id, { status: 'cancelled' })
+        )
+      );
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['invoices'] });
+      setSelectedInvoices(new Set());
+      toast.success("Invoices cancelled");
+    }
+  });
+
+  const filteredInvoices = invoices.filter(invoice => {
+    // Search filter
+    const matchesSearch = searchTerm === "" || 
+      invoice.invoice_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      invoice.buyer_name?.toLowerCase().includes(searchTerm.toLowerCase());
+
+    // Status filter
+    const matchesStatus = statusFilter === "all" || invoice.status === statusFilter;
+
+    // Date filter
+    let matchesDate = true;
+    if (dateFilter !== "all") {
+      const invoiceDate = moment(invoice.created_date);
+      const now = moment();
+      if (dateFilter === "this_month") {
+        matchesDate = invoiceDate.isSame(now, 'month');
+      } else if (dateFilter === "last_month") {
+        matchesDate = invoiceDate.isSame(now.subtract(1, 'month'), 'month');
+      } else if (dateFilter === "this_year") {
+        matchesDate = invoiceDate.isSame(now, 'year');
+      }
+    }
+
+    return matchesSearch && matchesStatus && matchesDate;
+  });
+
+  const totalAmount = filteredInvoices.reduce((sum, inv) => sum + (inv.total_amount || 0), 0);
+  const pendingAmount = filteredInvoices.filter(inv => inv.status === 'pending').reduce((sum, inv) => sum + (inv.total_amount || 0), 0);
+  const overdueAmount = filteredInvoices.filter(inv => inv.status === 'overdue').reduce((sum, inv) => sum + (inv.total_amount || 0), 0);
+  const paidAmount = filteredInvoices.filter(inv => inv.status === 'paid').reduce((sum, inv) => sum + (inv.total_amount || 0), 0);
+  const paidCount = filteredInvoices.filter(inv => inv.status === 'paid').length;
+
+  const toggleInvoiceSelection = (invoiceId) => {
+    const newSelected = new Set(selectedInvoices);
+    if (newSelected.has(invoiceId)) {
+      newSelected.delete(invoiceId);
+    } else {
+      newSelected.add(invoiceId);
+    }
+    setSelectedInvoices(newSelected);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedInvoices.size === filteredInvoices.length) {
+      setSelectedInvoices(new Set());
+    } else {
+      setSelectedInvoices(new Set(filteredInvoices.map(inv => inv.id)));
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6">
@@ -310,51 +398,158 @@ export default function Invoices() {
           <p className="text-slate-400">Manage your invoices and payments</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <Card className="bg-slate-900/50 border-slate-800">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-slate-400">Total Billed</CardTitle>
-              <DollarSign className="h-4 w-4 text-cyan-400" />
+              <CardTitle className="text-sm font-medium text-slate-400">Total Outstanding</CardTitle>
+              <DollarSign className="h-4 w-4 text-yellow-400" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-white">€{totalAmount.toLocaleString('en-US')}</div>
+              <div className="text-2xl font-bold text-white">€{(pendingAmount + overdueAmount).toLocaleString('en-US')}</div>
+              <p className="text-xs text-slate-500 mt-1">Pending + Overdue</p>
             </CardContent>
           </Card>
 
           <Card className="bg-slate-900/50 border-slate-800">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-slate-400">Pending Payment</CardTitle>
-              <Receipt className="h-4 w-4 text-yellow-400" />
+              <CardTitle className="text-sm font-medium text-slate-400">Total Paid</CardTitle>
+              <CheckCircle className="h-4 w-4 text-green-400" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-white">€{pendingAmount.toLocaleString('en-US')}</div>
+              <div className="text-2xl font-bold text-white">€{paidAmount.toLocaleString('en-US')}</div>
+              <p className="text-xs text-slate-500 mt-1">{paidCount} invoices</p>
             </CardContent>
           </Card>
 
           <Card className="bg-slate-900/50 border-slate-800">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-slate-400">Paid Invoices</CardTitle>
-              <FileText className="h-4 w-4 text-green-400" />
+              <CardTitle className="text-sm font-medium text-slate-400">Overdue</CardTitle>
+              <Receipt className="h-4 w-4 text-red-400" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-white">{paidCount}</div>
+              <div className="text-2xl font-bold text-white">€{overdueAmount.toLocaleString('en-US')}</div>
+              <p className="text-xs text-slate-500 mt-1">Requires attention</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-slate-900/50 border-slate-800">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-slate-400">Total Invoices</CardTitle>
+              <FileText className="h-4 w-4 text-cyan-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-white">{filteredInvoices.length}</div>
+              <p className="text-xs text-slate-500 mt-1">All time</p>
             </CardContent>
           </Card>
         </div>
 
         <Card className="bg-slate-900/50 border-slate-800">
           <CardHeader>
-            <CardTitle className="text-white">All Invoices</CardTitle>
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+              <CardTitle className="text-white">All Invoices</CardTitle>
+              
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <Input
+                    placeholder="Search invoices..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-9 bg-slate-800/50 border-slate-700 text-white w-full sm:w-64"
+                  />
+                  {searchTerm && (
+                    <button
+                      onClick={() => setSearchTerm("")}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                    >
+                      <X className="w-4 h-4 text-slate-400 hover:text-white" />
+                    </button>
+                  )}
+                </div>
+
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="bg-slate-800/50 border-slate-700 text-white w-full sm:w-40">
+                    <SelectValue placeholder="Status" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-slate-800 border-slate-700">
+                    <SelectItem value="all">All Status</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="paid">Paid</SelectItem>
+                    <SelectItem value="overdue">Overdue</SelectItem>
+                    <SelectItem value="cancelled">Cancelled</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Select value={dateFilter} onValueChange={setDateFilter}>
+                  <SelectTrigger className="bg-slate-800/50 border-slate-700 text-white w-full sm:w-40">
+                    <SelectValue placeholder="Period" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-slate-800 border-slate-700">
+                    <SelectItem value="all">All Time</SelectItem>
+                    <SelectItem value="this_month">This Month</SelectItem>
+                    <SelectItem value="last_month">Last Month</SelectItem>
+                    <SelectItem value="this_year">This Year</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {selectedInvoices.size > 0 && (
+              <div className="flex items-center gap-3 mt-4 p-3 bg-cyan-500/10 border border-cyan-500/30 rounded-lg">
+                <span className="text-sm text-cyan-400">{selectedInvoices.size} selected</span>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => markAsPaid.mutate(Array.from(selectedInvoices))}
+                  disabled={markAsPaid.isPending}
+                  className="bg-green-500/20 border-green-500/30 text-green-400 hover:bg-green-500/30"
+                >
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  Mark as Paid
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => cancelInvoices.mutate(Array.from(selectedInvoices))}
+                  disabled={cancelInvoices.isPending}
+                  className="bg-red-500/20 border-red-500/30 text-red-400 hover:bg-red-500/30"
+                >
+                  <Ban className="w-4 h-4 mr-2" />
+                  Cancel
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => setSelectedInvoices(new Set())}
+                  className="text-slate-400 hover:text-white ml-auto"
+                >
+                  Clear
+                </Button>
+              </div>
+            )}
           </CardHeader>
           <CardContent>
-            {invoices.length === 0 ? (
+            {filteredInvoices.length === 0 ? (
               <div className="text-center py-12">
                 <FileText className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-                <p className="text-slate-400">No invoices yet</p>
+                <p className="text-slate-400">
+                  {invoices.length === 0 ? "No invoices yet" : "No invoices match your filters"}
+                </p>
               </div>
             ) : (
               <div className="space-y-3">
-                {invoices.map((invoice) => {
+                {filteredInvoices.length > 0 && (
+                  <div className="flex items-center gap-3 pb-3 border-b border-slate-700/50">
+                    <Checkbox
+                      checked={selectedInvoices.size === filteredInvoices.length}
+                      onCheckedChange={toggleSelectAll}
+                      className="border-slate-600"
+                    />
+                    <span className="text-sm text-slate-400">Select all</span>
+                  </div>
+                )}
+                {filteredInvoices.map((invoice) => {
                   const status = statusColors[invoice.status] || statusColors.pending;
                   return (
                     <div
@@ -362,6 +557,11 @@ export default function Invoices() {
                       className="flex items-center justify-between p-4 rounded-lg bg-slate-800/50 border border-slate-700/50 hover:border-cyan-500/30 transition-colors"
                     >
                       <div className="flex items-center gap-4">
+                        <Checkbox
+                          checked={selectedInvoices.has(invoice.id)}
+                          onCheckedChange={() => toggleInvoiceSelection(invoice.id)}
+                          className="border-slate-600"
+                        />
                         <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-cyan-500/20 to-violet-500/20 flex items-center justify-center border border-cyan-500/30">
                           <FileText className="w-6 h-6 text-cyan-400" />
                         </div>
