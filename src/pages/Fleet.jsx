@@ -627,32 +627,32 @@ export default function Fleet() {
                   )}
 
                   {selectedVehicle.efficiency_score > 0 && (
-                  <div className="p-3 rounded-lg bg-slate-800/50">
-                    <p className="text-xs text-slate-500">Efficiency Score</p>
-                    <div className="flex items-center gap-2">
-                      <BarChart3 className={`w-4 h-4 ${
-                        selectedVehicle.efficiency_score >= 80 ? 'text-emerald-400' :
-                        selectedVehicle.efficiency_score >= 60 ? 'text-amber-400' : 'text-red-400'
-                      }`} />
-                      <p className="font-medium">{selectedVehicle.efficiency_score}%</p>
+                    <div className="p-3 rounded-lg bg-slate-800/50">
+                      <p className="text-xs text-slate-500">Efficiency Score</p>
+                      <div className="flex items-center gap-2">
+                        <BarChart3 className={`w-4 h-4 ${
+                          selectedVehicle.efficiency_score >= 80 ? 'text-emerald-400' :
+                          selectedVehicle.efficiency_score >= 60 ? 'text-amber-400' : 'text-red-400'
+                        }`} />
+                        <p className="font-medium">{selectedVehicle.efficiency_score}%</p>
+                      </div>
                     </div>
-                  </div>
                   )}
 
-                  <div className="grid grid-cols-2 gap-4">
                   {selectedVehicle.route_id && (
-                  <div className="p-3 rounded-lg bg-violet-500/10 border border-violet-500/20">
-                    <p className="text-xs text-violet-300">Assigned Route</p>
-                    <p className="font-medium text-violet-200">{selectedVehicle.route_id}</p>
-                  </div>
+                    <div className="p-3 rounded-lg bg-violet-500/10 border border-violet-500/20">
+                      <p className="text-xs text-violet-300">Assigned Route</p>
+                      <p className="font-medium text-violet-200">{selectedVehicle.route_id}</p>
+                    </div>
                   )}
                   {selectedVehicle.resource_id && (
-                  <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-                    <p className="text-xs text-emerald-300">Current Resource</p>
-                    <p className="font-medium text-emerald-200">{selectedVehicle.resource_id}</p>
-                  </div>
+                    <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                      <p className="text-xs text-emerald-300">Current Resource</p>
+                      <p className="font-medium text-emerald-200">{selectedVehicle.resource_id}</p>
+                    </div>
                   )}
-                <div className="flex gap-2">
+
+                  <div className="flex gap-2">
                   <Button 
                     variant="outline" 
                     className="flex-1 border-slate-700 text-black bg-white hover:bg-slate-100"
