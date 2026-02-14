@@ -65,6 +65,7 @@ const innovationMenuItems = [
 
 const systemMenuItems = [
   { name: "Users", icon: Users, page: "UserManagement" },
+  { name: "Customers", icon: Users, page: "CustomerManagement" },
   { name: "Contracts", icon: FileText, page: "ContractManagement" },
   { name: "Documents", icon: FileText, page: "DocumentManagement" },
   { name: "Security", icon: Shield, page: "Security" },

@@ -80,6 +80,7 @@ import ContractManagement from './pages/ContractManagement';
 import DocumentManagement from './pages/DocumentManagement';
 import DriverManagement from './pages/DriverManagement';
 import AssetManagement from './pages/AssetManagement';
+import CustomerManagement from './pages/CustomerManagement';
 import __Layout from './Layout.jsx';
 
 
@@ -117,6 +118,7 @@ export const PAGES = {
     "DocumentManagement": DocumentManagement,
     "DriverManagement": DriverManagement,
     "AssetManagement": AssetManagement,
+    "CustomerManagement": CustomerManagement,
 }
 
 export const pagesConfig = {
