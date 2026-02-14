@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  Warehouse, Plus, Search, MapPin, Fuel, Battery, Wrench, Ship, X
+  Warehouse, Plus, Search, MapPin, Fuel, Battery, Wrench, Ship, X, Filter, Download, BarChart3
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,6 +38,8 @@ const statusLabels = { operational: "Operational", limited: "Limited", offline: 
 export default function Resources() {
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("name");
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [formData, setFormData] = useState({
     name: "", type: "warehouse", location: "", status: "operational",
@@ -147,13 +149,53 @@ export default function Resources() {
     const matchesSearch = r.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           r.location?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesType = typeFilter === "all" || r.type === typeFilter;
-    return matchesSearch && matchesType;
+    const matchesStatus = statusFilter === "all" || r.status === statusFilter;
+    return matchesSearch && matchesType && matchesStatus;
+  }).sort((a, b) => {
+    if (sortBy === "name") return (a.name || "").localeCompare(b.name || "");
+    if (sortBy === "capacity") return (b.capacity || 0) - (a.capacity || 0);
+    if (sortBy === "utilization") {
+      const aUtil = a.capacity > 0 ? (a.current_level / a.capacity) : 0;
+      const bUtil = b.capacity > 0 ? (b.current_level / b.capacity) : 0;
+      return bUtil - aUtil;
+    }
+    if (sortBy === "available") return (b.capacity - b.current_level) - (a.capacity - a.current_level);
+    return 0;
   });
 
   const typeStats = Object.keys(typeLabels).reduce((acc, type) => {
     acc[type] = resources.filter(r => r.type === type).length;
     return acc;
   }, {});
+
+  const exportToCSV = () => {
+    const headers = ["Name", "Type", "Status", "Location", "Capacity", "Current Level", "Utilization %"];
+    const rows = filteredResources.map(r => {
+      const utilization = r.capacity > 0 ? Math.round((r.current_level / r.capacity) * 100) : 0;
+      return [
+        r.name,
+        typeLabels[r.type],
+        statusLabels[r.status],
+        r.location || "-",
+        r.capacity || 0,
+        r.current_level || 0,
+        `${utilization}%`
+      ];
+    });
+    
+    const csvContent = [
+      headers.join(","),
+      ...rows.map(row => row.join(","))
+    ].join("\n");
+    
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `resources-export-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6 lg:p-8">
@@ -167,15 +209,28 @@ export default function Resources() {
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-8">
           <div>
             <h1 className="text-3xl font-bold text-white">Resources</h1>
-            <p className="text-slate-400 mt-1">{resources.length} locations registered</p>
+            <p className="text-slate-400 mt-1">
+              {filteredResources.length} of {resources.length} locations
+              {searchTerm && ` matching "${searchTerm}"`}
+            </p>
           </div>
-          <Button 
-            onClick={() => setShowAddDialog(true)}
-            className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-black font-semibold"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Add Resource
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline"
+              onClick={exportToCSV}
+              className="bg-slate-800/50 border-slate-700/50 text-white hover:bg-slate-700/50"
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Export
+            </Button>
+            <Button 
+              onClick={() => setShowAddDialog(true)}
+              className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-black font-semibold"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Resource
+            </Button>
+          </div>
         </div>
 
         {/* Stats */}
@@ -204,29 +259,99 @@ export default function Resources() {
         </div>
 
         {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-6">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-            <Input
-              placeholder="Search for resource..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 bg-slate-800/50 border-slate-700/50 text-white"
-            />
+        <div className="flex flex-col gap-4 mb-6">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+              <Input
+                placeholder="Search by name or location..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 bg-slate-800/50 border-slate-700/50 text-white"
+              />
+            </div>
+            <div className="flex gap-2">
+              <Select value={typeFilter} onValueChange={setTypeFilter}>
+                <SelectTrigger className="w-[140px] bg-slate-800/50 border-slate-700/50 text-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Types</SelectItem>
+                  <SelectItem value="fuel_depot">Fuel Depot</SelectItem>
+                  <SelectItem value="warehouse">Warehouse</SelectItem>
+                  <SelectItem value="charging_station">Charging Station</SelectItem>
+                  <SelectItem value="maintenance_hub">Maintenance Hub</SelectItem>
+                  <SelectItem value="port">Port</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-[140px] bg-slate-800/50 border-slate-700/50 text-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="operational">Operational</SelectItem>
+                  <SelectItem value="limited">Limited</SelectItem>
+                  <SelectItem value="offline">Offline</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="w-[150px] bg-slate-800/50 border-slate-700/50 text-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="name">Sort: Name</SelectItem>
+                  <SelectItem value="capacity">Sort: Capacity</SelectItem>
+                  <SelectItem value="utilization">Sort: Utilization</SelectItem>
+                  <SelectItem value="available">Sort: Available</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-          <Select value={typeFilter} onValueChange={setTypeFilter}>
-            <SelectTrigger className="w-[180px] bg-slate-800/50 border-slate-700/50 text-white">
-              <SelectValue placeholder="Type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value="fuel_depot">Fuel Depot</SelectItem>
-              <SelectItem value="warehouse">Warehouse</SelectItem>
-              <SelectItem value="charging_station">Charging Station</SelectItem>
-              <SelectItem value="maintenance_hub">Maintenance Hub</SelectItem>
-              <SelectItem value="port">Port</SelectItem>
-            </SelectContent>
-          </Select>
+
+          {(searchTerm || typeFilter !== "all" || statusFilter !== "all") && (
+            <div className="flex items-center gap-2 text-sm flex-wrap">
+              <Filter className="w-4 h-4 text-slate-500" />
+              <span className="text-slate-400">Active filters:</span>
+              {searchTerm && (
+                <Badge variant="outline" className="bg-cyan-500/20 text-cyan-400 border-cyan-500/30">
+                  Search: {searchTerm}
+                  <X 
+                    className="w-3 h-3 ml-1 cursor-pointer" 
+                    onClick={() => setSearchTerm("")}
+                  />
+                </Badge>
+              )}
+              {typeFilter !== "all" && (
+                <Badge variant="outline" className="bg-amber-500/20 text-amber-400 border-amber-500/30">
+                  Type: {typeFilter}
+                  <X 
+                    className="w-3 h-3 ml-1 cursor-pointer" 
+                    onClick={() => setTypeFilter("all")}
+                  />
+                </Badge>
+              )}
+              {statusFilter !== "all" && (
+                <Badge variant="outline" className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
+                  Status: {statusFilter}
+                  <X 
+                    className="w-3 h-3 ml-1 cursor-pointer" 
+                    onClick={() => setStatusFilter("all")}
+                  />
+                </Badge>
+              )}
+              <button
+                onClick={() => {
+                  setSearchTerm("");
+                  setTypeFilter("all");
+                  setStatusFilter("all");
+                }}
+                className="text-slate-500 hover:text-white text-xs ml-2"
+              >
+                Clear all
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Resources Grid */}
@@ -276,10 +401,17 @@ export default function Resources() {
                       <span>{resource.location || 'No location'}</span>
                     </div>
                     
-                    <div className="flex items-center justify-between">
-                      <Badge variant="outline" className={statusColors[resource.status]}>
-                        {statusLabels[resource.status]}
-                      </Badge>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="p-2 rounded-lg bg-slate-800/50 text-center">
+                        <p className="text-xs text-slate-500">Status</p>
+                        <Badge variant="outline" className={`${statusColors[resource.status]} mt-1`}>
+                          {statusLabels[resource.status]}
+                        </Badge>
+                      </div>
+                      <div className="p-2 rounded-lg bg-slate-800/50 text-center">
+                        <p className="text-xs text-slate-500">Available</p>
+                        <p className="text-lg font-bold text-emerald-400">{(resource.capacity || 0) - (resource.current_level || 0)}</p>
+                      </div>
                     </div>
 
                     <div>
@@ -293,7 +425,13 @@ export default function Resources() {
                         value={utilization} 
                         className="h-2 bg-slate-700"
                       />
-                      <p className="text-xs text-slate-500 mt-1">{utilization}% utilized</p>
+                      <div className="flex items-center justify-between mt-1">
+                        <p className="text-xs text-slate-500">{utilization}% utilized</p>
+                        <BarChart3 className={`w-3 h-3 ${
+                          utilization >= 80 ? 'text-red-400' :
+                          utilization >= 60 ? 'text-amber-400' : 'text-emerald-400'
+                        }`} />
+                      </div>
                     </div>
                   </div>
                 </motion.div>
