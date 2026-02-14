@@ -285,28 +285,6 @@ export default function Invoices() {
     enabled: !!currentUser?.organization_id
   });
 
-  const statusColors = {
-    pending: { bg: 'bg-yellow-500/20', text: 'text-yellow-400', border: 'border-yellow-500/30' },
-    paid: { bg: 'bg-green-500/20', text: 'text-green-400', border: 'border-green-500/30' },
-    overdue: { bg: 'bg-red-500/20', text: 'text-red-400', border: 'border-red-500/30' },
-    cancelled: { bg: 'bg-gray-500/20', text: 'text-gray-400', border: 'border-gray-500/30' }
-  };
-
-  const statusLabels = {
-    pending: 'Pending',
-    paid: 'Paid',
-    overdue: 'Overdue',
-    cancelled: 'Cancelled'
-  };
-
-  if (userLoading || isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-cyan-400" />
-      </div>
-    );
-  }
-
   const markAsPaid = useMutation({
     mutationFn: async (invoiceIds) => {
       return Promise.all(
