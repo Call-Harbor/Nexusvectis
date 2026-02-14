@@ -43,6 +43,8 @@ const navItems = [
 
 const fleetMenuItems = [
   { name: "Fleet", icon: Truck, page: "Fleet" },
+  { name: "Drivers", icon: Users, page: "DriverManagement" },
+  { name: "Assets", icon: Package, page: "AssetManagement" },
   { name: "Assignments", icon: Route, page: "Assignment" },
   { name: "Shipments", icon: Package, page: "Shipments" },
   { name: "GPS Integration", icon: Satellite, page: "GPSIntegration" },

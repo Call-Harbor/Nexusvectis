@@ -78,6 +78,8 @@ import CustomerDashboard from './pages/CustomerDashboard';
 import CustomerTracking from './pages/CustomerTracking';
 import ContractManagement from './pages/ContractManagement';
 import DocumentManagement from './pages/DocumentManagement';
+import DriverManagement from './pages/DriverManagement';
+import AssetManagement from './pages/AssetManagement';
 import __Layout from './Layout.jsx';
 
 
@@ -113,6 +115,8 @@ export const PAGES = {
     "CustomerTracking": CustomerTracking,
     "ContractManagement": ContractManagement,
     "DocumentManagement": DocumentManagement,
+    "DriverManagement": DriverManagement,
+    "AssetManagement": AssetManagement,
 }
 
 export const pagesConfig = {
