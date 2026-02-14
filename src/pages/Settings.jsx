@@ -28,6 +28,13 @@ export default function Settings() {
     bank_swift: "",
     company_registration: ""
   });
+  const [accountingDefaults, setAccountingDefaults] = useState({
+    accounting_account: "",
+    cost_center: "",
+    project_number: "",
+    reference_number: "",
+    accounting_notes: ""
+  });
   const [invoiceSettingsId, setInvoiceSettingsId] = useState(null);
   const queryClient = useQueryClient();
 
@@ -51,8 +58,18 @@ export default function Settings() {
       // Load invoice settings
       const settings = await base44.entities.InvoiceSettings.list();
       if (settings.length > 0) {
-        setInvoiceSettings(settings[0]);
-        setInvoiceSettingsId(settings[0].id);
+        const s = settings[0];
+        setInvoiceSettings(s);
+        setInvoiceSettingsId(s.id);
+        
+        // Load accounting defaults if they exist
+        setAccountingDefaults({
+          accounting_account: s.accounting_account || "",
+          cost_center: s.cost_center || "",
+          project_number: s.project_number || "",
+          reference_number: s.reference_number || "",
+          accounting_notes: s.accounting_notes || ""
+        });
       }
     } catch (error) {
       console.error("Error loading user data:", error);
@@ -93,10 +110,11 @@ export default function Settings() {
 
     setSaving(true);
     try {
+      const dataToSave = { ...invoiceSettings, ...accountingDefaults };
       if (invoiceSettingsId) {
-        await base44.entities.InvoiceSettings.update(invoiceSettingsId, invoiceSettings);
+        await base44.entities.InvoiceSettings.update(invoiceSettingsId, dataToSave);
       } else {
-        const created = await base44.entities.InvoiceSettings.create(invoiceSettings);
+        const created = await base44.entities.InvoiceSettings.create(dataToSave);
         setInvoiceSettingsId(created.id);
       }
       toast.success("Faktura indstillinger opdateret");
@@ -371,10 +389,67 @@ export default function Settings() {
                   </div>
                 </div>
                 
+                <div className="pt-6 border-t border-slate-700">
+                  <h3 className="text-lg font-semibold text-white mb-4">Standard Bogføringsoplysninger</h3>
+                  <p className="text-sm text-slate-400 mb-4">Disse oplysninger vil automatisk blive tilføjet til nye fakturaer</p>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-slate-300">Kontonummer</Label>
+                      <Input
+                        value={accountingDefaults.accounting_account}
+                        onChange={(e) => setAccountingDefaults({...accountingDefaults, accounting_account: e.target.value})}
+                        className="bg-slate-800/50 border-slate-700 text-white"
+                        placeholder="8000"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-slate-300">Omkostningscenter</Label>
+                      <Input
+                        value={accountingDefaults.cost_center}
+                        onChange={(e) => setAccountingDefaults({...accountingDefaults, cost_center: e.target.value})}
+                        className="bg-slate-800/50 border-slate-700 text-white"
+                        placeholder="CC-100"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <div className="space-y-2">
+                      <Label className="text-slate-300">Projektnummer</Label>
+                      <Input
+                        value={accountingDefaults.project_number}
+                        onChange={(e) => setAccountingDefaults({...accountingDefaults, project_number: e.target.value})}
+                        className="bg-slate-800/50 border-slate-700 text-white"
+                        placeholder="PRJ-2026"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-slate-300">Reference/Bilagsnummer</Label>
+                      <Input
+                        value={accountingDefaults.reference_number}
+                        onChange={(e) => setAccountingDefaults({...accountingDefaults, reference_number: e.target.value})}
+                        className="bg-slate-800/50 border-slate-700 text-white"
+                        placeholder="REF-001"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2 mt-4">
+                    <Label className="text-slate-300">Interne Noter til Bogføring</Label>
+                    <Input
+                      value={accountingDefaults.accounting_notes}
+                      onChange={(e) => setAccountingDefaults({...accountingDefaults, accounting_notes: e.target.value})}
+                      className="bg-slate-800/50 border-slate-700 text-white"
+                      placeholder="Bemærkninger til bogføring..."
+                    />
+                  </div>
+                </div>
+                
                 <Button
                   onClick={updateInvoiceSettings}
                   disabled={saving}
-                  className="bg-gradient-to-r from-cyan-600 to-violet-600 hover:from-cyan-500 hover:to-violet-500"
+                  className="bg-gradient-to-r from-cyan-600 to-violet-600 hover:from-cyan-500 hover:to-violet-500 mt-6"
                 >
                   {saving ? (
                     <>
