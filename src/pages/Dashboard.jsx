@@ -6,10 +6,15 @@ import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "../utils";
 import { 
   Globe, Satellite, Radio, BarChart3,
-  PanelRightOpen, PanelRightClose, TrendingUp, AlertTriangle, Zap, Activity
+  PanelRightOpen, PanelRightClose, TrendingUp, AlertTriangle, Zap, Activity,
+  Package, Wrench, ArrowRight, FileText, Users
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Link } from "react-router-dom";
+import moment from "moment";
 
 import LiveTrackingMap from "@/components/tracking/LiveTrackingMap";
 import VehicleDetailPanel from "@/components/tracking/VehicleDetailPanel";
@@ -79,6 +84,26 @@ export default function Dashboard() {
     queryFn: () => base44.entities.Alert.list('-created_date'),
   });
 
+  const { data: shipments = [] } = useQuery({
+    queryKey: ['shipments'],
+    queryFn: async () => {
+      const user = await base44.auth.me();
+      const orgId = user?.organization_id || user?.data?.organization_id;
+      if (!orgId) return [];
+      return await base44.entities.Shipment.filter({ organization_id: orgId }, '-created_date', 50);
+    },
+  });
+
+  const { data: maintenanceRecords = [] } = useQuery({
+    queryKey: ['maintenance'],
+    queryFn: async () => {
+      const user = await base44.auth.me();
+      const orgId = user?.organization_id || user?.data?.organization_id;
+      if (!orgId) return [];
+      return await base44.entities.Maintenance.filter({ organization_id: orgId }, '-created_date', 50);
+    },
+  });
+
   const vehicleTrails = {};
 
   const resolveAlertMutation = useMutation({
@@ -114,7 +139,22 @@ export default function Dashboard() {
   const totalCo2 = Math.round(vehicles.reduce((acc, v) => acc + (v.co2_emissions || 0), 0) * 10) / 10;
   const criticalAlerts = alerts.filter(a => a.type === 'critical' && !a.is_resolved).length;
 
-  const StatCard = ({ icon: Icon, label, value, trend, color }) => (
+  const inTransitShipments = shipments.filter(s => s.status === 'in_transit').length;
+  const pendingMaintenance = maintenanceRecords.filter(m => m.status === 'pending').length;
+  const overdueMaintenance = maintenanceRecords.filter(m => 
+    m.status === 'pending' && 
+    m.scheduled_date && 
+    moment(m.scheduled_date).isBefore(moment())
+  ).length;
+
+  const quickActions = [
+    { label: "Shipments", icon: Package, page: "Shipments", color: "cyan" },
+    { label: "Maintenance", icon: Wrench, page: "MaintenanceManagement", color: "violet" },
+    { label: "Reports", icon: FileText, page: "Reports", color: "emerald" },
+    { label: "Drivers", icon: Users, page: "DriverManagement", color: "amber" }
+  ];
+
+  const StatCard = ({ icon: Icon, label, value, trend, color, subtitle }) => (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -147,6 +187,7 @@ export default function Dashboard() {
       </div>
       <p className="text-slate-400 text-xs sm:text-sm font-medium">{label}</p>
       <p className="text-xl sm:text-2xl font-bold text-white mt-0.5 sm:mt-1">{value}</p>
+      {subtitle && <p className="text-xs text-slate-500 mt-1">{subtitle}</p>}
     </motion.div>
   );
 
@@ -201,13 +242,45 @@ export default function Dashboard() {
               </div>
             </div>
 
+            {/* Quick Actions */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
+              {quickActions.map((action, idx) => {
+                const Icon = action.icon;
+                return (
+                  <Link key={idx} to={createPageUrl(action.page)}>
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: idx * 0.05 }}
+                      whileHover={{ scale: 1.02, y: -2 }}
+                      className={`p-3 sm:p-4 rounded-xl backdrop-blur-xl border transition-all cursor-pointer group ${
+                        action.color === 'cyan' ? 'bg-cyan-500/10 border-cyan-500/30 hover:border-cyan-500/50' :
+                        action.color === 'violet' ? 'bg-violet-500/10 border-violet-500/30 hover:border-violet-500/50' :
+                        action.color === 'emerald' ? 'bg-emerald-500/10 border-emerald-500/30 hover:border-emerald-500/50' :
+                        'bg-amber-500/10 border-amber-500/30 hover:border-amber-500/50'
+                      }`}
+                    >
+                      <Icon className={`w-5 h-5 mb-2 group-hover:scale-110 transition-transform ${
+                        action.color === 'cyan' ? 'text-cyan-400' :
+                        action.color === 'violet' ? 'text-violet-400' :
+                        action.color === 'emerald' ? 'text-emerald-400' :
+                        'text-amber-400'
+                      }`} />
+                      <p className="text-white text-sm font-medium">{action.label}</p>
+                    </motion.div>
+                  </Link>
+                );
+              })}
+            </div>
+
             {/* Live Stats Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3 lg:gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3 lg:gap-4">
               <StatCard icon={Activity} label="Active Units" value={`${activeVehicles}/${vehicles.length}`} trend color="cyan" />
               <StatCard icon={Zap} label="Fleet Efficiency" value={`${avgEfficiency}%`} trend color="cyan" />
-              <StatCard icon={Radio} label="Avg. Fuel Level" value={`${avgFuelLevel}%`} color="amber" />
-              <StatCard icon={Activity} label="CO₂ Emissions" value={`${totalCo2}t`} color="violet" />
-              <StatCard icon={AlertTriangle} label="Critical Alerts" value={criticalAlerts} color={criticalAlerts > 0 ? 'violet' : 'cyan'} />
+              <StatCard icon={Package} label="In Transit" value={inTransitShipments} subtitle={`${shipments.length} total`} color="violet" />
+              <StatCard icon={Wrench} label="Maintenance" value={pendingMaintenance} subtitle={overdueMaintenance > 0 ? `${overdueMaintenance} overdue` : "On track"} color={overdueMaintenance > 0 ? 'amber' : 'emerald'} />
+              <StatCard icon={Radio} label="Avg. Fuel" value={`${avgFuelLevel}%`} color="emerald" />
+              <StatCard icon={AlertTriangle} label="Critical" value={criticalAlerts} color={criticalAlerts > 0 ? 'amber' : 'cyan'} />
             </div>
           </div>
         </motion.div>
@@ -221,6 +294,89 @@ export default function Dashboard() {
                 onAnalyze={() => {}}
               />
             </div>
+
+            {/* Recent Activity Cards - Mobile & Desktop */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <Card className="bg-slate-900/50 border-slate-800">
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-white font-semibold flex items-center gap-2">
+                      <Package className="w-5 h-5 text-cyan-400" />
+                      Recent Shipments
+                    </h3>
+                    <Link to={createPageUrl("Shipments")}>
+                      <Button variant="ghost" size="sm" className="text-cyan-400 hover:text-cyan-300 text-xs">
+                        View All
+                        <ArrowRight className="w-3 h-3 ml-1" />
+                      </Button>
+                    </Link>
+                  </div>
+                  <div className="space-y-2">
+                    {shipments.slice(0, 4).map(shipment => (
+                      <div key={shipment.id} className="flex items-center justify-between p-2.5 rounded-lg bg-slate-800/50 hover:bg-slate-800/70 transition-colors">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-white text-sm font-medium truncate">{shipment.tracking_number}</p>
+                          <p className="text-slate-400 text-xs truncate">{shipment.origin} → {shipment.destination}</p>
+                        </div>
+                        <Badge className={
+                          shipment.status === 'delivered' ? 'bg-emerald-500/20 text-emerald-400 text-xs' :
+                          shipment.status === 'in_transit' ? 'bg-cyan-500/20 text-cyan-400 text-xs' :
+                          'bg-amber-500/20 text-amber-400 text-xs'
+                        }>
+                          {shipment.status === 'in_transit' ? 'Transit' : shipment.status}
+                        </Badge>
+                      </div>
+                    ))}
+                    {shipments.length === 0 && (
+                      <p className="text-slate-400 text-sm text-center py-6">No shipments yet</p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-slate-900/50 border-slate-800">
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-white font-semibold flex items-center gap-2">
+                      <Wrench className="w-5 h-5 text-violet-400" />
+                      Upcoming Maintenance
+                    </h3>
+                    <Link to={createPageUrl("MaintenanceManagement")}>
+                      <Button variant="ghost" size="sm" className="text-violet-400 hover:text-violet-300 text-xs">
+                        View All
+                        <ArrowRight className="w-3 h-3 ml-1" />
+                      </Button>
+                    </Link>
+                  </div>
+                  <div className="space-y-2">
+                    {maintenanceRecords.filter(m => m.status === "pending").slice(0, 4).map(maintenance => {
+                      const vehicle = vehicles.find(v => v.id === maintenance.vehicle_id);
+                      const isOverdue = maintenance.scheduled_date && moment(maintenance.scheduled_date).isBefore(moment());
+                      return (
+                        <div key={maintenance.id} className="flex items-center justify-between p-2.5 rounded-lg bg-slate-800/50 hover:bg-slate-800/70 transition-colors">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-white text-sm font-medium truncate">{vehicle?.name || "Unknown"}</p>
+                            <p className="text-slate-400 text-xs truncate">{maintenance.component}</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {isOverdue && (
+                              <Badge className="bg-red-500/20 text-red-400 text-xs">Overdue</Badge>
+                            )}
+                            <Badge className="bg-violet-500/20 text-violet-400 text-xs whitespace-nowrap">
+                              {maintenance.scheduled_date ? moment(maintenance.scheduled_date).format('MMM DD') : 'TBD'}
+                            </Badge>
+                          </div>
+                        </div>
+                      );
+                    })}
+                    {maintenanceRecords.filter(m => m.status === "pending").length === 0 && (
+                      <p className="text-slate-400 text-sm text-center py-6">No upcoming maintenance</p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
             <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
               <div className="flex-1 min-h-[400px] sm:min-h-[500px] lg:min-h-[600px]">
                 <LiveTrackingMap 
