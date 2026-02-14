@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Plus, Search, AlertTriangle, Info, AlertCircle, CheckCircle,
-  Sparkles, X, Check
+  Sparkles, X, Check, Filter, Download, BarChart3
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,7 +32,9 @@ const categoryLabels = {
 export default function Alerts() {
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
+  const [categoryFilter, setCategoryFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("unresolved");
+  const [sortBy, setSortBy] = useState("date");
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [formData, setFormData] = useState({
     title: "", message: "", type: "info", category: "system", ai_recommendation: ""
@@ -83,12 +85,22 @@ export default function Alerts() {
 
   const filteredAlerts = alerts.filter(a => {
     const matchesSearch = a.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          a.message?.toLowerCase().includes(searchTerm.toLowerCase());
+                          a.message?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          a.ai_recommendation?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesType = typeFilter === "all" || a.type === typeFilter;
+    const matchesCategory = categoryFilter === "all" || a.category === categoryFilter;
     const matchesStatus = statusFilter === "all" || 
                           (statusFilter === "unresolved" && !a.is_resolved) ||
                           (statusFilter === "resolved" && a.is_resolved);
-    return matchesSearch && matchesType && matchesStatus;
+    return matchesSearch && matchesType && matchesCategory && matchesStatus;
+  }).sort((a, b) => {
+    if (sortBy === "date") return new Date(b.created_date) - new Date(a.created_date);
+    if (sortBy === "priority") {
+      const priority = { critical: 3, warning: 2, info: 1, success: 0 };
+      return priority[b.type] - priority[a.type];
+    }
+    if (sortBy === "title") return (a.title || "").localeCompare(b.title || "");
+    return 0;
   });
 
   const stats = {
@@ -100,6 +112,32 @@ export default function Alerts() {
       const alertDate = new Date(a.created_date);
       return alertDate.toDateString() === today.toDateString();
     }).length,
+  };
+
+  const exportToCSV = () => {
+    const headers = ["Title", "Message", "Type", "Category", "Status", "AI Recommendation", "Created Date"];
+    const rows = filteredAlerts.map(a => [
+      a.title || "-",
+      a.message || "-",
+      typeLabels[a.type] || "-",
+      categoryLabels[a.category] || "-",
+      a.is_resolved ? "Resolved" : "Unresolved",
+      a.ai_recommendation || "-",
+      a.created_date ? format(new Date(a.created_date), "dd-MM-yyyy HH:mm") : "-"
+    ]);
+    
+    const csvContent = [
+      headers.join(","),
+      ...rows.map(row => row.map(cell => `"${cell}"`).join(","))
+    ].join("\n");
+    
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `alerts-export-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
   };
 
   return (
@@ -114,15 +152,28 @@ export default function Alerts() {
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-8">
           <div>
             <h1 className="text-3xl font-bold text-white">Alerts</h1>
-            <p className="text-slate-400 mt-1">{stats.unresolved} require action</p>
+            <p className="text-slate-400 mt-1">
+              {filteredAlerts.length} of {alerts.length} alerts
+              {searchTerm && ` matching "${searchTerm}"`}
+            </p>
           </div>
-          <Button 
-            onClick={() => setShowAddDialog(true)}
-            className="bg-gradient-to-r from-rose-500 to-violet-500 hover:from-rose-600 hover:to-violet-600 text-black font-semibold"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Create Alert
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline"
+              onClick={exportToCSV}
+              className="bg-slate-800/50 border-slate-700/50 text-white hover:bg-slate-700/50"
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Export
+            </Button>
+            <Button 
+              onClick={() => setShowAddDialog(true)}
+              className="bg-gradient-to-r from-rose-500 to-violet-500 hover:from-rose-600 hover:to-violet-600 text-black font-semibold"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Create Alert
+            </Button>
+          </div>
         </div>
 
         {/* Stats */}
@@ -147,41 +198,118 @@ export default function Alerts() {
         </div>
 
         {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-6">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-            <Input
-              placeholder="Search alerts..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 bg-slate-800/50 border-slate-700/50 text-white"
-            />
+        <div className="flex flex-col gap-4 mb-6">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+              <Input
+                placeholder="Search by title, message, or AI recommendation..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 bg-slate-800/50 border-slate-700/50 text-white"
+              />
+            </div>
+            <Tabs value={statusFilter} onValueChange={setStatusFilter}>
+              <TabsList className="bg-slate-800/50 border border-slate-700/50">
+                <TabsTrigger value="unresolved" className="data-[state=active]:bg-amber-500/20 data-[state=active]:text-amber-400">
+                  Unresolved
+                </TabsTrigger>
+                <TabsTrigger value="resolved" className="data-[state=active]:bg-emerald-500/20 data-[state=active]:text-emerald-400">
+                  Resolved
+                </TabsTrigger>
+                <TabsTrigger value="all" className="data-[state=active]:bg-slate-700 data-[state=active]:text-white">
+                  All
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
           </div>
-          <Tabs value={statusFilter} onValueChange={setStatusFilter}>
-            <TabsList className="bg-slate-800/50 border border-slate-700/50">
-              <TabsTrigger value="unresolved" className="data-[state=active]:bg-amber-500/20 data-[state=active]:text-amber-400">
-                Unresolved
-              </TabsTrigger>
-              <TabsTrigger value="resolved" className="data-[state=active]:bg-emerald-500/20 data-[state=active]:text-emerald-400">
-                Resolved
-              </TabsTrigger>
-              <TabsTrigger value="all" className="data-[state=active]:bg-slate-700 data-[state=active]:text-white">
-                All
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-          <Select value={typeFilter} onValueChange={setTypeFilter}>
-            <SelectTrigger className="w-[150px] bg-slate-800/50 border-slate-700/50 text-white">
-              <SelectValue placeholder="Type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value="info">Information</SelectItem>
-              <SelectItem value="warning">Warning</SelectItem>
-              <SelectItem value="critical">Critical</SelectItem>
-              <SelectItem value="success">Success</SelectItem>
-            </SelectContent>
-          </Select>
+
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <div className="flex items-center gap-2">
+              <Select value={typeFilter} onValueChange={setTypeFilter}>
+                <SelectTrigger className="w-[130px] bg-slate-800/50 border-slate-700/50 text-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Types</SelectItem>
+                  <SelectItem value="info">Information</SelectItem>
+                  <SelectItem value="warning">Warning</SelectItem>
+                  <SelectItem value="critical">Critical</SelectItem>
+                  <SelectItem value="success">Success</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                <SelectTrigger className="w-[130px] bg-slate-800/50 border-slate-700/50 text-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  <SelectItem value="system">System</SelectItem>
+                  <SelectItem value="maintenance">Maintenance</SelectItem>
+                  <SelectItem value="delay">Delay</SelectItem>
+                  <SelectItem value="weather">Weather</SelectItem>
+                  <SelectItem value="fuel">Fuel</SelectItem>
+                  <SelectItem value="route">Route</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="w-[140px] bg-slate-800/50 border-slate-700/50 text-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="date">Sort: Date</SelectItem>
+                  <SelectItem value="priority">Sort: Priority</SelectItem>
+                  <SelectItem value="title">Sort: Title</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {(searchTerm || typeFilter !== "all" || categoryFilter !== "all") && (
+              <div className="flex items-center gap-2 text-sm flex-wrap">
+                <Filter className="w-4 h-4 text-slate-500" />
+                <span className="text-slate-400">Active filters:</span>
+                {searchTerm && (
+                  <Badge variant="outline" className="bg-cyan-500/20 text-cyan-400 border-cyan-500/30">
+                    Search: {searchTerm}
+                    <X 
+                      className="w-3 h-3 ml-1 cursor-pointer" 
+                      onClick={() => setSearchTerm("")}
+                    />
+                  </Badge>
+                )}
+                {typeFilter !== "all" && (
+                  <Badge variant="outline" className="bg-rose-500/20 text-rose-400 border-rose-500/30">
+                    Type: {typeFilter}
+                    <X 
+                      className="w-3 h-3 ml-1 cursor-pointer" 
+                      onClick={() => setTypeFilter("all")}
+                    />
+                  </Badge>
+                )}
+                {categoryFilter !== "all" && (
+                  <Badge variant="outline" className="bg-violet-500/20 text-violet-400 border-violet-500/30">
+                    Category: {categoryFilter}
+                    <X 
+                      className="w-3 h-3 ml-1 cursor-pointer" 
+                      onClick={() => setCategoryFilter("all")}
+                    />
+                  </Badge>
+                )}
+                <button
+                  onClick={() => {
+                    setSearchTerm("");
+                    setTypeFilter("all");
+                    setCategoryFilter("all");
+                  }}
+                  className="text-slate-500 hover:text-white text-xs ml-2"
+                >
+                  Clear all
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Alerts List */}
