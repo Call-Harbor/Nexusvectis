@@ -77,6 +77,7 @@ import CustomerPortal from './pages/CustomerPortal';
 import CustomerDashboard from './pages/CustomerDashboard';
 import CustomerTracking from './pages/CustomerTracking';
 import ContractManagement from './pages/ContractManagement';
+import DocumentManagement from './pages/DocumentManagement';
 import __Layout from './Layout.jsx';
 
 
@@ -111,6 +112,7 @@ export const PAGES = {
     "CustomerDashboard": CustomerDashboard,
     "CustomerTracking": CustomerTracking,
     "ContractManagement": ContractManagement,
+    "DocumentManagement": DocumentManagement,
 }
 
 export const pagesConfig = {
