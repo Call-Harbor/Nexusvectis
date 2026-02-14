@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Truck, Ship, Plane, Train, Plus, Search,
-  Fuel, MapPin, Clock, Settings, Radio, X
+  Fuel, MapPin, Clock, Settings, Radio, X, Filter, Download, BarChart3
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,12 +24,23 @@ const statusColors = {
 };
 const statusLabels = { active: "Active", idle: "Standby", maintenance: "Maintenance", offline: "Offline" };
 
+// Sort options
+const sortOptions = [
+  { value: "name", label: "Name" },
+  { value: "type", label: "Type" },
+  { value: "status", label: "Status" },
+  { value: "fuel", label: "Fuel Level" },
+  { value: "speed", label: "Speed" },
+];
+
 export default function Fleet() {
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("name");
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
+  const [viewMode, setViewMode] = useState("grid"); // grid or table
   const [formData, setFormData] = useState({
     name: "TRUCK-001", type: "truck", status: "active",
     speed: 0, latitude: 20, longitude: 0,
@@ -138,10 +149,18 @@ export default function Fleet() {
   };
 
   const filteredVehicles = vehicles.filter(v => {
-    const matchesSearch = v.name?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = v.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          v.driver?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesType = typeFilter === "all" || v.type === typeFilter;
     const matchesStatus = statusFilter === "all" || v.status === statusFilter;
     return matchesSearch && matchesType && matchesStatus;
+  }).sort((a, b) => {
+    if (sortBy === "name") return (a.name || "").localeCompare(b.name || "");
+    if (sortBy === "type") return (a.type || "").localeCompare(b.type || "");
+    if (sortBy === "status") return (a.status || "").localeCompare(b.status || "");
+    if (sortBy === "fuel") return (b.fuel_level || 0) - (a.fuel_level || 0);
+    if (sortBy === "speed") return (b.speed || 0) - (a.speed || 0);
+    return 0;
   });
 
   const typeStats = {
@@ -150,6 +169,32 @@ export default function Fleet() {
     drone: vehicles.filter(v => v.type === 'drone').length,
     train: vehicles.filter(v => v.type === 'train').length,
     aircraft: vehicles.filter(v => v.type === 'aircraft').length,
+  };
+
+  const exportToCSV = () => {
+    const headers = ["Name", "Type", "Status", "Speed", "Fuel", "Driver", "Signal"];
+    const rows = filteredVehicles.map(v => [
+      v.name,
+      vehicleLabels[v.type],
+      statusLabels[v.status],
+      `${v.speed || 0} km/h`,
+      `${v.fuel_level || 0}%`,
+      v.driver || "-",
+      v.signal_type || "-"
+    ]);
+    
+    const csvContent = [
+      headers.join(","),
+      ...rows.map(row => row.join(","))
+    ].join("\n");
+    
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `fleet-export-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
   };
 
   return (
@@ -164,15 +209,28 @@ export default function Fleet() {
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-8">
           <div>
             <h1 className="text-3xl font-bold text-white">Fleet Management</h1>
-            <p className="text-slate-400 mt-1">{vehicles.length} units registered</p>
+            <p className="text-slate-400 mt-1">
+              {filteredVehicles.length} of {vehicles.length} units
+              {searchTerm && ` matching "${searchTerm}"`}
+            </p>
           </div>
-          <Button 
-            onClick={() => setShowAddDialog(true)}
-            className="bg-gradient-to-r from-cyan-500 to-violet-500 hover:from-cyan-600 hover:to-violet-600 text-black font-semibold"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Add Unit
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline"
+              onClick={exportToCSV}
+              className="bg-slate-800/50 border-slate-700/50 text-white hover:bg-slate-700/50"
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Export
+            </Button>
+            <Button 
+              onClick={() => setShowAddDialog(true)}
+              className="bg-gradient-to-r from-cyan-500 to-violet-500 hover:from-cyan-600 hover:to-violet-600 text-black font-semibold"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Unit
+            </Button>
+          </div>
         </div>
 
         {/* Stats */}
@@ -201,41 +259,99 @@ export default function Fleet() {
         </div>
 
         {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-6">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-            <Input
-              placeholder="Search for unit..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 bg-slate-800/50 border-slate-700/50 text-white"
-            />
+        <div className="flex flex-col gap-4 mb-6">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+              <Input
+                placeholder="Search by name or driver..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 bg-slate-800/50 border-slate-700/50 text-white"
+              />
+            </div>
+            <div className="flex gap-2">
+              <Select value={typeFilter} onValueChange={setTypeFilter}>
+                <SelectTrigger className="w-[140px] bg-slate-800/50 border-slate-700/50 text-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Types</SelectItem>
+                  <SelectItem value="truck">Truck</SelectItem>
+                  <SelectItem value="ship">Ship</SelectItem>
+                  <SelectItem value="drone">Drone</SelectItem>
+                  <SelectItem value="train">Train</SelectItem>
+                  <SelectItem value="aircraft">Aircraft</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-[140px] bg-slate-800/50 border-slate-700/50 text-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="idle">Standby</SelectItem>
+                  <SelectItem value="maintenance">Maintenance</SelectItem>
+                  <SelectItem value="offline">Offline</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="w-[140px] bg-slate-800/50 border-slate-700/50 text-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {sortOptions.map(opt => (
+                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-          <Select value={typeFilter} onValueChange={setTypeFilter}>
-            <SelectTrigger className="w-[150px] bg-slate-800/50 border-slate-700/50 text-white">
-              <SelectValue placeholder="Type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value="truck">Truck</SelectItem>
-              <SelectItem value="ship">Ship</SelectItem>
-              <SelectItem value="drone">Drone</SelectItem>
-              <SelectItem value="train">Train</SelectItem>
-              <SelectItem value="aircraft">Aircraft</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-[150px] bg-slate-800/50 border-slate-700/50 text-white">
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="idle">Standby</SelectItem>
-              <SelectItem value="maintenance">Maintenance</SelectItem>
-              <SelectItem value="offline">Offline</SelectItem>
-            </SelectContent>
-          </Select>
+          
+          {(searchTerm || typeFilter !== "all" || statusFilter !== "all") && (
+            <div className="flex items-center gap-2 text-sm">
+              <Filter className="w-4 h-4 text-slate-500" />
+              <span className="text-slate-400">Active filters:</span>
+              {searchTerm && (
+                <Badge variant="outline" className="bg-cyan-500/20 text-cyan-400 border-cyan-500/30">
+                  Search: {searchTerm}
+                  <X 
+                    className="w-3 h-3 ml-1 cursor-pointer" 
+                    onClick={() => setSearchTerm("")}
+                  />
+                </Badge>
+              )}
+              {typeFilter !== "all" && (
+                <Badge variant="outline" className="bg-violet-500/20 text-violet-400 border-violet-500/30">
+                  Type: {typeFilter}
+                  <X 
+                    className="w-3 h-3 ml-1 cursor-pointer" 
+                    onClick={() => setTypeFilter("all")}
+                  />
+                </Badge>
+              )}
+              {statusFilter !== "all" && (
+                <Badge variant="outline" className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
+                  Status: {statusFilter}
+                  <X 
+                    className="w-3 h-3 ml-1 cursor-pointer" 
+                    onClick={() => setStatusFilter("all")}
+                  />
+                </Badge>
+              )}
+              <button
+                onClick={() => {
+                  setSearchTerm("");
+                  setTypeFilter("all");
+                  setStatusFilter("all");
+                }}
+                className="text-slate-500 hover:text-white text-xs ml-2"
+              >
+                Clear all
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Vehicle Grid */}
@@ -289,6 +405,22 @@ export default function Fleet() {
                         <span className="text-xs">Live</span>
                       </div>
                     </div>
+                    {vehicle.driver && (
+                      <div className="text-xs text-slate-500">
+                        Driver: <span className="text-slate-400">{vehicle.driver}</span>
+                      </div>
+                    )}
+                    {vehicle.efficiency_score > 0 && (
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-slate-500">Efficiency</span>
+                        <span className={`font-medium ${
+                          vehicle.efficiency_score >= 80 ? 'text-emerald-400' :
+                          vehicle.efficiency_score >= 60 ? 'text-amber-400' : 'text-red-400'
+                        }`}>
+                          {vehicle.efficiency_score}%
+                        </span>
+                      </div>
+                    )}
                     <div>
                       <div className="flex justify-between text-xs mb-1">
                         <span className="text-slate-500">Fuel</span>
@@ -486,6 +618,28 @@ export default function Fleet() {
                     <p className="font-medium">{selectedVehicle.speed || 0} km/h</p>
                   </div>
                   </div>
+
+                  {selectedVehicle.driver && (
+                  <div className="p-3 rounded-lg bg-slate-800/50">
+                    <p className="text-xs text-slate-500">Driver / Operator</p>
+                    <p className="font-medium">{selectedVehicle.driver}</p>
+                  </div>
+                  )}
+
+                  {selectedVehicle.efficiency_score > 0 && (
+                  <div className="p-3 rounded-lg bg-slate-800/50">
+                    <p className="text-xs text-slate-500">Efficiency Score</p>
+                    <div className="flex items-center gap-2">
+                      <BarChart3 className={`w-4 h-4 ${
+                        selectedVehicle.efficiency_score >= 80 ? 'text-emerald-400' :
+                        selectedVehicle.efficiency_score >= 60 ? 'text-amber-400' : 'text-red-400'
+                      }`} />
+                      <p className="font-medium">{selectedVehicle.efficiency_score}%</p>
+                    </div>
+                  </div>
+                  )}
+
+                  <div className="grid grid-cols-2 gap-4">
                   {selectedVehicle.route_id && (
                   <div className="p-3 rounded-lg bg-violet-500/10 border border-violet-500/20">
                     <p className="text-xs text-violet-300">Assigned Route</p>

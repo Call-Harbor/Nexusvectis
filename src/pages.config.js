@@ -54,9 +54,17 @@ import AdminDashboard from './pages/AdminDashboard';
 import AdminInvoices from './pages/AdminInvoices';
 import AdminMonitor from './pages/AdminMonitor';
 import Alerts from './pages/Alerts';
+import AssetManagement from './pages/AssetManagement';
 import Assignment from './pages/Assignment';
+import ContractManagement from './pages/ContractManagement';
+import CustomerDashboard from './pages/CustomerDashboard';
+import CustomerManagement from './pages/CustomerManagement';
+import CustomerPortal from './pages/CustomerPortal';
+import CustomerTracking from './pages/CustomerTracking';
 import Dashboard from './pages/Dashboard';
 import DemandForecasting from './pages/DemandForecasting';
+import DocumentManagement from './pages/DocumentManagement';
+import DriverManagement from './pages/DriverManagement';
 import Fleet from './pages/Fleet';
 import GPSIntegration from './pages/GPSIntegration';
 import GreenTMS from './pages/GreenTMS';
@@ -64,8 +72,10 @@ import Home from './pages/Home';
 import IntellectMode from './pages/IntellectMode';
 import Invoices from './pages/Invoices';
 import Landing from './pages/Landing';
+import MaintenanceManagement from './pages/MaintenanceManagement';
 import MapMonitor from './pages/MapMonitor';
 import OrganizationSetup from './pages/OrganizationSetup';
+import Reports from './pages/Reports';
 import Resources from './pages/Resources';
 import Routes from './pages/Routes';
 import Security from './pages/Security';
@@ -73,16 +83,6 @@ import Settings from './pages/Settings';
 import Shipments from './pages/Shipments';
 import UserManagement from './pages/UserManagement';
 import WarehouseAutomation from './pages/WarehouseAutomation';
-import CustomerPortal from './pages/CustomerPortal';
-import CustomerDashboard from './pages/CustomerDashboard';
-import CustomerTracking from './pages/CustomerTracking';
-import ContractManagement from './pages/ContractManagement';
-import DocumentManagement from './pages/DocumentManagement';
-import DriverManagement from './pages/DriverManagement';
-import AssetManagement from './pages/AssetManagement';
-import CustomerManagement from './pages/CustomerManagement';
-import Reports from './pages/Reports';
-import MaintenanceManagement from './pages/MaintenanceManagement';
 import __Layout from './Layout.jsx';
 
 
@@ -94,9 +94,17 @@ export const PAGES = {
     "AdminInvoices": AdminInvoices,
     "AdminMonitor": AdminMonitor,
     "Alerts": Alerts,
+    "AssetManagement": AssetManagement,
     "Assignment": Assignment,
+    "ContractManagement": ContractManagement,
+    "CustomerDashboard": CustomerDashboard,
+    "CustomerManagement": CustomerManagement,
+    "CustomerPortal": CustomerPortal,
+    "CustomerTracking": CustomerTracking,
     "Dashboard": Dashboard,
     "DemandForecasting": DemandForecasting,
+    "DocumentManagement": DocumentManagement,
+    "DriverManagement": DriverManagement,
     "Fleet": Fleet,
     "GPSIntegration": GPSIntegration,
     "GreenTMS": GreenTMS,
@@ -104,8 +112,10 @@ export const PAGES = {
     "IntellectMode": IntellectMode,
     "Invoices": Invoices,
     "Landing": Landing,
+    "MaintenanceManagement": MaintenanceManagement,
     "MapMonitor": MapMonitor,
     "OrganizationSetup": OrganizationSetup,
+    "Reports": Reports,
     "Resources": Resources,
     "Routes": Routes,
     "Security": Security,
@@ -113,16 +123,6 @@ export const PAGES = {
     "Shipments": Shipments,
     "UserManagement": UserManagement,
     "WarehouseAutomation": WarehouseAutomation,
-    "CustomerPortal": CustomerPortal,
-    "CustomerDashboard": CustomerDashboard,
-    "CustomerTracking": CustomerTracking,
-    "ContractManagement": ContractManagement,
-    "DocumentManagement": DocumentManagement,
-    "DriverManagement": DriverManagement,
-    "AssetManagement": AssetManagement,
-    "CustomerManagement": CustomerManagement,
-    "Reports": Reports,
-    "MaintenanceManagement": MaintenanceManagement,
 }
 
 export const pagesConfig = {
