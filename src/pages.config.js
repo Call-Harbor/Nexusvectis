@@ -49,6 +49,7 @@
  */
 import AIOptimization from './pages/AIOptimization';
 import APIDocumentation from './pages/APIDocumentation';
+import APIMetrics from './pages/APIMetrics';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminInvoices from './pages/AdminInvoices';
 import AdminMonitor from './pages/AdminMonitor';
@@ -72,13 +73,13 @@ import Settings from './pages/Settings';
 import Shipments from './pages/Shipments';
 import UserManagement from './pages/UserManagement';
 import WarehouseAutomation from './pages/WarehouseAutomation';
-import APIMetrics from './pages/APIMetrics';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
     "AIOptimization": AIOptimization,
     "APIDocumentation": APIDocumentation,
+    "APIMetrics": APIMetrics,
     "AdminDashboard": AdminDashboard,
     "AdminInvoices": AdminInvoices,
     "AdminMonitor": AdminMonitor,
@@ -102,7 +103,6 @@ export const PAGES = {
     "Shipments": Shipments,
     "UserManagement": UserManagement,
     "WarehouseAutomation": WarehouseAutomation,
-    "APIMetrics": APIMetrics,
 }
 
 export const pagesConfig = {
