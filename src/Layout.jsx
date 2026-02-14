@@ -65,6 +65,7 @@ const systemMenuItems = [
   { name: "Security", icon: Shield, page: "Security" },
   { name: "Invoices", icon: FileText, page: "Invoices" },
   { name: "API Docs", icon: FileText, page: "APIDocumentation" },
+  { name: "API Metrics", icon: Activity, page: "APIMetrics" },
   { name: "Settings", icon: Settings, page: "Settings" },
 ];
 
