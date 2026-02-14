@@ -78,13 +78,13 @@ export default function Settings() {
 
   const updateOrganization = async () => {
     if (!orgName.trim()) {
-      toast.error("Organisations navn er påkrævet");
+      toast.error("Organization name is required");
       return;
     }
 
     const orgId = user.organization_id || user.data?.organization_id;
     if (!orgId) {
-      toast.error("Organisation ID ikke fundet");
+      toast.error("Organization ID not found");
       return;
     }
 
@@ -93,9 +93,9 @@ export default function Settings() {
       await base44.entities.Organization.update(orgId, {
         name: orgName
       });
-      toast.success("Organisation opdateret");
+      toast.success("Organization updated");
     } catch (error) {
-      toast.error("Kunne ikke opdatere organisation");
+      toast.error("Could not update organization");
       console.error(error);
     } finally {
       setSaving(false);
@@ -104,7 +104,7 @@ export default function Settings() {
 
   const updateInvoiceSettings = async () => {
     if (!invoiceSettings.company_name.trim() || !invoiceSettings.vat_number.trim()) {
-      toast.error("Firmanavn og CVR-nummer er påkrævet");
+      toast.error("Company name and VAT number are required");
       return;
     }
 
@@ -117,9 +117,9 @@ export default function Settings() {
         const created = await base44.entities.InvoiceSettings.create(dataToSave);
         setInvoiceSettingsId(created.id);
       }
-      toast.success("Faktura indstillinger opdateret");
+      toast.success("Invoice settings updated");
     } catch (error) {
-      toast.error("Kunne ikke opdatere faktura indstillinger");
+      toast.error("Could not update invoice settings");
       console.error(error);
     } finally {
       setSaving(false);
@@ -128,17 +128,17 @@ export default function Settings() {
 
   const changePassword = async () => {
     if (!newPassword || !confirmPassword) {
-      toast.error("Alle felter er påkrævet");
+      toast.error("All fields are required");
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      toast.error("Adgangskoderne matcher ikke");
+      toast.error("Passwords do not match");
       return;
     }
 
     if (newPassword.length < 8) {
-      toast.error("Adgangskoden skal være mindst 8 tegn");
+      toast.error("Password must be at least 8 characters");
       return;
     }
 
@@ -146,12 +146,12 @@ export default function Settings() {
     try {
       // Note: Base44 doesn't have built-in password change, but we'll simulate it
       // In a real app, you'd call an API endpoint
-      toast.success("Adgangskode ændret");
+      toast.success("Password changed");
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
     } catch (error) {
-      toast.error("Kunne ikke ændre adgangskode");
+      toast.error("Could not change password");
       console.error(error);
     } finally {
       setSaving(false);
@@ -161,13 +161,13 @@ export default function Settings() {
   const deleteAccount = async () => {
     try {
       await base44.entities.User.delete(user.id);
-      toast.success("Din konto er blevet slettet");
+      toast.success("Your account has been deleted");
       // Log out and redirect
       setTimeout(() => {
         base44.auth.logout();
       }, 1000);
     } catch (error) {
-      toast.error("Kunne ikke slette konto");
+      toast.error("Could not delete account");
       console.error(error);
     }
   };
@@ -184,38 +184,38 @@ export default function Settings() {
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6">
       <div className="max-w-4xl mx-auto">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-white mb-2">Indstillinger</h1>
-          <p className="text-slate-400">Administrer din konto og organisation</p>
+          <h1 className="text-3xl font-bold text-white mb-2">Settings</h1>
+          <p className="text-slate-400">Manage your account and organization</p>
         </div>
 
         <Tabs defaultValue="account" className="space-y-6">
           <TabsList className="bg-slate-800/50 border border-slate-700/50">
             <TabsTrigger value="account" className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400">
               <UserIcon className="w-4 h-4 mr-2" />
-              Konto
+              Account
             </TabsTrigger>
             <TabsTrigger value="organization" className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400">
               <Building2 className="w-4 h-4 mr-2" />
-              Organisation
+              Organization
             </TabsTrigger>
             {user?.role === 'admin' && (
               <TabsTrigger value="invoice" className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400">
                 <Building2 className="w-4 h-4 mr-2" />
-                Faktura
+                Invoice
               </TabsTrigger>
             )}
             <TabsTrigger value="security" className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400">
               <Key className="w-4 h-4 mr-2" />
-              Sikkerhed
+              Security
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="account">
             <Card className="bg-slate-900/50 border-slate-800">
               <CardHeader>
-                <CardTitle className="text-white">Konto oplysninger</CardTitle>
+                <CardTitle className="text-white">Account Information</CardTitle>
                 <CardDescription className="text-slate-400">
-                  Se dine konto oplysninger
+                  View your account information
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -228,7 +228,7 @@ export default function Settings() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-slate-300">Navn</Label>
+                  <Label className="text-slate-300">Name</Label>
                   <Input
                     value={user.full_name || ""}
                     disabled
@@ -236,9 +236,9 @@ export default function Settings() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-slate-300">Rolle</Label>
+                  <Label className="text-slate-300">Role</Label>
                   <Input
-                    value={user.role === "admin" ? "Administrator" : "Bruger"}
+                    value={user.role === "admin" ? "Administrator" : "User"}
                     disabled
                     className="bg-slate-800/50 border-slate-700 text-slate-400"
                   />
@@ -250,19 +250,19 @@ export default function Settings() {
           <TabsContent value="organization">
             <Card className="bg-slate-900/50 border-slate-800">
               <CardHeader>
-                <CardTitle className="text-white">Organisation</CardTitle>
+                <CardTitle className="text-white">Organization</CardTitle>
                 <CardDescription className="text-slate-400">
-                  Administrer din organisations indstillinger
+                  Manage your organization settings
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label className="text-slate-300">Organisations navn</Label>
+                  <Label className="text-slate-300">Organization Name</Label>
                   <Input
                     value={orgName}
                     onChange={(e) => setOrgName(e.target.value)}
                     className="bg-slate-800/50 border-slate-700 text-white"
-                    placeholder="Indtast organisations navn"
+                    placeholder="Enter organization name"
                   />
                 </div>
                 <Button
@@ -273,12 +273,12 @@ export default function Settings() {
                   {saving ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Gemmer...
+                      Saving...
                     </>
                   ) : (
                     <>
                       <Save className="w-4 h-4 mr-2" />
-                      Gem ændringer
+                      Save Changes
                     </>
                   )}
                 </Button>
@@ -289,15 +289,15 @@ export default function Settings() {
           <TabsContent value="invoice">
             <Card className="bg-slate-900/50 border-slate-800">
               <CardHeader>
-                <CardTitle className="text-white">NexusVectis Firma Oplysninger</CardTitle>
+                <CardTitle className="text-white">NexusVectis Company Information</CardTitle>
                 <CardDescription className="text-slate-400">
-                  Oplysninger der bruges på fakturaer
+                  Information used on invoices
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label className="text-slate-300">Firmanavn *</Label>
+                    <Label className="text-slate-300">Company Name *</Label>
                     <Input
                       value={invoiceSettings.company_name}
                       onChange={(e) => setInvoiceSettings({...invoiceSettings, company_name: e.target.value})}
@@ -306,7 +306,7 @@ export default function Settings() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-slate-300">CVR/VAT Nummer *</Label>
+                    <Label className="text-slate-300">CVR/VAT Number *</Label>
                     <Input
                       value={invoiceSettings.vat_number}
                       onChange={(e) => setInvoiceSettings({...invoiceSettings, vat_number: e.target.value})}
@@ -317,7 +317,7 @@ export default function Settings() {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label className="text-slate-300">Adresse *</Label>
+                  <Label className="text-slate-300">Address *</Label>
                   <Input
                     value={invoiceSettings.company_address}
                     onChange={(e) => setInvoiceSettings({...invoiceSettings, company_address: e.target.value})}
@@ -328,7 +328,7 @@ export default function Settings() {
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label className="text-slate-300">Land *</Label>
+                    <Label className="text-slate-300">Country *</Label>
                     <Input
                       value={invoiceSettings.company_country}
                       onChange={(e) => setInvoiceSettings({...invoiceSettings, company_country: e.target.value})}
@@ -337,7 +337,7 @@ export default function Settings() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-slate-300">CVR Registreringsnummer</Label>
+                    <Label className="text-slate-300">Company Registration Number</Label>
                     <Input
                       value={invoiceSettings.company_registration}
                       onChange={(e) => setInvoiceSettings({...invoiceSettings, company_registration: e.target.value})}
@@ -358,7 +358,7 @@ export default function Settings() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-slate-300">Telefon</Label>
+                    <Label className="text-slate-300">Phone</Label>
                     <Input
                       value={invoiceSettings.company_phone}
                       onChange={(e) => setInvoiceSettings({...invoiceSettings, company_phone: e.target.value})}
@@ -370,7 +370,7 @@ export default function Settings() {
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label className="text-slate-300">Bankkonto (IBAN)</Label>
+                    <Label className="text-slate-300">Bank Account (IBAN)</Label>
                     <Input
                       value={invoiceSettings.bank_account}
                       onChange={(e) => setInvoiceSettings({...invoiceSettings, bank_account: e.target.value})}
@@ -390,12 +390,12 @@ export default function Settings() {
                 </div>
                 
                 <div className="pt-6 border-t border-slate-700">
-                  <h3 className="text-lg font-semibold text-white mb-4">Standard Bogføringsoplysninger</h3>
-                  <p className="text-sm text-slate-400 mb-4">Disse oplysninger vil automatisk blive tilføjet til nye fakturaer</p>
+                  <h3 className="text-lg font-semibold text-white mb-4">Default Accounting Information</h3>
+                  <p className="text-sm text-slate-400 mb-4">These details will automatically be added to new invoices</p>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label className="text-slate-300">Kontonummer</Label>
+                      <Label className="text-slate-300">Account Number</Label>
                       <Input
                         value={accountingDefaults.accounting_account}
                         onChange={(e) => setAccountingDefaults({...accountingDefaults, accounting_account: e.target.value})}
@@ -404,7 +404,7 @@ export default function Settings() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-slate-300">Omkostningscenter</Label>
+                      <Label className="text-slate-300">Cost Center</Label>
                       <Input
                         value={accountingDefaults.cost_center}
                         onChange={(e) => setAccountingDefaults({...accountingDefaults, cost_center: e.target.value})}
@@ -416,7 +416,7 @@ export default function Settings() {
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                     <div className="space-y-2">
-                      <Label className="text-slate-300">Projektnummer</Label>
+                      <Label className="text-slate-300">Project Number</Label>
                       <Input
                         value={accountingDefaults.project_number}
                         onChange={(e) => setAccountingDefaults({...accountingDefaults, project_number: e.target.value})}
@@ -425,7 +425,7 @@ export default function Settings() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-slate-300">Reference/Bilagsnummer</Label>
+                      <Label className="text-slate-300">Reference/Document Number</Label>
                       <Input
                         value={accountingDefaults.reference_number}
                         onChange={(e) => setAccountingDefaults({...accountingDefaults, reference_number: e.target.value})}
@@ -436,12 +436,12 @@ export default function Settings() {
                   </div>
                   
                   <div className="space-y-2 mt-4">
-                    <Label className="text-slate-300">Interne Noter til Bogføring</Label>
+                    <Label className="text-slate-300">Internal Accounting Notes</Label>
                     <Input
                       value={accountingDefaults.accounting_notes}
                       onChange={(e) => setAccountingDefaults({...accountingDefaults, accounting_notes: e.target.value})}
                       className="bg-slate-800/50 border-slate-700 text-white"
-                      placeholder="Bemærkninger til bogføring..."
+                      placeholder="Accounting remarks..."
                     />
                   </div>
                 </div>
@@ -454,12 +454,12 @@ export default function Settings() {
                   {saving ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Gemmer...
+                      Saving...
                     </>
                   ) : (
                     <>
                       <Save className="w-4 h-4 mr-2" />
-                      Gem Faktura Indstillinger
+                      Save Invoice Settings
                     </>
                   )}
                 </Button>
@@ -471,40 +471,40 @@ export default function Settings() {
             <div className="space-y-6">
               <Card className="bg-slate-900/50 border-slate-800">
                 <CardHeader>
-                  <CardTitle className="text-white">Skift adgangskode</CardTitle>
+                  <CardTitle className="text-white">Change Password</CardTitle>
                   <CardDescription className="text-slate-400">
-                    Opdater din adgangskode
+                    Update your password
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label className="text-slate-300">Nuværende adgangskode</Label>
+                    <Label className="text-slate-300">Current Password</Label>
                     <Input
                       type="password"
                       value={currentPassword}
                       onChange={(e) => setCurrentPassword(e.target.value)}
                       className="bg-slate-800/50 border-slate-700 text-white"
-                      placeholder="Indtast nuværende adgangskode"
+                      placeholder="Enter current password"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-slate-300">Ny adgangskode</Label>
+                    <Label className="text-slate-300">New Password</Label>
                     <Input
                       type="password"
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       className="bg-slate-800/50 border-slate-700 text-white"
-                      placeholder="Indtast ny adgangskode (min. 8 tegn)"
+                      placeholder="Enter new password (min. 8 characters)"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-slate-300">Bekræft ny adgangskode</Label>
+                    <Label className="text-slate-300">Confirm New Password</Label>
                     <Input
                       type="password"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       className="bg-slate-800/50 border-slate-700 text-white"
-                      placeholder="Bekræft ny adgangskode"
+                      placeholder="Confirm new password"
                     />
                   </div>
                   <Button
@@ -515,12 +515,12 @@ export default function Settings() {
                     {saving ? (
                       <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Opdaterer...
+                        Updating...
                       </>
                     ) : (
                       <>
                         <Key className="w-4 h-4 mr-2" />
-                        Opdater adgangskode
+                        Update Password
                       </>
                     )}
                   </Button>
@@ -531,36 +531,36 @@ export default function Settings() {
                 <CardHeader>
                   <CardTitle className="text-white flex items-center gap-2">
                     <AlertTriangle className="w-5 h-5 text-red-400" />
-                    Farezone
+                    Danger Zone
                   </CardTitle>
                   <CardDescription className="text-slate-400">
-                    Permanent slet din konto
+                    Permanently delete your account
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-slate-400 mb-4">
-                    Når du sletter din konto, vil alle dine data blive permanent fjernet. Denne handling kan ikke fortrydes.
+                    When you delete your account, all your data will be permanently removed. This action cannot be undone.
                   </p>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button variant="destructive" className="bg-red-600 hover:bg-red-700">
                         <Trash2 className="w-4 h-4 mr-2" />
-                        Slet min konto
+                        Delete My Account
                       </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent className="bg-slate-900 border-slate-700">
                       <AlertDialogHeader>
-                        <AlertDialogTitle className="text-white">Er du helt sikker?</AlertDialogTitle>
+                        <AlertDialogTitle className="text-white">Are you absolutely sure?</AlertDialogTitle>
                         <AlertDialogDescription className="text-slate-400">
-                          Denne handling kan ikke fortrydes. Dette vil permanent slette din konto og fjerne alle dine data fra vores servere.
+                          This action cannot be undone. This will permanently delete your account and remove all your data from our servers.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
                         <AlertDialogCancel className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700">
-                          Annuller
+                          Cancel
                         </AlertDialogCancel>
                         <AlertDialogAction onClick={deleteAccount} className="bg-red-600 hover:bg-red-700">
-                          Ja, slet min konto
+                          Yes, delete my account
                         </AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
