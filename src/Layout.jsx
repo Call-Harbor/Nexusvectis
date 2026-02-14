@@ -68,6 +68,7 @@ const systemMenuItems = [
   { name: "Customers", icon: Users, page: "CustomerManagement" },
   { name: "Contracts", icon: FileText, page: "ContractManagement" },
   { name: "Documents", icon: FileText, page: "DocumentManagement" },
+  { name: "Reports", icon: FileText, page: "Reports" },
   { name: "Security", icon: Shield, page: "Security" },
   { name: "Invoices", icon: FileText, page: "Invoices" },
   { name: "API Docs", icon: FileText, page: "APIDocumentation" },
