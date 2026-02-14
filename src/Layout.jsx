@@ -21,7 +21,8 @@ import {
   FileText,
   Package,
   Zap,
-  Activity
+  Activity,
+  Wrench
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -53,6 +54,7 @@ const fleetMenuItems = [
 const planningMenuItems = [
   { name: "Routes", icon: Route, page: "Routes" },
   { name: "Resources", icon: Warehouse, page: "Resources" },
+  { name: "Maintenance", icon: Wrench, page: "MaintenanceManagement" },
   { name: "AI Optimization", icon: Sparkles, page: "AIOptimization" },
 ];
 
