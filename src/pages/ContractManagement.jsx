@@ -23,9 +23,9 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import moment from "moment";
-import ContractEditor from "../components/contracts/ContractEditor";
-import ContractDetails from "../components/contracts/ContractDetails";
-import RateCardManager from "../components/contracts/RateCardManager";
+import ContractEditor from "../components/contracts/ContractEditor.jsx";
+import ContractDetails from "../components/contracts/ContractDetails.jsx";
+import RateCardManager from "../components/contracts/RateCardManager.jsx";
 
 export default function ContractManagement() {
   const [user, setUser] = useState(null);
