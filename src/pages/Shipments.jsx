@@ -8,11 +8,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Package, Plus, Search, TrendingUp, Clock, AlertCircle } from "lucide-react";
+import { Package, Plus, Search, TrendingUp, Clock, AlertCircle, Filter, X, Download, MapPin } from "lucide-react";
 import { motion } from "framer-motion";
+import moment from "moment";
 
 export default function Shipments() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [priorityFilter, setPriorityFilter] = useState("all");
+  const [cargoFilter, setCargoFilter] = useState("all");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
     tracking_number: `SHIP-${Date.now()}`,
@@ -68,11 +72,16 @@ export default function Shipments() {
     }
   });
 
-  const filteredShipments = shipments.filter(s => 
-    s.tracking_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    s.origin?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    s.destination?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredShipments = shipments.filter(s => {
+    const matchesSearch = s.tracking_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         s.origin?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         s.destination?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         s.customer_name?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === "all" || s.status === statusFilter;
+    const matchesPriority = priorityFilter === "all" || s.priority === priorityFilter;
+    const matchesCargo = cargoFilter === "all" || s.cargo_type === cargoFilter;
+    return matchesSearch && matchesStatus && matchesPriority && matchesCargo;
+  });
 
   const stats = {
     total: shipments.length,
@@ -96,6 +105,34 @@ export default function Shipments() {
     urgent: 'bg-red-500/20 text-red-400'
   };
 
+  const exportToCSV = () => {
+    const headers = ["Tracking", "Status", "Priority", "Origin", "Destination", "Weight", "Cargo Type", "Customer", "ETA"];
+    const rows = filteredShipments.map(s => [
+      s.tracking_number,
+      s.status,
+      s.priority || "-",
+      s.origin,
+      s.destination,
+      s.weight_kg ? `${s.weight_kg} kg` : "-",
+      s.cargo_type || "-",
+      s.customer_name || "-",
+      s.eta ? moment(s.eta).format('DD-MM-YYYY HH:mm') : "-"
+    ]);
+    
+    const csvContent = [
+      headers.join(","),
+      ...rows.map(row => row.join(","))
+    ].join("\n");
+    
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `shipments-export-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="min-h-screen bg-slate-950 p-6">
       <div className="max-w-7xl mx-auto space-y-6">
@@ -106,15 +143,27 @@ export default function Shipments() {
               <Package className="w-8 h-8 text-cyan-400" />
               Forsendelser
             </h1>
-            <p className="text-slate-400 mt-1">Administrer og spor alle forsendelser</p>
+            <p className="text-slate-400 mt-1">
+              {filteredShipments.length} af {shipments.length} forsendelser
+              {searchTerm && ` matching "${searchTerm}"`}
+            </p>
           </div>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="bg-cyan-500 hover:bg-cyan-600">
-                <Plus className="w-4 h-4 mr-2" />
-                Ny Forsendelse
-              </Button>
-            </DialogTrigger>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline"
+              onClick={exportToCSV}
+              className="bg-slate-800/50 border-slate-700/50 text-white hover:bg-slate-700/50"
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Export
+            </Button>
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button className="bg-cyan-500 hover:bg-cyan-600">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Ny Forsendelse
+                </Button>
+              </DialogTrigger>
             <DialogContent className="bg-slate-900 border-slate-800 text-white">
               <DialogHeader>
                 <DialogTitle>Opret Forsendelse</DialogTitle>
@@ -216,7 +265,8 @@ export default function Shipments() {
                 </Button>
               </div>
             </DialogContent>
-          </Dialog>
+            </Dialog>
+          </div>
         </div>
 
         {/* Stats */}
@@ -267,15 +317,113 @@ export default function Shipments() {
           </Card>
         </div>
 
-        {/* Search */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500 w-5 h-5" />
-          <Input
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Søg efter tracking number, origin, destination..."
-            className="pl-10 bg-slate-900/50 border-slate-800 text-white"
-          />
+        {/* Filters */}
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500 w-5 h-5" />
+              <Input
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Søg efter tracking, kunde, location..."
+                className="pl-10 bg-slate-900/50 border-slate-800 text-white"
+              />
+            </div>
+            <div className="flex gap-2">
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-[140px] bg-slate-900/50 border-slate-800 text-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-slate-900 border-slate-800">
+                  <SelectItem value="all">Alle Status</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="in_transit">I Transit</SelectItem>
+                  <SelectItem value="delivered">Leveret</SelectItem>
+                  <SelectItem value="delayed">Forsinket</SelectItem>
+                  <SelectItem value="cancelled">Annulleret</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+                <SelectTrigger className="w-[140px] bg-slate-900/50 border-slate-800 text-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-slate-900 border-slate-800">
+                  <SelectItem value="all">Alle Prioriteter</SelectItem>
+                  <SelectItem value="low">Lav</SelectItem>
+                  <SelectItem value="normal">Normal</SelectItem>
+                  <SelectItem value="high">Høj</SelectItem>
+                  <SelectItem value="urgent">Akut</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={cargoFilter} onValueChange={setCargoFilter}>
+                <SelectTrigger className="w-[140px] bg-slate-900/50 border-slate-800 text-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-slate-900 border-slate-800">
+                  <SelectItem value="all">Alle Cargo</SelectItem>
+                  <SelectItem value="general">General</SelectItem>
+                  <SelectItem value="cold_chain">Cold Chain</SelectItem>
+                  <SelectItem value="hazardous">Hazardous</SelectItem>
+                  <SelectItem value="fragile">Fragile</SelectItem>
+                  <SelectItem value="bulk">Bulk</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {(searchTerm || statusFilter !== "all" || priorityFilter !== "all" || cargoFilter !== "all") && (
+            <div className="flex items-center gap-2 text-sm flex-wrap">
+              <Filter className="w-4 h-4 text-slate-500" />
+              <span className="text-slate-400">Aktive filtre:</span>
+              {searchTerm && (
+                <Badge variant="outline" className="bg-cyan-500/20 text-cyan-400 border-cyan-500/30">
+                  Søg: {searchTerm}
+                  <X 
+                    className="w-3 h-3 ml-1 cursor-pointer" 
+                    onClick={() => setSearchTerm("")}
+                  />
+                </Badge>
+              )}
+              {statusFilter !== "all" && (
+                <Badge variant="outline" className="bg-blue-500/20 text-blue-400 border-blue-500/30">
+                  Status: {statusFilter}
+                  <X 
+                    className="w-3 h-3 ml-1 cursor-pointer" 
+                    onClick={() => setStatusFilter("all")}
+                  />
+                </Badge>
+              )}
+              {priorityFilter !== "all" && (
+                <Badge variant="outline" className="bg-amber-500/20 text-amber-400 border-amber-500/30">
+                  Prioritet: {priorityFilter}
+                  <X 
+                    className="w-3 h-3 ml-1 cursor-pointer" 
+                    onClick={() => setPriorityFilter("all")}
+                  />
+                </Badge>
+              )}
+              {cargoFilter !== "all" && (
+                <Badge variant="outline" className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
+                  Cargo: {cargoFilter}
+                  <X 
+                    className="w-3 h-3 ml-1 cursor-pointer" 
+                    onClick={() => setCargoFilter("all")}
+                  />
+                </Badge>
+              )}
+              <button
+                onClick={() => {
+                  setSearchTerm("");
+                  setStatusFilter("all");
+                  setPriorityFilter("all");
+                  setCargoFilter("all");
+                }}
+                className="text-slate-500 hover:text-white text-xs ml-2"
+              >
+                Ryd alle
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Shipments List */}
@@ -302,12 +450,36 @@ export default function Shipments() {
                           </Badge>
                         )}
                       </div>
-                      <div className="text-sm text-slate-400 space-y-1">
-                        <p><span className="text-slate-500">Fra:</span> {shipment.origin} → <span className="text-slate-500">Til:</span> {shipment.destination}</p>
-                        {shipment.cargo_type && <p><span className="text-slate-500">Type:</span> {shipment.cargo_type}</p>}
-                        {shipment.weight_kg && <p><span className="text-slate-500">Vægt:</span> {shipment.weight_kg} kg</p>}
-                        {shipment.customer_name && <p><span className="text-slate-500">Kunde:</span> {shipment.customer_name}</p>}
-                        {shipment.eta && <p><span className="text-slate-500">ETA:</span> {new Date(shipment.eta).toLocaleString('da-DK')}</p>}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
+                        <div className="flex items-center gap-2 text-sm text-slate-400">
+                          <MapPin className="w-4 h-4 text-cyan-400" />
+                          <span>{shipment.origin} → {shipment.destination}</span>
+                        </div>
+                        {shipment.cargo_type && (
+                          <div className="text-sm text-slate-400">
+                            <span className="text-slate-500">Type:</span> {shipment.cargo_type}
+                          </div>
+                        )}
+                        {shipment.weight_kg && (
+                          <div className="text-sm text-slate-400">
+                            <span className="text-slate-500">Vægt:</span> {shipment.weight_kg} kg
+                          </div>
+                        )}
+                        {shipment.customer_name && (
+                          <div className="text-sm text-slate-400">
+                            <span className="text-slate-500">Kunde:</span> {shipment.customer_name}
+                          </div>
+                        )}
+                        {shipment.eta && (
+                          <div className="text-sm text-slate-400">
+                            <span className="text-slate-500">ETA:</span> {moment(shipment.eta).format('DD/MM HH:mm')}
+                          </div>
+                        )}
+                        {shipment.created_date && (
+                          <div className="text-sm text-slate-400">
+                            <span className="text-slate-500">Oprettet:</span> {moment(shipment.created_date).format('DD/MM HH:mm')}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
