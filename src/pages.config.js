@@ -76,6 +76,7 @@ import WarehouseAutomation from './pages/WarehouseAutomation';
 import CustomerPortal from './pages/CustomerPortal';
 import CustomerDashboard from './pages/CustomerDashboard';
 import CustomerTracking from './pages/CustomerTracking';
+import ContractManagement from './pages/ContractManagement';
 import __Layout from './Layout.jsx';
 
 
@@ -109,6 +110,7 @@ export const PAGES = {
     "CustomerPortal": CustomerPortal,
     "CustomerDashboard": CustomerDashboard,
     "CustomerTracking": CustomerTracking,
+    "ContractManagement": ContractManagement,
 }
 
 export const pagesConfig = {
