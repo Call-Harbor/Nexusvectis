@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
 import { 
   Route, Plus, Search, MapPin, Clock, Sparkles, 
-  ArrowRight, Truck, Ship, Plane, Train, Leaf, X, Map, Edit
+  ArrowRight, Truck, Ship, Plane, Train, Leaf, X, Map, Edit, Filter, Download, BarChart3
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,6 +37,9 @@ const vehicleIcons = { truck: Truck, ship: Ship, drone: Plane, train: Train, air
 export default function Routes() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [priorityFilter, setPriorityFilter] = useState("all");
+  const [transportFilter, setTransportFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("name");
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [formData, setFormData] = useState({
     name: "", origin: "", destination: "", transport_type: "truck",
@@ -123,7 +126,15 @@ export default function Routes() {
                           r.origin?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           r.destination?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === "all" || r.status === statusFilter;
-    return matchesSearch && matchesStatus;
+    const matchesPriority = priorityFilter === "all" || r.priority === priorityFilter;
+    const matchesTransport = transportFilter === "all" || r.transport_type === transportFilter;
+    return matchesSearch && matchesStatus && matchesPriority && matchesTransport;
+  }).sort((a, b) => {
+    if (sortBy === "name") return (a.name || "").localeCompare(b.name || "");
+    if (sortBy === "distance") return (b.distance_km || 0) - (a.distance_km || 0);
+    if (sortBy === "duration") return (b.estimated_duration_hours || 0) - (a.estimated_duration_hours || 0);
+    if (sortBy === "co2") return (b.co2_estimate || 0) - (a.co2_estimate || 0);
+    return 0;
   });
 
   const stats = {
@@ -131,6 +142,35 @@ export default function Routes() {
     active: routes.filter(r => r.status === 'active').length,
     delayed: routes.filter(r => r.status === 'delayed').length,
     optimized: routes.filter(r => r.ai_optimized).length,
+  };
+
+  const exportToCSV = () => {
+    const headers = ["Name", "Origin", "Destination", "Status", "Priority", "Transport", "Distance", "Duration", "CO2", "AI-Optimized"];
+    const rows = filteredRoutes.map(r => [
+      r.name,
+      r.origin,
+      r.destination,
+      statusLabels[r.status],
+      priorityLabels[r.priority],
+      r.transport_type,
+      `${r.distance_km || 0} km`,
+      `${r.estimated_duration_hours || 0}h`,
+      `${r.co2_estimate || 0} kg`,
+      r.ai_optimized ? "Yes" : "No"
+    ]);
+    
+    const csvContent = [
+      headers.join(","),
+      ...rows.map(row => row.join(","))
+    ].join("\n");
+    
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `routes-export-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
   };
 
   return (
@@ -147,15 +187,28 @@ export default function Routes() {
          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-8">
            <div>
              <h1 className="text-3xl font-bold text-white">Route Management</h1>
-             <p className="text-slate-400 mt-1">{routes.length} routes registered</p>
+             <p className="text-slate-400 mt-1">
+               {filteredRoutes.length} of {routes.length} routes
+               {searchTerm && ` matching "${searchTerm}"`}
+             </p>
            </div>
-          <Button 
-            onClick={() => setShowAddDialog(true)}
-            className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-black font-semibold"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Create Route
-          </Button>
+           <div className="flex gap-2">
+             <Button 
+               variant="outline"
+               onClick={exportToCSV}
+               className="bg-slate-800/50 border-slate-700/50 text-white hover:bg-slate-700/50"
+             >
+               <Download className="w-4 h-4 mr-2" />
+               Export
+             </Button>
+             <Button 
+               onClick={() => setShowAddDialog(true)}
+               className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-black font-semibold"
+             >
+               <Plus className="w-4 h-4 mr-2" />
+               Create Route
+             </Button>
+           </div>
         </div>
 
         {/* AI Route Insights */}
@@ -185,28 +238,122 @@ export default function Routes() {
         </div>
 
         {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-6">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-            <Input
-              placeholder="Search for route..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 bg-slate-800/50 border-slate-700/50 text-white"
-            />
+        <div className="flex flex-col gap-4 mb-6">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+              <Input
+                placeholder="Search by name, origin, destination..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 bg-slate-800/50 border-slate-700/50 text-white"
+              />
+            </div>
+            <div className="flex gap-2">
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-[140px] bg-slate-800/50 border-slate-700/50 text-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="planned">Planned</SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
+                  <SelectItem value="delayed">Delayed</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+                <SelectTrigger className="w-[140px] bg-slate-800/50 border-slate-700/50 text-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Priority</SelectItem>
+                  <SelectItem value="low">Low</SelectItem>
+                  <SelectItem value="normal">Normal</SelectItem>
+                  <SelectItem value="high">High</SelectItem>
+                  <SelectItem value="critical">Critical</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={transportFilter} onValueChange={setTransportFilter}>
+                <SelectTrigger className="w-[140px] bg-slate-800/50 border-slate-700/50 text-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Transport</SelectItem>
+                  <SelectItem value="truck">Truck</SelectItem>
+                  <SelectItem value="ship">Ship</SelectItem>
+                  <SelectItem value="drone">Drone</SelectItem>
+                  <SelectItem value="train">Train</SelectItem>
+                  <SelectItem value="aircraft">Aircraft</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="w-[140px] bg-slate-800/50 border-slate-700/50 text-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="name">Sort: Name</SelectItem>
+                  <SelectItem value="distance">Sort: Distance</SelectItem>
+                  <SelectItem value="duration">Sort: Duration</SelectItem>
+                  <SelectItem value="co2">Sort: CO2</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-[150px] bg-slate-800/50 border-slate-700/50 text-white">
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="planned">Planned</SelectItem>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="completed">Completed</SelectItem>
-              <SelectItem value="delayed">Delayed</SelectItem>
-            </SelectContent>
-          </Select>
+
+          {(searchTerm || statusFilter !== "all" || priorityFilter !== "all" || transportFilter !== "all") && (
+            <div className="flex items-center gap-2 text-sm flex-wrap">
+              <Filter className="w-4 h-4 text-slate-500" />
+              <span className="text-slate-400">Active filters:</span>
+              {searchTerm && (
+                <Badge variant="outline" className="bg-cyan-500/20 text-cyan-400 border-cyan-500/30">
+                  Search: {searchTerm}
+                  <X 
+                    className="w-3 h-3 ml-1 cursor-pointer" 
+                    onClick={() => setSearchTerm("")}
+                  />
+                </Badge>
+              )}
+              {statusFilter !== "all" && (
+                <Badge variant="outline" className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
+                  Status: {statusFilter}
+                  <X 
+                    className="w-3 h-3 ml-1 cursor-pointer" 
+                    onClick={() => setStatusFilter("all")}
+                  />
+                </Badge>
+              )}
+              {priorityFilter !== "all" && (
+                <Badge variant="outline" className="bg-amber-500/20 text-amber-400 border-amber-500/30">
+                  Priority: {priorityFilter}
+                  <X 
+                    className="w-3 h-3 ml-1 cursor-pointer" 
+                    onClick={() => setPriorityFilter("all")}
+                  />
+                </Badge>
+              )}
+              {transportFilter !== "all" && (
+                <Badge variant="outline" className="bg-violet-500/20 text-violet-400 border-violet-500/30">
+                  Transport: {transportFilter}
+                  <X 
+                    className="w-3 h-3 ml-1 cursor-pointer" 
+                    onClick={() => setTransportFilter("all")}
+                  />
+                </Badge>
+              )}
+              <button
+                onClick={() => {
+                  setSearchTerm("");
+                  setStatusFilter("all");
+                  setPriorityFilter("all");
+                  setTransportFilter("all");
+                }}
+                className="text-slate-500 hover:text-white text-xs ml-2"
+              >
+                Clear all
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Routes List */}
