@@ -231,7 +231,7 @@ export default function FleetGlobe3D({ vehicles = [], routes = [], onClose, onMi
         });
         const marker = new THREE.Mesh(markerGeometry, markerMaterial);
         marker.position.set(x, y, z);
-        scene.add(marker);
+        fleetGroup.add(marker);
 
         // Outer glow ring
         const glowGeometry = new THREE.SphereGeometry(0.045, 32, 32);
@@ -243,7 +243,7 @@ export default function FleetGlobe3D({ vehicles = [], routes = [], onClose, onMi
         });
         const glow = new THREE.Mesh(glowGeometry, glowMaterial);
         glow.position.set(x, y, z);
-        scene.add(glow);
+        fleetGroup.add(glow);
 
         // Vertical beam
         const beamGeometry = new THREE.CylinderGeometry(0.003, 0.003, 0.08, 8);
@@ -257,7 +257,7 @@ export default function FleetGlobe3D({ vehicles = [], routes = [], onClose, onMi
         beam.position.copy(beamDirection.multiplyScalar(1.04));
         beam.lookAt(0, 0, 0);
         beam.rotateX(Math.PI / 2);
-        scene.add(beam);
+        fleetGroup.add(beam);
 
         // Pulse animation
         vehicleMarkers.push({ marker, glow, beam });
