@@ -198,7 +198,7 @@ export default function FleetGlobe3D({ vehicles = [], routes = [], onClose, onMi
       line.rotation.x = Math.PI / 2;
       line.position.y = Math.sin((lat * Math.PI) / 180) * 1.01;
       line.scale.set(Math.cos((lat * Math.PI) / 180), Math.cos((lat * Math.PI) / 180), 1);
-      scene.add(line);
+      fleetGroup.add(line);
     }
 
     // Longitude lines
@@ -208,7 +208,7 @@ export default function FleetGlobe3D({ vehicles = [], routes = [], onClose, onMi
       const geometry = new THREE.BufferGeometry().setFromPoints(points);
       const line = new THREE.Line(geometry, gridMaterial);
       line.rotation.y = (lon * Math.PI) / 180;
-      scene.add(line);
+      fleetGroup.add(line);
     }
 
     // Add vehicles as glowing markers
