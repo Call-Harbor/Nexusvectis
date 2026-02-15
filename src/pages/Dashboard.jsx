@@ -24,11 +24,13 @@ import AIInsightWidget from "@/components/ai/AIInsightWidget";
 import AIQuickActions from "@/components/ai/AIQuickActions";
 import AIAssistantBadge from "@/components/ai/AIAssistantBadge";
 import InventoryForecast from "@/components/ai/InventoryForecast";
+import FleetGlobe3D from "@/components/intellect/FleetGlobe3D";
 
 export default function Dashboard() {
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [showDetailPanel, setShowDetailPanel] = useState(true);
   const [activeTab, setActiveTab] = useState("tracking");
+  const [show3DGlobe, setShow3DGlobe] = useState(false);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
@@ -271,6 +273,19 @@ export default function Dashboard() {
                   </Link>
                 );
               })}
+
+              {/* 3D Globe View Button */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: quickActions.length * 0.05 }}
+                whileHover={{ scale: 1.02, y: -2 }}
+                onClick={() => setShow3DGlobe(true)}
+                className="p-3 sm:p-4 rounded-xl backdrop-blur-xl border transition-all cursor-pointer group bg-gradient-to-br from-cyan-500/10 via-violet-500/10 to-emerald-500/10 border-cyan-500/30 hover:border-cyan-500/50"
+              >
+                <Globe className="w-5 h-5 mb-2 group-hover:scale-110 group-hover:rotate-12 transition-all text-cyan-400" />
+                <p className="text-white text-sm font-medium">3D Fleet View</p>
+              </motion.div>
             </div>
 
             {/* Live Stats Grid */}
@@ -284,6 +299,16 @@ export default function Dashboard() {
             </div>
           </div>
         </motion.div>
+
+        {/* 3D Globe Visualization */}
+        {show3DGlobe && (
+          <FleetGlobe3D
+            vehicles={vehicles}
+            routes={routes}
+            onClose={() => setShow3DGlobe(false)}
+            onMinimize={() => setShow3DGlobe(false)}
+          />
+        )}
 
         {activeTab === "tracking" ? (
           <div className="space-y-4 sm:space-y-6">
