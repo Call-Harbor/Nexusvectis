@@ -8,8 +8,9 @@ import ReactMarkdown from "react-markdown";
 import { 
   Sparkles, Send, Mic, Brain, Zap, TrendingUp, AlertTriangle, 
   Truck, Route, Package, Activity, Maximize2, Minimize2, X, LayoutDashboard, Paperclip, FileText,
-  Settings, Warehouse, Satellite, Globe, BarChart3
+  Settings, Warehouse, Satellite, Globe, BarChart3, Box
 } from "lucide-react";
+import FleetGlobe3D from "@/components/intellect/FleetGlobe3D";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
@@ -145,12 +146,12 @@ export default function IntellectMode() {
   ]);
 
   const quickCommands = [
-    { icon: Brain, label: "Predictive Maintenance", command: "predict vehicle maintenance needs", color: "cyan" },
-    { icon: TrendingUp, label: "Demand Forecast", command: "forecast shipment demand next 30 days", color: "violet" },
-    { icon: Activity, label: "CO2 Analysis", command: "analyze CO2 emissions by route", color: "emerald" },
-    { icon: Zap, label: "Fleet Optimization", command: "optimize all routes for cost and efficiency", color: "amber" },
-    { icon: AlertTriangle, label: "Risk Assessment", command: "assess fleet risks and vulnerabilities", color: "red" },
-    { icon: BarChart3, label: "Performance Benchmark", command: "benchmark fleet performance", color: "blue" },
+    { icon: Box, label: "3D Fleet View", command: "show fleet in 3D", color: "cyan" },
+    { icon: Brain, label: "Predictive Maintenance", command: "predict vehicle maintenance needs", color: "violet" },
+    { icon: TrendingUp, label: "Demand Forecast", command: "forecast shipment demand next 30 days", color: "emerald" },
+    { icon: Activity, label: "CO2 Analysis", command: "analyze CO2 emissions by route", color: "amber" },
+    { icon: Zap, label: "Fleet Optimization", command: "optimize all routes for cost and efficiency", color: "blue" },
+    { icon: BarChart3, label: "Performance Benchmark", command: "benchmark fleet performance", color: "fuchsia" },
   ];
   const [isProcessing, setIsProcessing] = useState(false);
   const [activeWindows, setActiveWindows] = useState([]);

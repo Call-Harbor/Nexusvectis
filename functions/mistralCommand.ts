@@ -116,6 +116,16 @@ AVAILABLE ACTIONS:
 13. DELETE_ROUTES - Clean up routes with archival
 14. DELETE_VEHICLES - Remove vehicles with reassignment suggestions
 15. SHOW_ANALYSIS - Advanced analytics with hologram visualization
+16. SHOW_3D - Display 3D visualization of fleet, routes, warehouses, or cargo
+
+3D VISUALIZATION CAPABILITIES (action: SHOW_3D):
+When user asks to "visualize", "show in 3D", "3D view", "vis i 3D", "3D visualisering":
+- Fleet 3D: Real-time 3D globe with vehicle positions, routes, and movement
+- Warehouse 3D: 3D warehouse layout with cargo placement, utilization heatmap
+- Route 3D: 3D terrain/airspace visualization with elevation, weather, traffic
+- Vehicle 3D: 3D vehicle model with component status, damage detection
+- Cargo 3D: 3D container/pallet layout optimization visualization
+→ Return SHOW_3D with visualization_type and data parameters
 
 ADVANCED ANALYSIS CAPABILITIES (action: SHOW_ANALYSIS):
 
@@ -207,6 +217,12 @@ When user asks for analysis (in ANY language):
 - "risk/risiko/riesgo" → Risk assessment and mitigation
 - "performance/ydeevne/rendimiento" → Performance benchmarking
 - "efficiency/effektivitet/eficiencia" → Operational efficiency analysis
+- "visualize/3D/view/vis/visualiser" → 3D visualization of fleet, routes, or cargo
+
+3D VISUALIZATION TRIGGERS:
+- "show 3D/vis i 3D/3D view" → SHOW_3D action
+- "visualize fleet/warehouse/route" → SHOW_3D with appropriate type
+- "3D map/globe/world" → SHOW_3D with fleet visualization on globe
 
 ANALYSIS EXECUTION PROTOCOL:
 1. Auto-select the most relevant analysis type based on user intent
@@ -285,7 +301,8 @@ OUTPUT FORMAT (JSON):
   "action": "ACTION_NAME",
   "parameters": {...},
   "message": "Brief message to user IN THE SAME LANGUAGE as their command",
-  "open_window": "window_type" (only if OPEN_WINDOW)
+  "open_window": "window_type" (only if OPEN_WINDOW),
+  "visualization_3d": {type, data} (only if SHOW_3D)
 }
 
 EXAMPLES:
@@ -293,7 +310,9 @@ EXAMPLES:
 - "show me alerts" → action: OPEN_WINDOW, parameters: {window_type: "alerts"}, message: "Opening alerts window", open_window: "alerts"
 - "predict vehicle maintenance" → action: SHOW_ANALYSIS, parameters: {chart_data: [{vehicle: "Truck-1", failure_risk: 75, component: "brake_pads"}], chart_config: {type: "bar", title: "Predictive Maintenance Analysis", xKey: "vehicle", bars: [{key: "failure_risk", name: "Failure Risk %"}], insights: ["Vehicle Truck-1 requires brake service within 2 weeks", "Engine oil change due in 5 days for 3 vehicles"]}}
 - "forecast shipment demand" → action: SHOW_ANALYSIS, parameters: {chart_data: [{month: "March", predicted: 450, actual: 420}], chart_config: {type: "line", title: "Demand Forecast", lines: [{key: "predicted", name: "Predicted"}, {key: "actual", name: "Actual"}], insights: ["15% growth expected in Q2", "Peak demand in May"]}}
-- "CO2 emissions report" → action: SHOW_ANALYSIS, parameters: {chart_data: [{name: "Copenhagen-Hamburg", value: 850}], chart_config: {type: "pie", title: "CO2 Emissions by Route", valueKey: "value", insights: ["Maritime routes 40% more efficient", "Rail could reduce 25% emissions"]}}`;
+- "CO2 emissions report" → action: SHOW_ANALYSIS, parameters: {chart_data: [{name: "Copenhagen-Hamburg", value: 850}], chart_config: {type: "pie", title: "CO2 Emissions by Route", valueKey: "value", insights: ["Maritime routes 40% more efficient", "Rail could reduce 25% emissions"]}}
+- "show fleet in 3D" → action: SHOW_3D, parameters: {visualization_type: "fleet_globe", vehicles: [...vehicle data], routes: [...route data]}, message: "Loading 3D fleet visualization", visualization_3d: {type: "fleet_globe", data: {vehicles, routes}}
+- "visualize warehouse" → action: SHOW_3D, parameters: {visualization_type: "warehouse", layout: {...warehouse data}, cargo: [...cargo data]}, message: "Opening 3D warehouse view", visualization_3d: {type: "warehouse", data: {layout, cargo}}`;
 
     // Use InvokeLLM if files are attached (supports vision/files)
     let result;
