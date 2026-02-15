@@ -83,6 +83,14 @@ import Settings from './pages/Settings';
 import Shipments from './pages/Shipments';
 import UserManagement from './pages/UserManagement';
 import WarehouseAutomation from './pages/WarehouseAutomation';
+import FleetAIPage from './pages/FleetAIPage';
+import LiveTrackingPage from './pages/LiveTrackingPage';
+import AnalyticsPage from './pages/AnalyticsPage';
+import IntegrationsPage from './pages/IntegrationsPage';
+import About from './pages/About';
+import Careers from './pages/Careers';
+import Contact from './pages/Contact';
+import Blog from './pages/Blog';
 import __Layout from './Layout.jsx';
 
 
@@ -123,6 +131,14 @@ export const PAGES = {
     "Shipments": Shipments,
     "UserManagement": UserManagement,
     "WarehouseAutomation": WarehouseAutomation,
+    "FleetAIPage": FleetAIPage,
+    "LiveTrackingPage": LiveTrackingPage,
+    "AnalyticsPage": AnalyticsPage,
+    "IntegrationsPage": IntegrationsPage,
+    "About": About,
+    "Careers": Careers,
+    "Contact": Contact,
+    "Blog": Blog,
 }
 
 export const pagesConfig = {

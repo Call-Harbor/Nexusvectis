@@ -946,20 +946,20 @@ export default function Landing() {
             <div>
               <h4 className="text-white font-bold mb-4">Platform</h4>
               <ul className="space-y-2 text-slate-400">
-                <li className="hover:text-cyan-400 transition-colors cursor-pointer">FLEET AI</li>
-                <li className="hover:text-cyan-400 transition-colors cursor-pointer">Live Tracking</li>
-                <li className="hover:text-cyan-400 transition-colors cursor-pointer">Analytics</li>
-                <li className="hover:text-cyan-400 transition-colors cursor-pointer">Integrations</li>
+                <li><Link to={createPageUrl("FleetAIPage")} className="hover:text-cyan-400 transition-colors">FLEET AI</Link></li>
+                <li><Link to={createPageUrl("LiveTrackingPage")} className="hover:text-cyan-400 transition-colors">Live Tracking</Link></li>
+                <li><Link to={createPageUrl("AnalyticsPage")} className="hover:text-cyan-400 transition-colors">Analytics</Link></li>
+                <li><Link to={createPageUrl("IntegrationsPage")} className="hover:text-cyan-400 transition-colors">Integrations</Link></li>
               </ul>
             </div>
             
             <div>
               <h4 className="text-white font-bold mb-4">Company</h4>
               <ul className="space-y-2 text-slate-400">
-                <li className="hover:text-cyan-400 transition-colors cursor-pointer">About</li>
-                <li className="hover:text-cyan-400 transition-colors cursor-pointer">Careers</li>
-                <li className="hover:text-cyan-400 transition-colors cursor-pointer">Contact</li>
-                <li className="hover:text-cyan-400 transition-colors cursor-pointer">Blog</li>
+                <li><Link to={createPageUrl("About")} className="hover:text-cyan-400 transition-colors">About</Link></li>
+                <li><Link to={createPageUrl("Careers")} className="hover:text-cyan-400 transition-colors">Careers</Link></li>
+                <li><Link to={createPageUrl("Contact")} className="hover:text-cyan-400 transition-colors">Contact</Link></li>
+                <li><Link to={createPageUrl("Blog")} className="hover:text-cyan-400 transition-colors">Blog</Link></li>
               </ul>
             </div>
           </div>
