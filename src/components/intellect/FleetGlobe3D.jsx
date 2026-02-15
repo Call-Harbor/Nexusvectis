@@ -380,11 +380,11 @@ export default function FleetGlobe3D({ vehicles = [], routes = [], onClose, onMi
         const deltaX = e.clientX - previousMousePosition.x;
         const deltaY = e.clientY - previousMousePosition.y;
         
-        globe.rotation.y += deltaX * 0.005;
-        globe.rotation.x += deltaY * 0.005;
+        fleetGroup.rotation.y += deltaX * 0.005;
+        fleetGroup.rotation.x += deltaY * 0.005;
         
         // Clamp rotation
-        globe.rotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, globe.rotation.x));
+        fleetGroup.rotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, fleetGroup.rotation.x));
         
         previousMousePosition = { x: e.clientX, y: e.clientY };
       }
