@@ -5,6 +5,10 @@ import { Globe, Satellite, MapPin, Radio, ArrowRight, CheckCircle2 } from "lucid
 import { base44 } from "@/api/base44Client";
 
 export default function LiveTrackingPage() {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   return (
     <div className="min-h-screen bg-black">
       <header className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-2xl border-b border-white/5">
