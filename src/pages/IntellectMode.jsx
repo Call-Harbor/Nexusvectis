@@ -1484,7 +1484,7 @@ export default function IntellectMode() {
             )}
             
             {/* AI Thinking Terminal */}
-            <AIThinkingTerminal 
+            <ThinkingTerminalVisual 
               isActive={showThinkingTerminal && isProcessing}
               logs={thinkingLogs}
               onClose={() => setShowThinkingTerminal(false)}
