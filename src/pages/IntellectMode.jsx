@@ -166,6 +166,8 @@ export default function IntellectMode() {
   const [isUploading, setIsUploading] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(true);
   const [show3DVisualization, setShow3DVisualization] = useState(null);
+  const [thinkingLogs, setThinkingLogs] = useState([]);
+  const [showThinkingTerminal, setShowThinkingTerminal] = useState(false);
   const messagesEndRef = useRef(null);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
