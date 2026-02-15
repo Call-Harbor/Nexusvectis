@@ -27,7 +27,9 @@ export default function Shipments() {
     cargo_type: "general",
     weight_kg: "",
     customer_name: "",
-    customer_email: ""
+    customer_email: "",
+    vehicle_id: "",
+    route_id: ""
   });
 
   const queryClient = useQueryClient();
@@ -43,6 +45,26 @@ export default function Shipments() {
       const userData = await base44.entities.User.filter({ email: currentUser.email });
       if (!userData?.[0]?.organization_id) return [];
       return base44.entities.Shipment.filter({ organization_id: userData[0].organization_id });
+    },
+    enabled: !!currentUser
+  });
+
+  const { data: vehicles = [] } = useQuery({
+    queryKey: ['vehicles'],
+    queryFn: async () => {
+      const userData = await base44.entities.User.filter({ email: currentUser.email });
+      if (!userData?.[0]?.organization_id) return [];
+      return base44.entities.Vehicle.filter({ organization_id: userData[0].organization_id });
+    },
+    enabled: !!currentUser
+  });
+
+  const { data: routes = [] } = useQuery({
+    queryKey: ['routes'],
+    queryFn: async () => {
+      const userData = await base44.entities.User.filter({ email: currentUser.email });
+      if (!userData?.[0]?.organization_id) return [];
+      return base44.entities.Route.filter({ organization_id: userData[0].organization_id });
     },
     enabled: !!currentUser
   });
@@ -67,7 +89,9 @@ export default function Shipments() {
         cargo_type: "general",
         weight_kg: "",
         customer_name: "",
-        customer_email: ""
+        customer_email: "",
+        vehicle_id: "",
+        route_id: ""
       });
     }
   });
@@ -236,6 +260,36 @@ export default function Shipments() {
                     onChange={(e) => setFormData({...formData, weight_kg: e.target.value})}
                     className="bg-slate-800 border-slate-700"
                   />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label>Assign Vehicle (Optional)</Label>
+                    <Select value={formData.vehicle_id} onValueChange={(v) => setFormData({...formData, vehicle_id: v})}>
+                      <SelectTrigger className="bg-slate-800 border-slate-700">
+                        <SelectValue placeholder="Select vehicle" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-slate-900 border-slate-800">
+                        <SelectItem value={null}>None</SelectItem>
+                        {vehicles.map(v => (
+                          <SelectItem key={v.id} value={v.id}>{v.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label>Assign Route (Optional)</Label>
+                    <Select value={formData.route_id} onValueChange={(v) => setFormData({...formData, route_id: v})}>
+                      <SelectTrigger className="bg-slate-800 border-slate-700">
+                        <SelectValue placeholder="Select route" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-slate-900 border-slate-800">
+                        <SelectItem value={null}>None</SelectItem>
+                        {routes.map(r => (
+                          <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
