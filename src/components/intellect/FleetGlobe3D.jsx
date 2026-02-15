@@ -14,27 +14,29 @@ export default function FleetGlobe3D({ vehicles = [], routes = [], onClose, onMi
   useEffect(() => {
     if (!containerRef.current) return;
 
-    // Scene setup
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x0a0a0f);
-    sceneRef.current = scene;
+    try {
+      // Scene setup
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x0a0a0f);
+      sceneRef.current = scene;
 
-    // Camera
-    const camera = new THREE.PerspectiveCamera(
-      60,
-      containerRef.current.clientWidth / containerRef.current.clientHeight,
-      0.1,
-      1000
-    );
-    camera.position.z = 2.5;
-    cameraRef.current = camera;
+      // Camera
+      const width = containerRef.current.clientWidth || 1200;
+      const height = containerRef.current.clientHeight || 800;
+      
+      const camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 1000);
+      camera.position.z = 2.5;
+      cameraRef.current = camera;
 
-    // Renderer
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(containerRef.current.clientWidth, containerRef.current.clientHeight);
-    renderer.setPixelRatio(window.devicePixelRatio);
-    containerRef.current.appendChild(renderer.domElement);
-    rendererRef.current = renderer;
+      // Renderer
+      const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer.setSize(width, height);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      
+      if (containerRef.current) {
+        containerRef.current.appendChild(renderer.domElement);
+      }
+      rendererRef.current = renderer;
 
     // Stars background
     const starsGeometry = new THREE.BufferGeometry();
