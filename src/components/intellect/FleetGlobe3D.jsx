@@ -467,22 +467,31 @@ export default function FleetGlobe3D({ vehicles = [], routes = [], onClose, onMi
 
     // Cleanup
     return () => {
-      window.removeEventListener('resize', handleResize);
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
+      try {
+        window.removeEventListener('resize', handleResize);
+        if (animationRef.current) {
+          cancelAnimationFrame(animationRef.current);
+        }
+        if (rendererRef.current?.domElement) {
+          rendererRef.current.domElement.removeEventListener('mousedown', onMouseDown);
+          rendererRef.current.domElement.removeEventListener('mousemove', onMouseMove);
+          rendererRef.current.domElement.removeEventListener('mouseup', onMouseUp);
+          rendererRef.current.domElement.removeEventListener('wheel', onWheel);
+        }
+        if (containerRef.current && rendererRef.current?.domElement) {
+          try {
+            containerRef.current.removeChild(rendererRef.current.domElement);
+          } catch (e) {
+            // Already removed
+          }
+        }
+        if (rendererRef.current) {
+          rendererRef.current.dispose();
+        }
+      } catch (error) {
+        console.error('Cleanup error:', error);
       }
-      if (renderer.domElement) {
-        renderer.domElement.removeEventListener('mousedown', onMouseDown);
-        renderer.domElement.removeEventListener('mousemove', onMouseMove);
-        renderer.domElement.removeEventListener('mouseup', onMouseUp);
-        renderer.domElement.removeEventListener('wheel', onWheel);
-      }
-      if (containerRef.current && renderer.domElement) {
-        containerRef.current.removeChild(renderer.domElement);
-      }
-      renderer.dispose();
     };
-  }, [vehicles, routes]);
 
   return (
     <motion.div
