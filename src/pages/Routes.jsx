@@ -34,6 +34,39 @@ const priorityColors = {
 const priorityLabels = { low: "Low", normal: "Normal", high: "High", critical: "Critical" };
 const vehicleIcons = { truck: Truck, ship: Ship, drone: Plane, train: Train, aircraft: Plane };
 
+// Precise distance calculation using Haversine formula
+const calculateDistance = (waypoints) => {
+  if (!waypoints || waypoints.length < 2) return 0;
+  const R = 6371; // Earth radius in km
+  let totalDistance = 0;
+  for (let i = 0; i < waypoints.length - 1; i++) {
+    const p1 = waypoints[i];
+    const p2 = waypoints[i + 1];
+    const dLat = (p2.lat - p1.lat) * Math.PI / 180;
+    const dLng = (p2.lng - p1.lng) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) ** 2 + Math.cos(p1.lat * Math.PI / 180) * Math.cos(p2.lat * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    totalDistance += R * c;
+  }
+  return Math.round(totalDistance * 10) / 10;
+};
+
+// Precise duration calculation based on transport type
+const calculateDuration = (waypoints, transportType) => {
+  const distance = calculateDistance(waypoints);
+  const speeds = { truck: 80, ship: 25, train: 120, aircraft: 800, drone: 60 };
+  const speed = speeds[transportType] || 80;
+  return Math.round((distance / speed) * 10) / 10;
+};
+
+// Precise CO2 calculation based on transport type
+const calculateCO2 = (waypoints, transportType) => {
+  const distance = calculateDistance(waypoints);
+  const factors = { truck: 0.8, ship: 0.02, train: 0.04, aircraft: 0.9, drone: 0.1 };
+  const factor = factors[transportType] || 0.8;
+  return Math.round(distance * factor * 10) / 10;
+};
+
 export default function Routes() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -703,9 +736,9 @@ export default function Routes() {
                   id: editingRoute.id,
                   data: {
                     waypoints,
-                    distance_km: distance,
-                    estimated_duration_hours: duration,
-                    co2_estimate: Math.round(distance * 0.8)
+                        distance_km: calculateDistance(waypoints),
+                        estimated_duration_hours: calculateDuration(waypoints, formData.transport_type),
+                        co2_estimate: calculateCO2(waypoints, formData.transport_type)
                   }
                 });
                 setEditingRoute(null);
