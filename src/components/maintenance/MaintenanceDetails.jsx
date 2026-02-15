@@ -3,8 +3,24 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Edit, Wrench, AlertTriangle, Clock, DollarSign } from "lucide-react";
 import moment from "moment";
+import { useQuery } from "@tanstack/react-query";
+import { base44 } from "@/api/base44Client";
+import { useNavigate } from "react-router-dom";
+import { createPageUrl } from "@/utils";
 
 export default function MaintenanceDetails({ maintenance, vehicle, onClose, onEdit }) {
+  const navigate = useNavigate();
+
+  const { data: driver } = useQuery({
+    queryKey: ['maintenanceDriver', vehicle?.driver],
+    queryFn: async () => {
+      if (!vehicle?.driver) return null;
+      const drivers = await base44.entities.Driver.filter({ employee_id: vehicle.driver });
+      return drivers[0] || null;
+    },
+    enabled: !!vehicle?.driver
+  });
+
   const getStatusColor = (status) => {
     switch (status) {
       case "completed": return "bg-emerald-500/20 text-emerald-400 border-emerald-500/30";
@@ -127,10 +143,36 @@ export default function MaintenanceDetails({ maintenance, vehicle, onClose, onEd
                 <CardHeader>
                   <CardTitle className="text-white">Vehicle Information</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
-                  <div><p className="text-slate-400 text-sm">Vehicle</p><p className="text-white">{vehicle.name}</p></div>
-                  <div><p className="text-slate-400 text-sm">Type</p><p className="text-white capitalize">{vehicle.type}</p></div>
-                  <div><p className="text-slate-400 text-sm">Status</p><Badge className={vehicle.status === "active" ? "bg-emerald-500/20 text-emerald-400" : "bg-slate-500/20 text-slate-400"}>{vehicle.status}</Badge></div>
+                <CardContent>
+                  <div
+                    className="p-3 rounded-lg bg-slate-800/50 border border-slate-700/30 hover:border-cyan-500/50 transition-colors cursor-pointer"
+                    onClick={() => navigate(createPageUrl('Fleet'))}
+                  >
+                    <p className="text-white font-medium">{vehicle.name}</p>
+                    <p className="text-slate-400 text-xs capitalize">{vehicle.type}</p>
+                    <div className="mt-2">
+                      <Badge className={vehicle.status === "active" ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" : "bg-slate-500/20 text-slate-400 border-slate-500/30"}>
+                        {vehicle.status}
+                      </Badge>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {driver && (
+              <Card className="bg-slate-900/50 border-slate-800">
+                <CardHeader>
+                  <CardTitle className="text-white">Assigned Driver</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div
+                    className="p-3 rounded-lg bg-slate-800/50 border border-slate-700/30 hover:border-cyan-500/50 transition-colors cursor-pointer"
+                    onClick={() => navigate(createPageUrl('DriverManagement'))}
+                  >
+                    <p className="text-white font-medium">{driver.first_name} {driver.last_name}</p>
+                    <p className="text-slate-400 text-xs">{driver.email}</p>
+                  </div>
                 </CardContent>
               </Card>
             )}

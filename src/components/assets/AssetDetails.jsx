@@ -3,8 +3,35 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Edit, DollarSign } from "lucide-react";
 import moment from "moment";
+import RelatedVehicles from "../shared/RelatedVehicles";
+import { useQuery } from "@tanstack/react-query";
+import { base44 } from "@/api/base44Client";
+import { useNavigate } from "react-router-dom";
+import { createPageUrl } from "@/utils";
 
 export default function AssetDetails({ asset, onClose, onEdit }) {
+  const navigate = useNavigate();
+
+  const { data: assignedVehicle } = useQuery({
+    queryKey: ['assignedVehicle', asset.assigned_to_vehicle_id],
+    queryFn: async () => {
+      if (!asset.assigned_to_vehicle_id) return null;
+      const vehicles = await base44.entities.Vehicle.filter({ id: asset.assigned_to_vehicle_id });
+      return vehicles[0] || null;
+    },
+    enabled: !!asset.assigned_to_vehicle_id
+  });
+
+  const { data: assignedDriver } = useQuery({
+    queryKey: ['assignedDriver', asset.assigned_to_driver_id],
+    queryFn: async () => {
+      if (!asset.assigned_to_driver_id) return null;
+      const drivers = await base44.entities.Driver.filter({ id: asset.assigned_to_driver_id });
+      return drivers[0] || null;
+    },
+    enabled: !!asset.assigned_to_driver_id
+  });
+
   const getStatusColor = (status) => {
     switch (status) {
       case "available": return "bg-emerald-500/20 text-emerald-400 border-emerald-500/30";
@@ -89,6 +116,40 @@ export default function AssetDetails({ asset, onClose, onEdit }) {
           </div>
 
           <div className="space-y-6">
+            {assignedVehicle && (
+              <Card className="bg-slate-900/50 border-slate-800">
+                <CardHeader>
+                  <CardTitle className="text-white">Assigned Vehicle</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div
+                    className="p-3 rounded-lg bg-slate-800/50 border border-slate-700/30 hover:border-cyan-500/50 transition-colors cursor-pointer"
+                    onClick={() => navigate(createPageUrl('Fleet'))}
+                  >
+                    <p className="text-white font-medium">{assignedVehicle.name}</p>
+                    <p className="text-slate-400 text-xs">{assignedVehicle.type}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {assignedDriver && (
+              <Card className="bg-slate-900/50 border-slate-800">
+                <CardHeader>
+                  <CardTitle className="text-white">Assigned Driver</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div
+                    className="p-3 rounded-lg bg-slate-800/50 border border-slate-700/30 hover:border-cyan-500/50 transition-colors cursor-pointer"
+                    onClick={() => navigate(createPageUrl('DriverManagement'))}
+                  >
+                    <p className="text-white font-medium">{assignedDriver.first_name} {assignedDriver.last_name}</p>
+                    <p className="text-slate-400 text-xs">{assignedDriver.email}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {asset.utilization_rate && (
               <Card className="bg-slate-900/50 border-slate-800">
                 <CardHeader>
