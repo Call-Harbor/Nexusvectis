@@ -409,36 +409,52 @@ export default function FleetGlobe3D({ vehicles = [], routes = [], onClose, onMi
 
     // Animation loop
     const animate = () => {
-      animationRef.current = requestAnimationFrame(animate);
-      
-      // Auto-rotate globe slowly
-      if (!isDragging) {
-        fleetGroup.rotation.y += 0.0015;
-      }
-      
-      // Animate markers
-      scene.children.forEach(child => {
-        if (child.userData.animate) {
-          child.userData.animate();
+      try {
+        animationRef.current = requestAnimationFrame(animate);
+        
+        // Auto-rotate globe slowly
+        if (!isDragging && fleetGroup) {
+          fleetGroup.rotation.y += 0.0015;
         }
-      });
-      
-      // Animate route dots
-      if (scene.userData.routeLines) {
-        scene.userData.routeLines.forEach(routeLine => {
-          routeLine.progress += 0.005;
-          if (routeLine.progress > 1) routeLine.progress = 0;
-          const point = routeLine.curve.getPoint(routeLine.progress);
-          routeLine.dot.position.copy(point);
-        });
+        
+        // Animate markers
+        if (sceneRef.current) {
+          sceneRef.current.children.forEach(child => {
+            if (child.userData?.animate) {
+              child.userData.animate();
+            }
+          });
+        }
+        
+        // Animate route dots
+        if (scene.userData?.routeLines) {
+          scene.userData.routeLines.forEach(routeLine => {
+            routeLine.progress += 0.005;
+            if (routeLine.progress > 1) routeLine.progress = 0;
+            const point = routeLine.curve.getPoint(routeLine.progress);
+            if (point && routeLine.dot) {
+              routeLine.dot.position.copy(point);
+            }
+          });
+        }
+        
+        // Rotate stars slowly
+        if (stars) {
+          stars.rotation.y += 0.0001;
+        }
+        
+        if (rendererRef.current && cameraRef.current && sceneRef.current) {
+          rendererRef.current.render(sceneRef.current, cameraRef.current);
+        }
+      } catch (error) {
+        console.error('Animation loop error:', error);
       }
-      
-      // Rotate stars slowly
-      stars.rotation.y += 0.0001;
-      
-      renderer.render(scene, camera);
     };
     animate();
+    } catch (error) {
+      console.error('3D Globe initialization error:', error);
+    }
+  }, [vehicles, routes]);
 
     // Handle resize
     const handleResize = () => {
