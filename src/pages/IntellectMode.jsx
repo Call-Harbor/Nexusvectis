@@ -830,12 +830,16 @@ export default function IntellectMode() {
           {chartConfig.insights && chartConfig.insights.length > 0 && (
             <div className="mt-4 space-y-2">
               <h4 className="text-cyan-400 font-semibold text-sm">Key Insights:</h4>
-              {chartConfig.insights.map((insight, idx) => (
-                <div key={idx} className="flex items-start gap-2 text-slate-300 text-xs">
-                  <Sparkles className="w-3 h-3 text-cyan-400 mt-0.5 flex-shrink-0" />
-                  <span>{insight}</span>
-                </div>
-              ))}
+              {chartConfig.insights.map((insight, idx) => {
+                const insightText = typeof insight === 'string' ? insight : insight?.text || '';
+                const severity = insight?.severity || 'info';
+                return (
+                  <div key={idx} className="flex items-start gap-2 text-slate-300 text-xs">
+                    <Sparkles className="w-3 h-3 text-cyan-400 mt-0.5 flex-shrink-0" />
+                    <span>{insightText}</span>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
