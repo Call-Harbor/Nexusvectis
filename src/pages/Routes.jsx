@@ -738,8 +738,8 @@ export default function Routes() {
                  setFormData({ ...formData, waypoints, distance_km: distance, estimated_duration_hours: duration, co2_estimate: co2 });
                }
                setShowAdvancedEditor(false);
-             }
-            onCancel={() => {
+             }}
+             onCancel={() => {
               setShowAdvancedEditor(false);
               setEditingRoute(null);
             }}
