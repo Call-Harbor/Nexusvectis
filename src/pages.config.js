@@ -50,12 +50,17 @@
 import AIOptimization from './pages/AIOptimization';
 import APIDocumentation from './pages/APIDocumentation';
 import APIMetrics from './pages/APIMetrics';
+import About from './pages/About';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminInvoices from './pages/AdminInvoices';
 import AdminMonitor from './pages/AdminMonitor';
 import Alerts from './pages/Alerts';
+import AnalyticsPage from './pages/AnalyticsPage';
 import AssetManagement from './pages/AssetManagement';
 import Assignment from './pages/Assignment';
+import Blog from './pages/Blog';
+import Careers from './pages/Careers';
+import Contact from './pages/Contact';
 import ContractManagement from './pages/ContractManagement';
 import CustomerDashboard from './pages/CustomerDashboard';
 import CustomerManagement from './pages/CustomerManagement';
@@ -66,11 +71,14 @@ import DemandForecasting from './pages/DemandForecasting';
 import DocumentManagement from './pages/DocumentManagement';
 import DriverManagement from './pages/DriverManagement';
 import Fleet from './pages/Fleet';
+import FleetAIPage from './pages/FleetAIPage';
 import GPSIntegration from './pages/GPSIntegration';
 import GreenTMS from './pages/GreenTMS';
 import Home from './pages/Home';
+import IntegrationsPage from './pages/IntegrationsPage';
 import IntellectMode from './pages/IntellectMode';
 import Invoices from './pages/Invoices';
+import LiveTrackingPage from './pages/LiveTrackingPage';
 import MaintenanceManagement from './pages/MaintenanceManagement';
 import MapMonitor from './pages/MapMonitor';
 import OrganizationSetup from './pages/OrganizationSetup';
@@ -82,14 +90,6 @@ import Settings from './pages/Settings';
 import Shipments from './pages/Shipments';
 import UserManagement from './pages/UserManagement';
 import WarehouseAutomation from './pages/WarehouseAutomation';
-import FleetAIPage from './pages/FleetAIPage';
-import LiveTrackingPage from './pages/LiveTrackingPage';
-import AnalyticsPage from './pages/AnalyticsPage';
-import IntegrationsPage from './pages/IntegrationsPage';
-import About from './pages/About';
-import Careers from './pages/Careers';
-import Contact from './pages/Contact';
-import Blog from './pages/Blog';
 import __Layout from './Layout.jsx';
 
 
@@ -97,12 +97,17 @@ export const PAGES = {
     "AIOptimization": AIOptimization,
     "APIDocumentation": APIDocumentation,
     "APIMetrics": APIMetrics,
+    "About": About,
     "AdminDashboard": AdminDashboard,
     "AdminInvoices": AdminInvoices,
     "AdminMonitor": AdminMonitor,
     "Alerts": Alerts,
+    "AnalyticsPage": AnalyticsPage,
     "AssetManagement": AssetManagement,
     "Assignment": Assignment,
+    "Blog": Blog,
+    "Careers": Careers,
+    "Contact": Contact,
     "ContractManagement": ContractManagement,
     "CustomerDashboard": CustomerDashboard,
     "CustomerManagement": CustomerManagement,
@@ -113,11 +118,14 @@ export const PAGES = {
     "DocumentManagement": DocumentManagement,
     "DriverManagement": DriverManagement,
     "Fleet": Fleet,
+    "FleetAIPage": FleetAIPage,
     "GPSIntegration": GPSIntegration,
     "GreenTMS": GreenTMS,
     "Home": Home,
+    "IntegrationsPage": IntegrationsPage,
     "IntellectMode": IntellectMode,
     "Invoices": Invoices,
+    "LiveTrackingPage": LiveTrackingPage,
     "MaintenanceManagement": MaintenanceManagement,
     "MapMonitor": MapMonitor,
     "OrganizationSetup": OrganizationSetup,
@@ -129,14 +137,6 @@ export const PAGES = {
     "Shipments": Shipments,
     "UserManagement": UserManagement,
     "WarehouseAutomation": WarehouseAutomation,
-    "FleetAIPage": FleetAIPage,
-    "LiveTrackingPage": LiveTrackingPage,
-    "AnalyticsPage": AnalyticsPage,
-    "IntegrationsPage": IntegrationsPage,
-    "About": About,
-    "Careers": Careers,
-    "Contact": Contact,
-    "Blog": Blog,
 }
 
 export const pagesConfig = {
