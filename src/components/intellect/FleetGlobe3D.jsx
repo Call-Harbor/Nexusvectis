@@ -267,11 +267,26 @@ export default function FleetGlobe3D({ vehicles = [], routes = [], onClose, onMi
     // Add routes as animated arcs
     const routeLines = [];
     routes.forEach((route, idx) => {
-      if (route.origin_lat && route.origin_lng && route.destination_lat && route.destination_lng) {
-        const phi1 = (90 - route.origin_lat) * (Math.PI / 180);
-        const theta1 = (route.origin_lng + 180) * (Math.PI / 180);
-        const phi2 = (90 - route.destination_lat) * (Math.PI / 180);
-        const theta2 = (route.destination_lng + 180) * (Math.PI / 180);
+      // Extract origin and destination from route data
+      let origin_lat, origin_lng, destination_lat, destination_lng;
+      
+      if (route.waypoints && route.waypoints.length > 0) {
+        origin_lat = route.waypoints[0]?.lat || route.waypoints[0]?.latitude;
+        origin_lng = route.waypoints[0]?.lng || route.waypoints[0]?.longitude;
+        destination_lat = route.waypoints[route.waypoints.length - 1]?.lat || route.waypoints[route.waypoints.length - 1]?.latitude;
+        destination_lng = route.waypoints[route.waypoints.length - 1]?.lng || route.waypoints[route.waypoints.length - 1]?.longitude;
+      } else {
+        origin_lat = route.origin_lat;
+        origin_lng = route.origin_lng;
+        destination_lat = route.destination_lat;
+        destination_lng = route.destination_lng;
+      }
+      
+      if (origin_lat && origin_lng && destination_lat && destination_lng) {
+        const phi1 = (90 - origin_lat) * (Math.PI / 180);
+        const theta1 = (origin_lng + 180) * (Math.PI / 180);
+        const phi2 = (90 - destination_lat) * (Math.PI / 180);
+        const theta2 = (destination_lng + 180) * (Math.PI / 180);
         
         const start = new THREE.Vector3(
           -(1.06 * Math.sin(phi1) * Math.cos(theta1)),
