@@ -252,6 +252,113 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* FLEET AI Showcase */}
+      <section className="relative py-32 px-6 z-10">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="relative rounded-[3rem] bg-gradient-to-br from-cyan-500/10 via-violet-500/10 to-fuchsia-500/10 border border-cyan-500/30 p-12 md:p-20 overflow-hidden"
+          >
+            <div className="absolute inset-0">
+              <motion.div
+                animate={{
+                  scale: [1, 1.2, 1],
+                  opacity: [0.3, 0.6, 0.3],
+                }}
+                transition={{ duration: 8, repeat: Infinity }}
+                className="absolute top-0 right-0 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl"
+              />
+              <motion.div
+                animate={{
+                  scale: [1.2, 1, 1.2],
+                  opacity: [0.3, 0.6, 0.3],
+                }}
+                transition={{ duration: 10, repeat: Infinity, delay: 1 }}
+                className="absolute bottom-0 left-0 w-96 h-96 bg-violet-500/20 rounded-full blur-3xl"
+              />
+            </div>
+
+            <div className="relative z-10">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                className="text-center mb-16"
+              >
+                <motion.div
+                  animate={{
+                    rotate: [0, 360],
+                  }}
+                  transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                  className="inline-block mb-6"
+                >
+                  <Sparkles className="w-16 h-16 text-cyan-400" />
+                </motion.div>
+                <h2 className="text-5xl md:text-7xl font-black text-white mb-6 leading-tight">
+                  Meet <span className="bg-gradient-to-r from-cyan-400 via-violet-400 to-fuchsia-400 bg-clip-text text-transparent">FLEET AI</span>
+                </h2>
+                <p className="text-2xl text-slate-300 max-w-4xl mx-auto leading-relaxed">
+                  Your intelligent co-pilot for fleet operations. Control everything with natural language commands.
+                  <br />
+                  <span className="text-cyan-400">No complex interfaces. No training required. Just ask.</span>
+                </p>
+              </motion.div>
+
+              <div className="grid md:grid-cols-3 gap-6 mt-16">
+                {[
+                  {
+                    icon: Brain,
+                    title: "Natural Language Control",
+                    description: "\"Route vehicle 47 to Copenhagen warehouse\" - FLEET AI understands and executes instantly",
+                    color: "cyan"
+                  },
+                  {
+                    icon: Zap,
+                    title: "Instant Automation",
+                    description: "\"Optimize all routes for fuel efficiency\" - AI analyzes and implements in seconds",
+                    color: "violet"
+                  },
+                  {
+                    icon: TrendingUp,
+                    title: "Predictive Intelligence",
+                    description: "\"Show maintenance predictions\" - AI forecasts issues before they happen",
+                    color: "fuchsia"
+                  }
+                ].map((item, idx) => {
+                  const Icon = item.icon;
+                  return (
+                    <motion.div
+                      key={idx}
+                      initial={{ opacity: 0, y: 30 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: idx * 0.2 }}
+                      whileHover={{ scale: 1.05, y: -10 }}
+                      className="relative p-8 rounded-3xl bg-white/5 backdrop-blur-xl border border-white/10 group"
+                    >
+                      <motion.div
+                        animate={{
+                          rotate: [0, 5, -5, 0],
+                        }}
+                        transition={{ duration: 3, repeat: Infinity, delay: idx * 0.5 }}
+                        className={`w-20 h-20 rounded-2xl bg-gradient-to-br from-${item.color}-500/20 to-${item.color}-500/5 flex items-center justify-center mb-6 shadow-xl shadow-${item.color}-500/20`}
+                      >
+                        <Icon className={`w-10 h-10 text-${item.color}-400`} />
+                      </motion.div>
+                      <h3 className="text-2xl font-bold text-white mb-3">{item.title}</h3>
+                      <p className="text-slate-400 leading-relaxed text-lg italic">"{item.description}"</p>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
       {/* Features Grid */}
       <section className="relative py-32 px-6 z-10">
         <div className="max-w-7xl mx-auto">
@@ -262,15 +369,24 @@ export default function Landing() {
             transition={{ duration: 0.6 }}
             className="text-center mb-20"
           >
+            <motion.div
+              animate={{
+                y: [0, -10, 0],
+              }}
+              transition={{ duration: 3, repeat: Infinity }}
+              className="inline-block mb-6"
+            >
+              <Orbit className="w-12 h-12 text-cyan-400" />
+            </motion.div>
             <h2 className="text-5xl md:text-6xl font-bold text-white mb-6 leading-tight">
-              Power Your Operations with
+              Complete Fleet Intelligence
               <br />
               <span className="bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent">
-                AI-Driven Intelligence
+                Powered by Advanced AI
               </span>
             </h2>
             <p className="text-xl text-slate-400 max-w-3xl mx-auto">
-              Every feature designed to give you unprecedented control and insight
+              Beyond FLEET AI - a comprehensive platform with every tool you need for modern logistics
             </p>
           </motion.div>
 
@@ -284,23 +400,220 @@ export default function Landing() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: idx * 0.1, duration: 0.5 }}
-                  whileHover={{ scale: 1.02, y: -5 }}
+                  whileHover={{ scale: 1.05, y: -10 }}
                   className="relative p-8 rounded-3xl bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl border border-white/10 hover:border-cyan-500/50 transition-all group overflow-hidden"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-violet-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <motion.div 
+                    className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-violet-500/5 opacity-0 group-hover:opacity-100 transition-opacity"
+                    animate={{
+                      scale: [1, 1.1, 1],
+                    }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  />
                   
                   <div className="relative">
-                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500/20 via-violet-500/20 to-fuchsia-500/20 flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all shadow-lg shadow-cyan-500/20">
+                    <motion.div 
+                      whileHover={{ rotate: 360 }}
+                      transition={{ duration: 0.6 }}
+                      className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500/20 via-violet-500/20 to-fuchsia-500/20 flex items-center justify-center mb-6 shadow-lg shadow-cyan-500/20"
+                    >
                       <Icon className="w-8 h-8 text-cyan-400" />
-                    </div>
+                    </motion.div>
                     <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-cyan-400 transition-colors">{feature.title}</h3>
-                    <p className="text-slate-400 leading-relaxed">{feature.description}</p>
+                    <p className="text-slate-400 leading-relaxed text-base">{feature.description}</p>
                   </div>
                   
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-cyan-500/10 to-transparent rounded-full blur-2xl -z-10 group-hover:scale-150 transition-transform" />
+                  <motion.div 
+                    className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-cyan-500/10 to-transparent rounded-full blur-2xl -z-10"
+                    animate={{
+                      scale: [1, 1.5, 1],
+                      opacity: [0.3, 0.6, 0.3],
+                    }}
+                    transition={{ duration: 3, repeat: Infinity, delay: idx * 0.2 }}
+                  />
                 </motion.div>
               );
             })}
+          </div>
+        </div>
+      </section>
+
+      {/* Use Cases Section */}
+      <section className="relative py-32 px-6 z-10">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-20"
+          >
+            <h2 className="text-5xl md:text-6xl font-bold text-white mb-6">
+              Trusted By Leading
+              <br />
+              <span className="bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent">
+                Logistics Companies
+              </span>
+            </h2>
+            <p className="text-xl text-slate-400 max-w-3xl mx-auto">
+              From last-mile delivery to international freight - FLEET AI adapts to your operations
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-2 gap-8">
+            {[
+              {
+                title: "International Freight",
+                icon: Globe,
+                stats: ["Multi-modal tracking", "Cross-border compliance", "Real-time customs updates"],
+                description: "Manage trucks, ships, and aircraft across continents with unified AI control"
+              },
+              {
+                title: "Urban Logistics",
+                icon: Truck,
+                stats: ["Last-mile optimization", "Dynamic routing", "ETA predictions"],
+                description: "Navigate city traffic with AI-powered route optimization and real-time adjustments"
+              },
+              {
+                title: "Cold Chain Transport",
+                icon: Package,
+                stats: ["Temperature monitoring", "Compliance alerts", "Quality assurance"],
+                description: "Ensure product integrity with continuous monitoring and predictive alerts"
+              },
+              {
+                title: "Heavy Equipment",
+                icon: Radio,
+                stats: ["Utilization tracking", "Predictive maintenance", "Cost optimization"],
+                description: "Maximize ROI on expensive assets with AI-driven maintenance and deployment"
+              }
+            ].map((useCase, idx) => {
+              const Icon = useCase.icon;
+              return (
+                <motion.div
+                  key={idx}
+                  initial={{ opacity: 0, x: idx % 2 === 0 ? -30 : 30 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: idx * 0.2 }}
+                  whileHover={{ scale: 1.02 }}
+                  className="relative p-10 rounded-3xl bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl border border-white/10 hover:border-cyan-500/50 transition-all group"
+                >
+                  <motion.div
+                    animate={{
+                      rotate: [0, 360],
+                    }}
+                    transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                    className="absolute -top-8 -right-8 w-32 h-32 bg-gradient-to-br from-cyan-500/10 to-violet-500/10 rounded-full blur-2xl"
+                  />
+                  
+                  <div className="relative">
+                    <div className="flex items-center gap-4 mb-6">
+                      <motion.div
+                        whileHover={{ scale: 1.1, rotate: 5 }}
+                        className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-violet-500/20 flex items-center justify-center"
+                      >
+                        <Icon className="w-8 h-8 text-cyan-400" />
+                      </motion.div>
+                      <h3 className="text-3xl font-bold text-white">{useCase.title}</h3>
+                    </div>
+                    
+                    <p className="text-slate-300 text-lg mb-6 leading-relaxed">{useCase.description}</p>
+                    
+                    <div className="space-y-3">
+                      {useCase.stats.map((stat, statIdx) => (
+                        <motion.div
+                          key={statIdx}
+                          initial={{ opacity: 0, x: -20 }}
+                          whileInView={{ opacity: 1, x: 0 }}
+                          viewport={{ once: true }}
+                          transition={{ delay: idx * 0.2 + statIdx * 0.1 }}
+                          className="flex items-center gap-3"
+                        >
+                          <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0" />
+                          <span className="text-slate-400">{stat}</span>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Benefits Section */}
+      <section className="relative py-32 px-6 z-10 overflow-hidden">
+        <motion.div
+          animate={{
+            rotate: [0, 360],
+          }}
+          transition={{ duration: 50, repeat: Infinity, ease: "linear" }}
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] border border-cyan-500/10 rounded-full"
+        />
+        <motion.div
+          animate={{
+            rotate: [360, 0],
+          }}
+          transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] border border-violet-500/10 rounded-full"
+        />
+
+        <div className="max-w-7xl mx-auto relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-20"
+          >
+            <h2 className="text-5xl md:text-6xl font-bold text-white mb-6">
+              Why Choose
+              <br />
+              <span className="bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent">
+                NexusVectis
+              </span>
+            </h2>
+          </motion.div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              {
+                value: "80%",
+                label: "Faster Operations",
+                description: "AI automation reduces manual tasks and speeds up decision-making"
+              },
+              {
+                value: "35%",
+                label: "Cost Reduction",
+                description: "Optimize routes, fuel consumption, and asset utilization"
+              },
+              {
+                value: "99.9%",
+                label: "Uptime Guarantee",
+                description: "Enterprise-grade reliability with 24/7 monitoring"
+              }
+            ].map((benefit, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, scale: 0.8 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.2 }}
+                whileHover={{ scale: 1.05, y: -10 }}
+                className="text-center p-10 rounded-3xl bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl border border-white/10 hover:border-cyan-500/50 transition-all"
+              >
+                <motion.div
+                  animate={{
+                    scale: [1, 1.1, 1],
+                  }}
+                  transition={{ duration: 2, repeat: Infinity, delay: idx * 0.3 }}
+                  className="text-7xl font-black bg-gradient-to-br from-cyan-400 via-violet-400 to-fuchsia-400 bg-clip-text text-transparent mb-4"
+                >
+                  {benefit.value}
+                </motion.div>
+                <h3 className="text-2xl font-bold text-white mb-3">{benefit.label}</h3>
+                <p className="text-slate-400 leading-relaxed">{benefit.description}</p>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
