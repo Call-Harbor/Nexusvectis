@@ -143,7 +143,7 @@ export default function Landing() {
               onClick={() => base44.auth.redirectToLogin(createPageUrl("Dashboard"))}
               className="bg-gradient-to-r from-cyan-500 to-violet-500 text-white px-6 py-2 rounded-lg transition-transform hover:scale-105 flex items-center gap-2"
             >
-              Get Started
+              Contact Sales
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>
@@ -198,10 +198,10 @@ export default function Landing() {
               transition={{ delay: 0.5 }}
               className="text-xl md:text-2xl text-slate-300 mb-12 max-w-3xl mx-auto leading-relaxed font-light"
             >
-              Real-time tracking meets artificial intelligence. 
+              Enterprise-grade fleet intelligence platform trusted by logistics leaders.
               <span className="text-cyan-400"> Monitor</span>,
               <span className="text-violet-400"> optimize</span>, and
-              <span className="text-fuchsia-400"> transform</span> your entire fleet with unprecedented precision.
+              <span className="text-fuchsia-400"> scale</span> your operations with AI-powered precision.
             </motion.p>
 
             <motion.div 
@@ -215,7 +215,7 @@ export default function Landing() {
                 className="bg-gradient-to-r from-cyan-500 via-violet-500 to-fuchsia-500 text-white text-lg px-10 py-6 rounded-2xl font-semibold group transition-transform hover:scale-105 flex items-center gap-3"
               >
                 <Brain className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                Experience the Platform
+                Request Demo
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
               </button>
             </motion.div>
@@ -348,7 +348,7 @@ export default function Landing() {
                 </span>
               </h2>
               <p className="text-2xl text-slate-300 mb-12 font-light">
-                Join the future of intelligent logistics management
+                Elevate your logistics operations with enterprise-grade AI solutions
               </p>
               
               <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
@@ -356,7 +356,7 @@ export default function Landing() {
                   onClick={() => base44.auth.redirectToLogin(createPageUrl("Dashboard"))}
                   className="bg-white text-slate-900 text-xl px-12 py-7 rounded-2xl font-bold group transition-transform hover:scale-105 flex items-center gap-3"
                 >
-                  Get Started Now
+                  Schedule Consultation
                   <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
                 </button>
               </div>
@@ -364,15 +364,15 @@ export default function Landing() {
               <div className="flex items-center justify-center gap-6 mt-10 text-slate-400">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-                  <span>Free trial</span>
+                  <span>Enterprise Security</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-                  <span>No credit card</span>
+                  <span>Dedicated Support</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-                  <span>Setup in minutes</span>
+                  <span>Custom Integration</span>
                 </div>
               </div>
             </div>
