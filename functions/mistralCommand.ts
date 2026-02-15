@@ -97,7 +97,21 @@ AVAILABLE ACTIONS:
 12. UPDATE_ALERTS - Resolve alerts (resolve_all: true)
 13. DELETE_ROUTES - Delete routes (delete_all: true)
 14. DELETE_VEHICLES - Delete vehicles (delete_all: true)
-14. ANSWER - Answer questions with expert logistics insights
+15. SHOW_ANALYSIS - Perform advanced analysis and display in hologram chart (predictive maintenance, demand forecast, CO2 report)
+16. ANSWER - Answer questions with expert logistics insights
+
+ANALYSIS TYPES (use action: SHOW_ANALYSIS):
+- Predictive Maintenance: Analyze vehicle data, predict failures, show timeline chart
+  → chart_data: [{ date, failure_risk, component }], chart_config: { type: "bar/line", title, insights }
+- Demand Forecasting: Analyze shipment history, forecast future demand
+  → chart_data: [{ month, predicted_demand, actual }], chart_config: { type: "area/line", title, insights }
+- CO2 Emissions: Calculate route emissions, show breakdown by transport mode
+  → chart_data: [{ route, co2_kg, transport_mode }], chart_config: { type: "bar/pie", title, insights }
+
+When user asks for "analysis", "predict", "forecast", "CO2 report", "maintenance analysis":
+1. Calculate appropriate metrics from context data
+2. Return SHOW_ANALYSIS action with chart_data and chart_config
+3. Include 3-5 key insights in chart_config.insights array
 
 AVAILABLE WINDOWS:
 - fleet → "fleet" (synonyms: flåde, flotte, flotille, vehicles, køretøjer, fahrzeuge)
@@ -150,7 +164,9 @@ OUTPUT FORMAT (JSON):
 EXAMPLES:
 - "vis mig min flåde" → action: OPEN_WINDOW, parameters: {window_type: "fleet"}, message: "Åbner flåde-vindue", open_window: "fleet"
 - "show me alerts" → action: OPEN_WINDOW, parameters: {window_type: "alerts"}, message: "Opening alerts window", open_window: "alerts"
-- "zeige mir die routen" → action: OPEN_WINDOW, parameters: {window_type: "routes"}, message: "Routen-Fenster wird geöffnet", open_window: "routes"`;
+- "predict vehicle maintenance" → action: SHOW_ANALYSIS, parameters: {chart_data: [{vehicle: "Truck-1", failure_risk: 75, component: "brake_pads"}], chart_config: {type: "bar", title: "Predictive Maintenance Analysis", xKey: "vehicle", bars: [{key: "failure_risk", name: "Failure Risk %"}], insights: ["Vehicle Truck-1 requires brake service within 2 weeks", "Engine oil change due in 5 days for 3 vehicles"]}}
+- "forecast shipment demand" → action: SHOW_ANALYSIS, parameters: {chart_data: [{month: "March", predicted: 450, actual: 420}], chart_config: {type: "line", title: "Demand Forecast", lines: [{key: "predicted", name: "Predicted"}, {key: "actual", name: "Actual"}], insights: ["15% growth expected in Q2", "Peak demand in May"]}}
+- "CO2 emissions report" → action: SHOW_ANALYSIS, parameters: {chart_data: [{name: "Copenhagen-Hamburg", value: 850}], chart_config: {type: "pie", title: "CO2 Emissions by Route", valueKey: "value", insights: ["Maritime routes 40% more efficient", "Rail could reduce 25% emissions"]}}`;
 
     // Use InvokeLLM if files are attached (supports vision/files)
     let result;
