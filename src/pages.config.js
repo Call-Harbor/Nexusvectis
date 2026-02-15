@@ -82,17 +82,17 @@ import LiveTrackingPage from './pages/LiveTrackingPage';
 import MaintenanceManagement from './pages/MaintenanceManagement';
 import MapMonitor from './pages/MapMonitor';
 import OrganizationSetup from './pages/OrganizationSetup';
+import PrivacyPolicy from './pages/PrivacyPolicy';
 import Reports from './pages/Reports';
 import Resources from './pages/Resources';
 import Routes from './pages/Routes';
 import Security from './pages/Security';
+import SecurityPage from './pages/SecurityPage';
 import Settings from './pages/Settings';
 import Shipments from './pages/Shipments';
+import TermsOfService from './pages/TermsOfService';
 import UserManagement from './pages/UserManagement';
 import WarehouseAutomation from './pages/WarehouseAutomation';
-import PrivacyPolicy from './pages/PrivacyPolicy';
-import TermsOfService from './pages/TermsOfService';
-import SecurityPage from './pages/SecurityPage';
 import __Layout from './Layout.jsx';
 
 
@@ -132,17 +132,17 @@ export const PAGES = {
     "MaintenanceManagement": MaintenanceManagement,
     "MapMonitor": MapMonitor,
     "OrganizationSetup": OrganizationSetup,
+    "PrivacyPolicy": PrivacyPolicy,
     "Reports": Reports,
     "Resources": Resources,
     "Routes": Routes,
     "Security": Security,
+    "SecurityPage": SecurityPage,
     "Settings": Settings,
     "Shipments": Shipments,
+    "TermsOfService": TermsOfService,
     "UserManagement": UserManagement,
     "WarehouseAutomation": WarehouseAutomation,
-    "PrivacyPolicy": PrivacyPolicy,
-    "TermsOfService": TermsOfService,
-    "SecurityPage": SecurityPage,
 }
 
 export const pagesConfig = {

@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { MapContainer, TileLayer, Marker, Polyline, Popup } from 'react-leaflet';
+import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area } from 'recharts';
 
 const HologramWindow = React.memo(({ id, title, icon: Icon, children, position, onClose, onMinimize, isMinimized }) => {
   const [pos, setPos] = useState(position);
@@ -225,12 +226,13 @@ export default function IntellectMode() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, streamingMessage]);
 
-  const openWindow = useCallback((type, position = { x: 100 + Math.random() * 200, y: 100 + Math.random() * 200 }) => {
-    if (activeWindows.find(w => w.type === type)) {
+  const openWindow = useCallback((type, position = { x: 100 + Math.random() * 200, y: 100 + Math.random() * 200 }, data = null) => {
+    // Allow multiple chart windows
+    if (!type.startsWith('chart_') && activeWindows.find(w => w.type === type)) {
       toast.info(`${type} window already open`);
       return;
     }
-    setActiveWindows(prev => [...prev, { type, id: Date.now(), position }]);
+    setActiveWindows(prev => [...prev, { type, id: Date.now(), position, data }]);
   }, [activeWindows]);
 
   const closeWindow = useCallback((id) => {
@@ -619,6 +621,29 @@ export default function IntellectMode() {
           });
           break;
 
+        case "SHOW_ANALYSIS":
+        case "VISUALIZE_DATA":
+          setMessages(prev => [...prev, { role: "assistant", content: message }]);
+          
+          // Open chart hologram with AI analysis data
+          if (parameters.chart_data && parameters.chart_config) {
+            const chartId = `chart_${Date.now()}`;
+            openWindow(chartId, { x: 150 + Math.random() * 100, y: 100 + Math.random() * 100 }, {
+              chartData: parameters.chart_data,
+              chartConfig: parameters.chart_config
+            });
+            setMessages(prev => [...prev, { 
+              role: "system", 
+              content: `📊 Hologram visualization opened: ${parameters.chart_config.title}` 
+            }]);
+          }
+          
+          base44.analytics.track({
+            eventName: "fleet_ai_analysis_visualized",
+            properties: { chart_type: parameters.chart_config?.type }
+          });
+          break;
+
         default:
           setMessages(prev => [...prev, { role: "assistant", content: message || "Command executed." }]);
           if (open_window) openWindow(open_window);
@@ -688,7 +713,109 @@ export default function IntellectMode() {
     shipments: shipments.slice(0, 3).map(s => ({ tracking_number: s.tracking_number, status: s.status }))
   }), [vehicles, alerts, routes, shipments]);
 
-  const renderWindowContent = useCallback((type) => {
+  const renderWindowContent = useCallback((type, data) => {
+    // Handle chart windows with custom data
+    if (type.startsWith('chart_')) {
+      const chartData = data?.chartData || [];
+      const chartConfig = data?.chartConfig || {};
+      const chartType = chartConfig.type || 'bar';
+      const colors = ['#06b6d4', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444'];
+
+      return (
+        <div className="w-full h-full p-4 overflow-auto bg-slate-950/40">
+          <div className="mb-4">
+            <h3 className="text-white font-bold text-lg mb-1">{chartConfig.title || 'Analysis'}</h3>
+            <p className="text-slate-400 text-sm">{chartConfig.description || 'AI-generated visualization'}</p>
+          </div>
+          
+          <ResponsiveContainer width="100%" height="85%">
+            {chartType === 'bar' && (
+              <BarChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                <XAxis dataKey={chartConfig.xKey || 'name'} stroke="#94a3b8" />
+                <YAxis stroke="#94a3b8" />
+                <Tooltip 
+                  contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '8px' }}
+                  labelStyle={{ color: '#f1f5f9' }}
+                />
+                <Legend />
+                {chartConfig.bars?.map((bar, idx) => (
+                  <Bar key={idx} dataKey={bar.key} fill={colors[idx % colors.length]} name={bar.name} />
+                ))}
+              </BarChart>
+            )}
+            
+            {chartType === 'line' && (
+              <LineChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                <XAxis dataKey={chartConfig.xKey || 'name'} stroke="#94a3b8" />
+                <YAxis stroke="#94a3b8" />
+                <Tooltip 
+                  contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '8px' }}
+                  labelStyle={{ color: '#f1f5f9' }}
+                />
+                <Legend />
+                {chartConfig.lines?.map((line, idx) => (
+                  <Line key={idx} type="monotone" dataKey={line.key} stroke={colors[idx % colors.length]} name={line.name} strokeWidth={2} />
+                ))}
+              </LineChart>
+            )}
+            
+            {chartType === 'pie' && (
+              <PieChart>
+                <Pie
+                  data={chartData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                  outerRadius={120}
+                  fill="#8884d8"
+                  dataKey={chartConfig.valueKey || 'value'}
+                >
+                  {chartData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
+                  ))}
+                </Pie>
+                <Tooltip 
+                  contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '8px' }}
+                  labelStyle={{ color: '#f1f5f9' }}
+                />
+              </PieChart>
+            )}
+            
+            {chartType === 'area' && (
+              <AreaChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                <XAxis dataKey={chartConfig.xKey || 'name'} stroke="#94a3b8" />
+                <YAxis stroke="#94a3b8" />
+                <Tooltip 
+                  contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '8px' }}
+                  labelStyle={{ color: '#f1f5f9' }}
+                />
+                <Legend />
+                {chartConfig.areas?.map((area, idx) => (
+                  <Area key={idx} type="monotone" dataKey={area.key} stackId="1" stroke={colors[idx % colors.length]} fill={colors[idx % colors.length]} fillOpacity={0.6} name={area.name} />
+                ))}
+              </AreaChart>
+            )}
+          </ResponsiveContainer>
+          
+          {chartConfig.insights && chartConfig.insights.length > 0 && (
+            <div className="mt-4 space-y-2">
+              <h4 className="text-cyan-400 font-semibold text-sm">Key Insights:</h4>
+              {chartConfig.insights.map((insight, idx) => (
+                <div key={idx} className="flex items-start gap-2 text-slate-300 text-xs">
+                  <Sparkles className="w-3 h-3 text-cyan-400 mt-0.5 flex-shrink-0" />
+                  <span>{insight}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    }
+
     // For full page iframes
     if (['dashboard', 'settings', 'aioptimization', 'invoices', 'apidocs', 'resources', 
          'warehouseautomation', 'demandforecasting', 'greentms', 'gpsintegration', 'assignment', 'routeeditor'].includes(type)) {
@@ -836,9 +963,11 @@ export default function IntellectMode() {
                             window.type === 'greentms' ? Activity :
                             window.type === 'gpsintegration' ? Satellite :
                             window.type === 'assignment' ? Route :
-                            window.type === 'routeeditor' ? Route : Activity;
+                            window.type === 'routeeditor' ? Route :
+                  window.type.startsWith('chart_') ? BarChart3 : Activity;
 
-                          const title = window.type === 'fleet' ? 'Fleet' :
+                          const title = window.type.startsWith('chart_') ? (window.data?.chartConfig?.title || 'Analysis Chart') :
+                            window.type === 'fleet' ? 'Fleet' :
                             window.type === 'alerts' ? 'Alerts' :
                             window.type === 'routes' ? 'Routes' :
                             window.type === 'shipments' ? 'Shipments' :
@@ -897,9 +1026,11 @@ export default function IntellectMode() {
                   window.type === 'greentms' ? 'Green TMS' :
                   window.type === 'gpsintegration' ? 'GPS Integration' :
                   window.type === 'assignment' ? 'Assignments' :
-                  window.type === 'routeeditor' ? 'Route Editor' : ''
+                  window.type === 'routeeditor' ? 'Route Editor' :
+                  window.type.startsWith('chart_') ? (window.data?.chartConfig?.title || 'Analysis') : ''
                 }
                 icon={
+                  window.type.startsWith('chart_') ? BarChart3 :
                   window.type === 'fleet' ? Truck :
                   window.type === 'alerts' ? AlertTriangle :
                   window.type === 'routes' ? Route :
@@ -922,7 +1053,7 @@ export default function IntellectMode() {
                 onMinimize={() => toggleMinimize(window.id)}
                 isMinimized={minimizedWindows.has(window.id)}
               >
-                {renderWindowContent(window.type)}
+                {renderWindowContent(window.type, window.data)}
               </HologramWindow>
             ))}
           </AnimatePresence>
