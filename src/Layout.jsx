@@ -22,7 +22,8 @@ import {
   Package,
   Zap,
   Activity,
-  Wrench
+  Wrench,
+  DollarSign
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
