@@ -20,40 +20,46 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Store user's organization for security filtering
+    const userOrganizationId = user.organization_id;
+
     const { calculation_type, params } = await req.json();
 
     let result = {};
 
+    // Pass user organization for security filtering
+    const secureParams = { ...params, _userOrganizationId: userOrganizationId };
+
     switch (calculation_type) {
       case 'ROUTE_OPTIMIZATION':
-        result = calculateRouteOptimization(params);
+        result = calculateRouteOptimization(secureParams);
         break;
       case 'COST_ANALYSIS':
-        result = calculateCostAnalysis(params);
+        result = calculateCostAnalysis(secureParams);
         break;
       case 'MAINTENANCE_PREDICTION':
-        result = calculateMaintenancePrediction(params);
+        result = calculateMaintenancePrediction(secureParams);
         break;
       case 'INVENTORY_FORECAST':
-        result = calculateInventoryForecast(params);
+        result = calculateInventoryForecast(secureParams);
         break;
       case 'CO2_EMISSIONS':
-        result = calculateCO2Emissions(params);
+        result = calculateCO2Emissions(secureParams);
         break;
       case 'ETA_PREDICTION':
-        result = calculateETAPrediction(params);
+        result = calculateETAPrediction(secureParams);
         break;
       case 'FUEL_EFFICIENCY':
-        result = calculateFuelEfficiency(params);
+        result = calculateFuelEfficiency(secureParams);
         break;
       case 'SHIPMENT_OPTIMIZATION':
-        result = calculateShipmentOptimization(params);
+        result = calculateShipmentOptimization(secureParams);
         break;
       case 'FLEET_PERFORMANCE':
-        result = calculateFleetPerformance(params);
+        result = calculateFleetPerformance(secureParams);
         break;
       case 'PREDICTIVE_MAINTENANCE':
-        result = calculatePredictiveMaintenance(params);
+        result = calculatePredictiveMaintenance(secureParams);
         break;
       default:
         return Response.json({ error: 'Unknown calculation type' }, { status: 400 });
