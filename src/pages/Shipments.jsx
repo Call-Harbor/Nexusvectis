@@ -141,10 +141,10 @@ export default function Shipments() {
           <div>
             <h1 className="text-3xl font-bold text-white flex items-center gap-3">
               <Package className="w-8 h-8 text-cyan-400" />
-              Forsendelser
+              Shipments
             </h1>
             <p className="text-slate-400 mt-1">
-              {filteredShipments.length} af {shipments.length} forsendelser
+              {filteredShipments.length} of {shipments.length} shipments
               {searchTerm && ` matching "${searchTerm}"`}
             </p>
           </div>
@@ -161,12 +161,12 @@ export default function Shipments() {
               <DialogTrigger asChild>
                 <Button className="bg-cyan-500 hover:bg-cyan-600">
                   <Plus className="w-4 h-4 mr-2" />
-                  Ny Forsendelse
+                  New Shipment
                 </Button>
               </DialogTrigger>
             <DialogContent className="bg-slate-900 border-slate-800 text-white">
               <DialogHeader>
-                <DialogTitle>Opret Forsendelse</DialogTitle>
+                <DialogTitle>Create Shipment</DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
                 <div>
@@ -199,16 +199,16 @@ export default function Shipments() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label>Prioritet</Label>
+                    <Label>Priority</Label>
                     <Select value={formData.priority} onValueChange={(v) => setFormData({...formData, priority: v})}>
                       <SelectTrigger className="bg-slate-800 border-slate-700">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent className="bg-slate-900 border-slate-800">
-                        <SelectItem value="low">Lav</SelectItem>
+                        <SelectItem value="low">Low</SelectItem>
                         <SelectItem value="normal">Normal</SelectItem>
-                        <SelectItem value="high">Høj</SelectItem>
-                        <SelectItem value="urgent">Akut</SelectItem>
+                        <SelectItem value="high">High</SelectItem>
+                        <SelectItem value="urgent">Urgent</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -229,7 +229,7 @@ export default function Shipments() {
                   </div>
                 </div>
                 <div>
-                  <Label>Vægt (kg)</Label>
+                  <Label>Weight (kg)</Label>
                   <Input
                     type="number"
                     value={formData.weight_kg}
@@ -239,7 +239,7 @@ export default function Shipments() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label>Kunde Navn</Label>
+                    <Label>Customer Name</Label>
                     <Input
                       value={formData.customer_name}
                       onChange={(e) => setFormData({...formData, customer_name: e.target.value})}
@@ -247,7 +247,7 @@ export default function Shipments() {
                     />
                   </div>
                   <div>
-                    <Label>Kunde Email</Label>
+                    <Label>Customer Email</Label>
                     <Input
                       type="email"
                       value={formData.customer_email}
@@ -261,7 +261,7 @@ export default function Shipments() {
                   className="w-full bg-cyan-500 hover:bg-cyan-600"
                   disabled={!formData.origin || !formData.destination}
                 >
-                  Opret Forsendelse
+                  Create Shipment
                 </Button>
               </div>
             </DialogContent>
@@ -297,7 +297,7 @@ export default function Shipments() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-slate-400 text-sm">Leveret</p>
+                  <p className="text-slate-400 text-sm">Delivered</p>
                   <p className="text-3xl font-bold text-emerald-400">{stats.delivered}</p>
                 </div>
                 <Clock className="w-10 h-10 text-emerald-400" />
@@ -308,7 +308,7 @@ export default function Shipments() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-slate-400 text-sm">Forsinket</p>
+                  <p className="text-slate-400 text-sm">Delayed</p>
                   <p className="text-3xl font-bold text-red-400">{stats.delayed}</p>
                 </div>
                 <AlertCircle className="w-10 h-10 text-red-400" />
@@ -325,7 +325,7 @@ export default function Shipments() {
               <Input
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Søg efter tracking, kunde, location..."
+                placeholder="Search by tracking, customer, location..."
                 className="pl-10 bg-slate-900/50 border-slate-800 text-white"
               />
             </div>
@@ -335,12 +335,12 @@ export default function Shipments() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-slate-900 border-slate-800">
-                  <SelectItem value="all">Alle Status</SelectItem>
+                  <SelectItem value="all">All Status</SelectItem>
                   <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="in_transit">I Transit</SelectItem>
-                  <SelectItem value="delivered">Leveret</SelectItem>
-                  <SelectItem value="delayed">Forsinket</SelectItem>
-                  <SelectItem value="cancelled">Annulleret</SelectItem>
+                  <SelectItem value="in_transit">In Transit</SelectItem>
+                  <SelectItem value="delivered">Delivered</SelectItem>
+                  <SelectItem value="delayed">Delayed</SelectItem>
+                  <SelectItem value="cancelled">Cancelled</SelectItem>
                 </SelectContent>
               </Select>
               <Select value={priorityFilter} onValueChange={setPriorityFilter}>
@@ -348,11 +348,11 @@ export default function Shipments() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-slate-900 border-slate-800">
-                  <SelectItem value="all">Alle Prioriteter</SelectItem>
-                  <SelectItem value="low">Lav</SelectItem>
+                  <SelectItem value="all">All Priorities</SelectItem>
+                  <SelectItem value="low">Low</SelectItem>
                   <SelectItem value="normal">Normal</SelectItem>
-                  <SelectItem value="high">Høj</SelectItem>
-                  <SelectItem value="urgent">Akut</SelectItem>
+                  <SelectItem value="high">High</SelectItem>
+                  <SelectItem value="urgent">Urgent</SelectItem>
                 </SelectContent>
               </Select>
               <Select value={cargoFilter} onValueChange={setCargoFilter}>
@@ -360,7 +360,7 @@ export default function Shipments() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-slate-900 border-slate-800">
-                  <SelectItem value="all">Alle Cargo</SelectItem>
+                  <SelectItem value="all">All Cargo</SelectItem>
                   <SelectItem value="general">General</SelectItem>
                   <SelectItem value="cold_chain">Cold Chain</SelectItem>
                   <SelectItem value="hazardous">Hazardous</SelectItem>
@@ -374,10 +374,10 @@ export default function Shipments() {
           {(searchTerm || statusFilter !== "all" || priorityFilter !== "all" || cargoFilter !== "all") && (
             <div className="flex items-center gap-2 text-sm flex-wrap">
               <Filter className="w-4 h-4 text-slate-500" />
-              <span className="text-slate-400">Aktive filtre:</span>
+              <span className="text-slate-400">Active filters:</span>
               {searchTerm && (
                 <Badge variant="outline" className="bg-cyan-500/20 text-cyan-400 border-cyan-500/30">
-                  Søg: {searchTerm}
+                  Search: {searchTerm}
                   <X 
                     className="w-3 h-3 ml-1 cursor-pointer" 
                     onClick={() => setSearchTerm("")}
@@ -395,7 +395,7 @@ export default function Shipments() {
               )}
               {priorityFilter !== "all" && (
                 <Badge variant="outline" className="bg-amber-500/20 text-amber-400 border-amber-500/30">
-                  Prioritet: {priorityFilter}
+                  Priority: {priorityFilter}
                   <X 
                     className="w-3 h-3 ml-1 cursor-pointer" 
                     onClick={() => setPriorityFilter("all")}
@@ -420,7 +420,7 @@ export default function Shipments() {
                 }}
                 className="text-slate-500 hover:text-white text-xs ml-2"
               >
-                Ryd alle
+                Clear all
               </button>
             </div>
           )}
@@ -462,12 +462,12 @@ export default function Shipments() {
                         )}
                         {shipment.weight_kg && (
                           <div className="text-sm text-slate-400">
-                            <span className="text-slate-500">Vægt:</span> {shipment.weight_kg} kg
+                            <span className="text-slate-500">Weight:</span> {shipment.weight_kg} kg
                           </div>
                         )}
                         {shipment.customer_name && (
                           <div className="text-sm text-slate-400">
-                            <span className="text-slate-500">Kunde:</span> {shipment.customer_name}
+                            <span className="text-slate-500">Customer:</span> {shipment.customer_name}
                           </div>
                         )}
                         {shipment.eta && (
@@ -477,7 +477,7 @@ export default function Shipments() {
                         )}
                         {shipment.created_date && (
                           <div className="text-sm text-slate-400">
-                            <span className="text-slate-500">Oprettet:</span> {moment(shipment.created_date).format('DD/MM HH:mm')}
+                            <span className="text-slate-500">Created:</span> {moment(shipment.created_date).format('DD/MM HH:mm')}
                           </div>
                         )}
                       </div>
@@ -492,7 +492,7 @@ export default function Shipments() {
         {filteredShipments.length === 0 && (
           <div className="text-center py-12">
             <Package className="w-16 h-16 text-slate-700 mx-auto mb-4" />
-            <p className="text-slate-400">Ingen forsendelser fundet</p>
+            <p className="text-slate-400">No shipments found</p>
           </div>
         )}
       </div>
