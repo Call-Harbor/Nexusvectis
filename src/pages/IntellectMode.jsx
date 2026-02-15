@@ -919,12 +919,18 @@ export default function IntellectMode() {
                 <h4 className="text-white font-bold text-base">Technical Analysis</h4>
               </div>
               <div className="space-y-3">
-                {Object.entries(chartConfig.technical_details).map(([key, value], idx) => (
-                  <div key={idx} className="flex justify-between items-center py-2 border-b border-slate-700/30 last:border-0">
-                    <span className="text-slate-400 text-xs font-medium uppercase tracking-wide">{key.replace(/_/g, ' ')}</span>
-                    <span className="text-white text-sm font-mono">{value}</span>
-                  </div>
-                ))}
+                {Object.entries(chartConfig.technical_details).map(([key, value], idx) => {
+                  const displayValue = typeof value === 'object' && value !== null 
+                    ? JSON.stringify(value, null, 2)
+                    : String(value);
+                  
+                  return (
+                    <div key={idx} className="flex justify-between items-start py-2 border-b border-slate-700/30 last:border-0">
+                      <span className="text-slate-400 text-xs font-medium uppercase tracking-wide">{key.replace(/_/g, ' ')}</span>
+                      <span className="text-white text-sm font-mono text-right max-w-[60%] break-words">{displayValue}</span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
