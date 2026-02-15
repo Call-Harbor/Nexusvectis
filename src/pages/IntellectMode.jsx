@@ -937,14 +937,42 @@ export default function IntellectMode() {
                 <h4 className="text-white font-bold text-base">AI Recommendations</h4>
               </div>
               <div className="space-y-2">
-                {chartConfig.recommendations.map((rec, idx) => (
-                  <div key={idx} className="flex items-start gap-2 p-2 rounded bg-emerald-500/5">
-                    <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <span className="text-emerald-400 text-xs font-bold">{idx + 1}</span>
+                {chartConfig.recommendations.map((rec, idx) => {
+                  const recText = typeof rec === 'string' ? rec : rec?.action || rec?.benefit || '';
+                  const savings = rec?.savings_kg || rec?.savings_dkk || null;
+                  const timeframe = rec?.timeframe || null;
+                  const confidence = rec?.confidence || null;
+                  
+                  return (
+                    <div key={idx} className="flex items-start gap-2 p-3 rounded bg-emerald-500/5 border border-emerald-500/20">
+                      <div className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <span className="text-emerald-400 text-xs font-bold">{idx + 1}</span>
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-slate-200 text-sm leading-relaxed mb-2">{recText}</p>
+                        {(savings || timeframe || confidence) && (
+                          <div className="flex flex-wrap gap-2 text-xs">
+                            {savings && (
+                              <span className="px-2 py-1 rounded bg-emerald-500/10 text-emerald-300">
+                                💰 {savings}
+                              </span>
+                            )}
+                            {timeframe && (
+                              <span className="px-2 py-1 rounded bg-cyan-500/10 text-cyan-300">
+                                ⏱️ {timeframe}
+                              </span>
+                            )}
+                            {confidence && (
+                              <span className="px-2 py-1 rounded bg-violet-500/10 text-violet-300">
+                                📊 {confidence}% confidence
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <p className="text-slate-200 text-sm leading-relaxed">{rec}</p>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
