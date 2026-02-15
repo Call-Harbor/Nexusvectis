@@ -50,6 +50,11 @@ export default function FleetGlobe3D({ vehicles = [], routes = [], onClose, onMi
     const stars = new THREE.Points(starsGeometry, starsMaterial);
     scene.add(stars);
 
+    // Container group for globe + vehicles + routes
+    const fleetGroup = new THREE.Group();
+    scene.add(fleetGroup);
+    sceneRef.current.userData.fleetGroup = fleetGroup;
+
     // Globe with continents
     const globeGeometry = new THREE.SphereGeometry(1, 128, 128);
     
