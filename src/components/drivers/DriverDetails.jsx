@@ -3,6 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Edit, TrendingUp, Award } from "lucide-react";
 import moment from "moment";
+import RelatedVehicles from "../shared/RelatedVehicles";
+import RelatedShipments from "../shared/RelatedShipments";
+import RelatedMaintenance from "../shared/RelatedMaintenance";
 
 export default function DriverDetails({ driver, onClose, onEdit }) {
   const getStatusColor = (status) => {
@@ -92,6 +95,24 @@ export default function DriverDetails({ driver, onClose, onEdit }) {
           </div>
 
           <div className="space-y-6">
+            <RelatedVehicles 
+              filterKey="driver" 
+              filterValue={driver.employee_id} 
+              title="Assigned Vehicles" 
+            />
+
+            <RelatedShipments 
+              filterKey="driver_id" 
+              filterValue={driver.id} 
+              title="Current Shipments" 
+            />
+
+            <RelatedMaintenance 
+              filterKey="driver_id" 
+              filterValue={driver.id} 
+              title="Vehicle Maintenance" 
+            />
+
             {(driver.emergency_contact_name || driver.emergency_contact_phone) && (
               <Card className="bg-slate-900/50 border-slate-800">
                 <CardHeader>

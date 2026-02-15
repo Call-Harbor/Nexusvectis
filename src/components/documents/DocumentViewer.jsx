@@ -2,6 +2,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Download, Trash2, Eye } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { base44 } from "@/api/base44Client";
+import { useNavigate } from "react-router-dom";
+import { createPageUrl } from "@/utils";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,6 +20,38 @@ import {
 import moment from "moment";
 
 export default function DocumentViewer({ document, onClose, onDelete }) {
+  const navigate = useNavigate();
+
+  const { data: shipment } = useQuery({
+    queryKey: ['shipment', document.shipment_id],
+    queryFn: async () => {
+      if (!document.shipment_id) return null;
+      const shipments = await base44.entities.Shipment.filter({ id: document.shipment_id });
+      return shipments[0] || null;
+    },
+    enabled: !!document.shipment_id
+  });
+
+  const { data: contract } = useQuery({
+    queryKey: ['contract', document.contract_id],
+    queryFn: async () => {
+      if (!document.contract_id) return null;
+      const contracts = await base44.entities.Contract.filter({ id: document.contract_id });
+      return contracts[0] || null;
+    },
+    enabled: !!document.contract_id
+  });
+
+  const { data: customer } = useQuery({
+    queryKey: ['customer', document.customer_id],
+    queryFn: async () => {
+      if (!document.customer_id) return null;
+      const customers = await base44.entities.Customer.filter({ id: document.customer_id });
+      return customers[0] || null;
+    },
+    enabled: !!document.customer_id
+  });
+
   const getStatusColor = (status) => {
     switch (status) {
       case "signed":
@@ -153,6 +189,57 @@ export default function DocumentViewer({ document, onClose, onDelete }) {
                 )}
               </CardContent>
             </Card>
+
+            {shipment && (
+              <Card className="bg-slate-900/50 border-slate-800">
+                <CardHeader>
+                  <CardTitle className="text-white">Related Shipment</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div
+                    className="p-3 rounded-lg bg-slate-800/50 border border-slate-700/30 hover:border-cyan-500/50 transition-colors cursor-pointer"
+                    onClick={() => navigate(createPageUrl('Shipments'))}
+                  >
+                    <p className="text-white font-medium">{shipment.tracking_number}</p>
+                    <p className="text-slate-400 text-xs">{shipment.origin} → {shipment.destination}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {contract && (
+              <Card className="bg-slate-900/50 border-slate-800">
+                <CardHeader>
+                  <CardTitle className="text-white">Related Contract</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div
+                    className="p-3 rounded-lg bg-slate-800/50 border border-slate-700/30 hover:border-cyan-500/50 transition-colors cursor-pointer"
+                    onClick={() => navigate(createPageUrl('ContractManagement'))}
+                  >
+                    <p className="text-white font-medium">{contract.contract_number}</p>
+                    <p className="text-slate-400 text-xs">{contract.contract_name}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {customer && (
+              <Card className="bg-slate-900/50 border-slate-800">
+                <CardHeader>
+                  <CardTitle className="text-white">Related Customer</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div
+                    className="p-3 rounded-lg bg-slate-800/50 border border-slate-700/30 hover:border-cyan-500/50 transition-colors cursor-pointer"
+                    onClick={() => navigate(createPageUrl('CustomerManagement'))}
+                  >
+                    <p className="text-white font-medium">{customer.name}</p>
+                    <p className="text-slate-400 text-xs">{customer.email}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {document.signed_by && (
               <Card className="bg-slate-900/50 border-slate-800">

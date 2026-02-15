@@ -2,6 +2,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import RelatedDocuments from "../shared/RelatedDocuments";
+import RelatedShipments from "../shared/RelatedShipments";
 import {
   ArrowLeft,
   Edit,
@@ -267,6 +269,18 @@ export default function ContractDetails({ contract, customer, onClose, onEdit, o
 
           {/* Sidebar */}
           <div className="space-y-6">
+            <RelatedDocuments 
+              filterKey="contract_id" 
+              filterValue={contract.id} 
+              title="Contract Documents" 
+            />
+
+            <RelatedShipments 
+              filterKey="contract_id" 
+              filterValue={contract.id} 
+              title="Shipments under Contract" 
+            />
+
             {/* Additional Services */}
             <Card className="bg-slate-900/50 border-slate-800">
               <CardHeader>
