@@ -164,6 +164,7 @@ export default function IntellectMode() {
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(true);
+  const [show3DVisualization, setShow3DVisualization] = useState(null);
   const messagesEndRef = useRef(null);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -645,6 +646,30 @@ export default function IntellectMode() {
           });
           break;
 
+        case "SHOW_3D":
+          setMessages(prev => [...prev, { role: "assistant", content: message }]);
+          
+          // Open 3D visualization
+          if (mistralResponse.data.visualization_3d || parameters.visualization_type) {
+            const vizData = mistralResponse.data.visualization_3d || parameters;
+            setShow3DVisualization({
+              type: vizData.type || parameters.visualization_type,
+              data: vizData.data || parameters,
+              vehicles: vehicles,
+              routes: routes
+            });
+            setMessages(prev => [...prev, { 
+              role: "system", 
+              content: "🌐 3D visualization activated" 
+            }]);
+          }
+          
+          base44.analytics.track({
+            eventName: "fleet_ai_3d_visualized",
+            properties: { viz_type: parameters.visualization_type }
+          });
+          break;
+
         default:
           setMessages(prev => [...prev, { role: "assistant", content: message || "Command executed." }]);
           if (open_window) openWindow(open_window);
@@ -1057,9 +1082,19 @@ export default function IntellectMode() {
                 {renderWindowContent(window.type, window.data)}
               </HologramWindow>
             ))}
-          </AnimatePresence>
+            </AnimatePresence>
 
-          {/* Standby Message */}
+            {/* 3D Visualization */}
+            {show3DVisualization && (
+            <FleetGlobe3D
+             vehicles={show3DVisualization.vehicles || vehicles}
+             routes={show3DVisualization.routes || routes}
+             onClose={() => setShow3DVisualization(null)}
+             onMinimize={() => setShow3DVisualization(null)}
+            />
+            )}
+
+            {/* Standby Message */}
           {activeWindows.length === 0 && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
