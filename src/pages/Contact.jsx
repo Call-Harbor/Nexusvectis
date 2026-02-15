@@ -354,16 +354,60 @@ export default function Contact() {
       </section>
 
       {/* Footer */}
-      <footer className="relative py-12 px-6 z-10 border-t border-white/5">
-        <div className="max-w-7xl mx-auto text-center">
-          <Link to={createPageUrl("Home")}>
-            <img 
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/697e930c62bf3e3832b34edb/bc9d40ccc_FullLogo_Transparent1.png" 
-              alt="NexusVectis" 
-              className="h-24 w-auto mx-auto mb-6 opacity-70"
-            />
-          </Link>
-          <p className="text-slate-500 text-sm">&copy; 2026 NexusVectis ApS. Building the future of logistics.</p>
+      <footer className="relative py-20 px-6 border-t border-white/5 z-10 bg-slate-950/50">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid md:grid-cols-4 gap-12 mb-12">
+            <div className="md:col-span-2">
+              <Link to={createPageUrl("Home")}>
+                <motion.img 
+                  whileHover={{ scale: 1.05 }}
+                  src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/697e930c62bf3e3832b34edb/bc9d40ccc_FullLogo_Transparent1.png" 
+                  alt="NexusVectis Logo" 
+                  className="h-32 w-auto mb-6 opacity-90"
+                />
+              </Link>
+              <p className="text-slate-400 max-w-md leading-relaxed">
+                Next-generation fleet intelligence platform powered by AI. 
+                Control your entire logistics operation through natural language.
+              </p>
+            </div>
+            
+            <div>
+              <h4 className="text-white font-bold mb-4">Platform</h4>
+              <ul className="space-y-2 text-slate-400">
+                <li><Link to={createPageUrl("FleetAIPage")} className="hover:text-cyan-400 transition-colors">FLEET AI</Link></li>
+                <li><Link to={createPageUrl("LiveTrackingPage")} className="hover:text-cyan-400 transition-colors">Live Tracking</Link></li>
+                <li><Link to={createPageUrl("AnalyticsPage")} className="hover:text-cyan-400 transition-colors">Analytics</Link></li>
+                <li><Link to={createPageUrl("IntegrationsPage")} className="hover:text-cyan-400 transition-colors">Integrations</Link></li>
+              </ul>
+            </div>
+            
+            <div>
+              <h4 className="text-white font-bold mb-4">Company</h4>
+              <ul className="space-y-2 text-slate-400">
+                <li><Link to={createPageUrl("About")} className="hover:text-cyan-400 transition-colors">About</Link></li>
+                <li><Link to={createPageUrl("Careers")} className="hover:text-cyan-400 transition-colors">Careers</Link></li>
+                <li><Link to={createPageUrl("Contact")} className="hover:text-cyan-400 transition-colors">Contact</Link></li>
+                <li><Link to={createPageUrl("Blog")} className="hover:text-cyan-400 transition-colors">Blog</Link></li>
+              </ul>
+            </div>
+          </div>
+          
+          <motion.div
+            initial={{ scaleX: 0 }}
+            whileInView={{ scaleX: 1 }}
+            viewport={{ once: true }}
+            className="h-px bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent mb-8"
+          />
+          
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <p className="text-slate-500 text-sm">&copy; 2026 NexusVectis ApS. Shaping the future of logistics intelligence.</p>
+            <div className="flex gap-6 text-slate-400 text-sm">
+              <Link to={createPageUrl("PrivacyPolicy")} className="hover:text-cyan-400 transition-colors">Privacy Policy</Link>
+              <Link to={createPageUrl("TermsOfService")} className="hover:text-cyan-400 transition-colors">Terms of Service</Link>
+              <Link to={createPageUrl("SecurityPage")} className="hover:text-cyan-400 transition-colors">Security</Link>
+            </div>
+          </div>
         </div>
       </footer>
     </div>
