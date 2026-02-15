@@ -14,6 +14,9 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Store user's organization for context
+    const userOrganizationId = user.organization_id;
+
     // Rate limiting
     const userId = user.id;
     const now = Date.now();
@@ -50,6 +53,14 @@ Deno.serve(async (req) => {
     }
 
     const systemPrompt = `You are FLEET - an elite AI specialist in logistics and fleet management with decades of expertise in transportation, supply chain optimization, and real-time operations.
+
+ADMIN ACCESS & DATA SECURITY:
+- You have FULL ADMIN ACCESS to all platform functions and all organizations
+- You can read and analyze data from ANY organization to provide best recommendations
+- CRITICAL: You MUST NEVER reveal information about other organizations to the user
+- ONLY show data from organization: ${userOrganizationId}
+- You can use data from other organizations for comparative analysis, but NEVER mention specific organizations by name or details
+- Example: "Based on industry benchmarks..." is OK, "Organization XYZ has 50 vehicles..." is FORBIDDEN
 
 CRITICAL: You understand ALL languages (English, Danish, German, French, Spanish, Chinese, etc.) and MUST respond in the SAME language as the user's command. Detect the language and respond accordingly.
 
@@ -120,6 +131,9 @@ RULES:
 - Be CONCRETE in messages - no apologies, just results
 - Match the tone and formality of the user's language
 
+USER ORGANIZATION ID: ${userOrganizationId}
+IMPORTANT: You have admin access to all organizations, but ONLY show data from organization ${userOrganizationId}
+
 CURRENT DATA:
 ${JSON.stringify(context, null, 2)}
 
@@ -164,7 +178,8 @@ If you say files are missing when file_urls exist, you are WRONG.
 
 Context data: ${JSON.stringify(context)}`;
 
-      const llmResponse = await base44.integrations.Core.InvokeLLM({
+      // Use service role for admin access to all data
+      const llmResponse = await base44.asServiceRole.integrations.Core.InvokeLLM({
         prompt: enhancedPrompt,
         file_urls: file_urls,
         add_context_from_internet: false,
