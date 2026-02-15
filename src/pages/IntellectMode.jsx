@@ -1414,6 +1414,13 @@ export default function IntellectMode() {
              onMinimize={() => setShow3DVisualization(null)}
             />
             )}
+            
+            {/* AI Thinking Terminal */}
+            <AIThinkingTerminal 
+              isActive={showThinkingTerminal && isProcessing}
+              logs={thinkingLogs}
+              onClose={() => setShowThinkingTerminal(false)}
+            />
 
             {/* Standby Message */}
           {activeWindows.length === 0 && (
