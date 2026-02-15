@@ -11,6 +11,7 @@ import {
   Settings, Warehouse, Satellite, Globe, BarChart3, Box
 } from "lucide-react";
 import FleetGlobe3D from "@/components/intellect/FleetGlobe3D";
+import AIThinkingTerminal from "@/components/intellect/AIThinkingTerminal";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
