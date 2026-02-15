@@ -448,11 +448,21 @@ export default function IntellectMode() {
 
         case "CREATE_ROUTE":
           setMessages(prev => [...prev, { role: "system", content: "🔄 Planning route..." }]);
+          addThinkingLog('calculate', `Planning route: ${parameters.origin} → ${parameters.destination}`, 
+            { transport_type: parameters.transport_type || 'ship' }, 0, 40);
+          
+          const routeStart = Date.now();
           const routePlan = await base44.functions.invoke('planRoute', {
             origin: parameters.origin,
             destination: parameters.destination,
             transport_type: parameters.transport_type || 'ship'
           });
+          
+          addThinkingLog('calculate', `Route optimization complete`, {
+            distance: routePlan.data.route_data?.distance_km + ' km',
+            duration: routePlan.data.route_data?.estimated_duration_hours + ' h',
+            co2: routePlan.data.route_data?.co2_estimate + ' kg'
+          }, Date.now() - routeStart, 80);
 
           if (routePlan.data.success) {
             await base44.entities.Route.create({
@@ -470,6 +480,7 @@ export default function IntellectMode() {
               priority: parameters.priority || 'normal'
             });
             queryClient.invalidateQueries({ queryKey: ['routes-intellect'] });
+            addThinkingLog('result', `✅ Route created and stored`, null, 100);
             setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
             if (open_window) openWindow(open_window);
           }
