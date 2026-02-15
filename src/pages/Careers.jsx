@@ -213,81 +213,46 @@ export default function Careers() {
         </div>
       </section>
 
-      {/* Open Positions */}
+      {/* No Open Positions */}
       <section className="relative py-32 px-6 z-10">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-4xl mx-auto">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
-            className="mb-16"
+            className="rounded-[3rem] bg-gradient-to-br from-cyan-500/10 via-violet-500/10 to-fuchsia-500/10 border border-cyan-500/30 p-16 text-center"
           >
+            <motion.div
+              initial={{ scale: 0 }}
+              whileInView={{ scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2, type: "spring" }}
+              className="mb-8"
+            >
+              <Users className="w-16 h-16 text-cyan-400 mx-auto" />
+            </motion.div>
+            
             <h2 className="text-5xl font-bold text-white mb-6">
-              Open <span className="text-cyan-400">Positions</span>
+              Not Hiring <span className="text-cyan-400">Right Now</span>
             </h2>
-            <p className="text-xl text-slate-400">
-              {jobs.length} openings across Engineering, Product, and Customer Success
+            <p className="text-xl text-slate-300 mb-8 max-w-2xl mx-auto leading-relaxed">
+              We're currently not actively recruiting, but we're always interested in connecting with talented individuals who are passionate about logistics and AI.
             </p>
-          </motion.div>
-          
-          <div className="space-y-6">
-            {jobs.map((job, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.05 }}
-                className="p-8 rounded-3xl bg-white/5 border border-white/10 hover:border-cyan-500/50 transition-all group"
-              >
-                <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
-                  <div className="flex-1">
-                    <div className="flex items-start gap-4 mb-4">
-                      <div className="w-12 h-12 rounded-xl bg-cyan-500/20 flex items-center justify-center flex-shrink-0">
-                        <Briefcase className="w-6 h-6 text-cyan-400" />
-                      </div>
-                      <div>
-                        <h3 className="text-2xl font-bold text-white mb-2 group-hover:text-cyan-400 transition-colors">
-                          {job.title}
-                        </h3>
-                        <div className="flex flex-wrap items-center gap-4 text-slate-400 mb-3">
-                          <div className="flex items-center gap-2">
-                            <MapPin className="w-4 h-4" />
-                            {job.location}
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Clock className="w-4 h-4" />
-                            {job.type}
-                          </div>
-                          <div className="px-3 py-1 rounded-full bg-violet-500/20 text-violet-400 text-sm">
-                            {job.department}
-                          </div>
-                        </div>
-                        <p className="text-slate-300 leading-relaxed">{job.description}</p>
-                      </div>
-                    </div>
-                  </div>
-                  <button className="bg-cyan-500 text-white px-8 py-4 rounded-xl hover:bg-cyan-600 transition-colors flex items-center gap-2 group-hover:scale-105 transition-transform">
-                    Apply Now
-                    <ArrowRight className="w-5 h-5" />
-                  </button>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+            
+            <div className="p-8 rounded-2xl bg-white/5 border border-white/10 mb-8">
+              <h3 className="text-2xl font-bold text-white mb-4">Stay Connected</h3>
+              <p className="text-slate-400 mb-6 leading-relaxed">
+                Want to be notified when we start hiring again? Send us your CV and we'll reach out when relevant positions open up.
+              </p>
+              <button className="bg-gradient-to-r from-cyan-500 to-violet-500 text-white px-8 py-4 rounded-xl font-bold hover:scale-105 transition-transform inline-flex items-center gap-2">
+                Send Your CV
+                <ArrowRight className="w-5 h-5" />
+              </button>
+            </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="mt-12 text-center"
-          >
-            <p className="text-slate-400 text-lg mb-6">
-              Don't see the right role? We're always interested in exceptional talent.
+            <p className="text-slate-400 text-sm">
+              Follow us on LinkedIn to stay updated on future opportunities
             </p>
-            <button className="text-cyan-400 font-semibold hover:text-cyan-300 transition-colors">
-              Send us your CV anyway →
-            </button>
           </motion.div>
         </div>
       </section>
