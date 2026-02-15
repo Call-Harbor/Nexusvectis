@@ -356,6 +356,13 @@ export default function IntellectMode() {
           file_urls: currentFiles.map(f => f.url)
         });
 
+        addThinkingLog('analyze', 'Analyzing context and fleet data', {
+          vehicles: vehicles.length,
+          alerts: alerts.length,
+          routes: routes.length,
+          shipments: shipments.length
+        }, 150, 25);
+
         const payload = {
           command: currentCommand,
           context: {
@@ -372,13 +379,19 @@ export default function IntellectMode() {
 
         if (currentFiles.length > 0) {
           payload.file_urls = currentFiles.map(f => f.url);
-          console.log('📤 Sending files:', payload.file_urls);
+          addThinkingLog('analyze', `Processing ${currentFiles.length} attached file(s)`, currentFiles.map(f => f.name), 120);
         }
 
+        addThinkingLog('think', 'Invoking AI model for semantic analysis', null, 50, 50);
+
+        const startTime = Date.now();
         const mistralResponse = await Promise.race([
           base44.functions.invoke('mistralCommand', payload),
           new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 30000))
         ]);
+        const duration = Date.now() - startTime;
+        
+        addThinkingLog('think', `AI analysis complete`, { model: 'Mistral', action: mistralResponse.data.action }, duration, 100);
 
         // Also log for API usage tracking
         try {
