@@ -2,7 +2,7 @@ import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { UserPlus, Users, Mail, Shield, User, Trash2, Search, Calendar, Activity } from "lucide-react";
+import { UserPlus, Users, Mail, Shield, User, Trash2, Search, Calendar, Activity, Download, Filter, X, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,6 +20,7 @@ export default function UserManagement() {
   const [currentUser, setCurrentUser] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("name");
 
   const queryClient = useQueryClient();
 
@@ -149,10 +150,38 @@ export default function UserManagement() {
       (roleFilter === "user" && !user.isAdmin);
     
     return matchesSearch && matchesRole;
+  }).sort((a, b) => {
+    if (sortBy === "name") return (a.full_name || "").localeCompare(b.full_name || "");
+    if (sortBy === "email") return (a.email || "").localeCompare(b.email || "");
+    if (sortBy === "date") return new Date(b.created_date) - new Date(a.created_date);
+    return 0;
   });
 
   const adminUsers = filteredUsers.filter(u => u.isAdmin);
   const regularUsers = filteredUsers.filter(u => !u.isAdmin);
+
+  const exportToCSV = () => {
+    const headers = ["Name", "Email", "Role", "Joined Date"];
+    const rows = filteredUsers.map(u => [
+      u.full_name || "-",
+      u.email || "-",
+      u.isAdmin ? "Admin" : "User",
+      u.created_date ? moment(u.created_date).format('DD-MM-YYYY') : "-"
+    ]);
+    
+    const csvContent = [
+      headers.join(","),
+      ...rows.map(row => row.map(cell => `"${cell}"`).join(","))
+    ].join("\n");
+    
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `users-export-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6 lg:p-8">
@@ -166,40 +195,113 @@ export default function UserManagement() {
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-8">
           <div>
             <h1 className="text-3xl font-bold text-white">User Management</h1>
-            <p className="text-slate-400 mt-1">{users.length} users in your organization</p>
+            <p className="text-slate-400 mt-1">
+              {filteredUsers.length} of {users.length} users
+              {searchTerm && ` matching "${searchTerm}"`}
+            </p>
           </div>
-          <Button 
-            onClick={() => setShowInviteDialog(true)}
-            className="bg-gradient-to-r from-cyan-500 to-violet-500 hover:from-cyan-600 hover:to-violet-600 text-white font-semibold"
-          >
-            <UserPlus className="w-4 h-4 mr-2" />
-            Invite User
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline"
+              onClick={exportToCSV}
+              className="border-slate-700 text-slate-300 hover:bg-slate-800"
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Export
+            </Button>
+            <Button 
+              onClick={() => setShowInviteDialog(true)}
+              className="bg-gradient-to-r from-cyan-500 to-violet-500 hover:from-cyan-600 hover:to-violet-600 text-white font-semibold"
+            >
+              <UserPlus className="w-4 h-4 mr-2" />
+              Invite User
+            </Button>
+          </div>
         </div>
 
         {/* Search and Filters */}
-        <div className="flex gap-4 mb-6 flex-wrap">
-          <div className="flex-1 min-w-64 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <Input
-              placeholder="Search users..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 bg-slate-800/50 border-slate-700 text-white"
-            />
+        <div className="flex flex-col gap-4 mb-6">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex-1 min-w-64 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Input
+                placeholder="Search by name or email..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 bg-slate-800/50 border-slate-700 text-white"
+              />
+            </div>
+            <div className="flex gap-2">
+              {["all", "admin", "user"].map((role) => (
+                <Button
+                  key={role}
+                  onClick={() => setRoleFilter(role)}
+                  variant={roleFilter === role ? "default" : "outline"}
+                  className={roleFilter === role ? "bg-cyan-600" : "border-slate-700 text-slate-300"}
+                  size="sm"
+                >
+                  {role === "all" ? "All Users" : role === "admin" ? "Admins" : "Users"}
+                </Button>
+              ))}
+            </div>
           </div>
-          <div className="flex gap-2">
-            {["all", "admin", "user"].map((role) => (
-              <Button
-                key={role}
-                onClick={() => setRoleFilter(role)}
-                variant={roleFilter === role ? "default" : "outline"}
-                className={roleFilter === role ? "bg-cyan-600" : "border-slate-700 text-slate-300"}
-                size="sm"
-              >
-                {role === "all" ? "All Users" : role === "admin" ? "Admins" : "Users"}
-              </Button>
-            ))}
+
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-slate-400">Sort by:</label>
+              <div className="flex gap-2">
+                {[
+                  { value: "name", label: "Name" },
+                  { value: "email", label: "Email" },
+                  { value: "date", label: "Join Date" }
+                ].map((option) => (
+                  <Button
+                    key={option.value}
+                    onClick={() => setSortBy(option.value)}
+                    variant={sortBy === option.value ? "default" : "outline"}
+                    size="sm"
+                    className={sortBy === option.value ? "bg-emerald-600" : "border-slate-700 text-slate-300"}
+                  >
+                    <BarChart3 className="w-3 h-3 mr-1" />
+                    {option.label}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            {(searchTerm || roleFilter !== "all") && (
+              <div className="flex items-center gap-2 text-sm flex-wrap">
+                <Filter className="w-4 h-4 text-slate-500" />
+                <span className="text-slate-400">Active filters:</span>
+                {searchTerm && (
+                  <Badge variant="outline" className="bg-cyan-500/20 text-cyan-400 border-cyan-500/30">
+                    Search: {searchTerm}
+                    <X 
+                      className="w-3 h-3 ml-1 cursor-pointer" 
+                      onClick={() => setSearchTerm("")}
+                    />
+                  </Badge>
+                )}
+                {roleFilter !== "all" && (
+                  <Badge variant="outline" className="bg-violet-500/20 text-violet-400 border-violet-500/30">
+                    Role: {roleFilter}
+                    <X 
+                      className="w-3 h-3 ml-1 cursor-pointer" 
+                      onClick={() => setRoleFilter("all")}
+                    />
+                  </Badge>
+                )}
+                <button
+                  onClick={() => {
+                    setSearchTerm("");
+                    setRoleFilter("all");
+                  }}
+                  className="text-slate-500 hover:text-white text-xs ml-2"
+                >
+                  Clear all
+                </button>
+              </div>
+            )}
           </div>
         </div>
 

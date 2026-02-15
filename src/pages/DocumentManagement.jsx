@@ -19,7 +19,9 @@ import {
   CheckCircle2,
   Clock,
   FileCheck,
-  Archive
+  Archive,
+  X,
+  BarChart3
 } from "lucide-react";
 import { toast } from "sonner";
 import moment from "moment";
@@ -31,6 +33,8 @@ export default function DocumentManagement() {
   const [user, setUser] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("date");
   const [selectedDocument, setSelectedDocument] = useState(null);
   const [showUploader, setShowUploader] = useState(false);
   const [showCMRGenerator, setShowCMRGenerator] = useState(false);
@@ -100,11 +104,18 @@ export default function DocumentManagement() {
   const filteredDocuments = documents.filter(doc => {
     const matchesSearch = 
       doc.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      doc.document_number?.toLowerCase().includes(searchTerm.toLowerCase());
+      doc.document_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      doc.file_name?.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesType = typeFilter === "all" || doc.document_type === typeFilter;
+    const matchesStatus = statusFilter === "all" || doc.status === statusFilter;
     
-    return matchesSearch && matchesType;
+    return matchesSearch && matchesType && matchesStatus;
+  }).sort((a, b) => {
+    if (sortBy === "date") return new Date(b.created_date) - new Date(a.created_date);
+    if (sortBy === "name") return (a.title || "").localeCompare(b.title || "");
+    if (sortBy === "type") return (a.document_type || "").localeCompare(b.document_type || "");
+    return 0;
   });
 
   const stats = {
@@ -112,6 +123,31 @@ export default function DocumentManagement() {
     cmr: documents.filter(d => d.document_type === "CMR").length,
     bol: documents.filter(d => d.document_type === "BOL").length,
     signed: documents.filter(d => d.status === "signed").length
+  };
+
+  const exportToCSV = () => {
+    const headers = ["Title", "Document Number", "Type", "Status", "Issue Date", "Created Date"];
+    const rows = filteredDocuments.map(d => [
+      d.title || "-",
+      d.document_number || "-",
+      d.document_type || "-",
+      d.status || "-",
+      d.issue_date ? moment(d.issue_date).format('DD-MM-YYYY') : "-",
+      d.created_date ? moment(d.created_date).format('DD-MM-YYYY') : "-"
+    ]);
+    
+    const csvContent = [
+      headers.join(","),
+      ...rows.map(row => row.map(cell => `"${cell}"`).join(","))
+    ].join("\n");
+    
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `documents-export-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
   };
 
   if (showUploader) {
@@ -154,9 +190,20 @@ export default function DocumentManagement() {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold text-white mb-2">Document Management</h1>
-            <p className="text-slate-400">Manage logistics documents and certificates</p>
+            <p className="text-slate-400">
+              {filteredDocuments.length} of {documents.length} documents
+              {searchTerm && ` matching "${searchTerm}"`}
+            </p>
           </div>
           <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={exportToCSV}
+              className="border-slate-700 text-slate-300 hover:bg-slate-800"
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Export
+            </Button>
             <Button
               onClick={() => setShowCMRGenerator(true)}
               variant="outline"
@@ -227,30 +274,118 @@ export default function DocumentManagement() {
         </div>
 
         {/* Filters */}
-        <div className="flex gap-4 mb-6">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <Input
-              placeholder="Search documents..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 bg-slate-900/50 border-slate-700 text-white"
-            />
+        <div className="flex flex-col gap-4 mb-6">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Input
+                placeholder="Search by title, document number, filename..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 bg-slate-900/50 border-slate-700 text-white"
+              />
+            </div>
+            <div className="flex gap-2">
+              {["all", "CMR", "BOL", "POD", "invoice"].map((type) => (
+                <Button
+                  key={type}
+                  onClick={() => setTypeFilter(type)}
+                  variant={typeFilter === type ? "default" : "outline"}
+                  size="sm"
+                  className={typeFilter === type 
+                    ? "bg-cyan-600 hover:bg-cyan-500" 
+                    : "border-slate-700 text-slate-300"}
+                >
+                  {type === "all" ? "All" : type}
+                </Button>
+              ))}
+            </div>
           </div>
-          <div className="flex gap-2">
-            {["all", "CMR", "BOL", "POD", "invoice"].map((type) => (
-              <Button
-                key={type}
-                onClick={() => setTypeFilter(type)}
-                variant={typeFilter === type ? "default" : "outline"}
-                className={typeFilter === type 
-                  ? "bg-cyan-600 hover:bg-cyan-500" 
-                  : "border-slate-700 text-slate-300"}
+
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-slate-400">Status:</label>
+              <div className="flex gap-2">
+                {["all", "draft", "pending_signature", "signed", "archived"].map((status) => (
+                  <Button
+                    key={status}
+                    onClick={() => setStatusFilter(status)}
+                    variant={statusFilter === status ? "default" : "outline"}
+                    size="sm"
+                    className={statusFilter === status ? "bg-violet-600" : "border-slate-700 text-slate-300"}
+                  >
+                    {status === "all" ? "All" : status.replace('_', ' ').split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-slate-400">Sort by:</label>
+              <div className="flex gap-2">
+                {[
+                  { value: "date", label: "Date" },
+                  { value: "name", label: "Name" },
+                  { value: "type", label: "Type" }
+                ].map((option) => (
+                  <Button
+                    key={option.value}
+                    onClick={() => setSortBy(option.value)}
+                    variant={sortBy === option.value ? "default" : "outline"}
+                    size="sm"
+                    className={sortBy === option.value ? "bg-emerald-600" : "border-slate-700 text-slate-300"}
+                  >
+                    <BarChart3 className="w-3 h-3 mr-1" />
+                    {option.label}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {(searchTerm || typeFilter !== "all" || statusFilter !== "all") && (
+            <div className="flex items-center gap-2 text-sm flex-wrap">
+              <Filter className="w-4 h-4 text-slate-500" />
+              <span className="text-slate-400">Active filters:</span>
+              {searchTerm && (
+                <Badge variant="outline" className="bg-cyan-500/20 text-cyan-400 border-cyan-500/30">
+                  Search: {searchTerm}
+                  <X 
+                    className="w-3 h-3 ml-1 cursor-pointer" 
+                    onClick={() => setSearchTerm("")}
+                  />
+                </Badge>
+              )}
+              {typeFilter !== "all" && (
+                <Badge variant="outline" className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
+                  Type: {typeFilter}
+                  <X 
+                    className="w-3 h-3 ml-1 cursor-pointer" 
+                    onClick={() => setTypeFilter("all")}
+                  />
+                </Badge>
+              )}
+              {statusFilter !== "all" && (
+                <Badge variant="outline" className="bg-violet-500/20 text-violet-400 border-violet-500/30">
+                  Status: {statusFilter}
+                  <X 
+                    className="w-3 h-3 ml-1 cursor-pointer" 
+                    onClick={() => setStatusFilter("all")}
+                  />
+                </Badge>
+              )}
+              <button
+                onClick={() => {
+                  setSearchTerm("");
+                  setTypeFilter("all");
+                  setStatusFilter("all");
+                }}
+                className="text-slate-500 hover:text-white text-xs ml-2"
               >
-                {type === "all" ? "All" : type}
-              </Button>
-            ))}
-          </div>
+                Clear all
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Documents Grid */}
