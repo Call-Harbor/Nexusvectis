@@ -3,11 +3,15 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "../utils";
 import { Mail, MessageSquare, Send, Phone, MapPin, Clock, Globe, Linkedin, Twitter } from "lucide-react";
 import { base44 } from "@/api/base44Client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Contact() {
   const [formData, setFormData] = useState({ name: "", email: "", company: "", message: "", subject: "general" });
   const [submitted, setSubmitted] = useState(false);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -47,7 +51,7 @@ export default function Contact() {
             animate={{ opacity: 1, y: 0 }}
             className="text-center"
           >
-            <Link to={createPageUrl("Landing")} className="inline-block mb-8">
+            <Link to={createPageUrl("Home")} className="inline-block mb-8">
               <img 
                 src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/697e930c62bf3e3832b34edb/bc9d40ccc_FullLogo_Transparent1.png" 
                 alt="NexusVectis Logo" 
@@ -352,7 +356,7 @@ export default function Contact() {
       {/* Footer */}
       <footer className="relative py-12 px-6 z-10 border-t border-white/5">
         <div className="max-w-7xl mx-auto text-center">
-          <Link to={createPageUrl("Landing")}>
+          <Link to={createPageUrl("Home")}>
             <img 
               src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/697e930c62bf3e3832b34edb/bc9d40ccc_FullLogo_Transparent1.png" 
               alt="NexusVectis" 

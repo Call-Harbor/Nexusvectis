@@ -71,7 +71,6 @@ import GreenTMS from './pages/GreenTMS';
 import Home from './pages/Home';
 import IntellectMode from './pages/IntellectMode';
 import Invoices from './pages/Invoices';
-import Landing from './pages/Landing';
 import MaintenanceManagement from './pages/MaintenanceManagement';
 import MapMonitor from './pages/MapMonitor';
 import OrganizationSetup from './pages/OrganizationSetup';
@@ -119,7 +118,6 @@ export const PAGES = {
     "Home": Home,
     "IntellectMode": IntellectMode,
     "Invoices": Invoices,
-    "Landing": Landing,
     "MaintenanceManagement": MaintenanceManagement,
     "MapMonitor": MapMonitor,
     "OrganizationSetup": OrganizationSetup,
@@ -142,7 +140,7 @@ export const PAGES = {
 }
 
 export const pagesConfig = {
-    mainPage: "Landing",
+    mainPage: "AIOptimization",
     Pages: PAGES,
     Layout: __Layout,
 };

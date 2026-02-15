@@ -3,8 +3,13 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "../utils";
 import { Target, Users, Sparkles, ArrowRight, Award, TrendingUp, Globe, Zap, Shield, Brain, Rocket, Heart } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { useEffect } from "react";
 
 export default function About() {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   return (
     <div className="min-h-screen bg-black overflow-hidden relative">
       {/* Animated Background */}
@@ -37,7 +42,7 @@ export default function About() {
             animate={{ opacity: 1, y: 0 }}
             className="text-center mb-16"
           >
-            <Link to={createPageUrl("Landing")} className="inline-block mb-8">
+            <Link to={createPageUrl("Home")} className="inline-block mb-8">
               <img 
                 src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/697e930c62bf3e3832b34edb/bc9d40ccc_FullLogo_Transparent1.png" 
                 alt="NexusVectis Logo" 
@@ -282,7 +287,7 @@ export default function About() {
       {/* Footer */}
       <footer className="relative py-12 px-6 z-10 border-t border-white/5">
         <div className="max-w-7xl mx-auto text-center">
-          <Link to={createPageUrl("Landing")}>
+          <Link to={createPageUrl("Home")}>
             <img 
               src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/697e930c62bf3e3832b34edb/bc9d40ccc_FullLogo_Transparent1.png" 
               alt="NexusVectis" 

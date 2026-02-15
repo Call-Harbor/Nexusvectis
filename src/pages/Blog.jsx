@@ -3,8 +3,13 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "../utils";
 import { FileText, Calendar, ArrowRight, Clock, User, Tag } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { useEffect } from "react";
 
 export default function Blog() {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const featuredPost = {
     title: "Introducing FLEET AI: The Future of Fleet Command",
     excerpt: "Today, we're launching FLEET AI—the world's first natural language interface for fleet operations. Control your entire logistics operation by simply asking, in plain English.",
@@ -133,7 +138,7 @@ export default function Blog() {
             animate={{ opacity: 1, y: 0 }}
             className="text-center mb-12"
           >
-            <Link to={createPageUrl("Landing")} className="inline-block mb-8">
+            <Link to={createPageUrl("Home")} className="inline-block mb-8">
               <img 
                 src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/697e930c62bf3e3832b34edb/bc9d40ccc_FullLogo_Transparent1.png" 
                 alt="NexusVectis Logo" 
@@ -321,7 +326,7 @@ export default function Blog() {
       {/* Footer */}
       <footer className="relative py-12 px-6 z-10 border-t border-white/5">
         <div className="max-w-7xl mx-auto text-center">
-          <Link to={createPageUrl("Landing")}>
+          <Link to={createPageUrl("Home")}>
             <img 
               src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/697e930c62bf3e3832b34edb/bc9d40ccc_FullLogo_Transparent1.png" 
               alt="NexusVectis" 
