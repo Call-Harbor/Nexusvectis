@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "../utils";
-import { Target, Users, Sparkles, ArrowRight } from "lucide-react";
+import { Target, Users, Sparkles, ArrowRight, Award, TrendingUp, Globe, Zap, Shield, Brain, Rocket, Heart } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
 export default function About() {
@@ -29,25 +29,153 @@ export default function About() {
         <div className="absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.05)_1px,transparent_1px)] bg-[size:100px_100px]" />
       </div>
 
-      <section className="relative pt-32 pb-32 px-6 z-10">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-7xl font-black text-white mb-8">
-            About <span className="text-cyan-400">NexusVectis</span>
-          </h1>
-          <p className="text-2xl text-slate-300 leading-relaxed mb-12">
-            We're building the future of logistics intelligence. Our mission is to empower every logistics operator with AI-powered tools that were previously only available to the largest corporations.
-          </p>
+      {/* Hero Section */}
+      <section className="relative pt-32 pb-20 px-6 z-10">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center mb-16"
+          >
+            <Link to={createPageUrl("Landing")} className="inline-block mb-8">
+              <img 
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/697e930c62bf3e3832b34edb/bc9d40ccc_FullLogo_Transparent1.png" 
+                alt="NexusVectis Logo" 
+                className="h-32 w-auto mx-auto opacity-90"
+              />
+            </Link>
+            <h1 className="text-6xl md:text-8xl font-black text-white mb-8 leading-tight">
+              Building the Future of <br />
+              <span className="bg-gradient-to-r from-cyan-400 via-violet-400 to-fuchsia-400 bg-clip-text text-transparent">
+                Logistics Intelligence
+              </span>
+            </h1>
+            <p className="text-2xl md:text-3xl text-slate-300 leading-relaxed max-w-5xl mx-auto">
+              We're on a mission to democratize AI-powered logistics technology. 
+              Every operator, from small fleets to global enterprises, deserves world-class intelligence tools.
+            </p>
+          </motion.div>
         </div>
       </section>
 
+      {/* Mission Section */}
       <section className="relative py-32 px-6 z-10">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-5xl font-bold text-white text-center mb-20">Our Values</h2>
+          <div className="grid md:grid-cols-2 gap-16 items-center">
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+            >
+              <h2 className="text-5xl md:text-6xl font-bold text-white mb-8">
+                Our <span className="text-cyan-400">Mission</span>
+              </h2>
+              <div className="space-y-6 text-xl text-slate-300 leading-relaxed">
+                <p>
+                  For decades, advanced fleet intelligence was reserved for Fortune 500 companies with massive IT budgets. 
+                  We're changing that.
+                </p>
+                <p>
+                  NexusVectis brings enterprise-grade AI, real-time tracking, and predictive analytics to businesses of all sizes. 
+                  Our platform scales from 5 vehicles to 5,000, adapting to your growth.
+                </p>
+                <p className="text-cyan-400 font-semibold">
+                  We believe powerful technology should be accessible, not exclusive.
+                </p>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="grid grid-cols-2 gap-6"
+            >
+              {[
+                { value: "10M+", label: "Shipments Tracked", icon: Globe },
+                { value: "500K+", label: "AI Commands Daily", icon: Brain },
+                { value: "99.9%", label: "Uptime", icon: Zap },
+                { value: "45%", label: "Avg. Cost Savings", icon: TrendingUp }
+              ].map((stat, idx) => {
+                const Icon = stat.icon;
+                return (
+                  <motion.div
+                    key={idx}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: idx * 0.1 }}
+                    whileHover={{ scale: 1.05 }}
+                    className="p-8 rounded-3xl bg-white/5 border border-white/10 text-center"
+                  >
+                    <Icon className="w-12 h-12 text-cyan-400 mx-auto mb-4" />
+                    <div className="text-4xl font-black bg-gradient-to-br from-cyan-400 to-violet-400 bg-clip-text text-transparent mb-2">
+                      {stat.value}
+                    </div>
+                    <div className="text-sm text-slate-400">{stat.label}</div>
+                  </motion.div>
+                );
+              })}
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Values Section */}
+      <section className="relative py-32 px-6 z-10">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-20"
+          >
+            <h2 className="text-5xl md:text-6xl font-bold text-white mb-6">
+              Our <span className="text-cyan-400">Values</span>
+            </h2>
+            <p className="text-xl text-slate-400 max-w-3xl mx-auto">
+              The principles that guide everything we build
+            </p>
+          </motion.div>
+
           <div className="grid md:grid-cols-3 gap-8">
             {[
-              { icon: Sparkles, title: "Innovation First", desc: "Pushing the boundaries of what's possible with AI" },
-              { icon: Users, title: "Customer Obsessed", desc: "Your success is our success" },
-              { icon: Target, title: "Simplicity", desc: "Complex technology, simple experience" }
+              { 
+                icon: Sparkles, 
+                title: "Innovation First", 
+                desc: "We push the boundaries of what's possible with AI. Our FLEET AI represents years of research in natural language understanding and logistics optimization.",
+                color: "cyan"
+              },
+              { 
+                icon: Heart, 
+                title: "Customer Obsessed", 
+                desc: "Your success is our success. We build features based on real operator feedback, not theoretical needs. Every update solves actual problems.",
+                color: "violet"
+              },
+              { 
+                icon: Target, 
+                title: "Radical Simplicity", 
+                desc: "Complex technology should feel simple. We hide advanced algorithms behind intuitive interfaces. If you need a manual, we've failed.",
+                color: "fuchsia"
+              },
+              {
+                icon: Shield,
+                title: "Security & Trust",
+                desc: "Enterprise-grade security is non-negotiable. SOC 2 compliance, end-to-end encryption, and rigorous auditing protect your data.",
+                color: "emerald"
+              },
+              {
+                icon: Rocket,
+                title: "Move Fast, Stay Reliable",
+                desc: "We ship features weekly without compromising stability. 99.9% uptime isn't a target—it's our baseline commitment.",
+                color: "amber"
+              },
+              {
+                icon: Globe,
+                title: "Global Thinking",
+                desc: "Logistics is global. Our platform supports 50+ countries, multiple languages, and diverse transport modes from day one.",
+                color: "rose"
+              }
             ].map((value, idx) => {
               const Icon = value.icon;
               return (
@@ -56,11 +184,21 @@ export default function About() {
                   initial={{ opacity: 0, y: 30 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  className="p-8 rounded-3xl bg-white/5 border border-white/10"
+                  transition={{ delay: idx * 0.1 }}
+                  whileHover={{ scale: 1.05, y: -10 }}
+                  className="p-10 rounded-3xl bg-white/5 border border-white/10 hover:border-cyan-500/50 transition-all group"
                 >
-                  <Icon className="w-12 h-12 text-cyan-400 mb-6" />
-                  <h3 className="text-2xl font-bold text-white mb-4">{value.title}</h3>
-                  <p className="text-slate-400">{value.desc}</p>
+                  <motion.div
+                    whileHover={{ rotate: 360 }}
+                    transition={{ duration: 0.6 }}
+                    className={`w-16 h-16 rounded-2xl bg-gradient-to-br from-${value.color}-500/20 to-${value.color}-500/5 flex items-center justify-center mb-6`}
+                  >
+                    <Icon className={`w-8 h-8 text-${value.color}-400`} />
+                  </motion.div>
+                  <h3 className="text-2xl font-bold text-white mb-4 group-hover:text-cyan-400 transition-colors">
+                    {value.title}
+                  </h3>
+                  <p className="text-slate-400 leading-relaxed">{value.desc}</p>
                 </motion.div>
               );
             })}
@@ -68,20 +206,92 @@ export default function About() {
         </div>
       </section>
 
+      {/* Team Section */}
       <section className="relative py-32 px-6 z-10">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-5xl font-bold text-white mb-6">Join Us</h2>
-          <p className="text-xl text-slate-400 mb-12">
-            We're always looking for talented people to join our mission
-          </p>
-          <Link to={createPageUrl("Careers")}>
-            <button className="bg-white text-slate-900 text-xl px-12 py-6 rounded-2xl font-bold hover:scale-105 transition-transform inline-flex items-center gap-3">
-              View Open Positions
-              <ArrowRight className="w-6 h-6" />
-            </button>
-          </Link>
+        <div className="max-w-5xl mx-auto text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-5xl md:text-6xl font-bold text-white mb-8">
+              Built by Logistics <span className="text-cyan-400">Experts</span>
+            </h2>
+            <p className="text-xl text-slate-300 leading-relaxed mb-12">
+              Our team combines decades of logistics operations experience with cutting-edge AI expertise. 
+              We've lived the problems we're solving—from warehouse floors to dispatch centers.
+            </p>
+            <div className="grid md:grid-cols-3 gap-6 mb-12">
+              {[
+                { role: "Operations Veterans", desc: "25+ years combined in logistics" },
+                { role: "AI Researchers", desc: "PhDs from leading tech companies" },
+                { role: "Engineers", desc: "Built systems handling millions of shipments" }
+              ].map((team, idx) => (
+                <motion.div
+                  key={idx}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: idx * 0.1 }}
+                  className="p-6 rounded-2xl bg-white/5 border border-white/10"
+                >
+                  <Award className="w-8 h-8 text-cyan-400 mx-auto mb-3" />
+                  <h4 className="text-lg font-bold text-white mb-2">{team.role}</h4>
+                  <p className="text-slate-400 text-sm">{team.desc}</p>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
         </div>
       </section>
+
+      {/* CTA Section */}
+      <section className="relative py-32 px-6 z-10">
+        <div className="max-w-5xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            className="rounded-[3rem] bg-gradient-to-br from-cyan-500/10 via-violet-500/10 to-fuchsia-500/10 border border-cyan-500/30 p-16 text-center"
+          >
+            <h2 className="text-5xl md:text-6xl font-bold text-white mb-6">
+              Join Our Mission
+            </h2>
+            <p className="text-xl text-slate-300 mb-12 max-w-2xl mx-auto">
+              We're always looking for passionate individuals who want to revolutionize logistics
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+              <Link to={createPageUrl("Careers")}>
+                <button className="bg-white text-slate-900 text-xl px-12 py-6 rounded-2xl font-bold hover:scale-105 transition-transform inline-flex items-center gap-3">
+                  View Open Positions
+                  <ArrowRight className="w-6 h-6" />
+                </button>
+              </Link>
+              <button
+                onClick={() => base44.auth.redirectToLogin(createPageUrl("Dashboard"))}
+                className="bg-gradient-to-r from-cyan-500 to-violet-500 text-white text-xl px-12 py-6 rounded-2xl font-bold hover:scale-105 transition-transform inline-flex items-center gap-3"
+              >
+                Try NexusVectis
+                <Sparkles className="w-6 h-6" />
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="relative py-12 px-6 z-10 border-t border-white/5">
+        <div className="max-w-7xl mx-auto text-center">
+          <Link to={createPageUrl("Landing")}>
+            <img 
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/697e930c62bf3e3832b34edb/bc9d40ccc_FullLogo_Transparent1.png" 
+              alt="NexusVectis" 
+              className="h-24 w-auto mx-auto mb-6 opacity-70"
+            />
+          </Link>
+          <p className="text-slate-500 text-sm">&copy; 2026 NexusVectis ApS. Building the future of logistics.</p>
+        </div>
+      </footer>
     </div>
   );
 }
