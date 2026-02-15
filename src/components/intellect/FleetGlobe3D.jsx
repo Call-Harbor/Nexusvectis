@@ -411,7 +411,7 @@ export default function FleetGlobe3D({ vehicles = [], routes = [], onClose, onMi
       
       // Auto-rotate globe slowly
       if (!isDragging) {
-        globe.rotation.y += 0.0015;
+        fleetGroup.rotation.y += 0.0015;
       }
       
       // Animate markers
