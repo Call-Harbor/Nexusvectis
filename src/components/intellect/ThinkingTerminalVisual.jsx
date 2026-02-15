@@ -186,16 +186,28 @@ const ThinkingTerminalVisual = ({ isActive, logs, onClose }) => {
                                 </div>
                                 
                                 {/* Details Grid */}
-                                {log.details && (
-                                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-2">
-                                    {Object.entries(log.details).map(([key, value], i) => (
-                                      <div key={i} className="text-xs">
-                                        <span className="text-slate-400">{key}:</span>
-                                        <span className="text-cyan-300 ml-1 font-mono">
-                                          {typeof value === 'object' ? JSON.stringify(value) : String(value)}
-                                        </span>
-                                      </div>
-                                    ))}
+                                {log.details && Object.keys(log.details).length > 0 && (
+                                  <div className="mb-2 space-y-2">
+                                    {Object.entries(log.details).map(([key, value], i) => {
+                                      const displayValue = (() => {
+                                        if (value === null || value === undefined) return 'N/A';
+                                        if (typeof value === 'object') {
+                                          return Array.isArray(value) 
+                                            ? `[${value.join(', ')}]`
+                                            : Object.entries(value)
+                                                .map(([k, v]) => `${k}: ${v}`)
+                                                .join(' • ');
+                                        }
+                                        return String(value);
+                                      })();
+                                      
+                                      return (
+                                        <div key={i} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 text-xs bg-slate-800/40 p-2 rounded border border-slate-700/50">
+                                          <span className="text-slate-400 font-semibold min-w-fit">{key}:</span>
+                                          <span className="text-cyan-300 font-mono break-all">{displayValue}</span>
+                                        </div>
+                                      );
+                                    })}
                                   </div>
                                 )}
 
