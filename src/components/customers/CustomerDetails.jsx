@@ -8,43 +8,6 @@ import { ArrowLeft, Edit, Package, FileText, MapPin } from "lucide-react";
 import moment from "moment";
 
 export default function CustomerDetails({ customer, onClose, onEdit }) {
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    loadUser();
-  }, []);
-
-  const loadUser = async () => {
-    try {
-      const currentUser = await base44.auth.me();
-      setUser(currentUser);
-    } catch (error) {
-      console.error("Error loading user:", error);
-    }
-  };
-
-  const { data: shipments = [] } = useQuery({
-    queryKey: ['customer-shipments', customer.id],
-    queryFn: async () => {
-      if (!user?.organization_id) return [];
-      const allShipments = await base44.entities.Shipment.filter({ organization_id: user.organization_id }, '-created_date', 100);
-      return allShipments.filter(s => s.customer_email === customer.email);
-    },
-    enabled: !!user?.organization_id
-  });
-
-  const { data: contracts = [] } = useQuery({
-    queryKey: ['customer-contracts', customer.id],
-    queryFn: async () => {
-      if (!user?.organization_id) return [];
-      return await base44.entities.Contract.filter({ 
-        organization_id: user.organization_id,
-        customer_id: customer.id 
-      }, '-created_date', 50);
-    },
-    enabled: !!user?.organization_id
-  });
-
   const getStatusColor = (status) => {
     return status === "active" 
       ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
@@ -98,52 +61,43 @@ export default function CustomerDetails({ customer, onClose, onEdit }) {
               </CardContent>
             </Card>
 
-            <Card className="bg-slate-900/50 border-slate-800">
-              <CardHeader>
-                <CardTitle className="text-white flex items-center gap-2"><Package className="w-5 h-5 text-emerald-400" />Recent Shipments</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {shipments.length === 0 ? (
-                  <p className="text-slate-400 text-center py-4">No shipments yet</p>
-                ) : (
-                  <div className="space-y-2">
-                    {shipments.slice(0, 5).map((shipment) => (
-                      <div key={shipment.id} className="flex items-center justify-between p-3 bg-slate-800/30 rounded-lg">
-                        <div>
-                          <p className="text-white font-medium">{shipment.tracking_number}</p>
-                          <p className="text-slate-400 text-sm">{shipment.origin} → {shipment.destination}</p>
-                        </div>
-                        <Badge className={
-                          shipment.status === "delivered" ? "bg-emerald-500/20 text-emerald-400" :
-                          shipment.status === "in_transit" ? "bg-cyan-500/20 text-cyan-400" :
-                          "bg-amber-500/20 text-amber-400"
-                        }>
-                          {shipment.status}
-                        </Badge>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            <RelatedContracts 
+              filterKey="customer_id" 
+              filterValue={customer.id} 
+              title="Customer Contracts" 
+            />
+
+            <RelatedDocuments 
+              filterKey="customer_id" 
+              filterValue={customer.id} 
+              title="Customer Documents" 
+            />
+
+            <RelatedShipments 
+              filterKey="customer_email" 
+              filterValue={customer.email} 
+              title="Customer Shipments" 
+            />
           </div>
 
           <div className="space-y-6">
-            <Card className="bg-slate-900/50 border-slate-800">
-              <CardHeader>
-                <CardTitle className="text-white">Statistics</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="text-center p-4 bg-cyan-500/10 border border-cyan-500/30 rounded-lg">
-                  <p className="text-3xl font-bold text-cyan-400 mb-1">{shipments.length}</p>
-                  <p className="text-slate-300 text-sm">Total Shipments</p>
-                </div>
-                <div className="text-center p-4 bg-violet-500/10 border border-violet-500/30 rounded-lg">
-                  <p className="text-3xl font-bold text-violet-400 mb-1">{contracts.length}</p>
-                  <p className="text-slate-300 text-sm">Active Contracts</p>
-                </div>
-              </CardContent>
-            </Card>
+            <RelatedContracts 
+              filterKey="customer_id" 
+              filterValue={customer.id} 
+              title="Customer Contracts" 
+            />
+
+            <RelatedDocuments 
+              filterKey="customer_id" 
+              filterValue={customer.id} 
+              title="Customer Documents" 
+            />
+
+            <RelatedShipments 
+              filterKey="customer_email" 
+              filterValue={customer.email} 
+              title="Customer Shipments" 
+            />
 
             {customer.notes && (
               <Card className="bg-slate-900/50 border-slate-800">
