@@ -8,7 +8,7 @@ import ReactMarkdown from "react-markdown";
 import { 
   Sparkles, Send, Mic, Brain, Zap, TrendingUp, AlertTriangle, 
   Truck, Route, Package, Activity, Maximize2, Minimize2, X, LayoutDashboard, Paperclip, FileText,
-  Settings, Warehouse, Satellite, Globe
+  Settings, Warehouse, Satellite, Globe, BarChart3
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -141,16 +141,16 @@ const HologramWindow = React.memo(({ id, title, icon: Icon, children, position, 
 export default function IntellectMode() {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([
-    { role: "system", content: "⚡ FLEET AI online. Specialized logistics intelligence ready. Command me to open windows, create routes, manage fleet operations, analyze files, or answer strategic questions." }
+    { role: "system", content: "⚡ FLEET AI online. World's most advanced logistics intelligence system ready. I can: perform predictive maintenance analysis, forecast demand, optimize routes multi-modally, generate CO2 reports, detect anomalies, assess risks, benchmark performance, and execute any fleet operation. Command me." }
   ]);
 
   const quickCommands = [
-    { icon: Globe, label: "Open Dashboard", command: "open dashboard", color: "cyan" },
-    { icon: Truck, label: "Show Fleet Status", command: "show fleet status", color: "violet" },
-    { icon: Route, label: "Open Route Editor", command: "open route editor", color: "emerald" },
-    { icon: AlertTriangle, label: "Check Alerts", command: "check alerts", color: "amber" },
-    { icon: Sparkles, label: "AI Optimization", command: "open ai optimization", color: "cyan" },
-    { icon: Package, label: "Track Shipments", command: "show shipments", color: "blue" },
+    { icon: Brain, label: "Predictive Maintenance", command: "predict vehicle maintenance needs", color: "cyan" },
+    { icon: TrendingUp, label: "Demand Forecast", command: "forecast shipment demand next 30 days", color: "violet" },
+    { icon: Activity, label: "CO2 Analysis", command: "analyze CO2 emissions by route", color: "emerald" },
+    { icon: Zap, label: "Fleet Optimization", command: "optimize all routes for cost and efficiency", color: "amber" },
+    { icon: AlertTriangle, label: "Risk Assessment", command: "assess fleet risks and vulnerabilities", color: "red" },
+    { icon: BarChart3, label: "Performance Benchmark", command: "benchmark fleet performance", color: "blue" },
   ];
   const [isProcessing, setIsProcessing] = useState(false);
   const [activeWindows, setActiveWindows] = useState([]);
@@ -917,7 +917,7 @@ export default function IntellectMode() {
                   <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-cyan-400 animate-spin" style={{ animationDuration: '3s' }} />
                   <Badge className="bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-400 border-amber-500/50 text-[10px] sm:text-xs font-bold animate-pulse shadow-lg shadow-amber-500/20">BETA</Badge>
                 </h1>
-                <p className="text-cyan-400 text-xs sm:text-sm">Elite Logistics Intelligence</p>
+                <p className="text-cyan-400 text-xs sm:text-sm">World's Most Advanced Fleet Intelligence</p>
               </div>
             </div>
 
@@ -1076,7 +1076,7 @@ export default function IntellectMode() {
                   FLEET AI Standby
                 </span>
               </h2>
-              <p className="text-slate-400">Command me to activate hologram windows and manage operations</p>
+              <p className="text-slate-400">Advanced analytics ready: predictive maintenance, demand forecasting, CO2 reports, risk assessment, and full fleet control</p>
               <div className="mt-4 flex items-center justify-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
                 <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" style={{ animationDelay: '0.2s' }} />
@@ -1250,7 +1250,7 @@ export default function IntellectMode() {
                     setInput(commandHistory[commandHistory.length - 1 - newIndex] || '');
                   }
                 }}
-                placeholder="Enter command... (e.g. 'open fleet', 'check alerts', 'analyze attached files')"
+                placeholder="Command FLEET AI... (e.g. 'predict maintenance', 'forecast demand', 'analyze CO2 emissions', 'optimize routes')"
                 disabled={isProcessing}
                 className="flex-1 px-3 py-2.5 sm:px-4 sm:py-3 lg:px-6 lg:py-4 bg-slate-900/60 border-2 border-cyan-500/40 rounded-xl sm:rounded-2xl text-sm sm:text-base text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-400 focus:shadow-lg focus:shadow-cyan-500/20 backdrop-blur-xl transition-all"
               />
