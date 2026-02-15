@@ -974,9 +974,9 @@ export default function Home() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <p className="text-slate-500 text-sm">&copy; 2026 NexusVectis ApS. Shaping the future of logistics intelligence.</p>
             <div className="flex gap-6 text-slate-400 text-sm">
-              <span className="hover:text-cyan-400 transition-colors cursor-pointer">Privacy Policy</span>
-              <span className="hover:text-cyan-400 transition-colors cursor-pointer">Terms of Service</span>
-              <span className="hover:text-cyan-400 transition-colors cursor-pointer">Security</span>
+              <Link to={createPageUrl("PrivacyPolicy")} className="hover:text-cyan-400 transition-colors">Privacy Policy</Link>
+              <Link to={createPageUrl("TermsOfService")} className="hover:text-cyan-400 transition-colors">Terms of Service</Link>
+              <Link to={createPageUrl("SecurityPage")} className="hover:text-cyan-400 transition-colors">Security</Link>
             </div>
           </div>
         </div>
