@@ -416,8 +416,21 @@ export default function FleetAIPage() {
               </ul>
             </div>
           </div>
-          <div className="h-px bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent mb-8" />
-          <p className="text-slate-500 text-sm text-center">&copy; 2026 NexusVectis ApS. Building the future of logistics.</p>
+          <motion.div
+            initial={{ scaleX: 0 }}
+            whileInView={{ scaleX: 1 }}
+            viewport={{ once: true }}
+            className="h-px bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent mb-8"
+          />
+          
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <p className="text-slate-500 text-sm">&copy; 2026 NexusVectis ApS. Shaping the future of logistics intelligence.</p>
+            <div className="flex gap-6 text-slate-400 text-sm">
+              <Link to={createPageUrl("PrivacyPolicy")} className="hover:text-cyan-400 transition-colors">Privacy Policy</Link>
+              <Link to={createPageUrl("TermsOfService")} className="hover:text-cyan-400 transition-colors">Terms of Service</Link>
+              <Link to={createPageUrl("SecurityPage")} className="hover:text-cyan-400 transition-colors">Security</Link>
+            </div>
+          </div>
         </div>
       </footer>
     </div>
