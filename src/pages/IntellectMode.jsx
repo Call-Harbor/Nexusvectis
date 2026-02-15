@@ -423,6 +423,8 @@ export default function IntellectMode() {
         }
 
       // Udfør handlingen
+      addThinkingLog('execute', `Executing action: ${action}`, parameters, 100, 75);
+      
       switch (action) {
         case "OPEN_WINDOW":
           const validWindows = ['fleet', 'alerts', 'routes', 'shipments', 'dashboard', 'settings', 
@@ -431,8 +433,10 @@ export default function IntellectMode() {
                                 'gpsintegration', 'assignment', 'routeeditor'];
           if (parameters.window_type && validWindows.includes(parameters.window_type)) {
             openWindow(parameters.window_type);
+            addThinkingLog('result', `✅ Window opened: ${parameters.window_type}`, null, 50);
             setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
           } else {
+            addThinkingLog('error', `Invalid window type: ${parameters.window_type}`, null, 30);
             setMessages(prev => [...prev, { role: "system", content: `❌ Invalid window type` }]);
           }
           break;
