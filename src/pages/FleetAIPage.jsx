@@ -3,14 +3,19 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "../utils";
 import { Sparkles, Brain, Zap, ArrowRight, CheckCircle2, MessageSquare, Globe, TrendingUp } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { useEffect } from "react";
 
 export default function FleetAIPage() {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   return (
     <div className="min-h-screen bg-black">
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-2xl border-b border-white/5">
         <div className="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
-          <Link to={createPageUrl("Landing")}>
+          <Link to={createPageUrl("Home")}>
             <img 
               src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/697e930c62bf3e3832b34edb/bc9d40ccc_FullLogo_Transparent1.png" 
               alt="NexusVectis" 
