@@ -270,9 +270,8 @@ export default function Careers() {
                   className="h-32 w-auto mb-6 opacity-90"
                 />
               </Link>
-              <p className="text-slate-400 max-w-md leading-relaxed">
-                Next-generation fleet intelligence platform powered by AI. 
-                Control your entire logistics operation through natural language.
+              <p className="text-slate-400 max-w-md">
+                Next-generation fleet intelligence platform powered by AI
               </p>
             </div>
             
