@@ -297,6 +297,10 @@ export default function IntellectMode() {
     setUploadedFiles(prev => prev.filter((_, i) => i !== index));
   };
 
+  const addThinkingLog = (type, message, details = null, duration = null, percentage = null) => {
+    setThinkingLogs(prev => [...prev, { type, message, details, duration, percentage, timestamp: Date.now() }]);
+  };
+
   const processCommand = async () => {
     if (!input.trim() || isProcessing) return;
 
@@ -324,6 +328,11 @@ export default function IntellectMode() {
     setInput("");
     setUploadedFiles([]);
     setIsProcessing(true);
+    
+    // Show thinking terminal
+    setThinkingLogs([]);
+    setShowThinkingTerminal(true);
+    addThinkingLog('parse', `Parsing command: "${currentCommand}"`, null, 0);
 
     const maxRetries = 3;
     let attempts = 0;
