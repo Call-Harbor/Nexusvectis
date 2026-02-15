@@ -153,7 +153,7 @@ export default function FleetGlobe3D({ vehicles = [], routes = [], onClose, onMi
       transparent: false
     });
     const globe = new THREE.Mesh(globeGeometry, globeMaterial);
-    scene.add(globe);
+    fleetGroup.add(globe);
     globeRef.current = globe;
     
     // Atmospheric glow
@@ -184,7 +184,7 @@ export default function FleetGlobe3D({ vehicles = [], routes = [], onClose, onMi
       transparent: true
     });
     const glow = new THREE.Mesh(glowGeometry, glowMaterial);
-    scene.add(glow);
+    fleetGroup.add(glow);
 
     // Grid lines (subtle)
     const gridMaterial = new THREE.LineBasicMaterial({ color: 0x06b6d4, transparent: true, opacity: 0.15 });
