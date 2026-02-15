@@ -331,7 +331,7 @@ export default function FleetGlobe3D({ vehicles = [], routes = [], onClose, onMi
           linewidth: 3
         });
         const line = new THREE.Line(geometry, material);
-        scene.add(line);
+        fleetGroup.add(line);
         
         // Moving dot along route
         const dotGeometry = new THREE.SphereGeometry(0.015, 16, 16);
@@ -341,7 +341,7 @@ export default function FleetGlobe3D({ vehicles = [], routes = [], onClose, onMi
           opacity: 0.9
         });
         const dot = new THREE.Mesh(dotGeometry, dotMaterial);
-        scene.add(dot);
+        fleetGroup.add(dot);
         
         routeLines.push({ curve, dot, progress: Math.random() });
       }
