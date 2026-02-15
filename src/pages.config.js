@@ -90,6 +90,9 @@ import Settings from './pages/Settings';
 import Shipments from './pages/Shipments';
 import UserManagement from './pages/UserManagement';
 import WarehouseAutomation from './pages/WarehouseAutomation';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsOfService from './pages/TermsOfService';
+import SecurityPage from './pages/SecurityPage';
 import __Layout from './Layout.jsx';
 
 
@@ -137,6 +140,9 @@ export const PAGES = {
     "Shipments": Shipments,
     "UserManagement": UserManagement,
     "WarehouseAutomation": WarehouseAutomation,
+    "PrivacyPolicy": PrivacyPolicy,
+    "TermsOfService": TermsOfService,
+    "SecurityPage": SecurityPage,
 }
 
 export const pagesConfig = {
