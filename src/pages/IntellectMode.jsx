@@ -722,9 +722,11 @@ export default function IntellectMode() {
         properties: { action, command: currentCommand }
       });
 
+        addThinkingLog('result', 'Command executed successfully', null, 100);
         break;
       } catch (error) {
         attempts++;
+        addThinkingLog('error', `Error (attempt ${attempts}/${maxRetries}): ${error.message}`, error, 100);
         console.error(`Command error (attempt ${attempts}/${maxRetries}):`, error);
 
         // Log failed usage
@@ -745,6 +747,7 @@ export default function IntellectMode() {
         }
         
         if (attempts >= maxRetries) {
+          addThinkingLog('error', 'Max retries exceeded', null, 100);
           setMessages(prev => [...prev, { 
             role: "system", 
             content: `❌ Error: ${error.message}. Please try again or rephrase your command.` 
@@ -766,6 +769,7 @@ export default function IntellectMode() {
     }
     
     setIsProcessing(false);
+    addThinkingLog('result', 'Processing complete', null, 100);
   };
 
   const contextData = useMemo(() => ({
