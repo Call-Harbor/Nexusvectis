@@ -1000,8 +1000,123 @@ export default function IntellectMode() {
               </div>
             </div>
           )}
-        </div>
-      );
+
+          {/* Advanced Metrics */}
+          {chartConfig.advanced_metrics && (
+            <div className="mt-6 p-4 rounded-xl bg-slate-900/60 border border-slate-700/50">
+              <div className="flex items-center gap-2 mb-3">
+                <TrendingUp className="w-5 h-5 text-blue-400" />
+                <h4 className="text-white font-bold text-base">Advanced Metrics</h4>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                {chartConfig.advanced_metrics.map((metric, idx) => (
+                  <div key={idx} className="p-3 rounded-lg bg-slate-800/50 border border-slate-700/50">
+                    <p className="text-slate-400 text-xs mb-1 font-medium">{metric.label}</p>
+                    <p className="text-white text-base font-bold">{metric.value}</p>
+                    {metric.change && (
+                      <p className={`text-xs mt-1 ${metric.change.includes('+') ? 'text-emerald-400' : 'text-red-400'}`}>
+                        {metric.change}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Forecasting & Predictions */}
+          {chartConfig.forecasts && chartConfig.forecasts.length > 0 && (
+            <div className="mt-6 p-4 rounded-xl bg-gradient-to-br from-violet-500/10 to-indigo-500/10 border border-violet-500/30">
+              <div className="flex items-center gap-2 mb-3">
+                <Sparkles className="w-5 h-5 text-violet-400" />
+                <h4 className="text-white font-bold text-base">Predictions & Forecasts</h4>
+              </div>
+              <div className="space-y-3">
+                {chartConfig.forecasts.map((forecast, idx) => (
+                  <div key={idx} className="p-3 rounded-lg bg-violet-500/5 border border-violet-500/20">
+                    <div className="flex justify-between items-start mb-2">
+                      <p className="text-white font-medium text-sm">{forecast.name}</p>
+                      <span className="text-xs px-2 py-1 rounded-full bg-violet-500/20 text-violet-300">
+                        {forecast.timeframe}
+                      </span>
+                    </div>
+                    <p className="text-slate-300 text-sm mb-2">{forecast.description}</p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-white text-lg font-bold">{forecast.value}</span>
+                      <div className="flex items-center gap-2">
+                        <div className="w-24 h-2 bg-violet-500/20 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-gradient-to-r from-violet-400 to-indigo-400"
+                            style={{ width: `${forecast.confidence || 85}%` }}
+                          />
+                        </div>
+                        <span className="text-xs text-violet-300">{forecast.confidence || 85}%</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Risk Analysis */}
+          {chartConfig.risks && chartConfig.risks.length > 0 && (
+            <div className="mt-6 p-4 rounded-xl bg-gradient-to-br from-red-500/10 to-orange-500/10 border border-red-500/30">
+              <div className="flex items-center gap-2 mb-3">
+                <AlertTriangle className="w-5 h-5 text-red-400" />
+                <h4 className="text-white font-bold text-base">Risk Analysis</h4>
+              </div>
+              <div className="space-y-2">
+                {chartConfig.risks.map((risk, idx) => (
+                  <div key={idx} className="p-3 rounded-lg bg-red-500/5 border border-red-500/20">
+                    <div className="flex items-start justify-between mb-2">
+                      <p className="text-white font-medium text-sm flex-1">{risk.name}</p>
+                      <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${
+                        risk.severity === 'critical' ? 'bg-red-500/30 text-red-300' :
+                        risk.severity === 'high' ? 'bg-orange-500/30 text-orange-300' :
+                        'bg-yellow-500/30 text-yellow-300'
+                      }`}>
+                        {risk.severity}
+                      </span>
+                    </div>
+                    <p className="text-slate-300 text-xs mb-2">{risk.description}</p>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-slate-400">Likelihood: {risk.likelihood}</span>
+                      <span className="text-red-300 font-semibold">Impact: {risk.impact}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Correlations & Relationships */}
+          {chartConfig.correlations && chartConfig.correlations.length > 0 && (
+            <div className="mt-6 p-4 rounded-xl bg-slate-900/60 border border-slate-700/50">
+              <div className="flex items-center gap-2 mb-3">
+                <Activity className="w-5 h-5 text-cyan-400" />
+                <h4 className="text-white font-bold text-base">Data Correlations</h4>
+              </div>
+              <div className="space-y-2">
+                {chartConfig.correlations.map((corr, idx) => (
+                  <div key={idx} className="p-3 rounded-lg bg-slate-800/50 border border-slate-700/50">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-slate-300 text-sm">{corr.variables}</p>
+                      <span className="text-xs font-mono text-cyan-300">{corr.coefficient}</span>
+                    </div>
+                    <div className="w-full h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-gradient-to-r from-cyan-400 to-blue-400"
+                        style={{ width: `${Math.abs(parseFloat(corr.coefficient)) * 100}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          </div>
+          );
     }
 
     // For full page iframes
