@@ -451,10 +451,6 @@ export default function FleetGlobe3D({ vehicles = [], routes = [], onClose, onMi
       }
     };
     animate();
-    } catch (error) {
-      console.error('3D Globe initialization error:', error);
-    }
-  }, [vehicles, routes]);
 
     // Handle resize
     const handleResize = () => {
@@ -492,6 +488,11 @@ export default function FleetGlobe3D({ vehicles = [], routes = [], onClose, onMi
         console.error('Cleanup error:', error);
       }
     };
+    } catch (error) {
+      console.error('3D Globe initialization error:', error);
+      return () => {};
+    }
+  }, [vehicles, routes]);
 
   return (
     <motion.div
