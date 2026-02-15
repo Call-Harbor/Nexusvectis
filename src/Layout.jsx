@@ -38,44 +38,50 @@ import {
 
 const navItems = [
   { name: "Dashboard", icon: LayoutDashboard, page: "Dashboard" },
-  { name: "Fleet Monitor", icon: Globe, page: "MapMonitor" },
   { name: "Alerts", icon: Bell, page: "Alerts" },
 ];
 
 const fleetMenuItems = [
   { name: "Fleet", icon: Truck, page: "Fleet" },
+  { name: "Fleet Monitor", icon: Globe, page: "MapMonitor" },
   { name: "Drivers", icon: Users, page: "DriverManagement" },
   { name: "Assets", icon: Package, page: "AssetManagement" },
   { name: "Assignments", icon: Route, page: "Assignment" },
+  { name: "Maintenance", icon: Wrench, page: "MaintenanceManagement" },
+];
+
+const logisticsMenuItems = [
   { name: "Shipments", icon: Package, page: "Shipments" },
+  { name: "Routes", icon: Route, page: "Routes" },
+  { name: "Resources", icon: Warehouse, page: "Resources" },
   { name: "GPS Integration", icon: Satellite, page: "GPSIntegration" },
 ];
 
-const planningMenuItems = [
-  { name: "Routes", icon: Route, page: "Routes" },
-  { name: "Resources", icon: Warehouse, page: "Resources" },
-  { name: "Maintenance", icon: Wrench, page: "MaintenanceManagement" },
-  { name: "AI Optimization", icon: Sparkles, page: "AIOptimization" },
+const businessMenuItems = [
+  { name: "Customers", icon: Users, page: "CustomerManagement" },
+  { name: "Contracts", icon: FileText, page: "ContractManagement" },
+  { name: "Invoices", icon: FileText, page: "Invoices" },
+  { name: "Documents", icon: FileText, page: "DocumentManagement" },
 ];
 
-const innovationMenuItems = [
+const aiMenuItems = [
   { name: "Intellect Mode", icon: Sparkles, page: "IntellectMode" },
-  { name: "Demand Forecasting", icon: Sparkles, page: "DemandForecasting" },
+  { name: "AI Optimization", icon: Sparkles, page: "AIOptimization" },
+  { name: "Demand Forecasting", icon: Activity, page: "DemandForecasting" },
+  { name: "Warehouse Automation", icon: Package, page: "WarehouseAutomation" },
   { name: "Green TMS", icon: Sparkles, page: "GreenTMS" },
-  { name: "Warehouse Automation", icon: Sparkles, page: "WarehouseAutomation" },
 ];
 
 const systemMenuItems = [
   { name: "Users", icon: Users, page: "UserManagement" },
-  { name: "Customers", icon: Users, page: "CustomerManagement" },
-  { name: "Contracts", icon: FileText, page: "ContractManagement" },
-  { name: "Documents", icon: FileText, page: "DocumentManagement" },
-  { name: "Reports", icon: FileText, page: "Reports" },
   { name: "Security", icon: Shield, page: "Security" },
-  { name: "Invoices", icon: FileText, page: "Invoices" },
+  { name: "Reports", icon: FileText, page: "Reports" },
+  { name: "Settings", icon: Settings, page: "Settings" },
+];
+
+const developerMenuItems = [
   { name: "API Docs", icon: FileText, page: "APIDocumentation" },
   { name: "API Metrics", icon: Activity, page: "APIMetrics" },
-  { name: "Settings", icon: Settings, page: "Settings" },
 ];
 
 export default function Layout({ children, currentPageName }) {
@@ -162,17 +168,34 @@ export default function Layout({ children, currentPageName }) {
                 )}
               >
                 <Truck className={cn("w-5 h-5", fleetMenuItems.some(item => item.page === currentPageName) && "text-cyan-400")} />
-                <span>Fleet Management</span>
+                <span>Fleet Operations</span>
                 <ChevronDown className="w-4 h-4 ml-auto" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56 bg-slate-900 border-slate-800 text-white ml-3">
-              <DropdownMenuLabel>Fleet Management</DropdownMenuLabel>
+              <DropdownMenuLabel>Fleet Operations</DropdownMenuLabel>
               <DropdownMenuSeparator className="bg-slate-800" />
               {fleetMenuItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = currentPageName === item.page;
-                return (
+                const isMapMonitor = item.page === "MapMonitor";
+
+                return isMapMonitor ? (
+                  <DropdownMenuItem key={item.name} asChild>
+                    <a
+                      href={createPageUrl(item.page)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={cn(
+                        "flex items-center gap-3 cursor-pointer",
+                        isActive && "text-cyan-400"
+                      )}
+                    >
+                      <Icon className="w-4 h-4" />
+                      <span>{item.name}</span>
+                    </a>
+                  </DropdownMenuItem>
+                ) : (
                   <DropdownMenuItem key={item.name} asChild>
                     <Link
                       to={createPageUrl(item.page)}
@@ -195,20 +218,20 @@ export default function Layout({ children, currentPageName }) {
               <button
                 className={cn(
                   "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all w-full",
-                  planningMenuItems.some(item => item.page === currentPageName)
+                  logisticsMenuItems.some(item => item.page === currentPageName)
                     ? "bg-gradient-to-r from-cyan-500/20 to-violet-500/10 text-white border border-cyan-500/30"
                     : "text-slate-400 hover:text-white hover:bg-slate-800/50"
                 )}
               >
-                <Route className={cn("w-5 h-5", planningMenuItems.some(item => item.page === currentPageName) && "text-cyan-400")} />
-                <span>Planning & Resources</span>
+                <Route className={cn("w-5 h-5", logisticsMenuItems.some(item => item.page === currentPageName) && "text-cyan-400")} />
+                <span>Logistics & Planning</span>
                 <ChevronDown className="w-4 h-4 ml-auto" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56 bg-slate-900 border-slate-800 text-white ml-3">
-              <DropdownMenuLabel>Planning & Resources</DropdownMenuLabel>
+              <DropdownMenuLabel>Logistics & Planning</DropdownMenuLabel>
               <DropdownMenuSeparator className="bg-slate-800" />
-              {planningMenuItems.map((item) => {
+              {logisticsMenuItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = currentPageName === item.page;
                 return (
@@ -234,20 +257,59 @@ export default function Layout({ children, currentPageName }) {
               <button
                 className={cn(
                   "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all w-full",
-                  innovationMenuItems.some(item => item.page === currentPageName)
+                  businessMenuItems.some(item => item.page === currentPageName)
                     ? "bg-gradient-to-r from-cyan-500/20 to-violet-500/10 text-white border border-cyan-500/30"
                     : "text-slate-400 hover:text-white hover:bg-slate-800/50"
                 )}
               >
-                <Sparkles className={cn("w-5 h-5", innovationMenuItems.some(item => item.page === currentPageName) && "text-cyan-400")} />
-                <span>AI Innovation</span>
+                <DollarSign className={cn("w-5 h-5", businessMenuItems.some(item => item.page === currentPageName) && "text-cyan-400")} />
+                <span>Business Management</span>
                 <ChevronDown className="w-4 h-4 ml-auto" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56 bg-slate-900 border-slate-800 text-white ml-3">
-              <DropdownMenuLabel>AI Innovation</DropdownMenuLabel>
+              <DropdownMenuLabel>Business Management</DropdownMenuLabel>
               <DropdownMenuSeparator className="bg-slate-800" />
-              {innovationMenuItems.map((item) => {
+              {businessMenuItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = currentPageName === item.page;
+                return (
+                  <DropdownMenuItem key={item.name} asChild>
+                    <Link
+                      to={createPageUrl(item.page)}
+                      className={cn(
+                        "flex items-center gap-3 cursor-pointer",
+                        isActive && "text-cyan-400"
+                      )}
+                    >
+                      <Icon className="w-4 h-4" />
+                      <span>{item.name}</span>
+                    </Link>
+                  </DropdownMenuItem>
+                );
+              })}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                className={cn(
+                  "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all w-full",
+                  aiMenuItems.some(item => item.page === currentPageName)
+                    ? "bg-gradient-to-r from-cyan-500/20 to-violet-500/10 text-white border border-cyan-500/30"
+                    : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+                )}
+              >
+                <Sparkles className={cn("w-5 h-5", aiMenuItems.some(item => item.page === currentPageName) && "text-cyan-400")} />
+                <span>AI & Automation</span>
+                <ChevronDown className="w-4 h-4 ml-auto" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56 bg-slate-900 border-slate-800 text-white ml-3">
+              <DropdownMenuLabel>AI & Automation</DropdownMenuLabel>
+              <DropdownMenuSeparator className="bg-slate-800" />
+              {aiMenuItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = currentPageName === item.page;
                 return (
@@ -282,14 +344,53 @@ export default function Layout({ children, currentPageName }) {
                 )}
               >
                 <Settings className={cn("w-5 h-5", systemMenuItems.some(item => item.page === currentPageName) && "text-cyan-400")} />
-                <span>System & Settings</span>
+                <span>System</span>
                 <ChevronDown className="w-4 h-4 ml-auto" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56 bg-slate-900 border-slate-800 text-white ml-3">
-              <DropdownMenuLabel>System & Settings</DropdownMenuLabel>
+              <DropdownMenuLabel>System</DropdownMenuLabel>
               <DropdownMenuSeparator className="bg-slate-800" />
               {systemMenuItems.filter(item => !item.adminOnly || user?.role === 'admin').map((item) => {
+                const Icon = item.icon;
+                const isActive = currentPageName === item.page;
+                return (
+                  <DropdownMenuItem key={item.name} asChild>
+                    <Link
+                      to={createPageUrl(item.page)}
+                      className={cn(
+                        "flex items-center gap-3 cursor-pointer",
+                        isActive && "text-cyan-400"
+                      )}
+                    >
+                      <Icon className="w-4 h-4" />
+                      <span>{item.name}</span>
+                    </Link>
+                  </DropdownMenuItem>
+                );
+              })}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                className={cn(
+                  "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all w-full",
+                  developerMenuItems.some(item => item.page === currentPageName)
+                    ? "bg-gradient-to-r from-cyan-500/20 to-violet-500/10 text-white border border-cyan-500/30"
+                    : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+                )}
+              >
+                <Activity className={cn("w-5 h-5", developerMenuItems.some(item => item.page === currentPageName) && "text-cyan-400")} />
+                <span>Developer</span>
+                <ChevronDown className="w-4 h-4 ml-auto" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56 bg-slate-900 border-slate-800 text-white ml-3">
+              <DropdownMenuLabel>Developer</DropdownMenuLabel>
+              <DropdownMenuSeparator className="bg-slate-800" />
+              {developerMenuItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = currentPageName === item.page;
                 return (
@@ -405,11 +506,29 @@ export default function Layout({ children, currentPageName }) {
               })}
 
               <div className="pt-2 space-y-1">
-                <p className="px-4 py-2 text-xs font-semibold text-slate-500 uppercase">Fleet Management</p>
+                <p className="px-4 py-2 text-xs font-semibold text-slate-500 uppercase">Fleet Operations</p>
                 {fleetMenuItems.map((item) => {
                   const isActive = currentPageName === item.page;
                   const Icon = item.icon;
-                  return (
+                  const isMapMonitor = item.page === "MapMonitor";
+                  return isMapMonitor ? (
+                    <a
+                      key={item.name}
+                      href={createPageUrl(item.page)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={cn(
+                        "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all",
+                        isActive 
+                          ? "bg-gradient-to-r from-cyan-500/20 to-violet-500/10 text-white border border-cyan-500/30" 
+                          : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+                      )}
+                    >
+                      <Icon className={cn("w-5 h-5", isActive && "text-cyan-400")} />
+                      <span>{item.name}</span>
+                    </a>
+                  ) : (
                     <Link
                       key={item.name}
                       to={createPageUrl(item.page)}
@@ -429,8 +548,8 @@ export default function Layout({ children, currentPageName }) {
               </div>
 
               <div className="pt-2 space-y-1">
-                <p className="px-4 py-2 text-xs font-semibold text-slate-500 uppercase">Planning & Resources</p>
-                {planningMenuItems.map((item) => {
+                <p className="px-4 py-2 text-xs font-semibold text-slate-500 uppercase">Logistics & Planning</p>
+                {logisticsMenuItems.map((item) => {
                   const isActive = currentPageName === item.page;
                   const Icon = item.icon;
                   return (
@@ -453,8 +572,32 @@ export default function Layout({ children, currentPageName }) {
               </div>
 
               <div className="pt-2 space-y-1">
-                <p className="px-4 py-2 text-xs font-semibold text-slate-500 uppercase">AI Innovation</p>
-                {innovationMenuItems.map((item) => {
+                <p className="px-4 py-2 text-xs font-semibold text-slate-500 uppercase">Business Management</p>
+                {businessMenuItems.map((item) => {
+                  const isActive = currentPageName === item.page;
+                  const Icon = item.icon;
+                  return (
+                    <Link
+                      key={item.name}
+                      to={createPageUrl(item.page)}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={cn(
+                        "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all",
+                        isActive 
+                          ? "bg-gradient-to-r from-cyan-500/20 to-violet-500/10 text-white border border-cyan-500/30" 
+                          : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+                      )}
+                    >
+                      <Icon className={cn("w-5 h-5", isActive && "text-cyan-400")} />
+                      <span>{item.name}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+
+              <div className="pt-2 space-y-1">
+                <p className="px-4 py-2 text-xs font-semibold text-slate-500 uppercase">AI & Automation</p>
+                {aiMenuItems.map((item) => {
                   const isActive = currentPageName === item.page;
                   const Icon = item.icon;
                   return (
@@ -480,8 +623,32 @@ export default function Layout({ children, currentPageName }) {
               </div>
 
               <div className="pt-2 space-y-1">
-                <p className="px-4 py-2 text-xs font-semibold text-slate-500 uppercase">System & Settings</p>
+                <p className="px-4 py-2 text-xs font-semibold text-slate-500 uppercase">System</p>
                 {systemMenuItems.filter(item => !item.adminOnly || user?.role === 'admin').map((item) => {
+                  const isActive = currentPageName === item.page;
+                  const Icon = item.icon;
+                  return (
+                    <Link
+                      key={item.name}
+                      to={createPageUrl(item.page)}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={cn(
+                        "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all",
+                        isActive 
+                          ? "bg-gradient-to-r from-cyan-500/20 to-violet-500/10 text-white border border-cyan-500/30" 
+                          : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+                      )}
+                    >
+                      <Icon className={cn("w-5 h-5", isActive && "text-cyan-400")} />
+                      <span>{item.name}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+
+              <div className="pt-2 space-y-1">
+                <p className="px-4 py-2 text-xs font-semibold text-slate-500 uppercase">Developer</p>
+                {developerMenuItems.map((item) => {
                   const isActive = currentPageName === item.page;
                   const Icon = item.icon;
                   return (
