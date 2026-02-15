@@ -36,37 +36,169 @@ export default function FleetGlobe3D({ vehicles = [], routes = [], onClose, onMi
     containerRef.current.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 
-    // Globe
-    const globeGeometry = new THREE.SphereGeometry(1, 64, 64);
+    // Stars background
+    const starsGeometry = new THREE.BufferGeometry();
+    const starsMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.7, transparent: true });
+    const starsVertices = [];
+    for (let i = 0; i < 2000; i++) {
+      const x = (Math.random() - 0.5) * 2000;
+      const y = (Math.random() - 0.5) * 2000;
+      const z = (Math.random() - 0.5) * 2000;
+      starsVertices.push(x, y, z);
+    }
+    starsGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starsVertices, 3));
+    const stars = new THREE.Points(starsGeometry, starsMaterial);
+    scene.add(stars);
+
+    // Globe with continents
+    const globeGeometry = new THREE.SphereGeometry(1, 128, 128);
+    
+    // Create texture with continents outline
+    const canvas = document.createElement('canvas');
+    canvas.width = 2048;
+    canvas.height = 1024;
+    const ctx = canvas.getContext('2d');
+    
+    // Ocean color
+    ctx.fillStyle = '#0a1929';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Continents (simplified)
+    ctx.fillStyle = '#1e3a5f';
+    ctx.strokeStyle = '#06b6d4';
+    ctx.lineWidth = 2;
+    
+    // North America
+    ctx.beginPath();
+    ctx.moveTo(200, 300);
+    ctx.lineTo(300, 250);
+    ctx.lineTo(400, 280);
+    ctx.lineTo(450, 400);
+    ctx.lineTo(350, 500);
+    ctx.lineTo(250, 450);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    
+    // South America
+    ctx.beginPath();
+    ctx.moveTo(350, 550);
+    ctx.lineTo(400, 600);
+    ctx.lineTo(420, 750);
+    ctx.lineTo(350, 800);
+    ctx.lineTo(300, 700);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    
+    // Europe
+    ctx.beginPath();
+    ctx.moveTo(900, 250);
+    ctx.lineTo(1000, 220);
+    ctx.lineTo(1050, 280);
+    ctx.lineTo(1000, 350);
+    ctx.lineTo(900, 320);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    
+    // Africa
+    ctx.beginPath();
+    ctx.moveTo(950, 400);
+    ctx.lineTo(1050, 380);
+    ctx.lineTo(1100, 500);
+    ctx.lineTo(1050, 650);
+    ctx.lineTo(950, 700);
+    ctx.lineTo(900, 550);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    
+    // Asia
+    ctx.beginPath();
+    ctx.moveTo(1100, 200);
+    ctx.lineTo(1400, 180);
+    ctx.lineTo(1600, 250);
+    ctx.lineTo(1650, 400);
+    ctx.lineTo(1500, 500);
+    ctx.lineTo(1300, 450);
+    ctx.lineTo(1150, 350);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    
+    // Australia
+    ctx.beginPath();
+    ctx.moveTo(1500, 650);
+    ctx.lineTo(1600, 630);
+    ctx.lineTo(1650, 700);
+    ctx.lineTo(1600, 750);
+    ctx.lineTo(1500, 730);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    
+    const texture = new THREE.CanvasTexture(canvas);
+    
     const globeMaterial = new THREE.MeshPhongMaterial({
-      color: 0x0a4d68,
-      emissive: 0x022e3f,
-      shininess: 10,
-      transparent: true,
-      opacity: 0.9
+      map: texture,
+      emissive: 0x0a2a3f,
+      emissiveIntensity: 0.3,
+      shininess: 15,
+      transparent: false
     });
     const globe = new THREE.Mesh(globeGeometry, globeMaterial);
     scene.add(globe);
     globeRef.current = globe;
+    
+    // Atmospheric glow
+    const glowGeometry = new THREE.SphereGeometry(1.05, 64, 64);
+    const glowMaterial = new THREE.ShaderMaterial({
+      uniforms: {
+        c: { type: "f", value: 0.3 },
+        p: { type: "f", value: 4.5 }
+      },
+      vertexShader: `
+        varying vec3 vNormal;
+        void main() {
+          vNormal = normalize(normalMatrix * normal);
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        uniform float c;
+        uniform float p;
+        varying vec3 vNormal;
+        void main() {
+          float intensity = pow(c - dot(vNormal, vec3(0.0, 0.0, 1.0)), p);
+          gl_FragColor = vec4(0.0, 0.7, 0.8, 1.0) * intensity;
+        }
+      `,
+      side: THREE.BackSide,
+      blending: THREE.AdditiveBlending,
+      transparent: true
+    });
+    const glow = new THREE.Mesh(glowGeometry, glowMaterial);
+    scene.add(glow);
 
-    // Grid lines
-    const gridMaterial = new THREE.LineBasicMaterial({ color: 0x06b6d4, transparent: true, opacity: 0.3 });
+    // Grid lines (subtle)
+    const gridMaterial = new THREE.LineBasicMaterial({ color: 0x06b6d4, transparent: true, opacity: 0.15 });
     
     // Latitude lines
     for (let lat = -80; lat <= 80; lat += 20) {
-      const curve = new THREE.EllipseCurve(0, 0, 1, 1, 0, 2 * Math.PI, false, 0);
+      const curve = new THREE.EllipseCurve(0, 0, 1.01, 1.01, 0, 2 * Math.PI, false, 0);
       const points = curve.getPoints(100);
       const geometry = new THREE.BufferGeometry().setFromPoints(points);
       const line = new THREE.Line(geometry, gridMaterial);
       line.rotation.x = Math.PI / 2;
-      line.position.y = Math.sin((lat * Math.PI) / 180);
+      line.position.y = Math.sin((lat * Math.PI) / 180) * 1.01;
       line.scale.set(Math.cos((lat * Math.PI) / 180), Math.cos((lat * Math.PI) / 180), 1);
       scene.add(line);
     }
 
     // Longitude lines
     for (let lon = 0; lon < 360; lon += 30) {
-      const curve = new THREE.EllipseCurve(0, 0, 1, 1, 0, Math.PI, false, 0);
+      const curve = new THREE.EllipseCurve(0, 0, 1.01, 1.01, 0, Math.PI, false, 0);
       const points = curve.getPoints(50);
       const geometry = new THREE.BufferGeometry().setFromPoints(points);
       const line = new THREE.Line(geometry, gridMaterial);
@@ -74,48 +206,66 @@ export default function FleetGlobe3D({ vehicles = [], routes = [], onClose, onMi
       scene.add(line);
     }
 
-    // Add vehicles as glowing points
+    // Add vehicles as glowing markers
+    const vehicleMarkers = [];
     vehicles.forEach(vehicle => {
       if (vehicle.latitude && vehicle.longitude) {
         const phi = (90 - vehicle.latitude) * (Math.PI / 180);
         const theta = (vehicle.longitude + 180) * (Math.PI / 180);
         
-        const x = -(1.05 * Math.sin(phi) * Math.cos(theta));
-        const y = 1.05 * Math.cos(phi);
-        const z = 1.05 * Math.sin(phi) * Math.sin(theta);
+        const x = -(1.08 * Math.sin(phi) * Math.cos(theta));
+        const y = 1.08 * Math.cos(phi);
+        const z = 1.08 * Math.sin(phi) * Math.sin(theta);
 
-        // Vehicle marker
-        const markerGeometry = new THREE.SphereGeometry(0.015, 16, 16);
+        // Vehicle marker (larger and brighter)
+        const markerGeometry = new THREE.SphereGeometry(0.025, 32, 32);
         const markerMaterial = new THREE.MeshBasicMaterial({ 
-          color: vehicle.status === 'active' ? 0x06b6d4 : 0x64748b,
+          color: vehicle.status === 'active' ? 0x00ffff : 0x888888,
           transparent: true,
-          opacity: 0.9
+          opacity: 1
         });
         const marker = new THREE.Mesh(markerGeometry, markerMaterial);
         marker.position.set(x, y, z);
         scene.add(marker);
 
-        // Glow effect
-        const glowGeometry = new THREE.SphereGeometry(0.025, 16, 16);
+        // Outer glow ring
+        const glowGeometry = new THREE.SphereGeometry(0.045, 32, 32);
         const glowMaterial = new THREE.MeshBasicMaterial({ 
-          color: vehicle.status === 'active' ? 0x06b6d4 : 0x64748b,
+          color: vehicle.status === 'active' ? 0x00ffff : 0x666666,
           transparent: true,
-          opacity: 0.3
+          opacity: 0.4,
+          side: THREE.BackSide
         });
         const glow = new THREE.Mesh(glowGeometry, glowMaterial);
         glow.position.set(x, y, z);
         scene.add(glow);
 
+        // Vertical beam
+        const beamGeometry = new THREE.CylinderGeometry(0.003, 0.003, 0.08, 8);
+        const beamMaterial = new THREE.MeshBasicMaterial({ 
+          color: vehicle.status === 'active' ? 0x00ffff : 0x666666,
+          transparent: true,
+          opacity: 0.6
+        });
+        const beam = new THREE.Mesh(beamGeometry, beamMaterial);
+        const beamDirection = new THREE.Vector3(x, y, z).normalize();
+        beam.position.copy(beamDirection.multiplyScalar(1.04));
+        beam.lookAt(0, 0, 0);
+        beam.rotateX(Math.PI / 2);
+        scene.add(beam);
+
         // Pulse animation
-        const pulseScale = () => {
-          const scale = 1 + Math.sin(Date.now() * 0.003) * 0.2;
+        vehicleMarkers.push({ marker, glow, beam });
+        glow.userData.animate = () => {
+          const scale = 1 + Math.sin(Date.now() * 0.003) * 0.3;
           glow.scale.set(scale, scale, scale);
+          marker.material.opacity = 0.8 + Math.sin(Date.now() * 0.003) * 0.2;
         };
-        glow.userData.animate = pulseScale;
       }
     });
 
-    // Add routes as curved lines
+    // Add routes as animated arcs
+    const routeLines = [];
     routes.forEach((route, idx) => {
       if (route.origin_lat && route.origin_lng && route.destination_lat && route.destination_lng) {
         const phi1 = (90 - route.origin_lat) * (Math.PI / 180);
@@ -124,48 +274,125 @@ export default function FleetGlobe3D({ vehicles = [], routes = [], onClose, onMi
         const theta2 = (route.destination_lng + 180) * (Math.PI / 180);
         
         const start = new THREE.Vector3(
-          -(1.05 * Math.sin(phi1) * Math.cos(theta1)),
-          1.05 * Math.cos(phi1),
-          1.05 * Math.sin(phi1) * Math.sin(theta1)
+          -(1.06 * Math.sin(phi1) * Math.cos(theta1)),
+          1.06 * Math.cos(phi1),
+          1.06 * Math.sin(phi1) * Math.sin(theta1)
         );
         
         const end = new THREE.Vector3(
-          -(1.05 * Math.sin(phi2) * Math.cos(theta2)),
-          1.05 * Math.cos(phi2),
-          1.05 * Math.sin(phi2) * Math.sin(theta2)
+          -(1.06 * Math.sin(phi2) * Math.cos(theta2)),
+          1.06 * Math.cos(phi2),
+          1.06 * Math.sin(phi2) * Math.sin(theta2)
         );
         
         const mid = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
-        mid.normalize().multiplyScalar(1.2);
+        mid.normalize().multiplyScalar(1.25);
         
         const curve = new THREE.QuadraticBezierCurve3(start, mid, end);
-        const points = curve.getPoints(50);
+        const points = curve.getPoints(100);
         const geometry = new THREE.BufferGeometry().setFromPoints(points);
+        
+        // Gradient effect with multiple colors
+        const colors = [];
+        for (let i = 0; i < points.length; i++) {
+          const t = i / points.length;
+          colors.push(
+            0.5 + t * 0.5,  // R
+            0.3 + t * 0.4,  // G
+            1.0           // B
+          );
+        }
+        geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+        
         const material = new THREE.LineBasicMaterial({ 
-          color: 0x8b5cf6, 
+          vertexColors: true,
           transparent: true, 
-          opacity: 0.6,
-          linewidth: 2
+          opacity: 0.8,
+          linewidth: 3
         });
         const line = new THREE.Line(geometry, material);
         scene.add(line);
+        
+        // Moving dot along route
+        const dotGeometry = new THREE.SphereGeometry(0.015, 16, 16);
+        const dotMaterial = new THREE.MeshBasicMaterial({ 
+          color: 0xffffff,
+          transparent: true,
+          opacity: 0.9
+        });
+        const dot = new THREE.Mesh(dotGeometry, dotMaterial);
+        scene.add(dot);
+        
+        routeLines.push({ curve, dot, progress: Math.random() });
       }
     });
+    
+    // Store route animations
+    scene.userData.routeLines = routeLines;
 
-    // Lighting
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    // Enhanced Lighting
+    const ambientLight = new THREE.AmbientLight(0x404040, 0.8);
     scene.add(ambientLight);
     
-    const pointLight = new THREE.PointLight(0x06b6d4, 1, 100);
-    pointLight.position.set(5, 3, 5);
-    scene.add(pointLight);
+    const sunLight = new THREE.DirectionalLight(0xffffff, 1.2);
+    sunLight.position.set(5, 3, 5);
+    scene.add(sunLight);
+    
+    const backLight = new THREE.DirectionalLight(0x0066ff, 0.5);
+    backLight.position.set(-5, -3, -5);
+    scene.add(backLight);
+    
+    const fillLight = new THREE.PointLight(0x06b6d4, 0.8, 100);
+    fillLight.position.set(-5, 0, 5);
+    scene.add(fillLight);
+
+    // Mouse interaction for camera rotation
+    let isDragging = false;
+    let previousMousePosition = { x: 0, y: 0 };
+    
+    const onMouseDown = (e) => {
+      isDragging = true;
+      previousMousePosition = { x: e.clientX, y: e.clientY };
+    };
+    
+    const onMouseMove = (e) => {
+      if (isDragging) {
+        const deltaX = e.clientX - previousMousePosition.x;
+        const deltaY = e.clientY - previousMousePosition.y;
+        
+        globe.rotation.y += deltaX * 0.005;
+        globe.rotation.x += deltaY * 0.005;
+        
+        // Clamp rotation
+        globe.rotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, globe.rotation.x));
+        
+        previousMousePosition = { x: e.clientX, y: e.clientY };
+      }
+    };
+    
+    const onMouseUp = () => {
+      isDragging = false;
+    };
+    
+    const onWheel = (e) => {
+      e.preventDefault();
+      camera.position.z += e.deltaY * 0.001;
+      camera.position.z = Math.max(1.5, Math.min(4, camera.position.z));
+    };
+    
+    renderer.domElement.addEventListener('mousedown', onMouseDown);
+    renderer.domElement.addEventListener('mousemove', onMouseMove);
+    renderer.domElement.addEventListener('mouseup', onMouseUp);
+    renderer.domElement.addEventListener('wheel', onWheel, { passive: false });
 
     // Animation loop
     const animate = () => {
       animationRef.current = requestAnimationFrame(animate);
       
-      // Rotate globe
-      globe.rotation.y += 0.001;
+      // Auto-rotate globe slowly
+      if (!isDragging) {
+        globe.rotation.y += 0.0015;
+      }
       
       // Animate markers
       scene.children.forEach(child => {
@@ -173,6 +400,19 @@ export default function FleetGlobe3D({ vehicles = [], routes = [], onClose, onMi
           child.userData.animate();
         }
       });
+      
+      // Animate route dots
+      if (scene.userData.routeLines) {
+        scene.userData.routeLines.forEach(routeLine => {
+          routeLine.progress += 0.005;
+          if (routeLine.progress > 1) routeLine.progress = 0;
+          const point = routeLine.curve.getPoint(routeLine.progress);
+          routeLine.dot.position.copy(point);
+        });
+      }
+      
+      // Rotate stars slowly
+      stars.rotation.y += 0.0001;
       
       renderer.render(scene, camera);
     };
@@ -192,6 +432,12 @@ export default function FleetGlobe3D({ vehicles = [], routes = [], onClose, onMi
       window.removeEventListener('resize', handleResize);
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
+      }
+      if (renderer.domElement) {
+        renderer.domElement.removeEventListener('mousedown', onMouseDown);
+        renderer.domElement.removeEventListener('mousemove', onMouseMove);
+        renderer.domElement.removeEventListener('mouseup', onMouseUp);
+        renderer.domElement.removeEventListener('wheel', onWheel);
       }
       if (containerRef.current && renderer.domElement) {
         containerRef.current.removeChild(renderer.domElement);
@@ -257,8 +503,11 @@ export default function FleetGlobe3D({ vehicles = [], routes = [], onClose, onMi
               </div>
             </div>
           </div>
-          <div className="text-xs text-slate-500">
-            Use mouse to rotate • Scroll to zoom
+          <div className="flex flex-col gap-1">
+            <div className="text-xs text-emerald-400 font-semibold">Interactive 3D Globe</div>
+            <div className="text-xs text-slate-500">
+              Drag to rotate • Scroll to zoom • Live vehicle tracking
+            </div>
           </div>
         </div>
       </motion.div>
