@@ -1,12 +1,19 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "../utils";
-import { Mail, MessageSquare, Send } from "lucide-react";
+import { Mail, MessageSquare, Send, Phone, MapPin, Clock, Globe, Linkedin, Twitter } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useState } from "react";
 
 export default function Contact() {
-  const [formData, setFormData] = useState({ name: "", email: "", message: "" });
+  const [formData, setFormData] = useState({ name: "", email: "", company: "", message: "", subject: "general" });
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setSubmitted(true);
+    setTimeout(() => setSubmitted(false), 3000);
+  };
 
   return (
     <div className="min-h-screen bg-black overflow-hidden relative">
@@ -32,82 +39,329 @@ export default function Contact() {
         <div className="absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.05)_1px,transparent_1px)] bg-[size:100px_100px]" />
       </div>
 
-      <section className="relative pt-32 pb-32 px-6 z-10">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-20">
-            <h1 className="text-7xl font-black text-white mb-8">
-              Get in <span className="text-cyan-400">Touch</span>
+      {/* Hero */}
+      <section className="relative pt-32 pb-20 px-6 z-10">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center"
+          >
+            <Link to={createPageUrl("Landing")} className="inline-block mb-8">
+              <img 
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/697e930c62bf3e3832b34edb/bc9d40ccc_FullLogo_Transparent1.png" 
+                alt="NexusVectis Logo" 
+                className="h-24 w-auto mx-auto opacity-90"
+              />
+            </Link>
+            <h1 className="text-6xl md:text-8xl font-black text-white mb-8">
+              Let's <span className="bg-gradient-to-r from-cyan-400 via-violet-400 to-fuchsia-400 bg-clip-text text-transparent">Talk</span>
             </h1>
-            <p className="text-2xl text-slate-300">
-              Have questions? We'd love to hear from you.
+            <p className="text-2xl text-slate-300 max-w-3xl mx-auto">
+              Whether you're interested in a demo, have technical questions, or want to explore enterprise solutions
             </p>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Contact Options */}
+      <section className="relative py-20 px-6 z-10">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-8 mb-20">
+            {[
+              {
+                icon: Mail,
+                title: "Sales & Demo",
+                content: "sales@nexusvectis.com",
+                desc: "Get a personalized demo and discuss pricing"
+              },
+              {
+                icon: MessageSquare,
+                title: "Support",
+                content: "support@nexusvectis.com",
+                desc: "Technical assistance and platform help"
+              },
+              {
+                icon: Phone,
+                title: "Enterprise",
+                content: "enterprise@nexusvectis.com",
+                desc: "Custom solutions for large organizations"
+              }
+            ].map((contact, idx) => {
+              const Icon = contact.icon;
+              return (
+                <motion.div
+                  key={idx}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: idx * 0.1 }}
+                  whileHover={{ scale: 1.05, y: -5 }}
+                  className="p-8 rounded-3xl bg-white/5 border border-white/10 hover:border-cyan-500/50 transition-all text-center"
+                >
+                  <Icon className="w-12 h-12 text-cyan-400 mx-auto mb-4" />
+                  <h3 className="text-xl font-bold text-white mb-2">{contact.title}</h3>
+                  <a href={`mailto:${contact.content}`} className="text-cyan-400 font-semibold mb-3 block hover:text-cyan-300 transition-colors">
+                    {contact.content}
+                  </a>
+                  <p className="text-slate-400 text-sm">{contact.desc}</p>
+                </motion.div>
+              );
+            })}
           </div>
 
-          <div className="grid md:grid-cols-2 gap-12">
-            <div>
-              <h2 className="text-3xl font-bold text-white mb-8">Contact Information</h2>
-              <div className="space-y-6">
-                <div className="flex items-start gap-4">
-                  <Mail className="w-6 h-6 text-cyan-400 mt-1" />
-                  <div>
-                    <h3 className="text-white font-semibold mb-1">Email</h3>
-                    <p className="text-slate-400">contact@nexusvectis.com</p>
+          <div className="grid lg:grid-cols-2 gap-16">
+            {/* Contact Form */}
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="relative"
+            >
+              <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500/20 to-violet-500/20 rounded-3xl blur-xl" />
+              <div className="relative p-10 rounded-3xl bg-white/5 backdrop-blur-xl border border-white/10">
+                <h2 className="text-3xl font-bold text-white mb-8">Send us a Message</h2>
+                
+                {submitted ? (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="text-center py-12"
+                  >
+                    <div className="w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-4">
+                      <Send className="w-8 h-8 text-emerald-400" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-white mb-2">Message Sent!</h3>
+                    <p className="text-slate-400">We'll get back to you within 24 hours</p>
+                  </motion.div>
+                ) : (
+                  <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-white font-semibold mb-2">Name *</label>
+                        <input
+                          type="text"
+                          required
+                          value={formData.name}
+                          onChange={(e) => setFormData({...formData, name: e.target.value})}
+                          className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:border-cyan-500 focus:outline-none transition-colors"
+                          placeholder="John Doe"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-white font-semibold mb-2">Email *</label>
+                        <input
+                          type="email"
+                          required
+                          value={formData.email}
+                          onChange={(e) => setFormData({...formData, email: e.target.value})}
+                          className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:border-cyan-500 focus:outline-none transition-colors"
+                          placeholder="john@company.com"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-white font-semibold mb-2">Company</label>
+                      <input
+                        type="text"
+                        value={formData.company}
+                        onChange={(e) => setFormData({...formData, company: e.target.value})}
+                        className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:border-cyan-500 focus:outline-none transition-colors"
+                        placeholder="Your company name"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-white font-semibold mb-2">Subject *</label>
+                      <select
+                        required
+                        value={formData.subject}
+                        onChange={(e) => setFormData({...formData, subject: e.target.value})}
+                        className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:border-cyan-500 focus:outline-none transition-colors"
+                      >
+                        <option value="general">General Inquiry</option>
+                        <option value="demo">Request Demo</option>
+                        <option value="enterprise">Enterprise Solution</option>
+                        <option value="partnership">Partnership</option>
+                        <option value="support">Technical Support</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-white font-semibold mb-2">Message *</label>
+                      <textarea
+                        required
+                        value={formData.message}
+                        onChange={(e) => setFormData({...formData, message: e.target.value})}
+                        rows={6}
+                        className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:border-cyan-500 focus:outline-none transition-colors resize-none"
+                        placeholder="Tell us about your logistics challenges..."
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      className="w-full bg-gradient-to-r from-cyan-500 to-violet-500 text-white px-8 py-4 rounded-xl font-bold hover:scale-105 transition-transform flex items-center justify-center gap-2"
+                    >
+                      Send Message
+                      <Send className="w-5 h-5" />
+                    </button>
+                  </form>
+                )}
+              </div>
+            </motion.div>
+
+            {/* Company Info */}
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="space-y-10"
+            >
+              <div>
+                <h2 className="text-3xl font-bold text-white mb-8">Headquarters</h2>
+                <div className="space-y-6">
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-cyan-500/20 flex items-center justify-center flex-shrink-0">
+                      <MapPin className="w-6 h-6 text-cyan-400" />
+                    </div>
+                    <div>
+                      <h3 className="text-white font-semibold mb-1">Address</h3>
+                      <p className="text-slate-400">
+                        Vesterbrogade 123<br />
+                        1620 København V<br />
+                        Denmark
+                      </p>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-start gap-4">
-                  <MessageSquare className="w-6 h-6 text-cyan-400 mt-1" />
-                  <div>
-                    <h3 className="text-white font-semibold mb-1">Sales</h3>
-                    <p className="text-slate-400">sales@nexusvectis.com</p>
+
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-violet-500/20 flex items-center justify-center flex-shrink-0">
+                      <Clock className="w-6 h-6 text-violet-400" />
+                    </div>
+                    <div>
+                      <h3 className="text-white font-semibold mb-1">Business Hours</h3>
+                      <p className="text-slate-400">
+                        Monday - Friday: 9:00 AM - 6:00 PM CET<br />
+                        Weekend: Emergency support only
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-fuchsia-500/20 flex items-center justify-center flex-shrink-0">
+                      <Globe className="w-6 h-6 text-fuchsia-400" />
+                    </div>
+                    <div>
+                      <h3 className="text-white font-semibold mb-1">Global Presence</h3>
+                      <p className="text-slate-400">
+                        Serving 50+ countries<br />
+                        24/7 platform availability
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div>
-              <form className="space-y-6">
-                <div>
-                  <label className="block text-white font-semibold mb-2">Name</label>
-                  <input
-                    type="text"
-                    value={formData.name}
-                    onChange={(e) => setFormData({...formData, name: e.target.value})}
-                    className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:border-cyan-500 transition-colors"
-                    placeholder="Your name"
-                  />
+              <div>
+                <h3 className="text-2xl font-bold text-white mb-6">Follow Us</h3>
+                <div className="flex gap-4">
+                  <a 
+                    href="#" 
+                    className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 hover:border-cyan-500/50 flex items-center justify-center transition-all hover:scale-110"
+                  >
+                    <Linkedin className="w-5 h-5 text-cyan-400" />
+                  </a>
+                  <a 
+                    href="#" 
+                    className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 hover:border-cyan-500/50 flex items-center justify-center transition-all hover:scale-110"
+                  >
+                    <Twitter className="w-5 h-5 text-cyan-400" />
+                  </a>
                 </div>
-                <div>
-                  <label className="block text-white font-semibold mb-2">Email</label>
-                  <input
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData({...formData, email: e.target.value})}
-                    className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:border-cyan-500 transition-colors"
-                    placeholder="your@email.com"
-                  />
-                </div>
-                <div>
-                  <label className="block text-white font-semibold mb-2">Message</label>
-                  <textarea
-                    value={formData.message}
-                    onChange={(e) => setFormData({...formData, message: e.target.value})}
-                    rows={5}
-                    className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:border-cyan-500 transition-colors resize-none"
-                    placeholder="How can we help?"
-                  />
-                </div>
+              </div>
+
+              <div className="p-8 rounded-3xl bg-gradient-to-br from-cyan-500/10 to-violet-500/10 border border-cyan-500/30">
+                <h3 className="text-xl font-bold text-white mb-4">Need Immediate Help?</h3>
+                <p className="text-slate-300 mb-6">
+                  For urgent technical issues, existing customers can access our priority support portal
+                </p>
                 <button
-                  type="submit"
-                  className="w-full bg-gradient-to-r from-cyan-500 to-violet-500 text-white px-8 py-4 rounded-xl font-bold hover:scale-105 transition-transform flex items-center justify-center gap-2"
+                  onClick={() => base44.auth.redirectToLogin(createPageUrl("Dashboard"))}
+                  className="bg-white text-slate-900 px-6 py-3 rounded-xl font-bold hover:scale-105 transition-transform"
                 >
-                  Send Message
-                  <Send className="w-5 h-5" />
+                  Customer Portal
                 </button>
-              </form>
-            </div>
+              </div>
+            </motion.div>
           </div>
         </div>
       </section>
+
+      {/* FAQ Preview */}
+      <section className="relative py-32 px-6 z-10">
+        <div className="max-w-5xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-5xl font-bold text-white mb-6">
+              Quick <span className="text-cyan-400">Answers</span>
+            </h2>
+            <p className="text-xl text-slate-400">Common questions we receive</p>
+          </motion.div>
+
+          <div className="space-y-6">
+            {[
+              {
+                q: "How long does it take to set up NexusVectis?",
+                a: "Most customers are up and running within 24 hours. Enterprise deployments with custom integrations typically take 1-2 weeks."
+              },
+              {
+                q: "Do you offer training for our team?",
+                a: "Yes! We provide comprehensive onboarding, live training sessions, and ongoing support. FLEET AI is designed to be intuitive—most users are productive within minutes."
+              },
+              {
+                q: "What's included in the pricing?",
+                a: "All features including FLEET AI, real-time tracking, analytics, and integrations. Pricing is based on active vehicles and resources, billed monthly."
+              },
+              {
+                q: "Can I integrate with my existing TMS/WMS?",
+                a: "Absolutely. We offer pre-built connectors for major platforms plus a comprehensive REST API for custom integrations."
+              }
+            ].map((faq, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.1 }}
+                className="p-6 rounded-2xl bg-white/5 border border-white/10"
+              >
+                <h4 className="text-lg font-bold text-white mb-3">{faq.q}</h4>
+                <p className="text-slate-400 leading-relaxed">{faq.a}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="relative py-12 px-6 z-10 border-t border-white/5">
+        <div className="max-w-7xl mx-auto text-center">
+          <Link to={createPageUrl("Landing")}>
+            <img 
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/697e930c62bf3e3832b34edb/bc9d40ccc_FullLogo_Transparent1.png" 
+              alt="NexusVectis" 
+              className="h-24 w-auto mx-auto mb-6 opacity-70"
+            />
+          </Link>
+          <p className="text-slate-500 text-sm">&copy; 2026 NexusVectis ApS. Building the future of logistics.</p>
+        </div>
+      </footer>
     </div>
   );
 }
