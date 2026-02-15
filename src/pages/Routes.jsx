@@ -724,36 +724,21 @@ export default function Routes() {
           <AdvancedRouteEditor
             initialWaypoints={editingRoute?.waypoints || formData.waypoints || []}
             onSave={(waypoints) => {
-              // Calculate distance and duration based on waypoints
-              const distance = waypoints.length > 1 
-                ? Math.round(waypoints.length * 100 + Math.random() * 200) 
-                : 0;
-              const duration = Math.round(distance / 80);
-              
-              if (editingRoute) {
-                // Update existing route
-                updateMutation.mutate({
-                  id: editingRoute.id,
-                  data: {
-                    waypoints,
-                        distance_km: calculateDistance(waypoints),
-                        estimated_duration_hours: calculateDuration(waypoints, formData.transport_type),
-                        co2_estimate: calculateCO2(waypoints, formData.transport_type)
-                  }
-                });
-                setEditingRoute(null);
-              } else {
-                // Update form data for new route
-                setFormData({
-                  ...formData,
-                  waypoints,
-                  distance_km: distance,
-                  estimated_duration_hours: duration,
-                  co2_estimate: Math.round(distance * 0.8)
-                });
-              }
-              setShowAdvancedEditor(false);
-            }}
+               const distance = calculateDistance(waypoints);
+               const duration = calculateDuration(waypoints, editingRoute?.transport_type || formData.transport_type);
+               const co2 = calculateCO2(waypoints, editingRoute?.transport_type || formData.transport_type);
+
+               if (editingRoute) {
+                 updateMutation.mutate({
+                   id: editingRoute.id,
+                   data: { waypoints, distance_km: distance, estimated_duration_hours: duration, co2_estimate: co2 }
+                 });
+                 setEditingRoute(null);
+               } else {
+                 setFormData({ ...formData, waypoints, distance_km: distance, estimated_duration_hours: duration, co2_estimate: co2 });
+               }
+               setShowAdvancedEditor(false);
+             }
             onCancel={() => {
               setShowAdvancedEditor(false);
               setEditingRoute(null);
