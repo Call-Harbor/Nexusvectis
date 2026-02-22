@@ -185,14 +185,14 @@ export default function IntellectMode() {
   ]);
 
   const quickCommands = [
-    { icon: Building2, label: "Company Analysis", command: "analyze company", action: "openCompanyAnalysis", color: "fuchsia" },
-    { icon: Users, label: "Match Candidates", command: "", action: "openCandidateMatcher", color: "emerald" },
-    { icon: Box, label: "3D Fleet View", command: "show fleet in 3D", color: "cyan" },
-    { icon: Brain, label: "Predictive Maintenance", command: "predict vehicle maintenance needs", color: "violet" },
-    { icon: TrendingUp, label: "Demand Forecast", command: "forecast shipment demand next 30 days", color: "emerald" },
-    { icon: Activity, label: "CO2 Analysis", command: "analyze CO2 emissions by route", color: "amber" },
-    { icon: Zap, label: "Fleet Optimization", command: "optimize all routes for cost and efficiency", color: "blue" },
-    { icon: BarChart3, label: "Performance Benchmark", command: "benchmark fleet performance", color: "blue" },
+    { icon: Brain, label: "Predictive Maintenance", command: "predict vehicle maintenance needs", action: "predictiveAnalysis", color: "violet" },
+    { icon: TrendingUp, label: "Demand Forecast", command: "forecast shipment demand next 30 days", action: "demandAnalysis", color: "emerald" },
+    { icon: Activity, label: "CO2 Analysis", command: "analyze CO2 emissions by route", action: "co2Analysis", color: "amber" },
+    { icon: Zap, label: "Route Optimization", command: "optimize all routes for cost and efficiency", action: "routeOptimization", color: "blue" },
+    { icon: Building2, label: "Company Analysis", command: "analyze company intelligence", action: "openCompanyAnalysis", color: "fuchsia" },
+    { icon: Box, label: "3D Fleet View", command: "show fleet in 3D", action: "show3DFleet", color: "cyan" },
+    { icon: BarChart3, label: "Performance Analytics", command: "analyze fleet performance metrics", action: "performanceAnalytics", color: "blue" },
+    { icon: AlertTriangle, label: "Risk Assessment", command: "assess operational risks and anomalies", action: "riskAssessment", color: "red" },
   ];
   const [isProcessing, setIsProcessing] = useState(false);
   const [activeWindows, setActiveWindows] = useState([]);

@@ -83,6 +83,7 @@ import LiveTrackingPage from './pages/LiveTrackingPage';
 import MaintenanceManagement from './pages/MaintenanceManagement';
 import MapMonitor from './pages/MapMonitor';
 import OrganizationSetup from './pages/OrganizationSetup';
+import PeopleSearch from './pages/PeopleSearch';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import Reports from './pages/Reports';
 import Resources from './pages/Resources';
@@ -94,7 +95,6 @@ import Shipments from './pages/Shipments';
 import TermsOfService from './pages/TermsOfService';
 import UserManagement from './pages/UserManagement';
 import WarehouseAutomation from './pages/WarehouseAutomation';
-import PeopleSearch from './pages/PeopleSearch';
 import __Layout from './Layout.jsx';
 
 
@@ -135,6 +135,7 @@ export const PAGES = {
     "MaintenanceManagement": MaintenanceManagement,
     "MapMonitor": MapMonitor,
     "OrganizationSetup": OrganizationSetup,
+    "PeopleSearch": PeopleSearch,
     "PrivacyPolicy": PrivacyPolicy,
     "Reports": Reports,
     "Resources": Resources,
@@ -146,7 +147,6 @@ export const PAGES = {
     "TermsOfService": TermsOfService,
     "UserManagement": UserManagement,
     "WarehouseAutomation": WarehouseAutomation,
-    "PeopleSearch": PeopleSearch,
 }
 
 export const pagesConfig = {
