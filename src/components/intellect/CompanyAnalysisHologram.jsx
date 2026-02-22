@@ -202,6 +202,50 @@ For shareholders, inkluder alle kendte ejere.`,
     if (companyInput.trim()) fetchData(companyInput.trim());
   };
 
+  const searchPerson = async () => {
+    if (!personSearch.trim()) return;
+    setPersonLoading(true);
+    setPersonData(null);
+    const result = await base44.integrations.Core.InvokeLLM({
+      prompt: `Find detaljeret profil-information om personen "${personSearch}"${companyName ? ` hos virksomheden "${companyName}"` : ''}. 
+Brug offentligt tilgængelige informationskilder inkl. LinkedIn, Wikipedia, virksomhedsprofiler, presseomtale og interviews.
+Returner så præcise og realistiske data som muligt.`,
+      add_context_from_internet: true,
+      response_json_schema: {
+        type: "object",
+        properties: {
+          full_name: { type: "string" },
+          current_title: { type: "string" },
+          current_company: { type: "string" },
+          location: { type: "string" },
+          linkedin_url: { type: "string" },
+          email_guess: { type: "string" },
+          education: { type: "array", items: { type: "string" } },
+          career_history: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                company: { type: "string" },
+                title: { type: "string" },
+                period: { type: "string" }
+              }
+            }
+          },
+          skills: { type: "array", items: { type: "string" } },
+          board_memberships: { type: "array", items: { type: "string" } },
+          notable_achievements: { type: "array", items: { type: "string" } },
+          summary: { type: "string" },
+          connections_count: { type: "string" },
+          languages: { type: "array", items: { type: "string" } },
+          notable_quote: { type: "string" }
+        }
+      }
+    });
+    setPersonData(result);
+    setPersonLoading(false);
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-black/60 backdrop-blur-sm overflow-auto">
       {/* Animated background */}
