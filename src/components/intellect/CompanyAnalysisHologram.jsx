@@ -536,7 +536,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
               {/* Recent news */}
               {data.history?.recent_news?.length > 0 && (
                 <div>
-                  <p className="text-slate-400 text-xs font-semibold mb-2 uppercase tracking-wide">Seneste Nyheder</p>
+                  <p className="text-slate-400 text-xs font-semibold mb-2 uppercase tracking-wide">Recent News</p>
                   <div className="space-y-1.5">
                     {data.history.recent_news.slice(0, 3).map((n, i) => (
                       <div key={i} className="flex items-start gap-2 text-xs p-2 rounded-lg bg-slate-800/40">
