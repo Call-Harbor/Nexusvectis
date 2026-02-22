@@ -18,6 +18,12 @@ import ProfileSearch from "@/components/intellect/ProfileSearch";
 import CandidateMatcher from "@/components/intellect/CandidateMatcher";
 import MultiScreenManager from "@/components/intellect/MultiScreenManager";
 import { useAdvancedIntellect, AdvancedCommandPanel, InsightRenderer } from "@/components/intellect/AdvancedIntellectEngine";
+import { 
+  PredictiveMaintenanceAnalysis, 
+  DemandForecastAnalysis, 
+  RiskAssessmentAnalysis, 
+  PerformanceAnalyticsPanel 
+} from "@/components/intellect/AdvancedAIAnalysis";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
