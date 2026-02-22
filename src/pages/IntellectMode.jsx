@@ -1683,6 +1683,10 @@ export default function IntellectMode() {
               </motion.div>
             )}
 
+            {showCandidateMatcher && (
+              <CandidateMatcher onClose={() => setShowCandidateMatcher(false)} />
+            )}
+
             {/* 3D Visualization */}
             {show3DVisualization && (
             <FleetGlobe3D
