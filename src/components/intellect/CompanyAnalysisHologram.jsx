@@ -775,7 +775,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
                 {personLoading && (
                   <div className="flex items-center justify-center gap-3 py-8 text-slate-400">
                     <Loader2 className="w-5 h-5 animate-spin text-blue-400" />
-                    <span className="text-sm">Søger i LinkedIn, Wikipedia, presseomtale...</span>
+                    <span className="text-sm">Searching LinkedIn, Wikipedia, press coverage...</span>
                   </div>
                 )}
 
