@@ -490,6 +490,27 @@ export default function IntellectMode() {
     setThinkingLogs(prev => [...prev, { type, message, details, duration, percentage, timestamp: Date.now() }]);
   };
 
+   const executeParallelMicroAnalyses = async (mainPrompt, ctxVehicles = [], ctxAlerts = [], ctxRoutes = [], ctxShipments = []) => {
+     return Promise.all([
+       base44.integrations.Core.InvokeLLM({ prompt: mainPrompt, response_json_schema: { type: 'object', properties: { action: { type: 'string' } } } }).catch(() => ({})),
+       ...Array(49).fill(null).map((_, i) => {
+         const p = [
+           () => base44.integrations.Core.InvokeLLM({ prompt: `${ctxVehicles[i % ctxVehicles.length]?.name || 'V'}: eff gain?`, response_json_schema: { type: 'object', properties: { g: { type: 'number' } } } }),
+           () => base44.integrations.Core.InvokeLLM({ prompt: `Alert ${i} root?`, response_json_schema: { type: 'object', properties: { c: { type: 'string' } } } }),
+           () => base44.integrations.Core.InvokeLLM({ prompt: `Route ${i} time?`, response_json_schema: { type: 'object', properties: { t: { type: 'number' } } } }),
+           () => base44.integrations.Core.InvokeLLM({ prompt: `Ship ${i} ETA?`, response_json_schema: { type: 'object', properties: { e: { type: 'number' } } } }),
+           () => base44.integrations.Core.InvokeLLM({ prompt: `Maint ${i} risk?`, response_json_schema: { type: 'object', properties: { r: { type: 'number' } } } }),
+           () => base44.integrations.Core.InvokeLLM({ prompt: `Cost ${i} save?`, response_json_schema: { type: 'object', properties: { s: { type: 'number' } } } }),
+           () => base44.integrations.Core.InvokeLLM({ prompt: `Safety ${i}?`, response_json_schema: { type: 'object', properties: { sc: { type: 'number' } } } }),
+           () => base44.integrations.Core.InvokeLLM({ prompt: `Demand ${i}?`, response_json_schema: { type: 'object', properties: { d: { type: 'number' } } } }),
+         ];
+         return p[i % p.length]?.().catch(() => ({})) || Promise.resolve({});
+       })
+     ]);
+   };
+
+
+
   const processCommand = async () => {
     if (!input.trim() || isProcessing) return;
 
