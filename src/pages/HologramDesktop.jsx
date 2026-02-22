@@ -314,7 +314,7 @@ export default function HologramDesktop() {
       }
 
       {/* Live Alerts */}
-      {activeWidgets.includes('alerts') && <HoloWidget title="Live Alerts" icon={Bell} color="red" defaultPos={{ x: 40, y: 280 }} onClose={() => setActiveWidgets(p => p.filter(w => w !== 'alerts'))}>
+      {activeWidgets.includes('alerts') && <HoloWidget title="Live Alerts" icon={Bell} color="red" defaultPos={getWidgetPosition('alerts', screenIndex)} onClose={() => setActiveWidgets(p => p.filter(w => w !== 'alerts'))}>
         <div className="space-y-1.5 min-w-[260px] max-h-[180px] overflow-y-auto">
           {alerts.length === 0 ? (
             <div className="flex items-center gap-2 text-emerald-400 text-xs py-2">
