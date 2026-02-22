@@ -90,10 +90,9 @@ export default function MultiScreenManager({ onClose }) {
   };
 
   const openOnScreen = (screen) => {
-    const url = window.location.href;
+    // Secondary screens get the Hologram Desktop, not another IntellectMode chat
+    const url = window.location.origin + createPageUrl('HologramDesktop');
 
-    // For manual/hub mode: open without positioning (let OS place it)
-    // For API mode: position precisely on the target screen
     let features;
     if (screen.virtual || useManual) {
       features = [
@@ -117,10 +116,10 @@ export default function MultiScreenManager({ onClose }) {
       ].join(',');
     }
 
-    const w = window.open(url, `_intellect_screen_${screen.id}`, features);
+    const w = window.open(url, `_holo_desktop_${screen.id}`, features);
     if (w) {
       setOpenedWindows(prev => new Set([...prev, screen.id]));
-      toast.success(`Opened FLEET AI window for ${screen.label}`);
+      toast.success(`Opened Hologram Desktop on ${screen.label}`);
     } else {
       toast.error('Popup blocked — please allow popups for this site in your browser settings.');
     }
