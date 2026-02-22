@@ -286,7 +286,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
         }),
         // Career history & education
         base44.integrations.Core.InvokeLLM({
-          prompt: `Find career history and education for "${personSearch}"${companyName ? ` at ${companyName}` : ''}: list previous companies/roles with dates, education institutions and degrees, total years experience, estimated seniority level. Real data only.`,
+          prompt: `Find career history and education for "${personSearch}"${companyName ? ` at ${companyName}` : ''}: list previous companies/roles with dates, education institutions and degrees. Only use verified sources. DO NOT fabricate. Leave empty if unverified.`,
           add_context_from_internet: true,
           response_json_schema: {
             type: "object",
