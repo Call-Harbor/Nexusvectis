@@ -98,7 +98,7 @@ const SWOTItem = ({ icon: Icon, label, items, color, bg }) => (
   </div>
 );
 
-export default function CompanyAnalysisHologram({ companyName: initialName, onClose }) {
+export default function CompanyAnalysisHologram({ companyName: initialName, onClose, onSendToScreen }) {
   const [companyInput, setCompanyInput] = useState(initialName || '');
   const [companyName, setCompanyName] = useState(initialName || '');
   const [loading, setLoading] = useState(!!initialName);
@@ -108,6 +108,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
   const [personLoading, setPersonLoading] = useState(false);
   const [personData, setPersonData] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
+  const [showScreenMenu, setShowScreenMenu] = useState(false);
 
   useEffect(() => {
     if (initialName) fetchData(initialName);
