@@ -365,7 +365,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
                       <XAxis dataKey="year" stroke="#64748b" style={{ fontSize: '11px' }} />
                       <YAxis stroke="#64748b" style={{ fontSize: '11px' }} />
                       <Tooltip contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '8px' }} labelStyle={{ color: '#f1f5f9' }} />
-                      <Bar dataKey="revenue" fill="#06b6d4" name="Omsætning" radius={[3,3,0,0]} />
+                      <Bar dataKey="revenue" fill="#06b6d4" name="Revenue" radius={[3,3,0,0]} />
                       <Bar dataKey="profit" fill="#8b5cf6" name="Profit" radius={[3,3,0,0]} />
                     </BarChart>
                   </ResponsiveContainer>
