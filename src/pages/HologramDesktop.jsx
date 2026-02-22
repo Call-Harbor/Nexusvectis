@@ -228,6 +228,18 @@ export default function HologramDesktop() {
     return () => clearInterval(t);
   }, []);
 
+  const handleSendToScreen = (widgetId, widgetTitle) => {
+    if (window.opener) {
+      // Send back to main window
+      window.opener.postMessage({ 
+        type: 'ADD_WIDGET', 
+        windowType: widgetId,
+        from: `Screen ${screenLabel}`
+      }, '*');
+      setActiveWidgets(prev => prev.filter(w => w !== widgetId));
+    }
+  };
+
   // Listen for "send widget here" messages from IntellectMode or other screens
   useEffect(() => {
     const handler = (e) => {
