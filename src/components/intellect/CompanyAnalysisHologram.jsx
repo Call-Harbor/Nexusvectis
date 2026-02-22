@@ -76,11 +76,11 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
     setData(null);
     setCompanyName(name);
     const result = await base44.integrations.Core.InvokeLLM({
-      prompt: `Du er en professionel virksomhedsanalytiker. Analyser virksomheden "${name}" grundigt baseret på offentligt tilgængelige oplysninger.
-Returner alle felter så præcist og realistisk som muligt. For finansielle data, brug de seneste tilgængelige tal (estimater er acceptable).
-For revenue_chart, giv realistiske tal i mio. DKK/EUR/USD (tilpas til virksomhedens størrelse).
-For milestones, giv de vigtigste begivenheder i kronologisk rækkefølge.
-For shareholders, inkluder alle kendte ejere.`,
+      prompt: `You are a professional company analyst. Analyze the company "${name}" in detail based on publicly available information.
+      Return all fields as accurately and realistically as possible. For financial data, use the latest available figures (estimates are acceptable).
+      For revenue_chart, provide realistic figures in millions of DKK/EUR/USD (adjust to the company's size).
+      For milestones, provide the most important events in chronological order.
+      For shareholders, include all known owners.`,
       add_context_from_internet: true,
       response_json_schema: {
         type: "object",
