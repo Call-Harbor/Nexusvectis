@@ -491,22 +491,21 @@ export default function IntellectMode() {
   };
 
    const executeParallelMicroAnalyses = async (mainPrompt, ctxVehicles = [], ctxAlerts = [], ctxRoutes = [], ctxShipments = []) => {
-     return Promise.all([
-       base44.integrations.Core.InvokeLLM({ prompt: mainPrompt, response_json_schema: { type: 'object', properties: { action: { type: 'string' } } } }).catch(() => ({})),
-       ...Array(49).fill(null).map((_, i) => {
-         const p = [
-           () => base44.integrations.Core.InvokeLLM({ prompt: `${ctxVehicles[i % ctxVehicles.length]?.name || 'V'}: eff gain?`, response_json_schema: { type: 'object', properties: { g: { type: 'number' } } } }),
-           () => base44.integrations.Core.InvokeLLM({ prompt: `Alert ${i} root?`, response_json_schema: { type: 'object', properties: { c: { type: 'string' } } } }),
-           () => base44.integrations.Core.InvokeLLM({ prompt: `Route ${i} time?`, response_json_schema: { type: 'object', properties: { t: { type: 'number' } } } }),
-           () => base44.integrations.Core.InvokeLLM({ prompt: `Ship ${i} ETA?`, response_json_schema: { type: 'object', properties: { e: { type: 'number' } } } }),
-           () => base44.integrations.Core.InvokeLLM({ prompt: `Maint ${i} risk?`, response_json_schema: { type: 'object', properties: { r: { type: 'number' } } } }),
-           () => base44.integrations.Core.InvokeLLM({ prompt: `Cost ${i} save?`, response_json_schema: { type: 'object', properties: { s: { type: 'number' } } } }),
-           () => base44.integrations.Core.InvokeLLM({ prompt: `Safety ${i}?`, response_json_schema: { type: 'object', properties: { sc: { type: 'number' } } } }),
-           () => base44.integrations.Core.InvokeLLM({ prompt: `Demand ${i}?`, response_json_schema: { type: 'object', properties: { d: { type: 'number' } } } }),
-         ];
-         return p[i % p.length]?.().catch(() => ({})) || Promise.resolve({});
-       })
-     ]);
+     const mainCall = base44.functions.invoke('mistralCommand', { command: mainPrompt }).catch(() => ({ data: { action: 'ANALYZE', parameters: {} } }));
+     const microCalls = Array(49).fill(null).map((_, i) => {
+       const p = [
+         () => base44.integrations.Core.InvokeLLM({ prompt: `Vehicle efficiency gain?`, response_json_schema: { type: 'object', properties: { g: { type: 'number' } } } }).catch(() => ({})),
+         () => base44.integrations.Core.InvokeLLM({ prompt: `Alert anomaly detection`, response_json_schema: { type: 'object', properties: { c: { type: 'string' } } } }).catch(() => ({})),
+         () => base44.integrations.Core.InvokeLLM({ prompt: `Route time optimization`, response_json_schema: { type: 'object', properties: { t: { type: 'number' } } } }).catch(() => ({})),
+         () => base44.integrations.Core.InvokeLLM({ prompt: `Shipment ETA accuracy`, response_json_schema: { type: 'object', properties: { e: { type: 'number' } } } }).catch(() => ({})),
+         () => base44.integrations.Core.InvokeLLM({ prompt: `Maintenance risk score`, response_json_schema: { type: 'object', properties: { r: { type: 'number' } } } }).catch(() => ({})),
+         () => base44.integrations.Core.InvokeLLM({ prompt: `Cost saving potential`, response_json_schema: { type: 'object', properties: { s: { type: 'number' } } } }).catch(() => ({})),
+         () => base44.integrations.Core.InvokeLLM({ prompt: `Safety score`, response_json_schema: { type: 'object', properties: { sc: { type: 'number' } } } }).catch(() => ({})),
+         () => base44.integrations.Core.InvokeLLM({ prompt: `Demand forecast`, response_json_schema: { type: 'object', properties: { d: { type: 'number' } } } }).catch(() => ({})),
+       ];
+       return p[i % p.length]();
+     });
+     return Promise.all([mainCall, ...microCalls]);
    };
 
 
