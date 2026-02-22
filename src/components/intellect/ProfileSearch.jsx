@@ -70,7 +70,7 @@ export default function ProfileSearch() {
     setProfileData(null);
     
     try {
-      const [basicInfo, careerData, skillsData, achievementsData, publicPresence] = await Promise.all([
+      const [basicInfo, advancedCareer, skillsData, achievementsData, publicPresence] = await Promise.all([
         base44.integrations.Core.InvokeLLM({
           prompt: `Find public profile information about "${searchQuery}": full name, current title, company, location, LinkedIn URL, email, public photo URL, connection count.`,
           add_context_from_internet: true,
