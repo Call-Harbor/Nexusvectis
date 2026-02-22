@@ -1959,6 +1959,73 @@ export default function IntellectMode() {
               </motion.div>
             )}
 
+            {/* Advanced AI Visualizations */}
+            {scenarios.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-4 bg-slate-900/50 border border-slate-800 rounded-lg p-4"
+              >
+                <ScenarioVisualization scenarios={scenarios} />
+              </motion.div>
+            )}
+
+            {multiModelAnalysis && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-4"
+              >
+                <StreamingAnalysisVisual analysis={multiModelAnalysis} isStreaming={isStreaming} />
+              </motion.div>
+            )}
+
+            {commandExecution && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-4"
+              >
+                <CommandExecution 
+                  execution={commandExecution.execution}
+                  impact={commandExecution.impact_estimate}
+                  confidence={commandExecution.confidence}
+                />
+              </motion.div>
+            )}
+
+            {suggestions.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-4 bg-slate-900/50 border border-slate-800 rounded-lg p-4"
+              >
+                <h4 className="text-white font-semibold mb-3 flex items-center gap-2">
+                  <Lightbulb className="w-4 h-4 text-amber-400" />
+                  AI Suggestions
+                </h4>
+                <div className="space-y-2">
+                  {suggestions.slice(0, 3).map((s, idx) => (
+                    <div key={idx} className="flex items-start gap-3 p-2 bg-slate-800/50 rounded">
+                      <div className={`p-1.5 rounded ${
+                        s.priority === 'critical' ? 'bg-red-500/20' :
+                        s.priority === 'high' ? 'bg-amber-500/20' : 'bg-blue-500/20'
+                      }`}>
+                        <Zap className={`w-4 h-4 ${
+                          s.priority === 'critical' ? 'text-red-400' :
+                          s.priority === 'high' ? 'text-amber-400' : 'text-blue-400'
+                        }`} />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm text-white font-medium">{s.action}</p>
+                        {s.savings && <p className="text-xs text-green-400">Potential savings: {s.savings}</p>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
             {/* Messages */}
             <div className="mb-3 sm:mb-4 max-h-32 sm:max-h-48 overflow-y-auto space-y-1.5 sm:space-y-2">
               {messages.slice(-5).map((msg, idx) => (
