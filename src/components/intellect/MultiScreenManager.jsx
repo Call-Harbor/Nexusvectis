@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { createPageUrl } from "@/utils";
 import { toast } from "sonner";
 
-export default function MultiScreenManager({ onClose }) {
+export default function MultiScreenManager({ onClose, onWindowOpened }) {
   const [screens, setScreens] = useState([]);
   const [loading, setLoading] = useState(true);
   const [apiSupported, setApiSupported] = useState(false);
