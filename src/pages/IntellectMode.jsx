@@ -24,6 +24,7 @@ import {
   RiskAssessmentAnalysis, 
   PerformanceAnalyticsPanel 
 } from "@/components/intellect/AdvancedAIAnalysis";
+import { AdvancedIntelligenceEngine } from "@/components/intellect/AdvancedIntelligenceEngine";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
