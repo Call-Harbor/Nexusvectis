@@ -376,7 +376,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
               <div className="grid grid-cols-2 gap-2 mb-4">
                 {data.financial?.market_cap && (
                   <div className="p-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20">
-                    <p className="text-cyan-400 text-xs">Markedsværdi</p>
+                    <p className="text-cyan-400 text-xs">Market Cap</p>
                     <p className="text-white font-bold text-sm">{data.financial.market_cap}</p>
                   </div>
                 )}
