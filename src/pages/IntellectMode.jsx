@@ -262,6 +262,12 @@ export default function IntellectMode() {
             </div>
             <div className="flex items-center gap-2">
               <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/40">BETA</Badge>
+              <Button onClick={() => setShowFleetGlobe(!showFleetGlobe)} variant="ghost" size="icon" title="Toggle 3D fleet globe">
+                <Globe className="w-5 h-5 text-cyan-400" />
+              </Button>
+              <Button onClick={() => setShowHologramDesktop(!showHologramDesktop)} variant="ghost" size="icon" title="Toggle hologram desktop">
+                <Sparkles className="w-5 h-5 text-violet-400" />
+              </Button>
               <Button onClick={() => setShowThinkingTerminal(!showThinkingTerminal)} variant="ghost" size="icon" title="Toggle thinking terminal">
                 <Brain className="w-5 h-5 text-violet-400" />
               </Button>
