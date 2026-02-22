@@ -119,7 +119,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
     setData(null);
     setCompanyName(name);
     try {
-    const result = await base44.integrations.Core.InvokeLLM({
+      const result = await base44.integrations.Core.InvokeLLM({
       prompt: `You are a senior investment analyst. Analyze the company "${name}" comprehensively. Use real publicly available data.
 
 IMPORTANT: You MUST populate ALL fields. Do not leave arrays empty. Provide at least 3 items in every array.
