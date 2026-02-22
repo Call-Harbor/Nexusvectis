@@ -276,7 +276,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
           {data && (
             <div className="hidden sm:flex items-center gap-2 text-xs text-slate-400 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/30 rounded-full">
               <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              {data.employees && `${data.employees} medarbejdere`}
+              {data.employees && `${data.employees} employees`}
               {data.website && ` · ${data.website}`}
             </div>
           )}
