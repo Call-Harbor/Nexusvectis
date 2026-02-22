@@ -1435,7 +1435,7 @@ export default function IntellectMode() {
                 className="bg-slate-800 hover:bg-slate-700 border border-violet-500/40 text-xs sm:text-sm hidden sm:flex relative overflow-hidden group"
                 title="Spread FLEET AI across all your screens"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-violet-500/0 via-violet-500/10 to-violet-500/0 translate-x-full group-hover:translate-x-0 transition-transform duration-500" />
+                <div className="absolute inset-0 bg-gradient-to-r from-violet-500/0 via-violet-500/10 to-violet-500/0 translate-x-full group-hover:translate-x-0 transition-transform duration-500 pointer-events-none" />
                 <Monitor className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-violet-400" />
                 <span className="text-violet-300">Multi-Screen</span>
                 {screens.length > 1 && (
