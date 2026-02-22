@@ -15,6 +15,8 @@ import { Badge } from "@/components/ui/badge";
 import CompanyAnalysisHologram from '@/components/intellect/CompanyAnalysisHologram';
 import ThinkingTerminalVisual from '@/components/intellect/ThinkingTerminalVisual';
 import MultiScreenManager from '@/components/intellect/MultiScreenManager';
+import FleetGlobe3D from '@/components/intellect/FleetGlobe3D';
+import AdvancedFleetHologram from '@/components/fleet/AdvancedFleetHologram';
 
 export default function IntellectMode() {
   const [user, setUser] = useState(null);
