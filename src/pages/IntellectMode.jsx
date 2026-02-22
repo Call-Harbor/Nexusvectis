@@ -176,6 +176,7 @@ export default function IntellectMode() {
   const [screens, setScreens] = useState([]);
   const [showMultiScreenPrompt, setShowMultiScreenPrompt] = useState(false);
   const [multiScreenDismissed, setMultiScreenDismissed] = useState(false);
+  const [showMultiScreenManager, setShowMultiScreenManager] = useState(false);
   const messagesEndRef = useRef(null);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
