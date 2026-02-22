@@ -10,6 +10,7 @@ export default function FleetGlobe3D({ vehicles = [], routes = [], onClose, onMi
   const rendererRef = useRef();
   const globeRef = useRef();
   const animationRef = useRef();
+  const [isMinimized, setIsMinimized] = useState(false);
 
   useEffect(() => {
     if (!containerRef.current) return;
