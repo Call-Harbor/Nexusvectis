@@ -782,7 +782,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
                 {!personData && !personLoading && (
                   <div className="text-center py-8 text-slate-500 text-sm">
                     <Linkedin className="w-10 h-10 mx-auto mb-3 opacity-30" />
-                    <p>Søg efter en person for at se deres profil, karriere og netværk</p>
+                    <p>Search for a person to view their profile, career and network</p>
                   </div>
                 )}
 
