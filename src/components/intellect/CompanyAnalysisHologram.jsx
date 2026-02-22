@@ -886,7 +886,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
                       {/* Education */}
                       {personData.education?.length > 0 && (
                         <div>
-                          <p className="text-slate-400 text-xs font-semibold mb-2 uppercase tracking-wide">Uddannelse</p>
+                          <p className="text-slate-400 text-xs font-semibold mb-2 uppercase tracking-wide">Education</p>
                           <div className="space-y-1">
                             {personData.education.map((e, i) => (
                               <div key={i} className="flex items-start gap-2 text-xs">
