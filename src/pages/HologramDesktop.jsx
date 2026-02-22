@@ -107,12 +107,30 @@ function HoloWidget({ title, icon: Icon, color, children, defaultPos, id, onClos
 
 const WIDGET_TYPES = ['fleet', 'alerts', 'shipments', 'routes', 'map', 'trend'];
 
+// Each screen index (0-based) gets a different default set of widgets
+const SCREEN_WIDGET_SETS = {
+  0: ['fleet', 'alerts', 'map'],           // Screen 2 (first secondary): Fleet status, alerts, live map
+  1: ['shipments', 'trend', 'routes'],     // Screen 3: Shipments, delivery trend, active routes
+  2: ['map', 'fleet', 'trend'],            // Screen 4: Map focus + fleet + trend
+  3: ['alerts', 'shipments', 'routes'],    // Screen 5+
+};
+
+function getDefaultWidgetsForScreen(screenIndex) {
+  return SCREEN_WIDGET_SETS[screenIndex] || SCREEN_WIDGET_SETS[screenIndex % Object.keys(SCREEN_WIDGET_SETS).length];
+}
+
 export default function HologramDesktop() {
   const [currentUser, setCurrentUser] = useState(null);
   const [orgId, setOrgId] = useState(null);
   const [time, setTime] = useState(new Date());
-  // Active widgets - user can remove or add
-  const [activeWidgets, setActiveWidgets] = useState(WIDGET_TYPES);
+
+  // Determine which screen this window is (screen=0 means 2nd display, screen=1 means 3rd, etc.)
+  const urlParams = new URLSearchParams(window.location.search);
+  const screenIndex = parseInt(urlParams.get('screen') || '0', 10);
+  const screenLabel = screenIndex + 2; // human-readable: Screen 2, 3, 4...
+
+  const defaultWidgets = getDefaultWidgetsForScreen(screenIndex);
+  const [activeWidgets, setActiveWidgets] = useState(defaultWidgets);
 
   useEffect(() => {
     const t = setInterval(() => setTime(new Date()), 1000);
