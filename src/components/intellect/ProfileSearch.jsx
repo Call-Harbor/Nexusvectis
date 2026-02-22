@@ -75,9 +75,11 @@ export default function ProfileSearch() {
     setProfileData(null);
     
     try {
-      const [basicInfo, advancedCareer, skillsData, achievementsData, publicPresence] = await Promise.all([
+      // 6 small focused parallel calls — each with a tiny simple schema
+      const [r1, r2, r3, r4, r5, r6] = await Promise.all([
+        // Basic info
         base44.integrations.Core.InvokeLLM({
-          prompt: `Find public profile information about "${searchQuery}": full name, current title, company, location, LinkedIn URL, email, public photo URL, connection count.`,
+          prompt: `Find basic profile info about "${searchQuery}": name, current title, company, location, LinkedIn URL, profile picture URL, email guess, connections count. Real data only.`,
           add_context_from_internet: true,
           response_json_schema: {
             type: "object",
@@ -93,39 +95,23 @@ export default function ProfileSearch() {
             }
           }
         }),
+        // Career history & education
         base44.integrations.Core.InvokeLLM({
-          prompt: `Provide ADVANCED career analysis for "${searchQuery}": (1) Detailed career progression with impact/achievements at each role, (2) Industry transitions and pivots with reasons, (3) Company trajectory (startups vs enterprises), (4) Leadership experience and team sizes led, (5) Mentorship patterns, (6) Education with specializations, (7) Career growth rate assessment, (8) Estimated seniority level.`,
+          prompt: `Find career history and education for "${searchQuery}": list previous companies/roles with dates, education institutions and degrees, total years experience, estimated seniority level. Real data only.`,
           add_context_from_internet: true,
           response_json_schema: {
             type: "object",
             properties: {
-              career_trajectory: { type: "string" },
-              detailed_career_history: { 
-                type: "array", 
-                items: { 
-                  type: "object",
-                  properties: {
-                    role: { type: "string" },
-                    company: { type: "string" },
-                    dates: { type: "string" },
-                    impact_summary: { type: "string" },
-                    teams_led: { type: "string" },
-                    key_achievements: { type: "array", items: { type: "string" } }
-                  },
-                  additionalProperties: true
-                } 
-              },
-              industry_transitions: { type: "array", items: { type: "string" } },
-              leadership_experience: { type: "string" },
               education: { type: "array", items: { type: "string" } },
+              career_history: { type: "array", items: { type: "object", additionalProperties: true } },
               total_experience_years: { type: "number" },
-              growth_rate_assessment: { type: "string" },
               estimated_seniority: { type: "string" }
             }
           }
         }),
+        // Skills & expertise
         base44.integrations.Core.InvokeLLM({
-          prompt: `Find deep expertise for "${searchQuery}": (1) Core technical/functional skills with proficiency levels, (2) Industry-specific expertise, (3) Soft skills demonstrated, (4) Certifications and credentials, (5) Board memberships with impact, (6) Advisory roles, (7) Thought leadership areas, (8) Tools/technologies mastery.`,
+          prompt: `Find skills and expertise for "${searchQuery}": technical skills, professional expertise, board positions, certifications, languages, core competencies. Real data only.`,
           add_context_from_internet: true,
           response_json_schema: {
             type: "object",
@@ -135,13 +121,28 @@ export default function ProfileSearch() {
               soft_skills: { type: "array", items: { type: "string" } },
               certifications: { type: "array", items: { type: "string" } },
               board_memberships: { type: "array", items: { type: "string" } },
-              advisory_roles: { type: "array", items: { type: "string" } },
-              thought_leadership_areas: { type: "array", items: { type: "string" } }
+              languages: { type: "array", items: { type: "string" } }
             }
           }
         }),
+        // Career progression with impact
         base44.integrations.Core.InvokeLLM({
-          prompt: `Find impact and achievements for "${searchQuery}": (1) Major accomplishments with measurable impact, (2) Awards and recognitions, (3) Notable projects with outcomes, (4) Companies founded with status, (5) Speaking engagements and conferences, (6) Published content/articles, (7) Research contributions, (8) Industry impact statements.`,
+          prompt: `For "${searchQuery}", provide detailed career progression: 5+ years of job roles with company, dates, job title, impact/achievements at each role, teams led, industry transitions, leadership experience. Real data only.`,
+          add_context_from_internet: true,
+          response_json_schema: {
+            type: "object",
+            properties: {
+              detailed_career_history: { type: "array", items: { type: "object", additionalProperties: true } },
+              industry_transitions: { type: "array", items: { type: "string" } },
+              leadership_experience: { type: "string" },
+              career_trajectory: { type: "string" },
+              growth_rate_assessment: { type: "string" }
+            }
+          }
+        }),
+        // Achievements & impact
+        base44.integrations.Core.InvokeLLM({
+          prompt: `Find achievements and impact for "${searchQuery}": major accomplishments with measurable results, awards/recognitions, notable projects, founded companies, speaking engagements, publications/articles, industry impact, media mentions. Real data only.`,
           add_context_from_internet: true,
           response_json_schema: {
             type: "object",
@@ -152,33 +153,36 @@ export default function ProfileSearch() {
               founder_history: { type: "array", items: { type: "string" } },
               speaking_engagements: { type: "array", items: { type: "string" } },
               publications: { type: "array", items: { type: "string" } },
+              media_mentions: { type: "array", items: { type: "string" } },
               industry_impact: { type: "string" }
             }
           }
         }),
+        // Public presence & influence
         base44.integrations.Core.InvokeLLM({
-          prompt: `Find public presence and influence for "${searchQuery}": (1) Media mentions and press coverage, (2) Podcast appearances, (3) Social media presence and followers, (4) Patents and intellectual property, (5) Network influence (known connections to notable figures), (6) Conference speaking history, (7) Book authorship, (8) Analyst rankings or industry recognition.`,
+          prompt: `Find public presence and influence for "${searchQuery}": podcast appearances, social media followers/presence, patents/IP, network influence/notable connections, book authorship, analyst rankings, thought leadership areas. Real data only.`,
           add_context_from_internet: true,
           response_json_schema: {
             type: "object",
             properties: {
-              media_mentions: { type: "array", items: { type: "string" } },
               podcast_appearances: { type: "array", items: { type: "string" } },
               social_media_presence: { type: "object", additionalProperties: true },
               patents: { type: "array", items: { type: "string" } },
               network_influence: { type: "string" },
-              publications_authored: { type: "array", items: { type: "string" } }
+              publications_authored: { type: "array", items: { type: "string" } },
+              thought_leadership_areas: { type: "array", items: { type: "string" } }
             }
           }
         })
       ]);
 
       const merged = {
-        ...basicInfo,
-        ...advancedCareer,
-        ...skillsData,
-        ...achievementsData,
-        ...publicPresence,
+        ...r1,
+        ...r2,
+        ...r3,
+        ...r4,
+        ...r5,
+        ...r6,
         search_timestamp: new Date().toISOString(),
         data_retention_until: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
       };
