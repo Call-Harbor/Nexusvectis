@@ -228,6 +228,11 @@ export default function IntellectMode() {
   const [showMultiScreenManager, setShowMultiScreenManager] = useState(false);
   const [openDesktopWindows, setOpenDesktopWindows] = useState([]); // {id, label, ref}
   const [showAdvancedPanel, setShowAdvancedPanel] = useState(false);
+  const [scenarios, setScenarios] = useState([]);
+  const [multiModelAnalysis, setMultiModelAnalysis] = useState(null);
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [commandExecution, setCommandExecution] = useState(null);
+  const [suggestions, setSuggestions] = useState([]);
   const messagesEndRef = useRef(null);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
