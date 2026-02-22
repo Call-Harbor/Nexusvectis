@@ -1543,6 +1543,45 @@ export default function IntellectMode() {
 
         {/* Main Content Area */}
         <div className="flex-1 overflow-hidden relative">
+          {/* Advanced Command Panel */}
+          {showAdvancedPanel && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="fixed top-24 left-4 w-96 max-w-[calc(100vw-32px)] bg-slate-900/80 backdrop-blur-xl border-2 border-amber-500/50 rounded-2xl p-4 z-40 shadow-2xl"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-white font-bold flex items-center gap-2">
+                  <Brain className="w-4 h-4 text-amber-400" />
+                  Advanced Intelligence
+                </h3>
+                <Button size="icon" variant="ghost" onClick={() => setShowAdvancedPanel(false)}>
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+              
+              {advancedError && (
+                <div className="mb-3 p-2 rounded bg-red-500/20 border border-red-500/50 text-red-300 text-xs">
+                  {advancedError}
+                </div>
+              )}
+              
+              <AdvancedCommandPanel 
+                onCommand={(cmdType) => {
+                  advancedExecute(cmdType);
+                  setMessages(prev => [...prev, { role: 'system', content: `🧠 Running advanced analysis: ${cmdType}...` }]);
+                }}
+              />
+              
+              {(advancedLoading || advancedResults) && (
+                <div className="mt-4 pt-4 border-t border-slate-700">
+                  <InsightRenderer data={advancedResults} loading={advancedLoading} />
+                </div>
+              )}
+            </motion.div>
+          )}
+
           {/* Minimized Windows Stack */}
                   <div className="fixed bottom-4 left-4 flex flex-col gap-2 z-40">
                     <AnimatePresence>
