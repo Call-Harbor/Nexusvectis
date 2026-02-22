@@ -88,6 +88,11 @@ function HoloWidget({ title, icon: Icon, color, children, defaultPos, id, onClos
           <button onClick={() => setMinimized(m => !m)} className="ml-2 text-slate-500 hover:text-slate-300 transition-colors">
             {minimized ? <Maximize2 className="w-3 h-3" /> : <Minimize2 className="w-3 h-3" />}
           </button>
+          {onClose && (
+            <button onClick={onClose} className="ml-1 text-slate-600 hover:text-red-400 transition-colors">
+              <X className="w-3 h-3" />
+            </button>
+          )}
         </div>
       </div>
 
