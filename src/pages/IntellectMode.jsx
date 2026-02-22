@@ -154,7 +154,7 @@ export default function IntellectMode() {
     { icon: TrendingUp, label: "Demand Forecast", command: "forecast shipment demand next 30 days", color: "emerald" },
     { icon: Activity, label: "CO2 Analysis", command: "analyze CO2 emissions by route", color: "amber" },
     { icon: Zap, label: "Fleet Optimization", command: "optimize all routes for cost and efficiency", color: "blue" },
-    { icon: BarChart3, label: "Performance Benchmark", command: "benchmark fleet performance", color: "fuchsia" },
+    { icon: BarChart3, label: "Performance Benchmark", command: "benchmark fleet performance", color: "blue" },
   ];
   const [isProcessing, setIsProcessing] = useState(false);
   const [activeWindows, setActiveWindows] = useState([]);
