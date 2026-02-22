@@ -218,7 +218,7 @@ export default function HologramDesktop() {
 
       {/* Widgets */}
       {/* Fleet Status */}
-      <HoloWidget title="Fleet Status" icon={Truck} color="cyan" defaultPos={{ x: 40, y: 60 }}>
+      {activeWidgets.includes('fleet') && <HoloWidget title="Fleet Status" icon={Truck} color="cyan" defaultPos={{ x: 40, y: 60 }} onClose={() => setActiveWidgets(p => p.filter(w => w !== 'fleet'))}>
         <div className="space-y-2 min-w-[240px]">
           {[
             { label: 'Active', count: activeVehicles.length, color: 'text-emerald-400', dot: 'bg-emerald-400' },
