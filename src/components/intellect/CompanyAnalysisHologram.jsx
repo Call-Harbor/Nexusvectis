@@ -311,8 +311,8 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
         {!companyName && !loading && (
           <div className="flex flex-col items-center justify-center h-64 text-center">
             <Building2 className="w-16 h-16 text-slate-600 mb-4" />
-            <p className="text-slate-400 text-lg">Søg en virksomhed for at starte analysen</p>
-            <p className="text-slate-600 text-sm mt-2">AI henter realtidsdata fra offentlige kilder</p>
+            <p className="text-slate-400 text-lg">Search a company to start the analysis</p>
+            <p className="text-slate-600 text-sm mt-2">AI fetches real-time data from public sources</p>
           </div>
         )}
 
