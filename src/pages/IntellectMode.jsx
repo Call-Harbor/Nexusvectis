@@ -1508,6 +1508,14 @@ export default function IntellectMode() {
 
             <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 w-full sm:w-auto">
               <Button
+                onClick={() => setShowAdvancedPanel(!showAdvancedPanel)}
+                className="bg-amber-600 hover:bg-amber-700 text-xs sm:text-sm hidden sm:flex"
+                title="Advanced Fleet Intelligence Commands"
+              >
+                <Lightbulb className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-amber-300" />
+                <span className="text-amber-100">Advanced</span>
+              </Button>
+              <Button
                 onClick={() => setShowMultiScreenManager(true)}
                 className="bg-slate-800 hover:bg-slate-700 border border-violet-500/40 text-xs sm:text-sm hidden sm:flex"
                 title="Spread FLEET AI across all your screens"
