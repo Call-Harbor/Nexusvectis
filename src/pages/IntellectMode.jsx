@@ -564,6 +564,9 @@ export default function IntellectMode() {
     setShowThinkingTerminal(true);
     addThinkingLog('parse', `Parsing command: "${currentCommand}"`, null, 0);
 
+    // Execute advanced AI command processing
+    await processAdvancedCommand(currentCommand);
+
     const maxRetries = 3;
     let attempts = 0;
 
