@@ -238,6 +238,80 @@ export default function IntellectMode() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, streamingMessage]);
 
+  // Multi-screen detection
+  useEffect(() => {
+    const detectScreens = async () => {
+      // Try modern Window Management API first
+      if ('getScreenDetails' in window) {
+        try {
+          const permission = await navigator.permissions.query({ name: 'window-management' });
+          if (permission.state === 'granted') {
+            const details = await window.getScreenDetails();
+            if (details.screens.length > 1) {
+              setScreens(details.screens);
+              if (!multiScreenDismissed) setShowMultiScreenPrompt(true);
+            }
+            return;
+          }
+        } catch {}
+      }
+      // Fallback: if window is not on primary screen or screen count hint
+      if (window.screen && window.screen.isExtended) {
+        setScreens([{ label: 'Screen 1 (primary)' }, { label: 'Screen 2 (extended)' }]);
+        if (!multiScreenDismissed) setShowMultiScreenPrompt(true);
+      }
+    };
+    detectScreens();
+  }, [multiScreenDismissed]);
+
+  const requestMultiScreenPermission = async () => {
+    if ('getScreenDetails' in window) {
+      try {
+        const details = await window.getScreenDetails();
+        const detectedScreens = details.screens;
+        setScreens(detectedScreens);
+        if (detectedScreens.length > 1) {
+          setShowMultiScreenPrompt(true);
+        } else {
+          toast.info('Only one screen detected. Connect more displays and try again.');
+        }
+      } catch (e) {
+        toast.error('Could not access screen information. Please allow the permission and try again.');
+      }
+    } else {
+      toast.info('Your browser does not support multi-screen detection (try Chrome 100+).');
+    }
+  };
+
+  const spreadAcrossScreens = async () => {
+    if (!('getScreenDetails' in window)) return;
+    try {
+      const details = await window.getScreenDetails();
+      const allScreens = details.screens;
+      if (allScreens.length < 2) {
+        toast.info('Only one screen detected.');
+        return;
+      }
+      // Suggested layout: chat on screen 1, windows spread on others
+      const windowLayouts = [
+        { name: 'Fleet Monitor', url: createPageUrl('MapMonitor'), screenIdx: 1 },
+        { name: 'Dashboard', url: createPageUrl('Dashboard'), screenIdx: Math.min(2, allScreens.length - 1) },
+      ];
+      let opened = 0;
+      for (const layout of windowLayouts) {
+        const s = allScreens[layout.screenIdx] || allScreens[allScreens.length - 1];
+        const features = `left=${s.availLeft},top=${s.availTop},width=${s.availWidth},height=${s.availHeight}`;
+        window.open(layout.url, `_nexus_${layout.name}`, features);
+        opened++;
+      }
+      setShowMultiScreenPrompt(false);
+      setMultiScreenDismissed(true);
+      setMessages(prev => [...prev, { role: 'system', content: `🖥️ Spread ${opened} windows across ${allScreens.length} screens. Fleet Monitor and Dashboard opened on secondary displays.` }]);
+    } catch (e) {
+      toast.error('Could not open windows on secondary screens.');
+    }
+  };
+
   const openWindow = useCallback((type, position = { x: 100 + Math.random() * 200, y: 100 + Math.random() * 200 }, data = null) => {
     // Allow multiple chart windows
     if (!type.startsWith('chart_') && activeWindows.find(w => w.type === type)) {
