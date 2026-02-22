@@ -349,7 +349,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
 
             {/* HOLOGRAM 1: Teknisk Økonomi */}
             <HologramPanel
-              title="1 · Teknisk Analyse – Økonomi & Marked"
+              title="1 · Technical Analysis – Economy & Market"
               icon={TrendingUp}
               colorClass="bg-cyan-500/10 text-cyan-400"
               borderClass="border-cyan-500/40"
