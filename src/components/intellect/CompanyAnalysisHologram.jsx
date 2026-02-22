@@ -681,7 +681,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
               {/* Shareholders pie + list */}
               {data.ownership?.shareholders?.length > 0 && (
                 <div className="mb-4">
-                  <p className="text-slate-400 text-xs font-semibold mb-3 uppercase tracking-wide">Ejerstruktur</p>
+                  <p className="text-slate-400 text-xs font-semibold mb-3 uppercase tracking-wide">Ownership Structure</p>
                   <ResponsiveContainer width="100%" height={150}>
                     <PieChart>
                       <Pie
