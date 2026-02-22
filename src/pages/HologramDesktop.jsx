@@ -329,10 +329,10 @@ export default function HologramDesktop() {
             <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-violet-400" /><span className="text-slate-400">On-time</span></div>
           </div>
         </div>
-      </HoloWidget>
+      </HoloWidget>}
 
       {/* Live Map */}
-      <HoloWidget title="Live Fleet Map" icon={Globe} color="blue" defaultPos={{ x: 700, y: 60 }}>
+      {activeWidgets.includes('map') && <HoloWidget title="Live Fleet Map" icon={Globe} color="blue" defaultPos={{ x: 700, y: 60 }} onClose={() => setActiveWidgets(p => p.filter(w => w !== 'map'))}>
         <div className="min-w-[380px]" style={{ height: 300 }}>
           {typeof window !== 'undefined' && (
             <MapContainer
@@ -358,10 +358,10 @@ export default function HologramDesktop() {
             </MapContainer>
           )}
         </div>
-      </HoloWidget>
+      </HoloWidget>}
 
       {/* Active Routes */}
-      <HoloWidget title="Active Routes" icon={Route} color="amber" defaultPos={{ x: 700, y: 400 }}>
+      {activeWidgets.includes('routes') && <HoloWidget title="Active Routes" icon={Route} color="amber" defaultPos={{ x: 700, y: 400 }} onClose={() => setActiveWidgets(p => p.filter(w => w !== 'routes'))}>
         <div className="min-w-[260px] space-y-1.5 max-h-[160px] overflow-y-auto">
           {routes.filter(r => r.status === 'active').slice(0, 6).map((r, i) => (
             <div key={i} className="flex items-center gap-2 p-2 rounded-lg bg-slate-800/40 text-xs">
@@ -374,7 +374,7 @@ export default function HologramDesktop() {
             <p className="text-slate-500 text-xs py-2">No active routes</p>
           )}
         </div>
-      </HoloWidget>
+      </HoloWidget>}
 
       {/* Bottom info bar */}
       <div className="absolute bottom-0 left-0 right-0 h-8 bg-slate-950/70 backdrop-blur border-t border-cyan-500/20 flex items-center justify-center z-50">
