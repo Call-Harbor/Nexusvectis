@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import FleetGlobe3D from "@/components/intellect/FleetGlobe3D";
 import ThinkingTerminalVisual from "@/components/intellect/ThinkingTerminalVisual";
+import CompanyAnalysisHologram from "@/components/intellect/CompanyAnalysisHologram";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
