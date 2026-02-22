@@ -128,7 +128,11 @@ export default function MultiScreenManager({ onClose, onWindowOpened }) {
   };
 
   const openSelected = () => {
-    displayScreens.filter(s => selectedScreens.has(s.id)).forEach(openOnScreen);
+    const secondaryScreensList = displayScreens.filter(s => !s.isPrimary);
+    displayScreens.filter(s => selectedScreens.has(s.id)).forEach((screen) => {
+      const secondaryIndex = secondaryScreensList.findIndex(s => s.id === screen.id);
+      openOnScreen(screen, Math.max(0, secondaryIndex));
+    });
   };
 
   const secondaryScreens = displayScreens.filter(s => !s.isPrimary);
