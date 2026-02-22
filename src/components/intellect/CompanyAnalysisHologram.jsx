@@ -331,7 +331,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
         }),
         // Achievements & impact
         base44.integrations.Core.InvokeLLM({
-          prompt: `Find achievements and impact for "${personSearch}"${companyName ? ` at ${companyName}` : ''}: major accomplishments with measurable results, awards/recognitions, notable projects, founded companies, speaking engagements, publications/articles, industry impact, media mentions. Real data only.`,
+          prompt: `Find achievements for "${personSearch}"${companyName ? ` at ${companyName}` : ''}: only list awards, publications, or speaking engagements from verified sources. DO NOT invent achievements. Return empty arrays if none found.`,
           add_context_from_internet: true,
           response_json_schema: {
             type: "object",
