@@ -119,15 +119,21 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
     setData(null);
     setCompanyName(name);
     const result = await base44.integrations.Core.InvokeLLM({
-      prompt: `You are a senior investment analyst and business intelligence expert. Provide a comprehensive, data-driven analysis of "${name}".
-      Use publicly available data, annual reports, news, LinkedIn, Orbis, Bloomberg, and other credible sources.
-      Be realistic and specific. Use actual known data where possible.
-      For revenue_chart, provide yearly figures in millions (use the company's main currency).
-      For stock_history, provide realistic monthly closing prices for the past 12 months if publicly listed.
-      For esg_scores, use realistic ESG rating data (scale 0-100).
-      For leadership_team, include CEO, CFO, COO, CTO and other key executives.
-      For swot, provide 3 items each for strengths, weaknesses, opportunities, threats.
-      For ratings, score each dimension from 0-10.`,
+      prompt: `You are a senior investment analyst. Analyze the company "${name}" comprehensively. Use real publicly available data.
+
+IMPORTANT: You MUST populate ALL fields. Do not leave arrays empty. Provide at least 3 items in every array.
+
+- revenue_chart: 5 years of revenue/profit data in millions
+- stock_history: 12 monthly price points (if listed, otherwise estimated)
+- swot.strengths: exactly 3 real strengths
+- swot.weaknesses: exactly 3 real weaknesses  
+- swot.opportunities: exactly 3 real opportunities
+- swot.threats: exactly 3 real threats
+- esg: realistic ESG scores 0-100 with sustainability_initiatives (3 items) and controversies (2 items)
+- leadership_team: at least 3 executives (CEO, CFO, and others) with name, title, background, education
+- ownership.shareholders: at least 3 shareholders with name, percentage, type
+- ratings: all fields scored 0-10
+- ai_verdict: full summary, investment_thesis, recommendation, key_risks (3), key_catalysts (3)`,
       add_context_from_internet: true,
       response_json_schema: {
         type: "object",
