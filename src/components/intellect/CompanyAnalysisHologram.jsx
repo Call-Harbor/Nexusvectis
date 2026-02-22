@@ -866,7 +866,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
                       {/* Career history */}
                       {personData.career_history?.length > 0 && (
                         <div>
-                          <p className="text-slate-400 text-xs font-semibold mb-2 uppercase tracking-wide">Karriere</p>
+                          <p className="text-slate-400 text-xs font-semibold mb-2 uppercase tracking-wide">Career</p>
                           <div className="space-y-1.5 relative">
                             <div className="absolute left-3 top-0 bottom-0 w-px bg-blue-500/20" />
                             {personData.career_history.map((job, i) => (
