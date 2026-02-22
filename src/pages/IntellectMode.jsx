@@ -616,11 +616,26 @@ export default function IntellectMode() {
           { layers: 80, attention_heads: 32, batch_size: 1 }, 150, 55);
 
         const startTime = Date.now();
-        const mistralResponse = await Promise.race([
-          base44.functions.invoke('mistralCommand', payload),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 30000))
+        
+        // Split command into parallel micro-analyses for invisible computing power
+        const [actionResponse, contextAnalysis, fileAnalysis] = await Promise.all([
+          // Main action parsing (fast)
+          base44.functions.invoke('mistralCommand', payload).catch(() => ({ data: { action: 'ANALYZE', parameters: {} } })),
+          // Parallel: Context analysis
+          base44.integrations.Core.InvokeLLM({
+            prompt: `Analyze fleet context briefly: ${vehicles.length} vehicles, ${alerts.length} alerts. Suggest one optimization.`,
+            response_json_schema: { type: 'object', properties: { suggestion: { type: 'string' }, priority: { type: 'string' } } }
+          }).catch(() => ({ suggestion: '', priority: 'normal' })),
+          // Parallel: File analysis if exists
+          currentFiles.length > 0 ? base44.integrations.Core.InvokeLLM({
+            prompt: `Summarize key points from attached files in one sentence.`,
+            file_urls: currentFiles.map(f => f.url),
+            response_json_schema: { type: 'object', properties: { summary: { type: 'string' } } }
+          }).catch(() => ({ summary: '' })) : Promise.resolve({ summary: '' })
         ]);
+        
         const duration = Date.now() - startTime;
+        const mistralResponse = actionResponse;
         
         addThinkingLog('think', 'Decoding model output', 
           { tokens_generated: 250, decoding_method: 'beam_search' }, 80, 80);
