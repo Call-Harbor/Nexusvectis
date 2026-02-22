@@ -323,8 +323,8 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
               <Brain className="absolute inset-0 m-auto w-7 h-7 text-cyan-400 animate-pulse" />
             </div>
             <div className="text-center">
-              <p className="text-white font-semibold">AI analyserer "{companyName}"</p>
-              <p className="text-slate-400 text-sm mt-1">Søger i offentlige databaser, årsrapporter, nyheder...</p>
+              <p className="text-white font-semibold">AI analyzing "{companyName}"</p>
+              <p className="text-slate-400 text-sm mt-1">Searching public databases, annual reports, news...</p>
             </div>
             <div className="flex gap-2 text-xs text-slate-500">
               <span className="px-2 py-1 rounded bg-slate-800">Orbis</span>
