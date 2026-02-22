@@ -262,7 +262,12 @@ IMPORTANT: You MUST populate ALL fields. Do not leave arrays empty. Provide at l
         }
       }
     });
+    console.log('Company data received:', JSON.stringify(result).substring(0, 500));
     setData(result);
+    } catch (err) {
+      console.error('fetchData error:', err);
+      setError(err.message);
+    }
     setLoading(false);
   };
 
