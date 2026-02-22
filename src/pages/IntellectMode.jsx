@@ -8,7 +8,8 @@ import ReactMarkdown from "react-markdown";
 import { 
   Sparkles, Send, Mic, Brain, Zap, TrendingUp, AlertTriangle, 
   Truck, Route, Package, Activity, Maximize2, Minimize2, X, LayoutDashboard, Paperclip, FileText,
-  Settings, Warehouse, Satellite, Globe, BarChart3, Box, Building2, Monitor, ExternalLink, ChevronDown, Users
+  Settings, Warehouse, Satellite, Globe, BarChart3, Box, Building2, Monitor, ExternalLink, ChevronDown, Users,
+  Lightbulb
 } from "lucide-react";
 import FleetGlobe3D from "@/components/intellect/FleetGlobe3D";
 import ThinkingTerminalVisual from "@/components/intellect/ThinkingTerminalVisual";
@@ -16,6 +17,7 @@ import CompanyAnalysisHologram from "@/components/intellect/CompanyAnalysisHolog
 import ProfileSearch from "@/components/intellect/ProfileSearch";
 import CandidateMatcher from "@/components/intellect/CandidateMatcher";
 import MultiScreenManager from "@/components/intellect/MultiScreenManager";
+import { useAdvancedIntellect, AdvancedCommandPanel, InsightRenderer } from "@/components/intellect/AdvancedIntellectEngine";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
