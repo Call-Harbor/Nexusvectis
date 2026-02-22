@@ -497,7 +497,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
               {/* Timeline */}
               {data.history?.milestones?.length > 0 && (
                 <div className="mb-4">
-                  <p className="text-slate-400 text-xs font-semibold mb-2 uppercase tracking-wide">Tidslinje</p>
+                  <p className="text-slate-400 text-xs font-semibold mb-2 uppercase tracking-wide">Timeline</p>
                   <div className="space-y-2 relative">
                     <div className="absolute left-7 top-0 bottom-0 w-px bg-violet-500/20" />
                     {data.history.milestones.map((m, i) => (
