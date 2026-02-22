@@ -152,16 +152,17 @@ export default function ProfileSearch() {
           }
         }),
         base44.integrations.Core.InvokeLLM({
-          prompt: `Find public presence for "${searchQuery}": media mentions, publications, podcast appearances, social media, company founding history, patents.`,
+          prompt: `Find public presence and influence for "${searchQuery}": (1) Media mentions and press coverage, (2) Podcast appearances, (3) Social media presence and followers, (4) Patents and intellectual property, (5) Network influence (known connections to notable figures), (6) Conference speaking history, (7) Book authorship, (8) Analyst rankings or industry recognition.`,
           add_context_from_internet: true,
           response_json_schema: {
             type: "object",
             properties: {
               media_mentions: { type: "array", items: { type: "string" } },
-              publications: { type: "array", items: { type: "string" } },
-              founder_of: { type: "array", items: { type: "string" } },
+              podcast_appearances: { type: "array", items: { type: "string" } },
+              social_media_presence: { type: "object", additionalProperties: true },
               patents: { type: "array", items: { type: "string" } },
-              social_media: { type: "object", additionalProperties: true }
+              network_influence: { type: "string" },
+              publications_authored: { type: "array", items: { type: "string" } }
             }
           }
         })
