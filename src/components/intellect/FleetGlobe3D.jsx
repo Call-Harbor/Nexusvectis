@@ -588,7 +588,8 @@ export default function FleetGlobe3D({ vehicles = [], routes = [], onClose, onMi
             </div>
           </div>
         </div>
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
+    </>
   );
 }
