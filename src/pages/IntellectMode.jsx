@@ -1489,6 +1489,14 @@ export default function IntellectMode() {
             ))}
             </AnimatePresence>
 
+            {/* Company Analysis Hologram */}
+            {showCompanyAnalysis && (
+              <CompanyAnalysisHologram
+                companyName={companyAnalysisTarget}
+                onClose={() => { setShowCompanyAnalysis(false); setCompanyAnalysisTarget(null); }}
+              />
+            )}
+
             {/* 3D Visualization */}
             {show3DVisualization && (
             <FleetGlobe3D
