@@ -358,7 +358,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
               {/* Revenue chart */}
               {data.financial?.revenue_chart?.length > 0 && (
                 <div className="mb-4">
-                  <p className="text-slate-400 text-xs font-semibold mb-2 uppercase tracking-wide">Omsætning & Profit ({data.financial.currency || 'mio.'})</p>
+                  <p className="text-slate-400 text-xs font-semibold mb-2 uppercase tracking-wide">Revenue & Profit ({data.financial.currency || 'mil.'})</p>
                   <ResponsiveContainer width="100%" height={160}>
                     <BarChart data={data.financial.revenue_chart}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
