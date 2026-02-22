@@ -5,7 +5,8 @@ import {
   X, TrendingUp, Building2, User, Users, BarChart3, 
   Clock, Globe, Award, Zap, Brain, Activity, Loader2, 
   MapPin, DollarSign, Sparkles, Target, Star, Briefcase,
-  GraduationCap, Shield, ChevronRight, Search
+  GraduationCap, Shield, ChevronRight, Search, Linkedin,
+  Network, Mail, Phone, ExternalLink, UserSearch
 } from 'lucide-react';
 import { 
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
