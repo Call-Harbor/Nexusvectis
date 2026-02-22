@@ -1951,7 +1951,10 @@ export default function IntellectMode() {
       {/* Multi-Screen Manager */}
       <AnimatePresence>
         {showMultiScreenManager && (
-          <MultiScreenManager onClose={() => setShowMultiScreenManager(false)} />
+          <MultiScreenManager
+            onClose={() => setShowMultiScreenManager(false)}
+            onWindowOpened={(label, winRef) => { trackDesktopWindow(label, winRef); }}
+          />
         )}
       </AnimatePresence>
     </div>
