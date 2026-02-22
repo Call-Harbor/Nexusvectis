@@ -113,115 +113,120 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
     if (initialName) fetchData(initialName);
   }, []);
 
-  const parseJSON = (text) => {
-    if (typeof text === 'object' && text !== null) return text;
-    try {
-      const match = text.match(/```(?:json)?\s*([\s\S]*?)```/) || text.match(/(\{[\s\S]*\})/);
-      return JSON.parse(match ? match[1].trim() : text.trim());
-    } catch {
-      return {};
-    }
-  };
-
   const fetchData = async (name) => {
     setLoading(true);
     setError(null);
     setData(null);
     setCompanyName(name);
     try {
-      const [raw1, raw2] = await Promise.all([
+      // 6 small focused parallel calls — each with a tiny simple schema
+      const [r1, r2, r3, r4, r5, r6] = await Promise.all([
+        // Basic info
         base44.integrations.Core.InvokeLLM({
-          prompt: `You are a business analyst. Research the company "${name}" using current information and return ONLY a raw JSON object (no markdown, no explanation) with exactly these fields:
-  {
-  "company_name": "...",
-  "industry": "...",
-  "sector": "...",
-  "country": "...",
-  "founded": "...",
-  "headquarters": "...",
-  "employees": "...",
-  "stock_ticker": "...",
-  "credit_rating": "...",
-  "website": "...",
-  "description": "2-3 sentence overview",
-  "financial": {
-    "revenue_latest": "...",
-    "market_cap": "...",
-    "ebitda_margin": "...",
-    "pe_ratio": "...",
-    "dividend_yield": "...",
-    "currency": "USD",
-    "debt_ratio": 0.3,
-    "market_share_pct": 15,
-    "revenue_chart": [{"year":"2020","revenue":100,"profit":20,"ebitda":30},{"year":"2021","revenue":110,"profit":22,"ebitda":33},{"year":"2022","revenue":120,"profit":24,"ebitda":36},{"year":"2023","revenue":130,"profit":26,"ebitda":39},{"year":"2024","revenue":140,"profit":28,"ebitda":42}],
-    "stock_history": [{"month":"Jan","price":100},{"month":"Feb","price":105},{"month":"Mar","price":102},{"month":"Apr","price":108},{"month":"May","price":112},{"month":"Jun","price":115},{"month":"Jul","price":118},{"month":"Aug","price":116},{"month":"Sep","price":120},{"month":"Oct","price":125},{"month":"Nov","price":122},{"month":"Dec","price":128}],
-    "competitors": [{"name":"Competitor A","market_share":20},{"name":"Competitor B","market_share":15},{"name":"Competitor C","market_share":10}],
-    "geographic_markets": [{"region":"North America","percentage":40},{"region":"Europe","percentage":30},{"region":"Asia","percentage":20},{"region":"Other","percentage":10}]
-  },
-  "ratings": {"financial_health":7,"growth_potential":8,"innovation":7,"brand_strength":8,"management_quality":7,"market_position":8,"esg_rating":6,"overall":7},
-  "history": {
-    "description": "...",
-    "business_model": "...",
-    "usp": "...",
-    "recent_news": ["news1","news2","news3","news4"],
-    "values": ["value1","value2","value3","value4","value5"],
-    "milestones": [{"year":"2000","event":"..."},{"year":"2005","event":"..."},{"year":"2010","event":"..."},{"year":"2015","event":"..."},{"year":"2020","event":"..."}]
-  }
-  }
-  Replace all placeholder values with real accurate data about ${name}. Return ONLY the JSON, nothing else.`,
+          prompt: `Give me basic info about the company "${name}". Real data only.`,
           add_context_from_internet: true,
+          response_json_schema: {
+            type: "object",
+            properties: {
+              company_name: { type: "string" },
+              industry: { type: "string" },
+              sector: { type: "string" },
+              country: { type: "string" },
+              founded: { type: "string" },
+              headquarters: { type: "string" },
+              employees: { type: "string" },
+              stock_ticker: { type: "string" },
+              credit_rating: { type: "string" },
+              website: { type: "string" },
+              description: { type: "string" }
+            }
+          }
         }),
+        // Financial metrics
         base44.integrations.Core.InvokeLLM({
-          prompt: `You are a business analyst. Research the company "${name}" and return ONLY a raw JSON object (no markdown, no explanation) with exactly these fields:
-  {
-  "swot": {
-    "strengths": ["strength1","strength2","strength3"],
-    "weaknesses": ["weakness1","weakness2","weakness3"],
-    "opportunities": ["opportunity1","opportunity2","opportunity3"],
-    "threats": ["threat1","threat2","threat3"]
-  },
-  "esg": {
-    "overall_score": 65,
-    "environmental_score": 60,
-    "social_score": 70,
-    "governance_score": 65,
-    "rating_agency": "MSCI",
-    "co2_target": "Net zero by 2050",
-    "renewable_energy_pct": 40,
-    "sustainability_initiatives": ["initiative1","initiative2","initiative3"],
-    "controversies": ["controversy1","controversy2"]
-  },
-  "leadership_team": [
-    {"name":"CEO Name","title":"Chief Executive Officer","age":"55","years_in_role":"5 years","background":"Background text","education":"University name"},
-    {"name":"CFO Name","title":"Chief Financial Officer","age":"52","years_in_role":"3 years","background":"Background text","education":"University name"},
-    {"name":"CTO Name","title":"Chief Technology Officer","age":"48","years_in_role":"4 years","background":"Background text","education":"University name"}
-  ],
-  "ownership": {
-    "ownership_type": "Public",
-    "listed_exchange": "NASDAQ",
-    "founder_name": "...",
-    "founder_year": "1994",
-    "founder_story": "2-3 sentences about founder story",
-    "founder_current_role": "...",
-    "shareholders": [{"name":"Vanguard","percentage":8,"type":"Institutional"},{"name":"BlackRock","percentage":6,"type":"Institutional"},{"name":"Founder","percentage":5,"type":"Individual"}]
-  },
-  "ai_verdict": {
-    "summary": "Executive summary paragraph",
-    "investment_thesis": "Investment thesis paragraph",
-    "recommendation": "BUY",
-    "key_risks": ["risk1","risk2","risk3"],
-    "key_catalysts": ["catalyst1","catalyst2","catalyst3"]
-  }
-  }
-  Replace all placeholder values with real accurate data about ${name}. Return ONLY the JSON, nothing else.`,
+          prompt: `Give me key financial metrics for the company "${name}". Real data only.`,
           add_context_from_internet: true,
-        })
+          response_json_schema: {
+            type: "object",
+            properties: {
+              revenue_latest: { type: "string" },
+              market_cap: { type: "string" },
+              ebitda_margin: { type: "string" },
+              pe_ratio: { type: "string" },
+              dividend_yield: { type: "string" },
+              currency: { type: "string" },
+              debt_ratio: { type: "number" },
+              market_share_pct: { type: "number" }
+            }
+          }
+        }),
+        // Revenue chart + competitors + geo markets + ratings
+        base44.integrations.Core.InvokeLLM({
+          prompt: `For "${name}", give me: 5 years of revenue/profit/ebitda data, top 3 competitors with market share %, geographic revenue split by region %, and ratings 1-10 for financial_health, growth_potential, innovation, brand_strength, management_quality, market_position, esg_rating, overall. Real data only.`,
+          add_context_from_internet: true,
+          response_json_schema: {
+            type: "object",
+            properties: {
+              revenue_chart: { type: "array", items: { type: "object", additionalProperties: true } },
+              stock_history: { type: "array", items: { type: "object", additionalProperties: true } },
+              competitors: { type: "array", items: { type: "object", additionalProperties: true } },
+              geographic_markets: { type: "array", items: { type: "object", additionalProperties: true } },
+              ratings: { type: "object", additionalProperties: true }
+            }
+          }
+        }),
+        // SWOT + history
+        base44.integrations.Core.InvokeLLM({
+          prompt: `For "${name}", give me: SWOT analysis (3 points each) and company history including description, business model, USP, 3 recent news headlines, 3 core values, and 3 key milestones (year + event). Real data only.`,
+          add_context_from_internet: true,
+          response_json_schema: {
+            type: "object",
+            properties: {
+              swot: { type: "object", additionalProperties: true },
+              history: { type: "object", additionalProperties: true }
+            }
+          }
+        }),
+        // ESG + leadership
+        base44.integrations.Core.InvokeLLM({
+          prompt: `For "${name}", give me: ESG scores (overall, environmental, social, governance out of 100), rating agency, CO2 target, renewable energy %, 3 sustainability initiatives, any controversies. Also give me the top 3 executives (name, title, age, years in role, background, education). Real data only.`,
+          add_context_from_internet: true,
+          response_json_schema: {
+            type: "object",
+            properties: {
+              esg: { type: "object", additionalProperties: true },
+              leadership_team: { type: "array", items: { type: "object", additionalProperties: true } }
+            }
+          }
+        }),
+        // Ownership + AI verdict
+        base44.integrations.Core.InvokeLLM({
+          prompt: `For "${name}", give me: ownership details (type, exchange, founder name, founder year, founder story, founder current role, top 3 shareholders with % and type). Also give an AI investment verdict: summary, investment thesis, recommendation (BUY/HOLD/SELL), 3 key risks, 3 key catalysts. Real data only.`,
+          add_context_from_internet: true,
+          response_json_schema: {
+            type: "object",
+            properties: {
+              ownership: { type: "object", additionalProperties: true },
+              ai_verdict: { type: "object", additionalProperties: true }
+            }
+          }
+        }),
       ]);
 
-      const part1 = parseJSON(raw1);
-      const part2 = parseJSON(raw2);
-      const merged = { ...part1, ...part2 };
-      console.log('Merged data keys:', Object.keys(merged));
+      const merged = {
+        ...r1,
+        ...r4,
+        ...r5,
+        ...r6,
+        financial: {
+          ...r2,
+          revenue_chart: r3?.revenue_chart,
+          stock_history: r3?.stock_history,
+          competitors: r3?.competitors,
+          geographic_markets: r3?.geographic_markets,
+        },
+        ratings: r3?.ratings,
+      };
       setData(merged);
     } catch (err) {
       console.error('fetchData error:', err);
