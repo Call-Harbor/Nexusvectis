@@ -136,16 +136,18 @@ export default function ProfileSearch() {
           }
         }),
         base44.integrations.Core.InvokeLLM({
-          prompt: `Find notable achievements, awards and insights for "${searchQuery}": major accomplishments, awards, notable projects, public statements, speaking engagements.`,
+          prompt: `Find impact and achievements for "${searchQuery}": (1) Major accomplishments with measurable impact, (2) Awards and recognitions, (3) Notable projects with outcomes, (4) Companies founded with status, (5) Speaking engagements and conferences, (6) Published content/articles, (7) Research contributions, (8) Industry impact statements.`,
           add_context_from_internet: true,
           response_json_schema: {
             type: "object",
             properties: {
-              notable_achievements: { type: "array", items: { type: "string" } },
-              awards: { type: "array", items: { type: "string" } },
-              public_projects: { type: "array", items: { type: "string" } },
+              major_accomplishments: { type: "array", items: { type: "string" } },
+              awards_recognitions: { type: "array", items: { type: "string" } },
+              notable_projects: { type: "array", items: { type: "string" } },
+              founder_history: { type: "array", items: { type: "string" } },
               speaking_engagements: { type: "array", items: { type: "string" } },
-              professional_summary: { type: "string" }
+              publications: { type: "array", items: { type: "string" } },
+              industry_impact: { type: "string" }
             }
           }
         }),
