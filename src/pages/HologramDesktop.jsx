@@ -100,15 +100,36 @@ function HoloWidget({ title, icon: Icon, color, children, defaultPos, id }) {
   );
 }
 
+const WIDGET_TYPES = ['fleet', 'alerts', 'shipments', 'routes', 'map', 'trend'];
+
 export default function HologramDesktop() {
   const [currentUser, setCurrentUser] = useState(null);
   const [orgId, setOrgId] = useState(null);
   const [time, setTime] = useState(new Date());
+  // Active widgets - user can remove or add
+  const [activeWidgets, setActiveWidgets] = useState(WIDGET_TYPES);
 
   useEffect(() => {
     const t = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(t);
   }, []);
+
+  // Listen for "send widget here" messages from IntellectMode
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.data?.type === 'ADD_WIDGET') {
+        const wt = e.data.windowType;
+        if (!activeWidgets.includes(wt)) {
+          setActiveWidgets(prev => [...prev, wt]);
+          // brief visual notification
+          document.title = `⚡ Widget received — FLEET AI Desktop`;
+          setTimeout(() => { document.title = 'FLEET AI — Hologram Desktop'; }, 3000);
+        }
+      }
+    };
+    window.addEventListener('message', handler);
+    return () => window.removeEventListener('message', handler);
+  }, [activeWidgets]);
 
   useEffect(() => {
     base44.auth.me().then(u => {
