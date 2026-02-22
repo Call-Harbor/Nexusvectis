@@ -168,12 +168,11 @@ export default function IntellectMode() {
     const mainResult = await base44.functions.invoke('mistralCommand', { 
       command: mainPrompt 
     }).then(res => {
-      const data = res?.data || res;
-      addThinkingLog('success', 'Main command processed', data?.action || 'COMPLETE');
-      return data;
+      addThinkingLog('success', 'Main command processed', res?.data?.action || 'COMPLETE');
+      return res;
     }).catch(err => {
       addThinkingLog('error', 'Main command failed', err.message);
-      return { action: 'ANALYZE', parameters: {} };
+      return { data: { action: 'ANALYZE', parameters: {} } };
     });
 
     return { mainResult, microAnalyses: batches.flat() };
