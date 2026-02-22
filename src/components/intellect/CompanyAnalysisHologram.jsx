@@ -551,7 +551,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
 
             {/* HOLOGRAM 3: CEO */}
             <HologramPanel
-              title="3 · Administrerende Direktør (CEO)"
+              title="3 · Chief Executive Officer (CEO)"
               icon={User}
               colorClass="bg-emerald-500/10 text-emerald-400"
               borderClass="border-emerald-500/40"
