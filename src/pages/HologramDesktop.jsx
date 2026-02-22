@@ -217,15 +217,21 @@ export default function HologramDesktop() {
     return () => clearInterval(t);
   }, []);
 
-  // Listen for "send widget here" messages from IntellectMode
+  // Listen for "send widget here" messages from IntellectMode or other screens
   useEffect(() => {
     const handler = (e) => {
       if (e.data?.type === 'ADD_WIDGET') {
         const wt = e.data.windowType;
         if (!activeWidgets.includes(wt)) {
           setActiveWidgets(prev => [...prev, wt]);
-          // brief visual notification
           document.title = `⚡ Widget received — FLEET AI Desktop`;
+          setTimeout(() => { document.title = 'FLEET AI — Hologram Desktop'; }, 3000);
+        }
+      } else if (e.data?.type === 'MOVE_WIDGET') {
+        const wt = e.data.widgetId;
+        if (!activeWidgets.includes(wt)) {
+          setActiveWidgets(prev => [...prev, wt]);
+          document.title = `⚡ Widget moved here — FLEET AI Desktop`;
           setTimeout(() => { document.title = 'FLEET AI — Hologram Desktop'; }, 3000);
         }
       }
