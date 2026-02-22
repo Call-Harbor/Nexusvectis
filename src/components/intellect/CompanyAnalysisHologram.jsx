@@ -442,7 +442,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
               {/* Target audience */}
               {data.financial?.target_audience && (
                 <div>
-                  <p className="text-slate-400 text-xs font-semibold mb-2 uppercase tracking-wide">Målgruppe</p>
+                  <p className="text-slate-400 text-xs font-semibold mb-2 uppercase tracking-wide">Target Audience</p>
                   <div className="space-y-1.5">
                     {data.financial.target_audience.primary && (
                       <div className="flex items-start gap-2 text-xs">
