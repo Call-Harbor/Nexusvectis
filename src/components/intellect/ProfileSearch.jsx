@@ -170,7 +170,7 @@ export default function ProfileSearch() {
 
       const merged = {
         ...basicInfo,
-        ...careerData,
+        ...advancedCareer,
         ...skillsData,
         ...achievementsData,
         ...publicPresence,
