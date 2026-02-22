@@ -337,9 +337,9 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
 
         {error && (
           <div className="text-center text-red-400 p-6">
-            <p>Fejl: {error}</p>
+            <p>Error: {error}</p>
             <Button onClick={() => fetchData(companyName)} className="mt-3 bg-red-500/20 border border-red-500/40 text-red-300">
-              Prøv igen
+              Try Again
             </Button>
           </div>
         )}
