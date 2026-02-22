@@ -14,6 +14,7 @@ import FleetGlobe3D from "@/components/intellect/FleetGlobe3D";
 import ThinkingTerminalVisual from "@/components/intellect/ThinkingTerminalVisual";
 import CompanyAnalysisHologram from "@/components/intellect/CompanyAnalysisHologram";
 import ProfileSearch from "@/components/intellect/ProfileSearch";
+import CandidateMatcher from "@/components/intellect/CandidateMatcher";
 import MultiScreenManager from "@/components/intellect/MultiScreenManager";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
