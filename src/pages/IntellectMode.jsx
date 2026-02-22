@@ -425,6 +425,35 @@ export default function IntellectMode() {
     });
   }, []);
 
+  const handleQuickAction = useCallback((action, cmd) => {
+    switch(action) {
+      case 'predictiveAnalysis':
+        openWindow('predictive_maintenance', { x: 100, y: 100 }, { component: PredictiveMaintenanceAnalysis });
+        break;
+      case 'demandAnalysis':
+        openWindow('demand_forecast', { x: 150, y: 150 }, { component: DemandForecastAnalysis });
+        break;
+      case 'riskAssessment':
+        openWindow('risk_assessment', { x: 200, y: 200 }, { component: RiskAssessmentAnalysis });
+        break;
+      case 'performanceAnalytics':
+        openWindow('performance_analytics', { x: 250, y: 250 }, { component: PerformanceAnalyticsPanel });
+        break;
+      case 'show3DFleet':
+        setShow3DVisualization({ vehicles, routes });
+        break;
+      case 'openCompanyAnalysis':
+        setShowCompanyAnalysis(true);
+        break;
+      case 'routeOptimization':
+        openWindow('route_optimization', { x: 300, y: 300 }, { component: null });
+        sendMessage(cmd.command);
+        break;
+      default:
+        sendMessage(cmd.command);
+    }
+  }, [openWindow, vehicles, routes, sendMessage]);
+
   const handleFileUpload = async (e) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
