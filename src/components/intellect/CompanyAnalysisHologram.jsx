@@ -118,6 +118,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
     setError(null);
     setData(null);
     setCompanyName(name);
+    try {
     const result = await base44.integrations.Core.InvokeLLM({
       prompt: `You are a senior investment analyst. Analyze the company "${name}" comprehensively. Use real publicly available data.
 
