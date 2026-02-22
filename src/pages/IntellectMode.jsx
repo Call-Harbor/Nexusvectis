@@ -1433,16 +1433,12 @@ export default function IntellectMode() {
 
             <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 w-full sm:w-auto">
               <Button
-                onClick={requestMultiScreenPermission}
-                className="bg-slate-800 hover:bg-slate-700 border border-violet-500/40 text-xs sm:text-sm hidden sm:flex relative overflow-hidden group"
+                onClick={() => setShowMultiScreenManager(true)}
+                className="bg-slate-800 hover:bg-slate-700 border border-violet-500/40 text-xs sm:text-sm hidden sm:flex"
                 title="Spread FLEET AI across all your screens"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-violet-500/0 via-violet-500/10 to-violet-500/0 translate-x-full group-hover:translate-x-0 transition-transform duration-500 pointer-events-none" />
                 <Monitor className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-violet-400" />
                 <span className="text-violet-300">Multi-Screen</span>
-                {screens.length > 1 && (
-                  <span className="ml-1.5 px-1.5 py-0.5 rounded-full bg-violet-500/30 text-violet-300 text-[10px] font-bold">{screens.length}</span>
-                )}
               </Button>
               <Button
                 onClick={() => navigate(createPageUrl("Dashboard"))}
