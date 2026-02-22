@@ -558,12 +558,15 @@ Returner så præcise og realistiske data som muligt.`,
               glowClass="bg-gradient-to-br from-emerald-500/10 via-transparent to-transparent"
             >
               {data.ceo?.name ? (
-                <>
-                  {/* CEO Header */}
-                  <div className="flex items-center gap-4 mb-4 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-emerald-500/30 to-cyan-500/30 border-2 border-emerald-500/40 flex items-center justify-center flex-shrink-0">
-                      <User className="w-7 h-7 text-emerald-400" />
-                    </div>
+              <>
+                {/* CEO Header */}
+                <div className="flex items-center gap-4 mb-4 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-emerald-500/30 to-cyan-500/30 border-2 border-emerald-500/40 flex items-center justify-center flex-shrink-0 cursor-pointer hover:border-blue-400/60 transition-all group"
+                    onClick={() => { setPersonSearch(data.ceo.name); setTimeout(() => searchPerson(), 100); }}
+                    title="Søg på LinkedIn"
+                  >
+                    <User className="w-7 h-7 text-emerald-400 group-hover:text-blue-400 transition-colors" />
+                  </div>
                     <div>
                       <p className="text-white font-bold">{data.ceo.name}</p>
                       <p className="text-emerald-400 text-xs">{data.ceo.title || 'CEO'}</p>
