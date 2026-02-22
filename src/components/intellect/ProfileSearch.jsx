@@ -4,7 +4,8 @@ import { base44 } from "@/api/base44Client";
 import {
   Search, Loader2, User, Linkedin, Mail, MapPin, GraduationCap,
   CheckCircle, AlertTriangle, Clock, Award, Globe, Briefcase,
-  Network, Code2, BookOpen, Building2, ShieldCheck, X, ChevronUp, ChevronDown
+  Network, Code2, BookOpen, Building2, ShieldCheck, X, ChevronUp, ChevronDown,
+  Zap, TrendingUp
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -294,105 +295,258 @@ export default function ProfileSearch() {
             expanded={expandedSections.overview}
             onToggle={() => toggleSection('overview')}
           >
-            {profileData.professional_summary && (
-              <p className="text-slate-300 text-sm leading-relaxed">{profileData.professional_summary}</p>
+            {profileData.career_trajectory && (
+              <p className="text-slate-300 text-sm leading-relaxed mb-3"><strong>Career Path:</strong> {profileData.career_trajectory}</p>
             )}
-            {profileData.total_experience_years && (
-              <div className="flex items-center gap-2 mt-2 text-sm">
-                <Clock className="w-4 h-4 text-slate-400" />
-                <span className="text-slate-300">{profileData.total_experience_years} years experience</span>
-              </div>
-            )}
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              {profileData.total_experience_years && (
+                <div className="p-2 rounded bg-slate-800/50">
+                  <p className="text-slate-400">Experience</p>
+                  <p className="text-white font-semibold">{profileData.total_experience_years} years</p>
+                </div>
+              )}
+              {profileData.estimated_seniority && (
+                <div className="p-2 rounded bg-slate-800/50">
+                  <p className="text-slate-400">Seniority</p>
+                  <p className="text-white font-semibold">{profileData.estimated_seniority}</p>
+                </div>
+              )}
+              {profileData.growth_rate_assessment && (
+                <div className="p-2 rounded bg-slate-800/50 col-span-2">
+                  <p className="text-slate-400">Growth Pattern</p>
+                  <p className="text-white text-[11px]">{profileData.growth_rate_assessment}</p>
+                </div>
+              )}
+            </div>
           </CollapsibleSection>
 
-          {/* Career section */}
-          {profileData.career_history && profileData.career_history.length > 0 && (
+          {/* Detailed Career Progression */}
+          {profileData.detailed_career_history && profileData.detailed_career_history.length > 0 && (
             <CollapsibleSection
-              title="Career History"
-              icon={Briefcase}
-              expanded={expandedSections.career}
-              onToggle={() => toggleSection('career')}
+              title="Detailed Career Progression"
+              icon={TrendingUp}
+              expanded={expandedSections.trajectory}
+              onToggle={() => toggleSection('trajectory')}
             >
-              <div className="space-y-2">
-                {profileData.career_history.map((job, i) => (
-                  <div key={i} className="p-2 rounded-lg bg-slate-900/40 border border-slate-800/50">
-                    <p className="text-white text-sm font-semibold">{job.title}</p>
-                    <p className="text-cyan-400 text-xs">{job.company}</p>
-                    {job.period && <p className="text-slate-500 text-[10px]">{job.period}</p>}
+              <div className="space-y-3">
+                {profileData.detailed_career_history.map((role, i) => (
+                  <div key={i} className="p-3 rounded-lg bg-slate-900/50 border border-slate-800/50">
+                    <div className="flex justify-between items-start gap-2 mb-2">
+                      <div className="flex-1">
+                        <p className="text-white font-semibold">{role.role}</p>
+                        <p className="text-cyan-400 text-sm">{role.company}</p>
+                      </div>
+                      {role.dates && <p className="text-slate-500 text-xs whitespace-nowrap">{role.dates}</p>}
+                    </div>
+                    {role.impact_summary && (
+                      <p className="text-slate-300 text-xs leading-relaxed mb-1">{role.impact_summary}</p>
+                    )}
+                    {role.teams_led && (
+                      <p className="text-slate-400 text-xs mb-1">👥 Led: {role.teams_led}</p>
+                    )}
+                    {role.key_achievements && role.key_achievements.length > 0 && (
+                      <div className="mt-2 space-y-1">
+                        {role.key_achievements.map((ach, j) => (
+                          <p key={j} className="text-slate-400 text-[11px] pl-2 border-l border-cyan-500/30">✓ {ach}</p>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
-              {profileData.education && profileData.education.length > 0 && (
-                <div className="mt-3 space-y-1">
-                  <p className="text-slate-400 text-xs font-semibold uppercase">Education</p>
-                  {profileData.education.map((edu, i) => (
-                    <div key={i} className="flex items-start gap-2 text-xs">
-                      <GraduationCap className="w-3 h-3 text-emerald-400 mt-0.5 flex-shrink-0" />
-                      <span className="text-slate-300">{edu}</span>
-                    </div>
-                  ))}
+            </CollapsibleSection>
+          )}
+
+          {/* Leadership & Industry Transitions */}
+          {(profileData.leadership_experience || profileData.industry_transitions) && (
+            <CollapsibleSection
+              title="Leadership & Industry Transitions"
+              icon={Zap}
+              expanded={expandedSections.leadership}
+              onToggle={() => toggleSection('leadership')}
+            >
+              {profileData.leadership_experience && (
+                <div className="mb-3">
+                  <p className="text-slate-400 text-xs font-semibold uppercase mb-1">Leadership Experience</p>
+                  <p className="text-slate-300 text-sm leading-relaxed">{profileData.leadership_experience}</p>
+                </div>
+              )}
+              {profileData.industry_transitions && profileData.industry_transitions.length > 0 && (
+                <div>
+                  <p className="text-slate-400 text-xs font-semibold uppercase mb-2">Industry Transitions</p>
+                  <div className="space-y-1">
+                    {profileData.industry_transitions.map((trans, i) => (
+                      <div key={i} className="text-slate-300 text-xs p-1.5 rounded bg-slate-800/40">→ {trans}</div>
+                    ))}
+                  </div>
                 </div>
               )}
             </CollapsibleSection>
           )}
 
-          {/* Skills section */}
-          {(profileData.skills || profileData.certifications) && (
+          {/* Skills & Expertise section */}
+          {(profileData.core_skills || profileData.technical_expertise || profileData.certifications || profileData.board_memberships) && (
             <CollapsibleSection
               title="Skills & Expertise"
               icon={Code2}
               expanded={expandedSections.skills}
               onToggle={() => toggleSection('skills')}
             >
-              {profileData.skills && profileData.skills.length > 0 && (
-                <div className="space-y-2">
-                  <p className="text-slate-400 text-xs font-semibold uppercase">Skills</p>
+              {profileData.core_skills && profileData.core_skills.length > 0 && (
+                <div className="mb-3">
+                  <p className="text-slate-400 text-xs font-semibold uppercase mb-1.5">Core Skills</p>
                   <div className="flex flex-wrap gap-1.5">
-                    {profileData.skills.map((skill, i) => (
+                    {profileData.core_skills.map((skill, i) => (
                       <Badge key={i} className="bg-cyan-500/20 text-cyan-300 border-cyan-500/30 text-[10px]">{skill}</Badge>
                     ))}
                   </div>
                 </div>
               )}
+              {profileData.technical_expertise && profileData.technical_expertise.length > 0 && (
+                <div className="mb-3">
+                  <p className="text-slate-400 text-xs font-semibold uppercase mb-1.5">Technical Expertise</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {profileData.technical_expertise.map((tech, i) => (
+                      <Badge key={i} className="bg-violet-500/20 text-violet-300 border-violet-500/30 text-[10px]">{tech}</Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {profileData.soft_skills && profileData.soft_skills.length > 0 && (
+                <div className="mb-3">
+                  <p className="text-slate-400 text-xs font-semibold uppercase mb-1.5">Soft Skills</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {profileData.soft_skills.map((skill, i) => (
+                      <Badge key={i} className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30 text-[10px]">{skill}</Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
               {profileData.certifications && profileData.certifications.length > 0 && (
-                <div className="space-y-2 mt-3">
-                  <p className="text-slate-400 text-xs font-semibold uppercase">Certifications</p>
-                  {profileData.certifications.map((cert, i) => (
-                    <div key={i} className="flex items-center gap-2 text-xs text-slate-300">
-                      <CheckCircle className="w-3 h-3 text-emerald-400" />
-                      {cert}
-                    </div>
-                  ))}
+                <div className="mb-3">
+                  <p className="text-slate-400 text-xs font-semibold uppercase mb-1.5">Certifications</p>
+                  <div className="space-y-1">
+                    {profileData.certifications.map((cert, i) => (
+                      <div key={i} className="flex items-center gap-2 text-xs text-slate-300">
+                        <CheckCircle className="w-3 h-3 text-emerald-400 flex-shrink-0" />
+                        {cert}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {profileData.board_memberships && profileData.board_memberships.length > 0 && (
+                <div>
+                  <p className="text-slate-400 text-xs font-semibold uppercase mb-1.5">Board Memberships</p>
+                  <div className="space-y-1">
+                    {profileData.board_memberships.map((board, i) => (
+                      <div key={i} className="flex items-center gap-2 text-xs text-slate-300">
+                        <Award className="w-3 h-3 text-amber-400 flex-shrink-0" />
+                        {board}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </CollapsibleSection>
           )}
 
-          {/* Achievements section */}
-          {(profileData.notable_achievements || profileData.awards) && (
+          {/* Achievements & Impact section */}
+          {(profileData.major_accomplishments || profileData.awards_recognitions || profileData.notable_projects || profileData.founder_history) && (
             <CollapsibleSection
-              title="Achievements & Recognition"
+              title="Achievements & Impact"
               icon={Award}
               expanded={expandedSections.achievements}
               onToggle={() => toggleSection('achievements')}
             >
-              {profileData.awards && profileData.awards.length > 0 && (
-                <div className="space-y-1 mb-3">
-                  <p className="text-slate-400 text-xs font-semibold uppercase">Awards</p>
-                  {profileData.awards.map((award, i) => (
-                    <div key={i} className="flex items-center gap-2 text-xs text-slate-300">
-                      <Award className="w-3 h-3 text-amber-400" />
-                      {award}
-                    </div>
-                  ))}
+              {profileData.major_accomplishments && profileData.major_accomplishments.length > 0 && (
+                <div className="mb-3">
+                  <p className="text-slate-400 text-xs font-semibold uppercase mb-1.5">Major Accomplishments</p>
+                  <div className="space-y-1">
+                    {profileData.major_accomplishments.map((acc, i) => (
+                      <div key={i} className="text-slate-300 text-xs p-1.5 rounded bg-slate-800/40">• {acc}</div>
+                    ))}
+                  </div>
                 </div>
               )}
-              {profileData.notable_achievements && profileData.notable_achievements.length > 0 && (
-                <div className="space-y-1">
-                  <p className="text-slate-400 text-xs font-semibold uppercase">Notable Achievements</p>
-                  {profileData.notable_achievements.map((achievement, i) => (
-                    <div key={i} className="text-xs text-slate-300 leading-relaxed">• {achievement}</div>
-                  ))}
+              {profileData.awards_recognitions && profileData.awards_recognitions.length > 0 && (
+                <div className="mb-3">
+                  <p className="text-slate-400 text-xs font-semibold uppercase mb-1.5">Awards & Recognition</p>
+                  <div className="space-y-1">
+                    {profileData.awards_recognitions.map((award, i) => (
+                      <div key={i} className="flex items-center gap-2 text-xs text-slate-300">
+                        <Award className="w-3 h-3 text-amber-400 flex-shrink-0" />
+                        {award}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {profileData.notable_projects && profileData.notable_projects.length > 0 && (
+                <div className="mb-3">
+                  <p className="text-slate-400 text-xs font-semibold uppercase mb-1.5">Notable Projects</p>
+                  <div className="space-y-1">
+                    {profileData.notable_projects.map((proj, i) => (
+                      <div key={i} className="text-slate-300 text-xs p-1.5 rounded bg-slate-800/40">📌 {proj}</div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {profileData.founder_history && profileData.founder_history.length > 0 && (
+                <div>
+                  <p className="text-slate-400 text-xs font-semibold uppercase mb-1.5">Founder History</p>
+                  <div className="space-y-1">
+                    {profileData.founder_history.map((founder, i) => (
+                      <div key={i} className="text-slate-300 text-xs p-1.5 rounded bg-slate-800/40">🚀 {founder}</div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </CollapsibleSection>
+          )}
+
+          {/* Public Presence & Influence */}
+          {(profileData.media_mentions || profileData.speaking_engagements || profileData.publications || profileData.industry_impact) && (
+            <CollapsibleSection
+              title="Public Presence & Influence"
+              icon={Globe}
+              expanded={expandedSections.presence}
+              onToggle={() => toggleSection('presence')}
+            >
+              {profileData.industry_impact && (
+                <div className="mb-3">
+                  <p className="text-slate-400 text-xs font-semibold uppercase mb-1">Industry Impact</p>
+                  <p className="text-slate-300 text-sm leading-relaxed">{profileData.industry_impact}</p>
+                </div>
+              )}
+              {profileData.speaking_engagements && profileData.speaking_engagements.length > 0 && (
+                <div className="mb-3">
+                  <p className="text-slate-400 text-xs font-semibold uppercase mb-1.5">Speaking Engagements</p>
+                  <div className="space-y-1">
+                    {profileData.speaking_engagements.map((speak, i) => (
+                      <div key={i} className="text-slate-300 text-xs p-1.5 rounded bg-slate-800/40">🎤 {speak}</div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {profileData.publications && profileData.publications.length > 0 && (
+                <div className="mb-3">
+                  <p className="text-slate-400 text-xs font-semibold uppercase mb-1.5">Publications</p>
+                  <div className="space-y-1">
+                    {profileData.publications.map((pub, i) => (
+                      <div key={i} className="text-slate-300 text-xs p-1.5 rounded bg-slate-800/40">📄 {pub}</div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {profileData.media_mentions && profileData.media_mentions.length > 0 && (
+                <div>
+                  <p className="text-slate-400 text-xs font-semibold uppercase mb-1.5">Media Mentions</p>
+                  <div className="space-y-1">
+                    {profileData.media_mentions.slice(0, 5).map((mention, i) => (
+                      <div key={i} className="text-slate-300 text-xs p-1.5 rounded bg-slate-800/40">📰 {mention}</div>
+                    ))}
+                  </div>
                 </div>
               )}
             </CollapsibleSection>
