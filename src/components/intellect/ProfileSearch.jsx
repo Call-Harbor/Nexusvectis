@@ -89,15 +89,33 @@ export default function ProfileSearch() {
           }
         }),
         base44.integrations.Core.InvokeLLM({
-          prompt: `Find career history and education for "${searchQuery}": previous roles/companies with dates, education institutions and degrees, years of experience.`,
+          prompt: `Provide ADVANCED career analysis for "${searchQuery}": (1) Detailed career progression with impact/achievements at each role, (2) Industry transitions and pivots with reasons, (3) Company trajectory (startups vs enterprises), (4) Leadership experience and team sizes led, (5) Mentorship patterns, (6) Education with specializations, (7) Career growth rate assessment, (8) Estimated seniority level.`,
           add_context_from_internet: true,
           response_json_schema: {
             type: "object",
             properties: {
+              career_trajectory: { type: "string" },
+              detailed_career_history: { 
+                type: "array", 
+                items: { 
+                  type: "object",
+                  properties: {
+                    role: { type: "string" },
+                    company: { type: "string" },
+                    dates: { type: "string" },
+                    impact_summary: { type: "string" },
+                    teams_led: { type: "string" },
+                    key_achievements: { type: "array", items: { type: "string" } }
+                  },
+                  additionalProperties: true
+                } 
+              },
+              industry_transitions: { type: "array", items: { type: "string" } },
+              leadership_experience: { type: "string" },
               education: { type: "array", items: { type: "string" } },
-              career_history: { type: "array", items: { type: "object", additionalProperties: true } },
-              languages: { type: "array", items: { type: "string" } },
-              total_experience_years: { type: "number" }
+              total_experience_years: { type: "number" },
+              growth_rate_assessment: { type: "string" },
+              estimated_seniority: { type: "string" }
             }
           }
         }),
