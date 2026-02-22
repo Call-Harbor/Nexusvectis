@@ -24,13 +24,13 @@ const GDPRConsent = ({ onAccept, onDecline }) => {
         </div>
         <div className="text-slate-300 text-sm space-y-3">
           <p>
-            Vi søger offentligt tilgængelige profiler fra LinkedIn, Wikipedia og offentlige kilder kun hvad der er lovligt at dele.
+            We search publicly available profiles from LinkedIn, Wikipedia and public sources - only what is legally shareable.
           </p>
           <ul className="text-xs text-slate-400 space-y-1 list-disc list-inside">
-            <li>Data bruges kun til BusinessIntelligence</li>
-            <li>Data slettes automatisk efter 30 dage</li>
-            <li>Ikke brugt til marketing eller profiling</li>
-            <li>Alle data enkrypteret under transmission</li>
+            <li>Data is used only for Business Intelligence</li>
+            <li>Data is automatically deleted after 30 days</li>
+            <li>Not used for marketing or profiling</li>
+            <li>All data encrypted during transmission</li>
           </ul>
         </div>
         <div className="flex gap-2 pt-2">
@@ -39,13 +39,13 @@ const GDPRConsent = ({ onAccept, onDecline }) => {
             variant="outline"
             className="flex-1 border-red-500/30 text-red-400 hover:bg-red-500/10"
           >
-            Afvis
+            Decline
           </Button>
           <Button
             onClick={onAccept}
             className="flex-1 bg-cyan-600 hover:bg-cyan-700"
           >
-            Accepter
+            Accept
           </Button>
         </div>
       </motion.div>
