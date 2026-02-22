@@ -844,7 +844,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
                       {/* Languages */}
                       {personData.languages?.length > 0 && (
                         <div>
-                          <p className="text-slate-400 text-xs font-semibold mb-2 uppercase tracking-wide">Sprog</p>
+                          <p className="text-slate-400 text-xs font-semibold mb-2 uppercase tracking-wide">Languages</p>
                           <div className="flex flex-wrap gap-1.5">
                             {personData.languages.map((l, i) => (
                               <span key={i} className="px-2 py-1 rounded-full text-xs bg-slate-800/70 border border-slate-700/50 text-slate-300">{l}</span>
