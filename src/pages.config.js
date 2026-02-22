@@ -77,6 +77,7 @@ import GreenTMS from './pages/GreenTMS';
 import HologramDesktop from './pages/HologramDesktop';
 import Home from './pages/Home';
 import IntegrationsPage from './pages/IntegrationsPage';
+import IntellectMode from './pages/IntellectMode';
 import Invoices from './pages/Invoices';
 import LiveTrackingPage from './pages/LiveTrackingPage';
 import MaintenanceManagement from './pages/MaintenanceManagement';
@@ -94,7 +95,6 @@ import Shipments from './pages/Shipments';
 import TermsOfService from './pages/TermsOfService';
 import UserManagement from './pages/UserManagement';
 import WarehouseAutomation from './pages/WarehouseAutomation';
-import IntellectMode from './pages/IntellectMode';
 import __Layout from './Layout.jsx';
 
 
@@ -129,6 +129,7 @@ export const PAGES = {
     "HologramDesktop": HologramDesktop,
     "Home": Home,
     "IntegrationsPage": IntegrationsPage,
+    "IntellectMode": IntellectMode,
     "Invoices": Invoices,
     "LiveTrackingPage": LiveTrackingPage,
     "MaintenanceManagement": MaintenanceManagement,
@@ -146,7 +147,6 @@ export const PAGES = {
     "TermsOfService": TermsOfService,
     "UserManagement": UserManagement,
     "WarehouseAutomation": WarehouseAutomation,
-    "IntellectMode": IntellectMode,
 }
 
 export const pagesConfig = {
