@@ -347,6 +347,34 @@ export default function IntellectMode() {
     }
   };
 
+  // Track open HologramDesktop windows for "send to screen"
+  const trackDesktopWindow = useCallback((screenLabel, winRef) => {
+    const id = Date.now();
+    setOpenDesktopWindows(prev => [...prev, { id, label: screenLabel, ref: winRef }]);
+    // Clean up when the popup closes
+    const poll = setInterval(() => {
+      if (winRef.closed) {
+        clearInterval(poll);
+        setOpenDesktopWindows(prev => prev.filter(w => w.id !== id));
+      }
+    }, 1000);
+  }, []);
+
+  const sendWindowToScreen = useCallback((screenInfo, windowType) => {
+    if (openDesktopWindows.length === 0) {
+      toast.error('Open a Hologram Desktop first using Multi-Screen');
+      return;
+    }
+    const target = screenInfo.ref;
+    if (!target || target.closed) {
+      toast.error('That screen window is closed');
+      return;
+    }
+    // Post message to the HologramDesktop window
+    target.postMessage({ type: 'ADD_WIDGET', windowType }, '*');
+    toast.success(`Sent ${windowType} widget to ${screenInfo.label}`);
+  }, [openDesktopWindows]);
+
   const openWindow = useCallback((type, position = { x: 100 + Math.random() * 200, y: 100 + Math.random() * 200 }, data = null) => {
     // Allow multiple chart windows
     if (!type.startsWith('chart_') && activeWindows.find(w => w.type === type)) {
