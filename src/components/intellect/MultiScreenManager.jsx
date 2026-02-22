@@ -120,6 +120,7 @@ export default function MultiScreenManager({ onClose, onWindowOpened }) {
     if (w) {
       setOpenedWindows(prev => new Set([...prev, screen.id]));
       toast.success(`Opened Hologram Desktop on ${screen.label}`);
+      if (onWindowOpened) onWindowOpened(screen.label, w);
     } else {
       toast.error('Popup blocked — please allow popups for this site in your browser settings.');
     }
