@@ -120,15 +120,18 @@ export default function ProfileSearch() {
           }
         }),
         base44.integrations.Core.InvokeLLM({
-          prompt: `Find skills, expertise and board roles for "${searchQuery}": technical skills, professional expertise, certifications, board memberships, industry recognition.`,
+          prompt: `Find deep expertise for "${searchQuery}": (1) Core technical/functional skills with proficiency levels, (2) Industry-specific expertise, (3) Soft skills demonstrated, (4) Certifications and credentials, (5) Board memberships with impact, (6) Advisory roles, (7) Thought leadership areas, (8) Tools/technologies mastery.`,
           add_context_from_internet: true,
           response_json_schema: {
             type: "object",
             properties: {
-              skills: { type: "array", items: { type: "string" } },
+              core_skills: { type: "array", items: { type: "string" } },
+              technical_expertise: { type: "array", items: { type: "string" } },
+              soft_skills: { type: "array", items: { type: "string" } },
               certifications: { type: "array", items: { type: "string" } },
               board_memberships: { type: "array", items: { type: "string" } },
-              industry_roles: { type: "array", items: { type: "string" } }
+              advisory_roles: { type: "array", items: { type: "string" } },
+              thought_leadership_areas: { type: "array", items: { type: "string" } }
             }
           }
         }),
