@@ -470,7 +470,7 @@ export default function HologramDesktop() {
       </HoloWidget>}
 
       {/* Active Routes */}
-      {activeWidgets.includes('routes') && <HoloWidget title="Active Routes" icon={Route} color="amber" defaultPos={getWidgetPosition('routes', screenIndex)} onClose={() => setActiveWidgets(p => p.filter(w => w !== 'routes'))}>
+      {activeWidgets.includes('routes') && <HoloWidget title="Active Routes" icon={Route} color="amber" id="routes" defaultPos={getWidgetPosition('routes', screenIndex)} screenIndex={screenIndex} onSendToScreen={handleSendToScreen} onClose={() => setActiveWidgets(p => p.filter(w => w !== 'routes'))}>
         <div className="min-w-[260px] space-y-1.5 max-h-[160px] overflow-y-auto">
           {routes.filter(r => r.status === 'active').slice(0, 6).map((r, i) => (
             <div key={i} className="flex items-center gap-2 p-2 rounded-lg bg-slate-800/40 text-xs">
