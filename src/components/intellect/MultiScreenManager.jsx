@@ -240,6 +240,13 @@ export default function MultiScreenManager({ onClose, onWindowOpened }) {
                 {displayScreens.map((screen) => {
                   const selected = selectedScreens.has(screen.id);
                   const opened = openedWindows.has(screen.id);
+                  const secIdx = secondaryScreens.findIndex(s => s.id === screen.id);
+                  const widgetPreview = screen.isPrimary ? null : {
+                    0: 'Fleet · Alerts · Map',
+                    1: 'Shipments · Trend · Routes',
+                    2: 'Map · Fleet · Trend',
+                    3: 'Alerts · Shipments · Routes',
+                  }[secIdx] || 'Mixed widgets';
                   return (
                     <motion.button
                       key={screen.id}
@@ -272,7 +279,8 @@ export default function MultiScreenManager({ onClose, onWindowOpened }) {
                       <p className="text-white text-xs font-semibold truncate">{screen.label}</p>
                       {screen.width && <p className="text-slate-500 text-[10px]">{screen.width}×{screen.height}</p>}
                       {screen.isPrimary && <p className="text-slate-600 text-[10px]">This window</p>}
-                      {useManual && !screen.isPrimary && <p className="text-slate-600 text-[10px]">Drag window to this screen</p>}
+                      {widgetPreview && <p className="text-violet-400/70 text-[10px] mt-1 truncate">{widgetPreview}</p>}
+                      {useManual && !screen.isPrimary && <p className="text-slate-600 text-[10px]">Drag to screen</p>}
                     </motion.button>
                   );
                 })}
