@@ -206,6 +206,7 @@ export default function IntellectMode() {
   const [showCompanyAnalysis, setShowCompanyAnalysis] = useState(false);
   const [companyAnalysisTarget, setCompanyAnalysisTarget] = useState(null);
   const [showProfileSearch, setShowProfileSearch] = useState(false);
+  const [showCandidateMatcher, setShowCandidateMatcher] = useState(false);
   const [thinkingLogs, setThinkingLogs] = useState([]);
   const [showThinkingTerminal, setShowThinkingTerminal] = useState(false);
   const [screens, setScreens] = useState([]);
