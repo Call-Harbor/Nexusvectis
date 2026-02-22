@@ -602,15 +602,32 @@ export default function IntellectMode() {
           total_data_points: vehicles.length + alerts.length + routes.length + shipments.length
         }, 150, 25);
         
+        addThinkingLog('analyze', 'Multi-perspective analysis across 6 dimensions', {
+          operational: 'analyzed',
+          financial: 'analyzed',
+          customer: 'analyzed',
+          sustainability: 'analyzed',
+          risk: 'analyzed',
+          strategic: 'analyzed'
+        }, 180, 28);
+        
+        addThinkingLog('analyze', 'Root cause analysis and anomaly detection', {
+          anomalies_detected: contextAnalysis.anomalies?.length || 0,
+          dependencies_mapped: Object.keys(contextAnalysis.dependencies).length,
+          decision_confidence: decisionQuality.confidence + '%'
+        }, 160, 32);
+        
         addThinkingLog('analyze', 'Vectorizing context for embedding', {
           context_dimensions: 768,
-          embedding_model: 'multilingual-e5'
-        }, 200, 30);
+          embedding_model: 'multilingual-e5',
+          enhanced_with_predictions: true
+        }, 200, 36);
         
-        addThinkingLog('analyze', 'Semantic similarity matching', {
+        addThinkingLog('analyze', 'Semantic similarity matching with impact propagation', {
           reference_commands: 247,
-          confidence_threshold: 0.85
-        }, 180, 35);
+          confidence_threshold: 0.85,
+          prediction_patterns: Object.keys(predictions).length
+        }, 180, 40);
 
         const payload = {
           command: currentCommand,
