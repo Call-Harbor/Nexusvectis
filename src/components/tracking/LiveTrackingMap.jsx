@@ -229,17 +229,7 @@ export default function LiveTrackingMap({
       ? [validVehicles[0].latitude, validVehicles[0].longitude]
       : [55.6761, 12.5683];
 
-  // Don't render map until we have valid data
-  if ((!vehicles || vehicles.length === 0) && (!resources || resources.length === 0)) {
-    return (
-      <div className="h-[600px] rounded-2xl border border-slate-700/50 bg-slate-900/50 backdrop-blur-xl flex items-center justify-center">
-        <div className="text-center">
-          <Satellite className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-          <p className="text-slate-400">No vehicles or resources to track</p>
-        </div>
-      </div>
-    );
-  }
+  // Always show the map, even with no vehicles
 
   const mapStyles = {
     dark: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
