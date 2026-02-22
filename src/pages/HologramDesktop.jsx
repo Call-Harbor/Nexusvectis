@@ -268,10 +268,10 @@ export default function HologramDesktop() {
             </div>
           ))}
         </div>
-      </HoloWidget>
+      </HoloWidget>}
 
       {/* Shipment Tracker */}
-      <HoloWidget title="Shipment Tracker" icon={Package} color="emerald" defaultPos={{ x: 360, y: 60 }}>
+      {activeWidgets.includes('shipments') && <HoloWidget title="Shipment Tracker" icon={Package} color="emerald" defaultPos={{ x: 360, y: 60 }} onClose={() => setActiveWidgets(p => p.filter(w => w !== 'shipments'))}>
         <div className="space-y-2 min-w-[240px]">
           {[
             { label: 'In Transit', count: inTransit.length, color: 'text-cyan-400' },
