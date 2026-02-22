@@ -403,7 +403,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
               {/* Geographic markets */}
               {data.financial?.geographic_markets?.length > 0 && (
                 <div className="mb-4">
-                  <p className="text-slate-400 text-xs font-semibold mb-2 uppercase tracking-wide">Geografisk Fordeling</p>
+                  <p className="text-slate-400 text-xs font-semibold mb-2 uppercase tracking-wide">Geographic Distribution</p>
                   <div className="space-y-1.5">
                     {data.financial.geographic_markets.slice(0, 5).map((m, i) => (
                       <div key={i} className="flex items-center gap-2">
