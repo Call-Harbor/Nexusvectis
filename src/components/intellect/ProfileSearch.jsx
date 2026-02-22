@@ -60,8 +60,12 @@ export default function ProfileSearch() {
   const [expandedSections, setExpandedSections] = useState({
     overview: true,
     career: true,
+    trajectory: true,
+    leadership: true,
     skills: true,
-    achievements: true
+    achievements: true,
+    impact: true,
+    presence: true
   });
 
   const handleSearch = async () => {
