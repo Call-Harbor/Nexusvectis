@@ -217,11 +217,13 @@ export default function IntellectMode() {
   const [multiScreenDismissed, setMultiScreenDismissed] = useState(false);
   const [showMultiScreenManager, setShowMultiScreenManager] = useState(false);
   const [openDesktopWindows, setOpenDesktopWindows] = useState([]); // {id, label, ref}
+  const [showAdvancedPanel, setShowAdvancedPanel] = useState(false);
   const messagesEndRef = useRef(null);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const abortControllerRef = useRef(null);
   const fileInputRef = useRef(null);
+  const { executeCommand: advancedExecute, loading: advancedLoading, results: advancedResults, error: advancedError } = useAdvancedIntellect();
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
