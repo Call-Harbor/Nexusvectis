@@ -572,7 +572,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
                       <p className="text-emerald-400 text-xs">{data.ceo.title || 'CEO'}</p>
                       <div className="flex gap-2 mt-1 flex-wrap">
                         {data.ceo.years_in_role && <Badge className="bg-slate-800 text-slate-300 text-[10px]">{data.ceo.years_in_role}</Badge>}
-                        {data.ceo.age && <Badge className="bg-slate-800 text-slate-300 text-[10px]">{data.ceo.age} år</Badge>}
+                        {data.ceo.age && <Badge className="bg-slate-800 text-slate-300 text-[10px]">{data.ceo.age} years old</Badge>}
                         <button
                           onClick={() => { setPersonSearch(data.ceo.name); setTimeout(() => searchPerson(), 100); }}
                           className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500/20 border border-blue-500/40 text-blue-300 text-[10px] hover:bg-blue-500/30 transition-all"
