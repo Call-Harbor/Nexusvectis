@@ -398,7 +398,7 @@ export default function HologramDesktop() {
       </HoloWidget>}
 
       {/* Shipment Tracker */}
-      {activeWidgets.includes('shipments') && <HoloWidget title="Shipment Tracker" icon={Package} color="emerald" defaultPos={getWidgetPosition('shipments', screenIndex)} onClose={() => setActiveWidgets(p => p.filter(w => w !== 'shipments'))}>
+      {activeWidgets.includes('shipments') && <HoloWidget title="Shipment Tracker" icon={Package} color="emerald" id="shipments" defaultPos={getWidgetPosition('shipments', screenIndex)} screenIndex={screenIndex} onSendToScreen={handleSendToScreen} onClose={() => setActiveWidgets(p => p.filter(w => w !== 'shipments'))}>
         <div className="space-y-2 min-w-[240px]">
           {[
             { label: 'In Transit', count: inTransit.length, color: 'text-cyan-400' },
