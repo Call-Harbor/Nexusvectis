@@ -242,20 +242,19 @@ export default function IntellectMode() {
         responseText = `Route optimization processed. Recommended changes: ${JSON.stringify(params).substring(0, 100)}...`;
       } else if (action === 'OPEN_WINDOW') {
         const windowType = params.window_type;
-        if (windowType === 'dashboard') {
-          setShowHologramDesktop(true);
-          responseText = 'Opening hologram dashboard...';
-        } else if (windowType === 'globe') {
-          setShowFleetGlobe(true);
-          responseText = 'Opening 3D fleet globe...';
-        } else if (windowType === 'company') {
-          const company = params.company_name || 'Unknown Company';
-          setCompanyName(company);
-          setShowCompanyAnalysis(true);
-          responseText = `Opening company analysis for ${company}...`;
-        } else {
-          responseText = `Opening ${windowType}...`;
-        }
+        responseText = 'Opening window...';
+        
+        setTimeout(() => {
+          if (windowType === 'dashboard') {
+            setShowHologramDesktop(true);
+          } else if (windowType === 'globe') {
+            setShowFleetGlobe(true);
+          } else if (windowType === 'company') {
+            const company = params.company_name || 'Unknown Company';
+            setCompanyName(company);
+            setShowCompanyAnalysis(true);
+          }
+        }, 100);
       } else if (action === 'ALERT') {
         responseText = `Alert: ${params.message || 'System alert triggered'}`;
       } else if (action === 'COMMAND_EXECUTED') {
