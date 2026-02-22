@@ -11,12 +11,18 @@ import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
 // Draggable hologram widget
-function HoloWidget({ title, icon: Icon, color, children, defaultPos, id, onClose }) {
+function HoloWidget({ title, icon: Icon, color, children, defaultPos, id, onClose, screenIndex, onSendToScreen }) {
   const [pos, setPos] = useState(defaultPos || { x: 40, y: 40 });
   const [minimized, setMinimized] = useState(false);
   const dragging = useRef(false);
   const offset = useRef({ x: 0, y: 0 });
   const widgetRef = useRef(null);
+
+  const sendToOtherScreen = () => {
+    if (onSendToScreen) {
+      onSendToScreen(id, title);
+    }
+  };
 
   const onMouseDown = (e) => {
     dragging.current = true;
