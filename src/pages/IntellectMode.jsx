@@ -209,6 +209,7 @@ export default function IntellectMode() {
   const [showMultiScreenPrompt, setShowMultiScreenPrompt] = useState(false);
   const [multiScreenDismissed, setMultiScreenDismissed] = useState(false);
   const [showMultiScreenManager, setShowMultiScreenManager] = useState(false);
+  const [openDesktopWindows, setOpenDesktopWindows] = useState([]); // {id, label, ref}
   const messagesEndRef = useRef(null);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
