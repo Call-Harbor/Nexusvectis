@@ -654,7 +654,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
                   )}
                 </>
               ) : (
-                <p className="text-slate-500 text-sm">Ingen CEO-data fundet</p>
+                <p className="text-slate-500 text-sm">No CEO data found</p>
               )}
             </HologramPanel>
 
