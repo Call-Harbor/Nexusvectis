@@ -218,22 +218,21 @@ export default function IntellectMode() {
 
       let action = mainResult?.data?.action || mainResult?.action;
       let params = mainResult?.data?.parameters || mainResult?.parameters || {};
-      const cmd = currentCommand.toLowerCase();
 
-      // Detect window opening requests from command text
-      if (cmd.includes('dashboard') || cmd.includes('hologram')) {
+      // Handle window opening requests
+      const shouldOpenDashboard = currentCommand.toLowerCase().includes('dashboard') || currentCommand.toLowerCase().includes('hologram');
+      const shouldOpenGlobe = currentCommand.toLowerCase().includes('globe') || currentCommand.toLowerCase().includes('3d');
+      const shouldOpenCompany = currentCommand.toLowerCase().includes('analyze company') || currentCommand.toLowerCase().includes('search company');
+
+      if (shouldOpenDashboard && !action) {
         action = 'OPEN_WINDOW';
-        params.window_type = 'dashboard';
-      } else if (cmd.includes('globe') || cmd.includes('3d')) {
+        params = { window_type: 'dashboard' };
+      } else if (shouldOpenGlobe && !action) {
         action = 'OPEN_WINDOW';
-        params.window_type = 'globe';
-      } else if (cmd.includes('analyze company') || cmd.includes('search company')) {
+        params = { window_type: 'globe' };
+      } else if (shouldOpenCompany && !action) {
         action = 'OPEN_WINDOW';
-        params.window_type = 'company';
-        if (!params.company_name) {
-          const match = currentCommand.match(/(?:company|analyze|search)\s+([^\s]+)/i);
-          params.company_name = match?.[1] || 'Unknown';
-        }
+        params = { window_type: 'company', company_name: currentCommand.match(/(?:company|analyze|search)\s+([^\s]+)/i)?.[1] || 'Unknown' };
       }
 
       let responseText = '';
@@ -243,16 +242,19 @@ export default function IntellectMode() {
         responseText = `Route optimization processed. Recommended changes: ${JSON.stringify(params).substring(0, 100)}...`;
       } else if (action === 'OPEN_WINDOW') {
         const windowType = params.window_type;
-        responseText = `Opening ${windowType}...`;
-        
-        // Open windows with state update
         if (windowType === 'dashboard') {
           setShowHologramDesktop(true);
+          responseText = 'Opening hologram dashboard...';
         } else if (windowType === 'globe') {
           setShowFleetGlobe(true);
+          responseText = 'Opening 3D fleet globe...';
         } else if (windowType === 'company') {
-          setCompanyName(params.company_name || 'Unknown Company');
+          const company = params.company_name || 'Unknown Company';
+          setCompanyName(company);
           setShowCompanyAnalysis(true);
+          responseText = `Opening company analysis for ${company}...`;
+        } else {
+          responseText = `Opening ${windowType}...`;
         }
       } else if (action === 'ALERT') {
         responseText = `Alert: ${params.message || 'System alert triggered'}`;
