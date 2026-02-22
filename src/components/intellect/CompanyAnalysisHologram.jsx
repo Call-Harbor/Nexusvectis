@@ -641,7 +641,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
                   {/* Key achievements */}
                   {data.ceo.key_achievements?.length > 0 && (
                     <div>
-                      <p className="text-slate-400 text-xs font-semibold mb-2 uppercase tracking-wide">Nøglepræstationer</p>
+                      <p className="text-slate-400 text-xs font-semibold mb-2 uppercase tracking-wide">Key Achievements</p>
                       <div className="space-y-1.5">
                         {data.ceo.key_achievements.map((a, i) => (
                           <div key={i} className="flex items-start gap-2 text-xs">
