@@ -641,7 +641,8 @@ export default function IntellectMode() {
         const microCalls = await executeParallelMicroAnalyses(input, vehicles, alerts, routes, shipments);
         
         const duration = Date.now() - startTime;
-        const mistralResponse = microCalls[0]?.data || { action: 'ANALYZE', parameters: {} };
+        const mainCallResult = microCalls[0] || {};
+        const mistralResponse = (mainCallResult.data || mainCallResult) || { action: 'ANALYZE', parameters: {} };
         
         addThinkingLog('think', 'Decoding model output', 
           { tokens_generated: 250, decoding_method: 'beam_search' }, 80, 80);
@@ -654,7 +655,7 @@ export default function IntellectMode() {
         
         addThinkingLog('think', `Model inference complete`, { 
           model: 'Mistral Large', 
-          action: mistralResponse.data.action,
+          action: mistralResponse.action || 'ANALYZE',
           inference_time_ms: duration,
           total_tokens: tokenCount + 250 
         }, duration, 95);
@@ -672,7 +673,7 @@ export default function IntellectMode() {
         // Remove streaming placeholder
         setMessages(prev => prev.filter((_, idx) => idx !== streamingMsgIndex));
 
-        const { action, parameters, message, open_window } = mistralResponse.data;
+        const { action, parameters, message, open_window } = mistralResponse;
         setRetryCount(0);
 
         // Log usage for monthly billing
