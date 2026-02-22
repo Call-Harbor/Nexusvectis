@@ -1589,6 +1589,8 @@ export default function IntellectMode() {
               <HologramWindow
                 key={window.id}
                 id={window.id}
+                windowType={window.type}
+                onSendToScreen={{ screens: openDesktopWindows, send: sendWindowToScreen }}
                 title={
                   window.type === 'fleet' ? 'Fleet' :
                   window.type === 'alerts' ? 'Alerts' :
