@@ -463,7 +463,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
 
             {/* HOLOGRAM 2: Historie */}
             <HologramPanel
-              title="2 · Virksomhedens Historie & Forretningsmodel"
+              title="2 · Company History & Business Model"
               icon={Building2}
               colorClass="bg-violet-500/10 text-violet-400"
               borderClass="border-violet-500/40"
