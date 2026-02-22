@@ -728,7 +728,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
                       <div>
                         <p className="text-white font-bold text-sm">{data.ownership.founder_name}</p>
                         <div className="flex gap-2">
-                          {data.ownership.founder_year && <p className="text-amber-400 text-xs">Grundlagt {data.ownership.founder_year}</p>}
+                          {data.ownership.founder_year && <p className="text-amber-400 text-xs">Founded {data.ownership.founder_year}</p>}
                           {data.ownership.founder_current_role && <p className="text-slate-400 text-xs">· {data.ownership.founder_current_role}</p>}
                         </div>
                       </div>
