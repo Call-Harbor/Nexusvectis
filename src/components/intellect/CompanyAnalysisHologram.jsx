@@ -626,7 +626,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
                   {/* Previous roles */}
                   {data.ceo.previous_roles?.length > 0 && (
                     <div className="mb-4">
-                      <p className="text-slate-400 text-xs font-semibold mb-2 uppercase tracking-wide">Tidligere Stillinger</p>
+                      <p className="text-slate-400 text-xs font-semibold mb-2 uppercase tracking-wide">Previous Positions</p>
                       <div className="space-y-1">
                         {data.ceo.previous_roles.map((r, i) => (
                           <div key={i} className="flex items-center gap-2 text-xs">
