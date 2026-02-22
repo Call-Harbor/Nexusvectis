@@ -731,6 +731,190 @@ Returner så præcise og realistiske data som muligt.`,
               )}
             </HologramPanel>
 
+            {/* HOLOGRAM 5: Person/LinkedIn Search */}
+            <div className="lg:col-span-2">
+              <HologramPanel
+                title="5 · Person & LinkedIn Søgning"
+                icon={UserSearch}
+                colorClass="bg-blue-500/10 text-blue-400"
+                borderClass="border-blue-500/40"
+                glowClass="bg-gradient-to-br from-blue-500/10 via-transparent to-transparent"
+              >
+                {/* Search bar */}
+                <div className="flex gap-2 mb-4">
+                  <div className="flex-1 relative">
+                    <Linkedin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-400" />
+                    <input
+                      value={personSearch}
+                      onChange={e => setPersonSearch(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && searchPerson()}
+                      placeholder={`Søg person${companyName ? ` hos ${companyName}` : ''} (fx CEO, CFO, navn)...`}
+                      className="w-full pl-10 pr-4 py-2.5 bg-slate-900/60 border-2 border-blue-500/30 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-400 text-sm"
+                    />
+                  </div>
+                  <button
+                    onClick={searchPerson}
+                    disabled={personLoading || !personSearch.trim()}
+                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-sm font-semibold disabled:opacity-50 flex items-center gap-2"
+                  >
+                    {personLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+                    Søg
+                  </button>
+                </div>
+
+                {personLoading && (
+                  <div className="flex items-center justify-center gap-3 py-8 text-slate-400">
+                    <Loader2 className="w-5 h-5 animate-spin text-blue-400" />
+                    <span className="text-sm">Søger i LinkedIn, Wikipedia, presseomtale...</span>
+                  </div>
+                )}
+
+                {!personData && !personLoading && (
+                  <div className="text-center py-8 text-slate-500 text-sm">
+                    <Linkedin className="w-10 h-10 mx-auto mb-3 opacity-30" />
+                    <p>Søg efter en person for at se deres profil, karriere og netværk</p>
+                  </div>
+                )}
+
+                {personData && !personLoading && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Profile card */}
+                    <div className="space-y-3">
+                      <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-start gap-4">
+                        <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500/30 to-cyan-500/30 border-2 border-blue-500/40 flex items-center justify-center flex-shrink-0">
+                          <User className="w-7 h-7 text-blue-400" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-white font-bold">{personData.full_name}</p>
+                          <p className="text-blue-400 text-xs">{personData.current_title}</p>
+                          <p className="text-slate-400 text-xs">{personData.current_company}</p>
+                          {personData.location && (
+                            <div className="flex items-center gap-1 mt-1">
+                              <MapPin className="w-3 h-3 text-slate-500" />
+                              <span className="text-slate-500 text-xs">{personData.location}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Contact info */}
+                      <div className="space-y-1.5">
+                        {personData.linkedin_url && (
+                          <div className="flex items-center gap-2 p-2 rounded-lg bg-slate-800/50 text-xs">
+                            <Linkedin className="w-4 h-4 text-blue-400 flex-shrink-0" />
+                            <span className="text-slate-300 truncate">{personData.linkedin_url}</span>
+                          </div>
+                        )}
+                        {personData.email_guess && (
+                          <div className="flex items-center gap-2 p-2 rounded-lg bg-slate-800/50 text-xs">
+                            <Mail className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                            <span className="text-slate-300">{personData.email_guess}</span>
+                          </div>
+                        )}
+                        {personData.connections_count && (
+                          <div className="flex items-center gap-2 p-2 rounded-lg bg-slate-800/50 text-xs">
+                            <Network className="w-4 h-4 text-violet-400 flex-shrink-0" />
+                            <span className="text-slate-300">{personData.connections_count} forbindelser</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Skills */}
+                      {personData.skills?.length > 0 && (
+                        <div>
+                          <p className="text-slate-400 text-xs font-semibold mb-2 uppercase tracking-wide">Kompetencer</p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {personData.skills.slice(0, 8).map((s, i) => (
+                              <span key={i} className="px-2 py-1 rounded-full text-xs bg-blue-500/10 border border-blue-500/20 text-blue-300">{s}</span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Languages */}
+                      {personData.languages?.length > 0 && (
+                        <div>
+                          <p className="text-slate-400 text-xs font-semibold mb-2 uppercase tracking-wide">Sprog</p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {personData.languages.map((l, i) => (
+                              <span key={i} className="px-2 py-1 rounded-full text-xs bg-slate-800/70 border border-slate-700/50 text-slate-300">{l}</span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Career & achievements */}
+                    <div className="space-y-3">
+                      {/* Summary */}
+                      {personData.summary && (
+                        <p className="text-slate-300 text-xs leading-relaxed p-3 rounded-lg bg-slate-900/40 border border-slate-700/50">
+                          {personData.summary}
+                        </p>
+                      )}
+
+                      {/* Career history */}
+                      {personData.career_history?.length > 0 && (
+                        <div>
+                          <p className="text-slate-400 text-xs font-semibold mb-2 uppercase tracking-wide">Karriere</p>
+                          <div className="space-y-1.5 relative">
+                            <div className="absolute left-3 top-0 bottom-0 w-px bg-blue-500/20" />
+                            {personData.career_history.map((job, i) => (
+                              <div key={i} className="flex items-start gap-3 pl-6 relative">
+                                <div className="absolute left-2 top-1.5 w-2 h-2 rounded-full bg-blue-400 flex-shrink-0" />
+                                <div>
+                                  <p className="text-white text-xs font-semibold">{job.title}</p>
+                                  <p className="text-blue-400 text-xs">{job.company}</p>
+                                  {job.period && <p className="text-slate-500 text-[10px]">{job.period}</p>}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Education */}
+                      {personData.education?.length > 0 && (
+                        <div>
+                          <p className="text-slate-400 text-xs font-semibold mb-2 uppercase tracking-wide">Uddannelse</p>
+                          <div className="space-y-1">
+                            {personData.education.map((e, i) => (
+                              <div key={i} className="flex items-start gap-2 text-xs">
+                                <GraduationCap className="w-3 h-3 text-emerald-400 mt-0.5 flex-shrink-0" />
+                                <span className="text-slate-300">{e}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Board memberships */}
+                      {personData.board_memberships?.length > 0 && (
+                        <div>
+                          <p className="text-slate-400 text-xs font-semibold mb-2 uppercase tracking-wide">Bestyrelsesposter</p>
+                          <div className="space-y-1">
+                            {personData.board_memberships.map((b, i) => (
+                              <div key={i} className="flex items-center gap-2 text-xs">
+                                <div className="w-1.5 h-1.5 rounded-full bg-amber-400/60" />
+                                <span className="text-slate-300">{b}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Notable quote */}
+                      {personData.notable_quote && (
+                        <blockquote className="p-3 rounded-lg border-l-2 border-blue-400/50 bg-blue-500/5 italic">
+                          <p className="text-slate-300 text-xs">"{personData.notable_quote}"</p>
+                        </blockquote>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </HologramPanel>
+            </div>
+
           </div>
         )}
       </div>
