@@ -8,7 +8,7 @@ import {
   GraduationCap, Shield, ChevronRight, Search, Linkedin,
   Network, Mail, UserSearch, Leaf, AlertTriangle, Award,
   TrendingDown, Globe, DollarSign, Activity, CheckCircle,
-  XCircle, MinusCircle, ChevronDown, ChevronUp
+  XCircle, MinusCircle, ChevronDown, ChevronUp, ExternalLink, Monitor
 } from 'lucide-react';
 import { 
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
