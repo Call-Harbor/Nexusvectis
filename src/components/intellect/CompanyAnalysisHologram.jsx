@@ -245,36 +245,40 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
     if (!personSearch.trim()) return;
     setPersonLoading(true);
     setPersonData(null);
-    const result = await base44.integrations.Core.InvokeLLM({
-      prompt: `Find detailed profile information about the person "${personSearch}"${companyName ? ` at the company "${companyName}"` : ''}. 
-      CRITICAL: Find their LinkedIn profile and extract the direct URL to their profile picture/headshot image. This must be a valid, publicly accessible image URL from LinkedIn or professional photo sources.
-      Use publicly available information sources including LinkedIn, Wikipedia, company profiles, press coverage and interviews.
-      Return as accurate and realistic data as possible with the linkedin_profile_image_url being a direct link to their professional headshot.`,
-      add_context_from_internet: true,
-      response_json_schema: {
-        type: "object",
-        properties: {
-          full_name: { type: "string" },
-          current_title: { type: "string" },
-          current_company: { type: "string" },
-          location: { type: "string" },
-          linkedin_url: { type: "string" },
-          linkedin_profile_image_url: { type: "string" },
-          email_guess: { type: "string" },
-          education: { type: "array", items: { type: "string" } },
-          career_history: { type: "array", items: { type: "object", properties: { company: { type: "string" }, title: { type: "string" }, period: { type: "string" } } } },
-          skills: { type: "array", items: { type: "string" } },
-          board_memberships: { type: "array", items: { type: "string" } },
-          notable_achievements: { type: "array", items: { type: "string" } },
-          summary: { type: "string" },
-          connections_count: { type: "string" },
-          languages: { type: "array", items: { type: "string" } },
-          notable_quote: { type: "string" }
+    try {
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `Find detailed profile information about "${personSearch}"${companyName ? ` who works at ${companyName}` : ''}. Use LinkedIn, Wikipedia, and professional sources. Return complete profile data.`,
+        add_context_from_internet: true,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            full_name: { type: "string" },
+            current_title: { type: "string" },
+            current_company: { type: "string" },
+            location: { type: "string" },
+            linkedin_url: { type: "string" },
+            linkedin_profile_image_url: { type: "string" },
+            email_guess: { type: "string" },
+            education: { type: "array", items: { type: "string" } },
+            career_history: { type: "array", items: { type: "object", additionalProperties: true } },
+            skills: { type: "array", items: { type: "string" } },
+            board_memberships: { type: "array", items: { type: "string" } },
+            notable_achievements: { type: "array", items: { type: "string" } },
+            summary: { type: "string" },
+            connections_count: { type: "string" },
+            languages: { type: "array", items: { type: "string" } },
+            notable_quote: { type: "string" }
+          }
         }
+      });
+      if (result) {
+        setPersonData(result);
       }
-    });
-    setPersonData(result);
-    setPersonLoading(false);
+    } catch (err) {
+      console.error('Person search error:', err);
+    } finally {
+      setPersonLoading(false);
+    }
   };
 
   const tabs = [
