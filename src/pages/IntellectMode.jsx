@@ -1825,6 +1825,15 @@ export default function IntellectMode() {
             {/* Quick Actions */}
             <div className="flex gap-2 flex-wrap">
               <Button
+                onClick={() => setShowCompanyAnalysis(true)}
+                variant="outline"
+                size="sm"
+                className="border-fuchsia-500/30 text-fuchsia-400 hover:bg-fuchsia-500/10"
+              >
+                <Building2 className="w-3.5 h-3.5 mr-1.5" />
+                Company Analytics
+              </Button>
+              <Button
                 onClick={handleOpenProfileSearch}
                 variant="outline"
                 size="sm"
