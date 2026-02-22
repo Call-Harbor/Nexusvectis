@@ -224,6 +224,26 @@ export default function IntellectMode() {
         responseText = `Fleet Analysis Complete: ${microAnalyses.filter(m => m.score > 5).length} significant insights identified. Key opportunities: ${microAnalyses.slice(0, 3).map(m => m.action).join(', ')}.`;
       } else if (action === 'OPTIMIZE') {
         responseText = `Route optimization processed. Recommended changes: ${JSON.stringify(params).substring(0, 100)}...`;
+      } else if (action === 'OPEN_WINDOW') {
+        const windowType = params.window_type;
+        if (windowType === 'dashboard') {
+          setShowHologramDesktop(true);
+          responseText = 'Opening hologram dashboard...';
+        } else if (windowType === 'globe') {
+          setShowFleetGlobe(true);
+          responseText = 'Opening 3D fleet globe...';
+        } else if (windowType === 'company') {
+          const company = params.company_name || 'Unknown Company';
+          setCompanyName(company);
+          setShowCompanyAnalysis(true);
+          responseText = `Opening company analysis for ${company}...`;
+        } else {
+          responseText = `Opening ${windowType}...`;
+        }
+      } else if (action === 'ALERT') {
+        responseText = `Alert: ${params.message || 'System alert triggered'}`;
+      } else if (action === 'COMMAND_EXECUTED') {
+        responseText = `Command executed successfully. Result: ${params.result || 'Done'}`;
       } else {
         responseText = `Command processed: ${action}. Results: ${JSON.stringify(params).substring(0, 100)}...`;
       }
