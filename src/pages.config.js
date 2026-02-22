@@ -77,7 +77,6 @@ import GreenTMS from './pages/GreenTMS';
 import HologramDesktop from './pages/HologramDesktop';
 import Home from './pages/Home';
 import IntegrationsPage from './pages/IntegrationsPage';
-import IntellectMode from './pages/IntellectMode';
 import Invoices from './pages/Invoices';
 import LiveTrackingPage from './pages/LiveTrackingPage';
 import MaintenanceManagement from './pages/MaintenanceManagement';
@@ -129,7 +128,6 @@ export const PAGES = {
     "HologramDesktop": HologramDesktop,
     "Home": Home,
     "IntegrationsPage": IntegrationsPage,
-    "IntellectMode": IntellectMode,
     "Invoices": Invoices,
     "LiveTrackingPage": LiveTrackingPage,
     "MaintenanceManagement": MaintenanceManagement,
