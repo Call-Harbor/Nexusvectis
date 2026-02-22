@@ -113,7 +113,38 @@ const HologramWindow = React.memo(({ id, title, icon: Icon, children, position, 
               </div>
               <span className="text-white font-semibold tracking-wide text-sm sm:text-base">{title}</span>
             </div>
-            <div className="flex gap-1 sm:gap-2">
+            <div className="flex gap-1 sm:gap-2 items-center">
+              {onSendToScreen && (
+                <div className="relative">
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    title="Send to screen"
+                    onClick={() => setShowScreenMenu(s => !s)}
+                    className="h-7 w-7 sm:h-8 sm:w-8 text-violet-400 hover:text-violet-300 hover:bg-violet-500/20 transition-all"
+                  >
+                    <ExternalLink className="w-3 h-3 sm:w-4 sm:h-4" />
+                  </Button>
+                  {showScreenMenu && (
+                    <div className="absolute right-0 top-9 z-[9999] bg-slate-900 border border-violet-500/40 rounded-xl shadow-xl min-w-[180px] py-1">
+                      <p className="text-slate-500 text-[10px] px-3 pt-1 pb-0.5 uppercase tracking-wide">Send to screen</p>
+                      {onSendToScreen.screens.map((s, i) => (
+                        <button
+                          key={i}
+                          onClick={() => { onSendToScreen.send(s, windowType); setShowScreenMenu(false); }}
+                          className="flex items-center gap-2 w-full px-3 py-2 text-xs text-slate-300 hover:bg-violet-500/20 hover:text-white transition-colors"
+                        >
+                          <Monitor className="w-3.5 h-3.5 text-violet-400" />
+                          {s.label}
+                        </button>
+                      ))}
+                      {onSendToScreen.screens.length === 0 && (
+                        <p className="text-slate-600 text-xs px-3 py-2">No Hologram Desktops open</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
               <Button
                 size="icon"
                 variant="ghost"
