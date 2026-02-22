@@ -207,9 +207,9 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
     setPersonLoading(true);
     setPersonData(null);
     const result = await base44.integrations.Core.InvokeLLM({
-      prompt: `Find detaljeret profil-information om personen "${personSearch}"${companyName ? ` hos virksomheden "${companyName}"` : ''}. 
-Brug offentligt tilgængelige informationskilder inkl. LinkedIn, Wikipedia, virksomhedsprofiler, presseomtale og interviews.
-Returner så præcise og realistiske data som muligt.`,
+      prompt: `Find detailed profile information about the person "${personSearch}"${companyName ? ` at the company "${companyName}"` : ''}. 
+      Use publicly available information sources including LinkedIn, Wikipedia, company profiles, press coverage and interviews.
+      Return as accurate and realistic data as possible.`,
       add_context_from_internet: true,
       response_json_schema: {
         type: "object",
