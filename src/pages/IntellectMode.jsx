@@ -275,6 +275,11 @@ export default function IntellectMode() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, streamingMessage]);
 
+  const handleOpenProfileSearch = () => {
+    setShowProfileSearch(true);
+    setMessages(prev => [...prev, { role: "system", content: "🔍 People Intelligence opened - Search any person to get detailed profiles with GDPR compliance" }]);
+  };
+
   // Multi-screen detection
   useEffect(() => {
     const detectScreens = async () => {
