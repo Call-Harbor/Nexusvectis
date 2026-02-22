@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Monitor, X, Sparkles, Loader2, CheckCircle, ExternalLink, Layout, RefreshCw, AlertTriangle, Plus, Minus } from 'lucide-react';
 import { Button } from "@/components/ui/button";
+import { createPageUrl } from "@/utils";
 import { toast } from "sonner";
 
 export default function MultiScreenManager({ onClose }) {
