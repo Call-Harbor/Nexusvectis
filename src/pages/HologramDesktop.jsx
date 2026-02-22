@@ -125,6 +125,11 @@ function HoloWidget({ title, icon: Icon, color, children, defaultPos, id, onClos
             <div className={`w-1.5 h-1.5 rounded-full ${iconColor.replace('text-', 'bg-')} animate-pulse`} />
             <div className={`w-1.5 h-1.5 rounded-full ${iconColor.replace('text-', 'bg-')} opacity-50 animate-pulse`} style={{ animationDelay: '0.4s' }} />
           </div>
+          {onSendToScreen && (
+            <button onClick={sendToOtherScreen} className="ml-1 text-slate-500 hover:text-slate-300 transition-colors" title="Send to other screen">
+              <Send className="w-3 h-3" />
+            </button>
+          )}
           <button onClick={() => setMinimized(m => !m)} className="ml-2 text-slate-500 hover:text-slate-300 transition-colors">
             {minimized ? <Maximize2 className="w-3 h-3" /> : <Minimize2 className="w-3 h-3" />}
           </button>
