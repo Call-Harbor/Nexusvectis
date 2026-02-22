@@ -1018,9 +1018,13 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-3">
                         <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-start gap-4">
-                          <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500/30 to-cyan-500/30 border-2 border-blue-500/40 flex items-center justify-center flex-shrink-0">
-                            <User className="w-7 h-7 text-blue-400" />
-                          </div>
+                          {personData.linkedin_profile_image_url ? (
+                            <img src={personData.linkedin_profile_image_url} alt={personData.full_name} className="w-14 h-14 rounded-full object-cover border-2 border-blue-500/40 flex-shrink-0" />
+                          ) : (
+                            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500/30 to-cyan-500/30 border-2 border-blue-500/40 flex items-center justify-center flex-shrink-0">
+                              <User className="w-7 h-7 text-blue-400" />
+                            </div>
+                          )}
                           <div className="flex-1 min-w-0">
                             <p className="text-white font-bold">{personData.full_name}</p>
                             <p className="text-blue-400 text-xs">{personData.current_title}</p>
