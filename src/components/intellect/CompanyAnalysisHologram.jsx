@@ -316,7 +316,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
         }),
         // Career progression with impact
         base44.integrations.Core.InvokeLLM({
-          prompt: `For "${personSearch}"${companyName ? ` at ${companyName}` : ''}, provide detailed career progression: 5+ years of job roles with company, dates, job title, impact/achievements at each role, teams led, industry transitions, leadership experience. Real data only.`,
+          prompt: `For "${personSearch}"${companyName ? ` at ${companyName}` : ''}, provide verified career progression from credible sources only. DO NOT fabricate job roles, companies, or achievements. Leave empty if unverified.`,
           add_context_from_internet: true,
           response_json_schema: {
             type: "object",
