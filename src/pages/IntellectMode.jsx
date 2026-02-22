@@ -216,8 +216,24 @@ export default function IntellectMode() {
         shipments
       );
 
-      const action = mainResult?.data?.action;
-      const params = mainResult?.data?.parameters || {};
+      let action = mainResult?.data?.action || mainResult?.action;
+      let params = mainResult?.data?.parameters || mainResult?.parameters || {};
+
+      // Handle window opening requests
+      const shouldOpenDashboard = currentCommand.toLowerCase().includes('dashboard') || currentCommand.toLowerCase().includes('hologram');
+      const shouldOpenGlobe = currentCommand.toLowerCase().includes('globe') || currentCommand.toLowerCase().includes('3d');
+      const shouldOpenCompany = currentCommand.toLowerCase().includes('analyze company') || currentCommand.toLowerCase().includes('search company');
+
+      if (shouldOpenDashboard && !action) {
+        action = 'OPEN_WINDOW';
+        params = { window_type: 'dashboard' };
+      } else if (shouldOpenGlobe && !action) {
+        action = 'OPEN_WINDOW';
+        params = { window_type: 'globe' };
+      } else if (shouldOpenCompany && !action) {
+        action = 'OPEN_WINDOW';
+        params = { window_type: 'company', company_name: currentCommand.match(/(?:company|analyze|search)\s+([^\s]+)/i)?.[1] || 'Unknown' };
+      }
 
       let responseText = '';
       if (action === 'ANALYZE') {
@@ -245,7 +261,7 @@ export default function IntellectMode() {
       } else if (action === 'COMMAND_EXECUTED') {
         responseText = `Command executed successfully. Result: ${params.result || 'Done'}`;
       } else {
-        responseText = `Command processed: ${action}. Results: ${JSON.stringify(params).substring(0, 100)}...`;
+        responseText = `Command processed: ${action || 'Analysis'}. Results: ${JSON.stringify(params).substring(0, 100)}...`;
       }
 
       addThinkingLog('success', 'Analysis complete', 'All batches processed');
