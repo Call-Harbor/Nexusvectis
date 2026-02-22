@@ -16,6 +16,7 @@ function HoloWidget({ title, icon: Icon, color, children, defaultPos, id, onClos
   const [minimized, setMinimized] = useState(false);
   const dragging = useRef(false);
   const offset = useRef({ x: 0, y: 0 });
+  const widgetRef = useRef(null);
 
   const onMouseDown = (e) => {
     dragging.current = true;
@@ -25,12 +26,43 @@ function HoloWidget({ title, icon: Icon, color, children, defaultPos, id, onClos
   };
   const onMouseMove = (e) => {
     if (!dragging.current) return;
-    setPos({ x: e.clientX - offset.current.x, y: e.clientY - offset.current.y });
+    const newX = e.clientX - offset.current.x;
+    const newY = e.clientY - offset.current.y;
+    
+    // Detect if dragged to another screen (cross-screen threshold)
+    if (newX < -100 || newX > window.innerWidth + 100) {
+      const targetWindow = getTargetWindow(newX);
+      if (targetWindow && targetWindow !== window) {
+        // Move widget to other window
+        const relativeX = newX < -100 ? newX + window.innerWidth : newX - window.innerWidth;
+        targetWindow.postMessage({ 
+          type: 'MOVE_WIDGET', 
+          widgetId: id, 
+          pos: { x: Math.max(40, relativeX), y: newY } 
+        }, '*');
+        setPos(defaultPos || { x: 40, y: 40 });
+        dragging.current = false;
+        window.removeEventListener("mousemove", onMouseMove);
+        window.removeEventListener("mouseup", onMouseUp);
+        return;
+      }
+    }
+    
+    setPos({ x: newX, y: newY });
   };
   const onMouseUp = () => {
     dragging.current = false;
     window.removeEventListener("mousemove", onMouseMove);
     window.removeEventListener("mouseup", onMouseUp);
+  };
+
+  const getTargetWindow = (xPos) => {
+    if (xPos < -100 && window.opener) return window.opener;
+    if (xPos > window.innerWidth + 100 && window.open) {
+      // In real multi-screen, you'd query window siblings
+      // For now, just prevent out-of-bounds
+    }
+    return null;
   };
 
   const borderColor = {
