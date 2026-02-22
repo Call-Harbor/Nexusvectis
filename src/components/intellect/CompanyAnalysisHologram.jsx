@@ -660,7 +660,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
 
             {/* HOLOGRAM 4: Ejere & Stiftere */}
             <HologramPanel
-              title="4 · Ejere, Aktionærer & Stiftende Person"
+              title="4 · Owners, Shareholders & Founder"
               icon={Users}
               colorClass="bg-amber-500/10 text-amber-400"
               borderClass="border-amber-500/40"
