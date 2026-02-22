@@ -578,7 +578,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
                           className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500/20 border border-blue-500/40 text-blue-300 text-[10px] hover:bg-blue-500/30 transition-all"
                         >
                           <Linkedin className="w-2.5 h-2.5" />
-                          Søg person
+                          Search Person
                         </button>
                       </div>
                     </div>
