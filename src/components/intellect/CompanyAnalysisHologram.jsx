@@ -394,7 +394,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
                 )}
                 {data.financial?.debt_ratio != null && (
                   <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/20">
-                    <p className="text-amber-400 text-xs">Gældsgrad</p>
+                    <p className="text-amber-400 text-xs">Debt Ratio</p>
                     <p className="text-white font-bold text-sm">{data.financial.debt_ratio}</p>
                   </div>
                 )}
