@@ -1644,6 +1644,7 @@ export default function IntellectMode() {
               <CompanyAnalysisHologram
                 companyName={companyAnalysisTarget}
                 onClose={() => { setShowCompanyAnalysis(false); setCompanyAnalysisTarget(null); }}
+                onSendToScreen={{ screens: openDesktopWindows, send: sendWindowToScreen }}
               />
             )}
 
