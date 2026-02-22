@@ -427,7 +427,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
               {/* Competitors */}
               {data.financial?.competitors?.length > 0 && (
                 <div className="mb-4">
-                  <p className="text-slate-400 text-xs font-semibold mb-2 uppercase tracking-wide">Konkurrenter</p>
+                  <p className="text-slate-400 text-xs font-semibold mb-2 uppercase tracking-wide">Competitors</p>
                   <div className="flex flex-wrap gap-1.5">
                     {data.financial.competitors.map((c, i) => (
                       <div key={i} className="px-2 py-1 rounded-lg bg-slate-800/70 border border-slate-700/50 text-xs">
