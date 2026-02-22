@@ -182,7 +182,7 @@ export default function IntellectMode() {
   ]);
 
   const quickCommands = [
-    { icon: Building2, label: "Company Analysis", command: "analyze company Maersk", color: "fuchsia" },
+    { icon: Building2, label: "Company Analysis", command: "analyze company", action: "openCompanyAnalysis", color: "fuchsia" },
     { icon: Box, label: "3D Fleet View", command: "show fleet in 3D", color: "cyan" },
     { icon: Brain, label: "Predictive Maintenance", command: "predict vehicle maintenance needs", color: "violet" },
     { icon: TrendingUp, label: "Demand Forecast", command: "forecast shipment demand next 30 days", color: "emerald" },
