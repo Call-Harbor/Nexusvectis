@@ -1748,6 +1748,9 @@ export default function IntellectMode() {
                       if (cmd.action === 'openCompanyAnalysis') {
                         setShowCompanyAnalysis(true);
                         setMessages(prev => [...prev, { role: "system", content: "🏢 Company Analytics Hologram activated - Search any company for deep insights" }]);
+                      } else if (cmd.action === 'openCandidateMatcher') {
+                        setShowCandidateMatcher(true);
+                        setMessages(prev => [...prev, { role: "system", content: "👥 Candidate Intelligence activated - Match candidates to job descriptions" }]);
                       } else {
                         setInput(cmd.command);
                       }
