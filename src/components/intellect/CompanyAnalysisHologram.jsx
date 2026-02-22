@@ -264,7 +264,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
           </div>
           <div>
             <h1 className="text-white text-lg sm:text-xl font-bold flex items-center gap-2">
-              Holografisk Virksomhedsanalyse
+              Company Analysis Hologram
               <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/40 text-[10px]">AI</Badge>
             </h1>
             {companyName && (
