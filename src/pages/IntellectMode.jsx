@@ -1885,72 +1885,10 @@ export default function IntellectMode() {
         </div>
       </div>
 
-      {/* Multi-Screen Suggestion Prompt */}
+      {/* Multi-Screen Manager */}
       <AnimatePresence>
-        {showMultiScreenPrompt && (
-          <motion.div
-            initial={{ opacity: 0, y: 40, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 40, scale: 0.95 }}
-            className="fixed bottom-6 right-6 z-[9999] max-w-sm"
-          >
-            <div className="relative rounded-2xl border-2 border-violet-500/50 bg-slate-950/95 backdrop-blur-xl shadow-2xl shadow-violet-500/30 overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-violet-500/10 via-transparent to-cyan-500/10 pointer-events-none" />
-              <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-violet-400/60 rounded-tl-2xl" />
-              <div className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-violet-400/60 rounded-tr-2xl" />
-              <div className="p-5 relative">
-                <div className="flex items-start gap-3 mb-4">
-                  <div className="p-2 rounded-xl bg-violet-500/20 border border-violet-500/40 flex-shrink-0">
-                    <Monitor className="w-5 h-5 text-violet-400" />
-                  </div>
-                  <div>
-                    <p className="text-white font-bold text-sm">
-                      {screens.length} screens detected!
-                    </p>
-                    <p className="text-slate-400 text-xs mt-0.5">
-                      Spread your FLEET AI workspace across all displays for maximum productivity.
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => { setShowMultiScreenPrompt(false); setMultiScreenDismissed(true); }}
-                    className="ml-auto text-slate-500 hover:text-slate-300 flex-shrink-0"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-
-                <div className="flex gap-2 mb-4">
-                  {screens.slice(0, 4).map((s, i) => (
-                    <div key={i} className="flex-1 p-2 rounded-lg bg-slate-800/60 border border-slate-700/50 text-center">
-                      <Monitor className="w-4 h-4 text-violet-400 mx-auto mb-1" />
-                      <p className="text-[10px] text-slate-400 font-medium">Screen {i + 1}</p>
-                      {i === 0 && <p className="text-[9px] text-cyan-400">Chat</p>}
-                      {i === 1 && <p className="text-[9px] text-emerald-400">Fleet Map</p>}
-                      {i === 2 && <p className="text-[9px] text-amber-400">Dashboard</p>}
-                      {i >= 3 && <p className="text-[9px] text-slate-500">Available</p>}
-                    </div>
-                  ))}
-                </div>
-
-                <div className="flex gap-2">
-                  <Button
-                    onClick={spreadAcrossScreens}
-                    className="flex-1 bg-gradient-to-r from-violet-500 to-cyan-500 hover:from-violet-600 hover:to-cyan-600 border-0 text-xs font-bold shadow-lg"
-                  >
-                    <Sparkles className="w-3.5 h-3.5 mr-1.5" />
-                    Spread across screens
-                  </Button>
-                  <Button
-                    onClick={() => { setShowMultiScreenPrompt(false); setMultiScreenDismissed(true); }}
-                    variant="ghost"
-                    className="text-slate-400 hover:text-slate-300 text-xs border border-slate-700"
-                  >
-                    Later
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </motion.div>
+        {showMultiScreenManager && (
+          <MultiScreenManager onClose={() => setShowMultiScreenManager(false)} />
         )}
       </AnimatePresence>
     </div>
