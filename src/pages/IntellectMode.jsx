@@ -641,7 +641,7 @@ export default function IntellectMode() {
         const microCalls = await executeParallelMicroAnalyses(input, vehicles, alerts, routes, shipments);
         
         const duration = Date.now() - startTime;
-        const mistralResponse = microCalls[0];
+        const mistralResponse = microCalls[0]?.data || { action: 'ANALYZE', parameters: {} };
         
         addThinkingLog('think', 'Decoding model output', 
           { tokens_generated: 250, decoding_method: 'beam_search' }, 80, 80);
@@ -650,7 +650,7 @@ export default function IntellectMode() {
           { constraints_checked: 15, safety_score: 0.98 }, 120, 85);
         
         addThinkingLog('calculate', 'Extracting parameters and arguments', 
-          { parameters_found: Object.keys(mistralResponse.data).length }, 90, 90);
+          { parameters_found: Object.keys(mistralResponse).length }, 90, 90);
         
         addThinkingLog('think', `Model inference complete`, { 
           model: 'Mistral Large', 
