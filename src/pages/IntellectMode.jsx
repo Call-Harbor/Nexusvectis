@@ -586,6 +586,13 @@ export default function IntellectMode() {
         addThinkingLog('parse', 'Extracting intent and entities', 
           { intent_categories: ['optimization', 'navigation', 'analysis', 'planning'] }, 120, 20);
 
+        // Advanced Intelligence Engine Processing
+        const fleetData = { vehicles, alerts, routes, shipments };
+        const contextAnalysis = AdvancedIntelligenceEngine.analyzeContext(fleetData);
+        const predictions = AdvancedIntelligenceEngine.predictiveReasoning(contextAnalysis, vehicles, shipments, routes);
+        const multiPerspective = AdvancedIntelligenceEngine.multiPerspectiveAnalysis(currentCommand, fleetData);
+        const decisionQuality = AdvancedIntelligenceEngine.scoreDecisionQuality({}, contextAnalysis, predictions);
+
         // Context analysis
         addThinkingLog('analyze', 'Analyzing context and fleet data', {
           vehicles: vehicles.length,
