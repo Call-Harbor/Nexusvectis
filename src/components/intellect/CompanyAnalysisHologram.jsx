@@ -824,7 +824,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
                         {personData.connections_count && (
                           <div className="flex items-center gap-2 p-2 rounded-lg bg-slate-800/50 text-xs">
                             <Network className="w-4 h-4 text-violet-400 flex-shrink-0" />
-                            <span className="text-slate-300">{personData.connections_count} forbindelser</span>
+                            <span className="text-slate-300">{personData.connections_count} connections</span>
                           </div>
                         )}
                       </div>
