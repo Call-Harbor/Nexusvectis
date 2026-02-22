@@ -441,7 +441,7 @@ export default function HologramDesktop() {
       </HoloWidget>}
 
       {/* Live Map */}
-      {activeWidgets.includes('map') && <HoloWidget title="Live Fleet Map" icon={Globe} color="blue" defaultPos={getWidgetPosition('map', screenIndex)} onClose={() => setActiveWidgets(p => p.filter(w => w !== 'map'))}>
+      {activeWidgets.includes('map') && <HoloWidget title="Live Fleet Map" icon={Globe} color="blue" id="map" defaultPos={getWidgetPosition('map', screenIndex)} screenIndex={screenIndex} onSendToScreen={handleSendToScreen} onClose={() => setActiveWidgets(p => p.filter(w => w !== 'map'))}>
         <div className="min-w-[380px]" style={{ height: 300 }}>
           {typeof window !== 'undefined' && (
             <MapContainer
