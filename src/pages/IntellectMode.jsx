@@ -1742,7 +1742,12 @@ export default function IntellectMode() {
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: idx * 0.05 }}
                     onClick={() => {
-                      setInput(cmd.command);
+                      if (cmd.action === 'openCompanyAnalysis') {
+                        setShowCompanyAnalysis(true);
+                        setMessages(prev => [...prev, { role: "system", content: "🏢 Company Analytics Hologram activated - Search any company for deep insights" }]);
+                      } else {
+                        setInput(cmd.command);
+                      }
                       setShowSuggestions(false);
                     }}
                     className={`p-2 sm:p-3 rounded-lg sm:rounded-xl border-2 backdrop-blur-xl transition-all text-left active:scale-95 sm:hover:scale-105 ${
