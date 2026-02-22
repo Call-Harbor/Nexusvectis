@@ -320,6 +320,37 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
               {data.credit_rating && ` · Rating: ${data.credit_rating}`}
             </div>
           )}
+          {onSendToScreen && (
+            <div className="relative">
+              <Button
+                size="icon"
+                variant="ghost"
+                title="Send to screen"
+                onClick={() => setShowScreenMenu(s => !s)}
+                className="text-violet-400 hover:text-violet-300 hover:bg-violet-500/20 transition-all"
+              >
+                <ExternalLink className="w-5 h-5" />
+              </Button>
+              {showScreenMenu && (
+                <div className="absolute right-0 top-10 z-[9999] bg-slate-900 border border-violet-500/40 rounded-xl shadow-xl min-w-[200px] py-1">
+                  <p className="text-slate-500 text-[10px] px-3 pt-1 pb-0.5 uppercase tracking-wide">Send to screen</p>
+                  {onSendToScreen.screens.map((s, i) => (
+                    <button
+                      key={i}
+                      onClick={() => { onSendToScreen.send(s, 'company_analysis'); setShowScreenMenu(false); }}
+                      className="flex items-center gap-2 w-full px-3 py-2 text-xs text-slate-300 hover:bg-violet-500/20 hover:text-white transition-colors"
+                    >
+                      <Monitor className="w-3.5 h-3.5 text-violet-400" />
+                      {s.label}
+                    </button>
+                  ))}
+                  {onSendToScreen.screens.length === 0 && (
+                    <p className="text-slate-600 text-xs px-3 py-2">No Hologram Desktops open</p>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
           <Button onClick={onClose} variant="ghost" className="text-red-400 hover:text-red-300 hover:bg-red-500/20">
             <X className="w-5 h-5" />
           </Button>
