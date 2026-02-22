@@ -51,7 +51,7 @@ const LoadingPanel = ({ colorClass, borderClass }) => (
   <div className={`rounded-2xl border-2 ${borderClass} bg-slate-950/80 flex items-center justify-center h-64`}>
     <div className="text-center">
       <Loader2 className={`w-8 h-8 animate-spin mx-auto mb-3 ${colorClass.replace('bg-', 'text-').replace('/10', '/80')}`} />
-      <p className="text-slate-400 text-sm">Henter data...</p>
+      <p className="text-slate-400 text-sm">Loading data...</p>
     </div>
   </div>
 );
