@@ -616,7 +616,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
                       <div className="flex items-start gap-2 p-2 rounded-lg bg-slate-800/40">
                         <Zap className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />
                         <div>
-                          <p className="text-slate-400 text-[10px]">Ledelsesstil</p>
+                          <p className="text-slate-400 text-[10px]">Leadership Style</p>
                           <p className="text-white text-xs">{data.ceo.leadership_style}</p>
                         </div>
                       </div>
