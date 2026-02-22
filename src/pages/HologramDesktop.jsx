@@ -115,8 +115,54 @@ const SCREEN_WIDGET_SETS = {
   3: ['alerts', 'shipments', 'routes'],    // Screen 5+
 };
 
+// Default positions for each widget on different screens
+const WIDGET_POSITIONS = {
+  fleet: [
+    { x: 40, y: 60 },      // Screen 0
+    { x: 700, y: 400 },    // Screen 1
+    { x: 40, y: 60 },      // Screen 2
+    { x: 40, y: 60 },      // Screen 3+
+  ],
+  alerts: [
+    { x: 40, y: 280 },     // Screen 0
+    { x: 40, y: 60 },      // Screen 1
+    { x: 700, y: 60 },     // Screen 2
+    { x: 40, y: 280 },     // Screen 3+
+  ],
+  shipments: [
+    { x: 360, y: 60 },     // Screen 0
+    { x: 360, y: 60 },     // Screen 1
+    { x: 360, y: 280 },    // Screen 2
+    { x: 360, y: 60 },     // Screen 3+
+  ],
+  trend: [
+    { x: 360, y: 290 },    // Screen 0
+    { x: 360, y: 290 },    // Screen 1
+    { x: 360, y: 60 },     // Screen 2
+    { x: 700, y: 60 },     // Screen 3+
+  ],
+  map: [
+    { x: 700, y: 60 },     // Screen 0
+    { x: 40, y: 280 },     // Screen 1
+    { x: 40, y: 280 },     // Screen 2
+    { x: 700, y: 60 },     // Screen 3+
+  ],
+  routes: [
+    { x: 700, y: 400 },    // Screen 0
+    { x: 700, y: 400 },    // Screen 1
+    { x: 700, y: 400 },    // Screen 2
+    { x: 700, y: 400 },    // Screen 3+
+  ],
+};
+
 function getDefaultWidgetsForScreen(screenIndex) {
   return SCREEN_WIDGET_SETS[screenIndex] || SCREEN_WIDGET_SETS[screenIndex % Object.keys(SCREEN_WIDGET_SETS).length];
+}
+
+function getWidgetPosition(widgetType, screenIndex) {
+  const positions = WIDGET_POSITIONS[widgetType];
+  if (!positions) return { x: 40, y: 40 };
+  return positions[screenIndex] || positions[positions.length - 1];
 }
 
 export default function HologramDesktop() {
