@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import {
   Monitor, Truck, Route, Package, Bell, Activity, Zap, Globe,
   TrendingUp, AlertTriangle, CheckCircle, Clock, Fuel, MapPin,
-  Wifi, WifiOff, X, GripHorizontal, Minimize2, Maximize2
+  Wifi, WifiOff, X, GripHorizontal, Minimize2, Maximize2, Send
 } from "lucide-react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
