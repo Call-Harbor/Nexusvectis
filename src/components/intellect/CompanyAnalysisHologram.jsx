@@ -190,7 +190,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
         }),
         // ESG + leadership
         base44.integrations.Core.InvokeLLM({
-          prompt: `For "${name}", give me: ESG scores (overall, environmental, social, governance out of 100), rating agency, CO2 target, renewable energy %, 3 sustainability initiatives, any controversies. Also give me the top 3 executives (name, title, age, years in role, background, education, linkedin_profile_image_url). Real data only.`,
+          prompt: `For "${name}", give me: ESG scores (overall, environmental, social, governance out of 100), rating agency, CO2 target, renewable energy %, 3 sustainability initiatives, any controversies. Also give me the top 3 executives with their LinkedIn profile picture URLs (name, title, age, years in role, background, education, and MOST IMPORTANT: linkedin_profile_image_url - the direct URL to their professional headshot/profile picture from LinkedIn). Real data only.`,
           add_context_from_internet: true,
           response_json_schema: {
             type: "object",
