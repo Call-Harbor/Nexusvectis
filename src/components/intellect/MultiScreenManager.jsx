@@ -89,9 +89,10 @@ export default function MultiScreenManager({ onClose, onWindowOpened }) {
     setSelectedScreens(s);
   };
 
-  const openOnScreen = (screen) => {
+  const openOnScreen = (screen, secondaryIndex) => {
     // Secondary screens get the Hologram Desktop, not another IntellectMode chat
-    const url = window.location.origin + createPageUrl('HologramDesktop');
+    // Pass screen index so each window knows which slot it is (affects default widgets)
+    const url = window.location.origin + createPageUrl(`HologramDesktop?screen=${secondaryIndex}`);
 
     let features;
     if (screen.virtual || useManual) {
