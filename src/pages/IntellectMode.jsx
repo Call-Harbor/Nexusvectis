@@ -20,12 +20,13 @@ import { toast } from "sonner";
 import { MapContainer, TileLayer, Marker, Polyline, Popup } from 'react-leaflet';
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area } from 'recharts';
 
-const HologramWindow = React.memo(({ id, title, icon: Icon, children, position, onClose, onMinimize, isMinimized }) => {
+const HologramWindow = React.memo(({ id, title, icon: Icon, children, position, onClose, onMinimize, isMinimized, onSendToScreen, windowType }) => {
   const [pos, setPos] = useState(position);
   const [size, setSize] = useState({ width: 480, height: 600 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [isMobile, setIsMobile] = useState(false);
+  const [showScreenMenu, setShowScreenMenu] = useState(false);
   const headerRef = useRef(null);
 
   useEffect(() => {
