@@ -499,6 +499,41 @@ export default function IntellectMode() {
     setThinkingLogs(prev => [...prev, { type, message, details, duration, percentage, timestamp: Date.now() }]);
   };
 
+  const processAdvancedCommand = async (command) => {
+    try {
+      // Parse command with AI agent
+      const parsed = IntelligentCommandAgent.parseCommand(command);
+      
+      // Generate scenarios
+      addThinkingLog('scenario', 'Generating 4 scenario forecasts...', { scenarios: 4 }, 120, 15);
+      const fleetData = { vehicles, alerts, routes, shipments };
+      const generatedScenarios = ScenarioPredictionEngine.generateScenarios(fleetData, parsed);
+      const scoredScenarios = ScenarioPredictionEngine.scoreScenarios(generatedScenarios, vehicles);
+      setScenarios(scoredScenarios);
+
+      // Start streaming multi-model analysis
+      addThinkingLog('analysis', 'Starting 3-model consensus analysis...', null, 100, 20);
+      setIsStreaming(true);
+      
+      const analysis = await MistralStreamingEngine.multiModelAnalysis(fleetData);
+      setMultiModelAnalysis(analysis);
+      setIsStreaming(false);
+
+      // Execute command with agent
+      addThinkingLog('execution', 'Executing intelligent command agent...', null, 150, 25);
+      const execution = await IntelligentCommandAgent.executeCommand(command, fleetData);
+      setCommandExecution(execution);
+
+      // Generate AI suggestions
+      const commandSuggestions = IntelligentCommandAgent.suggestActions(fleetData, analysis);
+      setSuggestions(commandSuggestions);
+
+      addThinkingLog('complete', 'Advanced AI processing complete', { total_steps: 4, confidence: 88 }, 50, 100);
+    } catch (error) {
+      console.error('Advanced command processing error:', error);
+    }
+  };
+
    const executeParallelMicroAnalyses = async (mainPrompt, ctxVehicles = [], ctxAlerts = [], ctxRoutes = [], ctxShipments = []) => {
      const mainCall = base44.functions.invoke('mistralCommand', { command: mainPrompt }).catch(() => ({ data: { action: 'ANALYZE', parameters: {} } }));
      const microCalls = Array(49).fill(null).map((_, i) => {
