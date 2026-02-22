@@ -204,6 +204,7 @@ export default function IntellectMode() {
   const [show3DVisualization, setShow3DVisualization] = useState(null);
   const [showCompanyAnalysis, setShowCompanyAnalysis] = useState(false);
   const [companyAnalysisTarget, setCompanyAnalysisTarget] = useState(null);
+  const [showProfileSearch, setShowProfileSearch] = useState(false);
   const [thinkingLogs, setThinkingLogs] = useState([]);
   const [showThinkingTerminal, setShowThinkingTerminal] = useState(false);
   const [screens, setScreens] = useState([]);
