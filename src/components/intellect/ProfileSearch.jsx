@@ -241,7 +241,7 @@ export default function ProfileSearch() {
       {!profileData && !loading && (
         <div className="text-center py-12 text-slate-500">
           <User className="w-12 h-12 mx-auto mb-3 opacity-30" />
-          <p>Søg efter en person for at få udvidet profil information</p>
+          <p>Search for a person to view their extended profile information</p>
         </div>
       )}
 
