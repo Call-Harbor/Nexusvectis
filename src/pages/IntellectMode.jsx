@@ -40,6 +40,8 @@ export default function IntellectMode() {
   const [showCompanyAnalysis, setShowCompanyAnalysis] = useState(false);
   const [companyName, setCompanyName] = useState(null);
   const [screens, setScreens] = useState([]);
+  const [showFleetGlobe, setShowFleetGlobe] = useState(false);
+  const [showHologramDesktop, setShowHologramDesktop] = useState(false);
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
