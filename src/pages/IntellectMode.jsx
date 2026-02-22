@@ -309,7 +309,19 @@ export default function IntellectMode() {
     if (!input.trim() || isProcessing) return;
 
     const currentCommand = input;
-    
+
+    // Detect company analysis command locally
+    const companyMatch = currentCommand.match(/(?:analyser(?:er)?\s+(?:virksomheden?\s+)?|company analysis[:\s]+|analyze company[:\s]+)(.+)/i);
+    if (companyMatch) {
+      const cName = companyMatch[1].trim();
+      setMessages(prev => [...prev, { role: "user", content: currentCommand }]);
+      setInput("");
+      setCompanyAnalysisTarget(cName);
+      setShowCompanyAnalysis(true);
+      setMessages(prev => [...prev, { role: "system", content: `🏢 Åbner holografisk virksomhedsanalyse for "${cName}"...` }]);
+      return;
+    }
+
     // Save to history
     setCommandHistory(prev => [...prev, currentCommand]);
     setHistoryIndex(-1);
