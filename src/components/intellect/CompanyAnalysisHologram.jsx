@@ -330,7 +330,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
               <span className="px-2 py-1 rounded bg-slate-800">Orbis</span>
               <span className="px-2 py-1 rounded bg-slate-800">Bloomberg</span>
               <span className="px-2 py-1 rounded bg-slate-800">LinkedIn</span>
-              <span className="px-2 py-1 rounded bg-slate-800">Årsrapporter</span>
+              <span className="px-2 py-1 rounded bg-slate-800">Annual Reports</span>
             </div>
           </div>
         )}
