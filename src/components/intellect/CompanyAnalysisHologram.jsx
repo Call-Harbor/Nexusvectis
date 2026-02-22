@@ -607,7 +607,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
                       <div className="flex items-start gap-2 p-2 rounded-lg bg-slate-800/40">
                         <Briefcase className="w-4 h-4 text-cyan-400 mt-0.5 flex-shrink-0" />
                         <div>
-                          <p className="text-slate-400 text-[10px]">Baggrund</p>
+                          <p className="text-slate-400 text-[10px]">Background</p>
                           <p className="text-white text-xs">{data.ceo.background}</p>
                         </div>
                       </div>
