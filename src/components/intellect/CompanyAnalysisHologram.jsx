@@ -300,7 +300,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
         }),
         // Skills & expertise
         base44.integrations.Core.InvokeLLM({
-          prompt: `Find skills and expertise for "${personSearch}"${companyName ? ` at ${companyName}` : ''}: technical skills, professional expertise, board positions, certifications, languages, core competencies. Real data only.`,
+          prompt: `Find skills and expertise for "${personSearch}"${companyName ? ` at ${companyName}` : ''}: certifications, board positions, languages only from verified sources. DO NOT fabricate. Leave empty if unverified.`,
           add_context_from_internet: true,
           response_json_schema: {
             type: "object",
