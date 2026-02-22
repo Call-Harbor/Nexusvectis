@@ -337,7 +337,7 @@ export default function IntellectMode() {
         </div>
       </div>
 
-      {/* Company analysis modal */}
+      {/* Modals */}
       <AnimatePresence>
         {showCompanyAnalysis && (
           <CompanyAnalysisHologram 
@@ -347,6 +347,24 @@ export default function IntellectMode() {
               screens: screens.map((s, i) => ({ id: i, label: `Screen ${i + 1}` })),
               send: (screen, type) => console.log('Send to screen:', screen, type)
             }}
+          />
+        )}
+
+        {showFleetGlobe && (
+          <FleetGlobe3D 
+            vehicles={vehicles}
+            routes={routes}
+            onClose={() => setShowFleetGlobe(false)}
+          />
+        )}
+
+        {showHologramDesktop && (
+          <AdvancedFleetHologram 
+            vehicles={vehicles}
+            alerts={alerts}
+            routes={routes}
+            shipments={shipments}
+            onClose={() => setShowHologramDesktop(false)}
           />
         )}
       </AnimatePresence>
