@@ -487,7 +487,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
                   )}
                   {data.history.usp && (
                     <div className="p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-                      <p className="text-emerald-400 text-xs font-semibold mb-1">Unikke Salgsargumenter (USP)</p>
+                      <p className="text-emerald-400 text-xs font-semibold mb-1">Unique Selling Points (USP)</p>
                       <p className="text-white text-xs">{data.history.usp}</p>
                     </div>
                   )}
