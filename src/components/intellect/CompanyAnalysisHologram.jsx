@@ -349,7 +349,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
         }),
         // Public presence & influence
         base44.integrations.Core.InvokeLLM({
-          prompt: `Find public presence and influence for "${personSearch}"${companyName ? ` at ${companyName}` : ''}: podcast appearances, social media followers/presence, patents/IP, network influence/notable connections, book authorship, analyst rankings, thought leadership areas. Real data only.`,
+          prompt: `Find public presence for "${personSearch}"${companyName ? ` at ${companyName}` : ''}: only verified podcasts, patents, or publications from credible sources. DO NOT fabricate. Return empty if nothing verified.`,
           add_context_from_internet: true,
           response_json_schema: {
             type: "object",
