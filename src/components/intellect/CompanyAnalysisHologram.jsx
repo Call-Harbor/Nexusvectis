@@ -190,13 +190,32 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
         }),
         // ESG + leadership
         base44.integrations.Core.InvokeLLM({
-          prompt: `For "${name}", give me: ESG scores (overall, environmental, social, governance out of 100), rating agency, CO2 target, renewable energy %, 3 sustainability initiatives, any controversies. Also give me the top 3 executives with their LinkedIn profile picture URLs (name, title, age, years in role, background, education, and MOST IMPORTANT: linkedin_profile_image_url - the direct URL to their professional headshot/profile picture from LinkedIn). Real data only.`,
+          prompt: `For "${name}", give me: ESG scores (overall, environmental, social, governance out of 100), rating agency, CO2 target, renewable energy %, 3 sustainability initiatives, any controversies. Also give me the top 3 executives (name, title, background, education).`,
           add_context_from_internet: true,
           response_json_schema: {
             type: "object",
             properties: {
-              esg: { type: "object", additionalProperties: true },
-              leadership_team: { type: "array", items: { type: "object", additionalProperties: true } }
+              overall_score: { type: "number" },
+              environmental_score: { type: "number" },
+              social_score: { type: "number" },
+              governance_score: { type: "number" },
+              rating_agency: { type: "string" },
+              co2_target: { type: "string" },
+              renewable_energy_pct: { type: "number" },
+              sustainability_initiatives: { type: "array", items: { type: "string" } },
+              controversies: { type: "array", items: { type: "string" } },
+              leadership_team: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    name: { type: "string" },
+                    title: { type: "string" },
+                    background: { type: "string" },
+                    education: { type: "string" }
+                  }
+                }
+              }
             }
           }
         }),
