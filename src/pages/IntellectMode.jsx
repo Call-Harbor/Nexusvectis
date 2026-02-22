@@ -1650,6 +1650,31 @@ export default function IntellectMode() {
               />
             )}
 
+            {/* Profile Search Hologram */}
+            {showProfileSearch && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-40 overflow-auto bg-slate-950"
+              >
+                <div className="flex items-start justify-between p-4 border-b border-cyan-500/20 bg-slate-950/80 backdrop-blur sticky top-0 z-10">
+                  <h2 className="text-white font-bold flex items-center gap-2">
+                    <Building2 className="w-5 h-5 text-cyan-400" />
+                    People Intelligence
+                  </h2>
+                  <Button
+                    onClick={() => setShowProfileSearch(false)}
+                    variant="ghost"
+                    className="text-red-400 hover:text-red-300 hover:bg-red-500/20"
+                  >
+                    <X className="w-5 h-5" />
+                  </Button>
+                </div>
+                <ProfileSearch />
+              </motion.div>
+            )}
+
             {/* 3D Visualization */}
             {show3DVisualization && (
             <FleetGlobe3D
