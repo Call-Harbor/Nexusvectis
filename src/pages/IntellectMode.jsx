@@ -1822,6 +1822,19 @@ export default function IntellectMode() {
               <div ref={messagesEndRef} />
             </div>
 
+            {/* Quick Actions */}
+            <div className="flex gap-2 flex-wrap">
+              <Button
+                onClick={handleOpenProfileSearch}
+                variant="outline"
+                size="sm"
+                className="border-blue-500/30 text-blue-400 hover:bg-blue-500/10"
+              >
+                <Building2 className="w-3.5 h-3.5 mr-1.5" />
+                People Search
+              </Button>
+            </div>
+
             {/* Input */}
             <div className="space-y-3">
               {/* Uploaded Files Preview */}
