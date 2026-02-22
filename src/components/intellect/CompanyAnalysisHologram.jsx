@@ -382,7 +382,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
                 )}
                 {data.financial?.market_share_pct != null && (
                   <div className="p-2 rounded-lg bg-violet-500/10 border border-violet-500/20">
-                    <p className="text-violet-400 text-xs">Markedsandel</p>
+                    <p className="text-violet-400 text-xs">Market Share</p>
                     <p className="text-white font-bold text-sm">{data.financial.market_share_pct}%</p>
                   </div>
                 )}
