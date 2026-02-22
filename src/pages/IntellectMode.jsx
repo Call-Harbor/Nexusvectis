@@ -445,14 +445,10 @@ export default function IntellectMode() {
       case 'openCompanyAnalysis':
         setShowCompanyAnalysis(true);
         break;
-      case 'routeOptimization':
-        openWindow('route_optimization', { x: 300, y: 300 }, { component: null });
-        sendMessage(cmd.command);
-        break;
       default:
-        sendMessage(cmd.command);
+        break;
     }
-  }, [openWindow, vehicles, routes, sendMessage]);
+  }, [openWindow, vehicles, routes]);
 
   const handleFileUpload = async (e) => {
     const files = Array.from(e.target.files);
