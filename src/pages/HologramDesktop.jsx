@@ -379,7 +379,7 @@ export default function HologramDesktop() {
       {/* Bottom info bar */}
       <div className="absolute bottom-0 left-0 right-0 h-8 bg-slate-950/70 backdrop-blur border-t border-cyan-500/20 flex items-center justify-center z-50">
         <span className="text-slate-600 text-[11px] tracking-widest uppercase">
-          FLEET AI Hologram Desktop · Secondary Display · Drag widgets freely
+          FLEET AI Hologram Desktop · Screen {screenLabel} · Drag widgets freely
         </span>
       </div>
     </div>
