@@ -495,35 +495,45 @@ export default function FleetGlobe3D({ vehicles = [], routes = [], onClose, onMi
     }
   }, [vehicles, routes]);
 
-  if (isMinimized) {
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="fixed bottom-20 left-4 z-50"
-      >
-        <button
-          onClick={() => setIsMinimized(false)}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500/30 to-violet-500/30 border-2 border-cyan-500/50 backdrop-blur-xl shadow-lg shadow-cyan-500/20 hover:from-cyan-500/40 hover:to-violet-500/40 transition-all"
-        >
-          <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-          <span className="text-white text-sm font-medium">3D Fleet Globe</span>
-          <span className="text-cyan-400 text-xs">{vehicles.length} v</span>
-        </button>
-      </motion.div>
-    );
-  }
+  const handleRestore = () => {
+    setIsMinimized(false);
+    // Give DOM time to show the container, then fix renderer size
+    setTimeout(() => {
+      if (rendererRef.current && containerRef.current) {
+        const w = containerRef.current.clientWidth;
+        const h = containerRef.current.clientHeight;
+        rendererRef.current.setSize(w, h);
+        if (cameraRef.current) {
+          cameraRef.current.aspect = w / h;
+          cameraRef.current.updateProjectionMatrix();
+        }
+      }
+    }, 50);
+  };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-      onClick={() => setIsMinimized(true)}
-    >
-      <motion.div
-        initial={{ y: 50 }}
-        animate={{ y: 0 }}
+    <>
+      {/* Minimized button */}
+      {isMinimized && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="fixed bottom-20 left-4 z-50"
+        >
+          <button
+            onClick={handleRestore}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500/30 to-violet-500/30 border-2 border-cyan-500/50 backdrop-blur-xl shadow-lg shadow-cyan-500/20 hover:from-cyan-500/40 hover:to-violet-500/40 transition-all"
+          >
+            <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+            <span className="text-white text-sm font-medium">3D Fleet Globe</span>
+            <span className="text-cyan-400 text-xs">{vehicles.length} v</span>
+          </button>
+        </motion.div>
+      )}
+
+      {/* Full globe — always mounted, hidden when minimized */}
+      <div style={{ display: isMinimized ? 'none' : 'flex' }} className="fixed inset-0 z-50 items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setIsMinimized(true)}>
+      <div
         onClick={(e) => e.stopPropagation()}
         className="relative w-full max-w-6xl h-[80vh] rounded-2xl border border-cyan-500/30 bg-slate-950/90 backdrop-blur-xl overflow-hidden"
       >
