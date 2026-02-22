@@ -522,7 +522,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
               {/* Core values */}
               {data.history?.values?.length > 0 && (
                 <div className="mb-4">
-                  <p className="text-slate-400 text-xs font-semibold mb-2 uppercase tracking-wide">Kerneværdier</p>
+                  <p className="text-slate-400 text-xs font-semibold mb-2 uppercase tracking-wide">Core Values</p>
                   <div className="flex flex-wrap gap-1.5">
                     {data.history.values.map((v, i) => (
                       <span key={i} className="px-2 py-1 rounded-full text-xs font-medium" style={{ backgroundColor: COLORS[i % COLORS.length] + '22', color: COLORS[i % COLORS.length], border: `1px solid ${COLORS[i % COLORS.length]}44` }}>
