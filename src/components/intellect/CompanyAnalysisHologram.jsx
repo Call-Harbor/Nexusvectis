@@ -246,33 +246,75 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
     setPersonLoading(true);
     setPersonData(null);
     try {
-      const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Find detailed profile information about "${personSearch}"${companyName ? ` who works at ${companyName}` : ''}. Use LinkedIn, Wikipedia, and professional sources. Return complete profile data.`,
-        add_context_from_internet: true,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            full_name: { type: "string" },
-            current_title: { type: "string" },
-            current_company: { type: "string" },
-            location: { type: "string" },
-            linkedin_url: { type: "string" },
-            linkedin_profile_image_url: { type: "string" },
-            email_guess: { type: "string" },
-            education: { type: "array", items: { type: "string" } },
-            career_history: { type: "array", items: { type: "object", additionalProperties: true } },
-            skills: { type: "array", items: { type: "string" } },
-            board_memberships: { type: "array", items: { type: "string" } },
-            notable_achievements: { type: "array", items: { type: "string" } },
-            summary: { type: "string" },
-            connections_count: { type: "string" },
-            languages: { type: "array", items: { type: "string" } },
-            notable_quote: { type: "string" }
+      const [basicInfo, careerData, skillsData, achievementsData] = await Promise.all([
+        // Basic info
+        base44.integrations.Core.InvokeLLM({
+          prompt: `Find basic profile info about "${personSearch}"${companyName ? ` at ${companyName}` : ''}: name, current title, company, location, LinkedIn URL, profile picture URL, email guess.`,
+          add_context_from_internet: true,
+          response_json_schema: {
+            type: "object",
+            properties: {
+              full_name: { type: "string" },
+              current_title: { type: "string" },
+              current_company: { type: "string" },
+              location: { type: "string" },
+              linkedin_url: { type: "string" },
+              linkedin_profile_image_url: { type: "string" },
+              email_guess: { type: "string" },
+              connections_count: { type: "string" }
+            }
           }
-        }
-      });
-      if (result) {
-        setPersonData(result);
+        }),
+        // Career & education
+        base44.integrations.Core.InvokeLLM({
+          prompt: `Find career history and education for "${personSearch}"${companyName ? ` at ${companyName}` : ''}: list previous companies/roles with dates, education institutions and degrees.`,
+          add_context_from_internet: true,
+          response_json_schema: {
+            type: "object",
+            properties: {
+              education: { type: "array", items: { type: "string" } },
+              career_history: { type: "array", items: { type: "object", additionalProperties: true } },
+              languages: { type: "array", items: { type: "string" } }
+            }
+          }
+        }),
+        // Skills & expertise
+        base44.integrations.Core.InvokeLLM({
+          prompt: `Find skills, expertise and board memberships for "${personSearch}"${companyName ? ` at ${companyName}` : ''}: technical skills, professional expertise, board positions.`,
+          add_context_from_internet: true,
+          response_json_schema: {
+            type: "object",
+            properties: {
+              skills: { type: "array", items: { type: "string" } },
+              board_memberships: { type: "array", items: { type: "string" } },
+              expertise_areas: { type: "array", items: { type: "string" } }
+            }
+          }
+        }),
+        // Achievements & quotes
+        base44.integrations.Core.InvokeLLM({
+          prompt: `Find notable achievements, awards, and memorable quotes from "${personSearch}"${companyName ? ` at ${companyName}` : ''}: major accomplishments, notable projects, public statements.`,
+          add_context_from_internet: true,
+          response_json_schema: {
+            type: "object",
+            properties: {
+              notable_achievements: { type: "array", items: { type: "string" } },
+              summary: { type: "string" },
+              notable_quote: { type: "string" }
+            }
+          }
+        })
+      ]);
+      
+      const merged = {
+        ...basicInfo,
+        ...careerData,
+        ...skillsData,
+        ...achievementsData
+      };
+      
+      if (merged.full_name) {
+        setPersonData(merged);
       }
     } catch (err) {
       console.error('Person search error:', err);
