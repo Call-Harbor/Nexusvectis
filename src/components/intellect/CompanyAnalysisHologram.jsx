@@ -744,7 +744,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
             {/* HOLOGRAM 5: Person/LinkedIn Search */}
             <div className="lg:col-span-2">
               <HologramPanel
-                title="5 · Person & LinkedIn Søgning"
+                title="5 · Person & LinkedIn Search"
                 icon={UserSearch}
                 colorClass="bg-blue-500/10 text-blue-400"
                 borderClass="border-blue-500/40"
