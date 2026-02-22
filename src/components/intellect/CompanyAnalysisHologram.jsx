@@ -481,7 +481,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
                 <div className="grid grid-cols-1 gap-2 mb-4">
                   {data.history.business_model && (
                     <div className="p-2.5 rounded-lg bg-violet-500/10 border border-violet-500/20">
-                      <p className="text-violet-400 text-xs font-semibold mb-1">Forretningsmodel</p>
+                      <p className="text-violet-400 text-xs font-semibold mb-1">Business Model</p>
                       <p className="text-white text-xs">{data.history.business_model}</p>
                     </div>
                   )}
