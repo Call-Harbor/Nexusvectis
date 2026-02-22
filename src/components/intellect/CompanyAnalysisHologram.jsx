@@ -119,153 +119,163 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
     setData(null);
     setCompanyName(name);
     try {
-      const result = await base44.integrations.Core.InvokeLLM({
-      prompt: `You are a senior investment analyst. Analyze the company "${name}" comprehensively. Use real publicly available data.
+      // Call 1: Core info + financials + ratings
+      const [result1, result2] = await Promise.all([
+        base44.integrations.Core.InvokeLLM({
+          prompt: `You are a senior investment analyst. Provide accurate data about the company "${name}". Use real publicly available information. Return ONLY valid data, no nulls for required fields.
 
-IMPORTANT: You MUST populate ALL fields. Do not leave arrays empty. Provide at least 3 items in every array.
-
-- revenue_chart: 5 years of revenue/profit data in millions
-- stock_history: 12 monthly price points (if listed, otherwise estimated)
-- swot.strengths: exactly 3 real strengths
-- swot.weaknesses: exactly 3 real weaknesses  
-- swot.opportunities: exactly 3 real opportunities
-- swot.threats: exactly 3 real threats
-- esg: realistic ESG scores 0-100 with sustainability_initiatives (3 items) and controversies (2 items)
-- leadership_team: at least 3 executives (CEO, CFO, and others) with name, title, background, education
-- ownership.shareholders: at least 3 shareholders with name, percentage, type
-- ratings: all fields scored 0-10
-- ai_verdict: full summary, investment_thesis, recommendation, key_risks (3), key_catalysts (3)`,
-      add_context_from_internet: true,
-      response_json_schema: {
-        type: "object",
-        properties: {
-          company_name: { type: "string" },
-          industry: { type: "string" },
-          sector: { type: "string" },
-          country: { type: "string" },
-          website: { type: "string" },
-          employees: { type: "string" },
-          founded: { type: "string" },
-          headquarters: { type: "string" },
-          stock_ticker: { type: "string" },
-          credit_rating: { type: "string" },
-          description: { type: "string" },
-          financial: {
+  Return:
+  - Basic info: company_name, industry, sector, country, founded, headquarters, employees, stock_ticker, credit_rating, website
+  - description: 2-3 sentence company overview
+  - financial: revenue_latest (e.g. "$45B"), market_cap, ebitda_margin, pe_ratio, dividend_yield, debt_ratio (number 0-1), market_share_pct (number), currency
+  - financial.revenue_chart: exactly 5 years of data [{year:"2020", revenue:100, profit:20, ebitda:30}]
+  - financial.stock_history: exactly 12 months [{month:"Jan", price:150}]
+  - financial.competitors: 3-4 competitors [{name:"X", market_share:15}]
+  - financial.geographic_markets: 3-5 regions [{region:"Europe", percentage:40}]
+  - ratings: ALL scored 0-10: financial_health, growth_potential, innovation, brand_strength, management_quality, market_position, esg_rating, overall
+  - history: description (paragraph), business_model (1 sentence), usp (1 sentence), recent_news (array of 4 strings), values (array of 5 strings), milestones (array of 5 objects {year, event})`,
+          add_context_from_internet: true,
+          response_json_schema: {
             type: "object",
             properties: {
-              revenue_chart: {
-                type: "array",
-                items: { type: "object", properties: { year: { type: "string" }, revenue: { type: "number" }, profit: { type: "number" }, ebitda: { type: "number" } } }
-              },
-              stock_history: {
-                type: "array",
-                items: { type: "object", properties: { month: { type: "string" }, price: { type: "number" } } }
-              },
-              current_ratio: { type: "number" },
-              debt_ratio: { type: "number" },
-              market_share_pct: { type: "number" },
-              market_cap: { type: "string" },
-              revenue_latest: { type: "string" },
-              ebitda_margin: { type: "string" },
-              pe_ratio: { type: "string" },
-              dividend_yield: { type: "string" },
-              currency: { type: "string" },
-              competitors: { type: "array", items: { type: "object", properties: { name: { type: "string" }, market_share: { type: "number" } } } },
-              geographic_markets: { type: "array", items: { type: "object", properties: { region: { type: "string" }, percentage: { type: "number" } } } },
-              target_audience: { type: "object", properties: { primary: { type: "string" }, demographics: { type: "string" } } }
-            }
-          },
-          swot: {
-            type: "object",
-            properties: {
-              strengths: { type: "array", items: { type: "string" } },
-              weaknesses: { type: "array", items: { type: "string" } },
-              opportunities: { type: "array", items: { type: "string" } },
-              threats: { type: "array", items: { type: "string" } }
-            }
-          },
-          esg: {
-            type: "object",
-            properties: {
-              overall_score: { type: "number" },
-              environmental_score: { type: "number" },
-              social_score: { type: "number" },
-              governance_score: { type: "number" },
-              rating_agency: { type: "string" },
-              co2_target: { type: "string" },
-              renewable_energy_pct: { type: "number" },
-              sustainability_initiatives: { type: "array", items: { type: "string" } },
-              controversies: { type: "array", items: { type: "string" } }
-            }
-          },
-          ratings: {
-            type: "object",
-            properties: {
-              financial_health: { type: "number" },
-              growth_potential: { type: "number" },
-              innovation: { type: "number" },
-              brand_strength: { type: "number" },
-              management_quality: { type: "number" },
-              market_position: { type: "number" },
-              esg_rating: { type: "number" },
-              overall: { type: "number" }
-            }
-          },
-          history: {
-            type: "object",
-            properties: {
+              company_name: { type: "string" },
+              industry: { type: "string" },
+              sector: { type: "string" },
+              country: { type: "string" },
+              website: { type: "string" },
+              employees: { type: "string" },
+              founded: { type: "string" },
+              headquarters: { type: "string" },
+              stock_ticker: { type: "string" },
+              credit_rating: { type: "string" },
               description: { type: "string" },
-              business_model: { type: "string" },
-              usp: { type: "string" },
-              milestones: { type: "array", items: { type: "object", properties: { year: { type: "string" }, event: { type: "string" } } } },
-              values: { type: "array", items: { type: "string" } },
-              recent_news: { type: "array", items: { type: "string" } }
-            }
-          },
-          leadership_team: {
-            type: "array",
-            items: {
-              type: "object",
-              properties: {
-                name: { type: "string" },
-                title: { type: "string" },
-                age: { type: "string" },
-                years_in_role: { type: "string" },
-                background: { type: "string" },
-                education: { type: "string" },
-                linkedin_url: { type: "string" }
+              financial: {
+                type: "object",
+                properties: {
+                  revenue_chart: { type: "array", items: { type: "object", properties: { year: { type: "string" }, revenue: { type: "number" }, profit: { type: "number" }, ebitda: { type: "number" } } } },
+                  stock_history: { type: "array", items: { type: "object", properties: { month: { type: "string" }, price: { type: "number" } } } },
+                  debt_ratio: { type: "number" },
+                  market_share_pct: { type: "number" },
+                  market_cap: { type: "string" },
+                  revenue_latest: { type: "string" },
+                  ebitda_margin: { type: "string" },
+                  pe_ratio: { type: "string" },
+                  dividend_yield: { type: "string" },
+                  currency: { type: "string" },
+                  competitors: { type: "array", items: { type: "object", properties: { name: { type: "string" }, market_share: { type: "number" } } } },
+                  geographic_markets: { type: "array", items: { type: "object", properties: { region: { type: "string" }, percentage: { type: "number" } } } }
+                }
+              },
+              ratings: {
+                type: "object",
+                properties: {
+                  financial_health: { type: "number" },
+                  growth_potential: { type: "number" },
+                  innovation: { type: "number" },
+                  brand_strength: { type: "number" },
+                  management_quality: { type: "number" },
+                  market_position: { type: "number" },
+                  esg_rating: { type: "number" },
+                  overall: { type: "number" }
+                }
+              },
+              history: {
+                type: "object",
+                properties: {
+                  description: { type: "string" },
+                  business_model: { type: "string" },
+                  usp: { type: "string" },
+                  milestones: { type: "array", items: { type: "object", properties: { year: { type: "string" }, event: { type: "string" } } } },
+                  values: { type: "array", items: { type: "string" } },
+                  recent_news: { type: "array", items: { type: "string" } }
+                }
               }
             }
-          },
-          ownership: {
+          }
+        }),
+        base44.integrations.Core.InvokeLLM({
+          prompt: `You are a senior investment analyst. Provide accurate data about the company "${name}". Use real publicly available information.
+
+  Return:
+  - swot.strengths: exactly 3 key strengths (strings)
+  - swot.weaknesses: exactly 3 key weaknesses (strings)
+  - swot.opportunities: exactly 3 market opportunities (strings)
+  - swot.threats: exactly 3 threats/risks (strings)
+  - esg: overall_score (0-100), environmental_score (0-100), social_score (0-100), governance_score (0-100), rating_agency (e.g. "MSCI"), co2_target (string), renewable_energy_pct (number), sustainability_initiatives (3 strings), controversies (2 strings)
+  - leadership_team: array of at least 3 executives with name, title, age (string), years_in_role (string), background (1-2 sentences), education
+  - ownership: ownership_type, listed_exchange, founder_name, founder_year, founder_story (2-3 sentences), founder_current_role, shareholders (3-4 objects: {name, percentage, type})
+  - ai_verdict: summary (paragraph), investment_thesis (paragraph), key_risks (3 strings), key_catalysts (3 strings), recommendation (e.g. "STRONG BUY" / "BUY" / "HOLD" / "SELL")`,
+          add_context_from_internet: true,
+          response_json_schema: {
             type: "object",
             properties: {
-              ownership_type: { type: "string" },
-              listed_exchange: { type: "string" },
-              founder_name: { type: "string" },
-              founder_year: { type: "string" },
-              founder_story: { type: "string" },
-              founder_current_role: { type: "string" },
-              shareholders: { type: "array", items: { type: "object", properties: { name: { type: "string" }, percentage: { type: "number" }, type: { type: "string" } } } }
-            }
-          },
-          ai_verdict: {
-            type: "object",
-            properties: {
-              summary: { type: "string" },
-              investment_thesis: { type: "string" },
-              key_risks: { type: "array", items: { type: "string" } },
-              key_catalysts: { type: "array", items: { type: "string" } },
-              recommendation: { type: "string" }
+              swot: {
+                type: "object",
+                properties: {
+                  strengths: { type: "array", items: { type: "string" } },
+                  weaknesses: { type: "array", items: { type: "string" } },
+                  opportunities: { type: "array", items: { type: "string" } },
+                  threats: { type: "array", items: { type: "string" } }
+                }
+              },
+              esg: {
+                type: "object",
+                properties: {
+                  overall_score: { type: "number" },
+                  environmental_score: { type: "number" },
+                  social_score: { type: "number" },
+                  governance_score: { type: "number" },
+                  rating_agency: { type: "string" },
+                  co2_target: { type: "string" },
+                  renewable_energy_pct: { type: "number" },
+                  sustainability_initiatives: { type: "array", items: { type: "string" } },
+                  controversies: { type: "array", items: { type: "string" } }
+                }
+              },
+              leadership_team: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    name: { type: "string" },
+                    title: { type: "string" },
+                    age: { type: "string" },
+                    years_in_role: { type: "string" },
+                    background: { type: "string" },
+                    education: { type: "string" }
+                  }
+                }
+              },
+              ownership: {
+                type: "object",
+                properties: {
+                  ownership_type: { type: "string" },
+                  listed_exchange: { type: "string" },
+                  founder_name: { type: "string" },
+                  founder_year: { type: "string" },
+                  founder_story: { type: "string" },
+                  founder_current_role: { type: "string" },
+                  shareholders: { type: "array", items: { type: "object", properties: { name: { type: "string" }, percentage: { type: "number" }, type: { type: "string" } } } }
+                }
+              },
+              ai_verdict: {
+                type: "object",
+                properties: {
+                  summary: { type: "string" },
+                  investment_thesis: { type: "string" },
+                  key_risks: { type: "array", items: { type: "string" } },
+                  key_catalysts: { type: "array", items: { type: "string" } },
+                  recommendation: { type: "string" }
+                }
+              }
             }
           }
-        }
-      }
-    });
-      console.log('Company data received:', JSON.stringify(result).substring(0, 1000));
-      // Handle both direct result and result.data wrapper
-      const parsed = result?.data || result;
-      setData(parsed);
+        })
+      ]);
+
+      const merged = { ...result1, ...result2 };
+      console.log('Company data merged:', JSON.stringify(merged).substring(0, 500));
+      setData(merged);
     } catch (err) {
       console.error('fetchData error:', err);
       setError(err.message);
