@@ -246,10 +246,10 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
     setPersonLoading(true);
     setPersonData(null);
     try {
-      const [basicInfo, careerData, skillsData, achievementsData] = await Promise.all([
+      const [r1, r2, r3, r4, r5, r6] = await Promise.all([
         // Basic info
         base44.integrations.Core.InvokeLLM({
-          prompt: `Find basic profile info about "${personSearch}"${companyName ? ` at ${companyName}` : ''}: name, current title, company, location, LinkedIn URL, profile picture URL, email guess.`,
+          prompt: `Find basic profile info about "${personSearch}"${companyName ? ` at ${companyName}` : ''}: name, current title, company, location, LinkedIn URL, profile picture URL, email guess, connections count. Real data only.`,
           add_context_from_internet: true,
           response_json_schema: {
             type: "object",
@@ -260,57 +260,99 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
               location: { type: "string" },
               linkedin_url: { type: "string" },
               linkedin_profile_image_url: { type: "string" },
-              email_guess: { type: "string" },
+              email: { type: "string" },
               connections_count: { type: "string" }
             }
           }
         }),
-        // Career & education
+        // Career history & education
         base44.integrations.Core.InvokeLLM({
-          prompt: `Find career history and education for "${personSearch}"${companyName ? ` at ${companyName}` : ''}: list previous companies/roles with dates, education institutions and degrees.`,
+          prompt: `Find career history and education for "${personSearch}"${companyName ? ` at ${companyName}` : ''}: list previous companies/roles with dates, education institutions and degrees, total years experience, estimated seniority level. Real data only.`,
           add_context_from_internet: true,
           response_json_schema: {
             type: "object",
             properties: {
               education: { type: "array", items: { type: "string" } },
               career_history: { type: "array", items: { type: "object", additionalProperties: true } },
-              languages: { type: "array", items: { type: "string" } }
+              total_experience_years: { type: "number" },
+              estimated_seniority: { type: "string" }
             }
           }
         }),
         // Skills & expertise
         base44.integrations.Core.InvokeLLM({
-          prompt: `Find skills, expertise and board memberships for "${personSearch}"${companyName ? ` at ${companyName}` : ''}: technical skills, professional expertise, board positions.`,
+          prompt: `Find skills and expertise for "${personSearch}"${companyName ? ` at ${companyName}` : ''}: technical skills, professional expertise, board positions, certifications, languages, core competencies. Real data only.`,
           add_context_from_internet: true,
           response_json_schema: {
             type: "object",
             properties: {
-              skills: { type: "array", items: { type: "string" } },
+              core_skills: { type: "array", items: { type: "string" } },
+              technical_expertise: { type: "array", items: { type: "string" } },
+              soft_skills: { type: "array", items: { type: "string" } },
+              certifications: { type: "array", items: { type: "string" } },
               board_memberships: { type: "array", items: { type: "string" } },
-              expertise_areas: { type: "array", items: { type: "string" } }
+              languages: { type: "array", items: { type: "string" } }
             }
           }
         }),
-        // Achievements & quotes
+        // Career progression with impact
         base44.integrations.Core.InvokeLLM({
-          prompt: `Find notable achievements, awards, and memorable quotes from "${personSearch}"${companyName ? ` at ${companyName}` : ''}: major accomplishments, notable projects, public statements.`,
+          prompt: `For "${personSearch}"${companyName ? ` at ${companyName}` : ''}, provide detailed career progression: 5+ years of job roles with company, dates, job title, impact/achievements at each role, teams led, industry transitions, leadership experience. Real data only.`,
           add_context_from_internet: true,
           response_json_schema: {
             type: "object",
             properties: {
-              notable_achievements: { type: "array", items: { type: "string" } },
-              summary: { type: "string" },
-              notable_quote: { type: "string" }
+              detailed_career_history: { type: "array", items: { type: "object", additionalProperties: true } },
+              industry_transitions: { type: "array", items: { type: "string" } },
+              leadership_experience: { type: "string" },
+              career_trajectory: { type: "string" },
+              growth_rate_assessment: { type: "string" }
+            }
+          }
+        }),
+        // Achievements & impact
+        base44.integrations.Core.InvokeLLM({
+          prompt: `Find achievements and impact for "${personSearch}"${companyName ? ` at ${companyName}` : ''}: major accomplishments with measurable results, awards/recognitions, notable projects, founded companies, speaking engagements, publications/articles, industry impact, media mentions. Real data only.`,
+          add_context_from_internet: true,
+          response_json_schema: {
+            type: "object",
+            properties: {
+              major_accomplishments: { type: "array", items: { type: "string" } },
+              awards_recognitions: { type: "array", items: { type: "string" } },
+              notable_projects: { type: "array", items: { type: "string" } },
+              founder_history: { type: "array", items: { type: "string" } },
+              speaking_engagements: { type: "array", items: { type: "string" } },
+              publications: { type: "array", items: { type: "string" } },
+              media_mentions: { type: "array", items: { type: "string" } },
+              industry_impact: { type: "string" }
+            }
+          }
+        }),
+        // Public presence & influence
+        base44.integrations.Core.InvokeLLM({
+          prompt: `Find public presence and influence for "${personSearch}"${companyName ? ` at ${companyName}` : ''}: podcast appearances, social media followers/presence, patents/IP, network influence/notable connections, book authorship, analyst rankings, thought leadership areas. Real data only.`,
+          add_context_from_internet: true,
+          response_json_schema: {
+            type: "object",
+            properties: {
+              podcast_appearances: { type: "array", items: { type: "string" } },
+              social_media_presence: { type: "object", additionalProperties: true },
+              patents: { type: "array", items: { type: "string" } },
+              network_influence: { type: "string" },
+              publications_authored: { type: "array", items: { type: "string" } },
+              thought_leadership_areas: { type: "array", items: { type: "string" } }
             }
           }
         })
       ]);
       
       const merged = {
-        ...basicInfo,
-        ...careerData,
-        ...skillsData,
-        ...achievementsData
+        ...r1,
+        ...r2,
+        ...r3,
+        ...r4,
+        ...r5,
+        ...r6
       };
       
       if (merged.full_name) {
