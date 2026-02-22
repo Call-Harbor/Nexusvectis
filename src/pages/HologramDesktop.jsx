@@ -415,7 +415,7 @@ export default function HologramDesktop() {
       </HoloWidget>}
 
       {/* Delivery Trend Chart */}
-      {activeWidgets.includes('trend') && <HoloWidget title="Delivery Trend (7d)" icon={TrendingUp} color="violet" defaultPos={getWidgetPosition('trend', screenIndex)} onClose={() => setActiveWidgets(p => p.filter(w => w !== 'trend'))}>
+      {activeWidgets.includes('trend') && <HoloWidget title="Delivery Trend (7d)" icon={TrendingUp} color="violet" id="trend" defaultPos={getWidgetPosition('trend', screenIndex)} screenIndex={screenIndex} onSendToScreen={handleSendToScreen} onClose={() => setActiveWidgets(p => p.filter(w => w !== 'trend'))}>
         <div className="min-w-[300px]">
           <ResponsiveContainer width="100%" height={120}>
             <AreaChart data={deliveryTrendData}>
