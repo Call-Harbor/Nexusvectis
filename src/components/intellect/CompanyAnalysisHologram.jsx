@@ -594,7 +594,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
                           {data.history.recent_news.slice(0, 4).map((n, i) => (
                             <div key={i} className="flex items-start gap-2 text-xs p-2 rounded-lg bg-slate-800/40">
                               <ChevronRight className="w-3 h-3 text-cyan-400 mt-0.5 flex-shrink-0" />
-                              <span className="text-slate-300">{n}</span>
+                              <span className="text-slate-300">{typeof n === 'string' ? n : n.headline || JSON.stringify(n)}</span>
                             </div>
                           ))}
                         </div>
