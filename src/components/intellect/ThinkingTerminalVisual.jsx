@@ -53,6 +53,25 @@ const ThinkingTerminalVisual = ({ isActive, logs, onClose }) => {
 
   if (!isActive) return null;
 
+  if (isMinimized) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="fixed bottom-20 right-4 z-50"
+      >
+        <button
+          onClick={() => setIsMinimized(false)}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500/30 to-violet-500/30 border-2 border-cyan-500/50 backdrop-blur-xl shadow-lg shadow-cyan-500/20 hover:from-cyan-500/40 hover:to-violet-500/40 transition-all"
+        >
+          <Brain className="w-4 h-4 text-cyan-400 animate-pulse" />
+          <span className="text-white text-sm font-medium">AI Thinking...</span>
+          <span className="text-cyan-400 text-xs font-mono">{completionPercentage}%</span>
+        </button>
+      </motion.div>
+    );
+  }
+
   return (
     <AnimatePresence>
       <motion.div
@@ -64,7 +83,7 @@ const ThinkingTerminalVisual = ({ isActive, logs, onClose }) => {
         {/* Backdrop */}
         <div 
           className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-          onClick={onClose}
+          onClick={() => setIsMinimized(true)}
         />
 
         {/* Terminal Window */}
