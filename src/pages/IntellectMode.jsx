@@ -172,6 +172,9 @@ export default function IntellectMode() {
   const [companyAnalysisTarget, setCompanyAnalysisTarget] = useState(null);
   const [thinkingLogs, setThinkingLogs] = useState([]);
   const [showThinkingTerminal, setShowThinkingTerminal] = useState(false);
+  const [screens, setScreens] = useState([]);
+  const [showMultiScreenPrompt, setShowMultiScreenPrompt] = useState(false);
+  const [multiScreenDismissed, setMultiScreenDismissed] = useState(false);
   const messagesEndRef = useRef(null);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
