@@ -71,13 +71,24 @@ function MapController({ selectedVehicle }) {
 export default function FleetMap({ vehicles, selectedVehicle, onSelectVehicle }) {
   const [isFullscreen, setIsFullscreen] = useState(false);
   
-  const validVehicles = vehicles.filter(v => v.latitude && v.longitude);
+  const validVehicles = (vehicles || []).filter(v => v.latitude && v.longitude);
   
   const center = selectedVehicle?.latitude && selectedVehicle?.longitude
     ? [selectedVehicle.latitude, selectedVehicle.longitude]
     : validVehicles.length > 0 
       ? [validVehicles[0].latitude, validVehicles[0].longitude]
       : [55.6761, 12.5683]; // Default to Copenhagen
+
+  // If no vehicles have coordinates, show placeholder
+  if (validVehicles.length === 0 && (!vehicles || vehicles.length === 0)) {
+    return (
+      <div className="h-[500px] rounded-2xl border border-slate-700/50 bg-slate-900/50 flex flex-col items-center justify-center gap-3">
+        <Navigation className="w-10 h-10 text-slate-600" />
+        <p className="text-slate-400 text-sm">Ingen køretøjer med GPS-koordinater</p>
+        <p className="text-slate-600 text-xs">Tilføj køretøjer med latitude/longitude for at se dem på kortet</p>
+      </div>
+    );
+  }
 
   return (
     <motion.div 
