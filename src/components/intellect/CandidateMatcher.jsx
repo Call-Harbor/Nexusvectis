@@ -2,154 +2,126 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from "@/api/base44Client";
 import { 
-  X, Brain, Loader2, Search, CheckCircle, AlertTriangle, TrendingUp,
-  Users, FileText, Zap, Award, Target, ChevronDown, ChevronUp
+  X, Loader2, Brain, Search, Plus, Trash2, CheckCircle, AlertCircle, 
+  TrendingUp, Users, Award, Target, Zap
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
-const ScoreBar = ({ score, max = 100, color }) => {
-  const pct = (score / max) * 100;
-  return (
-    <div className="space-y-1">
-      <div className="flex justify-between text-xs">
-        <span className="text-slate-400">Match Score</span>
-        <span className="font-bold text-white">{score}%</span>
-      </div>
-      <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
-        <motion.div
-          className="h-full rounded-full"
-          style={{ backgroundColor: color }}
-          initial={{ width: 0 }}
-          animate={{ width: `${pct}%` }}
-          transition={{ duration: 0.8 }}
-        />
-      </div>
-    </div>
-  );
-};
-
 export default function CandidateMatcher({ onClose }) {
+  const [step, setStep] = useState('input'); // input, loading, results
   const [jobDescription, setJobDescription] = useState('');
-  const [candidateNames, setCandidateNames] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [candidates, setCandidates] = useState([{ id: 1, name: '' }]);
   const [results, setResults] = useState(null);
-  const [expandedIdx, setExpandedIdx] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const nextId = React.useRef(2);
 
-  const handleSearch = async () => {
-    if (!jobDescription.trim() || !candidateNames.trim()) {
-      alert('Please enter both job description and candidate names');
+  const addCandidate = () => {
+    setCandidates([...candidates, { id: nextId.current, name: '' }]);
+    nextId.current += 1;
+  };
+
+  const updateCandidate = (id, name) => {
+    setCandidates(candidates.map(c => c.id === id ? { ...c, name } : c));
+  };
+
+  const removeCandidate = (id) => {
+    if (candidates.length > 1) {
+      setCandidates(candidates.filter(c => c.id !== id));
+    }
+  };
+
+  const analyzeMatches = async () => {
+    if (!jobDescription.trim()) {
+      setError('Please enter a job description');
+      return;
+    }
+    if (candidates.filter(c => c.name.trim()).length === 0) {
+      setError('Please add at least one candidate');
       return;
     }
 
     setLoading(true);
-    setResults(null);
+    setError(null);
+    setStep('loading');
 
     try {
-      // Parse candidate names
-      const candidates = candidateNames
-        .split('\n')
-        .map(n => n.trim())
-        .filter(n => n);
+      const candidateList = candidates.filter(c => c.name.trim()).map(c => c.name);
+      
+      const response = await base44.integrations.Core.InvokeLLM({
+        prompt: `You are an expert recruiter. Analyze the following candidates against this job description and provide detailed matching analysis.
 
-      if (candidates.length === 0) {
-        alert('Please enter at least one candidate name');
-        setLoading(false);
-        return;
-      }
-
-      // Fetch profile data for each candidate in parallel
-      const profilePromises = candidates.map(name =>
-        base44.integrations.Core.InvokeLLM({
-          prompt: `Find complete professional profile information for "${name}": current title, company, location, LinkedIn URL, years of experience, education, core skills (5-7), certifications, previous roles with dates, achievements, languages. Real data only.`,
-          add_context_from_internet: true,
-          response_json_schema: {
-            type: "object",
-            properties: {
-              full_name: { type: "string" },
-              current_title: { type: "string" },
-              current_company: { type: "string" },
-              years_experience: { type: "number" },
-              education: { type: "array", items: { type: "string" } },
-              core_skills: { type: "array", items: { type: "string" } },
-              certifications: { type: "array", items: { type: "string" } },
-              previous_roles: { type: "array", items: { type: "object", additionalProperties: true } },
-              achievements: { type: "array", items: { type: "string" } },
-              languages: { type: "array", items: { type: "string" } },
-              location: { type: "string" }
-            }
-          }
-        })
-      );
-
-      const profilesResponse = await Promise.all(profilePromises);
-      const profiles = profilesResponse.map(r => r.data || r);
-
-      // AI matching and analysis
-      const matchResponse = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are an expert recruiter. Analyze this job description and the candidate profiles provided, then rank them by fit.
-
-JOB DESCRIPTION:
+Job Description:
 ${jobDescription}
 
-CANDIDATES:
-${JSON.stringify(profiles, null, 2)}
+Candidates:
+${candidateList.map((name, i) => `${i + 1}. ${name}`).join('\n')}
 
 For each candidate, provide:
-1. Overall match score (0-100)
-2. Top 3 strengths vs job requirements
-3. Top 2 potential gaps/concerns
-4. Detailed professional recommendation (2-3 sentences)
+1. Match Score (0-100)
+2. Key Strengths (3-4 points)
+3. Gaps/Weaknesses (2-3 points)
+4. Recommendation (STRONG MATCH/GOOD MATCH/MODERATE MATCH/POOR MATCH)
+5. Why hire/why not (1-2 sentences)
 
-Format as JSON array of objects: { candidate_name, match_score, strengths, gaps, recommendation }`,
-        add_context_from_internet: false,
+Format as a structured JSON response.`,
+        add_context_from_internet: true,
         response_json_schema: {
           type: "object",
           properties: {
-            ranked_candidates: {
+            matches: {
               type: "array",
               items: {
                 type: "object",
-                additionalProperties: true
+                properties: {
+                  candidate_name: { type: "string" },
+                  match_score: { type: "number" },
+                  strengths: { type: "array", items: { type: "string" } },
+                  gaps: { type: "array", items: { type: "string" } },
+                  recommendation: { type: "string" },
+                  why: { type: "string" }
+                }
               }
             },
-            summary: { type: "string" }
+            top_pick: { type: "string" },
+            overall_assessment: { type: "string" }
           }
         }
       });
 
-      setResults({
-        candidates: matchResponse.data?.ranked_candidates || [],
-        summary: matchResponse.data?.summary,
-        jobTitle: jobDescription.split('\n')[0]
-      });
+      setResults(response);
+      setStep('results');
     } catch (err) {
-      console.error('Matching error:', err);
-      alert('Error analyzing candidates. Please try again.');
+      setError(err.message || 'Failed to analyze candidates');
+      setStep('input');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col overflow-auto bg-slate-950">
-      {/* Animated background */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-br from-cyan-950/30 via-slate-950 to-violet-950/30" />
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.05)_1px,transparent_1px)] bg-[size:50px_50px]" />
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-violet-500/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1.5s' }} />
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex flex-col overflow-auto bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950"
+    >
+      {/* Background effects */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-950/20 via-slate-950 to-violet-950/20" />
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(16,185,129,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(16,185,129,0.05)_1px,transparent_1px)] bg-[size:50px_50px]" />
       </div>
 
       {/* Header */}
-      <div className="relative z-10 flex items-center justify-between p-4 sm:p-5 border-b border-cyan-500/20 bg-slate-950/80 backdrop-blur flex-shrink-0">
+      <div className="relative z-10 flex items-center justify-between p-5 border-b border-emerald-500/20 bg-slate-950/80 backdrop-blur flex-shrink-0">
         <div className="flex items-center gap-3">
           <div className="p-2 rounded-xl bg-gradient-to-br from-emerald-500/30 to-cyan-500/30 border border-emerald-500/50">
             <Users className="w-5 h-5 text-emerald-400 animate-pulse" />
           </div>
           <div>
             <h1 className="text-white text-lg font-bold">Candidate Intelligence</h1>
-            <p className="text-emerald-400 text-xs">AI-powered candidate matching & analysis</p>
+            <p className="text-emerald-400 text-xs">AI-Powered Candidate Matching</p>
           </div>
         </div>
         <Button onClick={onClose} variant="ghost" className="text-red-400 hover:text-red-300 hover:bg-red-500/20">
@@ -157,175 +129,249 @@ Format as JSON array of objects: { candidate_name, match_score, strengths, gaps,
         </Button>
       </div>
 
-      {/* Content */}
-      <div className="relative z-10 flex-1 overflow-y-auto">
-        {!results ? (
-          <div className="max-w-3xl mx-auto p-4 sm:p-6 space-y-6">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
-              <div>
-                <label className="block text-white font-semibold mb-2">Job Description</label>
-                <textarea
-                  value={jobDescription}
-                  onChange={e => setJobDescription(e.target.value)}
-                  placeholder="Paste the job description here (title, requirements, responsibilities, etc.)..."
-                  className="w-full h-32 px-4 py-3 bg-slate-900/60 border-2 border-cyan-500/30 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-400 resize-none"
-                />
-              </div>
+      <div className="relative z-10 flex-1 overflow-y-auto p-6">
+        <div className="max-w-4xl mx-auto">
 
-              <div>
-                <label className="block text-white font-semibold mb-2">Candidate Names</label>
-                <textarea
-                  value={candidateNames}
-                  onChange={e => setCandidateNames(e.target.value)}
-                  placeholder="Enter candidate names (one per line)&#10;e.g.:&#10;John Smith&#10;Sarah Johnson&#10;Michael Chen"
-                  className="w-full h-32 px-4 py-3 bg-slate-900/60 border-2 border-emerald-500/30 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-400 resize-none"
-                />
-              </div>
-
-              <Button
-                onClick={handleSearch}
-                disabled={loading || !jobDescription.trim() || !candidateNames.trim()}
-                className="w-full bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-white font-bold py-3 rounded-xl"
+          {/* INPUT STEP */}
+          <AnimatePresence>
+            {step === 'input' && (
+              <motion.div
+                key="input"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="space-y-6"
               >
-                {loading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                    Analyzing candidates...
-                  </>
-                ) : (
-                  <>
-                    <Zap className="w-4 h-4 mr-2" />
-                    Match Candidates
-                  </>
+                {error && (
+                  <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/30 flex items-start gap-3">
+                    <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+                    <p className="text-red-300 text-sm">{error}</p>
+                  </div>
                 )}
-              </Button>
 
-              {loading && (
-                <div className="flex items-center justify-center py-8 gap-3">
-                  <Brain className="w-6 h-6 text-cyan-400 animate-pulse" />
-                  <span className="text-slate-400">Fetching profiles & analyzing fit...</span>
+                {/* Job Description */}
+                <div className="space-y-3">
+                  <label className="block text-white font-semibold text-sm">Job Description</label>
+                  <textarea
+                    value={jobDescription}
+                    onChange={e => setJobDescription(e.target.value)}
+                    placeholder="Paste the full job description here... Include requirements, responsibilities, and ideal candidate profile."
+                    className="w-full px-4 py-3 rounded-xl bg-slate-900/50 border border-emerald-500/30 text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-400 min-h-32 text-sm leading-relaxed"
+                  />
+                  <p className="text-slate-400 text-xs">
+                    {jobDescription.length} characters
+                  </p>
                 </div>
-              )}
-            </motion.div>
-          </div>
-        ) : (
-          <div className="max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
-            {/* Summary */}
-            {results.summary && (
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="p-4 rounded-2xl bg-gradient-to-r from-emerald-500/10 to-cyan-500/10 border border-emerald-500/30">
-                <div className="flex items-center gap-2 mb-2">
-                  <Brain className="w-5 h-5 text-emerald-400" />
-                  <h3 className="text-white font-bold">AI Analysis Summary</h3>
+
+                {/* Candidates */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-white font-semibold text-sm">Candidates to Analyze</label>
+                    <p className="text-slate-400 text-xs">{candidates.filter(c => c.name.trim()).length} added</p>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    {candidates.map(candidate => (
+                      <div key={candidate.id} className="flex gap-2">
+                        <input
+                          value={candidate.name}
+                          onChange={e => updateCandidate(candidate.id, e.target.value)}
+                          placeholder={`Candidate name (e.g. John Smith)`}
+                          className="flex-1 px-4 py-2.5 rounded-lg bg-slate-900/50 border border-slate-700/50 text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-400 text-sm"
+                        />
+                        {candidates.length > 1 && (
+                          <Button
+                            onClick={() => removeCandidate(candidate.id)}
+                            variant="ghost"
+                            size="icon"
+                            className="text-red-400 hover:text-red-300 hover:bg-red-500/20"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+
+                  <Button
+                    onClick={addCandidate}
+                    variant="outline"
+                    className="w-full border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 gap-2"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Add Candidate
+                  </Button>
                 </div>
-                <p className="text-slate-200 text-sm leading-relaxed">{results.summary}</p>
+
+                {/* Analyze Button */}
+                <Button
+                  onClick={analyzeMatches}
+                  disabled={loading}
+                  className="w-full bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-white font-semibold py-3 gap-2"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Analyzing...
+                    </>
+                  ) : (
+                    <>
+                      <Brain className="w-4 h-4" />
+                      Analyze Matches
+                    </>
+                  )}
+                </Button>
               </motion.div>
             )}
+          </AnimatePresence>
 
-            {/* Candidates */}
-            <div className="space-y-4">
-              {results.candidates && results.candidates.map((cand, idx) => {
-                const scoreColor = cand.match_score >= 80 ? '#10b981' : cand.match_score >= 60 ? '#f59e0b' : '#ef4444';
-                return (
-                  <motion.div
-                    key={idx}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: idx * 0.1 }}
-                    className="p-4 rounded-2xl border border-slate-700/50 bg-slate-900/40 overflow-hidden hover:border-emerald-500/30 transition-all"
-                  >
-                    <button
-                      onClick={() => setExpandedIdx(expandedIdx === idx ? null : idx)}
-                      className="w-full text-left flex items-start justify-between gap-4"
-                    >
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-3">
-                          <div className="flex-1 min-w-0">
-                            <p className="text-white font-bold text-lg">{cand.candidate_name || cand.full_name}</p>
-                            <p className="text-emerald-400 text-sm">{cand.current_title || 'Professional'}</p>
-                          </div>
-                        </div>
-                        <ScoreBar score={cand.match_score || 0} color={scoreColor} />
-                      </div>
-                      <motion.div animate={{ rotate: expandedIdx === idx ? 180 : 0 }}>
-                        <ChevronDown className="w-5 h-5 text-slate-400 flex-shrink-0 mt-1" />
-                      </motion.div>
-                    </button>
-
-                    {/* Expanded Details */}
-                    <AnimatePresence>
-                      {expandedIdx === idx && (
-                        <motion.div
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: 'auto' }}
-                          exit={{ opacity: 0, height: 0 }}
-                          transition={{ duration: 0.3 }}
-                          className="mt-4 pt-4 border-t border-slate-700/30 space-y-4"
-                        >
-                          {/* Strengths */}
-                          {cand.strengths && (
-                            <div>
-                              <div className="flex items-center gap-2 mb-2">
-                                <CheckCircle className="w-4 h-4 text-emerald-400" />
-                                <p className="text-emerald-400 text-sm font-semibold">Strengths</p>
-                              </div>
-                              <ul className="space-y-1">
-                                {(Array.isArray(cand.strengths) ? cand.strengths : [cand.strengths]).map((s, i) => (
-                                  <li key={i} className="text-slate-300 text-sm pl-6 relative">
-                                    <span className="absolute left-0 text-emerald-400">•</span>
-                                    {typeof s === 'string' ? s : s?.text || JSON.stringify(s)}
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          )}
-
-                          {/* Gaps */}
-                          {cand.gaps && (
-                            <div>
-                              <div className="flex items-center gap-2 mb-2">
-                                <AlertTriangle className="w-4 h-4 text-amber-400" />
-                                <p className="text-amber-400 text-sm font-semibold">Potential Gaps</p>
-                              </div>
-                              <ul className="space-y-1">
-                                {(Array.isArray(cand.gaps) ? cand.gaps : [cand.gaps]).map((g, i) => (
-                                  <li key={i} className="text-slate-300 text-sm pl-6 relative">
-                                    <span className="absolute left-0 text-amber-400">•</span>
-                                    {typeof g === 'string' ? g : g?.text || JSON.stringify(g)}
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          )}
-
-                          {/* Recommendation */}
-                          {cand.recommendation && (
-                            <div className="p-3 rounded-lg bg-cyan-500/10 border border-cyan-500/20">
-                              <div className="flex items-start gap-2">
-                                <TrendingUp className="w-4 h-4 text-cyan-400 mt-0.5 flex-shrink-0" />
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-slate-300 text-sm leading-relaxed">{cand.recommendation}</p>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </motion.div>
-                );
-              })}
-            </div>
-
-            {/* Back Button */}
-            <motion.button
-              onClick={() => setResults(null)}
-              className="w-full py-3 px-4 rounded-xl bg-slate-800/50 hover:bg-slate-800 text-slate-300 font-semibold transition-all text-center"
+          {/* LOADING STEP */}
+          {step === 'loading' && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="flex flex-col items-center justify-center py-20 gap-4"
             >
-              ← Analyze Different Candidates
-            </motion.button>
-          </div>
-        )}
+              <div className="relative">
+                <div className="w-16 h-16 rounded-full border-2 border-emerald-500/30 animate-spin border-t-emerald-400" />
+                <Brain className="absolute inset-0 m-auto w-7 h-7 text-emerald-400 animate-pulse" />
+              </div>
+              <div className="text-center">
+                <p className="text-white font-semibold">Analyzing Candidates</p>
+                <p className="text-slate-400 text-sm mt-1">Evaluating skills, experience, and fit...</p>
+              </div>
+            </motion.div>
+          )}
+
+          {/* RESULTS STEP */}
+          <AnimatePresence>
+            {step === 'results' && results && (
+              <motion.div
+                key="results"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="space-y-6"
+              >
+                {/* Overall Assessment */}
+                {results.overall_assessment && (
+                  <div className="p-4 rounded-xl bg-gradient-to-br from-emerald-500/10 to-cyan-500/10 border border-emerald-500/30">
+                    <div className="flex items-start gap-3">
+                      <Target className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-emerald-400 text-xs font-bold uppercase mb-1">Assessment</p>
+                        <p className="text-white text-sm">{results.overall_assessment}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Top Pick */}
+                {results.top_pick && (
+                  <div className="p-4 rounded-xl bg-gradient-to-br from-amber-500/10 to-emerald-500/10 border border-amber-500/30 flex items-start gap-3">
+                    <Award className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-amber-400 text-xs font-bold uppercase mb-1">Top Recommendation</p>
+                      <p className="text-white font-semibold">{results.top_pick}</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Candidate Matches */}
+                <div className="space-y-3">
+                  <h3 className="text-white font-bold text-sm uppercase tracking-wide">Detailed Analysis</h3>
+                  {results.matches?.map((match, idx) => (
+                    <motion.div
+                      key={idx}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: idx * 0.1 }}
+                      className="p-4 rounded-xl border border-slate-700/50 bg-slate-900/40 hover:border-emerald-500/30 transition-all"
+                    >
+                      <div className="flex items-start justify-between gap-4 mb-3">
+                        <div>
+                          <p className="text-white font-bold text-base">{match.candidate_name}</p>
+                          <Badge className={`mt-1 ${
+                            match.match_score >= 80 ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' :
+                            match.match_score >= 60 ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40' :
+                            match.match_score >= 40 ? 'bg-amber-500/20 text-amber-300 border-amber-500/40' :
+                            'bg-red-500/20 text-red-300 border-red-500/40'
+                          }`}>
+                            {match.recommendation}
+                          </Badge>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-3xl font-black text-emerald-400">{match.match_score}</div>
+                          <div className="text-slate-400 text-xs">/100</div>
+                        </div>
+                      </div>
+
+                      {/* Score bar */}
+                      <div className="h-2 bg-slate-800 rounded-full overflow-hidden mb-3">
+                        <motion.div
+                          className="h-full bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-full"
+                          initial={{ width: 0 }}
+                          animate={{ width: `${match.match_score}%` }}
+                          transition={{ duration: 0.8, ease: "easeOut" }}
+                        />
+                      </div>
+
+                      {/* Why */}
+                      {match.why && (
+                        <p className="text-slate-300 text-sm mb-3 italic border-l-2 border-emerald-500/30 pl-3">{match.why}</p>
+                      )}
+
+                      {/* Strengths */}
+                      {match.strengths?.length > 0 && (
+                        <div className="mb-3">
+                          <div className="flex items-center gap-2 mb-1.5">
+                            <CheckCircle className="w-4 h-4 text-emerald-400" />
+                            <p className="text-emerald-400 text-xs font-semibold uppercase">Strengths</p>
+                          </div>
+                          <ul className="space-y-1 ml-6">
+                            {match.strengths.map((strength, i) => (
+                              <li key={i} className="text-slate-300 text-xs leading-relaxed">• {strength}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {/* Gaps */}
+                      {match.gaps?.length > 0 && (
+                        <div>
+                          <div className="flex items-center gap-2 mb-1.5">
+                            <AlertCircle className="w-4 h-4 text-amber-400" />
+                            <p className="text-amber-400 text-xs font-semibold uppercase">Gaps</p>
+                          </div>
+                          <ul className="space-y-1 ml-6">
+                            {match.gaps.map((gap, i) => (
+                              <li key={i} className="text-slate-300 text-xs leading-relaxed">• {gap}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </motion.div>
+                  ))}
+                </div>
+
+                {/* Back Button */}
+                <Button
+                  onClick={() => {
+                    setStep('input');
+                    setResults(null);
+                  }}
+                  variant="outline"
+                  className="w-full border-slate-700 text-slate-300 hover:bg-slate-800"
+                >
+                  Analyze New Candidates
+                </Button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+        </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
