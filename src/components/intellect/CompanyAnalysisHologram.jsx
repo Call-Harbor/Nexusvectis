@@ -768,7 +768,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
                     className="px-4 py-2 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-sm font-semibold disabled:opacity-50 flex items-center gap-2"
                   >
                     {personLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
-                    Søg
+                    Search
                   </button>
                 </div>
 
