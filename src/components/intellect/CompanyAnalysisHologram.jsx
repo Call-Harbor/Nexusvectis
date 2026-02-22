@@ -671,7 +671,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
                 <div className="mb-4 flex items-center gap-2 p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/20">
                   <Shield className="w-4 h-4 text-amber-400" />
                   <div>
-                    <p className="text-amber-400 text-xs font-semibold">Ejerskabstype</p>
+                    <p className="text-amber-400 text-xs font-semibold">Ownership Type</p>
                     <p className="text-white text-sm font-bold">{data.ownership.ownership_type}</p>
                     {data.ownership.listed_exchange && <p className="text-slate-400 text-xs">{data.ownership.listed_exchange}</p>}
                   </div>
