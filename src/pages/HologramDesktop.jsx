@@ -94,10 +94,12 @@ function HoloWidget({ title, icon: Icon, color, children, defaultPos, id, onClos
 
   return (
     <motion.div
+      ref={widgetRef}
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       style={{ position: "absolute", left: pos.x, top: pos.y, zIndex: 10 }}
       className={`rounded-2xl border-2 ${borderColor} bg-slate-950/90 backdrop-blur-xl shadow-2xl ${glowColor} min-w-[280px]`}
+      draggable={false}
     >
       {/* Corner accents */}
       <div className={`absolute top-0 left-0 w-5 h-5 border-t-2 border-l-2 ${borderColor} rounded-tl-2xl pointer-events-none`} />
