@@ -49,13 +49,15 @@ const InsightCard = ({ title, icon: Icon, content, color = 'cyan' }) => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`p-4 rounded-xl border ${colors.border} ${colors.bg}`}
+      className={`p-3 rounded-xl border ${colors.border} ${colors.bg}`}
     >
       <div className="flex items-start gap-2 mb-2">
         <Icon className={`w-4 h-4 ${colors.text} flex-shrink-0 mt-0.5`} />
         <p className={`text-xs font-bold ${colors.text}`}>{title}</p>
       </div>
-      <p className="text-slate-300 text-sm leading-relaxed">{content}</p>
+      <div className="text-slate-300 text-xs leading-relaxed prose prose-xs prose-invert max-w-none prose-p:my-1 prose-ul:my-1 prose-li:my-0 prose-headings:text-xs prose-headings:text-slate-200 prose-strong:text-slate-200">
+        {typeof content === 'string' ? <ReactMarkdown>{content}</ReactMarkdown> : <p>{String(content)}</p>}
+      </div>
     </motion.div>
   );
 };
