@@ -680,6 +680,10 @@ fetch("https://api.nexusvectis.com${endpoint.endpoint}", {
                     ? "bg-cyan-500/20 border-cyan-500 shadow-lg shadow-cyan-500/20"
                     : endpoint.id === "fleet-ai-chat"
                     ? "bg-gradient-to-br from-violet-500/10 to-cyan-500/10 border-violet-500/50 hover:border-violet-400"
+                    : ["company-analytics", "company-benchmarking"].includes(endpoint.id)
+                    ? "bg-gradient-to-br from-emerald-500/10 to-teal-500/10 border-emerald-500/40 hover:border-emerald-400"
+                    : ["people-search", "people-profile"].includes(endpoint.id)
+                    ? "bg-gradient-to-br from-sky-500/10 to-blue-500/10 border-sky-500/40 hover:border-sky-400"
                     : "bg-slate-800/50 border-slate-700 hover:border-cyan-500/50"
                 }`}
               >
