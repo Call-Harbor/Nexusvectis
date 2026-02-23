@@ -686,9 +686,17 @@ fetch("https://api.nexusvectis.com${endpoint.endpoint}", {
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
                     {endpoint.id === "fleet-ai-chat" && <MessageSquare className="w-4 h-4 text-violet-400" />}
+                    {["company-analytics", "company-benchmarking"].includes(endpoint.id) && <Building2 className="w-4 h-4 text-emerald-400" />}
+                    {["people-search", "people-profile"].includes(endpoint.id) && <Users className="w-4 h-4 text-sky-400" />}
                     <h3 className="font-semibold text-white">{endpoint.name}</h3>
                     {endpoint.id === "fleet-ai-chat" && (
                       <span className="px-1.5 py-0.5 bg-violet-500/30 rounded text-[10px] text-violet-300 font-semibold">NEW</span>
+                    )}
+                    {["company-analytics", "company-benchmarking"].includes(endpoint.id) && (
+                      <span className="px-1.5 py-0.5 bg-emerald-500/30 rounded text-[10px] text-emerald-300 font-semibold">NEW</span>
+                    )}
+                    {["people-search", "people-profile"].includes(endpoint.id) && (
+                      <span className="px-1.5 py-0.5 bg-sky-500/30 rounded text-[10px] text-sky-300 font-semibold">NEW</span>
                     )}
                   </div>
                   <span className="px-2 py-1 bg-violet-500/20 rounded text-xs text-violet-400 font-mono">
