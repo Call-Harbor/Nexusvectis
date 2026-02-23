@@ -1088,104 +1088,351 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
               {/* PEOPLE SEARCH TAB */}
               {activeTab === 'people' && (
                 <div>
-                  <div className="flex gap-2 mb-4 max-w-xl">
+                  {/* Search bar */}
+                  <div className="flex gap-2 mb-6 max-w-xl">
                     <div className="flex-1 relative">
-                      <Linkedin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-400" />
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                       <input
                         value={personSearch}
                         onChange={e => setPersonSearch(e.target.value)}
                         onKeyDown={e => e.key === 'Enter' && searchPerson()}
-                        placeholder={`Search person${companyName ? ` at ${companyName}` : ''} (e.g. CEO, CFO, name)...`}
-                        className="w-full pl-10 pr-4 py-2.5 bg-slate-900/60 border-2 border-blue-500/30 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-400 text-sm"
+                        placeholder={`Search person${companyName ? ` at ${companyName}` : ''} (name, CEO, CFO...)...`}
+                        className="w-full pl-10 pr-4 py-3 bg-slate-900/60 border-2 border-cyan-500/30 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-400"
                       />
                     </div>
-                    <button
+                    <Button
                       onClick={searchPerson}
                       disabled={personLoading || !personSearch.trim()}
-                      className="px-4 py-2 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-sm font-semibold disabled:opacity-50 flex items-center gap-2"
+                      className="bg-cyan-600 hover:bg-cyan-700 px-6"
                     >
                       {personLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
-                      Search
-                    </button>
+                    </Button>
                   </div>
 
                   {personLoading && (
-                    <div className="flex items-center gap-3 py-8 text-slate-400">
-                      <Loader2 className="w-5 h-5 animate-spin text-blue-400" />
-                      <span className="text-sm">Searching LinkedIn, Wikipedia, press coverage...</span>
+                    <div className="text-center py-12">
+                      <Loader2 className="w-8 h-8 animate-spin text-cyan-400 mx-auto mb-2" />
+                      <p className="text-slate-400">Searching public sources...</p>
                     </div>
                   )}
 
                   {!personData && !personLoading && (
-                    <div className="text-center py-12 text-slate-500 text-sm">
-                      <Linkedin className="w-10 h-10 mx-auto mb-3 opacity-30" />
-                      <p>Search for a person to view their profile, career and network</p>
+                    <div className="text-center py-12 text-slate-500">
+                      <User className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                      <p>Search for a person to view their extended profile information</p>
                     </div>
                   )}
 
                   {personData && !personLoading && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-3">
-                        <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-start gap-4">
-                          {personData.linkedin_profile_image_url ? (
-                            <img src={personData.linkedin_profile_image_url} alt={personData.full_name} className="w-14 h-14 rounded-full object-cover border-2 border-blue-500/40 flex-shrink-0" />
-                          ) : (
-                            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500/30 to-cyan-500/30 border-2 border-blue-500/40 flex items-center justify-center flex-shrink-0">
-                              <User className="w-7 h-7 text-blue-400" />
-                            </div>
-                          )}
-                          <div className="flex-1 min-w-0">
-                            <p className="text-white font-bold">{personData.full_name}</p>
-                            <p className="text-blue-400 text-xs">{personData.current_title}</p>
-                            <p className="text-slate-400 text-xs">{personData.current_company}</p>
-                            {personData.location && (
-                              <div className="flex items-center gap-1 mt-1">
-                                <MapPin className="w-3 h-3 text-slate-500" />
-                                <span className="text-slate-500 text-xs">{personData.location}</span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="space-y-1.5">
-                          {personData.linkedin_url && <div className="flex items-center gap-2 p-2 rounded-lg bg-slate-800/50 text-xs"><Linkedin className="w-4 h-4 text-blue-400 flex-shrink-0" /><span className="text-slate-300 truncate">{personData.linkedin_url}</span></div>}
-                          {personData.email_guess && <div className="flex items-center gap-2 p-2 rounded-lg bg-slate-800/50 text-xs"><Mail className="w-4 h-4 text-emerald-400 flex-shrink-0" /><span className="text-slate-300">{personData.email_guess}</span></div>}
-                          {personData.connections_count && <div className="flex items-center gap-2 p-2 rounded-lg bg-slate-800/50 text-xs"><Network className="w-4 h-4 text-violet-400 flex-shrink-0" /><span className="text-slate-300">{personData.connections_count} connections</span></div>}
-                        </div>
-
-                        {personData.skills?.length > 0 && (
-                          <div>
-                            <p className="text-slate-400 text-xs font-semibold mb-2 uppercase tracking-wide">Skills</p>
-                            <div className="flex flex-wrap gap-1.5">
-                              {personData.skills.slice(0, 8).map((s, i) => <span key={i} className="px-2 py-1 rounded-full text-xs bg-blue-500/10 border border-blue-500/20 text-blue-300">{s}</span>)}
-                            </div>
+                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4 max-w-4xl">
+                      {/* Header */}
+                      <div className="p-4 rounded-xl bg-gradient-to-r from-cyan-500/10 to-violet-500/10 border border-cyan-500/30 flex items-start gap-4">
+                        {personData.linkedin_profile_image_url ? (
+                          <img src={personData.linkedin_profile_image_url} alt={personData.full_name} className="w-16 h-16 rounded-full object-cover border border-cyan-500/40 flex-shrink-0" />
+                        ) : (
+                          <div className="w-16 h-16 rounded-full bg-slate-800 border border-cyan-500/30 flex items-center justify-center flex-shrink-0">
+                            <User className="w-8 h-8 text-cyan-400" />
                           </div>
                         )}
-
-                        {personData.languages?.length > 0 && (
-                          <div>
-                            <p className="text-slate-400 text-xs font-semibold mb-2 uppercase tracking-wide">Languages</p>
-                            <div className="flex flex-wrap gap-1.5">
-                              {personData.languages.map((l, i) => <span key={i} className="px-2 py-1 rounded-full text-xs bg-slate-800/70 border border-slate-700/50 text-slate-300">{l}</span>)}
+                        <div className="flex-1 min-w-0">
+                          <h2 className="text-white text-xl font-bold">{personData.full_name || 'Unknown'}</h2>
+                          <p className="text-cyan-400 text-sm">{personData.current_title}</p>
+                          <p className="text-slate-400 text-sm">{personData.current_company}</p>
+                          {personData.location && (
+                            <div className="flex items-center gap-1 mt-1 text-slate-500 text-xs">
+                              <MapPin className="w-3 h-3" />
+                              {personData.location}
                             </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Quick links */}
+                      <div className="flex flex-wrap gap-2">
+                        {personData.linkedin_url && (
+                          <a href={personData.linkedin_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500/10 border border-blue-500/30 text-blue-400 text-xs hover:bg-blue-500/20 transition-colors">
+                            <Linkedin className="w-3.5 h-3.5" />LinkedIn
+                          </a>
+                        )}
+                        {personData.email && (
+                          <a href={`mailto:${personData.email}`} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs hover:bg-emerald-500/20 transition-colors">
+                            <Mail className="w-3.5 h-3.5" />Email
+                          </a>
+                        )}
+                        {personData.connections_count && (
+                          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-violet-500/10 border border-violet-500/30 text-violet-400 text-xs">
+                            <Network className="w-3.5 h-3.5" />{personData.connections_count}
                           </div>
                         )}
                       </div>
 
-                      <div className="space-y-3">
-                        {personData.summary && <p className="text-slate-300 text-xs leading-relaxed p-3 rounded-lg bg-slate-900/40 border border-slate-700/50">{personData.summary}</p>}
+                      {/* Overview */}
+                      <PersonCollapsibleSection title="Overview" icon={Building2}>
+                        {personData.career_trajectory && (
+                          <p className="text-slate-300 text-sm leading-relaxed mb-3"><strong>Career Path:</strong> {personData.career_trajectory}</p>
+                        )}
+                        <div className="grid grid-cols-2 gap-2 text-xs">
+                          {personData.total_experience_years && (
+                            <div className="p-2 rounded bg-slate-800/50"><p className="text-slate-400">Experience</p><p className="text-white font-semibold">{personData.total_experience_years} years</p></div>
+                          )}
+                          {personData.estimated_seniority && (
+                            <div className="p-2 rounded bg-slate-800/50"><p className="text-slate-400">Seniority</p><p className="text-white font-semibold">{personData.estimated_seniority}</p></div>
+                          )}
+                          {personData.growth_rate_assessment && (
+                            <div className="p-2 rounded bg-slate-800/50 col-span-2"><p className="text-slate-400">Growth Pattern</p><p className="text-white text-[11px]">{personData.growth_rate_assessment}</p></div>
+                          )}
+                        </div>
+                      </PersonCollapsibleSection>
 
-                        {personData.career_history?.length > 0 && (
-                          <div>
-                            <p className="text-slate-400 text-xs font-semibold mb-2 uppercase tracking-wide">Career</p>
-                            <div className="space-y-1.5 relative">
-                              <div className="absolute left-3 top-0 bottom-0 w-px bg-blue-500/20" />
-                              {personData.career_history.map((job, i) => (
-                                <div key={i} className="flex items-start gap-3 pl-6 relative">
-                                  <div className="absolute left-2 top-1.5 w-2 h-2 rounded-full bg-blue-400 flex-shrink-0" />
-                                  <div>
-                                    <p className="text-white text-xs font-semibold">{job.title}</p>
-                                    <p className="text-blue-400 text-xs">{job.company}</p>
+                      {/* Detailed Career Progression */}
+                      {personData.detailed_career_history?.length > 0 && (
+                        <PersonCollapsibleSection title="Detailed Career Progression" icon={TrendingUp}>
+                          <div className="space-y-3">
+                            {personData.detailed_career_history.map((role, i) => (
+                              <div key={i} className="p-3 rounded-lg bg-slate-900/50 border border-slate-800/50">
+                                <div className="flex justify-between items-start gap-2 mb-2">
+                                  <div className="flex-1">
+                                    <p className="text-white font-semibold">{role.role}</p>
+                                    <p className="text-cyan-400 text-sm">{role.company}</p>
+                                  </div>
+                                  {role.dates && <p className="text-slate-500 text-xs whitespace-nowrap">{role.dates}</p>}
+                                </div>
+                                {role.impact_summary && <p className="text-slate-300 text-xs leading-relaxed mb-1">{role.impact_summary}</p>}
+                                {role.teams_led && <p className="text-slate-400 text-xs mb-1">👥 Led: {role.teams_led}</p>}
+                                {role.key_achievements?.length > 0 && (
+                                  <div className="mt-2 space-y-1">
+                                    {role.key_achievements.map((ach, j) => (
+                                      <p key={j} className="text-slate-400 text-[11px] pl-2 border-l border-cyan-500/30">✓ {ach}</p>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </PersonCollapsibleSection>
+                      )}
+
+                      {/* Leadership & Industry Transitions */}
+                      {(personData.leadership_experience || personData.industry_transitions?.length > 0) && (
+                        <PersonCollapsibleSection title="Leadership & Industry Transitions" icon={Zap}>
+                          {personData.leadership_experience && (
+                            <div className="mb-3">
+                              <p className="text-slate-400 text-xs font-semibold uppercase mb-1">Leadership Experience</p>
+                              <p className="text-slate-300 text-sm leading-relaxed">{personData.leadership_experience}</p>
+                            </div>
+                          )}
+                          {personData.industry_transitions?.length > 0 && (
+                            <div>
+                              <p className="text-slate-400 text-xs font-semibold uppercase mb-1">Industry Transitions</p>
+                              <div className="flex flex-wrap gap-2">
+                                {personData.industry_transitions.map((t, i) => (
+                                  <span key={i} className="px-2 py-1 rounded-full text-xs bg-violet-500/10 border border-violet-500/20 text-violet-300">{t}</span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </PersonCollapsibleSection>
+                      )}
+
+                      {/* Skills */}
+                      {(personData.core_skills?.length > 0 || personData.technical_expertise?.length > 0 || personData.certifications?.length > 0) && (
+                        <PersonCollapsibleSection title="Skills & Expertise" icon={Award}>
+                          {personData.core_skills?.length > 0 && (
+                            <div className="mb-3">
+                              <p className="text-slate-400 text-xs font-semibold uppercase mb-1.5">Core Skills</p>
+                              <div className="flex flex-wrap gap-1.5">
+                                {personData.core_skills.map((s, i) => <span key={i} className="px-2 py-1 rounded-full text-xs bg-cyan-500/10 border border-cyan-500/20 text-cyan-300">{s}</span>)}
+                              </div>
+                            </div>
+                          )}
+                          {personData.technical_expertise?.length > 0 && (
+                            <div className="mb-3">
+                              <p className="text-slate-400 text-xs font-semibold uppercase mb-1.5">Technical Expertise</p>
+                              <div className="flex flex-wrap gap-1.5">
+                                {personData.technical_expertise.map((s, i) => <span key={i} className="px-2 py-1 rounded-full text-xs bg-violet-500/10 border border-violet-500/20 text-violet-300">{s}</span>)}
+                              </div>
+                            </div>
+                          )}
+                          {personData.certifications?.length > 0 && (
+                            <div className="mb-3">
+                              <p className="text-slate-400 text-xs font-semibold uppercase mb-1.5">Certifications</p>
+                              <div className="space-y-1">
+                                {personData.certifications.map((c, i) => <div key={i} className="flex items-center gap-2 text-xs"><CheckCircle className="w-3 h-3 text-emerald-400" /><span className="text-slate-300">{c}</span></div>)}
+                              </div>
+                            </div>
+                          )}
+                          {personData.board_memberships?.length > 0 && (
+                            <div className="mb-3">
+                              <p className="text-slate-400 text-xs font-semibold uppercase mb-1.5">Board Memberships</p>
+                              <div className="space-y-1">
+                                {personData.board_memberships.map((b, i) => <div key={i} className="flex items-center gap-2 text-xs"><div className="w-1.5 h-1.5 rounded-full bg-amber-400/60" /><span className="text-slate-300">{b}</span></div>)}
+                              </div>
+                            </div>
+                          )}
+                          {personData.languages?.length > 0 && (
+                            <div>
+                              <p className="text-slate-400 text-xs font-semibold uppercase mb-1.5">Languages</p>
+                              <div className="flex flex-wrap gap-1.5">
+                                {personData.languages.map((l, i) => <span key={i} className="px-2 py-1 rounded-full text-xs bg-slate-800/70 border border-slate-700/50 text-slate-300">{l}</span>)}
+                              </div>
+                            </div>
+                          )}
+                        </PersonCollapsibleSection>
+                      )}
+
+                      {/* Achievements */}
+                      {(personData.major_accomplishments?.length > 0 || personData.awards_recognitions?.length > 0 || personData.notable_projects?.length > 0 || personData.founder_history?.length > 0) && (
+                        <PersonCollapsibleSection title="Achievements & Impact" icon={Star}>
+                          {personData.major_accomplishments?.length > 0 && (
+                            <div className="mb-3">
+                              <p className="text-slate-400 text-xs font-semibold uppercase mb-1.5">Major Accomplishments</p>
+                              <div className="space-y-1">
+                                {personData.major_accomplishments.map((a, i) => <div key={i} className="flex items-start gap-2 text-xs"><CheckCircle className="w-3 h-3 text-emerald-400 mt-0.5 flex-shrink-0" /><span className="text-slate-300">{a}</span></div>)}
+                              </div>
+                            </div>
+                          )}
+                          {personData.awards_recognitions?.length > 0 && (
+                            <div className="mb-3">
+                              <p className="text-slate-400 text-xs font-semibold uppercase mb-1.5">Awards & Recognitions</p>
+                              <div className="space-y-1">
+                                {personData.awards_recognitions.map((a, i) => <div key={i} className="flex items-center gap-2 text-xs">🏆<span className="text-slate-300">{a}</span></div>)}
+                              </div>
+                            </div>
+                          )}
+                          {personData.notable_projects?.length > 0 && (
+                            <div className="mb-3">
+                              <p className="text-slate-400 text-xs font-semibold uppercase mb-1.5">Notable Projects</p>
+                              <div className="space-y-1">
+                                {personData.notable_projects.map((p, i) => <div key={i} className="text-slate-300 text-xs p-1.5 rounded bg-slate-800/40">🎯 {p}</div>)}
+                              </div>
+                            </div>
+                          )}
+                          {personData.founder_history?.length > 0 && (
+                            <div>
+                              <p className="text-slate-400 text-xs font-semibold uppercase mb-1.5">Founder History</p>
+                              <div className="space-y-1">
+                                {personData.founder_history.map((f, i) => <div key={i} className="text-slate-300 text-xs p-1.5 rounded bg-slate-800/40">🚀 {f}</div>)}
+                              </div>
+                            </div>
+                          )}
+                        </PersonCollapsibleSection>
+                      )}
+
+                      {/* Education & Career History */}
+                      {(personData.education?.length > 0 || personData.career_history?.length > 0) && (
+                        <PersonCollapsibleSection title="Education & Career History" icon={GraduationCap}>
+                          {personData.education?.length > 0 && (
+                            <div className="mb-3">
+                              <p className="text-slate-400 text-xs font-semibold uppercase mb-1.5">Education</p>
+                              <div className="space-y-1">
+                                {personData.education.map((e, i) => <div key={i} className="flex items-start gap-2 text-xs"><GraduationCap className="w-3 h-3 text-emerald-400 mt-0.5 flex-shrink-0" /><span className="text-slate-300">{typeof e === 'string' ? e : JSON.stringify(e)}</span></div>)}
+                              </div>
+                            </div>
+                          )}
+                          {personData.career_history?.length > 0 && (
+                            <div>
+                              <p className="text-slate-400 text-xs font-semibold uppercase mb-1.5">Career History</p>
+                              <div className="space-y-1.5 relative">
+                                <div className="absolute left-3 top-0 bottom-0 w-px bg-cyan-500/20" />
+                                {personData.career_history.map((job, i) => (
+                                  <div key={i} className="flex items-start gap-3 pl-6 relative">
+                                    <div className="absolute left-2 top-1.5 w-2 h-2 rounded-full bg-cyan-400 flex-shrink-0" />
+                                    <div>
+                                      <p className="text-white text-xs font-semibold">{job.title || job.role}</p>
+                                      <p className="text-cyan-400 text-xs">{job.company}</p>
+                                      {job.dates && <p className="text-slate-500 text-[10px]">{job.dates}</p>}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </PersonCollapsibleSection>
+                      )}
+
+                      {/* Public Presence */}
+                      {(personData.media_mentions?.length > 0 || personData.speaking_engagements?.length > 0 || personData.publications?.length > 0 || personData.industry_impact || personData.thought_leadership_areas?.length > 0 || personData.podcast_appearances?.length > 0 || personData.patents?.length > 0) && (
+                        <PersonCollapsibleSection title="Public Presence & Influence" icon={Globe}>
+                          {personData.industry_impact && (
+                            <div className="mb-3">
+                              <p className="text-slate-400 text-xs font-semibold uppercase mb-1">Industry Impact</p>
+                              <p className="text-slate-300 text-sm leading-relaxed">{personData.industry_impact}</p>
+                            </div>
+                          )}
+                          {personData.thought_leadership_areas?.length > 0 && (
+                            <div className="mb-3">
+                              <p className="text-slate-400 text-xs font-semibold uppercase mb-1.5">Thought Leadership</p>
+                              <div className="flex flex-wrap gap-1.5">
+                                {personData.thought_leadership_areas.map((t, i) => <span key={i} className="px-2 py-1 rounded-full text-xs bg-amber-500/10 border border-amber-500/20 text-amber-300">{t}</span>)}
+                              </div>
+                            </div>
+                          )}
+                          {personData.speaking_engagements?.length > 0 && (
+                            <div className="mb-3">
+                              <p className="text-slate-400 text-xs font-semibold uppercase mb-1.5">Speaking Engagements</p>
+                              <div className="space-y-1">{personData.speaking_engagements.map((s, i) => <div key={i} className="text-slate-300 text-xs p-1.5 rounded bg-slate-800/40">🎤 {s}</div>)}</div>
+                            </div>
+                          )}
+                          {personData.publications?.length > 0 && (
+                            <div className="mb-3">
+                              <p className="text-slate-400 text-xs font-semibold uppercase mb-1.5">Publications</p>
+                              <div className="space-y-1">{personData.publications.map((p, i) => <div key={i} className="text-slate-300 text-xs p-1.5 rounded bg-slate-800/40">📄 {p}</div>)}</div>
+                            </div>
+                          )}
+                          {personData.podcast_appearances?.length > 0 && (
+                            <div className="mb-3">
+                              <p className="text-slate-400 text-xs font-semibold uppercase mb-1.5">Podcast Appearances</p>
+                              <div className="space-y-1">{personData.podcast_appearances.map((p, i) => <div key={i} className="text-slate-300 text-xs p-1.5 rounded bg-slate-800/40">🎙️ {p}</div>)}</div>
+                            </div>
+                          )}
+                          {personData.patents?.length > 0 && (
+                            <div className="mb-3">
+                              <p className="text-slate-400 text-xs font-semibold uppercase mb-1.5">Patents</p>
+                              <div className="space-y-1">{personData.patents.map((p, i) => <div key={i} className="text-slate-300 text-xs p-1.5 rounded bg-slate-800/40">⚙️ {p}</div>)}</div>
+                            </div>
+                          )}
+                          {personData.media_mentions?.length > 0 && (
+                            <div>
+                              <p className="text-slate-400 text-xs font-semibold uppercase mb-1.5">Media Mentions</p>
+                              <div className="space-y-1">{personData.media_mentions.slice(0, 5).map((m, i) => <div key={i} className="text-slate-300 text-xs p-1.5 rounded bg-slate-800/40">📰 {m}</div>)}</div>
+                            </div>
+                          )}
+                        </PersonCollapsibleSection>
+                      )}
+
+                      <div className="text-[10px] text-slate-600 p-2 rounded border border-slate-800/50 bg-slate-900/20">
+                        <p>✓ GDPR compliant · Data retention: 30 days · No marketing use · Encrypted transmission</p>
+                      </div>
+                    </motion.div>
+                  )}
+                </div>
+              )}
+
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function PersonCollapsibleSection({ title, icon: Icon, children }) {
+  const [expanded, setExpanded] = useState(true);
+  return (
+    <div className="border border-slate-800/50 rounded-xl overflow-hidden">
+      <button onClick={() => setExpanded(v => !v)} className="w-full flex items-center gap-3 p-3 bg-slate-900/40 hover:bg-slate-900/60 transition-colors">
+        <Icon className="w-4 h-4 text-cyan-400 flex-shrink-0" />
+        <span className="text-white font-semibold text-sm flex-1 text-left">{title}</span>
+        {expanded ? <ChevronUp className="w-4 h-4 text-slate-500" /> : <ChevronDown className="w-4 h-4 text-slate-500" />}
+      </button>
+      {expanded && <div className="p-3 border-t border-slate-800/50 bg-slate-950/40 space-y-2">{children}</div>}
+    </div>
+  );
+}
+
+// Remove old duplicate ending
+function _unused() {
+  return null;">{job.company}</p>
                                     {job.period && <p className="text-slate-500 text-[10px]">{job.period}</p>}
                                   </div>
                                 </div>
