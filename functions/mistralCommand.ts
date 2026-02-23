@@ -398,7 +398,7 @@ OUTPUT FORMAT (JSON):
 }
 
 EXAMPLES:
-- "vis mig min flåde" → action: OPEN_WINDOW, parameters: {window_type: "fleet"}, message: "Åbner flåde-vindue", open_window: "fleet"
+- "vis mig min flåde" → action: OPEN_WINDOW, parameters: {window_type: "fleet"}, message: "Opening fleet window", open_window: "fleet"
 - "show me alerts" → action: OPEN_WINDOW, parameters: {window_type: "alerts"}, message: "Opening alerts window", open_window: "alerts"
 - "predict vehicle maintenance" → action: SHOW_ANALYSIS, parameters: {chart_data: [{vehicle: "Truck-1", failure_risk: 75, component: "brake_pads"}], chart_config: {type: "bar", title: "Predictive Maintenance Analysis", xKey: "vehicle", bars: [{key: "failure_risk", name: "Failure Risk %"}], insights: ["Vehicle Truck-1 requires brake service within 2 weeks", "Engine oil change due in 5 days for 3 vehicles"]}}
 - "forecast shipment demand" → action: SHOW_ANALYSIS, parameters: {chart_data: [{month: "March", predicted: 450, actual: 420}], chart_config: {type: "line", title: "Demand Forecast", lines: [{key: "predicted", name: "Predicted"}, {key: "actual", name: "Actual"}], insights: ["15% growth expected in Q2", "Peak demand in May"]}}
