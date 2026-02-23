@@ -285,6 +285,31 @@ export default function APIDocumentation() {
         status: "open",
       },
     },
+    // Fleet AI Chat
+    {
+      id: "fleet-ai-chat",
+      name: "Fleet AI Chat",
+      method: "POST",
+      endpoint: "/api/v1/ai/chat",
+      description: "Chat with Fleet AI — ask questions, get insights and logistics recommendations in natural language",
+      params: {
+        message: "Which vehicles need maintenance soon?",
+        conversation_history: [
+          { role: "user", content: "How many active vehicles do I have?" },
+          { role: "assistant", content: "You currently have 38 active vehicles out of 45 total." }
+        ],
+        context: {
+          vehicles_count: 45,
+          alerts_count: 3
+        }
+      },
+      response: {
+        reply: "Based on your fleet data, 3 vehicles are flagged for upcoming maintenance: TRUCK-004 (brake pads due in 800 km), SHIP-002 (engine oil overdue), and DRONE-01 (battery calibration needed). I recommend scheduling SHIP-002 immediately to avoid downtime.",
+        role: "assistant",
+        model: "mistral-large-latest",
+        usage: { prompt_tokens: 210, completion_tokens: 64, total_tokens: 274 }
+      }
+    },
     // Data Export
     {
       id: "export-data",
