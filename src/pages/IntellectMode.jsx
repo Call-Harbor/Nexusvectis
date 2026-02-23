@@ -675,8 +675,15 @@ export default function IntellectMode() {
           prediction_patterns: Object.keys(predictions).length
         }, 180, 40);
 
+        // Build conversation history from user/assistant messages (exclude system messages)
+        const conversationHistory = messages
+          .filter(m => m.role === 'user' || m.role === 'assistant')
+          .filter(m => m.content && !m.streaming)
+          .map(m => ({ role: m.role, content: m.content }));
+
         const payload = {
           command: currentCommand,
+          conversation_history: conversationHistory,
           context: {
             vehicles_count: vehicles.length,
             alerts_count: alerts.length,
