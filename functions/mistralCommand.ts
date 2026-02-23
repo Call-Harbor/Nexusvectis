@@ -33,7 +33,7 @@ Deno.serve(async (req) => {
     rateLimitMap.set(userId, recentRequests);
 
     const body = await req.json();
-    const { command, context, file_urls } = body;
+    const { command, context, file_urls, conversation_history } = body;
     
     console.log('📨 Request received:', { 
       command, 
