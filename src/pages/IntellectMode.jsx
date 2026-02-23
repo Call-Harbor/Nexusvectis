@@ -681,10 +681,15 @@ export default function IntellectMode() {
           .filter(m => m.content && !m.streaming)
           .map(m => ({ role: m.role, content: m.content }));
 
+        const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const userLocalTime = new Date().toLocaleString('en-GB', { timeZone: userTimezone, hour12: false });
+
         const payload = {
           command: currentCommand,
           conversation_history: conversationHistory,
           context: {
+            current_datetime: userLocalTime,
+            user_timezone: userTimezone,
             vehicles_count: vehicles.length,
             alerts_count: alerts.length,
             routes_count: routes.length,
