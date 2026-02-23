@@ -244,14 +244,7 @@ export default function Settings() {
                     className="bg-slate-800/50 border-slate-700 text-slate-400"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label className="text-slate-300">Role</Label>
-                  <Input
-                    value={user.role === "admin" ? "Administrator" : "User"}
-                    disabled
-                    className="bg-slate-800/50 border-slate-700 text-slate-400"
-                  />
-                </div>
+
               </CardContent>
             </Card>
           </TabsContent>
