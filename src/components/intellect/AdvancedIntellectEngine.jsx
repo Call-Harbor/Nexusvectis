@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { base44 } from "@/api/base44Client";
 import { Brain, Loader2, Sparkles, TrendingUp, AlertTriangle, Zap } from 'lucide-react';
 import { Button } from "@/components/ui/button";
+import ReactMarkdown from 'react-markdown';
 
 export const useAdvancedIntellect = () => {
   const [loading, setLoading] = useState(false);
