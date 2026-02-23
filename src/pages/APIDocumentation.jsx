@@ -310,6 +310,120 @@ export default function APIDocumentation() {
         usage: { prompt_tokens: 210, completion_tokens: 64, total_tokens: 274 }
       }
     },
+    // Company Analytics
+    {
+      id: "company-analytics",
+      name: "Company Analytics",
+      method: "POST",
+      endpoint: "/api/v1/analytics/company",
+      description: "Deep analytics on a company — revenue trends, fleet utilization, sustainability scores and risk indicators",
+      params: {
+        company_name: "Maersk",
+        include: ["financials", "fleet_metrics", "sustainability", "risk_score"],
+        period_days: 90,
+      },
+      response: {
+        company: "Maersk",
+        fleet_utilization_percent: 87,
+        revenue_trend_percent: 12.4,
+        sustainability_score: 74,
+        co2_reduction_target_met: false,
+        risk_score: "low",
+        top_routes: ["Copenhagen → Hamburg", "Rotterdam → Oslo"],
+        active_contracts: 14,
+        on_time_delivery_percent: 96.2,
+      },
+    },
+    {
+      id: "company-benchmarking",
+      name: "Company Benchmarking",
+      method: "POST",
+      endpoint: "/api/v1/analytics/benchmark",
+      description: "Benchmark your company's logistics performance against industry peers",
+      params: {
+        organization_id: "ORG-001",
+        industry: "maritime_logistics",
+        metrics: ["efficiency", "cost_per_km", "on_time_delivery", "co2_per_ton"],
+      },
+      response: {
+        your_score: 82,
+        industry_average: 76,
+        top_quartile_threshold: 89,
+        percentile_rank: 68,
+        strengths: ["on_time_delivery", "fuel_efficiency"],
+        improvement_areas: ["co2_per_ton", "asset_utilization"],
+        peer_comparison: {
+          cost_per_km: { you: 1.23, industry_avg: 1.41 },
+          on_time_percent: { you: 94, industry_avg: 88 },
+        },
+      },
+    },
+    // People Search
+    {
+      id: "people-search",
+      name: "People Search",
+      method: "POST",
+      endpoint: "/api/v1/people/search",
+      description: "Search for logistics professionals, drivers or operators by name, role or location",
+      params: {
+        query: "senior logistics manager",
+        filters: {
+          location: "Copenhagen",
+          role: "logistics_manager",
+          experience_years_min: 5,
+        },
+        limit: 10,
+      },
+      response: {
+        total: 3,
+        results: [
+          {
+            id: "USR-001",
+            full_name: "Anders Nielsen",
+            role: "Logistics Manager",
+            location: "Copenhagen",
+            experience_years: 8,
+            certifications: ["ADR", "ISO 9001"],
+            availability: "available",
+          },
+          {
+            id: "USR-002",
+            full_name: "Maria Sørensen",
+            role: "Senior Logistics Manager",
+            location: "Aarhus",
+            experience_years: 12,
+            availability: "not_available",
+          },
+        ],
+      },
+    },
+    {
+      id: "people-profile",
+      name: "Get Person Profile",
+      method: "GET",
+      endpoint: "/api/v1/people/{person_id}",
+      description: "Retrieve a detailed profile for a driver, operator or logistics professional",
+      params: {
+        person_id: "USR-001",
+      },
+      response: {
+        id: "USR-001",
+        full_name: "Anders Nielsen",
+        email: "anders.nielsen@example.com",
+        role: "Logistics Manager",
+        location: "Copenhagen",
+        hire_date: "2018-04-01",
+        license_type: "CE",
+        license_expiry: "2027-08-15",
+        total_trips: 842,
+        total_distance_km: 312000,
+        performance_rating: 4.7,
+        safety_incidents: 0,
+        certifications: ["ADR", "ISO 9001", "HACCP"],
+        current_vehicle_id: "TRUCK-003",
+        status: "active",
+      },
+    },
     // Data Export
     {
       id: "export-data",
