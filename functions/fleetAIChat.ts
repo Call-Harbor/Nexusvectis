@@ -86,6 +86,10 @@ Deno.serve(async (req) => {
     if (context) {
       systemPrompt += `\n\nCURRENT FLEET CONTEXT:\n${JSON.stringify(context, null, 2)}`;
     }
+    if (context?.current_datetime) {
+      systemPrompt += `\n\nCURRENT LOCAL DATE/TIME: ${context.current_datetime} (Timezone: ${context.user_timezone || 'UTC'})`;
+      systemPrompt += `\nUse this as "now" for all temporal reasoning, scheduling, and ETA calculations.`;
+    }
     if (user) {
       systemPrompt += `\n\nUSER: ${user.full_name} (${user.email}), role: ${user.role}`;
     }
