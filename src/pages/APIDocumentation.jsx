@@ -564,11 +564,19 @@ fetch("https://api.nexusvectis.com${endpoint.endpoint}", {
                 className={`p-4 rounded-xl border-2 text-left transition-all ${
                   selected?.id === endpoint.id
                     ? "bg-cyan-500/20 border-cyan-500 shadow-lg shadow-cyan-500/20"
+                    : endpoint.id === "fleet-ai-chat"
+                    ? "bg-gradient-to-br from-violet-500/10 to-cyan-500/10 border-violet-500/50 hover:border-violet-400"
                     : "bg-slate-800/50 border-slate-700 hover:border-cyan-500/50"
                 }`}
               >
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-semibold text-white">{endpoint.name}</h3>
+                  <div className="flex items-center gap-2">
+                    {endpoint.id === "fleet-ai-chat" && <MessageSquare className="w-4 h-4 text-violet-400" />}
+                    <h3 className="font-semibold text-white">{endpoint.name}</h3>
+                    {endpoint.id === "fleet-ai-chat" && (
+                      <span className="px-1.5 py-0.5 bg-violet-500/30 rounded text-[10px] text-violet-300 font-semibold">NEW</span>
+                    )}
+                  </div>
                   <span className="px-2 py-1 bg-violet-500/20 rounded text-xs text-violet-400 font-mono">
                     {endpoint.method}
                   </span>
