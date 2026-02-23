@@ -360,6 +360,12 @@ Context data: ${JSON.stringify(context)}`;
       console.log('✅ InvokeLLM response received');
       result = llmResponse;
     } else {
+      // Build messages with conversation history for context
+      const historyMessages = (conversation_history || [])
+        .filter(m => m.role === 'user' || m.role === 'assistant')
+        .slice(-10) // Keep last 10 messages for context
+        .map(m => ({ role: m.role, content: m.content }));
+
       // Use direct Mistral API for text-only commands
       const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
         method: 'POST',
@@ -371,6 +377,7 @@ Context data: ${JSON.stringify(context)}`;
           model: 'mistral-large-latest',
           messages: [
             { role: 'system', content: systemPrompt },
+            ...historyMessages,
             { role: 'user', content: command }
           ],
           response_format: { type: 'json_object' },
