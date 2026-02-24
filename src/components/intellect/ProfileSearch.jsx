@@ -176,7 +176,7 @@ Return all found persons in the "persons" array.`,
           }
         }),
         base44.integrations.Core.InvokeLLM({
-          prompt: `Find skills and expertise for "${context}": technical skills, professional expertise, board positions, certifications, languages, core competencies. Real data only.`,
+          prompt: `Search the web for skills and expertise of "${context}". Find: technical skills listed on their public profiles, board positions they hold, professional certifications, languages spoken, core professional competencies. Use only real verified public data.`,
           add_context_from_internet: true,
           response_json_schema: {
             type: "object",
