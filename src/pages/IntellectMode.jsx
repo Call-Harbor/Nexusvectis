@@ -1651,14 +1651,17 @@ export default function IntellectMode() {
                 <Lightbulb className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-amber-300" />
                 <span className="text-amber-100">Advanced</span>
               </Button>
-              <Button
-                onClick={() => setShowMultiScreenManager(true)}
-                className="bg-slate-800 hover:bg-slate-700 border border-violet-500/40 text-xs sm:text-sm hidden sm:flex"
-                title="Spread FLEET AI across all your screens"
-              >
-                <Monitor className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-violet-400" />
-                <span className="text-violet-300">Multi-Screen</span>
-              </Button>
+              <div className="relative hidden sm:flex flex-col items-center">
+                <Button
+                  disabled
+                  className="bg-slate-800/50 border border-violet-500/20 text-xs sm:text-sm opacity-50 cursor-not-allowed"
+                  title="Coming Soon"
+                >
+                  <Monitor className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-violet-400/50" />
+                  <span className="text-violet-300/50">Multi-Screen</span>
+                </Button>
+                <span className="text-[9px] text-violet-400/70 font-semibold mt-0.5 tracking-wider uppercase">Coming Soon</span>
+              </div>
               <Button
                 onClick={() => navigate(createPageUrl("Dashboard"))}
                 className="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs sm:text-sm flex-1 sm:flex-initial"
