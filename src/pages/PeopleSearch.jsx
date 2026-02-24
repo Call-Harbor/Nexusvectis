@@ -402,21 +402,51 @@ Return ALL found persons in the "persons" array. If only one clear match exists,
               placeholder="Search by name, title, or expertise..."
               className="flex-1 px-4 py-3 bg-slate-900/60 border-2 border-cyan-500/30 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-400"
             />
-            <input
-              value={companyFilter}
-              onChange={(e) => setCompanyFilter(e.target.value)}
-              placeholder="Filter by company (optional)"
-              className="px-4 py-3 bg-slate-900/60 border-2 border-slate-700/50 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-400 w-48"
-            />
             <Button
               onClick={handleSearch}
               disabled={loading || !searchInput.trim()}
-              className="bg-gradient-to-r from-cyan-500 to-violet-500 rounded-xl"
+              className="bg-gradient-to-r from-cyan-500 to-violet-500 rounded-xl px-6"
             >
-              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4 mr-2" />}
+              {!loading && 'Search'}
             </Button>
           </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <input
+              value={companyFilter}
+              onChange={(e) => setCompanyFilter(e.target.value)}
+              placeholder="Company (optional)"
+              className="px-3 py-2 bg-slate-900/60 border border-slate-700/50 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-400 text-sm"
+            />
+            <input
+              value={locationFilter}
+              onChange={(e) => setLocationFilter(e.target.value)}
+              placeholder="Location / country (optional)"
+              className="px-3 py-2 bg-slate-900/60 border border-slate-700/50 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-400 text-sm"
+            />
+            <input
+              value={industryFilter}
+              onChange={(e) => setIndustryFilter(e.target.value)}
+              placeholder="Industry / field (optional)"
+              className="px-3 py-2 bg-slate-900/60 border border-slate-700/50 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-400 text-sm"
+            />
+          </div>
+          {(companyFilter || locationFilter || industryFilter) && (
+            <div className="flex items-center gap-2 text-xs text-slate-400">
+              <Filter className="w-3 h-3" />
+              Active filters:
+              {companyFilter && <span className="px-2 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/25">{companyFilter}</span>}
+              {locationFilter && <span className="px-2 py-0.5 rounded-full bg-violet-500/15 text-violet-300 border border-violet-500/25">{locationFilter}</span>}
+              {industryFilter && <span className="px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/25">{industryFilter}</span>}
+            </div>
+          )}
         </div>
+
+        {!loading && results.length > 0 && (
+          <p className="text-slate-400 text-sm mb-4">
+            Found <span className="text-cyan-400 font-semibold">{results.length}</span> profile{results.length !== 1 ? 's' : ''} matching <span className="text-white">"{searchInput}"</span>
+          </p>
+        )}
 
         {/* Results grid */}
         {!loading && results.length === 0 && !searchInput && (
