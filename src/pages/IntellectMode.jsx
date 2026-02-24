@@ -1638,7 +1638,7 @@ export default function IntellectMode() {
                   <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-cyan-400 animate-spin" style={{ animationDuration: '3s' }} />
                   <Badge className="bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-400 border-amber-500/50 text-[10px] sm:text-xs font-bold animate-pulse shadow-lg shadow-amber-500/20">BETA</Badge>
                 </h1>
-                <p className="text-cyan-400 text-xs sm:text-sm">World's Most Advanced Fleet Intelligence</p>
+                <p className="text-cyan-400 text-xs sm:text-sm">AI-Powered Fleet Operations</p>
               </div>
             </div>
 
