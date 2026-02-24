@@ -227,23 +227,30 @@ export default function Routes() {
                {searchTerm && ` matching "${searchTerm}"`}
              </p>
            </div>
-           <div className="flex gap-2">
-             <Button 
-               variant="outline"
-               onClick={exportToCSV}
-               className="bg-slate-800/50 border-slate-700/50 text-white hover:bg-slate-700/50"
-             >
-               <Download className="w-4 h-4 mr-2" />
-               Export
-             </Button>
-             <Button 
-               onClick={() => setShowAddDialog(true)}
-               className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-black font-semibold"
-             >
-               <Plus className="w-4 h-4 mr-2" />
-               Create Route
-             </Button>
-           </div>
+           <div className="flex gap-2 flex-wrap">
+              <Button 
+                variant="outline"
+                onClick={exportToCSV}
+                className="bg-slate-800/50 border-slate-700/50 text-white hover:bg-slate-700/50"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Export
+              </Button>
+              <Button
+                onClick={() => setShowRouteOptimizer(true)}
+                className="bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-700 hover:to-cyan-700 font-semibold"
+              >
+                <Sparkles className="w-4 h-4 mr-2" />
+                AI Route Optimizer
+              </Button>
+              <Button 
+                onClick={() => setShowAddDialog(true)}
+                className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-black font-semibold"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Create Route
+              </Button>
+            </div>
         </div>
 
         {/* AI Route Insights */}
