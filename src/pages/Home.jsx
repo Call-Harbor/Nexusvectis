@@ -851,6 +851,170 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Swarm Intelligence Section */}
+      <section className="relative py-32 px-6 z-10">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <motion.div
+              animate={{ rotate: [0, 360] }}
+              transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+              className="inline-block mb-6"
+            >
+              <Network className="w-12 h-12 text-emerald-400" />
+            </motion.div>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/30 mb-6">
+              <Bug className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="text-emerald-300 text-sm font-semibold">Next-Gen Technology</span>
+            </div>
+            <h2 className="text-5xl md:text-6xl font-bold text-white mb-6 leading-tight">
+              Swarm Intelligence
+              <br />
+              <span className="bg-gradient-to-r from-emerald-400 via-cyan-400 to-violet-400 bg-clip-text text-transparent">
+                Koordinering
+              </span>
+            </h2>
+            <p className="text-xl text-slate-400 max-w-3xl mx-auto leading-relaxed">
+              Efterligner naturens kollektive intelligens fra myrer, bier og fuglesværme — 
+              hvert køretøj fungerer som en autonom agent der koordinerer med flåden via edge computing, uden behov for en central hjerne.
+            </p>
+          </motion.div>
+
+          {/* Nature Principles */}
+          <div className="grid md:grid-cols-3 gap-6 mb-16">
+            {[
+              {
+                icon: Bug,
+                color: "emerald",
+                title: "Myrer & Feromoner",
+                description: "Myrer finder optimale ruter ved at efterlade feromoner — i NexusVectis oversættes dette til digitale signaler. Agenter deler realtidsdata som trafik og vejr via mesh-netværk, så hele flåden selvjusterer sig kollektivt."
+              },
+              {
+                icon: Wifi,
+                color: "cyan",
+                title: "Emergent Adfærd",
+                description: "Ingen enkelt fejl lammer systemet — da andre agenter kompenserer automatisk. Resultatet er emergent flådeadfærd: robusthed og selvhelbredelse uden manuel intervention."
+              },
+              {
+                icon: Dna,
+                color: "violet",
+                title: "Genetisk Læring",
+                description: "Swarmen \"udvikler\" sig over tid baseret på tidligere ture via genetiske algoritmer — smartere til europæiske vejrforhold, sæsonudsving og gaming-spikes."
+              }
+            ].map((item, idx) => {
+              const Icon = item.icon;
+              return (
+                <motion.div
+                  key={idx}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: idx * 0.15 }}
+                  whileHover={{ scale: 1.03, y: -8 }}
+                  className={`relative p-8 rounded-3xl bg-gradient-to-br from-${item.color}-500/10 to-${item.color}-500/5 border border-${item.color}-500/30 hover:border-${item.color}-400/50 transition-all overflow-hidden group`}
+                >
+                  <motion.div
+                    animate={{ scale: [1, 1.4, 1], opacity: [0.2, 0.4, 0.2] }}
+                    transition={{ duration: 4, repeat: Infinity, delay: idx * 0.8 }}
+                    className={`absolute -top-8 -right-8 w-32 h-32 bg-${item.color}-500/20 rounded-full blur-2xl`}
+                  />
+                  <div className={`w-14 h-14 rounded-2xl bg-${item.color}-500/20 border border-${item.color}-500/30 flex items-center justify-center mb-5`}>
+                    <Icon className={`w-7 h-7 text-${item.color}-400`} />
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-3">{item.title}</h3>
+                  <p className="text-slate-400 leading-relaxed text-sm">{item.description}</p>
+                </motion.div>
+              );
+            })}
+          </div>
+
+          {/* Technical Components */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="rounded-[2.5rem] bg-gradient-to-br from-slate-900/70 to-slate-950/70 border border-slate-700/50 p-10 md:p-14 mb-16 overflow-hidden relative"
+          >
+            <div className="absolute inset-0 bg-[linear-gradient(rgba(16,185,129,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(16,185,129,0.03)_1px,transparent_1px)] bg-[size:60px_60px]" />
+            <div className="relative z-10">
+              <h3 className="text-3xl font-bold text-white text-center mb-10">Tekniske Komponenter</h3>
+              <div className="grid md:grid-cols-3 gap-6">
+                {[
+                  {
+                    icon: Cpu,
+                    title: "Edge AI på hver node",
+                    tech: "5G · LoRaWAN · Neural nets",
+                    description: "Hvert køretøj kører lette neurale netværk til lokal beslutningstagning — f.eks. omdirigering i trafikkaos — mens data synkroniseres med nærliggende noder."
+                  },
+                  {
+                    icon: GitBranch,
+                    title: "Stigmergi-kommunikation",
+                    tech: "PSO · ACO · P2P mesh",
+                    description: "Indirekte signaler i miljøet — opdaterede kort, belastningsdata — guider flåden. Suppleret med direkte peer-to-peer beskeder til komplekse opgaver som lastfordeling."
+                  },
+                  {
+                    icon: Network,
+                    title: "Selvorganisering",
+                    tech: "Particle Swarm · Ant Colony",
+                    description: "Algoritmer som PSO og ACO simulerer dynamiske ruter. Servernoder balancerer autonomt MMORPG-sessions under peak load uden manuel intervention."
+                  }
+                ].map((comp, idx) => {
+                  const Icon = comp.icon;
+                  return (
+                    <motion.div
+                      key={idx}
+                      initial={{ opacity: 0 }}
+                      whileInView={{ opacity: 1 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: idx * 0.1 }}
+                      className="p-6 rounded-2xl bg-slate-800/40 border border-slate-700/50 hover:border-emerald-500/30 transition-all group"
+                    >
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center">
+                          <Icon className="w-5 h-5 text-emerald-400" />
+                        </div>
+                        <div>
+                          <p className="text-white font-semibold text-sm">{comp.title}</p>
+                          <p className="text-emerald-400/70 text-[10px] font-mono">{comp.tech}</p>
+                        </div>
+                      </div>
+                      <p className="text-slate-400 text-sm leading-relaxed">{comp.description}</p>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Impact Stats */}
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              { value: "30%", label: "Færre forsinkelser", desc: "Kollektiv ruteoptimering i trafikkaos reducerer forsinkelser i simuleringer" },
+              { value: "∞", label: "Skalérbarhed", desc: "Eliminerer single points of failure — swarmen skalerer uendeligt med flåden" },
+              { value: "0", label: "Central kontrol nødvendig", desc: "Agenter koordinerer autonomt — ingen central hjerne der kan svigte" },
+            ].map((stat, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.15 }}
+                whileHover={{ scale: 1.05, y: -5 }}
+                className="text-center p-8 rounded-2xl bg-gradient-to-br from-emerald-500/10 to-cyan-500/5 border border-emerald-500/20 hover:border-emerald-400/40 transition-all"
+              >
+                <div className="text-5xl font-black bg-gradient-to-br from-emerald-400 to-cyan-400 bg-clip-text text-transparent mb-2">{stat.value}</div>
+                <p className="text-white font-bold mb-2">{stat.label}</p>
+                <p className="text-slate-400 text-sm leading-relaxed">{stat.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="relative py-32 px-6 z-10">
         <div className="max-w-7xl mx-auto">
