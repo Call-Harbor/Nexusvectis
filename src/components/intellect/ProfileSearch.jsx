@@ -222,7 +222,7 @@ Return all found persons in the "persons" array.`,
           }
         }),
         base44.integrations.Core.InvokeLLM({
-          prompt: `Find public presence and influence for "${context}": podcast appearances, social media followers/presence, patents/IP, network influence/notable connections, book authorship, analyst rankings, thought leadership areas. Real data only.`,
+          prompt: `Search the web for the public presence and thought leadership of "${context}". Find: podcast or conference appearances, social media presence (Twitter/X, GitHub, etc.) with follower counts, patents filed, books authored, analyst or industry rankings they appear in, key areas of thought leadership. Use only real verified public data.`,
           add_context_from_internet: true,
           response_json_schema: {
             type: "object",
