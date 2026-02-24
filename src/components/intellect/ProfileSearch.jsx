@@ -89,9 +89,11 @@ export default function ProfileSearch() {
 
     try {
       const response = await base44.integrations.Core.InvokeLLM({
-        prompt: `Search the web for multiple different real professionals named "${searchQuery}"${filters ? ` with filters: ${filters}` : ''}.
+        prompt: `You are a professional research assistant. Search the web RIGHT NOW for real professionals named "${searchQuery}"${filters ? ` (filters: ${filters})` : ''}.
 
-Since many people share the same name, find UP TO 5 DISTINCT individuals. Each should be a different real person. For each person include their full name, current title, current company, location, and a short 1-sentence description to help identify them.
+Search LinkedIn, company websites, news, and public sources. Find UP TO 5 DISTINCT real individuals — each must be a genuinely different person. Provide only verified, real information.
+
+For each person include: full name, current title, current company, location, and a short 1-sentence description to help identify them.
 
 Return all found persons in the "persons" array.`,
         add_context_from_internet: true,
