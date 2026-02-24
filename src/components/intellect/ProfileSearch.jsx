@@ -146,7 +146,7 @@ Return all found persons in the "persons" array.`,
     try {
       const [r1, r2, r3, r4, r5, r6] = await Promise.all([
         base44.integrations.Core.InvokeLLM({
-          prompt: `Find basic profile info about "${context}": name, current title, company, location, LinkedIn URL, profile picture URL, email guess, connections count. Real data only.`,
+          prompt: `Search the web and find verified profile information for "${context}". Find: full name, current job title, current company, city/country location, LinkedIn profile URL, profile picture URL (from LinkedIn or company page), professional email, connections/followers count. Only use real verified data from public sources.`,
           add_context_from_internet: true,
           response_json_schema: {
             type: "object",
