@@ -118,7 +118,7 @@ Return all found persons in the "persons" array.`,
       });
 
       const raw = response?.data || response;
-      const found = (raw?.persons || []).filter(p => p.full_name);
+      const found = (raw?.persons || response?.persons || []).filter(p => p.full_name);
       if (found.length === 1) {
         // Only one match — go straight to deep search
         deepSearch(found[0].full_name, found[0].current_company);
