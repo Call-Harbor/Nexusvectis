@@ -163,7 +163,7 @@ Return all found persons in the "persons" array.`,
           }
         }),
         base44.integrations.Core.InvokeLLM({
-          prompt: `Find career history and education for "${context}": list previous companies/roles with dates, education institutions and degrees, total years experience, estimated seniority level. Real data only.`,
+          prompt: `Search the web and find the career history and education of "${context}". List all previous companies and roles with start/end dates, universities/schools attended with degrees, total years of experience, and seniority level. Use only real verified public data.`,
           add_context_from_internet: true,
           response_json_schema: {
             type: "object",
