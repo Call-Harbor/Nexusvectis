@@ -17,6 +17,7 @@ import { Switch } from "@/components/ui/switch";
 import AIInsightWidget from "@/components/ai/AIInsightWidget";
 import AIAssistantBadge from "@/components/ai/AIAssistantBadge";
 import AdvancedRouteEditor from "@/components/routes/AdvancedRouteEditor";
+import RouteOptimizer from "@/components/routes/RouteOptimizer";
 
 const statusColors = {
   planned: "bg-slate-500/20 text-slate-400 border-slate-500/30",
