@@ -55,7 +55,12 @@ const GDPRConsent = ({ onAccept, onDecline }) => {
 
 export default function ProfileSearch() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [companyFilter, setCompanyFilter] = useState('');
+  const [locationFilter, setLocationFilter] = useState('');
+  const [industryFilter, setIndustryFilter] = useState('');
   const [loading, setLoading] = useState(false);
+  const [loadingDeep, setLoadingDeep] = useState(false);
+  const [candidates, setCandidates] = useState([]);
   const [profileData, setProfileData] = useState(null);
   const [gdprAccepted, setGdprAccepted] = useState(false);
   const [expandedSections, setExpandedSections] = useState({
@@ -69,17 +74,73 @@ export default function ProfileSearch() {
     presence: true
   });
 
+  // Step 1: Find candidates (multiple people with same name)
   const handleSearch = async () => {
     if (!searchQuery.trim() || !gdprAccepted) return;
     setLoading(true);
+    setCandidates([]);
     setProfileData(null);
-    
+
+    const filters = [
+      companyFilter && `company: ${companyFilter}`,
+      locationFilter && `location: ${locationFilter}`,
+      industryFilter && `industry: ${industryFilter}`,
+    ].filter(Boolean).join(', ');
+
     try {
-      // 6 small focused parallel calls — each with a tiny simple schema
+      const response = await base44.integrations.Core.InvokeLLM({
+        prompt: `Search the web for multiple different real professionals named "${searchQuery}"${filters ? ` with filters: ${filters}` : ''}.
+
+Since many people share the same name, find UP TO 5 DISTINCT individuals. Each should be a different real person. For each person include their full name, current title, current company, location, and a short 1-sentence description to help identify them.
+
+Return all found persons in the "persons" array.`,
+        add_context_from_internet: true,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            persons: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  full_name: { type: "string" },
+                  current_title: { type: "string" },
+                  current_company: { type: "string" },
+                  location: { type: "string" },
+                  short_description: { type: "string" }
+                }
+              }
+            }
+          }
+        }
+      });
+
+      const found = (response.persons || []).filter(p => p.full_name);
+      if (found.length === 1) {
+        // Only one match — go straight to deep search
+        deepSearch(found[0].full_name, found[0].current_company);
+      } else {
+        setCandidates(found);
+      }
+    } catch (err) {
+      console.error('Candidate search error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Step 2: Deep profile search for a specific person
+  const deepSearch = async (name, company) => {
+    setLoadingDeep(true);
+    setProfileData(null);
+    setCandidates([]);
+
+    const context = company ? `${name} who works at ${company}` : name;
+
+    try {
       const [r1, r2, r3, r4, r5, r6] = await Promise.all([
-        // Basic info
         base44.integrations.Core.InvokeLLM({
-          prompt: `Find basic profile info about "${searchQuery}": name, current title, company, location, LinkedIn URL, profile picture URL, email guess, connections count. Real data only.`,
+          prompt: `Find basic profile info about "${context}": name, current title, company, location, LinkedIn URL, profile picture URL, email guess, connections count. Real data only.`,
           add_context_from_internet: true,
           response_json_schema: {
             type: "object",
@@ -95,9 +156,8 @@ export default function ProfileSearch() {
             }
           }
         }),
-        // Career history & education
         base44.integrations.Core.InvokeLLM({
-          prompt: `Find career history and education for "${searchQuery}": list previous companies/roles with dates, education institutions and degrees, total years experience, estimated seniority level. Real data only.`,
+          prompt: `Find career history and education for "${context}": list previous companies/roles with dates, education institutions and degrees, total years experience, estimated seniority level. Real data only.`,
           add_context_from_internet: true,
           response_json_schema: {
             type: "object",
@@ -109,9 +169,8 @@ export default function ProfileSearch() {
             }
           }
         }),
-        // Skills & expertise
         base44.integrations.Core.InvokeLLM({
-          prompt: `Find skills and expertise for "${searchQuery}": technical skills, professional expertise, board positions, certifications, languages, core competencies. Real data only.`,
+          prompt: `Find skills and expertise for "${context}": technical skills, professional expertise, board positions, certifications, languages, core competencies. Real data only.`,
           add_context_from_internet: true,
           response_json_schema: {
             type: "object",
@@ -125,9 +184,8 @@ export default function ProfileSearch() {
             }
           }
         }),
-        // Career progression with impact
         base44.integrations.Core.InvokeLLM({
-          prompt: `For "${searchQuery}", provide detailed career progression: 5+ years of job roles with company, dates, job title, impact/achievements at each role, teams led, industry transitions, leadership experience. Real data only.`,
+          prompt: `For "${context}", provide detailed career progression: 5+ years of job roles with company, dates, job title, impact/achievements at each role, teams led, industry transitions, leadership experience. Real data only.`,
           add_context_from_internet: true,
           response_json_schema: {
             type: "object",
@@ -140,9 +198,8 @@ export default function ProfileSearch() {
             }
           }
         }),
-        // Achievements & impact
         base44.integrations.Core.InvokeLLM({
-          prompt: `Find achievements and impact for "${searchQuery}": major accomplishments with measurable results, awards/recognitions, notable projects, founded companies, speaking engagements, publications/articles, industry impact, media mentions. Real data only.`,
+          prompt: `Find achievements and impact for "${context}": major accomplishments with measurable results, awards/recognitions, notable projects, founded companies, speaking engagements, publications/articles, industry impact, media mentions. Real data only.`,
           add_context_from_internet: true,
           response_json_schema: {
             type: "object",
@@ -158,9 +215,8 @@ export default function ProfileSearch() {
             }
           }
         }),
-        // Public presence & influence
         base44.integrations.Core.InvokeLLM({
-          prompt: `Find public presence and influence for "${searchQuery}": podcast appearances, social media followers/presence, patents/IP, network influence/notable connections, book authorship, analyst rankings, thought leadership areas. Real data only.`,
+          prompt: `Find public presence and influence for "${context}": podcast appearances, social media followers/presence, patents/IP, network influence/notable connections, book authorship, analyst rankings, thought leadership areas. Real data only.`,
           add_context_from_internet: true,
           response_json_schema: {
             type: "object",
@@ -177,12 +233,7 @@ export default function ProfileSearch() {
       ]);
 
       const merged = {
-        ...r1,
-        ...r2,
-        ...r3,
-        ...r4,
-        ...r5,
-        ...r6,
+        ...r1, ...r2, ...r3, ...r4, ...r5, ...r6,
         search_timestamp: new Date().toISOString(),
         data_retention_until: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
       };
@@ -191,7 +242,7 @@ export default function ProfileSearch() {
     } catch (err) {
       console.error('Profile search error:', err);
     } finally {
-      setLoading(false);
+      setLoadingDeep(false);
     }
   };
 
