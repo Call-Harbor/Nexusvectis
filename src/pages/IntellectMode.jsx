@@ -1064,8 +1064,8 @@ export default function IntellectMode() {
           setMessages(prev => [...prev, { role: "assistant", content: message }]);
           
           // Open 3D visualization
-          if (mistralResponse.data.visualization_3d || parameters.visualization_type) {
-            const vizData = mistralResponse.data.visualization_3d || parameters;
+          if (parameters.visualization_type) {
+            const vizData = parameters;
             setShow3DVisualization({
               type: vizData.type || parameters.visualization_type,
               data: vizData.data || parameters,
