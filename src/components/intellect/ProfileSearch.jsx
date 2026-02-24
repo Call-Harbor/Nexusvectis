@@ -205,7 +205,7 @@ Return all found persons in the "persons" array.`,
           }
         }),
         base44.integrations.Core.InvokeLLM({
-          prompt: `Find achievements and impact for "${context}": major accomplishments with measurable results, awards/recognitions, notable projects, founded companies, speaking engagements, publications/articles, industry impact, media mentions. Real data only.`,
+          prompt: `Search the web for achievements and public impact of "${context}". Find: major accomplishments with measurable results (revenue, users, etc.), awards or industry recognitions they have received, notable projects they led, companies they founded, speaking engagements at conferences, articles or publications authored, media coverage and mentions. Use only real verified public data.`,
           add_context_from_internet: true,
           response_json_schema: {
             type: "object",
