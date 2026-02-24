@@ -755,6 +755,38 @@ export default function Routes() {
           />
         </DialogContent>
       </Dialog>
+
+      {/* AI Route Optimizer Dialog */}
+      <Dialog open={showRouteOptimizer} onOpenChange={setShowRouteOptimizer}>
+        <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-3xl max-h-[90vh] overflow-hidden flex flex-col p-0">
+          <DialogHeader className="p-5 pb-0 border-b border-slate-700/50">
+            <DialogTitle className="flex items-center gap-2 text-white pb-4">
+              <Sparkles className="w-5 h-5 text-cyan-400" />
+              AI Route Optimizer
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 overflow-y-auto">
+            <RouteOptimizer
+              onApply={(routeData) => {
+                setFormData(prev => ({
+                  ...prev,
+                  origin: routeData.origin || prev.origin,
+                  destination: routeData.destination || prev.destination,
+                  transport_type: routeData.transport_type || prev.transport_type,
+                  waypoints: routeData.waypoints,
+                  distance_km: routeData.distance_km,
+                  estimated_duration_hours: routeData.estimated_duration_hours,
+                  co2_estimate: routeData.co2_estimate_kg,
+                  ai_optimized: true,
+                }));
+                setShowRouteOptimizer(false);
+                setShowAddDialog(true);
+              }}
+              onClose={() => setShowRouteOptimizer(false)}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
