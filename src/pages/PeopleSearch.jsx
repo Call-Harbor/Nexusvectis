@@ -313,15 +313,17 @@ export default function PeopleSearch() {
       ].filter(Boolean).join(', ');
 
       const response = await base44.integrations.Core.InvokeLLM({
-        prompt: `Search the web thoroughly for multiple different real professionals named "${searchInput}"${filters ? ` with filters: ${filters}` : ''}.
+        prompt: `You are a professional research assistant. Search the web right now for real professionals named "${searchInput}"${filters ? ` (filters: ${filters})` : ''}.
 
-Since many people share the same name, find UP TO 5 DISTINCT individuals who match. Each person should be a different real person (different employer, location, or background). 
+CRITICAL INSTRUCTIONS:
+- Search LinkedIn, company websites, news articles, and public profiles
+- Find UP TO 5 DISTINCT real individuals — each must be a genuinely different person
+- Provide ACCURATE, VERIFIED information only — no guessing or fabrication
+- For each person fill in as many fields as you can find from real sources
+- If filters are provided, prioritize matching candidates but still return all plausible matches
+- career_history should be an array of objects with fields: title, company, period
 
-For each person, find as much detail as possible: their current job title, current employer, city/country, LinkedIn URL, years of experience, career history, education, skills, and notable accomplishments.
-
-If there are additional context filters provided, prioritize people who match those filters but still return multiple distinct results.
-
-Return ALL found persons in the "persons" array. If only one clear match exists, return just that one.`,
+Search NOW and return real results in the persons array.`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",
@@ -354,7 +356,7 @@ Return ALL found persons in the "persons" array. If only one clear match exists,
         }
       });
 
-      const persons = response.data?.persons || [];
+      const persons = (response?.persons || response?.data?.persons || []);
       setResults(persons.filter(p => p.full_name));
     } catch (error) {
       console.error('Search error:', error);
