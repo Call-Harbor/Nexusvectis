@@ -191,7 +191,7 @@ Return all found persons in the "persons" array.`,
           }
         }),
         base44.integrations.Core.InvokeLLM({
-          prompt: `For "${context}", provide detailed career progression: 5+ years of job roles with company, dates, job title, impact/achievements at each role, teams led, industry transitions, leadership experience. Real data only.`,
+          prompt: `Search the web for the detailed career progression of "${context}". For each role: company name, job title, start and end dates, key achievements or impact (with numbers if available), team size managed. Also identify any major industry transitions and overall leadership experience. Use only real verified public data from LinkedIn, news, company sites.`,
           add_context_from_internet: true,
           response_json_schema: {
             type: "object",
