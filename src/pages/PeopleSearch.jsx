@@ -294,6 +294,8 @@ const ComparisonView = ({ profiles }) => {
 export default function PeopleSearch() {
   const [searchInput, setSearchInput] = useState('');
   const [companyFilter, setCompanyFilter] = useState('');
+  const [locationFilter, setLocationFilter] = useState('');
+  const [industryFilter, setIndustryFilter] = useState('');
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState([]);
   const [comparing, setComparing] = useState([]);
@@ -304,35 +306,56 @@ export default function PeopleSearch() {
     setLoading(true);
     setResults([]);
     try {
+      const filters = [
+        companyFilter && `company: ${companyFilter}`,
+        locationFilter && `location: ${locationFilter}`,
+        industryFilter && `industry: ${industryFilter}`,
+      ].filter(Boolean).join(', ');
+
       const response = await base44.integrations.Core.InvokeLLM({
-        prompt: `Search for professional "${searchInput}"${companyFilter ? ` at ${companyFilter}` : ''}. Return structured data: full_name, current_title, current_company, location, linkedin_url, profile_image_url, total_experience_years, estimated_seniority, connections_count, summary. Only use verified sources. If unsure, leave empty.`,
+        prompt: `Search the web thoroughly for multiple different real professionals named "${searchInput}"${filters ? ` with filters: ${filters}` : ''}.
+
+Since many people share the same name, find UP TO 5 DISTINCT individuals who match. Each person should be a different real person (different employer, location, or background). 
+
+For each person, find as much detail as possible: their current job title, current employer, city/country, LinkedIn URL, years of experience, career history, education, skills, and notable accomplishments.
+
+If there are additional context filters provided, prioritize people who match those filters but still return multiple distinct results.
+
+Return ALL found persons in the "persons" array. If only one clear match exists, return just that one.`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",
           properties: {
-            full_name: { type: "string" },
-            current_title: { type: "string" },
-            current_company: { type: "string" },
-            location: { type: "string" },
-            linkedin_url: { type: "string" },
-            linkedin_profile_image_url: { type: "string" },
-            total_experience_years: { type: "number" },
-            estimated_seniority: { type: "string" },
-            connections_count: { type: "number" },
-            education: { type: "array", items: { type: "string" } },
-            core_skills: { type: "array", items: { type: "string" } },
-            languages: { type: "array", items: { type: "string" } },
-            career_history: { type: "array", items: { type: "object", additionalProperties: true } },
-            major_accomplishments: { type: "array", items: { type: "string" } },
-            board_memberships: { type: "array", items: { type: "string" } },
-            certifications: { type: "array", items: { type: "string" } }
+            persons: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  full_name: { type: "string" },
+                  current_title: { type: "string" },
+                  current_company: { type: "string" },
+                  location: { type: "string" },
+                  linkedin_url: { type: "string" },
+                  linkedin_profile_image_url: { type: "string" },
+                  total_experience_years: { type: "number" },
+                  estimated_seniority: { type: "string" },
+                  connections_count: { type: "number" },
+                  education: { type: "array", items: { type: "string" } },
+                  core_skills: { type: "array", items: { type: "string" } },
+                  languages: { type: "array", items: { type: "string" } },
+                  career_history: { type: "array", items: { type: "object", additionalProperties: true } },
+                  major_accomplishments: { type: "array", items: { type: "string" } },
+                  board_memberships: { type: "array", items: { type: "string" } },
+                  certifications: { type: "array", items: { type: "string" } }
+                }
+              }
+            }
           }
         }
       });
 
-      if (response.data?.full_name) {
-        setResults([response.data]);
-      }
+      const persons = response.data?.persons || [];
+      setResults(persons.filter(p => p.full_name));
     } catch (error) {
       console.error('Search error:', error);
     } finally {
