@@ -115,10 +115,14 @@ Return all found persons in the "persons" array.`,
         }
       });
 
-      const found = (response?.data?.persons || []).filter(p => p.full_name);
+      const raw = response?.data || response;
+      const found = (raw?.persons || []).filter(p => p.full_name);
       if (found.length === 1) {
         // Only one match — go straight to deep search
         deepSearch(found[0].full_name, found[0].current_company);
+      } else if (found.length === 0) {
+        // Fallback: treat the search query itself as the person and do deep search directly
+        deepSearch(searchQuery, companyFilter);
       } else {
         setCandidates(found);
       }
