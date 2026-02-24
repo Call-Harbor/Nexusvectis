@@ -124,6 +124,7 @@ export default function Routes() {
   const [showRouteDialog, setShowRouteDialog] = useState(false);
   const [showAdvancedEditor, setShowAdvancedEditor] = useState(false);
   const [editingRoute, setEditingRoute] = useState(null);
+  const [showRouteOptimizer, setShowRouteOptimizer] = useState(false);
 
   const planRouteMutation = useMutation({
     mutationFn: async ({ origin, destination, transport_type }) => {
