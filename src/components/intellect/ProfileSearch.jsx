@@ -233,7 +233,12 @@ Return all found persons in the "persons" array.`,
       ]);
 
       const merged = {
-        ...r1, ...r2, ...r3, ...r4, ...r5, ...r6,
+        ...(r1?.data || r1),
+        ...(r2?.data || r2),
+        ...(r3?.data || r3),
+        ...(r4?.data || r4),
+        ...(r5?.data || r5),
+        ...(r6?.data || r6),
         search_timestamp: new Date().toISOString(),
         data_retention_until: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
       };
