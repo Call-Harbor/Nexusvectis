@@ -260,39 +260,102 @@ Return all found persons in the "persons" array.`,
   return (
     <div className="space-y-4 p-4 max-w-4xl mx-auto">
       {/* Search bar */}
-      <div className="flex gap-2 mb-6">
-        <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+      <div className="space-y-3 mb-6">
+        <div className="flex gap-2">
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+            <input
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleSearch()}
+              placeholder="Search any person (name, LinkedIn, etc)..."
+              className="w-full pl-10 pr-4 py-3 bg-slate-900/60 border-2 border-cyan-500/30 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-400"
+            />
+          </div>
+          <Button
+            onClick={handleSearch}
+            disabled={loading || loadingDeep || !searchQuery.trim()}
+            className="bg-cyan-600 hover:bg-cyan-700 px-6"
+          >
+            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+          </Button>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <input
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && handleSearch()}
-            placeholder="Search any person (name, LinkedIn, etc)..."
-            className="w-full pl-10 pr-4 py-3 bg-slate-900/60 border-2 border-cyan-500/30 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-400"
+            value={companyFilter}
+            onChange={e => setCompanyFilter(e.target.value)}
+            placeholder="Company (optional)"
+            className="px-3 py-2 bg-slate-900/60 border border-slate-700/50 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-400 text-sm"
+          />
+          <input
+            value={locationFilter}
+            onChange={e => setLocationFilter(e.target.value)}
+            placeholder="Location / country (optional)"
+            className="px-3 py-2 bg-slate-900/60 border border-slate-700/50 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-400 text-sm"
+          />
+          <input
+            value={industryFilter}
+            onChange={e => setIndustryFilter(e.target.value)}
+            placeholder="Industry / field (optional)"
+            className="px-3 py-2 bg-slate-900/60 border border-slate-700/50 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-400 text-sm"
           />
         </div>
-        <Button
-          onClick={handleSearch}
-          disabled={loading || !searchQuery.trim()}
-          className="bg-cyan-600 hover:bg-cyan-700 px-6"
-        >
-          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
-        </Button>
       </div>
 
-      {/* Loading */}
+      {/* Loading candidates */}
       {loading && (
-        <div className="text-center py-12">
+        <div className="text-center py-8">
           <Loader2 className="w-8 h-8 animate-spin text-cyan-400 mx-auto mb-2" />
-          <p className="text-slate-400">Searching public sources...</p>
+          <p className="text-slate-400">Searching for matching profiles...</p>
         </div>
       )}
 
+      {/* Loading deep profile */}
+      {loadingDeep && (
+        <div className="text-center py-8">
+          <Loader2 className="w-8 h-8 animate-spin text-cyan-400 mx-auto mb-2" />
+          <p className="text-slate-400">Building detailed profile...</p>
+        </div>
+      )}
+
+      {/* Candidate picker — shown when multiple people match */}
+      {candidates.length > 0 && !loading && !loadingDeep && (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
+          <p className="text-slate-300 text-sm font-semibold">
+            Found <span className="text-cyan-400">{candidates.length}</span> people named <span className="text-white">"{searchQuery}"</span> — select the right one:
+          </p>
+          <div className="grid gap-2">
+            {candidates.map((c, i) => (
+              <button
+                key={i}
+                onClick={() => deepSearch(c.full_name, c.current_company)}
+                className="text-left p-3 rounded-xl border border-slate-700/50 bg-slate-900/40 hover:border-cyan-500/40 hover:bg-slate-800/60 transition-all group"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500/30 to-violet-500/30 border border-cyan-500/40 flex items-center justify-center flex-shrink-0">
+                    <User className="w-5 h-5 text-cyan-400" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white font-semibold text-sm group-hover:text-cyan-300 transition-colors">{c.full_name}</p>
+                    {c.current_title && <p className="text-cyan-400 text-xs">{c.current_title}</p>}
+                    {c.current_company && <p className="text-slate-400 text-xs">{c.current_company}</p>}
+                    {c.location && <p className="text-slate-500 text-xs flex items-center gap-1 mt-0.5"><MapPin className="w-2.5 h-2.5" />{c.location}</p>}
+                    {c.short_description && <p className="text-slate-400 text-xs mt-1 italic">{c.short_description}</p>}
+                  </div>
+                  <ChevronDown className="w-4 h-4 text-slate-600 group-hover:text-cyan-400 transition-colors rotate-[-90deg] flex-shrink-0 mt-1" />
+                </div>
+              </button>
+            ))}
+          </div>
+        </motion.div>
+      )}
+
       {/* Empty state */}
-      {!profileData && !loading && (
+      {!profileData && !loading && !loadingDeep && candidates.length === 0 && (
         <div className="text-center py-12 text-slate-500">
           <User className="w-12 h-12 mx-auto mb-3 opacity-30" />
           <p>Search for a person to view their extended profile information</p>
+          <p className="text-xs mt-1 text-slate-600">Use the filters above to narrow down when searching common names</p>
         </div>
       )}
 
