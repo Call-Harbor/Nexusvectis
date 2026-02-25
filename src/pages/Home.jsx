@@ -150,29 +150,6 @@ export default function Home() {
           </div>
         </div>
       </motion.header>
-          <motion.img 
-            whileHover={{ scale: 1.05 }}
-            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/697e930c62bf3e3832b34edb/bc9d40ccc_FullLogo_Transparent1.png" 
-            alt="NexusVectis Logo" 
-            className="h-20 w-auto"
-          />
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => base44.auth.redirectToLogin(createPageUrl("Dashboard"))}
-              className="text-white hover:bg-white/10 px-4 py-2 rounded-lg transition-colors"
-            >
-              Log In
-            </button>
-            <button
-              onClick={() => base44.auth.redirectToLogin(createPageUrl("Dashboard"))}
-              className="bg-gradient-to-r from-cyan-500 to-violet-500 text-white px-6 py-2 rounded-lg transition-transform hover:scale-105 flex items-center gap-2"
-            >
-              Get Started
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      </motion.header>
 
       {/* Hero Section */}
       <section className="relative pt-32 sm:pt-40 pb-20 sm:pb-32 px-4 sm:px-6 z-10">
