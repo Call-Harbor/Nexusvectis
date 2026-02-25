@@ -663,7 +663,7 @@ export default function NeuroSymbolicRiskPanel({ vehicles = [], routes = [], onC
               </p>
               <div className="flex items-center gap-1">
                 <div className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse" />
-                <span className="text-[9px] text-red-400 font-mono">{realSignals.length} fund</span>
+                <span className="text-[9px] text-red-400 font-mono">{realSignals.length} found</span>
               </div>
             </div>
 
