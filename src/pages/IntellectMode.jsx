@@ -1545,6 +1545,19 @@ export default function IntellectMode() {
           );
     }
 
+    // Swarm Intelligence Panel
+    if (type === 'swarm_intelligence') {
+      return (
+        <SwarmIntelligencePanel
+          vehicles={vehicles}
+          routes={routes}
+          onCommand={(cmd) => {
+            setInput(cmd);
+          }}
+        />
+      );
+    }
+
     // For full page iframes
     if (['dashboard', 'settings', 'aioptimization', 'invoices', 'apidocs', 'resources', 
          'warehouseautomation', 'demandforecasting', 'greentms', 'gpsintegration', 'assignment', 'routeeditor'].includes(type)) {
