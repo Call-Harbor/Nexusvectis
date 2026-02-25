@@ -216,6 +216,38 @@ async function runImmunityProtocol(base44, orgId, mistralApiKey, now, immunityLo
       log('FUEL_DATA_TAMPERED', `${v.name} fuel=${v.fuel_level}%`, 'medium');
       actionsCount++;
     }
+
+    // DIGITAL TWIN DIVERGENCE: Cross-check vs simulated state
+    const digitalTwins = await base44.asServiceRole.entities.DigitalTwin.filter({
+      organization_id: orgId,
+      entity_id: v.id,
+      entity_type: 'vehicle',
+      active: true,
+    });
+    
+    if (digitalTwins && digitalTwins.length > 0) {
+      const twin = digitalTwins[0];
+      const simulatedState = JSON.parse(twin.simulated_state);
+      
+      // Major position divergence (> 10km from expected)
+      const latDiff = Math.abs(v.latitude - simulatedState.expected_latitude) * 111;
+      const lonDiff = Math.abs(v.longitude - simulatedState.expected_longitude) * 111;
+      const geoDist = Math.sqrt(latDiff * latDiff + lonDiff * lonDiff);
+      
+      if (geoDist > 10) {
+        cyberThreats.push({ type: 'TWIN_GEO_DIVERGENCE', vehicle: v.name, distance_km: geoDist, severity: 'high' });
+        await base44.asServiceRole.entities.Alert.create({
+          organization_id: orgId,
+          title: `[TWIN] Position Anomaly: ${v.name} ${geoDist.toFixed(1)}km off-course`,
+          message: `Digital Twin detected ${geoDist.toFixed(1)}km divergence. Real: (${v.latitude}, ${v.longitude}), Expected: (${simulatedState.expected_latitude}, ${simulatedState.expected_longitude}). Could indicate theft, rerouting, or navigation attack.`,
+          type: 'critical', category: 'system', vehicle_id: v.id,
+          ai_recommendation: 'Physical verification required. Check against route authorization.',
+          is_read: false, is_resolved: false,
+        });
+        log('TWIN_GEO_DIVERGENCE', `${v.name} +${geoDist.toFixed(1)}km`, 'high');
+        actionsCount++;
+      }
+    }
   }
 
   // ── 0B. ABNORMAL LOGIN PATTERN DETECTION ────────────────────────────────
