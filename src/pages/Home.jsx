@@ -941,26 +941,26 @@ export default function Home() {
           >
             <div className="absolute inset-0 bg-[linear-gradient(rgba(16,185,129,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(16,185,129,0.03)_1px,transparent_1px)] bg-[size:60px_60px]" />
             <div className="relative z-10">
-              <h3 className="text-3xl font-bold text-white text-center mb-10">Tekniske Komponenter</h3>
+              <h3 className="text-3xl font-bold text-white text-center mb-10">Technical Components</h3>
               <div className="grid md:grid-cols-3 gap-6">
                 {[
                   {
                     icon: Cpu,
-                    title: "Edge AI på hver node",
+                    title: "Edge AI on every node",
                     tech: "5G · LoRaWAN · Neural nets",
-                    description: "Hvert køretøj kører lette neurale netværk til lokal beslutningstagning — f.eks. omdirigering i trafikkaos — mens data synkroniseres med nærliggende noder."
+                    description: "Each vehicle runs lightweight neural networks for local decision-making — e.g. rerouting in traffic chaos — while data syncs with nearby nodes."
                   },
                   {
                     icon: GitBranch,
-                    title: "Stigmergi-kommunikation",
+                    title: "Stigmergy communication",
                     tech: "PSO · ACO · P2P mesh",
-                    description: "Indirekte signaler i miljøet — opdaterede kort, belastningsdata — guider flåden. Suppleret med direkte peer-to-peer beskeder til komplekse opgaver som lastfordeling."
+                    description: "Indirect environmental signals — updated maps, load data — guide the fleet. Supplemented with direct peer-to-peer messages for complex tasks like load balancing."
                   },
                   {
                     icon: Network,
-                    title: "Selvorganisering",
+                    title: "Self-organisation",
                     tech: "Particle Swarm · Ant Colony",
-                    description: "Algoritmer som PSO og ACO simulerer dynamiske ruter. Servernoder balancerer autonomt MMORPG-sessions under peak load uden manuel intervention."
+                    description: "Algorithms like PSO and ACO simulate dynamic routes. Nodes autonomously balance sessions under peak load without manual intervention."
                   }
                 ].map((comp, idx) => {
                   const Icon = comp.icon;
