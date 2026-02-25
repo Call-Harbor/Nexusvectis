@@ -458,9 +458,9 @@ export default function NeuroSymbolicRiskPanel({ vehicles = [], routes = [], onC
   const memoryActive = true; // Always active — logs to SecurityAudit
 
   const tabs = [
-    { id: 'bloodstream', label: 'Blodstrøm', icon: Heart },
-    { id: 'pathogens', label: 'Trusler', icon: Radiation },
-    { id: 'layers', label: 'Forsvar', icon: Shield },
+    { id: 'bloodstream', label: 'Bloodstream', icon: Heart },
+    { id: 'pathogens', label: 'Threats', icon: Radiation },
+    { id: 'layers', label: 'Defense', icon: Shield },
     { id: 'dna', label: 'Intelligence', icon: Dna },
   ];
 
