@@ -1035,14 +1035,14 @@ export default function Home() {
               <Sparkles className="w-3.5 h-3.5 text-rose-400" />
               <span className="text-rose-300 text-sm font-semibold">Advanced Security</span>
             </div>
-            <h2 className="text-5xl md:text-6xl font-bold text-white mb-6 leading-tight">
+            <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-6 leading-tight px-2">
               Digital Twin
               <br />
               <span className="bg-gradient-to-r from-rose-400 via-cyan-400 to-violet-400 bg-clip-text text-transparent">
                 Federation
               </span>
             </h2>
-            <p className="text-xl text-slate-400 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-base sm:text-lg md:text-xl text-slate-400 max-w-3xl mx-auto leading-relaxed px-2">
               Run virtual doubles of your entire fleet in parallel with real-time data. Detect anomalies, attacks, and failures before they impact operations.
             </p>
           </motion.div>
