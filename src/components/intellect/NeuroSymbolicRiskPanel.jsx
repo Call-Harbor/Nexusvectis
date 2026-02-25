@@ -544,7 +544,7 @@ export default function NeuroSymbolicRiskPanel({ vehicles = [], routes = [], onC
         <div className="flex items-center justify-between mt-2">
           <div className="flex items-center gap-1.5">
             <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-[9px] text-emerald-400 font-mono font-bold">IMMUNITY ENGINE AKTIV · 10min cycle</span>
+            <span className="text-[9px] text-emerald-400 font-mono font-bold">IMMUNITY ENGINE ACTIVE · 10min cycle</span>
           </div>
           <button
             onClick={runFusionAnalysis}
