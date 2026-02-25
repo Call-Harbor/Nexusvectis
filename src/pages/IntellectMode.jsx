@@ -457,6 +457,11 @@ export default function IntellectMode() {
       case 'openCompanyAnalysis':
         setShowCompanyAnalysis(true);
         break;
+      case 'openSwarmIntelligence':
+        setShowSwarmIntelligence(true);
+        openWindow('swarm_intelligence', { x: 120, y: 80 });
+        setMessages(prev => [...prev, { role: "system", content: "🐜 Swarm Intelligence Koordinering aktiveret — ACO/PSO algoritmer kører på flåden" }]);
+        break;
       default:
         break;
     }
