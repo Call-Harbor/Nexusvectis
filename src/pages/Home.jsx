@@ -1015,6 +1015,240 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Digital Twin Federation Section */}
+      <section className="relative py-32 px-6 z-10">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <motion.div
+              animate={{ rotate: [0, 360] }}
+              transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+              className="inline-block mb-6"
+            >
+              <Orbit className="w-12 h-12 text-rose-400" />
+            </motion.div>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-rose-500/10 border border-rose-500/30 mb-6">
+              <Sparkles className="w-3.5 h-3.5 text-rose-400" />
+              <span className="text-rose-300 text-sm font-semibold">Advanced Security</span>
+            </div>
+            <h2 className="text-5xl md:text-6xl font-bold text-white mb-6 leading-tight">
+              Digital Twin
+              <br />
+              <span className="bg-gradient-to-r from-rose-400 via-cyan-400 to-violet-400 bg-clip-text text-transparent">
+                Federation
+              </span>
+            </h2>
+            <p className="text-xl text-slate-400 max-w-3xl mx-auto leading-relaxed">
+              Run virtual doubles of your entire fleet in parallel with real-time data. Detect anomalies, attacks, and failures before they impact operations.
+            </p>
+          </motion.div>
+
+          {/* Twin Architecture Overview */}
+          <div className="grid md:grid-cols-2 gap-8 mb-16">
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="relative p-10 rounded-3xl bg-gradient-to-br from-rose-500/10 to-pink-500/5 border border-rose-500/30 overflow-hidden"
+            >
+              <motion.div
+                animate={{ scale: [1, 1.3, 1], opacity: [0.2, 0.4, 0.2] }}
+                transition={{ duration: 4, repeat: Infinity }}
+                className="absolute -top-8 -right-8 w-32 h-32 bg-rose-500/20 rounded-full blur-2xl"
+              />
+              <div className="relative">
+                <h3 className="text-2xl font-bold text-white mb-4">Real vs. Simulated</h3>
+                <ul className="space-y-4">
+                  {[
+                    "Live vehicle GPS position",
+                    "Predicted route trajectory",
+                    "Real sensor telemetry",
+                    "Simulated physical model",
+                    "Expected vs. actual fuel",
+                    "Divergence detection"
+                  ].map((item, idx) => (
+                    <motion.li
+                      key={idx}
+                      initial={{ opacity: 0, x: -20 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: idx * 0.1 }}
+                      className="flex items-center gap-3"
+                    >
+                      <div className="w-2 h-2 rounded-full bg-gradient-to-r from-rose-400 to-cyan-400" />
+                      <span className="text-slate-300">{item}</span>
+                    </motion.li>
+                  ))}
+                </ul>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="relative p-10 rounded-3xl bg-gradient-to-br from-cyan-500/10 to-violet-500/5 border border-cyan-500/30 overflow-hidden"
+            >
+              <motion.div
+                animate={{ scale: [1, 1.3, 1], opacity: [0.2, 0.4, 0.2] }}
+                transition={{ duration: 4, repeat: Infinity, delay: 1 }}
+                className="absolute -bottom-8 -left-8 w-32 h-32 bg-cyan-500/20 rounded-full blur-2xl"
+              />
+              <div className="relative">
+                <h3 className="text-2xl font-bold text-white mb-4">Anomaly Detection</h3>
+                <ul className="space-y-4">
+                  {[
+                    "Position divergence > 10km",
+                    "Impossible speed patterns",
+                    "Replay attack signatures",
+                    "Sensor data tampering",
+                    "Unauthorized rerouting",
+                    "Real-time alerts"
+                  ].map((item, idx) => (
+                    <motion.li
+                      key={idx}
+                      initial={{ opacity: 0, x: 20 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: idx * 0.1 }}
+                      className="flex items-center gap-3"
+                    >
+                      <Shield className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                      <span className="text-slate-300">{item}</span>
+                    </motion.li>
+                  ))}
+                </ul>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* How It Works */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="rounded-[2.5rem] bg-gradient-to-br from-slate-900/70 to-slate-950/70 border border-slate-700/50 p-10 md:p-14 mb-16 overflow-hidden relative"
+          >
+            <div className="absolute inset-0 bg-[linear-gradient(rgba(168,85,247,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(168,85,247,0.03)_1px,transparent_1px)] bg-[size:60px_60px]" />
+            <div className="relative z-10">
+              <h3 className="text-3xl font-bold text-white text-center mb-10">How Digital Twin Federation Works</h3>
+              <div className="grid md:grid-cols-4 gap-6">
+                {[
+                  {
+                    icon: Truck,
+                    step: "1",
+                    title: "Ingest",
+                    description: "Collect real-time data from vehicles, shipments, and resources via GPS, AIS, ADS-B"
+                  },
+                  {
+                    icon: Cpu,
+                    step: "2",
+                    title: "Simulate",
+                    description: "Run physics-based models predicting expected position, fuel, temperature"
+                  },
+                  {
+                    icon: TrendingUp,
+                    step: "3",
+                    title: "Compare",
+                    description: "Calculate divergence between real state and simulated expectation"
+                  },
+                  {
+                    icon: AlertCircle,
+                    step: "4",
+                    title: "Alert",
+                    description: "Trigger security alerts and feed insights to Immunity & Swarm engines"
+                  }
+                ].map((item, idx) => {
+                  const Icon = item.icon;
+                  return (
+                    <motion.div
+                      key={idx}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: idx * 0.15 }}
+                      className="relative"
+                    >
+                      <div className="p-6 rounded-2xl bg-slate-800/40 border border-slate-700/50 hover:border-violet-500/30 transition-all">
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="w-10 h-10 rounded-xl bg-violet-500/15 border border-violet-500/30 flex items-center justify-center">
+                            <span className="text-violet-400 font-bold text-sm">{item.step}</span>
+                          </div>
+                          <Icon className="w-5 h-5 text-violet-400" />
+                        </div>
+                        <p className="text-white font-semibold text-sm mb-2">{item.title}</p>
+                        <p className="text-slate-400 text-sm leading-relaxed">{item.description}</p>
+                      </div>
+                      {idx < 3 && (
+                        <motion.div
+                          animate={{ x: [0, 10, 0] }}
+                          transition={{ duration: 2, repeat: Infinity }}
+                          className="hidden md:block absolute top-1/2 -right-8 text-violet-500/40"
+                        >
+                          <ArrowRight className="w-5 h-5" />
+                        </motion.div>
+                      )}
+                    </motion.div>
+                  );
+                })}
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Benefits Grid */}
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              {
+                title: "Cyber Attack Prevention",
+                icon: Shield,
+                color: "rose",
+                description: "Detect GPS spoofing, data injection, and MITM attacks instantly through divergence analysis"
+              },
+              {
+                title: "Theft Prevention",
+                icon: Package,
+                color: "cyan",
+                description: "Identify unauthorized rerouting and physical asset displacement in real-time"
+              },
+              {
+                title: "Quality Assurance",
+                icon: CheckCircle2,
+                color: "violet",
+                description: "Monitor cold chain compliance, cargo integrity, and safe delivery conditions"
+              }
+            ].map((benefit, idx) => {
+              const Icon = benefit.icon;
+              return (
+                <motion.div
+                  key={idx}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: idx * 0.15 }}
+                  whileHover={{ scale: 1.05, y: -5 }}
+                  className={`relative p-8 rounded-3xl bg-gradient-to-br from-${benefit.color}-500/10 to-${benefit.color}-500/5 border border-${benefit.color}-500/30 overflow-hidden group`}
+                >
+                  <motion.div
+                    animate={{ scale: [1, 1.4, 1], opacity: [0.2, 0.4, 0.2] }}
+                    transition={{ duration: 4, repeat: Infinity, delay: idx * 0.8 }}
+                    className={`absolute -top-8 -right-8 w-32 h-32 bg-${benefit.color}-500/20 rounded-full blur-2xl`}
+                  />
+                  <div className={`w-14 h-14 rounded-2xl bg-${benefit.color}-500/20 border border-${benefit.color}-500/30 flex items-center justify-center mb-5`}>
+                    <Icon className={`w-7 h-7 text-${benefit.color}-400`} />
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-3">{benefit.title}</h3>
+                  <p className="text-slate-400 leading-relaxed text-sm">{benefit.description}</p>
+                </motion.div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="relative py-32 px-6 z-10">
         <div className="max-w-7xl mx-auto">
