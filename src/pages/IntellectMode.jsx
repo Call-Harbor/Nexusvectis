@@ -1769,9 +1769,10 @@ export default function IntellectMode() {
                             window.type === 'gpsintegration' ? Satellite :
                             window.type === 'assignment' ? Route :
                             window.type === 'routeeditor' ? Route :
-                  window.type.startsWith('chart_') ? BarChart3 : Activity;
+                            window.type === 'swarm_intelligence' ? Network :
+                            window.type.startsWith('chart_') ? BarChart3 : Activity;
 
-                          const title = window.type.startsWith('chart_') ? (window.data?.chartConfig?.title || 'Analysis Chart') :
+                                   const title = window.type.startsWith('chart_') ? (window.data?.chartConfig?.title || 'Analysis Chart') :
                             window.type === 'fleet' ? 'Fleet' :
                             window.type === 'alerts' ? 'Alerts' :
                             window.type === 'routes' ? 'Routes' :
