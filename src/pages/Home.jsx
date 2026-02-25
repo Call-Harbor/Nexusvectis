@@ -875,12 +875,12 @@ export default function Home() {
               Swarm Intelligence
               <br />
               <span className="bg-gradient-to-r from-emerald-400 via-cyan-400 to-violet-400 bg-clip-text text-transparent">
-                Koordinering
+                Coordination
               </span>
             </h2>
             <p className="text-xl text-slate-400 max-w-3xl mx-auto leading-relaxed">
-              Efterligner naturens kollektive intelligens fra myrer, bier og fuglesværme — 
-              hvert køretøj fungerer som en autonom agent der koordinerer med flåden via edge computing, uden behov for en central hjerne.
+              Mimicking nature's collective intelligence from ants, bees and bird flocks — 
+              each vehicle operates as an autonomous agent coordinating with the fleet via edge computing, with no central brain required.
             </p>
           </motion.div>
 
