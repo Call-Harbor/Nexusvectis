@@ -873,7 +873,7 @@ export default function NeuroSymbolicRiskPanel({ vehicles = [], routes = [], onC
                   size="sm"
                 >
                   <Syringe className="w-3.5 h-3.5 mr-1.5" />
-                  Injicér Immunterapi via FLEET AI
+                  Inject Immunotherapy via FLEET AI
                 </Button>
               </motion.div>
             )}
