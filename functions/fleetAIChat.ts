@@ -69,10 +69,39 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json();
-    const { message, conversation_history, context } = body;
+    const { message, conversation_history, context, file_urls } = body;
 
     if (!message || typeof message !== "string") {
       return Response.json({ error: "message is required" }, { status: 400 });
+    }
+
+    // Process uploaded files if present
+    let filesContent = '';
+    if (file_urls && file_urls.length > 0) {
+      try {
+        const fileProcessingResponse = await fetch(Deno.env.get("BASE44_API_URL") || "http://localhost:3000", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${Deno.env.get("BASE44_SERVICE_TOKEN") || ''}`
+          },
+          body: JSON.stringify({
+            function_name: 'processFileContent',
+            payload: { file_urls }
+          })
+        }).catch(() => null);
+
+        if (fileProcessingResponse?.ok) {
+          const fileData = await fileProcessingResponse.json();
+          if (fileData.processed_files) {
+            filesContent = fileData.processed_files.map(f => 
+              `[FILE: ${f.url.split('/').pop()} (${f.type})]\n${f.content}`
+            ).join('\n\n---\n\n');
+          }
+        }
+      } catch (e) {
+        console.log('File processing not available, proceeding with message only');
+      }
     }
 
     // Build conversation messages
