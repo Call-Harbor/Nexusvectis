@@ -831,7 +831,7 @@ export default function NeuroSymbolicRiskPanel({ vehicles = [], routes = [], onC
                 {riskReport.compound_risks?.length > 0 && (
                   <div>
                     <p className="text-[10px] font-bold text-red-400/80 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                      <AlertTriangle className="w-3 h-3" /> Kaskade-Risici (Cytokinstorm-scenarier)
+                      <AlertTriangle className="w-3 h-3" /> Cascade Risks (Cytokine Storm Scenarios)
                     </p>
                     <div className="space-y-2">
                       {riskReport.compound_risks.map((r, i) => (
