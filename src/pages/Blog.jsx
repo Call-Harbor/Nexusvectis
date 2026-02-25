@@ -370,7 +370,7 @@ export default function Blog() {
           />
           
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <p className="text-slate-500 text-sm">&copy; 2026 NexusVectis ApS. Shaping the future of logistics intelligence.</p>
+            <p className="text-slate-500 text-sm">&copy; 2026 NexusVectis. Shaping the future of logistics intelligence.</p>
             <div className="flex gap-6 text-slate-400 text-sm">
               <Link to={createPageUrl("PrivacyPolicy")} className="hover:text-cyan-400 transition-colors">Privacy Policy</Link>
               <Link to={createPageUrl("TermsOfService")} className="hover:text-cyan-400 transition-colors">Terms of Service</Link>
