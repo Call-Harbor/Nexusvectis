@@ -2491,6 +2491,29 @@ export default function IntellectMode() {
           />
         )}
       </AnimatePresence>
-    </div>
-  );
-}
+
+      {/* Voice Executive */}
+      {voiceEnabled && (
+        <VoiceExecutive 
+          onVoiceCommand={(command) => {
+            const commandMap = {
+              'SHOW_FLEET_STATUS': 'show fleet analytics and vehicle status',
+              'ANALYZE_DSV': 'analyze DSV as major customer',
+              'OPTIMIZE_ROUTES': 'optimize routes for traffic and cost',
+              'ACTIVATE_SWARM': 'activate swarm intelligence coordination',
+              'THREAT_STATUS': 'show threat pilot status'
+            };
+            const cmd = commandMap[command] || command;
+            setInput(cmd);
+            setTimeout(() => processCommand(), 300);
+          }}
+          isListening={isListening}
+          setIsListening={setIsListening}
+        />
+      )}
+
+      {/* Threat Pilot */}
+      {threatPilotEnabled && <ThreatPilot />}
+      </div>
+      );
+      }
