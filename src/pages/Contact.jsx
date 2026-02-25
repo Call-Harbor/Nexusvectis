@@ -228,12 +228,21 @@ export default function Contact() {
                     </div>
 
                     <button
-                      type="submit"
-                      className="w-full bg-gradient-to-r from-cyan-500 to-violet-500 text-white px-8 py-4 rounded-xl font-bold hover:scale-105 transition-transform flex items-center justify-center gap-2"
-                    >
-                      Send Message
-                      <Send className="w-5 h-5" />
-                    </button>
+                       type="submit"
+                       disabled={loading}
+                       className="w-full bg-gradient-to-r from-cyan-500 to-violet-500 text-white px-8 py-4 rounded-xl font-bold hover:scale-105 transition-transform flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                     >
+                       {loading ? (
+                         <>
+                           Sending...
+                         </>
+                       ) : (
+                         <>
+                           Send Message
+                           <Send className="w-5 h-5" />
+                         </>
+                       )}
+                     </button>
                   </form>
                 )}
               </div>
