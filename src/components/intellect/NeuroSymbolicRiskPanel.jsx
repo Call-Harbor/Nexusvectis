@@ -750,7 +750,7 @@ export default function NeuroSymbolicRiskPanel({ vehicles = [], routes = [], onC
             {symbolicRules.length > 0 && (
               <div className="mt-3">
                 <p className="text-[9px] text-slate-600 font-mono uppercase tracking-widest mb-2">
-                  Symbolske Immunregler ({symbolicRules.filter(r => r.triggered).length}/{symbolicRules.length} aktive)
+                  Symbolic Immune Rules ({symbolicRules.filter(r => r.triggered).length}/{symbolicRules.length} active)
                 </p>
                 <div className="space-y-1.5">
                   {symbolicRules.slice(0, 6).map((rule, i) => (
