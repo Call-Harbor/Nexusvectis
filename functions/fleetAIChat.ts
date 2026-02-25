@@ -110,6 +110,11 @@ Deno.serve(async (req) => {
       .slice(-20) // Keep last 20 messages
       .map(m => ({ role: m.role, content: m.content }));
 
+    // Combine file content with message
+    const enrichedMessage = filesContent 
+      ? `${message}\n\n[ATTACHED FILES CONTENT]\n${filesContent}`
+      : message;
+
     // Optionally enrich system prompt with fleet context
     let systemPrompt = SYSTEM_PROMPT;
     if (context) {
