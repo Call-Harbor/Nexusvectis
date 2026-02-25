@@ -555,7 +555,7 @@ export default function NeuroSymbolicRiskPanel({ vehicles = [], routes = [], onC
               ? <Loader2 className="w-3 h-3 animate-spin" />
               : <RefreshCw className="w-3 h-3" />
             }
-            {isAnalyzing ? 'Analyserer...' : 'Opdater'}
+            {isAnalyzing ? 'Analyzing...' : 'Refresh'}
           </button>
         </div>
       </div>
