@@ -2482,6 +2482,20 @@ export default function IntellectMode() {
                     return;
                   }
 
+                  // Request microphone permission first
+                  try {
+                    await navigator.mediaDevices.getUserMedia({ audio: true });
+                  } catch (error) {
+                    if (error.name === 'NotAllowedError') {
+                      toast.error('Mikrofontilladelse nægtet');
+                    } else if (error.name === 'NotFoundError') {
+                      toast.error('Ingen mikrofon fundet');
+                    } else {
+                      toast.error('Kunne ikke få adgang til mikrofon');
+                    }
+                    return;
+                  }
+
                   const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
                   const recognition = new SpeechRecognition();
                   recognition.lang = detectLanguage();
