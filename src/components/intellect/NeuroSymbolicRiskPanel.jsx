@@ -293,28 +293,28 @@ const ImmuneSystemCanvas = ({ riskLevel, immunityLog = [] }) => {
 const ImmunityLayer = ({ layer, isActive, response }) => {
   const configs = {
     innate: {
-      name: 'Medfødt Immunforsvar',
-      subtitle: 'Første forsvarslinje',
+      name: 'Innate Immune System',
+      subtitle: 'First line of defense',
       icon: Shield,
       color: 'amber',
-      description: 'Hurtig, ikke-specifik respons. Aktiveres inden for minutter.',
-      cells: ['Neutrofiler', 'Makrofager', 'NK-celler'],
+      description: 'Fast, non-specific response. Activated within minutes.',
+      cells: ['Neutrophils', 'Macrophages', 'NK Cells'],
     },
     adaptive: {
-      name: 'Adaptivt Immunforsvar',
-      subtitle: 'Anden forsvarslinje',
+      name: 'Adaptive Immune System',
+      subtitle: 'Second line of defense',
       icon: Dna,
       color: 'violet',
-      description: 'Specifik respons. Lærer og husker trusler. Aktiveres over timer.',
-      cells: ['T-celler', 'B-celler', 'Antistoffer'],
+      description: 'Specific response. Learns and remembers threats. Activated over hours.',
+      cells: ['T-Cells', 'B-Cells', 'Antibodies'],
     },
     memory: {
-      name: 'Immunhukommelse',
-      subtitle: 'Langtidsbeskyttelse',
+      name: 'Immune Memory',
+      subtitle: 'Long-term protection',
       icon: Brain,
       color: 'cyan',
-      description: 'Husker tidligere trusler. Hurtigere respons ved gentagne angreb.',
-      cells: ['Hukommelsesceller', 'SecurityAudit Log', 'Antigen-profiler'],
+      description: 'Remembers past threats. Faster response on repeated attacks.',
+      cells: ['Memory Cells', 'SecurityAudit Log', 'Antigen Profiles'],
     },
   };
   const cfg = configs[layer];
