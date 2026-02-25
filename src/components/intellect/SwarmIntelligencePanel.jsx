@@ -330,16 +330,21 @@ export default function SwarmIntelligencePanel({ vehicles = [], routes = [], onC
             <div className="relative rounded-xl overflow-hidden border border-emerald-500/20 bg-slate-900/40" style={{ height: 200 }}>
               <SwarmVisualization vehicles={vehicles} />
               <div className="absolute bottom-2 left-2 text-[9px] text-emerald-400/60 font-mono">
-                {vehicles.length || 8} agents · pheromone mesh · live
+                {latestCycle?.vehicles_in_swarm || vehicles.length || 0} agents · pheromone mesh · {latestCycle ? 'live' : 'idle'}
               </div>
+              {latestCycle && (
+                <div className="absolute top-2 right-2 text-[9px] text-emerald-300 font-mono bg-slate-900/70 px-1.5 py-0.5 rounded">
+                  Health: {swarmHealthScore}/100
+                </div>
+              )}
             </div>
 
-            {/* Agent status grid */}
+            {/* Real stats from latest cycle */}
             <div className="grid grid-cols-3 gap-1.5">
               {[
-                { label: 'Active Agents', value: vehicles.filter(v => v.status === 'active').length || 6, color: 'emerald' },
-                { label: 'Mesh Links', value: Math.floor((vehicles.length || 8) * 2.3), color: 'cyan' },
-                { label: 'Signals/min', value: Math.floor(Math.random() * 40 + 80), color: 'violet' },
+                { label: 'Active Agents', value: latestCycle?.vehicles_in_swarm || vehicles.filter(v => v.status === 'active').length || 0, color: 'emerald' },
+                { label: 'Routes Optimized', value: latestCycle?.routes_optimized || 0, color: 'cyan' },
+                { label: 'Pheromone Signals', value: latestCycle?.pheromone_signals || 0, color: 'violet' },
               ].map((s, i) => (
                 <div key={i} className={`p-2 rounded-lg bg-${s.color}-500/10 border border-${s.color}-500/20 text-center`}>
                   <p className={`text-${s.color}-400 font-bold text-sm`}>{s.value}</p>
@@ -348,25 +353,36 @@ export default function SwarmIntelligencePanel({ vehicles = [], routes = [], onC
               ))}
             </div>
 
-            {/* Principles */}
-            <div className="space-y-1.5">
-              {[
-                { icon: Bug, color: 'emerald', title: 'Pheromone Trails', desc: 'Optimal routes reinforced by digital feromoner fra aktive køretøjer' },
-                { icon: Wifi, color: 'cyan', title: 'Mesh Koordinering', desc: 'P2P signaler via 5G/LoRaWAN — ingen central hjerne nødvendig' },
-                { icon: Network, color: 'violet', title: 'Emergent Routing', desc: 'Flåden self-organiserer automatisk ved trafikkaos eller fejl' },
-              ].map((item, i) => {
-                const Icon = item.icon;
-                return (
-                  <div key={i} className={`flex items-start gap-2 p-2 rounded-lg bg-${item.color}-500/5 border border-${item.color}-500/15`}>
-                    <Icon className={`w-3.5 h-3.5 text-${item.color}-400 mt-0.5 flex-shrink-0`} />
-                    <div>
-                      <p className="text-white text-[11px] font-semibold">{item.title}</p>
-                      <p className="text-slate-400 text-[10px]">{item.desc}</p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+            {/* Bottlenecks from real data */}
+            {latestCycle?.bottlenecks_detected?.length > 0 && (
+              <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                <p className="text-amber-400 text-[10px] font-bold uppercase mb-1">Bottlenecks Detected by ACO</p>
+                {latestCycle.bottlenecks_detected.map((b, i) => (
+                  <p key={i} className="text-slate-300 text-[10px] flex items-center gap-1">
+                    <span className="text-amber-400">▲</span> {b}
+                  </p>
+                ))}
+              </div>
+            )}
+
+            {/* Scout agents */}
+            {latestCycle?.scout_agents?.length > 0 && (
+              <div className="p-2 rounded-lg bg-emerald-500/5 border border-emerald-500/15">
+                <p className="text-emerald-400 text-[10px] font-bold uppercase mb-1">Scout Agents (High Mobility)</p>
+                <p className="text-slate-300 text-[10px]">{latestCycle.scout_agents.join(' · ')}</p>
+              </div>
+            )}
+
+            {!latestCycle && !loadingCycles && (
+              <div className="text-center py-4">
+                <p className="text-slate-500 text-xs">No swarm cycles run yet — click "Run Now" to start</p>
+              </div>
+            )}
+            {loadingCycles && (
+              <div className="flex items-center justify-center py-4">
+                <Loader2 className="w-4 h-4 text-emerald-400 animate-spin" />
+              </div>
+            )}
           </div>
         )}
 
