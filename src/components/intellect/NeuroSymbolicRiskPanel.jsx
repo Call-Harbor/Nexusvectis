@@ -693,10 +693,10 @@ export default function NeuroSymbolicRiskPanel({ vehicles = [], routes = [], onC
             {realSignals.length > 0 && (
               <div className="grid grid-cols-2 gap-1.5 mt-3">
                 {[
-                  { label: 'Kritiske', value: criticalCount, color: 'red' },
-                  { label: 'Høj', value: highCount, color: 'orange' },
+                  { label: 'Critical', value: criticalCount, color: 'red' },
+                  { label: 'High', value: highCount, color: 'orange' },
                   { label: 'Medium', value: realSignals.filter(s => s.severity === 'medium').length, color: 'amber' },
-                  { label: 'Lav', value: realSignals.filter(s => s.severity === 'low').length, color: 'emerald' },
+                  { label: 'Low', value: realSignals.filter(s => s.severity === 'low').length, color: 'emerald' },
                 ].map((s, i) => (
                   <div key={i} className={`p-2 rounded-lg text-center border ${
                     s.color === 'red' ? 'bg-red-500/10 border-red-500/20' :
