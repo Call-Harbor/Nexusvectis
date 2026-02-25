@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { base44 } from "@/api/base44Client";
-import { Network, Cpu, Wifi, GitBranch, Dna, Bug, Zap, Activity, TrendingUp, CheckCircle, Loader2, RefreshCw, ChevronDown, ChevronUp } from 'lucide-react';
+import { Network, Cpu, Wifi, GitBranch, Dna, Bug, Zap, Activity, TrendingUp, CheckCircle, Loader2, RefreshCw } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
