@@ -219,6 +219,12 @@ export default function Home() {
                 Try FLEET AI
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
               </button>
+              <Link
+                to={createPageUrl("Contact")}
+                className="text-white text-lg px-10 py-6 rounded-2xl font-semibold border-2 border-white/30 hover:border-cyan-400 hover:text-cyan-400 group transition-all hover:scale-105 flex items-center gap-3"
+              >
+                Request a Demo
+              </Link>
             </motion.div>
           </motion.div>
 
