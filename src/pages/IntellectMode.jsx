@@ -697,6 +697,57 @@ export default function IntellectMode() {
           prediction_patterns: Object.keys(predictions).length
         }, 180, 40);
 
+        // If files attached, use vision-enabled LLM for image analysis
+        if (currentFiles.length > 0) {
+          addThinkingLog('vision', `Processing ${currentFiles.length} image(s) with vision model...`, 
+            { file_count: currentFiles.length, types: currentFiles.map(f => f.name.split('.').pop()) }, 150, 45);
+
+          try {
+            const visionResponse = await base44.integrations.Core.InvokeLLM({
+              prompt: `Du er en avanceret AI-assistent specialiseret i at analysere billeder og fotos.\n\nBrugerkommando: "${currentCommand}"\n\nAnalyser det/de vedlagte billede(r) detaljeret og svar på spørgsmål baseret på billedindholdet. Giv konkrete observationer, værdier og anbefalinger.`,
+              file_urls: currentFiles.map(f => f.url),
+              add_context_from_internet: true,
+              response_json_schema: {
+                type: "object",
+                properties: {
+                  observations: { type: "array", items: { type: "string" } },
+                  analysis: { type: "string" },
+                  detected_items: { type: "array", items: { type: "string" } },
+                  recommendations: { type: "array", items: { type: "string" } },
+                  confidence_score: { type: "number" }
+                }
+              }
+            });
+
+            const visionData = visionResponse.data || visionResponse;
+            addThinkingLog('vision', 'Billede-analyse fuldført', 
+              { observations: visionData.observations?.length || 0, confidence: visionData.confidence_score }, 100, 52);
+
+            const visionContent = `
+        📸 **Billede-Analyse Resultat:**
+
+        **Observationer:**
+        ${visionData.observations?.map(o => `• ${o}`).join('\n') || 'Ingen observationer'}
+
+        **Analyse:**
+        ${visionData.analysis || 'Ingen analyse tilgængelig'}
+
+        **Detekterede Elementer:**
+        ${visionData.detected_items?.map(d => `• ${d}`).join('\n') || 'Ingen elementer detekteret'}
+
+        **Anbefalinger:**
+        ${visionData.recommendations?.map(r => `• ${r}`).join('\n') || 'Ingen anbefalinger'}
+
+        **Sikkerhed:** ${visionData.confidence_score || '0'}%
+            `;
+
+            setStreamingMessage(visionContent);
+          } catch (visionError) {
+            console.error('Vision analysis error:', visionError);
+            addThinkingLog('vision', 'Billede-analyse fejl - bruger tekst-analyse', { error: visionError.message }, 50, 48);
+          }
+        }
+
         // Build conversation history from user/assistant messages (exclude system messages)
         const conversationHistory = messages
           .filter(m => m.role === 'user' || m.role === 'assistant')
@@ -2161,13 +2212,29 @@ export default function IntellectMode() {
                     )}
                   </div>
                   {msg.files && msg.files.length > 0 && (
-                    <div className="flex flex-wrap gap-1 ml-4">
-                      {msg.files.map((file, i) => (
-                        <div key={i} className="flex items-center gap-1 px-2 py-1 bg-cyan-500/10 border border-cyan-500/20 rounded text-[10px]">
-                          <FileText className="w-3 h-3 text-cyan-400" />
-                          <span className="text-slate-400">{file.name}</span>
-                        </div>
-                      ))}
+                    <div className="flex flex-wrap gap-2 ml-4 mt-2">
+                      {msg.files.map((file, i) => {
+                        const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(file.name);
+                        return (
+                          <div key={i} className="flex flex-col gap-1">
+                            {isImage ? (
+                              <>
+                                <img 
+                                  src={file.url} 
+                                  alt={file.name}
+                                  className="max-w-xs max-h-64 rounded border border-cyan-500/30"
+                                />
+                                <span className="text-[10px] text-slate-400">{file.name}</span>
+                              </>
+                            ) : (
+                              <div className="flex items-center gap-1 px-2 py-1 bg-cyan-500/10 border border-cyan-500/20 rounded text-[10px]">
+                                <FileText className="w-3 h-3 text-cyan-400" />
+                                <span className="text-slate-400">{file.name}</span>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
                 </motion.div>
