@@ -316,7 +316,7 @@ export default function Alerts() {
         <div className="space-y-4">
           <AnimatePresence mode="popLayout">
             {filteredAlerts.map((alert, index) => {
-              const Icon = typeIcons[alert.type];
+              const Icon = typeIcons[alert.type] || AlertCircle;
               return (
                 <motion.div
                   key={alert.id}
