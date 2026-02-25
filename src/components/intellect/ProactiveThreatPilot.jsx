@@ -181,7 +181,46 @@ export default function ProactiveThreatPilot() {
         // Avoid duplicate alerts
         if (!hasSpoken.current.has(randomThreat.id)) {
           hasSpoken.current.add(randomThreat.id);
-          const newThreat = { ...randomThreat, timestamp: Date.now() };
+          
+          // Advanced threat analysis with multi-source validation
+          const threatEvent = {
+            timestamp: new Date().toISOString(),
+            gpsData: {
+              velocity: Math.random() * 120,
+              positionError: Math.random() * 3,
+              signalSources: 6,
+              jumpDistance: Math.random() * 50
+            },
+            networkData: {
+              failedAttempts: Math.floor(Math.random() * 25),
+              geoChange: Math.random() * 2000,
+              ipReputation: Math.random() > 0.7 ? 'suspicious' : 'clean',
+              protocolViolations: Math.random() > 0.8 ? 2 : 0
+            },
+            sensorData: {
+              tempDelta: (Math.random() - 0.5) * 20,
+              pressureDelta: (Math.random() - 0.5) * 1.2,
+              acceleration: Math.random() * 3,
+              batteryDrainRate: Math.random() * 6,
+              failedSensors: Math.floor(Math.random() * 3)
+            },
+            driverBehaviorDelta: Math.random(),
+            routeDeviation: Math.random() * 8,
+            velocityAnomaly: Math.random() * 1
+          };
+          
+          const analysis = AdvancedThreatDetection.analyzeMultiSource(threatEvent);
+          const report = AdvancedThreatDetection.generateThreatReport(threatEvent, analysis, {});
+          
+          const newThreat = {
+            ...randomThreat,
+            timestamp: Date.now(),
+            confidence: analysis.confidence,
+            trustScore: analysis.trustScore,
+            verified: report.verified,
+            rootCauses: report.rootCauses
+          };
+          
           setThreats(prev => [newThreat, ...prev].slice(0, 4));
           setActiveAlert(newThreat);
           speakThreat(newThreat);
