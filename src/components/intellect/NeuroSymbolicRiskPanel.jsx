@@ -721,14 +721,14 @@ export default function NeuroSymbolicRiskPanel({ vehicles = [], routes = [], onC
         {activeTab === 'layers' && (
           <div className="space-y-2">
             <p className="text-[9px] text-slate-600 font-mono uppercase tracking-widest mb-2">
-              Immunforsvarets Forsvarslag
+              Immune System Defense Layers
             </p>
 
             <ImmunityLayer
               layer="innate"
               isActive={innateActive}
               response={innateActive
-                ? `Hurtig respons aktiveret. ${criticalCount} kritiske trusler neutraliseres. Offline-køretøjer flagget til karantæne. Lav-brændstof alerts sendt.`
+                ? `Rapid response activated. ${criticalCount} critical threats being neutralized. Offline vehicles flagged for quarantine. Low-fuel alerts dispatched.`
                 : null
               }
             />
@@ -736,14 +736,14 @@ export default function NeuroSymbolicRiskPanel({ vehicles = [], routes = [], onC
               layer="adaptive"
               isActive={adaptiveActive}
               response={adaptiveActive
-                ? `Mistral AI analyserer trusselmønster. Antistof-generering igangsat. Kaskaderisici evalueres. Specifikke modforanstaltninger implementeres.`
+                ? `Mistral AI analyzing threat patterns. Antibody generation initiated. Cascade risks evaluated. Targeted countermeasures being deployed.`
                 : null
               }
             />
             <ImmunityLayer
               layer="memory"
               isActive={memoryActive}
-              response="Alle immunitetscyklusser logges i SecurityAudit. Trusselmønstre gemmes og bruges til hurtigere respons ved fremtidige angreb."
+              response="All immunity cycles logged to SecurityAudit. Threat patterns stored and used for faster response on future attacks."
             />
 
             {/* Symbolic rules */}
