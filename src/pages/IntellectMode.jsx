@@ -790,7 +790,7 @@ export default function IntellectMode() {
         // Remove streaming placeholder
         setMessages(prev => prev.filter((_, idx) => idx !== streamingMsgIndex));
 
-        const { action, parameters, message, open_window } = mistralResponse;
+        const { reply, action, parameters, message, open_window } = mistralResponse;
         setRetryCount(0);
 
         // Log usage for monthly billing
