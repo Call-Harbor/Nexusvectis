@@ -227,6 +227,11 @@ export default function Security() {
           </Card>
         </div>
 
+        {/* Fleet Immune System — Full 3-Layer Defense */}
+        <div className="mb-8">
+          <ImmuneSystemPanel orgId={orgId} />
+        </div>
+
         {/* Security Monitor */}
         <SecurityMonitor />
 
