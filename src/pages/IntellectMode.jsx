@@ -697,54 +697,78 @@ export default function IntellectMode() {
           prediction_patterns: Object.keys(predictions).length
         }, 180, 40);
 
-        // If files attached, use vision-enabled LLM for image analysis
+        // If files attached, process based on file type
         if (currentFiles.length > 0) {
-          addThinkingLog('vision', `Processing ${currentFiles.length} image(s) with vision model...`, 
+          addThinkingLog('files', `Processing ${currentFiles.length} file(s)...`, 
             { file_count: currentFiles.length, types: currentFiles.map(f => f.name.split('.').pop()) }, 150, 45);
 
           try {
-            const visionResponse = await base44.integrations.Core.InvokeLLM({
-              prompt: `Du er en avanceret AI-assistent specialiseret i at analysere billeder og fotos.\n\nBrugerkommando: "${currentCommand}"\n\nAnalyser det/de vedlagte billede(r) detaljeret og svar på spørgsmål baseret på billedindholdet. Giv konkrete observationer, værdier og anbefalinger.`,
-              file_urls: currentFiles.map(f => f.url),
-              add_context_from_internet: true,
-              response_json_schema: {
-                type: "object",
-                properties: {
-                  observations: { type: "array", items: { type: "string" } },
-                  analysis: { type: "string" },
-                  detected_items: { type: "array", items: { type: "string" } },
-                  recommendations: { type: "array", items: { type: "string" } },
-                  confidence_score: { type: "number" }
+            const imageFiles = currentFiles.filter(f => /\.(jpg|jpeg|png|gif|webp)$/i.test(f.name));
+            const dataFiles = currentFiles.filter(f => /\.(pdf|xlsx?|csv|doc|docx|txt|json)$/i.test(f.name));
+
+            let fileAnalysisContent = '';
+
+            // Vision analysis for images
+            if (imageFiles.length > 0) {
+              addThinkingLog('vision', `Analyzing ${imageFiles.length} image(s)...`, 
+                { file_count: imageFiles.length }, 120, 48);
+
+              const visionResponse = await base44.integrations.Core.InvokeLLM({
+                prompt: `Du er en avanceret AI-assistent specialiseret i at analysere billeder.\n\nBrugerkommando: "${currentCommand}"\n\nAnalyser det/de vedlagte billede(r) detaljeret. Giv konkrete observationer, værdier og anbefalinger.`,
+                file_urls: imageFiles.map(f => f.url),
+                add_context_from_internet: true,
+                response_json_schema: {
+                  type: "object",
+                  properties: {
+                    observations: { type: "array", items: { type: "string" } },
+                    analysis: { type: "string" },
+                    detected_items: { type: "array", items: { type: "string" } },
+                    recommendations: { type: "array", items: { type: "string" } },
+                    confidence_score: { type: "number" }
+                  }
+                }
+              });
+
+              const visionData = visionResponse.data || visionResponse;
+              fileAnalysisContent += `📸 **Billede-Analyse:**\n\n**Observationer:**\n${visionData.observations?.map(o => `• ${o}`).join('\n') || 'Ingen'}\n\n**Analyse:**\n${visionData.analysis || 'N/A'}\n\n**Elementer:**\n${visionData.detected_items?.map(d => `• ${d}`).join('\n') || 'Ingen'}\n\n`;
+              addThinkingLog('vision', 'Billede-analyse fuldført', { confidence: visionData.confidence_score }, 80, 52);
+            }
+
+            // Data extraction for documents
+            if (dataFiles.length > 0) {
+              addThinkingLog('documents', `Extracting data from ${dataFiles.length} document(s)...`, 
+                { file_count: dataFiles.length }, 150, 54);
+
+              for (const file of dataFiles) {
+                try {
+                  const extractResponse = await base44.integrations.Core.ExtractDataFromUploadedFile({
+                    file_url: file.url,
+                    json_schema: {
+                      type: "object",
+                      properties: {
+                        summary: { type: "string" },
+                        key_data: { type: "array", items: { type: "string" } },
+                        extracted_values: { type: "object", additionalProperties: true }
+                      }
+                    }
+                  });
+
+                  const data = extractResponse.output || extractResponse;
+                  fileAnalysisContent += `📄 **${file.name}:**\n\n**Sammenfatning:**\n${data.summary || 'Ingen'}\n\n**Vigtige Data:**\n${data.key_data?.map(k => `• ${k}`).join('\n') || 'Ingen'}\n\n`;
+                  addThinkingLog('documents', `Extracted from ${file.name}`, { keys: Object.keys(data.extracted_values || {}).length }, 100, 58);
+                } catch (e) {
+                  console.error(`Error extracting ${file.name}:`, e);
+                  fileAnalysisContent += `📄 **${file.name}:** [Upload tilgængeligt for analyse]\n\n`;
                 }
               }
-            });
+            }
 
-            const visionData = visionResponse.data || visionResponse;
-            addThinkingLog('vision', 'Billede-analyse fuldført', 
-              { observations: visionData.observations?.length || 0, confidence: visionData.confidence_score }, 100, 52);
-
-            const visionContent = `
-        📸 **Billede-Analyse Resultat:**
-
-        **Observationer:**
-        ${visionData.observations?.map(o => `• ${o}`).join('\n') || 'Ingen observationer'}
-
-        **Analyse:**
-        ${visionData.analysis || 'Ingen analyse tilgængelig'}
-
-        **Detekterede Elementer:**
-        ${visionData.detected_items?.map(d => `• ${d}`).join('\n') || 'Ingen elementer detekteret'}
-
-        **Anbefalinger:**
-        ${visionData.recommendations?.map(r => `• ${r}`).join('\n') || 'Ingen anbefalinger'}
-
-        **Sikkerhed:** ${visionData.confidence_score || '0'}%
-            `;
-
-            setStreamingMessage(visionContent);
-          } catch (visionError) {
-            console.error('Vision analysis error:', visionError);
-            addThinkingLog('vision', 'Billede-analyse fejl - bruger tekst-analyse', { error: visionError.message }, 50, 48);
+            if (fileAnalysisContent) {
+              setStreamingMessage(fileAnalysisContent);
+            }
+          } catch (fileError) {
+            console.error('File analysis error:', fileError);
+            addThinkingLog('files', 'Fil-analyse fejl', { error: fileError.message }, 50, 48);
           }
         }
 
