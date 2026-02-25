@@ -11,8 +11,7 @@ import {
   Settings, Warehouse, Satellite, Globe, BarChart3, Box, Building2, Monitor, ExternalLink, ChevronDown, Users,
   Lightbulb, Network, Shield, Volume2, AlertCircle
 } from "lucide-react";
-import VoiceExecutive from "@/components/intellect/VoiceExecutive.js";
-import ThreatPilot from "@/components/intellect/ThreatPilot.js";
+
 import FleetGlobe3D from "@/components/intellect/FleetGlobe3D";
 import ThinkingTerminalVisual from "@/components/intellect/ThinkingTerminalVisual";
 import CompanyAnalysisHologram from "@/components/intellect/CompanyAnalysisHologram";
@@ -2492,28 +2491,7 @@ export default function IntellectMode() {
         )}
       </AnimatePresence>
 
-      {/* Voice Executive */}
-      {voiceEnabled && (
-        <VoiceExecutive 
-          onVoiceCommand={(command) => {
-            const commandMap = {
-              'SHOW_FLEET_STATUS': 'show fleet analytics and vehicle status',
-              'ANALYZE_DSV': 'analyze DSV company data and market position',
-              'OPTIMIZE_ROUTES': 'optimize all routes for traffic and cost efficiency',
-              'ACTIVATE_SWARM': 'activate swarm intelligence coordination for fleet',
-              'THREAT_STATUS': 'show threat pilot security status'
-            };
-            const cmd = commandMap[command] || command;
-            setInput(cmd);
-            setTimeout(processCommand, 300);
-          }}
-          isListening={isListening}
-          setIsListening={setIsListening}
-        />
-      )}
 
-      {/* Threat Pilot */}
-      {threatPilotEnabled && <ThreatPilot />}
       </div>
       );
       }
