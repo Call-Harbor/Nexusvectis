@@ -1566,6 +1566,19 @@ export default function IntellectMode() {
       );
     }
 
+    // Neuro-Symbolic Risk Fusion Panel
+    if (type === 'neuro_risk') {
+      return (
+        <NeuroSymbolicRiskPanel
+          vehicles={vehicles}
+          routes={routes}
+          onCommand={(cmd) => {
+            setInput(cmd);
+          }}
+        />
+      );
+    }
+
     // For full page iframes
     if (['dashboard', 'settings', 'aioptimization', 'invoices', 'apidocs', 'resources', 
          'warehouseautomation', 'demandforecasting', 'greentms', 'gpsintegration', 'assignment', 'routeeditor'].includes(type)) {
