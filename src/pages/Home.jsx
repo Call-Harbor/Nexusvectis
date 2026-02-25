@@ -890,20 +890,20 @@ export default function Home() {
               {
                 icon: Bug,
                 color: "emerald",
-                title: "Myrer & Feromoner",
-                description: "Myrer finder optimale ruter ved at efterlade feromoner — i NexusVectis oversættes dette til digitale signaler. Agenter deler realtidsdata som trafik og vejr via mesh-netværk, så hele flåden selvjusterer sig kollektivt."
+                title: "Ants & Pheromones",
+                description: "Ants find optimal routes by leaving pheromone trails — in NexusVectis this translates to digital signals. Agents share real-time data like traffic and weather via mesh networks, enabling the entire fleet to self-adjust collectively."
               },
               {
                 icon: Wifi,
                 color: "cyan",
-                title: "Emergent Adfærd",
-                description: "Ingen enkelt fejl lammer systemet — da andre agenter kompenserer automatisk. Resultatet er emergent flådeadfærd: robusthed og selvhelbredelse uden manuel intervention."
+                title: "Emergent Behaviour",
+                description: "No single failure paralyses the system — other agents compensate automatically. The result is emergent fleet behaviour: resilience and self-healing without manual intervention."
               },
               {
                 icon: Dna,
                 color: "violet",
-                title: "Genetisk Læring",
-                description: "Swarmen \"udvikler\" sig over tid baseret på tidligere ture via genetiske algoritmer — smartere til europæiske vejrforhold, sæsonudsving og gaming-spikes."
+                title: "Genetic Learning",
+                description: "The swarm \"evolves\" over time based on past trips via genetic algorithms — becoming smarter for European weather conditions, seasonal variations and demand spikes."
               }
             ].map((item, idx) => {
               const Icon = item.icon;
