@@ -4,7 +4,7 @@ import { createPageUrl } from "../utils";
 import { 
   Truck, Globe, Zap, Shield, TrendingUp, Satellite,
   BarChart3, MapPin, Radio, ArrowRight, CheckCircle2, Sparkles, Brain, Orbit, Package,
-  Network, Cpu, Wifi, GitBranch, Dna, Bug
+  Network, Cpu, Wifi, GitBranch, Dna, Bug, AlertCircle
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useEffect, useState } from "react";
