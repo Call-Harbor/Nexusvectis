@@ -796,8 +796,8 @@ export default function NeuroSymbolicRiskPanel({ vehicles = [], routes = [], onC
                   />
                   <Dna className="w-6 h-6 text-violet-400 absolute top-4 left-4" />
                 </div>
-                <p className="text-slate-400 text-xs">Mistral AI sekvenserer fleet-DNA...</p>
-                <p className="text-slate-600 text-[10px] mt-1">Analyserer køretøjer, ruter, undtagelser & vedligeholdelse</p>
+                <p className="text-slate-400 text-xs">Mistral AI sequencing fleet DNA...</p>
+                <p className="text-slate-600 text-[10px] mt-1">Analyzing vehicles, routes, exceptions & maintenance</p>
               </div>
             )}
 
