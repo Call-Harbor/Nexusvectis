@@ -175,7 +175,7 @@ export default function Home() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="text-7xl md:text-8xl font-black text-white mb-8 leading-[1.1] tracking-tight"
+              className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-white mb-8 leading-[1.1] tracking-tight"
             >
               The Future of
               <br />
