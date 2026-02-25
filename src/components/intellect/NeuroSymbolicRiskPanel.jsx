@@ -591,13 +591,13 @@ export default function NeuroSymbolicRiskPanel({ vehicles = [], routes = [], onC
           <div className="space-y-3">
             <div>
               <p className="text-[9px] text-slate-600 font-mono mb-1.5 uppercase tracking-widest">
-                Fleet Blodstrøm — Immunologisk Oversigt
+                Fleet Bloodstream — Immunological Overview
               </p>
               {isAnalyzing && !fleetSummary ? (
                 <div className="flex items-center justify-center h-48 rounded-xl bg-red-900/10 border border-red-900/20">
                   <div className="text-center">
                     <Loader2 className="w-6 h-6 text-red-400/60 animate-spin mx-auto mb-2" />
-                    <p className="text-[10px] text-slate-600 font-mono">Analyserer blodprøve...</p>
+                    <p className="text-[10px] text-slate-600 font-mono">Analyzing blood sample...</p>
                   </div>
                 </div>
               ) : (
