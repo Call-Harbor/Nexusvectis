@@ -566,7 +566,7 @@ export default function Home() {
       </section>
 
       {/* Benefits Section */}
-      <section className="relative py-32 px-6 z-10 overflow-hidden">
+      <section className="relative py-20 sm:py-32 px-4 sm:px-6 z-10 overflow-hidden">
         <motion.div
           animate={{
             rotate: [0, 360],
