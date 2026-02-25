@@ -158,6 +158,11 @@ export default function Contact() {
                   </motion.div>
                 ) : (
                   <form onSubmit={handleSubmit} className="space-y-6">
+                    {error && (
+                      <div className="p-4 rounded-xl bg-red-500/20 border border-red-500/50 text-red-300">
+                        {error}
+                      </div>
+                    )}
                     <div className="grid md:grid-cols-2 gap-6">
                       <div>
                         <label className="block text-white font-semibold mb-2">Name *</label>
