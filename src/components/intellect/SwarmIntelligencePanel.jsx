@@ -279,34 +279,25 @@ export default function SwarmIntelligencePanel({ vehicles = [], routes = [], onC
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             <span className="text-emerald-400 text-xs font-bold uppercase tracking-wider">Swarm Intelligence Active</span>
+            {latestCycle && <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30 text-[9px]">Cycle #{latestCycle.cycle_number}</Badge>}
           </div>
           <div className="flex items-center gap-1.5">
             <span className="text-slate-400 text-[10px]">Gen {geneticGeneration}</span>
-            <span className="text-emerald-400 text-[10px] font-mono">Fitness: {fitness.toFixed(1)}%</span>
+            <span className="text-emerald-400 text-[10px] font-mono">Fitness: {typeof fitness === 'number' ? fitness.toFixed(1) : '0.0'}%</span>
           </div>
         </div>
         <div className="flex gap-1.5 text-[10px]">
-          {['ACO', 'PSO'].map(alg => (
-            <button
-              key={alg}
-              onClick={() => setAlgorithm(alg)}
-              className={`px-2.5 py-1 rounded-full border transition-all font-semibold ${
-                algorithm === alg
-                  ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-300'
-                  : 'border-slate-700/50 text-slate-500 hover:text-slate-300'
-              }`}
-            >
-              {alg === 'ACO' ? '🐜 ACO' : '⚡ PSO'}
-            </button>
-          ))}
+          <div className={`px-2.5 py-1 rounded-full border font-semibold bg-emerald-500/20 border-emerald-500/50 text-emerald-300`}>
+            {cycleAlgorithm === 'ACO' ? '🐜 ACO' : '⚡ PSO'} — {cycleAlgorithm === 'ACO' ? 'Ant Colony' : 'Particle Swarm'}
+          </div>
           <Button
             onClick={runSwarmAnalysis}
             disabled={isAnalyzing}
             size="sm"
             className="ml-auto bg-emerald-600/20 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-600/30 h-6 text-[10px] px-2"
           >
-            {isAnalyzing ? <Loader2 className="w-3 h-3 animate-spin" /> : <Zap className="w-3 h-3" />}
-            {isAnalyzing ? 'Analyzing...' : 'Run Analysis'}
+            {isAnalyzing ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
+            {isAnalyzing ? 'Running...' : 'Run Now'}
           </Button>
         </div>
       </div>
