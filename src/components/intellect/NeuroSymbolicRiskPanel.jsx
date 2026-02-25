@@ -850,7 +850,7 @@ export default function NeuroSymbolicRiskPanel({ vehicles = [], routes = [], onC
                 {riskReport.hedging_actions?.length > 0 && (
                   <div>
                     <p className="text-[10px] font-bold text-emerald-400/80 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                      <Syringe className="w-3 h-3" /> Immunterapi — Proaktive Foranstaltninger
+                      <Syringe className="w-3 h-3" /> Immunotherapy — Proactive Countermeasures
                     </p>
                     <div className="space-y-1.5">
                       {riskReport.hedging_actions.map((a, i) => (
