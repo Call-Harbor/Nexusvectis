@@ -2498,14 +2498,14 @@ export default function IntellectMode() {
           onVoiceCommand={(command) => {
             const commandMap = {
               'SHOW_FLEET_STATUS': 'show fleet analytics and vehicle status',
-              'ANALYZE_DSV': 'analyze DSV as major customer',
-              'OPTIMIZE_ROUTES': 'optimize routes for traffic and cost',
-              'ACTIVATE_SWARM': 'activate swarm intelligence coordination',
-              'THREAT_STATUS': 'show threat pilot status'
+              'ANALYZE_DSV': 'analyze DSV company data and market position',
+              'OPTIMIZE_ROUTES': 'optimize all routes for traffic and cost efficiency',
+              'ACTIVATE_SWARM': 'activate swarm intelligence coordination for fleet',
+              'THREAT_STATUS': 'show threat pilot security status'
             };
             const cmd = commandMap[command] || command;
             setInput(cmd);
-            setTimeout(() => processCommand(), 300);
+            setTimeout(processCommand, 300);
           }}
           isListening={isListening}
           setIsListening={setIsListening}
