@@ -388,33 +388,73 @@ export default function SwarmIntelligencePanel({ vehicles = [], routes = [], onC
 
         {activeTab === 'algorithm' && (
           <div className="space-y-3">
-            <AlgorithmStats algorithm={algorithm} vehicles={vehicles} />
-
-            <div className="p-3 rounded-xl bg-slate-800/40 border border-slate-700/50 space-y-2">
-              <p className="text-white text-xs font-semibold flex items-center gap-2">
-                <Cpu className="w-3.5 h-3.5 text-cyan-400" />
-                Edge AI — Lokale beslutninger pr. node
-              </p>
-              {[
-                'Omdirigering ved lokal trafik-detektion',
-                'Fuel-optimering baseret på sensor-data',
-                'Peer signal: broadcast forsinkelse til naboer',
-                'Autonom lastfordeling ved kapacitets-spikes',
-              ].map((d, i) => (
-                <div key={i} className="flex items-center gap-2 text-[11px] text-slate-300">
-                  <CheckCircle className="w-3 h-3 text-emerald-400 flex-shrink-0" />
-                  {d}
+            {/* Real convergence data */}
+            {convergence.length > 1 && (
+              <div className="p-3 rounded-xl bg-slate-800/40 border border-slate-700/50">
+                <p className="text-white text-xs font-semibold mb-2 flex items-center gap-2">
+                  <GitBranch className="w-3.5 h-3.5 text-emerald-400" />
+                  {cycleAlgorithm} Convergence — Cycle #{latestCycle?.cycle_number}
+                </p>
+                <div className="h-12 flex items-end gap-0.5">
+                  {convergence.map((v, i) => {
+                    const max = Math.max(...convergence);
+                    const min = Math.min(...convergence);
+                    const h = max === min ? 50 : ((v - min) / (max - min)) * 100;
+                    return (
+                      <div key={i} className="flex-1 rounded-t transition-all"
+                        style={{ height: `${Math.max(5, h)}%`, background: `rgba(16,185,129,${0.3 + (i / convergence.length) * 0.7})` }}
+                      />
+                    );
+                  })}
                 </div>
-              ))}
-            </div>
+                <p className="text-slate-500 text-[10px] text-center mt-1">Cost minimization — {convergence.length} iterations</p>
+                <div className="grid grid-cols-2 gap-2 mt-2">
+                  <div className="p-2 rounded-lg bg-slate-900/60 text-center">
+                    <p className="text-slate-400 text-[10px]">Efficiency Gain</p>
+                    <p className="text-emerald-400 font-bold text-sm">+{efficiencyGain}%</p>
+                  </div>
+                  <div className="p-2 rounded-lg bg-slate-900/60 text-center">
+                    <p className="text-slate-400 text-[10px]">Vehicles Improved</p>
+                    <p className="text-cyan-400 font-bold text-sm">{latestCycle?.rerouted_vehicles?.length || 0}</p>
+                  </div>
+                </div>
+              </div>
+            )}
 
-            <div className="p-3 rounded-xl bg-cyan-500/5 border border-cyan-500/20">
-              <p className="text-cyan-400 text-[10px] font-bold uppercase mb-1.5">Stigmergi-kommunikation</p>
-              <p className="text-slate-400 text-[11px] leading-relaxed">
-                Agenter opdaterer det delte miljø — opdaterede kort, belastningsdata — 
-                så andre agenter automatisk tilpasser sig uden direkte kommunikation.
-              </p>
-            </div>
+            {/* Stigmergic signals from real cycle */}
+            {latestCycle?.stigmergic_signals?.length > 0 && (
+              <div className="p-3 rounded-xl bg-cyan-500/5 border border-cyan-500/20">
+                <p className="text-cyan-400 text-[10px] font-bold uppercase mb-1.5 flex items-center gap-1">
+                  <Wifi className="w-3 h-3" /> Stigmergic Signals Broadcast
+                </p>
+                {latestCycle.stigmergic_signals.map((s, i) => (
+                  <div key={i} className="flex items-center gap-2 text-[11px] text-slate-300 mb-1">
+                    <CheckCircle className="w-3 h-3 text-cyan-400 flex-shrink-0" />
+                    {s}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Actions taken */}
+            {latestCycle?.actions_taken?.length > 0 && (
+              <div className="p-3 rounded-xl bg-slate-800/40 border border-slate-700/50">
+                <p className="text-white text-xs font-semibold mb-2 flex items-center gap-2">
+                  <Zap className="w-3.5 h-3.5 text-amber-400" />
+                  Real Actions Taken
+                </p>
+                {latestCycle.actions_taken.map((a, i) => (
+                  <div key={i} className="flex items-start gap-2 text-[11px] text-slate-300 mb-1">
+                    <CheckCircle className="w-3 h-3 text-emerald-400 mt-0.5 flex-shrink-0" />
+                    {a}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {!latestCycle && (
+              <div className="text-center py-6 text-slate-500 text-xs">Run a swarm cycle to see real algorithm data</div>
+            )}
           </div>
         )}
 
