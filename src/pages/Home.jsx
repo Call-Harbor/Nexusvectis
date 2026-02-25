@@ -449,14 +449,14 @@ export default function Home() {
             className="text-center mb-20"
           >
             <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-6 px-2">
-              Trusted By Leading
+              From Last-Mile to
               <br />
               <span className="bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent">
-                Logistics Companies
+                Global Supply Chains
               </span>
             </h2>
             <p className="text-base sm:text-lg md:text-xl text-slate-400 max-w-3xl mx-auto px-2">
-              From last-mile delivery to international freight - FLEET AI adapts to your operations
+              Versatile logistics solutions designed to scale across any operation size or complexity
             </p>
           </motion.div>
 
