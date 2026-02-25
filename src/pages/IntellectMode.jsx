@@ -2477,13 +2477,14 @@ export default function IntellectMode() {
               </Button>
               <Button
                 onClick={async () => {
-                  if (!('webkitSpeechRecognition' in window)) {
+                  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
                     toast.error('Voice input not supported in this browser');
                     return;
                   }
 
-                  const recognition = new window.webkitSpeechRecognition();
-                  recognition.lang = 'en-US';
+                  const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
+                  const recognition = new SpeechRecognition();
+                  recognition.lang = detectLanguage();
                   recognition.continuous = false;
                   recognition.interimResults = false;
 
@@ -2492,15 +2493,25 @@ export default function IntellectMode() {
                   recognition.onresult = (event) => {
                     const transcript = event.results[0][0].transcript;
                     setInput(transcript);
+                    // Auto-send after voice input
+                    setTimeout(async () => {
+                      setIsProcessing(true);
+                      try {
+                        await processCommand(transcript);
+                      } finally {
+                        setIsProcessing(false);
+                      }
+                    }, 300);
                   };
-                  recognition.onerror = () => {
-                    toast.error('Voice input failed');
+                  recognition.onerror = (event) => {
+                    console.error('Voice error:', event.error);
+                    toast.error(`Voice input failed: ${event.error}`);
                     setIsListening(false);
                   };
 
                   recognition.start();
                 }}
-                disabled={isProcessing}
+                disabled={isProcessing || isListening}
                 size="sm"
                 className={`px-3 sm:px-4 lg:px-6 ${isListening ? 'bg-red-500 hover:bg-red-600' : 'bg-slate-800 hover:bg-slate-700'} rounded-xl sm:rounded-2xl hidden sm:flex`}
               >
