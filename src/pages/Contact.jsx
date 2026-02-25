@@ -208,7 +208,6 @@ export default function Contact() {
                         className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:border-cyan-500 focus:outline-none transition-colors"
                       >
                         <option value="general">General Inquiry</option>
-                        <option value="demo">Request Demo</option>
                         <option value="enterprise">Enterprise Solution</option>
                         <option value="partnership">Partnership</option>
                         <option value="support">Technical Support</option>
