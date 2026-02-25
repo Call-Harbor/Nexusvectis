@@ -2408,33 +2408,46 @@ export default function IntellectMode() {
               </AnimatePresence>
 
               <div className="flex gap-2 sm:gap-3">
-              <input
-                type="text"
-                value={input}
-                onChange={(e) => {
-                  setInput(e.target.value);
-                  if (e.target.value) setShowSuggestions(false);
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    processCommand();
-                  } else if (e.key === 'ArrowUp' && commandHistory.length > 0) {
-                    e.preventDefault();
-                    const newIndex = historyIndex < commandHistory.length - 1 ? historyIndex + 1 : historyIndex;
-                    setHistoryIndex(newIndex);
-                    setInput(commandHistory[commandHistory.length - 1 - newIndex] || '');
-                  } else if (e.key === 'ArrowDown' && historyIndex > 0) {
-                    e.preventDefault();
-                    const newIndex = historyIndex - 1;
-                    setHistoryIndex(newIndex);
-                    setInput(commandHistory[commandHistory.length - 1 - newIndex] || '');
-                  }
-                }}
-                placeholder="Command FLEET AI... (e.g. 'predict maintenance', 'forecast demand', 'analyze CO2 emissions', 'optimize routes')"
-                disabled={isProcessing}
-                className="flex-1 px-3 py-2.5 sm:px-4 sm:py-3 lg:px-6 lg:py-4 bg-slate-900/60 border-2 border-cyan-500/40 rounded-xl sm:rounded-2xl text-sm sm:text-base text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-400 focus:shadow-lg focus:shadow-cyan-500/20 backdrop-blur-xl transition-all"
-              />
+               <input
+                 type="text"
+                 value={input}
+                 onChange={(e) => {
+                   setInput(e.target.value);
+                   if (e.target.value) setShowSuggestions(false);
+                 }}
+                 onKeyDown={(e) => {
+                   if (e.key === 'Enter' && !e.shiftKey) {
+                     e.preventDefault();
+                     processCommand();
+                   } else if (e.key === 'ArrowUp' && commandHistory.length > 0) {
+                     e.preventDefault();
+                     const newIndex = historyIndex < commandHistory.length - 1 ? historyIndex + 1 : historyIndex;
+                     setHistoryIndex(newIndex);
+                     setInput(commandHistory[commandHistory.length - 1 - newIndex] || '');
+                   } else if (e.key === 'ArrowDown' && historyIndex > 0) {
+                     e.preventDefault();
+                     const newIndex = historyIndex - 1;
+                     setHistoryIndex(newIndex);
+                     setInput(commandHistory[commandHistory.length - 1 - newIndex] || '');
+                   }
+                 }}
+                 placeholder="Command FLEET AI... (e.g. 'predict maintenance', 'forecast demand', 'analyze CO2 emissions', 'optimize routes')"
+                 disabled={isProcessing}
+                 className="flex-1 px-3 py-2.5 sm:px-4 sm:py-3 lg:px-6 lg:py-4 bg-slate-900/60 border-2 border-cyan-500/40 rounded-xl sm:rounded-2xl text-sm sm:text-base text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-400 focus:shadow-lg focus:shadow-cyan-500/20 backdrop-blur-xl transition-all"
+               />
+               <motion.button
+                 whileHover={{ scale: 1.05 }}
+                 whileTap={{ scale: 0.95 }}
+                 onClick={() => setVoiceEnabled(!voiceEnabled)}
+                 className={`px-3 sm:px-4 lg:px-6 py-2.5 sm:py-3 lg:py-4 rounded-xl sm:rounded-2xl border-2 font-semibold transition-all shadow-lg ${
+                   voiceEnabled
+                     ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20'
+                     : 'border-slate-700/40 bg-slate-900/40 text-slate-400 hover:bg-slate-900/60'
+                 }`}
+                 title={voiceEnabled ? "AI Voice enabled" : "AI Voice disabled"}
+               >
+                 {voiceEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+               </motion.button>
               <input
                 ref={fileInputRef}
                 type="file"
