@@ -2239,6 +2239,14 @@ export default function IntellectMode() {
                     <div className="flex flex-wrap gap-2 ml-4 mt-2">
                       {msg.files.map((file, i) => {
                         const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(file.name);
+                        const fileExt = file.name.split('.').pop().toLowerCase();
+                        const fileIcons = {
+                          pdf: '📄', xlsx: '📊', xls: '📊', csv: '📊',
+                          doc: '📝', docx: '📝', txt: '📝', json: '⚙️',
+                          zip: '📦', jpg: '🖼️', jpeg: '🖼️', png: '🖼️'
+                        };
+                        const icon = fileIcons[fileExt] || '📎';
+
                         return (
                           <div key={i} className="flex flex-col gap-1">
                             {isImage ? (
@@ -2251,9 +2259,12 @@ export default function IntellectMode() {
                                 <span className="text-[10px] text-slate-400">{file.name}</span>
                               </>
                             ) : (
-                              <div className="flex items-center gap-1 px-2 py-1 bg-cyan-500/10 border border-cyan-500/20 rounded text-[10px]">
-                                <FileText className="w-3 h-3 text-cyan-400" />
-                                <span className="text-slate-400">{file.name}</span>
+                              <div className="flex items-center gap-2 px-3 py-2 bg-cyan-500/10 border border-cyan-500/20 rounded text-[10px]">
+                                <span className="text-base">{icon}</span>
+                                <div className="flex-1">
+                                  <p className="text-slate-300 truncate font-medium">{file.name}</p>
+                                  <p className="text-slate-500 uppercase text-[9px]">.{fileExt}</p>
+                                </div>
                               </div>
                             )}
                           </div>
