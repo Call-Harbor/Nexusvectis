@@ -630,7 +630,7 @@ export default function NeuroSymbolicRiskPanel({ vehicles = [], routes = [], onC
             }`}>
               <div className="flex items-center justify-between mb-2">
                 <p className={`text-[10px] font-bold uppercase tracking-wider ${immuneStatusColor}`}>
-                  Homeostase Balance
+                  Homeostasis Balance
                 </p>
                 <span className={`text-[9px] font-mono ${immuneStatusColor}`}>{immuneStatus}</span>
               </div>
