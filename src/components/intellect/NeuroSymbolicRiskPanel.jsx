@@ -264,9 +264,15 @@ export default function NeuroSymbolicRiskPanel({ vehicles = [], routes = [], onC
           </Button>
         </div>
 
-        <p className="text-[9px] text-slate-600 mt-1 font-mono">
-          fusion cycles: {fusionPulse} · {fleetSummary ? `${fleetSummary.vehicles_total} køretøjer · ${fleetSummary.vehicles_offline} offline · ${fleetSummary.alerts_critical} kritiske alerts` : 'indlæser...'} {lastUpdated ? `· opdateret ${lastUpdated.toLocaleTimeString()}` : ''}
-        </p>
+        <div className="flex items-center justify-between mt-1">
+          <p className="text-[9px] text-slate-600 font-mono">
+            fusion cycles: {fusionPulse} · {fleetSummary ? `${fleetSummary.vehicles_total} køretøjer · ${fleetSummary.vehicles_offline} offline` : 'indlæser...'} {lastUpdated ? `· ${lastUpdated.toLocaleTimeString()}` : ''}
+          </p>
+          <div className="flex items-center gap-1">
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="text-[9px] text-emerald-400 font-mono font-bold">IMMUNITY AKTIV</span>
+          </div>
+        </div>
       </div>
 
       {/* Tabs */}
