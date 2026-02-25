@@ -32,6 +32,8 @@ import NeuroSymbolicRiskPanel from "@/components/intellect/NeuroSymbolicRiskPane
 import DigitalTwinFederation from "@/components/intellect/DigitalTwinFederation";
 import MistralStreamingEngine, { StreamingAnalysisVisual } from "@/components/intellect/MistralStreamingEngine";
 import IntelligentCommandAgent, { CommandInput, CommandExecution } from "@/components/intellect/IntelligentCommandAgent";
+import DanishVoiceCommands from "@/components/intellect/DanishVoiceCommands";
+import ProactiveThreatPilot from "@/components/intellect/ProactiveThreatPilot";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
@@ -242,8 +244,6 @@ export default function IntellectMode() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [commandExecution, setCommandExecution] = useState(null);
   const [suggestions, setSuggestions] = useState([]);
-  const [voiceEnabled, setVoiceEnabled] = useState(true);
-  const [threatPilotEnabled, setThreatPilotEnabled] = useState(true);
   const messagesEndRef = useRef(null);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
