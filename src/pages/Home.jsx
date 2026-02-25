@@ -725,7 +725,7 @@ export default function Home() {
                 <Sparkles className="w-16 h-16 text-cyan-400 mx-auto mb-8" />
               </motion.div>
               
-              <h2 className="text-5xl md:text-6xl font-black text-white mb-8">
+              <h2 className="text-4xl sm:text-5xl md:text-6xl font-black text-white mb-8 px-2">
                 See <span className="bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent">FLEET AI</span> in Action
               </h2>
 
