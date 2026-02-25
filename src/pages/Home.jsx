@@ -298,10 +298,10 @@ export default function Home() {
                 >
                   <Sparkles className="w-16 h-16 text-cyan-400" />
                 </motion.div>
-                <h2 className="text-5xl md:text-7xl font-black text-white mb-6 leading-tight">
-                  Meet <span className="bg-gradient-to-r from-cyan-400 via-violet-400 to-fuchsia-400 bg-clip-text text-transparent">FLEET AI</span>
-                </h2>
-                <p className="text-2xl text-slate-300 max-w-4xl mx-auto leading-relaxed">
+                <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-white mb-6 leading-tight px-2">
+                      Meet <span className="bg-gradient-to-r from-cyan-400 via-violet-400 to-fuchsia-400 bg-clip-text text-transparent">FLEET AI</span>
+                    </h2>
+                    <p className="text-lg sm:text-xl md:text-2xl text-slate-300 max-w-4xl mx-auto leading-relaxed px-2">
                   Your intelligent co-pilot for fleet operations. Control everything with natural language commands.
                   <br />
                   <span className="text-cyan-400">No complex interfaces. No training required. Just ask.</span>
