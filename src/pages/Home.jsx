@@ -1394,13 +1394,13 @@ export default function Home() {
               onClick={() => base44.auth.redirectToLogin(createPageUrl("Dashboard"))}
               className="bg-gradient-to-r from-cyan-500 to-violet-500 text-white text-lg px-8 py-4 rounded-2xl font-semibold hover:shadow-lg hover:shadow-cyan-500/50 transition-all"
             >
-              Start Free Trial
+              Get Started
             </button>
-          </motion.div>
-        </div>
-      </section>
+            </motion.div>
+            </div>
+            </section>
 
-      {/* CTA Section */}
+            {/* CTA Section */}
       <section className="relative py-20 sm:py-32 px-4 sm:px-6 z-10">
         <div className="max-w-7xl mx-auto">
           <motion.div
