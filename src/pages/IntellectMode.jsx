@@ -1062,9 +1062,11 @@ export default function IntellectMode() {
 
         case "QUERY_DATA":
         case "ANSWER":
-          setMessages(prev => [...prev, { role: "assistant", content: message }]);
+          // Use reply from fleetAIChat if available
+          const responseContent = reply || message || "Analysis complete.";
+          setMessages(prev => [...prev, { role: "assistant", content: responseContent }]);
           if (open_window) openWindow(open_window);
-          
+
           base44.analytics.track({
             eventName: "fleet_ai_query_answered",
             properties: { action }
