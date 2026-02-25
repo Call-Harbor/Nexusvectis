@@ -4,7 +4,7 @@ import { base44 } from "@/api/base44Client";
 import {
   Shield, Brain, Satellite, Globe, Zap, Activity, AlertTriangle, 
   TrendingUp, CheckCircle, Loader2, Eye, Radio, Cpu, Lock,
-  ChevronRight, Wifi, BarChart3, Cloud
+  Wifi, BarChart3, Cloud, RefreshCw
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -24,7 +24,6 @@ const NeuralPulseCanvas = ({ riskLevel }) => {
     canvas.width = W;
     canvas.height = H;
 
-    // Three layers: input (satellite/social/weather), hidden (neuro), output (risk)
     const layers = [
       { x: W * 0.12, nodes: 5, label: 'Sensors' },
       { x: W * 0.38, nodes: 7, label: 'Neural' },
@@ -50,7 +49,6 @@ const NeuralPulseCanvas = ({ riskLevel }) => {
     });
     nodesRef.current = allNodes;
 
-    // Edges between consecutive layers
     const edges = [];
     allNodes.forEach(a => {
       allNodes.forEach(b => {
@@ -64,16 +62,9 @@ const NeuralPulseCanvas = ({ riskLevel }) => {
     const draw = () => {
       ctx.clearRect(0, 0, W, H);
       frame++;
+      nodesRef.current.forEach(n => { n.pulse = (n.pulse + n.pulseSpeed) % 1; });
+      edges.forEach(e => { e.signal = (e.signal + e.speed) % 1; });
 
-      // Update pulses
-      nodesRef.current.forEach(n => {
-        n.pulse = (n.pulse + n.pulseSpeed) % 1;
-      });
-      edges.forEach(e => {
-        e.signal = (e.signal + e.speed) % 1;
-      });
-
-      // Draw edges
       edges.forEach(e => {
         const alpha = 0.12 + Math.abs(Math.sin(frame * 0.02)) * 0.1;
         ctx.beginPath();
@@ -82,8 +73,6 @@ const NeuralPulseCanvas = ({ riskLevel }) => {
         ctx.strokeStyle = `rgba(139,92,246,${alpha})`;
         ctx.lineWidth = 0.7;
         ctx.stroke();
-
-        // Signal pulse traveling along edge
         const px = e.a.x + (e.b.x - e.a.x) * e.signal;
         const py = e.a.y + (e.b.y - e.a.y) * e.signal;
         ctx.beginPath();
@@ -92,10 +81,8 @@ const NeuralPulseCanvas = ({ riskLevel }) => {
         ctx.fill();
       });
 
-      // Draw nodes
       nodesRef.current.forEach(n => {
         const glow = 0.3 + Math.sin(n.pulse * Math.PI * 2) * 0.3;
-        // Glow halo
         const grad = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, 12);
         grad.addColorStop(0, n.color + Math.round(glow * 255).toString(16).padStart(2, '0'));
         grad.addColorStop(1, 'transparent');
@@ -103,8 +90,6 @@ const NeuralPulseCanvas = ({ riskLevel }) => {
         ctx.arc(n.x, n.y, 12, 0, Math.PI * 2);
         ctx.fillStyle = grad;
         ctx.fill();
-
-        // Core
         ctx.beginPath();
         ctx.arc(n.x, n.y, 4.5, 0, Math.PI * 2);
         ctx.fillStyle = n.active ? n.color : '#1e293b';
@@ -114,7 +99,6 @@ const NeuralPulseCanvas = ({ riskLevel }) => {
         ctx.stroke();
       });
 
-      // Layer labels
       layers.forEach(layer => {
         ctx.fillStyle = 'rgba(148,163,184,0.5)';
         ctx.font = '8px monospace';
@@ -131,158 +115,83 @@ const NeuralPulseCanvas = ({ riskLevel }) => {
   return <canvas ref={canvasRef} className="w-full" style={{ height: 160, background: 'transparent' }} />;
 };
 
-// Live risk signal stream
-const SignalStream = ({ signals }) => {
-  return (
-    <div className="space-y-1.5">
-      {signals.map((s, i) => (
-        <motion.div
-          key={i}
-          initial={{ opacity: 0, x: -10 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: i * 0.05 }}
-          className={`flex items-center gap-2 p-2 rounded-lg border text-[10px] ${
-            s.severity === 'critical' ? 'bg-red-500/10 border-red-500/20' :
-            s.severity === 'high' ? 'bg-amber-500/10 border-amber-500/20' :
-            s.severity === 'medium' ? 'bg-yellow-500/10 border-yellow-500/20' :
-            'bg-emerald-500/10 border-emerald-500/20'
-          }`}
-        >
-          <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
-            s.severity === 'critical' ? 'bg-red-400 animate-pulse' :
-            s.severity === 'high' ? 'bg-amber-400 animate-pulse' :
-            s.severity === 'medium' ? 'bg-yellow-400' :
-            'bg-emerald-400'
-          }`} />
-          <span className={`font-mono font-semibold flex-shrink-0 ${
-            s.severity === 'critical' ? 'text-red-400' :
-            s.severity === 'high' ? 'text-amber-400' :
-            s.severity === 'medium' ? 'text-yellow-400' :
-            'text-emerald-400'
-          }`}>[{s.source}]</span>
-          <span className="text-slate-300 flex-1">{s.signal}</span>
-          <span className="text-slate-600 flex-shrink-0">{s.confidence}%</span>
-        </motion.div>
-      ))}
-    </div>
-  );
-};
-
-// Simulated real-time risk signals from external data sources
-const SIMULATED_SIGNALS = [
-  { source: 'SAT', signal: 'Unidentified vessel shadow trailing Container Route 7', severity: 'critical', confidence: 91 },
-  { source: 'SOCIAL', signal: 'Twitter spike: #PortStrike trending +340% Hamburg', severity: 'high', confidence: 78 },
-  { source: 'QUANTUM', signal: 'North Sea storm probability 83% in 72h window', severity: 'high', confidence: 88 },
-  { source: 'IOT', signal: 'Anomalous CAN-bus packet flood detected: Vehicle NX-447', severity: 'critical', confidence: 95 },
-  { source: 'OSINT', signal: 'Geopolitical tension signal: Strait of Hormuz', severity: 'medium', confidence: 62 },
-  { source: 'DARK-WEB', signal: 'Fleet logistics API credentials listed in breach forum', severity: 'critical', confidence: 87 },
-  { source: 'ECONOMY', signal: 'Diesel futures +18% — supply chain margin risk', severity: 'medium', confidence: 74 },
-  { source: 'GRID', signal: 'Power grid instability signal: Frankfurt hub', severity: 'medium', confidence: 69 },
-  { source: 'SAT', signal: 'Road surface anomaly detected: E45 bridge sector', severity: 'high', confidence: 82 },
-  { source: 'IOT', signal: 'GPS spoofing attempt pattern near Kaliningrad corridor', severity: 'critical', confidence: 93 },
-  { source: 'SOCIAL', signal: 'Reddit: viral logistics scam campaign targeting drivers', severity: 'medium', confidence: 71 },
-  { source: 'QUANTUM', signal: 'Black swan probability index elevated: +2.4σ', severity: 'high', confidence: 79 },
-];
-
-const DATA_SOURCES = [
-  { icon: Satellite, label: 'Satellite Intel', color: 'cyan', active: true, feed: 'ESA Sentinel-2 + commercial SAR' },
-  { icon: Globe, label: 'Social Media AI', color: 'violet', active: true, feed: 'Twitter/X, Reddit, LinkedIn firehose' },
-  { icon: Cloud, label: 'Quantum Weather', color: 'blue', active: true, feed: 'ECMWF + quantum-enhanced models' },
-  { icon: Wifi, label: 'IoT Telemetry', color: 'emerald', active: true, feed: 'CAN-bus, GPS, OBD-II mesh' },
-  { icon: Eye, label: 'OSINT Monitor', color: 'amber', active: true, feed: 'Dark web, breach databases, news NLP' },
-  { icon: Radio, label: 'Grid Signals', color: 'red', active: false, feed: 'Power grid & telecom anomalies' },
-];
+const SignalStream = ({ signals }) => (
+  <div className="space-y-1.5">
+    {signals.map((s, i) => (
+      <motion.div
+        key={i}
+        initial={{ opacity: 0, x: -10 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: i * 0.05 }}
+        className={`flex items-center gap-2 p-2 rounded-lg border text-[10px] ${
+          s.severity === 'critical' ? 'bg-red-500/10 border-red-500/20' :
+          s.severity === 'high' ? 'bg-amber-500/10 border-amber-500/20' :
+          s.severity === 'medium' ? 'bg-yellow-500/10 border-yellow-500/20' :
+          'bg-emerald-500/10 border-emerald-500/20'
+        }`}
+      >
+        <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
+          s.severity === 'critical' ? 'bg-red-400 animate-pulse' :
+          s.severity === 'high' ? 'bg-amber-400 animate-pulse' :
+          s.severity === 'medium' ? 'bg-yellow-400' : 'bg-emerald-400'
+        }`} />
+        <span className={`font-mono font-semibold flex-shrink-0 ${
+          s.severity === 'critical' ? 'text-red-400' :
+          s.severity === 'high' ? 'text-amber-400' :
+          s.severity === 'medium' ? 'text-yellow-400' : 'text-emerald-400'
+        }`}>[{s.source}]</span>
+        <span className="text-slate-300 flex-1">{s.signal}</span>
+        <span className="text-slate-600 flex-shrink-0">{s.confidence}%</span>
+      </motion.div>
+    ))}
+  </div>
+);
 
 export default function NeuroSymbolicRiskPanel({ vehicles = [], routes = [], onCommand }) {
   const [activeTab, setActiveTab] = useState('fusion');
-  const [riskLevel, setRiskLevel] = useState(42);
+  const [riskLevel, setRiskLevel] = useState(20);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [riskReport, setRiskReport] = useState(null);
-  const [visibleSignals, setVisibleSignals] = useState(SIMULATED_SIGNALS.slice(0, 4));
-  const [fusionPulse, setFusionPulse] = useState(0);
+  const [realSignals, setRealSignals] = useState([]);
   const [symbolicRules, setSymbolicRules] = useState([]);
+  const [fleetSummary, setFleetSummary] = useState(null);
+  const [fusionPulse, setFusionPulse] = useState(0);
+  const [lastUpdated, setLastUpdated] = useState(null);
+  const [autoLoaded, setAutoLoaded] = useState(false);
 
-  // Rolling signal stream
+  // Pulse counter animation
   useEffect(() => {
-    const t = setInterval(() => {
-      setVisibleSignals(prev => {
-        const next = [...prev.slice(1), SIMULATED_SIGNALS[Math.floor(Math.random() * SIMULATED_SIGNALS.length)]];
-        return next;
-      });
-      setRiskLevel(prev => Math.max(15, Math.min(95, prev + (Math.random() - 0.45) * 8)));
-      setFusionPulse(p => p + 1);
-    }, 2500);
+    const t = setInterval(() => setFusionPulse(p => p + 1), 2500);
     return () => clearInterval(t);
   }, []);
 
-  // Symbolic rule engine simulation
+  // Auto-run on mount
   useEffect(() => {
-    const rules = [
-      { id: 1, rule: 'IF satellite_anomaly AND iot_spike THEN cyber_attack_risk HIGH', triggered: riskLevel > 60, confidence: 88 },
-      { id: 2, rule: 'IF social_trend(strike) AND weather_storm THEN supply_chain_break CRITICAL', triggered: riskLevel > 75, confidence: 94 },
-      { id: 3, rule: 'IF dark_web_breach AND gps_spoofing THEN fleet_compromise CRITICAL', triggered: riskLevel > 70, confidence: 91 },
-      { id: 4, rule: 'IF fuel_spike > 15% AND route_count > 5 THEN margin_hedge REQUIRED', triggered: riskLevel > 45, confidence: 76 },
-      { id: 5, rule: 'IF geopolitical_signal AND convoy_region(risk) THEN reroute RECOMMEND', triggered: riskLevel > 50, confidence: 83 },
-    ];
-    setSymbolicRules(rules);
-  }, [riskLevel]);
+    if (!autoLoaded) {
+      runFusionAnalysis();
+      setAutoLoaded(true);
+    }
+  }, []);
 
   const runFusionAnalysis = async () => {
     setIsAnalyzing(true);
     try {
-      const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are a Neuro-Symbolic Risk Fusion AI embedded in a fleet management system. You combine:
-1. Neural networks (pattern recognition from sensor streams)
-2. Symbolic AI (logical inference rules)
-3. Multi-source data fusion (satellite, social media, IoT, dark web, weather)
+      const user = await base44.auth.me();
+      const orgId = user?.organization_id;
 
-Fleet context:
-- ${vehicles.length} vehicles across multiple routes
-- Active threats detected: GPS spoofing attempts, port strike trending, quantum weather anomaly
-- IoT anomalies: CAN-bus packet flood, GPS signal interference
-- Dark web: credentials potentially exposed
+      const response = await base44.functions.invoke('neuroRiskFusion', { organization_id: orgId });
+      const data = response.data;
 
-Perform Neuro-Symbolic Risk Fusion analysis:
-1. Identify top 3 compound risk scenarios (combining unlikely inputs into high-probability threats)
-2. Cyber risk: assess fleet IoT attack surface and probable attack vectors
-3. Supply chain rupture signals: what combination of signals predicts sudden breakdown
-4. Proactive hedging recommendations: what should the fleet operator do NOW to prevent cascading failures
-5. Sixth-sense alert: synthesize one non-obvious emerging risk that only cross-modal fusion reveals
-6. Generate symbolic logic rules that should be permanently added to the risk engine
-7. Confidence scores for each risk
+      if (data.error) throw new Error(data.error);
 
-Be specific, actionable, and dramatic where warranted. This is a premium intelligence product.`,
-        add_context_from_internet: false,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            overall_risk_score: { type: "number" },
-            risk_level: { type: "string" },
-            compound_risks: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  scenario: { type: "string" },
-                  probability: { type: "number" },
-                  impact: { type: "string" },
-                  inputs: { type: "array", items: { type: "string" } }
-                }
-              }
-            },
-            cyber_threats: { type: "array", items: { type: "string" } },
-            supply_chain_signals: { type: "array", items: { type: "string" } },
-            hedging_actions: { type: "array", items: { type: "string" } },
-            sixth_sense_alert: { type: "string" },
-            symbolic_rules: { type: "array", items: { type: "string" } },
-            summary: { type: "string" }
-          }
-        }
-      });
-      setRiskReport(result);
-      if (result.overall_risk_score) setRiskLevel(result.overall_risk_score);
+      setRealSignals(data.real_signals || []);
+      setSymbolicRules(data.symbolic_rules || []);
+      setFleetSummary(data.fleet_summary);
+      setRiskReport(data.ai_report);
+      setRiskLevel(data.risk_score || data.ai_report?.overall_risk_score || 20);
+      setLastUpdated(new Date());
     } catch (e) {
-      console.error(e);
+      console.error('Fusion error:', e);
     } finally {
       setIsAnalyzing(false);
     }
@@ -314,6 +223,7 @@ Be specific, actionable, and dramatic where warranted. This is a premium intelli
             <span className={`text-xs font-bold uppercase tracking-wider ${
               riskColor === 'red' ? 'text-red-400' : riskColor === 'amber' ? 'text-amber-400' : 'text-violet-400'
             }`}>Neuro-Symbolic Risk Fusion</span>
+            <Badge className="text-[9px] bg-emerald-500/20 text-emerald-400 border-emerald-500/30">LIVE DATA</Badge>
           </div>
           <div className="flex items-center gap-2">
             <Badge className={`text-[10px] font-bold ${
@@ -327,7 +237,6 @@ Be specific, actionable, and dramatic where warranted. This is a premium intelli
           </div>
         </div>
 
-        {/* Risk bar */}
         <div className="flex items-center gap-2">
           <div className="flex-1 h-1.5 bg-slate-800 rounded-full overflow-hidden">
             <motion.div
@@ -350,14 +259,13 @@ Be specific, actionable, and dramatic where warranted. This is a premium intelli
                 : 'bg-violet-600/20 border-violet-500/30 text-violet-300 hover:bg-violet-600/30'
             }`}
           >
-            {isAnalyzing ? <Loader2 className="w-3 h-3 animate-spin" /> : <Zap className="w-3 h-3" />}
-            {isAnalyzing ? 'Fusing...' : 'Deep Fusion'}
+            {isAnalyzing ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
+            {isAnalyzing ? 'Analyserer...' : 'Opdater'}
           </Button>
         </div>
 
-        {/* Fusion pulse counter */}
         <p className="text-[9px] text-slate-600 mt-1 font-mono">
-          fusion cycles: {fusionPulse} · sources: {DATA_SOURCES.filter(s => s.active).length}/6 active · models: neuro+symbolic+quantum
+          fusion cycles: {fusionPulse} · {fleetSummary ? `${fleetSummary.vehicles_total} køretøjer · ${fleetSummary.vehicles_offline} offline · ${fleetSummary.alerts_critical} kritiske alerts` : 'indlæser...'} {lastUpdated ? `· opdateret ${lastUpdated.toLocaleTimeString()}` : ''}
         </p>
       </div>
 
@@ -388,69 +296,50 @@ Be specific, actionable, and dramatic where warranted. This is a premium intelli
         {/* FUSION TAB */}
         {activeTab === 'fusion' && (
           <div className="space-y-3">
-            {/* Neural viz */}
             <div className="rounded-xl overflow-hidden border border-violet-500/20 bg-slate-900/40 p-2">
               <p className="text-[9px] text-violet-400/60 font-mono mb-1">
-                neuro-symbolic fusion network · 4-layer architecture · live
+                neuro-symbolic fusion network · 4-layer architecture · live fleet data
               </p>
               <NeuralPulseCanvas riskLevel={riskLevel} />
             </div>
 
-            {/* Data sources */}
-            <div>
-              <p className="text-slate-500 text-[10px] font-bold uppercase mb-2 flex items-center gap-1.5">
-                <Satellite className="w-3 h-3" /> Data Sources
-              </p>
-              <div className="grid grid-cols-2 gap-1.5">
-                {DATA_SOURCES.map((src, i) => {
-                  const Icon = src.icon;
-                  return (
-                    <div key={i} className={`flex items-center gap-1.5 p-1.5 rounded-lg border ${
-                      src.active
-                        ? 'bg-slate-800/50 border-slate-700/50'
-                        : 'bg-slate-900/30 border-slate-800/30 opacity-50'
+            {/* Fleet summary stats */}
+            {fleetSummary && (
+              <div>
+                <p className="text-slate-500 text-[10px] font-bold uppercase mb-2 flex items-center gap-1.5">
+                  <Activity className="w-3 h-3" /> Rigtig Flåde Status
+                </p>
+                <div className="grid grid-cols-3 gap-1.5">
+                  {[
+                    { label: 'Offline', value: fleetSummary.vehicles_offline, color: fleetSummary.vehicles_offline > 0 ? 'red' : 'emerald' },
+                    { label: 'Lav brændstof', value: fleetSummary.vehicles_low_fuel, color: fleetSummary.vehicles_low_fuel > 0 ? 'amber' : 'emerald' },
+                    { label: 'Forsinkede', value: fleetSummary.shipments_delayed, color: fleetSummary.shipments_delayed > 0 ? 'amber' : 'emerald' },
+                    { label: 'Kritiske alerts', value: fleetSummary.alerts_critical, color: fleetSummary.alerts_critical > 0 ? 'red' : 'emerald' },
+                    { label: 'Vedligeholdelse', value: fleetSummary.maintenance_overdue, color: fleetSummary.maintenance_overdue > 0 ? 'red' : 'emerald' },
+                    { label: 'Undtagelser', value: fleetSummary.exceptions_critical, color: fleetSummary.exceptions_critical > 0 ? 'red' : 'emerald' },
+                  ].map((s, i) => (
+                    <div key={i} className={`p-2 rounded-lg text-center border ${
+                      s.color === 'red' ? 'bg-red-500/10 border-red-500/20' :
+                      s.color === 'amber' ? 'bg-amber-500/10 border-amber-500/20' :
+                      'bg-emerald-500/10 border-emerald-500/20'
                     }`}>
-                      <Icon className={`w-3 h-3 flex-shrink-0 ${
-                        src.color === 'cyan' ? 'text-cyan-400' :
-                        src.color === 'violet' ? 'text-violet-400' :
-                        src.color === 'blue' ? 'text-blue-400' :
-                        src.color === 'emerald' ? 'text-emerald-400' :
-                        src.color === 'amber' ? 'text-amber-400' :
-                        'text-red-400'
-                      }`} />
-                      <div className="min-w-0">
-                        <p className="text-white text-[10px] font-semibold truncate">{src.label}</p>
-                        <p className="text-slate-600 text-[9px] truncate">{src.feed}</p>
-                      </div>
-                      <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ml-auto ${
-                        src.active ? 'bg-emerald-400 animate-pulse' : 'bg-slate-600'
-                      }`} />
+                      <p className={`font-bold text-sm ${
+                        s.color === 'red' ? 'text-red-400' :
+                        s.color === 'amber' ? 'text-amber-400' : 'text-emerald-400'
+                      }`}>{s.value}</p>
+                      <p className="text-slate-500 text-[9px]">{s.label}</p>
                     </div>
-                  );
-                })}
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
-            {/* Fusion description */}
-            <div className="p-3 rounded-xl bg-violet-500/5 border border-violet-500/15 space-y-2">
-              <p className="text-violet-400 text-[10px] font-bold uppercase">Fusion Architecture</p>
-              {[
-                { icon: Brain, color: 'violet', title: 'Neural Layer', desc: 'Deep learning detekterer subtile mønstre på tværs af 10.000+ signaler i realtid' },
-                { icon: Cpu, color: 'amber', title: 'Symbolsk Lag', desc: 'Logic-regler transformerer neurale outputs til menneskelig-forståelig kausalitet' },
-                { icon: Shield, color: 'red', title: 'Risk Synthesis', desc: 'Sixth-sense fusion — proaktiv hedge-anbefaling INDEN risikoen materialiseres' },
-              ].map((item, i) => {
-                const Icon = item.icon;
-                return (
-                  <div key={i} className={`flex items-start gap-2 p-2 rounded-lg bg-${item.color}-500/5 border border-${item.color}-500/15`}>
-                    <Icon className={`w-3.5 h-3.5 text-${item.color}-400 mt-0.5 flex-shrink-0`} />
-                    <div>
-                      <p className="text-white text-[11px] font-semibold">{item.title}</p>
-                      <p className="text-slate-400 text-[10px]">{item.desc}</p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+            {isAnalyzing && !fleetSummary && (
+              <div className="text-center py-6">
+                <Loader2 className="w-8 h-8 text-violet-400 animate-spin mx-auto mb-2" />
+                <p className="text-slate-500 text-xs">Fusionerer rigtige flådedata med Mistral AI...</p>
+              </div>
+            )}
           </div>
         )}
 
@@ -460,7 +349,7 @@ Be specific, actionable, and dramatic where warranted. This is a premium intelli
             <div className="flex items-center justify-between">
               <p className="text-slate-400 text-[10px] font-bold uppercase flex items-center gap-1.5">
                 <Radio className="w-3 h-3 text-red-400" />
-                Live Multi-Source Feed
+                Rigtige Risikosignaler
               </p>
               <div className="flex items-center gap-1">
                 <div className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse" />
@@ -468,74 +357,80 @@ Be specific, actionable, and dramatic where warranted. This is a premium intelli
               </div>
             </div>
 
-            <SignalStream signals={visibleSignals} />
+            {realSignals.length === 0 && !isAnalyzing && (
+              <div className="text-center py-6">
+                <CheckCircle className="w-8 h-8 text-emerald-400/40 mx-auto mb-2" />
+                <p className="text-emerald-400 text-xs font-semibold">Ingen kritiske signaler</p>
+                <p className="text-slate-600 text-[10px]">Flåden kører nominelt</p>
+              </div>
+            )}
 
-            <div className="grid grid-cols-2 gap-2">
-              {[
-                { label: 'Signals/min', value: '847', color: 'violet' },
-                { label: 'Active Threats', value: visibleSignals.filter(s => s.severity === 'critical').length, color: 'red' },
-                { label: 'Confidence Avg', value: `${Math.round(visibleSignals.reduce((a, s) => a + s.confidence, 0) / visibleSignals.length)}%`, color: 'cyan' },
-                { label: 'Sources Live', value: '5/6', color: 'emerald' },
-              ].map((s, i) => (
-                <div key={i} className={`p-2 rounded-lg bg-${s.color}-500/10 border border-${s.color}-500/20 text-center`}>
-                  <p className={`text-${s.color}-400 font-bold text-sm`}>{s.value}</p>
-                  <p className="text-slate-500 text-[9px]">{s.label}</p>
+            {isAnalyzing && realSignals.length === 0 && (
+              <div className="text-center py-6">
+                <Loader2 className="w-6 h-6 text-violet-400 animate-spin mx-auto mb-2" />
+                <p className="text-slate-500 text-xs">Scanner flådedata...</p>
+              </div>
+            )}
+
+            {realSignals.length > 0 && (
+              <>
+                <SignalStream signals={realSignals.slice(0, 8)} />
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { label: 'Total signaler', value: realSignals.length, color: 'violet' },
+                    { label: 'Kritiske', value: realSignals.filter(s => s.severity === 'critical').length, color: 'red' },
+                    { label: 'Avg. confidence', value: `${Math.round(realSignals.reduce((a, s) => a + s.confidence, 0) / realSignals.length)}%`, color: 'cyan' },
+                    { label: 'Høj prioritet', value: realSignals.filter(s => s.severity === 'high').length, color: 'amber' },
+                  ].map((s, i) => (
+                    <div key={i} className={`p-2 rounded-lg bg-${s.color}-500/10 border border-${s.color}-500/20 text-center`}>
+                      <p className={`text-${s.color}-400 font-bold text-sm`}>{s.value}</p>
+                      <p className="text-slate-500 text-[9px]">{s.label}</p>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-
-            <div className="p-2.5 rounded-xl bg-red-500/10 border border-red-500/20">
-              <p className="text-red-400 text-[10px] font-bold uppercase mb-1">⚠ Highest Priority Alert</p>
-              <p className="text-white text-[11px] font-semibold">{visibleSignals.find(s => s.severity === 'critical')?.signal || 'Monitoring...'}</p>
-              <p className="text-slate-500 text-[9px] mt-0.5">Source: {visibleSignals.find(s => s.severity === 'critical')?.source} · Confidence: {visibleSignals.find(s => s.severity === 'critical')?.confidence}%</p>
-            </div>
+              </>
+            )}
           </div>
         )}
 
         {/* SYMBOLIC AI TAB */}
         {activeTab === 'symbolic' && (
           <div className="space-y-3">
-            <div>
-              <p className="text-slate-400 text-[10px] font-bold uppercase mb-2 flex items-center gap-1.5">
-                <Cpu className="w-3 h-3 text-amber-400" />
-                Symbolsk Logik Motor — Aktive Regler
-              </p>
-              {symbolicRules.map((rule, i) => (
-                <motion.div
-                  key={rule.id}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.07 }}
-                  className={`mb-2 p-2.5 rounded-xl border ${
-                    rule.triggered
-                      ? 'bg-amber-500/10 border-amber-500/25'
-                      : 'bg-slate-800/30 border-slate-700/30'
-                  }`}
-                >
-                  <div className="flex items-start gap-2">
-                    <div className={`w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0 ${rule.triggered ? 'bg-amber-400 animate-pulse' : 'bg-slate-600'}`} />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[10px] font-mono text-slate-300 leading-relaxed break-all">{rule.rule}</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className={`text-[9px] font-bold ${rule.triggered ? 'text-amber-400' : 'text-slate-600'}`}>
-                          {rule.triggered ? '▶ TRIGGERED' : '○ DORMANT'}
-                        </span>
-                        <span className="text-[9px] text-slate-600">conf: {rule.confidence}%</span>
-                      </div>
+            <p className="text-slate-400 text-[10px] font-bold uppercase mb-2 flex items-center gap-1.5">
+              <Cpu className="w-3 h-3 text-amber-400" />
+              Symbolsk Logik Motor — Baseret på Rigtige Data
+            </p>
+
+            {isAnalyzing && symbolicRules.length === 0 && (
+              <div className="text-center py-6">
+                <Loader2 className="w-6 h-6 text-amber-400 animate-spin mx-auto" />
+              </div>
+            )}
+
+            {symbolicRules.map((rule, i) => (
+              <motion.div
+                key={rule.id}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.07 }}
+                className={`mb-2 p-2.5 rounded-xl border ${
+                  rule.triggered ? 'bg-amber-500/10 border-amber-500/25' : 'bg-slate-800/30 border-slate-700/30'
+                }`}
+              >
+                <div className="flex items-start gap-2">
+                  <div className={`w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0 ${rule.triggered ? 'bg-amber-400 animate-pulse' : 'bg-slate-600'}`} />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[10px] font-mono text-slate-300 leading-relaxed break-all">{rule.rule}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className={`text-[9px] font-bold ${rule.triggered ? 'text-amber-400' : 'text-slate-600'}`}>
+                        {rule.triggered ? '▶ TRIGGERED' : '○ DORMANT'}
+                      </span>
+                      <span className="text-[9px] text-slate-600">conf: {rule.confidence}%</span>
                     </div>
                   </div>
-                </motion.div>
-              ))}
-            </div>
-
-            <div className="p-3 rounded-xl bg-amber-500/5 border border-amber-500/15">
-              <p className="text-amber-400 text-[10px] font-bold uppercase mb-1.5">Neuro → Symbolsk Bridge</p>
-              <p className="text-slate-400 text-[11px] leading-relaxed">
-                Neurale netværkets latente repræsentationer konverteres til prædikater via en lært 
-                embeddings-mapper — symbolske regler kan dermed operere på høj-niveau semantik 
-                fra rå sensordata uden manuel feature engineering.
-              </p>
-            </div>
+                </div>
+              </motion.div>
+            ))}
 
             <div className="grid grid-cols-3 gap-1.5 text-center">
               <div className="p-2 rounded-lg bg-slate-800/40 border border-slate-700/40">
@@ -547,7 +442,9 @@ Be specific, actionable, and dramatic where warranted. This is a premium intelli
                 <p className="text-slate-500 text-[9px]">Total regler</p>
               </div>
               <div className="p-2 rounded-lg bg-slate-800/40 border border-slate-700/40">
-                <p className="text-cyan-400 font-bold text-sm">88%</p>
+                <p className="text-cyan-400 font-bold text-sm">
+                  {symbolicRules.length > 0 ? `${Math.round(symbolicRules.reduce((a, r) => a + r.confidence, 0) / symbolicRules.length)}%` : '-'}
+                </p>
                 <p className="text-slate-500 text-[9px]">Avg confidence</p>
               </div>
             </div>
@@ -561,14 +458,13 @@ Be specific, actionable, and dramatic where warranted. This is a premium intelli
               <div className="text-center py-8">
                 <Shield className="w-10 h-10 text-violet-400/40 mx-auto mb-3" />
                 <p className="text-slate-400 text-sm mb-1">Kør Deep Fusion for fuld risikorapport</p>
-                <p className="text-slate-600 text-[11px] mb-3">Neuro-Symbolic AI fusionerer alle datakilder</p>
                 <Button
                   onClick={runFusionAnalysis}
                   className="bg-violet-600/20 border border-violet-500/30 text-violet-300 hover:bg-violet-600/30"
                   size="sm"
                 >
                   <Brain className="w-4 h-4 mr-2" />
-                  Aktivér Sixth Sense
+                  Aktivér Analyse
                 </Button>
               </div>
             )}
@@ -579,14 +475,13 @@ Be specific, actionable, and dramatic where warranted. This is a premium intelli
                   <Loader2 className="w-12 h-12 text-violet-400 animate-spin" />
                   <Brain className="w-5 h-5 text-amber-400 absolute top-3.5 left-3.5" />
                 </div>
-                <p className="text-slate-400 text-sm">Neuro-Symbolic Fusion kører...</p>
-                <p className="text-slate-600 text-xs mt-1">Fusionerer satellite + social + quantum + IoT + OSINT</p>
+                <p className="text-slate-400 text-sm">Mistral AI analyserer rigtige flådedata...</p>
+                <p className="text-slate-600 text-xs mt-1">Henter køretøjer, ruter, advarsler og undtagelser</p>
               </div>
             )}
 
             {riskReport && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
-                {/* Overall score */}
                 <div className={`flex items-center justify-between p-3 rounded-xl border ${
                   riskLevel > 70 ? 'bg-red-500/10 border-red-500/25' :
                   riskLevel > 45 ? 'bg-amber-500/10 border-amber-500/25' :
@@ -598,10 +493,9 @@ Be specific, actionable, and dramatic where warranted. This is a premium intelli
                   </div>
                   <div className={`text-3xl font-black ${
                     riskLevel > 70 ? 'text-red-400' : riskLevel > 45 ? 'text-amber-400' : 'text-emerald-400'
-                  }`}>{riskReport.overall_risk_score || Math.round(riskLevel)}</div>
+                  }`}>{Math.round(riskLevel)}</div>
                 </div>
 
-                {/* Sixth sense */}
                 {riskReport.sixth_sense_alert && (
                   <div className="p-3 rounded-xl bg-violet-500/10 border border-violet-500/25">
                     <p className="text-violet-400 text-[10px] font-bold uppercase mb-1.5 flex items-center gap-1.5">
@@ -611,7 +505,6 @@ Be specific, actionable, and dramatic where warranted. This is a premium intelli
                   </div>
                 )}
 
-                {/* Compound risks */}
                 {riskReport.compound_risks?.length > 0 && (
                   <div>
                     <p className="text-slate-400 text-[10px] font-bold uppercase mb-1.5 flex items-center gap-1"><AlertTriangle className="w-3 h-3 text-red-400" /> Compound Risici</p>
@@ -630,7 +523,6 @@ Be specific, actionable, and dramatic where warranted. This is a premium intelli
                   </div>
                 )}
 
-                {/* Hedging actions */}
                 {riskReport.hedging_actions?.length > 0 && (
                   <div>
                     <p className="text-slate-400 text-[10px] font-bold uppercase mb-1.5 flex items-center gap-1"><TrendingUp className="w-3 h-3 text-emerald-400" /> Proaktiv Hedging</p>
@@ -643,7 +535,6 @@ Be specific, actionable, and dramatic where warranted. This is a premium intelli
                   </div>
                 )}
 
-                {/* Cyber threats */}
                 {riskReport.cyber_threats?.length > 0 && (
                   <div>
                     <p className="text-slate-400 text-[10px] font-bold uppercase mb-1.5 flex items-center gap-1"><Lock className="w-3 h-3 text-red-400" /> Cyber Trusler</p>
@@ -657,7 +548,7 @@ Be specific, actionable, and dramatic where warranted. This is a premium intelli
                 )}
 
                 <Button
-                  onClick={() => onCommand && onCommand(`Aktivér neuro-symbolsk risikofusion hedge-protokol — implementér top prioritets sikkerhedstiltag og rerouting baseret på aktuelle cyber og supply chain risici`)}
+                  onClick={() => onCommand && onCommand(`Aktivér neuro-symbolsk risikofusion hedge-protokol — implementér top prioritets sikkerhedstiltag baseret på: ${riskReport.hedging_actions?.[0] || 'aktuelle risici'}`)}
                   className="w-full bg-violet-600/20 border border-violet-500/30 text-violet-300 hover:bg-violet-600/30"
                   size="sm"
                 >
