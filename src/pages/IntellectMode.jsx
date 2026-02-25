@@ -2169,6 +2169,15 @@ export default function IntellectMode() {
                 <Building2 className="w-3.5 h-3.5 mr-1.5" />
                 People Search
               </Button>
+              <Button
+                onClick={() => handleQuickAction('openNeuroRisk')}
+                variant="outline"
+                size="sm"
+                className="border-red-500/30 text-red-400 hover:bg-red-500/10"
+              >
+                <Shield className="w-3.5 h-3.5 mr-1.5" />
+                Neuro Risk Fusion
+              </Button>
             </div>
 
             {/* Input */}
