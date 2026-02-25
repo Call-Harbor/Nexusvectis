@@ -659,7 +659,7 @@ export default function NeuroSymbolicRiskPanel({ vehicles = [], routes = [], onC
           <div className="space-y-2">
             <div className="flex items-center justify-between mb-1">
               <p className="text-[9px] text-slate-600 font-mono uppercase tracking-widest">
-                Detekterede Patogener & Trusler
+                Detected Pathogens & Threats
               </p>
               <div className="flex items-center gap-1">
                 <div className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse" />
