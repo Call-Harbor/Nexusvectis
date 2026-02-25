@@ -464,7 +464,7 @@ export default function SwarmIntelligencePanel({ vehicles = [], routes = [], onC
               <div className="flex items-center justify-between mb-2">
                 <p className="text-violet-400 text-xs font-bold flex items-center gap-1.5">
                   <Dna className="w-3.5 h-3.5" />
-                  Genetisk Algoritme
+                  Genetic Algorithm — Real Data
                 </p>
                 <span className="text-[10px] font-mono text-violet-300">Gen {geneticGeneration}</span>
               </div>
@@ -475,26 +475,51 @@ export default function SwarmIntelligencePanel({ vehicles = [], routes = [], onC
                   transition={{ duration: 0.5 }}
                 />
               </div>
-              <p className="text-slate-400 text-[10px]">Fitness: {fitness.toFixed(1)}% — swarmen udvikler sig over tid</p>
+              <p className="text-slate-400 text-[10px]">Fitness: {typeof fitness === 'number' ? fitness.toFixed(1) : '0.0'}% — evolving over real fleet cycles</p>
             </div>
 
-            {[
-              { label: 'Vejroptimering', desc: 'Europæiske vejrforhold indlært fra historiske ture', score: 87 },
-              { label: 'Rush-hour Patterns', desc: 'Travl-tids mønstre i København, Berlin, Amsterdam', score: 92 },
-              { label: 'Gaming Spike Handling', desc: 'Server-load spikes under MMORPG peak times', score: 78 },
-              { label: 'Fuel Efficiency Evolution', desc: 'Optimal fart-profiler på tværs af ruter', score: 95 },
-            ].map((item, i) => (
-              <div key={i} className="p-2.5 rounded-lg bg-slate-800/40 border border-slate-700/40">
-                <div className="flex items-center justify-between mb-1">
-                  <p className="text-white text-[11px] font-semibold">{item.label}</p>
-                  <span className="text-emerald-400 text-[10px] font-mono">{item.score}%</span>
-                </div>
-                <div className="w-full h-1 bg-slate-700 rounded-full overflow-hidden mb-1">
-                  <div className="h-full bg-gradient-to-r from-emerald-500 to-cyan-500" style={{ width: `${item.score}%` }} />
-                </div>
-                <p className="text-slate-500 text-[10px]">{item.desc}</p>
-              </div>
-            ))}
+            {/* Real metrics from actual fleet data */}
+            {latestCycle && (
+              <>
+                {[
+                  {
+                    label: 'Active Vehicle Ratio',
+                    desc: `${latestCycle.vehicles_in_swarm} vehicles in swarm`,
+                    score: Math.round((vehicles.filter(v => v.status === 'active').length / Math.max(vehicles.length, 1)) * 100)
+                  },
+                  {
+                    label: 'Route Coverage',
+                    desc: `${latestCycle.routes_optimized} routes optimized`,
+                    score: Math.min(100, Math.round((latestCycle.routes_optimized / Math.max(routes.length, 1)) * 100))
+                  },
+                  {
+                    label: 'Swarm Health',
+                    desc: `Cycle #${latestCycle.cycle_number} — ${latestCycle.algorithm}`,
+                    score: latestCycle.swarm_health_score
+                  },
+                  {
+                    label: 'Efficiency Gain vs Baseline',
+                    desc: `PSO particle optimization — ${latestCycle.rerouted_vehicles?.length || 0} vehicles updated`,
+                    score: Math.min(100, latestCycle.efficiency_gain_percent + 50)
+                  },
+                ].map((item, i) => (
+                  <div key={i} className="p-2.5 rounded-lg bg-slate-800/40 border border-slate-700/40">
+                    <div className="flex items-center justify-between mb-1">
+                      <p className="text-white text-[11px] font-semibold">{item.label}</p>
+                      <span className="text-emerald-400 text-[10px] font-mono">{item.score}%</span>
+                    </div>
+                    <div className="w-full h-1 bg-slate-700 rounded-full overflow-hidden mb-1">
+                      <div className="h-full bg-gradient-to-r from-emerald-500 to-cyan-500" style={{ width: `${item.score}%` }} />
+                    </div>
+                    <p className="text-slate-500 text-[10px]">{item.desc}</p>
+                  </div>
+                ))}
+              </>
+            )}
+
+            {!latestCycle && (
+              <div className="text-center py-6 text-slate-500 text-xs">No genetic data yet — run a swarm cycle first</div>
+            )}
           </div>
         )}
 
