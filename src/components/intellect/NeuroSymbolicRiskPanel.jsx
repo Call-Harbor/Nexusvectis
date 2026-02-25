@@ -608,9 +608,9 @@ export default function NeuroSymbolicRiskPanel({ vehicles = [], routes = [], onC
             {/* Legend */}
             <div className="grid grid-cols-3 gap-1.5">
               {[
-                { color: 'bg-red-600', label: 'Røde blodlegemer', sub: 'Aktive køretøjer' },
-                { color: 'bg-violet-500', label: 'Hvide blodlegemer', sub: 'AI-immunrespons' },
-                { color: riskLevel > 30 ? 'bg-orange-500' : 'bg-slate-700', label: 'Patogener', sub: `${criticalCount + highCount} trusler` },
+                { color: 'bg-red-600', label: 'Red Blood Cells', sub: 'Active vehicles' },
+                { color: 'bg-violet-500', label: 'White Blood Cells', sub: 'AI immune response' },
+                { color: riskLevel > 30 ? 'bg-orange-500' : 'bg-slate-700', label: 'Pathogens', sub: `${criticalCount + highCount} threats` },
               ].map((item, i) => (
                 <div key={i} className="flex items-center gap-1.5 p-1.5 rounded-lg bg-slate-900/40 border border-slate-800/30">
                   <div className={`w-3 h-3 rounded-full flex-shrink-0 ${item.color}`} />
