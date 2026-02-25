@@ -2,170 +2,423 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from "@/api/base44Client";
 import {
-  Shield, Brain, Satellite, Globe, Zap, Activity, AlertTriangle, 
-  TrendingUp, CheckCircle, Loader2, Eye, Radio, Cpu, Lock,
-  Wifi, BarChart3, Cloud, RefreshCw
+  Shield, Brain, Zap, Activity, AlertTriangle,
+  TrendingUp, CheckCircle, Loader2, Eye, Lock, RefreshCw,
+  Syringe, Heart, FlaskConical, Microscope, Dna, Radiation
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 
-// Neural network pulse visualization on canvas
-const NeuralPulseCanvas = ({ riskLevel }) => {
+// ═══════════════════════════════════════════════════
+// IMMUNE CELL CANVAS — bloodstream with live cells
+// ═══════════════════════════════════════════════════
+const ImmuneSystemCanvas = ({ riskLevel, immunityLog = [] }) => {
   const canvasRef = useRef(null);
   const animRef = useRef(null);
-  const nodesRef = useRef([]);
+  const stateRef = useRef({ cells: [], pathogens: [], antibodies: [] });
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     const W = canvas.offsetWidth || 340;
-    const H = canvas.offsetHeight || 160;
+    const H = 200;
     canvas.width = W;
     canvas.height = H;
 
-    const layers = [
-      { x: W * 0.12, nodes: 5, label: 'Sensors' },
-      { x: W * 0.38, nodes: 7, label: 'Neural' },
-      { x: W * 0.62, nodes: 5, label: 'Symbolic' },
-      { x: W * 0.88, nodes: 3, label: 'Risk' },
-    ];
+    // Generate blood cells
+    const cells = Array.from({ length: 28 }, (_, i) => ({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      r: 6 + Math.random() * 5,
+      vx: (Math.random() - 0.5) * 0.8,
+      vy: (Math.random() - 0.5) * 0.6,
+      type: i < 18 ? 'rbc' : i < 24 ? 'wbc' : 'platelet', // red blood, white blood, platelet
+      pulse: Math.random() * Math.PI * 2,
+      pulseSpeed: 0.03 + Math.random() * 0.02,
+    }));
 
-    const allNodes = [];
-    layers.forEach((layer, li) => {
-      const gap = H / (layer.nodes + 1);
-      for (let i = 0; i < layer.nodes; i++) {
-        allNodes.push({
-          x: layer.x,
-          y: gap * (i + 1),
-          layer: li,
-          active: Math.random() > 0.4,
-          pulse: Math.random(),
-          pulseSpeed: 0.02 + Math.random() * 0.03,
-          color: li === 0 ? '#06b6d4' : li === 1 ? '#8b5cf6' : li === 2 ? '#f59e0b' : 
-                 riskLevel > 70 ? '#ef4444' : riskLevel > 40 ? '#f59e0b' : '#10b981',
-        });
-      }
-    });
-    nodesRef.current = allNodes;
+    // Generate pathogens based on risk
+    const pathogenCount = Math.round((riskLevel / 100) * 12);
+    const pathogens = Array.from({ length: pathogenCount }, () => ({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      r: 4 + Math.random() * 3,
+      vx: (Math.random() - 0.5) * 1.2,
+      vy: (Math.random() - 0.5) * 1.2,
+      spikes: 6 + Math.floor(Math.random() * 4),
+      rot: Math.random() * Math.PI * 2,
+      rotSpeed: (Math.random() - 0.5) * 0.04,
+      detected: false,
+    }));
 
-    const edges = [];
-    allNodes.forEach(a => {
-      allNodes.forEach(b => {
-        if (b.layer === a.layer + 1 && Math.random() > 0.45) {
-          edges.push({ a, b, signal: Math.random(), speed: 0.008 + Math.random() * 0.012 });
-        }
-      });
-    });
+    // Antibodies
+    const antibodies = Array.from({ length: 8 }, () => ({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      targetX: Math.random() * W,
+      targetY: Math.random() * H,
+      speed: 1.5 + Math.random(),
+      active: Math.random() > 0.4,
+      pulse: Math.random() * Math.PI * 2,
+    }));
 
-    let frame = 0;
-    const draw = () => {
-      ctx.clearRect(0, 0, W, H);
-      frame++;
-      nodesRef.current.forEach(n => { n.pulse = (n.pulse + n.pulseSpeed) % 1; });
-      edges.forEach(e => { e.signal = (e.signal + e.speed) % 1; });
+    stateRef.current = { cells, pathogens, antibodies };
 
-      edges.forEach(e => {
-        const alpha = 0.12 + Math.abs(Math.sin(frame * 0.02)) * 0.1;
+    const drawCell = (x, y, r, type, alpha, pulse) => {
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      if (type === 'rbc') {
+        // Red blood cell — biconcave disc look
+        const grad = ctx.createRadialGradient(x, y, r * 0.2, x, y, r);
+        grad.addColorStop(0, '#7f1d1d');
+        grad.addColorStop(0.5, '#dc2626');
+        grad.addColorStop(1, '#ef4444aa');
         ctx.beginPath();
-        ctx.moveTo(e.a.x, e.a.y);
-        ctx.lineTo(e.b.x, e.b.y);
-        ctx.strokeStyle = `rgba(139,92,246,${alpha})`;
-        ctx.lineWidth = 0.7;
-        ctx.stroke();
-        const px = e.a.x + (e.b.x - e.a.x) * e.signal;
-        const py = e.a.y + (e.b.y - e.a.y) * e.signal;
-        ctx.beginPath();
-        ctx.arc(px, py, 2.5, 0, Math.PI * 2);
-        ctx.fillStyle = e.b.color + 'cc';
+        ctx.ellipse(x, y, r, r * 0.7, 0, 0, Math.PI * 2);
+        ctx.fillStyle = grad;
         ctx.fill();
-      });
-
-      nodesRef.current.forEach(n => {
-        const glow = 0.3 + Math.sin(n.pulse * Math.PI * 2) * 0.3;
-        const grad = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, 12);
-        grad.addColorStop(0, n.color + Math.round(glow * 255).toString(16).padStart(2, '0'));
+        // Center dip
+        ctx.beginPath();
+        ctx.ellipse(x, y, r * 0.35, r * 0.25, 0, 0, Math.PI * 2);
+        ctx.fillStyle = '#7f1d1d88';
+        ctx.fill();
+      } else if (type === 'wbc') {
+        // White blood cell — irregular with nucleus
+        const glow = 0.5 + Math.sin(pulse) * 0.2;
+        const grad = ctx.createRadialGradient(x - r * 0.2, y - r * 0.2, 0, x, y, r * 1.4);
+        grad.addColorStop(0, `rgba(139,92,246,${glow})`);
+        grad.addColorStop(0.5, `rgba(109,40,217,${glow * 0.6})`);
         grad.addColorStop(1, 'transparent');
         ctx.beginPath();
-        ctx.arc(n.x, n.y, 12, 0, Math.PI * 2);
+        ctx.arc(x, y, r * 1.3, 0, Math.PI * 2);
         ctx.fillStyle = grad;
         ctx.fill();
         ctx.beginPath();
-        ctx.arc(n.x, n.y, 4.5, 0, Math.PI * 2);
-        ctx.fillStyle = n.active ? n.color : '#1e293b';
+        ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.fillStyle = '#6d28d9cc';
         ctx.fill();
-        ctx.strokeStyle = n.color + '99';
-        ctx.lineWidth = 1;
-        ctx.stroke();
-      });
-
-      layers.forEach(layer => {
-        ctx.fillStyle = 'rgba(148,163,184,0.5)';
-        ctx.font = '8px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText(layer.label, layer.x, H - 4);
-      });
-
-      animRef.current = requestAnimationFrame(draw);
+        // Nucleus
+        ctx.beginPath();
+        ctx.arc(x - r * 0.15, y - r * 0.1, r * 0.45, 0, Math.PI * 2);
+        ctx.fillStyle = '#a78bfa';
+        ctx.fill();
+      } else {
+        // Platelet — small star-like
+        ctx.beginPath();
+        ctx.arc(x, y, r * 0.6, 0, Math.PI * 2);
+        ctx.fillStyle = '#f59e0b99';
+        ctx.fill();
+      }
+      ctx.restore();
     };
-    draw();
+
+    const drawPathogen = (p) => {
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot);
+      // Virus body
+      const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, p.r * 1.5);
+      grad.addColorStop(0, p.detected ? '#ef4444' : '#f97316');
+      grad.addColorStop(1, 'transparent');
+      ctx.beginPath();
+      ctx.arc(0, 0, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = p.detected ? '#ef4444cc' : '#f97316cc';
+      ctx.fill();
+      // Spikes
+      for (let s = 0; s < p.spikes; s++) {
+        const angle = (s / p.spikes) * Math.PI * 2;
+        const sx = Math.cos(angle) * (p.r + 4);
+        const sy = Math.sin(angle) * (p.r + 4);
+        ctx.beginPath();
+        ctx.moveTo(Math.cos(angle) * p.r, Math.sin(angle) * p.r);
+        ctx.lineTo(sx, sy);
+        ctx.strokeStyle = p.detected ? '#fca5a5' : '#fdba74';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(sx, sy, 1.5, 0, Math.PI * 2);
+        ctx.fillStyle = p.detected ? '#fca5a5' : '#fdba74';
+        ctx.fill();
+      }
+      ctx.restore();
+    };
+
+    const drawAntibody = (ab) => {
+      if (!ab.active) return;
+      ctx.save();
+      ctx.globalAlpha = 0.6 + Math.sin(ab.pulse) * 0.3;
+      // Y-shape antibody
+      const stemLen = 8;
+      const armLen = 6;
+      const angle = Math.atan2(ab.targetY - ab.y, ab.targetX - ab.x);
+      ctx.strokeStyle = '#22d3ee';
+      ctx.lineWidth = 1.5;
+      // Stem
+      ctx.beginPath();
+      ctx.moveTo(ab.x, ab.y);
+      ctx.lineTo(ab.x + Math.cos(angle) * stemLen, ab.y + Math.sin(angle) * stemLen);
+      ctx.stroke();
+      // Two arms
+      const perpAngle1 = angle + Math.PI / 4;
+      const perpAngle2 = angle - Math.PI / 4;
+      const tipX = ab.x + Math.cos(angle) * stemLen;
+      const tipY = ab.y + Math.sin(angle) * stemLen;
+      ctx.beginPath();
+      ctx.moveTo(tipX, tipY);
+      ctx.lineTo(tipX + Math.cos(perpAngle1) * armLen, tipY + Math.sin(perpAngle1) * armLen);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(tipX, tipY);
+      ctx.lineTo(tipX + Math.cos(perpAngle2) * armLen, tipY + Math.sin(perpAngle2) * armLen);
+      ctx.stroke();
+      // Binding tips
+      ctx.beginPath();
+      ctx.arc(tipX + Math.cos(perpAngle1) * armLen, tipY + Math.sin(perpAngle1) * armLen, 2, 0, Math.PI * 2);
+      ctx.fillStyle = '#22d3ee';
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(tipX + Math.cos(perpAngle2) * armLen, tipY + Math.sin(perpAngle2) * armLen, 2, 0, Math.PI * 2);
+      ctx.fillStyle = '#22d3ee';
+      ctx.fill();
+      ctx.restore();
+    };
+
+    const drawBloodVessel = () => {
+      // Top and bottom vessel walls
+      const gradient = ctx.createLinearGradient(0, 0, 0, H);
+      gradient.addColorStop(0, 'rgba(127,29,29,0.3)');
+      gradient.addColorStop(0.15, 'rgba(127,29,29,0.05)');
+      gradient.addColorStop(0.85, 'rgba(127,29,29,0.05)');
+      gradient.addColorStop(1, 'rgba(127,29,29,0.3)');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, W, H);
+
+      // Vessel walls
+      ctx.strokeStyle = 'rgba(185,28,28,0.25)';
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(0, 8); ctx.lineTo(W, 8); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, H - 8); ctx.lineTo(W, H - 8); ctx.stroke();
+    };
+
+    let frame = 0;
+    const animate = () => {
+      ctx.clearRect(0, 0, W, H);
+      frame++;
+
+      drawBloodVessel();
+
+      const { cells, pathogens, antibodies } = stateRef.current;
+
+      // Move cells
+      cells.forEach(c => {
+        c.x += c.vx;
+        c.y += c.vy;
+        c.pulse += c.pulseSpeed;
+        if (c.x < -c.r) c.x = W + c.r;
+        if (c.x > W + c.r) c.x = -c.r;
+        if (c.y < 8 + c.r) { c.y = 8 + c.r; c.vy = Math.abs(c.vy); }
+        if (c.y > H - 8 - c.r) { c.y = H - 8 - c.r; c.vy = -Math.abs(c.vy); }
+        drawCell(c.x, c.y, c.r, c.type, 0.85, c.pulse);
+      });
+
+      // Move pathogens
+      pathogens.forEach(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.rot += p.rotSpeed;
+        if (p.x < 0 || p.x > W) p.vx *= -1;
+        if (p.y < 8 || p.y > H - 8) p.vy *= -1;
+
+        // WBC detection radius
+        cells.filter(c => c.type === 'wbc').forEach(wbc => {
+          const dx = wbc.x - p.x;
+          const dy = wbc.y - p.y;
+          if (Math.sqrt(dx * dx + dy * dy) < 40) {
+            p.detected = true;
+            // WBC chases pathogen
+            wbc.vx += dx * 0.005;
+            wbc.vy += dy * 0.005;
+          }
+        });
+
+        drawPathogen(p);
+      });
+
+      // Move antibodies
+      antibodies.forEach(ab => {
+        if (!ab.active) return;
+        ab.pulse += 0.06;
+        const dx = ab.targetX - ab.x;
+        const dy = ab.targetY - ab.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist > 5) {
+          ab.x += (dx / dist) * ab.speed;
+          ab.y += (dy / dist) * ab.speed;
+        } else {
+          ab.targetX = Math.random() * W;
+          ab.targetY = 8 + Math.random() * (H - 16);
+        }
+        drawAntibody(ab);
+      });
+
+      // Immunity field pulse
+      if (riskLevel < 40) {
+        const pulseAlpha = 0.03 + Math.sin(frame * 0.03) * 0.02;
+        const grad = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, W * 0.6);
+        grad.addColorStop(0, `rgba(16,185,129,${pulseAlpha})`);
+        grad.addColorStop(1, 'transparent');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, W, H);
+      }
+
+      animRef.current = requestAnimationFrame(animate);
+    };
+
+    animate();
     return () => cancelAnimationFrame(animRef.current);
   }, [riskLevel]);
 
-  return <canvas ref={canvasRef} className="w-full" style={{ height: 160, background: 'transparent' }} />;
+  return (
+    <canvas
+      ref={canvasRef}
+      className="w-full rounded-xl"
+      style={{ height: 200, background: 'rgba(127,29,29,0.08)', border: '1px solid rgba(185,28,28,0.2)' }}
+    />
+  );
 };
 
-const SignalStream = ({ signals }) => (
-  <div className="space-y-1.5">
-    {signals.map((s, i) => (
-      <motion.div
-        key={i}
-        initial={{ opacity: 0, x: -10 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: i * 0.05 }}
-        className={`flex items-center gap-2 p-2 rounded-lg border text-[10px] ${
-          s.severity === 'critical' ? 'bg-red-500/10 border-red-500/20' :
-          s.severity === 'high' ? 'bg-amber-500/10 border-amber-500/20' :
-          s.severity === 'medium' ? 'bg-yellow-500/10 border-yellow-500/20' :
-          'bg-emerald-500/10 border-emerald-500/20'
-        }`}
-      >
-        <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
-          s.severity === 'critical' ? 'bg-red-400 animate-pulse' :
-          s.severity === 'high' ? 'bg-amber-400 animate-pulse' :
-          s.severity === 'medium' ? 'bg-yellow-400' : 'bg-emerald-400'
-        }`} />
-        <span className={`font-mono font-semibold flex-shrink-0 ${
-          s.severity === 'critical' ? 'text-red-400' :
-          s.severity === 'high' ? 'text-amber-400' :
-          s.severity === 'medium' ? 'text-yellow-400' : 'text-emerald-400'
-        }`}>[{s.source}]</span>
-        <span className="text-slate-300 flex-1">{s.signal}</span>
-        <span className="text-slate-600 flex-shrink-0">{s.confidence}%</span>
-      </motion.div>
-    ))}
-  </div>
-);
+// ═══════════════════════════════════════════════════
+// IMMUNITY LAYER DISPLAY
+// ═══════════════════════════════════════════════════
+const ImmunityLayer = ({ layer, isActive, response }) => {
+  const configs = {
+    innate: {
+      name: 'Medfødt Immunforsvar',
+      subtitle: 'Første forsvarslinje',
+      icon: Shield,
+      color: 'amber',
+      description: 'Hurtig, ikke-specifik respons. Aktiveres inden for minutter.',
+      cells: ['Neutrofiler', 'Makrofager', 'NK-celler'],
+    },
+    adaptive: {
+      name: 'Adaptivt Immunforsvar',
+      subtitle: 'Anden forsvarslinje',
+      icon: Dna,
+      color: 'violet',
+      description: 'Specifik respons. Lærer og husker trusler. Aktiveres over timer.',
+      cells: ['T-celler', 'B-celler', 'Antistoffer'],
+    },
+    memory: {
+      name: 'Immunhukommelse',
+      subtitle: 'Langtidsbeskyttelse',
+      icon: Brain,
+      color: 'cyan',
+      description: 'Husker tidligere trusler. Hurtigere respons ved gentagne angreb.',
+      cells: ['Hukommelsesceller', 'SecurityAudit Log', 'Antigen-profiler'],
+    },
+  };
+  const cfg = configs[layer];
+  const Icon = cfg.icon;
+  const colorMap = {
+    amber: { bg: 'bg-amber-500/10', border: 'border-amber-500/25', text: 'text-amber-400', dot: 'bg-amber-400' },
+    violet: { bg: 'bg-violet-500/10', border: 'border-violet-500/25', text: 'text-violet-400', dot: 'bg-violet-400' },
+    cyan: { bg: 'bg-cyan-500/10', border: 'border-cyan-500/25', text: 'text-cyan-400', dot: 'bg-cyan-400' },
+  };
+  const c = colorMap[cfg.color];
 
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: -8 }}
+      animate={{ opacity: 1, x: 0 }}
+      className={`rounded-xl border p-3 ${isActive ? `${c.bg} ${c.border}` : 'bg-slate-900/40 border-slate-800/40'}`}
+    >
+      <div className="flex items-start gap-3">
+        <div className={`p-2 rounded-lg ${isActive ? c.bg : 'bg-slate-800/60'} flex-shrink-0`}>
+          <Icon className={`w-4 h-4 ${isActive ? c.text : 'text-slate-600'}`} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between mb-0.5">
+            <p className={`text-xs font-bold ${isActive ? c.text : 'text-slate-500'}`}>{cfg.name}</p>
+            <div className="flex items-center gap-1">
+              <div className={`w-1.5 h-1.5 rounded-full ${isActive ? `${c.dot} animate-pulse` : 'bg-slate-700'}`} />
+              <span className={`text-[9px] font-mono ${isActive ? c.text : 'text-slate-600'}`}>
+                {isActive ? 'AKTIV' : 'STANDBY'}
+              </span>
+            </div>
+          </div>
+          <p className="text-[10px] text-slate-500 mb-2">{cfg.description}</p>
+          <div className="flex flex-wrap gap-1 mb-2">
+            {cfg.cells.map((cell, i) => (
+              <span key={i} className={`text-[9px] px-1.5 py-0.5 rounded border ${
+                isActive ? `${c.bg} ${c.border} ${c.text}` : 'bg-slate-800/40 border-slate-700/40 text-slate-600'
+              }`}>{cell}</span>
+            ))}
+          </div>
+          {response && (
+            <p className="text-[10px] text-slate-300 leading-relaxed bg-slate-800/40 rounded-lg px-2 py-1.5 border border-slate-700/30">
+              {response}
+            </p>
+          )}
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+// ═══════════════════════════════════════════════════
+// THREAT PATHOGEN CARD
+// ═══════════════════════════════════════════════════
+const PathogenCard = ({ signal, index }) => {
+  const sevConfig = {
+    critical: { bg: 'bg-red-500/10', border: 'border-red-500/25', text: 'text-red-400', dot: 'bg-red-400', label: 'KRITISK PATOGEN' },
+    high: { bg: 'bg-orange-500/10', border: 'border-orange-500/25', text: 'text-orange-400', dot: 'bg-orange-400', label: 'HØJ TRUSSEL' },
+    medium: { bg: 'bg-amber-500/10', border: 'border-amber-500/25', text: 'text-amber-400', dot: 'bg-amber-400', label: 'MODERAT TRUSSEL' },
+    low: { bg: 'bg-emerald-500/10', border: 'border-emerald-500/25', text: 'text-emerald-400', dot: 'bg-emerald-400', label: 'LAVER TRUSSEL' },
+  };
+  const cfg = sevConfig[signal.severity] || sevConfig.low;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.04 }}
+      className={`p-2.5 rounded-xl border ${cfg.bg} ${cfg.border}`}
+    >
+      <div className="flex items-start gap-2">
+        <div className={`w-2 h-2 rounded-full flex-shrink-0 mt-1 ${cfg.dot} ${signal.severity === 'critical' ? 'animate-pulse' : ''}`} />
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between gap-1 mb-0.5">
+            <span className={`text-[9px] font-black tracking-wider ${cfg.text}`}>{cfg.label}</span>
+            <span className="text-[9px] text-slate-600 font-mono">{signal.confidence}% match</span>
+          </div>
+          <p className={`text-[10px] font-semibold ${cfg.text} mb-0.5`}>[{signal.source}]</p>
+          <p className="text-slate-300 text-[10px] leading-relaxed">{signal.signal}</p>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+// ═══════════════════════════════════════════════════
+// MAIN COMPONENT
+// ═══════════════════════════════════════════════════
 export default function NeuroSymbolicRiskPanel({ vehicles = [], routes = [], onCommand }) {
-  const [activeTab, setActiveTab] = useState('fusion');
+  const [activeTab, setActiveTab] = useState('bloodstream');
   const [riskLevel, setRiskLevel] = useState(20);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [riskReport, setRiskReport] = useState(null);
   const [realSignals, setRealSignals] = useState([]);
   const [symbolicRules, setSymbolicRules] = useState([]);
   const [fleetSummary, setFleetSummary] = useState(null);
-  const [fusionPulse, setFusionPulse] = useState(0);
-  const [lastUpdated, setLastUpdated] = useState(null);
+  const [immunityLog, setImmunityLog] = useState([]);
+  const [heartbeat, setHeartbeat] = useState(0);
   const [autoLoaded, setAutoLoaded] = useState(false);
 
-  // Pulse counter animation
   useEffect(() => {
-    const t = setInterval(() => setFusionPulse(p => p + 1), 2500);
+    const t = setInterval(() => setHeartbeat(h => h + 1), 1200);
     return () => clearInterval(t);
   }, []);
 
-  // Auto-run on mount
   useEffect(() => {
     if (!autoLoaded) {
       runFusionAnalysis();
@@ -177,106 +430,138 @@ export default function NeuroSymbolicRiskPanel({ vehicles = [], routes = [], onC
     setIsAnalyzing(true);
     try {
       const user = await base44.auth.me();
-      const orgId = user?.organization_id;
-
-      const response = await base44.functions.invoke('neuroRiskFusion', { organization_id: orgId });
+      const response = await base44.functions.invoke('neuroRiskFusion', { organization_id: user?.organization_id });
       const data = response.data;
-
       if (data.error) throw new Error(data.error);
-
       setRealSignals(data.real_signals || []);
       setSymbolicRules(data.symbolic_rules || []);
       setFleetSummary(data.fleet_summary);
       setRiskReport(data.ai_report);
       setRiskLevel(data.risk_score || data.ai_report?.overall_risk_score || 20);
-      setLastUpdated(new Date());
     } catch (e) {
-      console.error('Fusion error:', e);
+      console.error('Immunity analysis error:', e);
     } finally {
       setIsAnalyzing(false);
     }
   };
 
   const riskColor = riskLevel > 70 ? 'red' : riskLevel > 45 ? 'amber' : 'emerald';
-  const riskLabel = riskLevel > 70 ? 'CRITICAL' : riskLevel > 45 ? 'ELEVATED' : 'NOMINAL';
+  const immuneStatus = riskLevel > 70 ? 'CYTOKINSTORM' : riskLevel > 45 ? 'INFLAMATION' : 'HOMEOSTASE';
+  const immuneStatusColor = riskLevel > 70 ? 'text-red-400' : riskLevel > 45 ? 'text-amber-400' : 'text-emerald-400';
+  const immuneStatusBg = riskLevel > 70 ? 'from-red-900/30 to-slate-950' : riskLevel > 45 ? 'from-amber-900/20 to-slate-950' : 'from-emerald-900/20 to-slate-950';
+
+  const criticalCount = realSignals.filter(s => s.severity === 'critical').length;
+  const highCount = realSignals.filter(s => s.severity === 'high').length;
+
+  const innateActive = riskLevel > 20 || criticalCount > 0 || highCount > 0;
+  const adaptiveActive = riskLevel > 40 || criticalCount > 0;
+  const memoryActive = true; // Always active — logs to SecurityAudit
 
   const tabs = [
-    { id: 'fusion', label: 'Risk Fusion', icon: Brain },
-    { id: 'signals', label: 'Live Signals', icon: Radio },
-    { id: 'symbolic', label: 'Symbolic AI', icon: Cpu },
-    { id: 'report', label: 'Intelligence', icon: Shield },
+    { id: 'bloodstream', label: 'Blodstrøm', icon: Heart },
+    { id: 'pathogens', label: 'Trusler', icon: Radiation },
+    { id: 'layers', label: 'Forsvar', icon: Shield },
+    { id: 'dna', label: 'Intelligence', icon: Dna },
   ];
 
   return (
-    <div className="h-full flex flex-col bg-slate-950/60 overflow-hidden">
-      {/* Header */}
-      <div className={`flex-shrink-0 p-3 border-b bg-gradient-to-r ${
-        riskColor === 'red' ? 'from-red-500/15 to-violet-500/10 border-red-500/20' :
-        riskColor === 'amber' ? 'from-amber-500/15 to-violet-500/10 border-amber-500/20' :
-        'from-violet-500/15 to-cyan-500/10 border-violet-500/20'
+    <div className={`h-full flex flex-col bg-gradient-to-b ${immuneStatusBg} overflow-hidden`}>
+
+      {/* ── HEADER: Vital Signs ─────────────────────── */}
+      <div className={`flex-shrink-0 p-3 border-b ${
+        riskLevel > 70 ? 'border-red-900/40' : riskLevel > 45 ? 'border-amber-900/30' : 'border-emerald-900/20'
       }`}>
-        <div className="flex items-center justify-between mb-2">
+        {/* Title row */}
+        <div className="flex items-center justify-between mb-2.5">
           <div className="flex items-center gap-2">
-            <div className={`w-2 h-2 rounded-full animate-pulse ${
-              riskColor === 'red' ? 'bg-red-400' : riskColor === 'amber' ? 'bg-amber-400' : 'bg-violet-400'
-            }`} />
-            <span className={`text-xs font-bold uppercase tracking-wider ${
-              riskColor === 'red' ? 'text-red-400' : riskColor === 'amber' ? 'text-amber-400' : 'text-violet-400'
-            }`}>Neuro-Symbolic Risk Fusion</span>
-            <Badge className="text-[9px] bg-emerald-500/20 text-emerald-400 border-emerald-500/30">LIVE DATA</Badge>
+            {/* Heartbeat icon */}
+            <motion.div
+              animate={{ scale: [1, 1.3, 1] }}
+              transition={{ duration: 0.6, repeat: Infinity, repeatDelay: 0.6 }}
+            >
+              <Heart className={`w-4 h-4 ${riskLevel > 70 ? 'text-red-500' : riskLevel > 45 ? 'text-amber-400' : 'text-emerald-400'} fill-current`} />
+            </motion.div>
+            <div>
+              <p className="text-[11px] font-black text-white tracking-widest uppercase">Fleet Immunforsvar</p>
+              <p className="text-[8px] text-slate-500 font-mono tracking-wider">Autonomt · Menneskelignende · Selvhelbredende</p>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Badge className={`text-[10px] font-bold ${
-              riskColor === 'red' ? 'bg-red-500/20 text-red-300 border-red-500/30' :
-              riskColor === 'amber' ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' :
-              'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
-            }`}>{riskLabel}</Badge>
-            <span className={`text-2xl font-black ${
-              riskColor === 'red' ? 'text-red-400' : riskColor === 'amber' ? 'text-amber-400' : 'text-emerald-400'
-            }`}>{Math.round(riskLevel)}</span>
+          <div className="text-right">
+            <p className={`text-2xl font-black ${immuneStatusColor}`}>{Math.round(riskLevel)}</p>
+            <p className={`text-[9px] font-bold tracking-widest ${immuneStatusColor}`}>{immuneStatus}</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <div className="flex-1 h-1.5 bg-slate-800 rounded-full overflow-hidden">
-            <motion.div
-              className={`h-full rounded-full ${
-                riskColor === 'red' ? 'bg-gradient-to-r from-amber-500 to-red-500' :
-                riskColor === 'amber' ? 'bg-gradient-to-r from-emerald-500 to-amber-500' :
-                'bg-gradient-to-r from-emerald-500 to-cyan-500'
-              }`}
-              animate={{ width: `${riskLevel}%` }}
-              transition={{ duration: 0.8 }}
+        {/* Vital signs bar — ECG-like */}
+        <div className="relative h-8 mb-2 overflow-hidden rounded-lg bg-slate-950/60 border border-slate-800/40">
+          <svg className="absolute inset-0 w-full h-full" viewBox="0 0 340 32" preserveAspectRatio="none">
+            {/* ECG trace */}
+            <motion.path
+              d={`M0,16 L40,16 L50,16 L55,4 L60,28 L65,10 L70,16 L110,16 L120,16 L125,4 L130,28 L135,10 L140,16 L180,16 L190,16 L195,${riskLevel > 70 ? 2 : riskLevel > 45 ? 6 : 8} L200,${riskLevel > 70 ? 30 : riskLevel > 45 ? 26 : 24} L205,${riskLevel > 70 ? 5 : riskLevel > 45 ? 9 : 11} L210,16 L260,16 L270,16 L275,4 L280,28 L285,10 L290,16 L340,16`}
+              fill="none"
+              stroke={riskLevel > 70 ? '#ef4444' : riskLevel > 45 ? '#f59e0b' : '#10b981'}
+              strokeWidth="1.5"
+              animate={{ strokeDashoffset: [0, -200] }}
+              transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+              strokeDasharray="200"
             />
+          </svg>
+          <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
+            <motion.div
+              className={`w-1.5 h-1.5 rounded-full ${riskLevel > 70 ? 'bg-red-400' : riskLevel > 45 ? 'bg-amber-400' : 'bg-emerald-400'}`}
+              animate={{ opacity: [1, 0.2, 1] }}
+              transition={{ duration: 1.2, repeat: Infinity }}
+            />
+            <span className="text-[8px] font-mono text-slate-500">LIVE</span>
           </div>
-          <Button
+        </div>
+
+        {/* Fleet vitals */}
+        <div className="grid grid-cols-4 gap-1.5">
+          {[
+            { label: 'T-celler', sublabel: 'Aktive køretøjer', value: fleetSummary?.vehicles_total ?? '—', color: 'emerald' },
+            { label: 'NK-celler', sublabel: 'Trusler detekt.', value: criticalCount + highCount, color: criticalCount > 0 ? 'red' : 'amber' },
+            { label: 'Antistoffer', sublabel: 'Auto-handlinger', value: fleetSummary?.alerts_critical ?? '—', color: 'violet' },
+            { label: 'Cytokiner', sublabel: 'Offline enheder', value: fleetSummary?.vehicles_offline ?? '—', color: fleetSummary?.vehicles_offline > 0 ? 'red' : 'emerald' },
+          ].map((v, i) => (
+            <div key={i} className={`p-1.5 rounded-lg text-center border ${
+              v.color === 'red' ? 'bg-red-500/10 border-red-500/20' :
+              v.color === 'amber' ? 'bg-amber-500/10 border-amber-500/20' :
+              v.color === 'violet' ? 'bg-violet-500/10 border-violet-500/20' :
+              'bg-emerald-500/10 border-emerald-500/20'
+            }`}>
+              <p className={`text-sm font-black ${
+                v.color === 'red' ? 'text-red-400' :
+                v.color === 'amber' ? 'text-amber-400' :
+                v.color === 'violet' ? 'text-violet-400' : 'text-emerald-400'
+              }`}>{v.value}</p>
+              <p className="text-[8px] text-slate-600 font-mono">{v.label}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Refresh + status */}
+        <div className="flex items-center justify-between mt-2">
+          <div className="flex items-center gap-1.5">
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="text-[9px] text-emerald-400 font-mono font-bold">IMMUNITY ENGINE AKTIV · 10min cycle</span>
+          </div>
+          <button
             onClick={runFusionAnalysis}
             disabled={isAnalyzing}
-            size="sm"
-            className={`h-6 text-[10px] px-2 border ${
-              riskColor === 'red'
-                ? 'bg-red-600/20 border-red-500/30 text-red-300 hover:bg-red-600/30'
-                : 'bg-violet-600/20 border-violet-500/30 text-violet-300 hover:bg-violet-600/30'
-            }`}
+            className="flex items-center gap-1 text-[9px] text-slate-500 hover:text-slate-300 transition-colors"
           >
-            {isAnalyzing ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
+            {isAnalyzing
+              ? <Loader2 className="w-3 h-3 animate-spin" />
+              : <RefreshCw className="w-3 h-3" />
+            }
             {isAnalyzing ? 'Analyserer...' : 'Opdater'}
-          </Button>
-        </div>
-
-        <div className="flex items-center justify-between mt-1">
-          <p className="text-[9px] text-slate-600 font-mono">
-            fusion cycles: {fusionPulse} · {fleetSummary ? `${fleetSummary.vehicles_total} køretøjer · ${fleetSummary.vehicles_offline} offline` : 'indlæser...'} {lastUpdated ? `· ${lastUpdated.toLocaleTimeString()}` : ''}
-          </p>
-          <div className="flex items-center gap-1">
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-[9px] text-emerald-400 font-mono font-bold">IMMUNITY AKTIV</span>
-          </div>
+          </button>
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex-shrink-0 flex border-b border-slate-800/60">
+      {/* ── TABS ─────────────────────────────────────── */}
+      <div className="flex-shrink-0 flex border-b border-slate-800/50">
         {tabs.map(tab => {
           const Icon = tab.icon;
           return (
@@ -285,286 +570,316 @@ export default function NeuroSymbolicRiskPanel({ vehicles = [], routes = [], onC
               onClick={() => setActiveTab(tab.id)}
               className={`flex-1 flex items-center justify-center gap-1 py-2 text-[10px] font-semibold transition-all ${
                 activeTab === tab.id
-                  ? 'text-violet-400 border-b-2 border-violet-400 bg-violet-500/5'
-                  : 'text-slate-500 hover:text-slate-300'
+                  ? riskLevel > 70 ? 'text-red-400 border-b-2 border-red-400 bg-red-500/5'
+                    : riskLevel > 45 ? 'text-amber-400 border-b-2 border-amber-400 bg-amber-500/5'
+                    : 'text-emerald-400 border-b-2 border-emerald-400 bg-emerald-500/5'
+                  : 'text-slate-600 hover:text-slate-400'
               }`}
             >
               <Icon className="w-3 h-3" />
-              {tab.label}
+              <span className="hidden sm:inline">{tab.label}</span>
             </button>
           );
         })}
       </div>
 
-      {/* Content */}
+      {/* ── CONTENT ──────────────────────────────────── */}
       <div className="flex-1 overflow-y-auto p-3 space-y-3 min-h-0">
 
-        {/* FUSION TAB */}
-        {activeTab === 'fusion' && (
+        {/* BLOODSTREAM TAB */}
+        {activeTab === 'bloodstream' && (
           <div className="space-y-3">
-            <div className="rounded-xl overflow-hidden border border-violet-500/20 bg-slate-900/40 p-2">
-              <p className="text-[9px] text-violet-400/60 font-mono mb-1">
-                neuro-symbolic fusion network · 4-layer architecture · live fleet data
+            <div>
+              <p className="text-[9px] text-slate-600 font-mono mb-1.5 uppercase tracking-widest">
+                Fleet Blodstrøm — Immunologisk Oversigt
               </p>
-              <NeuralPulseCanvas riskLevel={riskLevel} />
+              {isAnalyzing && !fleetSummary ? (
+                <div className="flex items-center justify-center h-48 rounded-xl bg-red-900/10 border border-red-900/20">
+                  <div className="text-center">
+                    <Loader2 className="w-6 h-6 text-red-400/60 animate-spin mx-auto mb-2" />
+                    <p className="text-[10px] text-slate-600 font-mono">Analyserer blodprøve...</p>
+                  </div>
+                </div>
+              ) : (
+                <ImmuneSystemCanvas riskLevel={riskLevel} />
+              )}
             </div>
 
-            {/* Fleet summary stats */}
-            {fleetSummary && (
-              <div>
-                <p className="text-slate-500 text-[10px] font-bold uppercase mb-2 flex items-center gap-1.5">
-                  <Activity className="w-3 h-3" /> Rigtig Flåde Status
-                </p>
-                <div className="grid grid-cols-3 gap-1.5">
-                  {[
-                    { label: 'Offline', value: fleetSummary.vehicles_offline, color: fleetSummary.vehicles_offline > 0 ? 'red' : 'emerald' },
-                    { label: 'Lav brændstof', value: fleetSummary.vehicles_low_fuel, color: fleetSummary.vehicles_low_fuel > 0 ? 'amber' : 'emerald' },
-                    { label: 'Forsinkede', value: fleetSummary.shipments_delayed, color: fleetSummary.shipments_delayed > 0 ? 'amber' : 'emerald' },
-                    { label: 'Kritiske alerts', value: fleetSummary.alerts_critical, color: fleetSummary.alerts_critical > 0 ? 'red' : 'emerald' },
-                    { label: 'Vedligeholdelse', value: fleetSummary.maintenance_overdue, color: fleetSummary.maintenance_overdue > 0 ? 'red' : 'emerald' },
-                    { label: 'Undtagelser', value: fleetSummary.exceptions_critical, color: fleetSummary.exceptions_critical > 0 ? 'red' : 'emerald' },
-                  ].map((s, i) => (
-                    <div key={i} className={`p-2 rounded-lg text-center border ${
-                      s.color === 'red' ? 'bg-red-500/10 border-red-500/20' :
-                      s.color === 'amber' ? 'bg-amber-500/10 border-amber-500/20' :
-                      'bg-emerald-500/10 border-emerald-500/20'
-                    }`}>
-                      <p className={`font-bold text-sm ${
-                        s.color === 'red' ? 'text-red-400' :
-                        s.color === 'amber' ? 'text-amber-400' : 'text-emerald-400'
-                      }`}>{s.value}</p>
-                      <p className="text-slate-500 text-[9px]">{s.label}</p>
-                    </div>
-                  ))}
+            {/* Legend */}
+            <div className="grid grid-cols-3 gap-1.5">
+              {[
+                { color: 'bg-red-600', label: 'Røde blodlegemer', sub: 'Aktive køretøjer' },
+                { color: 'bg-violet-500', label: 'Hvide blodlegemer', sub: 'AI-immunrespons' },
+                { color: riskLevel > 30 ? 'bg-orange-500' : 'bg-slate-700', label: 'Patogener', sub: `${criticalCount + highCount} trusler` },
+              ].map((item, i) => (
+                <div key={i} className="flex items-center gap-1.5 p-1.5 rounded-lg bg-slate-900/40 border border-slate-800/30">
+                  <div className={`w-3 h-3 rounded-full flex-shrink-0 ${item.color}`} />
+                  <div>
+                    <p className="text-[9px] text-slate-400 font-semibold leading-tight">{item.label}</p>
+                    <p className="text-[8px] text-slate-600">{item.sub}</p>
+                  </div>
                 </div>
-              </div>
-            )}
+              ))}
+            </div>
 
-            {isAnalyzing && !fleetSummary && (
-              <div className="text-center py-6">
-                <Loader2 className="w-8 h-8 text-violet-400 animate-spin mx-auto mb-2" />
-                <p className="text-slate-500 text-xs">Fusionerer rigtige flådedata med Mistral AI...</p>
+            {/* Homeostasis indicator */}
+            <div className={`p-3 rounded-xl border ${
+              riskLevel > 70 ? 'bg-red-500/10 border-red-500/20' :
+              riskLevel > 45 ? 'bg-amber-500/10 border-amber-500/20' :
+              'bg-emerald-500/10 border-emerald-500/20'
+            }`}>
+              <div className="flex items-center justify-between mb-2">
+                <p className={`text-[10px] font-bold uppercase tracking-wider ${immuneStatusColor}`}>
+                  Homeostase Balance
+                </p>
+                <span className={`text-[9px] font-mono ${immuneStatusColor}`}>{immuneStatus}</span>
               </div>
-            )}
+              <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
+                <motion.div
+                  className={`h-full rounded-full ${
+                    riskLevel > 70 ? 'bg-gradient-to-r from-red-600 to-red-400' :
+                    riskLevel > 45 ? 'bg-gradient-to-r from-amber-600 to-amber-400' :
+                    'bg-gradient-to-r from-emerald-600 to-emerald-400'
+                  }`}
+                  animate={{ width: `${riskLevel}%` }}
+                  transition={{ duration: 1, type: 'spring' }}
+                />
+              </div>
+              <div className="flex justify-between mt-1">
+                <span className="text-[8px] text-emerald-500/60 font-mono">NOMINAL</span>
+                <span className="text-[8px] text-amber-500/60 font-mono">INFLAMATION</span>
+                <span className="text-[8px] text-red-500/60 font-mono">CYTOKINSTORM</span>
+              </div>
+            </div>
           </div>
         )}
 
-        {/* LIVE SIGNALS TAB */}
-        {activeTab === 'signals' && (
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <p className="text-slate-400 text-[10px] font-bold uppercase flex items-center gap-1.5">
-                <Radio className="w-3 h-3 text-red-400" />
-                Rigtige Risikosignaler
+        {/* PATHOGENS TAB */}
+        {activeTab === 'pathogens' && (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between mb-1">
+              <p className="text-[9px] text-slate-600 font-mono uppercase tracking-widest">
+                Detekterede Patogener & Trusler
               </p>
               <div className="flex items-center gap-1">
                 <div className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse" />
-                <span className="text-[9px] text-red-400 font-mono">LIVE</span>
+                <span className="text-[9px] text-red-400 font-mono">{realSignals.length} fund</span>
               </div>
             </div>
 
-            {realSignals.length === 0 && !isAnalyzing && (
-              <div className="text-center py-6">
-                <CheckCircle className="w-8 h-8 text-emerald-400/40 mx-auto mb-2" />
-                <p className="text-emerald-400 text-xs font-semibold">Ingen kritiske signaler</p>
-                <p className="text-slate-600 text-[10px]">Flåden kører nominelt</p>
+            {isAnalyzing && realSignals.length === 0 && (
+              <div className="text-center py-8">
+                <Microscope className="w-8 h-8 text-violet-400/40 mx-auto mb-2 animate-pulse" />
+                <p className="text-[10px] text-slate-600">Scanner flåde-blodprøve...</p>
               </div>
             )}
 
-            {isAnalyzing && realSignals.length === 0 && (
-              <div className="text-center py-6">
-                <Loader2 className="w-6 h-6 text-violet-400 animate-spin mx-auto mb-2" />
-                <p className="text-slate-500 text-xs">Scanner flådedata...</p>
+            {!isAnalyzing && realSignals.length === 0 && (
+              <div className="text-center py-10">
+                <div className="w-12 h-12 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto mb-3">
+                  <CheckCircle className="w-6 h-6 text-emerald-400" />
+                </div>
+                <p className="text-emerald-400 text-sm font-bold">Ingen patogener detekteret</p>
+                <p className="text-slate-600 text-[10px] mt-1">Flåden er immun og kører nominelt</p>
               </div>
             )}
+
+            <div className="space-y-2">
+              {realSignals.map((s, i) => (
+                <PathogenCard key={i} signal={s} index={i} />
+              ))}
+            </div>
 
             {realSignals.length > 0 && (
-              <>
-                <SignalStream signals={realSignals.slice(0, 8)} />
-                <div className="grid grid-cols-2 gap-2">
-                  {[
-                    { label: 'Total signaler', value: realSignals.length, color: 'violet' },
-                    { label: 'Kritiske', value: realSignals.filter(s => s.severity === 'critical').length, color: 'red' },
-                    { label: 'Avg. confidence', value: `${Math.round(realSignals.reduce((a, s) => a + s.confidence, 0) / realSignals.length)}%`, color: 'cyan' },
-                    { label: 'Høj prioritet', value: realSignals.filter(s => s.severity === 'high').length, color: 'amber' },
-                  ].map((s, i) => (
-                    <div key={i} className={`p-2 rounded-lg bg-${s.color}-500/10 border border-${s.color}-500/20 text-center`}>
-                      <p className={`text-${s.color}-400 font-bold text-sm`}>{s.value}</p>
-                      <p className="text-slate-500 text-[9px]">{s.label}</p>
+              <div className="grid grid-cols-2 gap-1.5 mt-3">
+                {[
+                  { label: 'Kritiske', value: criticalCount, color: 'red' },
+                  { label: 'Høj', value: highCount, color: 'orange' },
+                  { label: 'Medium', value: realSignals.filter(s => s.severity === 'medium').length, color: 'amber' },
+                  { label: 'Lav', value: realSignals.filter(s => s.severity === 'low').length, color: 'emerald' },
+                ].map((s, i) => (
+                  <div key={i} className={`p-2 rounded-lg text-center border ${
+                    s.color === 'red' ? 'bg-red-500/10 border-red-500/20' :
+                    s.color === 'orange' ? 'bg-orange-500/10 border-orange-500/20' :
+                    s.color === 'amber' ? 'bg-amber-500/10 border-amber-500/20' :
+                    'bg-emerald-500/10 border-emerald-500/20'
+                  }`}>
+                    <p className={`font-black text-sm ${
+                      s.color === 'red' ? 'text-red-400' :
+                      s.color === 'orange' ? 'text-orange-400' :
+                      s.color === 'amber' ? 'text-amber-400' : 'text-emerald-400'
+                    }`}>{s.value}</p>
+                    <p className="text-[9px] text-slate-500">{s.label}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* DEFENSE LAYERS TAB */}
+        {activeTab === 'layers' && (
+          <div className="space-y-2">
+            <p className="text-[9px] text-slate-600 font-mono uppercase tracking-widest mb-2">
+              Immunforsvarets Forsvarslag
+            </p>
+
+            <ImmunityLayer
+              layer="innate"
+              isActive={innateActive}
+              response={innateActive
+                ? `Hurtig respons aktiveret. ${criticalCount} kritiske trusler neutraliseres. Offline-køretøjer flagget til karantæne. Lav-brændstof alerts sendt.`
+                : null
+              }
+            />
+            <ImmunityLayer
+              layer="adaptive"
+              isActive={adaptiveActive}
+              response={adaptiveActive
+                ? `Mistral AI analyserer trusselmønster. Antistof-generering igangsat. Kaskaderisici evalueres. Specifikke modforanstaltninger implementeres.`
+                : null
+              }
+            />
+            <ImmunityLayer
+              layer="memory"
+              isActive={memoryActive}
+              response="Alle immunitetscyklusser logges i SecurityAudit. Trusselmønstre gemmes og bruges til hurtigere respons ved fremtidige angreb."
+            />
+
+            {/* Symbolic rules */}
+            {symbolicRules.length > 0 && (
+              <div className="mt-3">
+                <p className="text-[9px] text-slate-600 font-mono uppercase tracking-widest mb-2">
+                  Symbolske Immunregler ({symbolicRules.filter(r => r.triggered).length}/{symbolicRules.length} aktive)
+                </p>
+                <div className="space-y-1.5">
+                  {symbolicRules.slice(0, 6).map((rule, i) => (
+                    <div key={i} className={`flex items-start gap-2 p-2 rounded-lg border text-[10px] ${
+                      rule.triggered ? 'bg-amber-500/10 border-amber-500/20' : 'bg-slate-900/30 border-slate-800/30'
+                    }`}>
+                      <div className={`w-1.5 h-1.5 rounded-full mt-1 flex-shrink-0 ${rule.triggered ? 'bg-amber-400 animate-pulse' : 'bg-slate-700'}`} />
+                      <p className={`font-mono text-[9px] leading-relaxed ${rule.triggered ? 'text-amber-300' : 'text-slate-600'}`}>{rule.rule}</p>
+                      <span className={`text-[8px] flex-shrink-0 ${rule.triggered ? 'text-amber-400' : 'text-slate-700'}`}>{rule.confidence}%</span>
                     </div>
                   ))}
                 </div>
-              </>
+              </div>
             )}
           </div>
         )}
 
-        {/* SYMBOLIC AI TAB */}
-        {activeTab === 'symbolic' && (
-          <div className="space-y-3">
-            <p className="text-slate-400 text-[10px] font-bold uppercase mb-2 flex items-center gap-1.5">
-              <Cpu className="w-3 h-3 text-amber-400" />
-              Symbolsk Logik Motor — Baseret på Rigtige Data
-            </p>
-
-            {isAnalyzing && symbolicRules.length === 0 && (
-              <div className="text-center py-6">
-                <Loader2 className="w-6 h-6 text-amber-400 animate-spin mx-auto" />
-              </div>
-            )}
-
-            {symbolicRules.map((rule, i) => (
-              <motion.div
-                key={rule.id}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.07 }}
-                className={`mb-2 p-2.5 rounded-xl border ${
-                  rule.triggered ? 'bg-amber-500/10 border-amber-500/25' : 'bg-slate-800/30 border-slate-700/30'
-                }`}
-              >
-                <div className="flex items-start gap-2">
-                  <div className={`w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0 ${rule.triggered ? 'bg-amber-400 animate-pulse' : 'bg-slate-600'}`} />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[10px] font-mono text-slate-300 leading-relaxed break-all">{rule.rule}</p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className={`text-[9px] font-bold ${rule.triggered ? 'text-amber-400' : 'text-slate-600'}`}>
-                        {rule.triggered ? '▶ TRIGGERED' : '○ DORMANT'}
-                      </span>
-                      <span className="text-[9px] text-slate-600">conf: {rule.confidence}%</span>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-
-            <div className="grid grid-cols-3 gap-1.5 text-center">
-              <div className="p-2 rounded-lg bg-slate-800/40 border border-slate-700/40">
-                <p className="text-amber-400 font-bold text-sm">{symbolicRules.filter(r => r.triggered).length}</p>
-                <p className="text-slate-500 text-[9px]">Aktive regler</p>
-              </div>
-              <div className="p-2 rounded-lg bg-slate-800/40 border border-slate-700/40">
-                <p className="text-violet-400 font-bold text-sm">{symbolicRules.length}</p>
-                <p className="text-slate-500 text-[9px]">Total regler</p>
-              </div>
-              <div className="p-2 rounded-lg bg-slate-800/40 border border-slate-700/40">
-                <p className="text-cyan-400 font-bold text-sm">
-                  {symbolicRules.length > 0 ? `${Math.round(symbolicRules.reduce((a, r) => a + r.confidence, 0) / symbolicRules.length)}%` : '-'}
-                </p>
-                <p className="text-slate-500 text-[9px]">Avg confidence</p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* INTELLIGENCE REPORT TAB */}
-        {activeTab === 'report' && (
+        {/* DNA / INTELLIGENCE TAB */}
+        {activeTab === 'dna' && (
           <div className="space-y-3">
             {!riskReport && !isAnalyzing && (
-              <div className="text-center py-8">
-                <Shield className="w-10 h-10 text-violet-400/40 mx-auto mb-3" />
-                <p className="text-slate-400 text-sm mb-1">Kør Deep Fusion for fuld risikorapport</p>
+              <div className="text-center py-10">
+                <FlaskConical className="w-10 h-10 text-violet-400/30 mx-auto mb-3" />
+                <p className="text-slate-500 text-xs mb-3">Aktiver DNA-analyse for fuld immunprofil</p>
                 <Button
                   onClick={runFusionAnalysis}
                   className="bg-violet-600/20 border border-violet-500/30 text-violet-300 hover:bg-violet-600/30"
                   size="sm"
                 >
-                  <Brain className="w-4 h-4 mr-2" />
-                  Aktivér Analyse
+                  <Dna className="w-4 h-4 mr-2" />
+                  Analysér DNA
                 </Button>
               </div>
             )}
 
             {isAnalyzing && (
-              <div className="text-center py-8">
-                <div className="relative mx-auto w-12 h-12 mb-3">
-                  <Loader2 className="w-12 h-12 text-violet-400 animate-spin" />
-                  <Brain className="w-5 h-5 text-amber-400 absolute top-3.5 left-3.5" />
+              <div className="text-center py-10">
+                <div className="relative mx-auto w-14 h-14 mb-4">
+                  <motion.div
+                    className="w-14 h-14 rounded-full border-2 border-violet-500/30"
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+                  />
+                  <Dna className="w-6 h-6 text-violet-400 absolute top-4 left-4" />
                 </div>
-                <p className="text-slate-400 text-sm">Mistral AI analyserer rigtige flådedata...</p>
-                <p className="text-slate-600 text-xs mt-1">Henter køretøjer, ruter, advarsler og undtagelser</p>
+                <p className="text-slate-400 text-xs">Mistral AI sekvenserer fleet-DNA...</p>
+                <p className="text-slate-600 text-[10px] mt-1">Analyserer køretøjer, ruter, undtagelser & vedligeholdelse</p>
               </div>
             )}
 
             {riskReport && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
-                <div className={`flex items-center justify-between p-3 rounded-xl border ${
-                  riskLevel > 70 ? 'bg-red-500/10 border-red-500/25' :
-                  riskLevel > 45 ? 'bg-amber-500/10 border-amber-500/25' :
-                  'bg-emerald-500/10 border-emerald-500/25'
+                {/* DNA Summary */}
+                <div className={`p-3 rounded-xl border ${
+                  riskLevel > 70 ? 'bg-red-500/10 border-red-500/20' :
+                  riskLevel > 45 ? 'bg-amber-500/10 border-amber-500/20' :
+                  'bg-emerald-500/10 border-emerald-500/20'
                 }`}>
-                  <div>
-                    <p className="text-white font-bold">Risk Score</p>
-                    <p className="text-slate-400 text-xs">{riskReport.summary}</p>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <p className="text-white text-xs font-bold flex items-center gap-1.5">
+                      <Dna className={`w-3.5 h-3.5 ${immuneStatusColor}`} />
+                      Immunologisk DNA-profil
+                    </p>
+                    <span className={`text-xl font-black ${immuneStatusColor}`}>{Math.round(riskLevel)}</span>
                   </div>
-                  <div className={`text-3xl font-black ${
-                    riskLevel > 70 ? 'text-red-400' : riskLevel > 45 ? 'text-amber-400' : 'text-emerald-400'
-                  }`}>{Math.round(riskLevel)}</div>
+                  <p className="text-slate-300 text-[11px] leading-relaxed">{riskReport.summary}</p>
                 </div>
 
                 {riskReport.sixth_sense_alert && (
-                  <div className="p-3 rounded-xl bg-violet-500/10 border border-violet-500/25">
-                    <p className="text-violet-400 text-[10px] font-bold uppercase mb-1.5 flex items-center gap-1.5">
-                      <Eye className="w-3 h-3" /> 🔮 Sixth Sense Alert
+                  <div className="p-3 rounded-xl bg-violet-900/20 border border-violet-500/25">
+                    <p className="text-violet-400 text-[10px] font-black uppercase mb-1.5 flex items-center gap-1.5 tracking-wider">
+                      <Eye className="w-3 h-3" /> Sjette Sans — Præ-Immun Signal
                     </p>
-                    <p className="text-white text-[11px] leading-relaxed">{riskReport.sixth_sense_alert}</p>
+                    <p className="text-slate-200 text-[11px] leading-relaxed">{riskReport.sixth_sense_alert}</p>
                   </div>
                 )}
 
                 {riskReport.compound_risks?.length > 0 && (
                   <div>
-                    <p className="text-slate-400 text-[10px] font-bold uppercase mb-1.5 flex items-center gap-1"><AlertTriangle className="w-3 h-3 text-red-400" /> Compound Risici</p>
-                    {riskReport.compound_risks.map((r, i) => (
-                      <div key={i} className="mb-2 p-2.5 rounded-lg bg-slate-800/40 border border-slate-700/40">
-                        <div className="flex justify-between items-start mb-1">
-                          <p className="text-white text-[11px] font-semibold flex-1">{r.scenario}</p>
-                          <span className={`text-[10px] font-bold ml-2 ${r.probability > 70 ? 'text-red-400' : r.probability > 40 ? 'text-amber-400' : 'text-emerald-400'}`}>{r.probability}%</span>
+                    <p className="text-[10px] font-bold text-red-400/80 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                      <AlertTriangle className="w-3 h-3" /> Kaskade-Risici (Cytokinstorm-scenarier)
+                    </p>
+                    <div className="space-y-2">
+                      {riskReport.compound_risks.map((r, i) => (
+                        <div key={i} className="p-2.5 rounded-lg bg-slate-900/50 border border-slate-700/40">
+                          <div className="flex items-start justify-between gap-2 mb-1">
+                            <p className="text-slate-200 text-[11px] font-semibold flex-1">{r.scenario}</p>
+                            <span className={`text-xs font-black flex-shrink-0 ${r.probability > 70 ? 'text-red-400' : r.probability > 40 ? 'text-amber-400' : 'text-emerald-400'}`}>{r.probability}%</span>
+                          </div>
+                          <p className="text-slate-500 text-[9px]">{r.impact}</p>
                         </div>
-                        <p className="text-slate-500 text-[9px] mb-1">Impact: {r.impact}</p>
-                        {r.inputs && <div className="flex flex-wrap gap-1">{r.inputs.map((inp, j) => (
-                          <span key={j} className="text-[9px] px-1.5 py-0.5 rounded bg-slate-700/60 text-slate-400">{inp}</span>
-                        ))}</div>}
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
                 )}
 
                 {riskReport.hedging_actions?.length > 0 && (
                   <div>
-                    <p className="text-slate-400 text-[10px] font-bold uppercase mb-1.5 flex items-center gap-1"><TrendingUp className="w-3 h-3 text-emerald-400" /> Proaktiv Hedging</p>
-                    {riskReport.hedging_actions.map((a, i) => (
-                      <div key={i} className="flex items-start gap-1.5 mb-1.5">
-                        <CheckCircle className="w-3 h-3 text-emerald-400 mt-0.5 flex-shrink-0" />
-                        <p className="text-slate-300 text-[11px]">{a}</p>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {riskReport.cyber_threats?.length > 0 && (
-                  <div>
-                    <p className="text-slate-400 text-[10px] font-bold uppercase mb-1.5 flex items-center gap-1"><Lock className="w-3 h-3 text-red-400" /> Cyber Trusler</p>
-                    {riskReport.cyber_threats.map((t, i) => (
-                      <div key={i} className="flex items-start gap-1.5 mb-1">
-                        <AlertTriangle className="w-3 h-3 text-red-400 mt-0.5 flex-shrink-0" />
-                        <p className="text-slate-300 text-[11px]">{t}</p>
-                      </div>
-                    ))}
+                    <p className="text-[10px] font-bold text-emerald-400/80 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                      <Syringe className="w-3 h-3" /> Immunterapi — Proaktive Foranstaltninger
+                    </p>
+                    <div className="space-y-1.5">
+                      {riskReport.hedging_actions.map((a, i) => (
+                        <div key={i} className="flex items-start gap-2 p-2 rounded-lg bg-emerald-500/5 border border-emerald-500/15">
+                          <CheckCircle className="w-3 h-3 text-emerald-400 mt-0.5 flex-shrink-0" />
+                          <p className="text-slate-300 text-[11px] leading-relaxed">{a}</p>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
 
                 <Button
-                  onClick={() => onCommand && onCommand(`Aktivér neuro-symbolsk risikofusion hedge-protokol — implementér top prioritets sikkerhedstiltag baseret på: ${riskReport.hedging_actions?.[0] || 'aktuelle risici'}`)}
-                  className="w-full bg-violet-600/20 border border-violet-500/30 text-violet-300 hover:bg-violet-600/30"
+                  onClick={() => onCommand && onCommand(`Aktivér immunterapi-protokol — implementér alle proaktive hedging foranstaltninger: ${riskReport.hedging_actions?.slice(0,2).join(', ')}`)}
+                  className={`w-full border ${
+                    riskLevel > 70
+                      ? 'bg-red-600/20 border-red-500/30 text-red-300 hover:bg-red-600/30'
+                      : 'bg-emerald-600/20 border-emerald-500/30 text-emerald-300 hover:bg-emerald-600/30'
+                  }`}
                   size="sm"
                 >
-                  <Zap className="w-3.5 h-3.5 mr-1.5" />
-                  Implementér Hedge-Protokol via FLEET AI
+                  <Syringe className="w-3.5 h-3.5 mr-1.5" />
+                  Injicér Immunterapi via FLEET AI
                 </Button>
               </motion.div>
             )}
           </div>
         )}
+
       </div>
     </div>
   );
