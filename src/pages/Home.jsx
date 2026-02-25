@@ -1284,14 +1284,14 @@ export default function Home() {
                 <Sparkles className="w-16 h-16 text-cyan-400 mx-auto mb-6" />
               </motion.div>
               
-              <h2 className="text-5xl md:text-6xl font-black text-white mb-6 leading-tight">
+              <h2 className="text-4xl sm:text-5xl md:text-6xl font-black text-white mb-6 leading-tight px-2">
                 Command Your Fleet
                 <br />
                 <span className="bg-gradient-to-r from-cyan-400 via-violet-400 to-fuchsia-400 bg-clip-text text-transparent">
                   With AI Intelligence
                 </span>
               </h2>
-              <p className="text-2xl text-slate-300 mb-12 font-light">
+              <p className="text-lg sm:text-xl md:text-2xl text-slate-300 mb-8 sm:mb-12 font-light px-2">
                 Experience the power of FLEET AI - natural language fleet control
               </p>
               
