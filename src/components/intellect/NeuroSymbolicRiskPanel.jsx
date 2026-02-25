@@ -519,10 +519,10 @@ export default function NeuroSymbolicRiskPanel({ vehicles = [], routes = [], onC
         {/* Fleet vitals */}
         <div className="grid grid-cols-4 gap-1.5">
           {[
-            { label: 'T-celler', sublabel: 'Aktive køretøjer', value: fleetSummary?.vehicles_total ?? '—', color: 'emerald' },
-            { label: 'NK-celler', sublabel: 'Trusler detekt.', value: criticalCount + highCount, color: criticalCount > 0 ? 'red' : 'amber' },
-            { label: 'Antistoffer', sublabel: 'Auto-handlinger', value: fleetSummary?.alerts_critical ?? '—', color: 'violet' },
-            { label: 'Cytokiner', sublabel: 'Offline enheder', value: fleetSummary?.vehicles_offline ?? '—', color: fleetSummary?.vehicles_offline > 0 ? 'red' : 'emerald' },
+            { label: 'T-Cells', sublabel: 'Active vehicles', value: fleetSummary?.vehicles_total ?? '—', color: 'emerald' },
+            { label: 'NK-Cells', sublabel: 'Threats detected', value: criticalCount + highCount, color: criticalCount > 0 ? 'red' : 'amber' },
+            { label: 'Antibodies', sublabel: 'Auto-actions', value: fleetSummary?.alerts_critical ?? '—', color: 'violet' },
+            { label: 'Cytokines', sublabel: 'Offline units', value: fleetSummary?.vehicles_offline ?? '—', color: fleetSummary?.vehicles_offline > 0 ? 'red' : 'emerald' },
           ].map((v, i) => (
             <div key={i} className={`p-1.5 rounded-lg text-center border ${
               v.color === 'red' ? 'bg-red-500/10 border-red-500/20' :
