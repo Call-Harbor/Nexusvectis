@@ -463,31 +463,31 @@ export default function Home() {
           <div className="grid md:grid-cols-2 gap-8">
             {[
               {
-                title: "International Freight",
+                title: "Multi-Modal Tracking",
                 icon: Globe,
-                stats: ["Multi-modal tracking", "Cross-border compliance", "Real-time customs updates"],
-                description: "Manage trucks, ships, and aircraft across continents with unified AI control"
+                stats: ["GPS, AIS, ADS-B signals", "Cross-border compliance", "Real-time tracking"],
+                description: "Track trucks, ships, and aircraft simultaneously with unified AI control"
               },
               {
-                title: "Urban Logistics",
+                title: "Dynamic Route Planning",
                 icon: Truck,
-                stats: ["Last-mile optimization", "Dynamic routing", "ETA predictions"],
-                description: "Navigate city traffic with AI-powered route optimization and real-time adjustments"
+                stats: ["Real-time optimization", "Traffic-aware routing", "ETA predictions"],
+                description: "Optimize routes automatically with AI-powered planning and real-time adjustments"
               },
               {
-                title: "Cold Chain Transport",
+                title: "Predictive Maintenance",
                 icon: Package,
-                stats: ["Temperature monitoring", "Compliance alerts", "Quality assurance"],
-                description: "Ensure product integrity with continuous monitoring and predictive alerts"
+                stats: ["Anomaly detection", "Failure forecasting", "Downtime prevention"],
+                description: "Prevent breakdowns before they happen with AI-driven maintenance predictions"
               },
               {
-                title: "Heavy Equipment",
+                title: "Asset Optimization",
                 icon: Radio,
-                stats: ["Utilization tracking", "Predictive maintenance", "Cost optimization"],
-                description: "Maximize ROI on expensive assets with AI-driven maintenance and deployment"
+                stats: ["Utilization tracking", "Cost analysis", "Performance metrics"],
+                description: "Maximize ROI on your fleet assets with real-time insights and analytics"
               }
-            ].map((useCase, idx) => {
-              const Icon = useCase.icon;
+            ].map((feature, idx) => {
+              const Icon = feature.icon;
               return (
                 <motion.div
                   key={idx}
@@ -505,7 +505,7 @@ export default function Home() {
                     transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
                     className="absolute -top-8 -right-8 w-32 h-32 bg-gradient-to-br from-cyan-500/10 to-violet-500/10 rounded-full blur-2xl"
                   />
-                  
+
                   <div className="relative">
                     <div className="flex items-center gap-4 mb-6">
                       <motion.div
@@ -514,13 +514,13 @@ export default function Home() {
                       >
                         <Icon className="w-8 h-8 text-cyan-400" />
                       </motion.div>
-                      <h3 className="text-3xl font-bold text-white">{useCase.title}</h3>
+                      <h3 className="text-3xl font-bold text-white">{feature.title}</h3>
                     </div>
-                    
-                    <p className="text-slate-300 text-lg mb-6 leading-relaxed">{useCase.description}</p>
-                    
+
+                    <p className="text-slate-300 text-lg mb-6 leading-relaxed">{feature.description}</p>
+
                     <div className="space-y-3">
-                      {useCase.stats.map((stat, statIdx) => (
+                      {feature.stats.map((stat, statIdx) => (
                         <motion.div
                           key={statIdx}
                           initial={{ opacity: 0, x: -20 }}
