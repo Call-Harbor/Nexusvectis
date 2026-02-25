@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import SecurityMonitor from "@/components/security/SecurityMonitor";
+import ImmuneSystemPanel from "@/components/security/ImmuneSystemPanel";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import moment from "moment";
