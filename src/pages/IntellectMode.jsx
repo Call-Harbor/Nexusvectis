@@ -1855,8 +1855,9 @@ export default function IntellectMode() {
                   window.type === 'greentms' ? Activity :
                   window.type === 'gpsintegration' ? Satellite :
                   window.type === 'assignment' ? Route :
-                  window.type === 'routeeditor' ? Route : Activity
-                }
+                  window.type === 'routeeditor' ? Route :
+                  window.type === 'swarm_intelligence' ? Network : Activity
+                  }
                 position={window.position}
                 onClose={() => closeWindow(window.id)}
                 onMinimize={() => toggleMinimize(window.id)}
