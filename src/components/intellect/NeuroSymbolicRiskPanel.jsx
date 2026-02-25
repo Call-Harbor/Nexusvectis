@@ -670,7 +670,7 @@ export default function NeuroSymbolicRiskPanel({ vehicles = [], routes = [], onC
             {isAnalyzing && realSignals.length === 0 && (
               <div className="text-center py-8">
                 <Microscope className="w-8 h-8 text-violet-400/40 mx-auto mb-2 animate-pulse" />
-                <p className="text-[10px] text-slate-600">Scanner flåde-blodprøve...</p>
+                <p className="text-[10px] text-slate-600">Scanning fleet blood sample...</p>
               </div>
             )}
 
