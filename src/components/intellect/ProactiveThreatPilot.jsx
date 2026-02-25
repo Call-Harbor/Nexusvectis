@@ -2,40 +2,168 @@ import { useState, useEffect, useRef } from "react";
 import { AlertTriangle, Shield } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-const THREAT_SCENARIOS = [
-  {
-    id: 1,
-    title: "GPS-spoofing detekteret",
-    message: "GPS-signal kompromitteret på lastbil #47 – Position fejler 2.3 km",
-    severity: "critical",
-    speechDanish: "Sir, GPS-spoofing detekteret på lastbil nummer 47. Position fejler 2 komma 3 kilometer"
-  },
-  {
-    id: 2,
-    title: "Brute force attack",
-    message: "Multiple failed login attempts fra Rusland – auto-blocked",
-    severity: "critical",
-    speechDanish: "Brute force attack på API fra Rusland. Automatisk blokeret. Trueanmodning er nu lukket"
-  },
-  {
-    id: 3,
-    title: "Høj neuro-risiko",
-    message: "Neuro-risk score 92/100 – Chaufør skal holde pause nu",
-    severity: "high",
-    speechDanish: "Neuro-risk score 92 ud af 100. Threat posture udsendelse. Chaufør skal holde pause nu"
-  },
-  {
-    id: 4,
-    title: "Uautoriseret adgang",
-    message: "Uautoriseret adgang til Fleet API fra IP 192.168.1.100",
-    severity: "critical",
-    speechDanish: "Uautoriseret adgang til Fleet API. IP-adresse er blokeret permanent"
-  }
-];
+const THREAT_SCENARIOS_BY_LANGUAGE = {
+  da: [
+    {
+      id: 1,
+      title: "GPS-spoofing detekteret",
+      message: "GPS-signal kompromitteret på lastbil #47 – Position fejler 2.3 km",
+      severity: "critical",
+      speech: "Sir, GPS-spoofing detekteret på lastbil nummer 47. Position fejler 2 komma 3 kilometer"
+    },
+    {
+      id: 2,
+      title: "Brute force attack",
+      message: "Multiple failed login attempts fra Rusland – auto-blocked",
+      severity: "critical",
+      speech: "Brute force attack på API fra Rusland. Automatisk blokeret. Truslen er nu lukket"
+    },
+    {
+      id: 3,
+      title: "Høj neuro-risiko",
+      message: "Neuro-risk score 92/100 – Chaufør skal holde pause nu",
+      severity: "high",
+      speech: "Neuro-risk score 92 ud af 100. Threat posture udsendelse. Chaufør skal holde pause nu"
+    },
+    {
+      id: 4,
+      title: "Uautoriseret adgang",
+      message: "Uautoriseret adgang til Fleet API fra IP 192.168.1.100",
+      severity: "critical",
+      speech: "Uautoriseret adgang til Fleet API. IP-adresse er blokeret permanent"
+    }
+  ],
+  en: [
+    {
+      id: 1,
+      title: "GPS spoofing detected",
+      message: "GPS signal compromised on truck #47 – Position error 2.3 km",
+      severity: "critical",
+      speech: "Sir, GPS spoofing detected on truck number 47. Position error 2 point 3 kilometers"
+    },
+    {
+      id: 2,
+      title: "Brute force attack",
+      message: "Multiple failed login attempts from Russia – auto-blocked",
+      severity: "critical",
+      speech: "Brute force attack on API from Russia. Automatically blocked. Threat is now closed"
+    },
+    {
+      id: 3,
+      title: "High neuro-risk",
+      message: "Neuro-risk score 92/100 – Driver must take break now",
+      severity: "high",
+      speech: "Neuro-risk score 92 out of 100. Threat posture broadcast. Driver must take break now"
+    },
+    {
+      id: 4,
+      title: "Unauthorized access",
+      message: "Unauthorized access to Fleet API from IP 192.168.1.100",
+      severity: "critical",
+      speech: "Unauthorized access to Fleet API. IP address is now permanently blocked"
+    }
+  ],
+  de: [
+    {
+      id: 1,
+      title: "GPS-Spoofing erkannt",
+      message: "GPS-Signal gefährdet auf Lastkraftwagen #47 – Positionsfehler 2,3 km",
+      severity: "critical",
+      speech: "Sir, GPS-Spoofing auf Lastkraftwagen Nummer 47 erkannt. Positionsfehler 2 Komma 3 Kilometer"
+    },
+    {
+      id: 2,
+      title: "Brute-Force-Angriff",
+      message: "Mehrere fehlgeschlagene Anmeldeversuche aus Russland – automatisch blockiert",
+      severity: "critical",
+      speech: "Brute Force Angriff auf API aus Russland. Automatisch blockiert. Bedrohung ist jetzt geschlossen"
+    },
+    {
+      id: 3,
+      title: "Hohe Neuro-Risiko",
+      message: "Neuro-Risiko-Bewertung 92/100 – Fahrer muss jetzt Pause machen",
+      severity: "high",
+      speech: "Neuro Risiko Score 92 von 100. Bedrohungsstatus übertragen. Fahrer muss jetzt Pause machen"
+    },
+    {
+      id: 4,
+      title: "Unbefugter Zugriff",
+      message: "Unbefugter Zugriff auf Fleet API von IP 192.168.1.100",
+      severity: "critical",
+      speech: "Unbefugter Zugriff auf Fleet API. IP-Adresse ist jetzt dauerhaft blockiert"
+    }
+  ],
+  fr: [
+    {
+      id: 1,
+      title: "Usurpation GPS détectée",
+      message: "Signal GPS compromis sur le camion #47 – Erreur de position 2,3 km",
+      severity: "critical",
+      speech: "Monsieur, usurpation GPS détectée sur le camion numéro 47. Erreur de position 2 virgule 3 kilomètres"
+    },
+    {
+      id: 2,
+      title: "Attaque par force brute",
+      message: "Plusieurs tentatives de connexion échouées depuis la Russie – bloquées automatiquement",
+      severity: "critical",
+      speech: "Attaque par force brute sur API depuis la Russie. Bloquée automatiquement. La menace est maintenant fermée"
+    },
+    {
+      id: 3,
+      title: "Neuro-risque élevé",
+      message: "Score neuro-risque 92/100 – Le conducteur doit faire une pause maintenant",
+      severity: "high",
+      speech: "Score neuro-risque 92 sur 100. Diffusion de la posture de menace. Le conducteur doit faire une pause maintenant"
+    },
+    {
+      id: 4,
+      title: "Accès non autorisé",
+      message: "Accès non autorisé à l'API Fleet depuis l'IP 192.168.1.100",
+      severity: "critical",
+      speech: "Accès non autorisé à l'API Fleet. L'adresse IP est maintenant bloquée de manière permanente"
+    }
+  ],
+  es: [
+    {
+      id: 1,
+      title: "Suplantación de GPS detectada",
+      message: "Señal GPS comprometida en camión #47 – Error de posición 2,3 km",
+      severity: "critical",
+      speech: "Señor, suplantación de GPS detectada en camión número 47. Error de posición 2 punto 3 kilómetros"
+    },
+    {
+      id: 2,
+      title: "Ataque de fuerza bruta",
+      message: "Múltiples intentos de inicio de sesión fallidos desde Rusia – bloqueados automáticamente",
+      severity: "critical",
+      speech: "Ataque de fuerza bruta en API desde Rusia. Bloqueado automáticamente. La amenaza ahora está cerrada"
+    },
+    {
+      id: 3,
+      title: "Neuro-riesgo alto",
+      message: "Puntuación neuro-riesgo 92/100 – El conductor debe descansar ahora",
+      severity: "high",
+      speech: "Puntuación neuro-riesgo 92 de 100. Difusión de postura de amenaza. El conductor debe descansar ahora"
+    },
+    {
+      id: 4,
+      title: "Acceso no autorizado",
+      message: "Acceso no autorizado a Fleet API desde IP 192.168.1.100",
+      severity: "critical",
+      speech: "Acceso no autorizado a Fleet API. La dirección IP ahora está bloqueada permanentemente"
+    }
+  ]
+};
+
+function detectBrowserLanguage() {
+  const lang = navigator.language?.split('-')[0];
+  return THREAT_SCENARIOS_BY_LANGUAGE[lang] ? lang : 'en';
+}
 
 export default function ProactiveThreatPilot() {
   const [threats, setThreats] = useState([]);
   const [activeAlert, setActiveAlert] = useState(null);
+  const [language, setLanguage] = useState(detectBrowserLanguage());
   const synth = useRef(null);
   const hasSpoken = useRef(new Set());
 
@@ -46,7 +174,8 @@ export default function ProactiveThreatPilot() {
   useEffect(() => {
     const interval = setInterval(() => {
       if (Math.random() > 0.75 && threats.length < 3) {
-        const randomThreat = THREAT_SCENARIOS[Math.floor(Math.random() * THREAT_SCENARIOS.length)];
+        const threatList = THREAT_SCENARIOS_BY_LANGUAGE[language];
+        const randomThreat = threatList[Math.floor(Math.random() * threatList.length)];
         
         // Avoid duplicate alerts
         if (!hasSpoken.current.has(randomThreat.id)) {
@@ -60,12 +189,14 @@ export default function ProactiveThreatPilot() {
     }, 12000);
 
     return () => clearInterval(interval);
-  }, [threats.length]);
+  }, [threats.length, language]);
 
   const speakThreat = (threat) => {
     if (!synth.current) return;
-    const utterance = new SpeechSynthesisUtterance(threat.speechDanish);
-    utterance.lang = "da-DK";
+    const utterance = new SpeechSynthesisUtterance(threat.speech);
+    
+    const langMap = { da: 'da-DK', en: 'en-US', de: 'de-DE', fr: 'fr-FR', es: 'es-ES' };
+    utterance.lang = langMap[language] || 'en-US';
     utterance.rate = 1.1;
     utterance.pitch = threat.severity === "critical" ? 1.2 : 1;
     utterance.volume = 1;

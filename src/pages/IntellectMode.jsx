@@ -32,7 +32,7 @@ import NeuroSymbolicRiskPanel from "@/components/intellect/NeuroSymbolicRiskPane
 import DigitalTwinFederation from "@/components/intellect/DigitalTwinFederation";
 import MistralStreamingEngine, { StreamingAnalysisVisual } from "@/components/intellect/MistralStreamingEngine";
 import IntelligentCommandAgent, { CommandInput, CommandExecution } from "@/components/intellect/IntelligentCommandAgent";
-import DanishVoiceCommands from "@/components/intellect/DanishVoiceCommands";
+import MultilingualVoiceCommands from "@/components/intellect/MultilingualVoiceCommands";
 import ProactiveThreatPilot from "@/components/intellect/ProactiveThreatPilot";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -2491,8 +2491,8 @@ export default function IntellectMode() {
         )}
       </AnimatePresence>
 
-      {/* Danish Voice Commands */}
-      <DanishVoiceCommands 
+      {/* Multilingual Voice Commands */}
+      <MultilingualVoiceCommands 
         onCommand={(action, response) => {
           const commandMap = {
             'SHOW_FLEET': { title: "Fleet Status", icon: Truck },
