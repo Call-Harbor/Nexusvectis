@@ -123,7 +123,7 @@ export default function PrivacyPolicy() {
               <h2 className="text-3xl font-bold text-white">Introduction</h2>
             </div>
             <p className="text-slate-300 leading-relaxed mb-4">
-              NexusVectis ApS ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our fleet intelligence platform.
+              NexusVectis ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our fleet intelligence platform.
             </p>
             <p className="text-slate-300 leading-relaxed">
               By using NexusVectis, you agree to the collection and use of information in accordance with this policy. If you do not agree with our policies and practices, please do not use our services.
@@ -336,7 +336,7 @@ export default function PrivacyPolicy() {
             </p>
             <div className="space-y-2 text-slate-300">
               <p><strong>Email:</strong> privacy@nexusvectis.com</p>
-              <p><strong>Address:</strong> NexusVectis ApS, Vesterbrogade 123, 1620 København V, Denmark</p>
+              <p><strong>Address:</strong> NexusVectis, Vesterbrogade 123, 1620 København V, Denmark</p>
             </div>
           </motion.div>
 
@@ -380,7 +380,7 @@ export default function PrivacyPolicy() {
           </div>
           <div className="h-px bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent mb-8" />
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-slate-500 text-sm">&copy; 2026 NexusVectis ApS. Building the future of logistics.</p>
+            <p className="text-slate-500 text-sm">&copy; 2026 NexusVectis. Building the future of logistics.</p>
             <div className="flex gap-6 text-sm text-slate-400">
               <Link to={createPageUrl("PrivacyPolicy")} className="hover:text-emerald-400 transition-colors">Privacy Policy</Link>
               <Link to={createPageUrl("TermsOfService")} className="hover:text-emerald-400 transition-colors">Terms of Service</Link>

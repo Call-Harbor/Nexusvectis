@@ -284,7 +284,7 @@ export default function TermsOfService() {
               <h2 className="text-3xl font-bold text-white">Intellectual Property</h2>
             </div>
             <p className="text-slate-300 leading-relaxed mb-6">
-              The Service and its original content, features, and functionality are owned by NexusVectis ApS and are protected by international copyright, trademark, patent, trade secret, and other intellectual property laws.
+              The Service and its original content, features, and functionality are owned by NexusVectis and are protected by international copyright, trademark, patent, trade secret, and other intellectual property laws.
             </p>
             <div className="space-y-4">
               <p className="text-slate-300 leading-relaxed">
@@ -308,7 +308,7 @@ export default function TermsOfService() {
               <h2 className="text-3xl font-bold text-white">Limitation of Liability</h2>
             </div>
             <p className="text-slate-300 leading-relaxed mb-4">
-              To the maximum extent permitted by law, NexusVectis ApS shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including lost profits, data loss, or business interruption.
+              To the maximum extent permitted by law, NexusVectis shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including lost profits, data loss, or business interruption.
             </p>
             <p className="text-slate-300 leading-relaxed">
               Our total liability for any claims arising from your use of the Service shall not exceed the amount you paid us in the 12 months preceding the claim.
@@ -366,7 +366,7 @@ export default function TermsOfService() {
             </p>
             <div className="space-y-2 text-slate-300">
               <p><strong>Email:</strong> legal@nexusvectis.com</p>
-              <p><strong>Address:</strong> NexusVectis ApS, Vesterbrogade 123, 1620 København V, Denmark</p>
+              <p><strong>Address:</strong> NexusVectis, Vesterbrogade 123, 1620 København V, Denmark</p>
             </div>
           </motion.div>
 
@@ -410,7 +410,7 @@ export default function TermsOfService() {
           </div>
           <div className="h-px bg-gradient-to-r from-transparent via-blue-500/50 to-transparent mb-8" />
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-slate-500 text-sm">&copy; 2026 NexusVectis ApS. Building the future of logistics.</p>
+            <p className="text-slate-500 text-sm">&copy; 2026 NexusVectis. Building the future of logistics.</p>
             <div className="flex gap-6 text-sm text-slate-400">
               <Link to={createPageUrl("PrivacyPolicy")} className="hover:text-blue-400 transition-colors">Privacy Policy</Link>
               <Link to={createPageUrl("TermsOfService")} className="hover:text-blue-400 transition-colors">Terms of Service</Link>
