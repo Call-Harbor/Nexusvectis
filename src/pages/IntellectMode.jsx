@@ -2491,6 +2491,37 @@ export default function IntellectMode() {
         )}
       </AnimatePresence>
 
+      {/* Danish Voice Commands */}
+      <DanishVoiceCommands 
+        onCommand={(action, response) => {
+          const commandMap = {
+            'SHOW_FLEET': { title: "Fleet Status", icon: Truck },
+            'ANALYZE_DSV': { title: "DSV Analysis", icon: Building2 },
+            'OPTIMIZE_ROUTES': { title: "Route Optimization", icon: Route }
+          };
+
+          if (commandMap[action]) {
+            const cmd = commandMap[action];
+            setMessages(prev => [...prev, { 
+              role: "system", 
+              content: `🎯 ${response} - Opening hologram windows...` 
+            }]);
+
+            // Execute the corresponding action
+            if (action === 'SHOW_FLEET') {
+              setShow3DVisualization('fleet');
+            } else if (action === 'ANALYZE_DSV') {
+              setShowCompanyAnalysis(true);
+              setCompanyAnalysisTarget('DSV');
+            } else if (action === 'OPTIMIZE_ROUTES') {
+              setShowSwarmIntelligence(true);
+            }
+          }
+        }}
+      />
+
+      {/* Proactive Threat Pilot with Danish Alerts */}
+      <ProactiveThreatPilot />
 
       </div>
       );
