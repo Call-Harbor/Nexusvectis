@@ -279,6 +279,38 @@ export default function ProactiveThreatPilot() {
               <div className="flex-1">
                 <p className="text-xs font-bold text-white">{activeAlert.title}</p>
                 <p className="text-xs text-white/90 mt-1">{activeAlert.message}</p>
+
+                {/* Trust Score & Verification Badge */}
+                <div className="mt-2 space-y-1">
+                  <div className="flex items-center gap-2">
+                    {activeAlert.verified ? (
+                      <CheckCircle2 className="w-3 h-3 text-green-400" />
+                    ) : (
+                      <AlertCircle className="w-3 h-3 text-yellow-400" />
+                    )}
+                    <span className="text-[10px] font-mono text-white/80">
+                      Trust: {activeAlert.trustScore || 0}% {activeAlert.verified && '✓ VERIFIED'}
+                    </span>
+                  </div>
+
+                  {/* Confidence Score */}
+                  <div className="flex items-center gap-2">
+                    <div className="text-[10px] text-white/70">Multi-source:</div>
+                    <div className="flex-1 h-1 bg-white/20 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-green-500 rounded-full transition-all"
+                        style={{ width: `${(activeAlert.confidence || 0) * 100}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Root Cause */}
+                  {activeAlert.rootCauses && activeAlert.rootCauses[0] && (
+                    <p className="text-[9px] text-white/60 italic">
+                      Root: {activeAlert.rootCauses[0].cause}
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
           </motion.div>
