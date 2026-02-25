@@ -1169,10 +1169,17 @@ export default function IntellectMode() {
 
         case "QUERY_DATA":
         case "ANSWER":
-          // Use reply from fleetAIChat if available
-          const responseContent = reply || message || "Analysis complete.";
-          setMessages(prev => [...prev, { role: "assistant", content: responseContent }]);
-          if (open_window) openWindow(open_window);
+           // Use reply from fleetAIChat if available
+           const responseContent = reply || message || "Analysis complete.";
+           setMessages(prev => [...prev, { role: "assistant", content: responseContent }]);
+
+           // Speak the response
+           if (voiceEnabled && responseContent) {
+             const textToSpeak = responseContent.replace(/\*\*/g, '').replace(/\n/g, ' ').substring(0, 500);
+             speakMessage(textToSpeak);
+           }
+
+           if (open_window) openWindow(open_window);
 
           base44.analytics.track({
             eventName: "fleet_ai_query_answered",
@@ -1182,7 +1189,13 @@ export default function IntellectMode() {
 
         case "SHOW_ANALYSIS":
         case "VISUALIZE_DATA":
-          setMessages(prev => [...prev, { role: "assistant", content: message }]);
+           setMessages(prev => [...prev, { role: "assistant", content: message }]);
+
+           // Speak the message
+           if (voiceEnabled && message) {
+             const textToSpeak = message.replace(/\*\*/g, '').replace(/\n/g, ' ').substring(0, 500);
+             speakMessage(textToSpeak);
+           }
           
           // Open chart hologram with AI analysis data
           if (parameters.chart_data && parameters.chart_config) {
