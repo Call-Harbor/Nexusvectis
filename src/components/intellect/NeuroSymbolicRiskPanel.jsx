@@ -647,8 +647,8 @@ export default function NeuroSymbolicRiskPanel({ vehicles = [], routes = [], onC
               </div>
               <div className="flex justify-between mt-1">
                 <span className="text-[8px] text-emerald-500/60 font-mono">NOMINAL</span>
-                <span className="text-[8px] text-amber-500/60 font-mono">INFLAMATION</span>
-                <span className="text-[8px] text-red-500/60 font-mono">CYTOKINSTORM</span>
+                <span className="text-[8px] text-amber-500/60 font-mono">INFLAMMATION</span>
+                <span className="text-[8px] text-red-500/60 font-mono">CYTOKINE STORM</span>
               </div>
             </div>
           </div>
