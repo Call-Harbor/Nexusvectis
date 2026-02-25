@@ -993,9 +993,9 @@ export default function Home() {
           {/* Impact Stats */}
           <div className="grid md:grid-cols-3 gap-6">
             {[
-              { value: "30%", label: "Færre forsinkelser", desc: "Kollektiv ruteoptimering i trafikkaos reducerer forsinkelser i simuleringer" },
-              { value: "∞", label: "Skalérbarhed", desc: "Eliminerer single points of failure — swarmen skalerer uendeligt med flåden" },
-              { value: "0", label: "Central kontrol nødvendig", desc: "Agenter koordinerer autonomt — ingen central hjerne der kan svigte" },
+              { value: "30%", label: "Fewer Delays", desc: "Collective route optimisation in traffic chaos reduces delays in simulations" },
+              { value: "∞", label: "Scalability", desc: "Eliminates single points of failure — the swarm scales infinitely with the fleet" },
+              { value: "0", label: "Central Control Needed", desc: "Agents coordinate autonomously — no central brain that can fail" },
             ].map((stat, idx) => (
               <motion.div
                 key={idx}
