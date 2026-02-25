@@ -706,8 +706,24 @@ export default function IntellectMode() {
         const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
         const userLocalTime = new Date().toLocaleString('en-GB', { timeZone: userTimezone, hour12: false });
 
+        // Process files content first
+        let fileUrls = [];
+        if (currentFiles.length > 0) {
+          fileUrls = currentFiles.map(f => f.url);
+          addThinkingLog('analyze', `Processing ${currentFiles.length} attached file(s)`, {
+            files: currentFiles.map(f => f.name),
+            total_size_mb: (currentFiles.reduce((sum, f) => sum + (f.size || 0), 0) / 1024 / 1024).toFixed(2)
+          }, 120, 40);
+
+          // Extract file content
+          addThinkingLog('analyze', 'Extracting file content for AI analysis', {
+            file_types: [...new Set(currentFiles.map(f => f.type))],
+            total_files: currentFiles.length
+          }, 150, 42);
+        }
+
         const payload = {
-          command: currentCommand,
+          message: currentCommand,
           conversation_history: conversationHistory,
           context: {
             current_datetime: userLocalTime,
@@ -723,12 +739,8 @@ export default function IntellectMode() {
           }
         };
 
-        if (currentFiles.length > 0) {
-          payload.file_urls = currentFiles.map(f => f.url);
-          addThinkingLog('analyze', `Processing ${currentFiles.length} attached file(s)`, {
-            files: currentFiles.map(f => f.name),
-            total_size_mb: (currentFiles.reduce((sum, f) => sum + (f.size || 0), 0) / 1024 / 1024).toFixed(2)
-          }, 120, 40);
+        if (fileUrls.length > 0) {
+          payload.file_urls = fileUrls;
         }
 
         addThinkingLog('think', 'Initializing Mistral model inference', 
