@@ -822,7 +822,7 @@ export default function NeuroSymbolicRiskPanel({ vehicles = [], routes = [], onC
                 {riskReport.sixth_sense_alert && (
                   <div className="p-3 rounded-xl bg-violet-900/20 border border-violet-500/25">
                     <p className="text-violet-400 text-[10px] font-black uppercase mb-1.5 flex items-center gap-1.5 tracking-wider">
-                      <Eye className="w-3 h-3" /> Sjette Sans — Præ-Immun Signal
+                      <Eye className="w-3 h-3" /> Sixth Sense — Pre-Immune Signal
                     </p>
                     <p className="text-slate-200 text-[11px] leading-relaxed">{riskReport.sixth_sense_alert}</p>
                   </div>
