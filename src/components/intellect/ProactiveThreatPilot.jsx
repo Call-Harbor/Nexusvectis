@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
-import { AlertTriangle, Shield } from "lucide-react";
+import { AlertTriangle, Shield, CheckCircle2, AlertCircle, Info } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { AdvancedThreatDetection } from "./AdvancedThreatDetection";
 
 const THREAT_SCENARIOS_BY_LANGUAGE = {
   da: [
