@@ -325,8 +325,22 @@ export default function ProactiveThreatPilot() {
             animate={{ opacity: 1, x: 0 }}
             className="p-2 bg-slate-800/50 border border-slate-700/50 rounded-lg"
           >
-            <p className="text-xs font-semibold text-white">{threat.title}</p>
-            <p className="text-[11px] text-slate-400 line-clamp-2 mt-1">{threat.message}</p>
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <p className="text-xs font-semibold text-white">{threat.title}</p>
+                <p className="text-[11px] text-slate-400 line-clamp-2 mt-1">{threat.message}</p>
+              </div>
+
+              {/* Mini Verification Badge */}
+              <div className="ml-2 text-right">
+                {threat.verified && (
+                  <CheckCircle2 className="w-3 h-3 text-green-400 flex-shrink-0" />
+                )}
+                <p className="text-[9px] font-mono text-white/60 mt-1">
+                  {threat.trustScore || 0}%
+                </p>
+              </div>
+            </div>
           </motion.div>
         ))}
       </div>
