@@ -1585,6 +1585,19 @@ export default function IntellectMode() {
       );
     }
 
+    // Digital Twin Federation
+    if (type === 'digital_twin') {
+      return (
+        <DigitalTwinFederation
+          vehicles={vehicles}
+          routes={routes}
+          onCommand={(cmd) => {
+            setInput(cmd);
+          }}
+        />
+      );
+    }
+
     // For full page iframes
     if (['dashboard', 'settings', 'aioptimization', 'invoices', 'apidocs', 'resources', 
          'warehouseautomation', 'demandforecasting', 'greentms', 'gpsintegration', 'assignment', 'routeeditor'].includes(type)) {
