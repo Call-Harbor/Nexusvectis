@@ -448,14 +448,14 @@ export default function Home() {
             viewport={{ once: true }}
             className="text-center mb-20"
           >
-            <h2 className="text-5xl md:text-6xl font-bold text-white mb-6">
+            <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-6 px-2">
               Trusted By Leading
               <br />
               <span className="bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent">
                 Logistics Companies
               </span>
             </h2>
-            <p className="text-xl text-slate-400 max-w-3xl mx-auto">
+            <p className="text-base sm:text-lg md:text-xl text-slate-400 max-w-3xl mx-auto px-2">
               From last-mile delivery to international freight - FLEET AI adapts to your operations
             </p>
           </motion.div>
