@@ -366,6 +366,27 @@ async function runSwarmCycle(base44, orgId) {
     } catch (_) {}
   }
 
+  // ── DIGITAL TWIN FEDERATION INTEGRATION ──────────────────────────────────
+  // Invoke Digital Twin Federation to validate swarm decisions
+  let twinValidation = { status: 'skipped' };
+  try {
+    const twinResponse = await base44.asServiceRole.functions.invoke('digitalTwinFederation', { organization_id: orgId });
+    if (twinResponse && twinResponse.data) {
+      twinValidation = {
+        status: 'validated',
+        total_twins: twinResponse.data.total_twins_created,
+        divergence_detected: twinResponse.data.divergence_count,
+        divergences: twinResponse.data.divergences || [],
+      };
+      // If significant divergence detected, reduce swarm confidence
+      if (twinResponse.data.divergence_count > 0) {
+        swarmHealthScore = Math.max(0, swarmHealthScore - (twinResponse.data.divergence_count * 5));
+      }
+    }
+  } catch (e) {
+    console.error('[SWARM-TWIN] Federation validation failed:', e.message);
+  }
+
   // ── PERSIST CYCLE TO DATABASE ────────────────────────────────────────────
   const cycleRecord = await base44.asServiceRole.entities.SwarmCoordination.create({
     organization_id: orgId,
@@ -385,6 +406,7 @@ async function runSwarmCycle(base44, orgId) {
     convergence_data: algorithm === 'ACO' ? acoResult.convergence.slice(-10) : psoResult.convergence,
     ai_summary: aiSummary,
     actions_taken: actions,
+    twin_federation_validation: JSON.stringify(twinValidation),
     status: 'completed',
   });
 
