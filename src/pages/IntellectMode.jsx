@@ -28,6 +28,7 @@ import { AdvancedIntelligenceEngine } from "@/components/intellect/AdvancedIntel
 import ScenarioPredictionEngine, { ScenarioVisualization } from "@/components/intellect/ScenarioPredictionEngine";
 import SwarmIntelligencePanel from "@/components/intellect/SwarmIntelligencePanel";
 import NeuroSymbolicRiskPanel from "@/components/intellect/NeuroSymbolicRiskPanel";
+import DigitalTwinFederation from "@/components/intellect/DigitalTwinFederation";
 import MistralStreamingEngine, { StreamingAnalysisVisual } from "@/components/intellect/MistralStreamingEngine";
 import IntelligentCommandAgent, { CommandInput, CommandExecution } from "@/components/intellect/IntelligentCommandAgent";
 import { Button } from "@/components/ui/button";
@@ -207,6 +208,7 @@ export default function IntellectMode() {
     { icon: AlertTriangle, label: "Risk Assessment", command: "assess operational risks and anomalies", action: "riskAssessment", color: "red" },
     { icon: Network, label: "Swarm Intelligence", command: "activate swarm intelligence coordination for fleet", action: "openSwarmIntelligence", color: "emerald" },
     { icon: Shield, label: "Neuro-Symbolic Risk", command: "activate neuro-symbolic risk fusion analysis", action: "openNeuroRisk", color: "red" },
+    { icon: Globe, label: "Digital Twin Federation", command: "activate digital twin federation for fleet", action: "openDigitalTwin", color: "cyan" },
   ];
   const [isProcessing, setIsProcessing] = useState(false);
   const [activeWindows, setActiveWindows] = useState([]);
