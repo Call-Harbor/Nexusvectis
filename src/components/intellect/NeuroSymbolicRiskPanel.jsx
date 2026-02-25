@@ -812,7 +812,7 @@ export default function NeuroSymbolicRiskPanel({ vehicles = [], routes = [], onC
                   <div className="flex items-center justify-between mb-1.5">
                     <p className="text-white text-xs font-bold flex items-center gap-1.5">
                       <Dna className={`w-3.5 h-3.5 ${immuneStatusColor}`} />
-                      Immunologisk DNA-profil
+                      Immunological DNA Profile
                     </p>
                     <span className={`text-xl font-black ${immuneStatusColor}`}>{Math.round(riskLevel)}</span>
                   </div>
