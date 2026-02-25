@@ -379,14 +379,14 @@ export default function Home() {
             >
               <Orbit className="w-12 h-12 text-cyan-400" />
             </motion.div>
-            <h2 className="text-5xl md:text-6xl font-bold text-white mb-6 leading-tight">
+            <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-6 leading-tight px-2">
               Complete Fleet Intelligence
               <br />
               <span className="bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent">
                 Powered by Advanced AI
               </span>
             </h2>
-            <p className="text-xl text-slate-400 max-w-3xl mx-auto">
+            <p className="text-base sm:text-lg md:text-xl text-slate-400 max-w-3xl mx-auto px-2">
               Beyond FLEET AI - a comprehensive platform with every tool you need for modern logistics
             </p>
           </motion.div>
