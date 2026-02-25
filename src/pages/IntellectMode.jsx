@@ -1811,6 +1811,7 @@ export default function IntellectMode() {
                             window.type === 'routeeditor' ? Route :
                             window.type === 'swarm_intelligence' ? Network :
                             window.type === 'neuro_risk' ? Shield :
+                            window.type === 'digital_twin' ? Globe :
                             window.type.startsWith('chart_') ? BarChart3 : Activity;
 
                                    const title = window.type.startsWith('chart_') ? (window.data?.chartConfig?.title || 'Analysis Chart') :
@@ -1831,7 +1832,8 @@ export default function IntellectMode() {
                             window.type === 'assignment' ? 'Assignments' :
                             window.type === 'routeeditor' ? 'Route Editor' :
                             window.type === 'swarm_intelligence' ? '🐜 Swarm Intelligence' :
-                            window.type === 'neuro_risk' ? '🧠 Neuro-Symbolic Risk' : '';
+                            window.type === 'neuro_risk' ? '🧠 Neuro-Symbolic Risk' :
+                            window.type === 'digital_twin' ? '🌐 Digital Twin Federation' : '';
 
                           return (
                             <motion.div
@@ -1880,6 +1882,7 @@ export default function IntellectMode() {
                   window.type === 'routeeditor' ? 'Route Editor' :
                   window.type === 'swarm_intelligence' ? '🐜 Swarm Intelligence' :
                   window.type === 'neuro_risk' ? '🧠 Neuro-Symbolic Risk' :
+                  window.type === 'digital_twin' ? '🌐 Digital Twin Federation' :
                   window.type.startsWith('chart_') ? (window.data?.chartConfig?.title || 'Analysis') : ''
                 }
                 icon={
@@ -1901,7 +1904,8 @@ export default function IntellectMode() {
                   window.type === 'assignment' ? Route :
                   window.type === 'routeeditor' ? Route :
                   window.type === 'swarm_intelligence' ? Network :
-                  window.type === 'neuro_risk' ? Shield : Activity
+                  window.type === 'neuro_risk' ? Shield :
+                  window.type === 'digital_twin' ? Globe : Activity
                   }
                 position={window.position}
                 onClose={() => closeWindow(window.id)}
