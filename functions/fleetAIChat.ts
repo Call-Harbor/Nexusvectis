@@ -139,10 +139,10 @@ Deno.serve(async (req) => {
         messages: [
           { role: "system", content: systemPrompt },
           ...historyMessages,
-          { role: "user", content: message }
+          { role: "user", content: enrichedMessage }
         ],
         temperature: 0.4,
-        max_tokens: 1024
+        max_tokens: 2000
       })
     });
 
