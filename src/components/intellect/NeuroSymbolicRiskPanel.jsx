@@ -446,7 +446,7 @@ export default function NeuroSymbolicRiskPanel({ vehicles = [], routes = [], onC
   };
 
   const riskColor = riskLevel > 70 ? 'red' : riskLevel > 45 ? 'amber' : 'emerald';
-  const immuneStatus = riskLevel > 70 ? 'CYTOKINSTORM' : riskLevel > 45 ? 'INFLAMATION' : 'HOMEOSTASE';
+  const immuneStatus = riskLevel > 70 ? 'CYTOKINE STORM' : riskLevel > 45 ? 'INFLAMMATION' : 'HOMEOSTASIS';
   const immuneStatusColor = riskLevel > 70 ? 'text-red-400' : riskLevel > 45 ? 'text-amber-400' : 'text-emerald-400';
   const immuneStatusBg = riskLevel > 70 ? 'from-red-900/30 to-slate-950' : riskLevel > 45 ? 'from-amber-900/20 to-slate-950' : 'from-emerald-900/20 to-slate-950';
 
