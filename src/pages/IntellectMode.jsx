@@ -1778,6 +1778,7 @@ export default function IntellectMode() {
                             window.type === 'assignment' ? Route :
                             window.type === 'routeeditor' ? Route :
                             window.type === 'swarm_intelligence' ? Network :
+                            window.type === 'neuro_risk' ? Shield :
                             window.type.startsWith('chart_') ? BarChart3 : Activity;
 
                                    const title = window.type.startsWith('chart_') ? (window.data?.chartConfig?.title || 'Analysis Chart') :
@@ -1797,7 +1798,8 @@ export default function IntellectMode() {
                             window.type === 'gpsintegration' ? 'GPS Integration' :
                             window.type === 'assignment' ? 'Assignments' :
                             window.type === 'routeeditor' ? 'Route Editor' :
-                            window.type === 'swarm_intelligence' ? '🐜 Swarm Intelligence' : '';
+                            window.type === 'swarm_intelligence' ? '🐜 Swarm Intelligence' :
+                            window.type === 'neuro_risk' ? '🧠 Neuro-Symbolic Risk' : '';
 
                           return (
                             <motion.div
