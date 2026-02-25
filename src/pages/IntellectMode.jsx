@@ -1788,7 +1788,8 @@ export default function IntellectMode() {
                             window.type === 'greentms' ? 'Green TMS' :
                             window.type === 'gpsintegration' ? 'GPS Integration' :
                             window.type === 'assignment' ? 'Assignments' :
-                            window.type === 'routeeditor' ? 'Route Editor' : '';
+                            window.type === 'routeeditor' ? 'Route Editor' :
+                            window.type === 'swarm_intelligence' ? '🐜 Swarm Intelligence' : '';
 
                           return (
                             <motion.div
