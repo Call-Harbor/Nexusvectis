@@ -8,15 +8,33 @@ import { useState, useEffect } from "react";
 export default function Contact() {
   const [formData, setFormData] = useState({ name: "", email: "", company: "", message: "", subject: "general" });
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setSubmitted(true);
-    setTimeout(() => setSubmitted(false), 3000);
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await base44.functions.invoke('sendContactMessage', formData);
+      if (response.data.success) {
+        setSubmitted(true);
+        setFormData({ name: "", email: "", company: "", message: "", subject: "general" });
+        setTimeout(() => setSubmitted(false), 3000);
+      } else {
+        setError(response.data.error || "Failed to send message");
+      }
+    } catch (err) {
+      setError("Failed to send message. Please try again.");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
