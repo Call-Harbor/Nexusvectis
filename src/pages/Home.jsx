@@ -1259,141 +1259,119 @@ export default function Home() {
             className="text-center mb-20"
           >
             <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-6 px-2">
-              Simple, Transparent
+              Pay Only for What You Use
               <br />
               <span className="bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent">
-                Pricing
+                Transparent Pricing
               </span>
             </h2>
             <p className="text-base sm:text-lg md:text-xl text-slate-400 max-w-3xl mx-auto px-2">
-              Scale your fleet operations without breaking the bank
+              Simple, usage-based billing. No hidden fees.
             </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            {[
-              {
-                name: "Starter",
-                price: "€299",
-                period: "/month",
-                description: "Perfect for small fleets",
-                features: [
-                  "Up to 10 vehicles",
-                  "Real-time GPS tracking",
-                  "Basic route optimization",
-                  "Email support",
-                  "API access"
-                ],
-                highlighted: false
-              },
-              {
-                name: "Professional",
-                price: "€899",
-                period: "/month",
-                description: "For growing logistics operations",
-                features: [
-                  "Up to 100 vehicles",
-                  "Multi-signal tracking (GPS, AIS, ADS-B)",
-                  "Advanced AI route optimization",
-                  "Predictive maintenance",
-                  "Priority support",
-                  "Demand forecasting",
-                  "Custom API limits"
-                ],
-                highlighted: true
-              },
-              {
-                name: "Enterprise",
-                price: "Custom",
-                period: "pricing",
-                description: "For large-scale operations",
-                features: [
-                  "Unlimited vehicles",
-                  "Full platform access",
-                  "Dedicated account manager",
-                  "Custom integrations",
-                  "SLA guarantee (99.9%)",
-                  "White-label options",
-                  "24/7 phone support"
-                ],
-                highlighted: false
-              }
-            ].map((plan, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.15 }}
-                whileHover={{ scale: plan.highlighted ? 1.05 : 1.02, y: -10 }}
-                className={`relative rounded-3xl p-8 transition-all ${
-                  plan.highlighted
-                    ? "bg-gradient-to-br from-cyan-500/20 to-violet-500/20 border-2 border-cyan-500/50 ring-2 ring-cyan-500/10"
-                    : "bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 hover:border-cyan-500/30"
-                }`}
-              >
-                {plan.highlighted && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                    <span className="bg-gradient-to-r from-cyan-500 to-violet-500 text-white px-4 py-1 rounded-full text-sm font-bold">
-                      Most Popular
-                    </span>
-                  </div>
-                )}
-
-                <div className="mb-8">
-                  <h3 className="text-2xl font-bold text-white mb-2">{plan.name}</h3>
-                  <p className="text-slate-400 text-sm">{plan.description}</p>
-                </div>
-
-                <div className="mb-8">
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-5xl font-black bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent">
-                      {plan.price}
-                    </span>
-                    <span className="text-slate-400 text-sm">{plan.period}</span>
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => base44.auth.redirectToLogin(createPageUrl("Dashboard"))}
-                  className={`w-full py-3 rounded-xl font-semibold mb-8 transition-all ${
-                    plan.highlighted
-                      ? "bg-gradient-to-r from-cyan-500 to-violet-500 text-white hover:shadow-lg hover:shadow-cyan-500/50"
-                      : "bg-white/10 text-white border border-white/20 hover:bg-white/20"
-                  }`}
-                >
-                  Get Started
-                </button>
-
-                <div className="space-y-4">
-                  {plan.features.map((feature, fIdx) => (
-                    <motion.div
-                      key={fIdx}
-                      initial={{ opacity: 0, x: -20 }}
-                      whileInView={{ opacity: 1, x: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: idx * 0.15 + fIdx * 0.05 }}
-                      className="flex items-start gap-3"
-                    >
-                      <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
-                      <span className="text-slate-300 text-sm">{feature}</span>
-                    </motion.div>
-                  ))}
-                </div>
-              </motion.div>
-            ))}
+          <div className="max-w-4xl mx-auto mb-16">
+            <div className="grid md:grid-cols-2 gap-8">
+              {[
+                {
+                  icon: Truck,
+                  title: "Per Vehicle",
+                  price: "€15",
+                  unit: "/month",
+                  description: "Track each vehicle in your fleet with real-time monitoring"
+                },
+                {
+                  icon: Warehouse,
+                  title: "Per Resource",
+                  price: "€40",
+                  unit: "/month",
+                  description: "Monitor warehouses, fuel depots, charging stations and ports"
+                },
+                {
+                  icon: Sparkles,
+                  title: "FLEET AI Commands",
+                  price: "€5",
+                  unit: "/100 commands",
+                  description: "Natural language fleet operations executed through AI"
+                },
+                {
+                  icon: Radio,
+                  title: "API Calls",
+                  price: "€5",
+                  unit: "/100 calls",
+                  description: "Direct API access for custom integrations and automation"
+                }
+              ].map((item, idx) => {
+                const Icon = item.icon;
+                return (
+                  <motion.div
+                    key={idx}
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: idx * 0.1 }}
+                    whileHover={{ scale: 1.02 }}
+                    className="relative p-8 rounded-3xl bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl border border-white/10 hover:border-cyan-500/50 transition-all"
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <Icon className="w-12 h-12 text-cyan-400" />
+                      <div className="text-right">
+                        <div className="text-4xl font-black bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent">
+                          {item.price}
+                        </div>
+                        <div className="text-sm text-slate-400">{item.unit}</div>
+                      </div>
+                    </div>
+                    <h3 className="text-xl font-bold text-white mb-2">{item.title}</h3>
+                    <p className="text-slate-400 text-sm">{item.description}</p>
+                  </motion.div>
+                );
+              })}
+            </div>
           </div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="max-w-2xl mx-auto rounded-3xl bg-gradient-to-br from-slate-900/50 to-slate-950/50 border border-slate-700/50 p-8 md:p-10 mb-16"
+          >
+            <h3 className="text-2xl font-bold text-white mb-6">Example: Small Fleet Setup</h3>
+            <div className="space-y-4 mb-6">
+              <div className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10">
+                <span className="text-slate-300">5 vehicles × €15</span>
+                <span className="text-cyan-400 font-semibold">€75</span>
+              </div>
+              <div className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10">
+                <span className="text-slate-300">1 warehouse × €40</span>
+                <span className="text-cyan-400 font-semibold">€40</span>
+              </div>
+              <div className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10">
+                <span className="text-slate-300">2,000 FLEET AI commands (€5 per 100)</span>
+                <span className="text-cyan-400 font-semibold">€100</span>
+              </div>
+              <div className="border-t border-slate-700/50 pt-4 flex items-center justify-between">
+                <span className="text-white font-semibold">Monthly Total</span>
+                <span className="text-3xl font-black bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent">
+                  €215
+                </span>
+              </div>
+            </div>
+          </motion.div>
 
           <motion.div
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
-            className="text-center mt-16"
+            className="text-center"
           >
-            <p className="text-slate-400 mb-4">All plans include a 14-day free trial. No credit card required.</p>
-            <Link to={createPageUrl("Contact")} className="text-cyan-400 hover:text-cyan-300 font-semibold transition-colors">
-              Have questions? Contact our sales team →
-            </Link>
+            <p className="text-slate-400 mb-6">Invoices are generated automatically every month. Cancel anytime.</p>
+            <button
+              onClick={() => base44.auth.redirectToLogin(createPageUrl("Dashboard"))}
+              className="bg-gradient-to-r from-cyan-500 to-violet-500 text-white text-lg px-8 py-4 rounded-2xl font-semibold hover:shadow-lg hover:shadow-cyan-500/50 transition-all"
+            >
+              Start Free Trial
+            </button>
           </motion.div>
         </div>
       </section>
