@@ -175,7 +175,7 @@ export default function Home() {
       </motion.header>
 
       {/* Hero Section */}
-      <section className="relative pt-40 pb-32 px-6 z-10">
+      <section className="relative pt-32 sm:pt-40 pb-20 sm:pb-32 px-4 sm:px-6 z-10">
         <div className="max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
