@@ -439,7 +439,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Use Cases Section */}
+      {/* Pricing Section */}
       <section className="relative py-20 sm:py-32 px-4 sm:px-6 z-10">
         <div className="max-w-7xl mx-auto">
           <motion.div
@@ -449,96 +449,120 @@ export default function Home() {
             className="text-center mb-20"
           >
             <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-6 px-2">
-              From Last-Mile to
+              Pay Only for What You Use
               <br />
               <span className="bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent">
-                Global Supply Chains
+                Transparent Pricing
               </span>
             </h2>
             <p className="text-base sm:text-lg md:text-xl text-slate-400 max-w-3xl mx-auto px-2">
-              Versatile logistics solutions designed to scale across any operation size or complexity
+              Simple, usage-based billing. No hidden fees.
             </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-2 gap-8">
-            {[
-              {
-                title: "Multi-Modal Tracking",
-                icon: Globe,
-                stats: ["GPS, AIS, ADS-B signals", "Cross-border compliance", "Real-time tracking"],
-                description: "Track trucks, ships, and aircraft simultaneously with unified AI control"
-              },
-              {
-                title: "Dynamic Route Planning",
-                icon: Truck,
-                stats: ["Real-time optimization", "Traffic-aware routing", "ETA predictions"],
-                description: "Optimize routes automatically with AI-powered planning and real-time adjustments"
-              },
-              {
-                title: "Predictive Maintenance",
-                icon: Package,
-                stats: ["Anomaly detection", "Failure forecasting", "Downtime prevention"],
-                description: "Prevent breakdowns before they happen with AI-driven maintenance predictions"
-              },
-              {
-                title: "Asset Optimization",
-                icon: Radio,
-                stats: ["Utilization tracking", "Cost analysis", "Performance metrics"],
-                description: "Maximize ROI on your fleet assets with real-time insights and analytics"
-              }
-            ].map((feature, idx) => {
-              const Icon = feature.icon;
-              return (
-                <motion.div
-                  key={idx}
-                  initial={{ opacity: 0, x: idx % 2 === 0 ? -30 : 30 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: idx * 0.2 }}
-                  whileHover={{ scale: 1.02 }}
-                  className="relative p-10 rounded-3xl bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl border border-white/10 hover:border-cyan-500/50 transition-all group"
-                >
+          <div className="max-w-4xl mx-auto mb-16">
+            <div className="grid md:grid-cols-2 gap-8">
+              {[
+                {
+                  icon: Truck,
+                  title: "Per Vehicle",
+                  price: "€15",
+                  unit: "/month",
+                  description: "Track each vehicle in your fleet with real-time monitoring"
+                },
+                {
+                  icon: Warehouse,
+                  title: "Per Resource",
+                  price: "€40",
+                  unit: "/month",
+                  description: "Monitor warehouses, fuel depots, charging stations and ports"
+                },
+                {
+                  icon: Sparkles,
+                  title: "FLEET AI Commands",
+                  price: "€5",
+                  unit: "/100 commands",
+                  description: "Natural language fleet operations executed through AI"
+                },
+                {
+                  icon: Radio,
+                  title: "API Calls",
+                  price: "€5",
+                  unit: "/100 calls",
+                  description: "Direct API access for custom integrations and automation"
+                }
+              ].map((item, idx) => {
+                const Icon = item.icon;
+                return (
                   <motion.div
-                    animate={{
-                      rotate: [0, 360],
-                    }}
-                    transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                    className="absolute -top-8 -right-8 w-32 h-32 bg-gradient-to-br from-cyan-500/10 to-violet-500/10 rounded-full blur-2xl"
-                  />
-
-                  <div className="relative">
-                    <div className="flex items-center gap-4 mb-6">
-                      <motion.div
-                        whileHover={{ scale: 1.1, rotate: 5 }}
-                        className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-violet-500/20 flex items-center justify-center"
-                      >
-                        <Icon className="w-8 h-8 text-cyan-400" />
-                      </motion.div>
-                      <h3 className="text-3xl font-bold text-white">{feature.title}</h3>
+                    key={idx}
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: idx * 0.1 }}
+                    whileHover={{ scale: 1.02 }}
+                    className="relative p-8 rounded-3xl bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl border border-white/10 hover:border-cyan-500/50 transition-all"
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <Icon className="w-12 h-12 text-cyan-400" />
+                      <div className="text-right">
+                        <div className="text-4xl font-black bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent">
+                          {item.price}
+                        </div>
+                        <div className="text-sm text-slate-400">{item.unit}</div>
+                      </div>
                     </div>
-
-                    <p className="text-slate-300 text-lg mb-6 leading-relaxed">{feature.description}</p>
-
-                    <div className="space-y-3">
-                      {feature.stats.map((stat, statIdx) => (
-                        <motion.div
-                          key={statIdx}
-                          initial={{ opacity: 0, x: -20 }}
-                          whileInView={{ opacity: 1, x: 0 }}
-                          viewport={{ once: true }}
-                          transition={{ delay: idx * 0.2 + statIdx * 0.1 }}
-                          className="flex items-center gap-3"
-                        >
-                          <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0" />
-                          <span className="text-slate-400">{stat}</span>
-                        </motion.div>
-                      ))}
-                    </div>
-                  </div>
-                </motion.div>
-              );
-            })}
+                    <h3 className="text-xl font-bold text-white mb-2">{item.title}</h3>
+                    <p className="text-slate-400 text-sm">{item.description}</p>
+                  </motion.div>
+                );
+              })}
+            </div>
           </div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="max-w-2xl mx-auto rounded-3xl bg-gradient-to-br from-slate-900/50 to-slate-950/50 border border-slate-700/50 p-8 md:p-10 mb-16"
+          >
+            <h3 className="text-2xl font-bold text-white mb-6">Example: Small Fleet Setup</h3>
+            <div className="space-y-4 mb-6">
+              <div className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10">
+                <span className="text-slate-300">5 vehicles × €15</span>
+                <span className="text-cyan-400 font-semibold">€75</span>
+              </div>
+              <div className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10">
+                <span className="text-slate-300">1 warehouse × €40</span>
+                <span className="text-cyan-400 font-semibold">€40</span>
+              </div>
+              <div className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10">
+                <span className="text-slate-300">2,000 FLEET AI commands (€5 per 100)</span>
+                <span className="text-cyan-400 font-semibold">€100</span>
+              </div>
+              <div className="border-t border-slate-700/50 pt-4 flex items-center justify-between">
+                <span className="text-white font-semibold">Monthly Total</span>
+                <span className="text-3xl font-black bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent">
+                  €215
+                </span>
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="text-center"
+          >
+            <p className="text-slate-400 mb-6">Invoices are generated automatically every month. Cancel anytime.</p>
+            <button
+              onClick={() => base44.auth.redirectToLogin(createPageUrl("Dashboard"))}
+              className="bg-gradient-to-r from-cyan-500 to-violet-500 text-white text-lg px-8 py-4 rounded-2xl font-semibold hover:shadow-lg hover:shadow-cyan-500/50 transition-all"
+            >
+              Start Free Trial
+            </button>
+          </motion.div>
         </div>
       </section>
 
