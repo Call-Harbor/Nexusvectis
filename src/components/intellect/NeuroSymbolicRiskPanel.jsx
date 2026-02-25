@@ -482,7 +482,7 @@ export default function NeuroSymbolicRiskPanel({ vehicles = [], routes = [], onC
               <Heart className={`w-4 h-4 ${riskLevel > 70 ? 'text-red-500' : riskLevel > 45 ? 'text-amber-400' : 'text-emerald-400'} fill-current`} />
             </motion.div>
             <div>
-              <p className="text-[11px] font-black text-white tracking-widest uppercase">Fleet Immunforsvar</p>
+              <p className="text-[11px] font-black text-white tracking-widest uppercase">Fleet Immune System</p>
               <p className="text-[8px] text-slate-500 font-mono tracking-wider">Autonomous · Human-Like · Self-Healing</p>
             </div>
           </div>
