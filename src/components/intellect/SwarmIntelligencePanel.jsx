@@ -525,17 +525,17 @@ export default function SwarmIntelligencePanel({ vehicles = [], routes = [], onC
 
         {activeTab === 'report' && (
           <div className="space-y-3">
-            {!swarmReport && !isAnalyzing && (
+            {!latestCycle && !isAnalyzing && (
               <div className="text-center py-8">
                 <Network className="w-10 h-10 text-emerald-400/40 mx-auto mb-3" />
-                <p className="text-slate-400 text-sm">Kør analyse for at generere swarm intelligence rapport</p>
+                <p className="text-slate-400 text-sm">No swarm cycles run yet</p>
                 <Button
                   onClick={runSwarmAnalysis}
                   className="mt-3 bg-emerald-600/20 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-600/30"
                   size="sm"
                 >
                   <Zap className="w-4 h-4 mr-2" />
-                  Analysér Flåde
+                  Run First Cycle
                 </Button>
               </div>
             )}
@@ -543,33 +543,37 @@ export default function SwarmIntelligencePanel({ vehicles = [], routes = [], onC
             {isAnalyzing && (
               <div className="text-center py-8">
                 <Loader2 className="w-8 h-8 text-emerald-400 animate-spin mx-auto mb-3" />
-                <p className="text-slate-400 text-sm">Swarm algoritme kører...</p>
-                <p className="text-slate-600 text-xs mt-1">{algorithm} optimering i gang</p>
+                <p className="text-slate-400 text-sm">Swarm engine running...</p>
+                <p className="text-slate-600 text-xs mt-1">ACO + PSO + Genetic algorithms processing fleet data</p>
               </div>
             )}
 
-            {swarmReport && (
+            {latestCycle && !isAnalyzing && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
-                {/* Score */}
+                {/* Health score */}
                 <div className="flex items-center justify-between p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
                   <div>
                     <p className="text-white font-bold">Swarm Health Score</p>
-                    <p className="text-slate-400 text-xs">{swarmReport.summary}</p>
+                    <p className="text-slate-400 text-xs">{latestCycle.ai_summary}</p>
                   </div>
-                  <div className="text-3xl font-black text-emerald-400">{swarmReport.swarm_health_score || 82}</div>
+                  <div className="text-3xl font-black text-emerald-400">{swarmHealthScore}</div>
                 </div>
 
-                {swarmReport.efficiency_gain_percent && (
+                <div className="grid grid-cols-2 gap-2">
                   <div className="p-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-center">
-                    <p className="text-cyan-400 font-bold text-lg">{swarmReport.efficiency_gain_percent}%</p>
-                    <p className="text-slate-400 text-xs">Efficiency gain over centralized control</p>
+                    <p className="text-cyan-400 font-bold text-lg">+{efficiencyGain}%</p>
+                    <p className="text-slate-400 text-xs">Efficiency gain</p>
                   </div>
-                )}
+                  <div className="p-2 rounded-lg bg-violet-500/10 border border-violet-500/20 text-center">
+                    <p className="text-violet-400 font-bold text-lg">{latestCycle.genetic_generation}</p>
+                    <p className="text-slate-400 text-xs">Generations evolved</p>
+                  </div>
+                </div>
 
-                {swarmReport.stigmergic_signals?.length > 0 && (
+                {latestCycle.stigmergic_signals?.length > 0 && (
                   <div>
-                    <p className="text-slate-400 text-[10px] font-bold uppercase mb-1.5 flex items-center gap-1"><Wifi className="w-3 h-3" /> Stigmergi Signaler</p>
-                    {swarmReport.stigmergic_signals.map((s, i) => (
+                    <p className="text-slate-400 text-[10px] font-bold uppercase mb-1.5 flex items-center gap-1"><Wifi className="w-3 h-3" /> Stigmergic Signals</p>
+                    {latestCycle.stigmergic_signals.map((s, i) => (
                       <div key={i} className="flex items-start gap-1.5 text-[11px] text-slate-300 mb-1">
                         <CheckCircle className="w-3 h-3 text-cyan-400 mt-0.5 flex-shrink-0" />
                         {s}
@@ -578,37 +582,26 @@ export default function SwarmIntelligencePanel({ vehicles = [], routes = [], onC
                   </div>
                 )}
 
-                {swarmReport.edge_ai_decisions?.length > 0 && (
+                {latestCycle.rerouted_vehicles?.length > 0 && (
                   <div>
-                    <p className="text-slate-400 text-[10px] font-bold uppercase mb-1.5 flex items-center gap-1"><Cpu className="w-3 h-3" /> Edge AI Beslutninger</p>
-                    {swarmReport.edge_ai_decisions.map((d, i) => (
+                    <p className="text-slate-400 text-[10px] font-bold uppercase mb-1.5 flex items-center gap-1"><Cpu className="w-3 h-3" /> PSO-Optimized Vehicles</p>
+                    {latestCycle.rerouted_vehicles.map((v, i) => (
                       <div key={i} className="flex items-start gap-1.5 text-[11px] text-slate-300 mb-1">
                         <Zap className="w-3 h-3 text-amber-400 mt-0.5 flex-shrink-0" />
-                        {d}
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {swarmReport.genetic_recommendations?.length > 0 && (
-                  <div>
-                    <p className="text-slate-400 text-[10px] font-bold uppercase mb-1.5 flex items-center gap-1"><Dna className="w-3 h-3" /> Genetiske Anbefalinger</p>
-                    {swarmReport.genetic_recommendations.map((r, i) => (
-                      <div key={i} className="flex items-start gap-1.5 text-[11px] text-slate-300 mb-1">
-                        <TrendingUp className="w-3 h-3 text-violet-400 mt-0.5 flex-shrink-0" />
-                        {r}
+                        {v} — efficiency score updated
                       </div>
                     ))}
                   </div>
                 )}
 
                 <Button
-                  onClick={() => onCommand && onCommand(`Implementér swarm intelligence koordinering for flåden med ${algorithm} algoritmen — optimer ruter og edge AI beslutninger`)}
+                  onClick={runSwarmAnalysis}
+                  disabled={isAnalyzing}
                   className="w-full bg-emerald-600/20 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-600/30"
                   size="sm"
                 >
-                  <Zap className="w-3.5 h-3.5 mr-1.5" />
-                  Implementér via FLEET AI
+                  <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
+                  Run New Cycle
                 </Button>
               </motion.div>
             )}
