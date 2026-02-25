@@ -679,8 +679,8 @@ export default function NeuroSymbolicRiskPanel({ vehicles = [], routes = [], onC
                 <div className="w-12 h-12 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto mb-3">
                   <CheckCircle className="w-6 h-6 text-emerald-400" />
                 </div>
-                <p className="text-emerald-400 text-sm font-bold">Ingen patogener detekteret</p>
-                <p className="text-slate-600 text-[10px] mt-1">Flåden er immun og kører nominelt</p>
+                <p className="text-emerald-400 text-sm font-bold">No pathogens detected</p>
+                <p className="text-slate-600 text-[10px] mt-1">Fleet is immune and running nominally</p>
               </div>
             )}
 
