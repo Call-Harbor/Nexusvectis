@@ -864,7 +864,7 @@ export default function NeuroSymbolicRiskPanel({ vehicles = [], routes = [], onC
                 )}
 
                 <Button
-                  onClick={() => onCommand && onCommand(`Aktivér immunterapi-protokol — implementér alle proaktive hedging foranstaltninger: ${riskReport.hedging_actions?.slice(0,2).join(', ')}`)}
+                  onClick={() => onCommand && onCommand(`Activate immunotherapy protocol — implement all proactive hedging countermeasures: ${riskReport.hedging_actions?.slice(0,2).join(', ')}`)}
                   className={`w-full border ${
                     riskLevel > 70
                       ? 'bg-red-600/20 border-red-500/30 text-red-300 hover:bg-red-600/30'
