@@ -216,63 +216,51 @@ const AlgorithmStats = ({ algorithm, vehicles }) => {
 export default function SwarmIntelligencePanel({ vehicles = [], routes = [], onCommand }) {
   const [algorithm, setAlgorithm] = useState('ACO');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [swarmReport, setSwarmReport] = useState(null);
+  const [latestCycle, setLatestCycle] = useState(null);
   const [activeTab, setActiveTab] = useState('visualization');
-  const [geneticGeneration, setGeneticGeneration] = useState(0);
-  const [fitness, setFitness] = useState(0);
+  const [loadingCycles, setLoadingCycles] = useState(true);
 
-  // Genetic algorithm evolution simulation
+  // Load latest real swarm cycle from DB
+  const loadLatestCycle = async () => {
+    try {
+      const cycles = await base44.entities.SwarmCoordination.list('-created_date', 1);
+      if (cycles.length > 0) setLatestCycle(cycles[0]);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoadingCycles(false);
+    }
+  };
+
   useEffect(() => {
-    const t = setInterval(() => {
-      setGeneticGeneration(g => g + 1);
-      setFitness(f => Math.min(98, f + Math.random() * 2.5 - 0.3));
-    }, 1200);
-    return () => clearInterval(t);
+    loadLatestCycle();
+    // Subscribe to real-time updates
+    const unsub = base44.entities.SwarmCoordination.subscribe((event) => {
+      if (event.type === 'create') setLatestCycle(event.data);
+    });
+    return unsub;
   }, []);
 
+  // Trigger real swarm engine manually
   const runSwarmAnalysis = async () => {
     setIsAnalyzing(true);
     try {
-      const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are a Swarm Intelligence AI engine embedded in a fleet management system.
-
-Analyze this fleet using ${algorithm} (${algorithm === 'ACO' ? 'Ant Colony Optimization' : 'Particle Swarm Optimization'}) principles:
-- Vehicles: ${vehicles.length} units (${vehicles.filter(v => v.status === 'active').length} active)
-- Routes: ${routes.length} active routes
-- Algorithm: ${algorithm}
-
-Perform swarm intelligence analysis:
-1. Identify optimal route clusters using pheromone/velocity signals
-2. Detect bottlenecks that swarm agents should route around
-3. Suggest stigmergic communication improvements (what data to broadcast between agents)
-4. Estimate collective efficiency gain from swarm coordination vs. centralized control
-5. Identify which vehicles should act as "scout agents" (high mobility, route diversity)
-6. Genetic algorithm recommendation: what fleet behaviors should evolve over time
-7. Edge AI recommendation: which decisions each vehicle node should make locally
-
-Return a concise, actionable swarm intelligence report for the fleet operator.`,
-        add_context_from_internet: false,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            summary: { type: "string" },
-            efficiency_gain_percent: { type: "number" },
-            bottlenecks: { type: "array", items: { type: "string" } },
-            stigmergic_signals: { type: "array", items: { type: "string" } },
-            scout_agents: { type: "array", items: { type: "string" } },
-            genetic_recommendations: { type: "array", items: { type: "string" } },
-            edge_ai_decisions: { type: "array", items: { type: "string" } },
-            swarm_health_score: { type: "number" }
-          }
-        }
-      });
-      setSwarmReport(result);
+      const response = await base44.functions.invoke('swarmCoordinationEngine', {});
+      // Reload latest cycle after engine runs
+      await loadLatestCycle();
     } catch (e) {
       console.error(e);
     } finally {
       setIsAnalyzing(false);
     }
   };
+
+  // Use real data from latest cycle, with fallbacks
+  const geneticGeneration = latestCycle?.genetic_generation || 0;
+  const fitness = latestCycle?.fitness_score || 0;
+  const swarmHealthScore = latestCycle?.swarm_health_score || 0;
+  const efficiencyGain = latestCycle?.efficiency_gain_percent || 0;
+  const convergence = latestCycle?.convergence_data || [];
 
   const tabs = [
     { id: 'visualization', label: 'Live Swarm', icon: Network },
