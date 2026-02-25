@@ -370,10 +370,10 @@ const ImmunityLayer = ({ layer, isActive, response }) => {
 // ═══════════════════════════════════════════════════
 const PathogenCard = ({ signal, index }) => {
   const sevConfig = {
-    critical: { bg: 'bg-red-500/10', border: 'border-red-500/25', text: 'text-red-400', dot: 'bg-red-400', label: 'KRITISK PATOGEN' },
-    high: { bg: 'bg-orange-500/10', border: 'border-orange-500/25', text: 'text-orange-400', dot: 'bg-orange-400', label: 'HØJ TRUSSEL' },
-    medium: { bg: 'bg-amber-500/10', border: 'border-amber-500/25', text: 'text-amber-400', dot: 'bg-amber-400', label: 'MODERAT TRUSSEL' },
-    low: { bg: 'bg-emerald-500/10', border: 'border-emerald-500/25', text: 'text-emerald-400', dot: 'bg-emerald-400', label: 'LAVER TRUSSEL' },
+    critical: { bg: 'bg-red-500/10', border: 'border-red-500/25', text: 'text-red-400', dot: 'bg-red-400', label: 'CRITICAL PATHOGEN' },
+    high: { bg: 'bg-orange-500/10', border: 'border-orange-500/25', text: 'text-orange-400', dot: 'bg-orange-400', label: 'HIGH THREAT' },
+    medium: { bg: 'bg-amber-500/10', border: 'border-amber-500/25', text: 'text-amber-400', dot: 'bg-amber-400', label: 'MODERATE THREAT' },
+    low: { bg: 'bg-emerald-500/10', border: 'border-emerald-500/25', text: 'text-emerald-400', dot: 'bg-emerald-400', label: 'LOW THREAT' },
   };
   const cfg = sevConfig[signal.severity] || sevConfig.low;
 
