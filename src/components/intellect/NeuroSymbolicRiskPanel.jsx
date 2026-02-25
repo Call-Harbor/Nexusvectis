@@ -774,14 +774,14 @@ export default function NeuroSymbolicRiskPanel({ vehicles = [], routes = [], onC
             {!riskReport && !isAnalyzing && (
               <div className="text-center py-10">
                 <FlaskConical className="w-10 h-10 text-violet-400/30 mx-auto mb-3" />
-                <p className="text-slate-500 text-xs mb-3">Aktiver DNA-analyse for fuld immunprofil</p>
+                <p className="text-slate-500 text-xs mb-3">Activate DNA analysis for full immune profile</p>
                 <Button
                   onClick={runFusionAnalysis}
                   className="bg-violet-600/20 border border-violet-500/30 text-violet-300 hover:bg-violet-600/30"
                   size="sm"
                 >
                   <Dna className="w-4 h-4 mr-2" />
-                  Analysér DNA
+                  Analyze DNA
                 </Button>
               </div>
             )}
