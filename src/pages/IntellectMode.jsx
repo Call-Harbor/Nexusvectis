@@ -9,7 +9,7 @@ import {
   Sparkles, Send, Mic, Brain, Zap, TrendingUp, AlertTriangle, 
   Truck, Route, Package, Activity, Maximize2, Minimize2, X, LayoutDashboard, Paperclip, FileText,
   Settings, Warehouse, Satellite, Globe, BarChart3, Box, Building2, Monitor, ExternalLink, ChevronDown, Users,
-  Lightbulb, Network, Shield, Volume2, AlertCircle
+  Lightbulb, Network, Shield, Volume2, AlertCircle, Volume, VolumeX
 } from "lucide-react";
 
 import FleetGlobe3D from "@/components/intellect/FleetGlobe3D";
@@ -244,7 +244,36 @@ export default function IntellectMode() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [commandExecution, setCommandExecution] = useState(null);
   const [suggestions, setSuggestions] = useState([]);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [voiceEnabled, setVoiceEnabled] = useState(true);
+  const synthRef = useRef(null);
   const messagesEndRef = useRef(null);
+
+  const detectLanguage = useCallback(() => {
+    const lang = navigator.language?.split('-')[0];
+    const langMap = { da: 'da-DK', en: 'en-US', de: 'de-DE', fr: 'fr-FR', es: 'es-ES' };
+    return langMap[lang] || 'en-US';
+  }, []);
+
+  const speakMessage = useCallback((text) => {
+    if (!voiceEnabled || !synthRef.current) return;
+
+    synthRef.current.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = detectLanguage();
+    utterance.rate = 0.9;
+    utterance.pitch = 1;
+    utterance.volume = 1;
+
+    utterance.onstart = () => setIsSpeaking(true);
+    utterance.onend = () => setIsSpeaking(false);
+
+    synthRef.current.speak(utterance);
+  }, [voiceEnabled, detectLanguage]);
+
+  useEffect(() => {
+    synthRef.current = window.speechSynthesis;
+  }, []);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const abortControllerRef = useRef(null);
