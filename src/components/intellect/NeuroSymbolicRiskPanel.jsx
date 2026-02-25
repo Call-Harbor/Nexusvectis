@@ -483,7 +483,7 @@ export default function NeuroSymbolicRiskPanel({ vehicles = [], routes = [], onC
             </motion.div>
             <div>
               <p className="text-[11px] font-black text-white tracking-widest uppercase">Fleet Immunforsvar</p>
-              <p className="text-[8px] text-slate-500 font-mono tracking-wider">Autonomt · Menneskelignende · Selvhelbredende</p>
+              <p className="text-[8px] text-slate-500 font-mono tracking-wider">Autonomous · Human-Like · Self-Healing</p>
             </div>
           </div>
           <div className="text-right">
