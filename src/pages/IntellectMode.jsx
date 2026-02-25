@@ -465,6 +465,11 @@ export default function IntellectMode() {
         openWindow('swarm_intelligence', { x: 120, y: 80 });
         setMessages(prev => [...prev, { role: "system", content: "🐜 Swarm Intelligence Koordinering aktiveret — ACO/PSO algoritmer kører på flåden" }]);
         break;
+      case 'openNeuroRisk':
+        setShowNeuroRisk(true);
+        openWindow('neuro_risk', { x: 140, y: 100 });
+        setMessages(prev => [...prev, { role: "system", content: "🧠 Neuro-Symbolic Risikofusion aktiveret — fusionerer satellitdata, social media, quantum-vejr og IoT" }]);
+        break;
       default:
         break;
     }
