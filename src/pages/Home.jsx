@@ -1349,7 +1349,7 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="relative py-20 px-6 border-t border-white/5 z-10 bg-slate-950/50">
+      <footer className="relative py-12 sm:py-20 px-4 sm:px-6 border-t border-white/5 z-10 bg-slate-950/50">
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-4 gap-12 mb-12">
             <div className="md:col-span-2">
