@@ -1,99 +1,93 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Mic, MicOff, Volume2, AlertCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { motion } from 'framer-motion';
-import { toast } from 'sonner';
+import { useState, useEffect, useRef } from "react";
+import { Mic, MicOff, Zap } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+
+const VOICE_COMMANDS = [
+  { trigger: "show fleet", command: "SHOW_FLEET_STATUS", response: "Displaying fleet status dashboard" },
+  { trigger: "analyze dsv", command: "ANALYZE_DSV", response: "Analyzing DSV company data" },
+  { trigger: "optimize routes", command: "OPTIMIZE_ROUTES", response: "Optimizing routes for efficiency" },
+  { trigger: "swarm intelligence", command: "ACTIVATE_SWARM", response: "Activating swarm coordination" },
+  { trigger: "threat status", command: "THREAT_STATUS", response: "Showing threat pilot status" },
+  { trigger: "hologram dashboard", command: "SHOW_FLEET_STATUS", response: "Opening hologram dashboard" },
+];
 
 export default function VoiceExecutive({ onVoiceCommand, isListening, setIsListening }) {
+  const [transcript, setTranscript] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [lastCommand, setLastCommand] = useState(null);
   const recognitionRef = useRef(null);
-  const synthRef = useRef(window.speechSynthesis);
-  const [transcript, setTranscript] = useState('');
-  const [isSupported, setIsSupported] = useState(false);
+  const synth = useRef(null);
 
   useEffect(() => {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    setIsSupported(!!SpeechRecognition);
+    synth.current = window.speechSynthesis;
 
+    // Initialize Speech Recognition
+    const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
     if (SpeechRecognition) {
-      const recognition = new SpeechRecognition();
-      recognition.continuous = true;
-      recognition.interimResults = true;
-      recognition.lang = 'da-DK';
+      recognitionRef.current = new SpeechRecognition();
+      recognitionRef.current.continuous = true;
+      recognitionRef.current.interimResults = true;
+      recognitionRef.current.lang = "en-US";
 
-      recognition.onstart = () => {
-        setIsListening(true);
-      };
+      recognitionRef.current.onstart = () => setIsListening(true);
+      recognitionRef.current.onend = () => setIsListening(false);
 
-      recognition.onresult = (event) => {
-        let interimTranscript = '';
+      recognitionRef.current.onresult = (event) => {
+        let interim = "";
         for (let i = event.resultIndex; i < event.results.length; i++) {
-          const transcript = event.results[i][0].transcript;
+          const text = event.results[i][0].transcript;
           if (event.results[i].isFinal) {
-            processVoiceCommand(transcript);
+            processVoiceInput(text);
           } else {
-            interimTranscript += transcript;
+            interim += text;
           }
         }
-        setTranscript(interimTranscript);
+        if (interim) setTranscript(interim);
       };
 
-      recognition.onerror = (event) => {
-        console.error('Speech recognition error:', event.error);
-        if (event.error !== 'no-speech') {
-          toast.error(`Stemme-fejl: ${event.error}`);
-        }
+      recognitionRef.current.onerror = (event) => {
+        console.error("Voice error:", event.error);
       };
-
-      recognition.onend = () => {
-        setIsListening(false);
-        setTranscript('');
-      };
-
-      recognitionRef.current = recognition;
     }
-  }, [setIsListening]);
+  }, []);
 
-  const processVoiceCommand = (text) => {
-    const command = text.toLowerCase().trim();
-    setTranscript('');
+  const processVoiceInput = (text) => {
+    const lowerText = text.toLowerCase();
+    setTranscript(text);
 
-    // Voice command patterns
-    const patterns = {
-      'vis flåde status': 'SHOW_FLEET_STATUS',
-      'flåde status': 'SHOW_FLEET_STATUS',
-      'analyser dsv': 'ANALYZE_DSV',
-      'analyser dsv som kunde': 'ANALYZE_DSV',
-      'optimer ruter': 'OPTIMIZE_ROUTES',
-      'optimer ruter for trafik': 'OPTIMIZE_ROUTES',
-      'aktiver swarm': 'ACTIVATE_SWARM',
-      'threat status': 'THREAT_STATUS',
-      'sikkerhedsstatus': 'THREAT_STATUS',
-    };
+    for (const cmd of VOICE_COMMANDS) {
+      if (lowerText.includes(cmd.trigger)) {
+        setIsProcessing(true);
+        setLastCommand({ command: cmd.command, response: cmd.response });
 
-    let detectedCommand = null;
-    for (const [pattern, cmd] of Object.entries(patterns)) {
-      if (command.includes(pattern)) {
-        detectedCommand = cmd;
-        break;
+        // Speak response
+        speakResponse(cmd.response);
+
+        // Execute command
+        setTimeout(() => {
+          onVoiceCommand(cmd.command);
+          setIsProcessing(false);
+          setTranscript("");
+        }, 1500);
+
+        return;
       }
     }
 
-    if (detectedCommand) {
-      onVoiceCommand(detectedCommand, command);
-      speak(`Aktiverer ${command}`);
-    } else {
-      speak('Kommando ikke genkendt. Prøv "vis flåde status" eller "analyser DSV"');
-    }
+    // No command matched - give feedback
+    speakResponse("Command not recognized. Try 'show fleet', 'analyze DSV', or 'optimize routes'");
   };
 
-  const speak = (text) => {
-    if (synthRef.current.speaking) {
-      synthRef.current.cancel();
-    }
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'da-DK';
-    utterance.rate = 1;
-    synthRef.current.speak(utterance);
+  const speakResponse = (text) => {
+    if (!synth.current) return;
+
+    const utterance = new SpeechSynthesisUtterance();
+    utterance.text = text;
+    utterance.rate = 0.9;
+    utterance.pitch = 1;
+
+    synth.current.cancel();
+    synth.current.speak(utterance);
   };
 
   const toggleListening = () => {
@@ -101,63 +95,83 @@ export default function VoiceExecutive({ onVoiceCommand, isListening, setIsListe
 
     if (isListening) {
       recognitionRef.current.stop();
-      setIsListening(false);
     } else {
-      setTranscript('');
       recognitionRef.current.start();
-      speak('Lytter nu. Hvad kan jeg gøre for dig?');
     }
   };
 
-  if (!isSupported) {
-    return null;
-  }
-
   return (
-    <div className="fixed bottom-24 right-6 z-50 flex flex-col gap-3 items-end">
-      {/* Listening indicator */}
-      {isListening && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.8 }}
-          className="bg-slate-800 border border-cyan-500/50 rounded-xl p-4 max-w-xs"
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="fixed bottom-4 left-4 z-40"
+    >
+      <div className="flex flex-col gap-3">
+        {/* Voice Control Button */}
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={toggleListening}
+          className={`p-3 rounded-full shadow-lg transition-all ${
+            isListening
+              ? "bg-gradient-to-r from-red-500 to-red-600 shadow-red-500/50 animate-pulse"
+              : "bg-gradient-to-r from-cyan-500 to-violet-500 shadow-cyan-500/50 hover:shadow-cyan-500/70"
+          }`}
         >
-          <div className="flex items-center gap-2 mb-2">
-            <motion.div
-              animate={{ scale: [1, 1.2, 1] }}
-              transition={{ duration: 0.6, repeat: Infinity }}
-              className="w-3 h-3 rounded-full bg-red-500"
-            />
-            <span className="text-sm font-semibold text-cyan-400">Lytter...</span>
-          </div>
-          {transcript && (
-            <p className="text-xs text-slate-300 italic">{transcript}</p>
+          {isListening ? (
+            <Mic className="w-6 h-6 text-white animate-bounce" />
+          ) : (
+            <MicOff className="w-6 h-6 text-white" />
           )}
-        </motion.div>
-      )}
+        </motion.button>
 
-      {/* Voice button */}
-      <Button
-        onClick={toggleListening}
-        className={`rounded-full w-16 h-16 flex items-center justify-center transition-all ${
-          isListening
-            ? 'bg-red-500 hover:bg-red-600 animate-pulse'
-            : 'bg-gradient-to-r from-cyan-500 to-violet-500 hover:from-cyan-600 hover:to-violet-600'
-        }`}
-        title={isListening ? 'Stop lytning' : 'Start stemmestyring'}
-      >
-        {isListening ? (
-          <MicOff className="w-6 h-6 text-white" />
-        ) : (
-          <Mic className="w-6 h-6 text-white" />
-        )}
-      </Button>
+        {/* Status Card */}
+        <AnimatePresence>
+          {isListening && (
+            <motion.div
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -10 }}
+              className="bg-slate-900/95 backdrop-blur-xl border border-cyan-500/30 rounded-xl p-3 w-64 shadow-xl"
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <div className="flex gap-1">
+                  {[0, 1, 2].map((i) => (
+                    <motion.div
+                      key={i}
+                      animate={{ height: [8, 20, 8] }}
+                      transition={{
+                        duration: 0.4,
+                        repeat: Infinity,
+                        delay: i * 0.1,
+                      }}
+                      className="w-1 bg-gradient-to-t from-cyan-500 to-violet-500 rounded-full"
+                    />
+                  ))}
+                </div>
+                <span className="text-xs font-semibold text-cyan-300">Listening...</span>
+              </div>
 
-      {/* Voice hint */}
-      <div className="text-xs text-slate-400 text-right max-w-xs">
-        <p>💬 Sig: "Nexus, vis flåde status"</p>
+              {transcript && (
+                <p className="text-xs text-white mb-2 italic">"{transcript}"</p>
+              )}
+
+              {lastCommand && !isProcessing && (
+                <div className="mt-2 p-2 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
+                  <p className="text-xs text-emerald-300 font-semibold">{lastCommand.response}</p>
+                </div>
+              )}
+
+              {isProcessing && (
+                <div className="flex items-center gap-2">
+                  <Zap className="w-3 h-3 text-violet-400 animate-spin" />
+                  <span className="text-xs text-violet-300">Processing...</span>
+                </div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
-    </div>
+    </motion.div>
   );
 }
