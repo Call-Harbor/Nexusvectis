@@ -1846,6 +1846,8 @@ export default function IntellectMode() {
                   window.type === 'gpsintegration' ? 'GPS Integration' :
                   window.type === 'assignment' ? 'Assignments' :
                   window.type === 'routeeditor' ? 'Route Editor' :
+                  window.type === 'swarm_intelligence' ? '🐜 Swarm Intelligence' :
+                  window.type === 'neuro_risk' ? '🧠 Neuro-Symbolic Risk' :
                   window.type.startsWith('chart_') ? (window.data?.chartConfig?.title || 'Analysis') : ''
                 }
                 icon={
@@ -1866,7 +1868,8 @@ export default function IntellectMode() {
                   window.type === 'gpsintegration' ? Satellite :
                   window.type === 'assignment' ? Route :
                   window.type === 'routeeditor' ? Route :
-                  window.type === 'swarm_intelligence' ? Network : Activity
+                  window.type === 'swarm_intelligence' ? Network :
+                  window.type === 'neuro_risk' ? Shield : Activity
                   }
                 position={window.position}
                 onClose={() => closeWindow(window.id)}
