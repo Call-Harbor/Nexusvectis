@@ -106,23 +106,35 @@ export default function Settings() {
   };
 
   const updateInvoiceSettings = async () => {
-    if (!invoiceSettings.company_name.trim() || !invoiceSettings.vat_number.trim()) {
-      toast.error("Company name and VAT number are required");
+    if (!invoiceSettings.company_name?.trim()) {
+      toast.error("Company name is required");
       return;
     }
 
     setSaving(true);
     try {
-      const dataToSave = { ...invoiceSettings, ...accountingDefaults };
+      const dataToSave = { 
+        company_name: invoiceSettings.company_name,
+        vat_number: invoiceSettings.vat_number || "",
+        company_address: invoiceSettings.company_address || "",
+        company_country: invoiceSettings.company_country || "",
+        company_email: invoiceSettings.company_email || "",
+        company_phone: invoiceSettings.company_phone || "",
+        bank_account: invoiceSettings.bank_account || "",
+        bank_swift: invoiceSettings.bank_swift || "",
+        company_registration: invoiceSettings.company_registration || "",
+        ...accountingDefaults
+      };
+
       if (invoiceSettingsId) {
         await base44.entities.InvoiceSettings.update(invoiceSettingsId, dataToSave);
       } else {
         const created = await base44.entities.InvoiceSettings.create(dataToSave);
         setInvoiceSettingsId(created.id);
       }
-      toast.success("Invoice settings updated");
+      toast.success("Invoice settings saved successfully");
     } catch (error) {
-      toast.error("Could not update invoice settings");
+      toast.error(`Could not save invoice settings: ${error.message}`);
       console.error(error);
     } finally {
       setSaving(false);
