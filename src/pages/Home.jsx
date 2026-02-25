@@ -1249,6 +1249,155 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Pricing Section */}
+      <section className="relative py-20 sm:py-32 px-4 sm:px-6 z-10">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-20"
+          >
+            <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-6 px-2">
+              Simple, Transparent
+              <br />
+              <span className="bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent">
+                Pricing
+              </span>
+            </h2>
+            <p className="text-base sm:text-lg md:text-xl text-slate-400 max-w-3xl mx-auto px-2">
+              Scale your fleet operations without breaking the bank
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            {[
+              {
+                name: "Starter",
+                price: "€299",
+                period: "/month",
+                description: "Perfect for small fleets",
+                features: [
+                  "Up to 10 vehicles",
+                  "Real-time GPS tracking",
+                  "Basic route optimization",
+                  "Email support",
+                  "API access"
+                ],
+                highlighted: false
+              },
+              {
+                name: "Professional",
+                price: "€899",
+                period: "/month",
+                description: "For growing logistics operations",
+                features: [
+                  "Up to 100 vehicles",
+                  "Multi-signal tracking (GPS, AIS, ADS-B)",
+                  "Advanced AI route optimization",
+                  "Predictive maintenance",
+                  "Priority support",
+                  "Demand forecasting",
+                  "Custom API limits"
+                ],
+                highlighted: true
+              },
+              {
+                name: "Enterprise",
+                price: "Custom",
+                period: "pricing",
+                description: "For large-scale operations",
+                features: [
+                  "Unlimited vehicles",
+                  "Full platform access",
+                  "Dedicated account manager",
+                  "Custom integrations",
+                  "SLA guarantee (99.9%)",
+                  "White-label options",
+                  "24/7 phone support"
+                ],
+                highlighted: false
+              }
+            ].map((plan, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.15 }}
+                whileHover={{ scale: plan.highlighted ? 1.05 : 1.02, y: -10 }}
+                className={`relative rounded-3xl p-8 transition-all ${
+                  plan.highlighted
+                    ? "bg-gradient-to-br from-cyan-500/20 to-violet-500/20 border-2 border-cyan-500/50 ring-2 ring-cyan-500/10"
+                    : "bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 hover:border-cyan-500/30"
+                }`}
+              >
+                {plan.highlighted && (
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                    <span className="bg-gradient-to-r from-cyan-500 to-violet-500 text-white px-4 py-1 rounded-full text-sm font-bold">
+                      Most Popular
+                    </span>
+                  </div>
+                )}
+
+                <div className="mb-8">
+                  <h3 className="text-2xl font-bold text-white mb-2">{plan.name}</h3>
+                  <p className="text-slate-400 text-sm">{plan.description}</p>
+                </div>
+
+                <div className="mb-8">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-5xl font-black bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent">
+                      {plan.price}
+                    </span>
+                    <span className="text-slate-400 text-sm">{plan.period}</span>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => base44.auth.redirectToLogin(createPageUrl("Dashboard"))}
+                  className={`w-full py-3 rounded-xl font-semibold mb-8 transition-all ${
+                    plan.highlighted
+                      ? "bg-gradient-to-r from-cyan-500 to-violet-500 text-white hover:shadow-lg hover:shadow-cyan-500/50"
+                      : "bg-white/10 text-white border border-white/20 hover:bg-white/20"
+                  }`}
+                >
+                  Get Started
+                </button>
+
+                <div className="space-y-4">
+                  {plan.features.map((feature, fIdx) => (
+                    <motion.div
+                      key={fIdx}
+                      initial={{ opacity: 0, x: -20 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: idx * 0.15 + fIdx * 0.05 }}
+                      className="flex items-start gap-3"
+                    >
+                      <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
+                      <span className="text-slate-300 text-sm">{feature}</span>
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="text-center mt-16"
+          >
+            <p className="text-slate-400 mb-4">All plans include a 14-day free trial. No credit card required.</p>
+            <Link to={createPageUrl("Contact")} className="text-cyan-400 hover:text-cyan-300 font-semibold transition-colors">
+              Have questions? Contact our sales team →
+            </Link>
+          </motion.div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="relative py-20 sm:py-32 px-4 sm:px-6 z-10">
         <div className="max-w-7xl mx-auto">
