@@ -67,7 +67,7 @@ export default function AlertPanel({ alerts, onMarkRead, onResolve }) {
             </motion.div>
           ) : (
             unreadAlerts.map((alert, index) => {
-              const Icon = alertIcons[alert.type];
+              const Icon = alertIcons[alert.type] || AlertTriangle;
               return (
                 <motion.div
                   key={alert.id}
