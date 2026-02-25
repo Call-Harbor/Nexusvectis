@@ -269,6 +269,8 @@ export default function SwarmIntelligencePanel({ vehicles = [], routes = [], onC
     { id: 'report', label: 'Report', icon: Activity },
   ];
 
+  const cycleAlgorithm = latestCycle?.algorithm || algorithm;
+
   return (
     <div className="h-full flex flex-col bg-slate-950/60 overflow-hidden">
       {/* Header bar */}
