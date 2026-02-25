@@ -206,6 +206,7 @@ export default function IntellectMode() {
     { icon: BarChart3, label: "Performance Analytics", command: "analyze fleet performance metrics", action: "performanceAnalytics", color: "blue" },
     { icon: AlertTriangle, label: "Risk Assessment", command: "assess operational risks and anomalies", action: "riskAssessment", color: "red" },
     { icon: Network, label: "Swarm Intelligence", command: "activate swarm intelligence coordination for fleet", action: "openSwarmIntelligence", color: "emerald" },
+    { icon: Shield, label: "Neuro-Symbolic Risk", command: "activate neuro-symbolic risk fusion analysis", action: "openNeuroRisk", color: "red" },
   ];
   const [isProcessing, setIsProcessing] = useState(false);
   const [activeWindows, setActiveWindows] = useState([]);
