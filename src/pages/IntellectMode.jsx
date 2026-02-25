@@ -472,6 +472,10 @@ export default function IntellectMode() {
         openWindow('neuro_risk', { x: 140, y: 100 });
         setMessages(prev => [...prev, { role: "system", content: "🧠 Neuro-Symbolic Risikofusion aktiveret — fusionerer satellitdata, social media, quantum-vejr og IoT" }]);
         break;
+      case 'openDigitalTwin':
+        openWindow('digital_twin', { x: 160, y: 120 });
+        setMessages(prev => [...prev, { role: "system", content: "🌐 Digital Twin Federation aktiveret — decentralt netværk af virtuelle replika-tvillinger koordinerer i realtid" }]);
+        break;
       default:
         break;
     }
