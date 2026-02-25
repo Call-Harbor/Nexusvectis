@@ -11,8 +11,8 @@ import {
   Settings, Warehouse, Satellite, Globe, BarChart3, Box, Building2, Monitor, ExternalLink, ChevronDown, Users,
   Lightbulb, Network, Shield, Volume2, AlertCircle
 } from "lucide-react";
-import VoiceExecutive from "@/components/intellect/VoiceExecutive";
-import ThreatPilot from "@/components/intellect/ThreatPilot";
+import VoiceExecutive from "@/components/intellect/VoiceExecutive.js";
+import ThreatPilot from "@/components/intellect/ThreatPilot.js";
 import FleetGlobe3D from "@/components/intellect/FleetGlobe3D";
 import ThinkingTerminalVisual from "@/components/intellect/ThinkingTerminalVisual";
 import CompanyAnalysisHologram from "@/components/intellect/CompanyAnalysisHologram";
