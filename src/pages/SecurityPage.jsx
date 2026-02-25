@@ -628,7 +628,7 @@ export default function SecurityPage() {
           </div>
           <div className="h-px bg-gradient-to-r from-transparent via-violet-500/50 to-transparent mb-8" />
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-slate-500 text-sm">&copy; 2026 NexusVectis ApS. Building the future of logistics.</p>
+            <p className="text-slate-500 text-sm">&copy; 2026 NexusVectis. Building the future of logistics.</p>
             <div className="flex gap-6 text-sm text-slate-400">
               <Link to={createPageUrl("PrivacyPolicy")} className="hover:text-violet-400 transition-colors">Privacy Policy</Link>
               <Link to={createPageUrl("TermsOfService")} className="hover:text-violet-400 transition-colors">Terms of Service</Link>
