@@ -445,6 +445,11 @@ export default function NexusSatelliteChat({ user: propUser, orgId, customers })
   const selectChannel = (ch) => {
     setActiveChannel(ch);
     setMobileShowChat(true);
+    // Clear unread badge
+    setUnreadChannels(prev => ({
+      ...prev,
+      [ch.id]: 0
+    }));
   };
 
   return (
