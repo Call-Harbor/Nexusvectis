@@ -32,6 +32,7 @@ import NeuroSymbolicRiskPanel from "@/components/intellect/NeuroSymbolicRiskPane
 import DigitalTwinFederation from "@/components/intellect/DigitalTwinFederation";
 import MistralStreamingEngine, { StreamingAnalysisVisual } from "@/components/intellect/MistralStreamingEngine";
 import IntelligentCommandAgent, { CommandInput, CommandExecution } from "@/components/intellect/IntelligentCommandAgent";
+import VideoCallHologram from "@/components/intellect/VideoCallHologram";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
