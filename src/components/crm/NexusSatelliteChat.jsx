@@ -6,12 +6,14 @@ import {
   MessageSquare, Send, Video, VideoOff, Mic, MicOff, Phone, PhoneOff,
   Plus, Search, Users, Lock, Satellite, Shield, X, ChevronLeft,
   MoreVertical, Paperclip, Smile, Hash, User, Volume2, VolumeX,
-  Monitor, Camera, CameraOff, Maximize2, Minimize2, Settings
+  Monitor, Camera, CameraOff, Maximize2, Minimize2, Settings, Sparkles,
+  Brain, Wand2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import AIEnhancedChat from "@/components/intellect/AIEnhancedChat";
 
 const AVATAR_COLORS = ["bg-cyan-500", "bg-violet-500", "bg-emerald-500", "bg-amber-500", "bg-pink-500", "bg-blue-500", "bg-orange-500"];
 
