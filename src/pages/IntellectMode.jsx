@@ -1230,7 +1230,7 @@ export default function IntellectMode() {
         <div className="w-full h-full overflow-hidden">
           <NexusSatelliteChat
             user={currentUser}
-            orgId={currentUser?.organization_id}
+            orgId={orgId}
             customers={customers}
           />
         </div>
