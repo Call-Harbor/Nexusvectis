@@ -1713,9 +1713,10 @@ export default function IntellectMode() {
       return <AISpreadsheetEditor />;
     }
 
-    // For full page iframes
+    // For full page iframes - all apps
     if (['dashboard', 'settings', 'aioptimization', 'invoices', 'apidocs', 'resources', 
-         'warehouseautomation', 'demandforecasting', 'greentms', 'gpsintegration', 'assignment', 'routeeditor'].includes(type)) {
+         'warehouseautomation', 'demandforecasting', 'greentms', 'gpsintegration', 'assignment', 'routeeditor',
+         'fleet', 'alerts', 'routes', 'shipments', 'crm', 'vehicles', 'drivers', 'maintenance'].includes(type)) {
       const pageMap = {
         'dashboard': 'Dashboard',
         'settings': 'Settings',
@@ -1728,25 +1729,15 @@ export default function IntellectMode() {
         'greentms': 'GreenTMS',
         'gpsintegration': 'GPSIntegration',
         'assignment': 'Assignment',
-        'routeeditor': 'Routes'
-      };
-      
-      return (
-        <iframe 
-          src={`${createPageUrl(pageMap[type])}?hologram=true`}
-          className="w-full h-full border-0"
-          title={pageMap[type]}
-        />
-      );
-    }
-
-    // For fleet/alerts/routes/shipments - open as full page iframes
-    if (['fleet', 'alerts', 'routes', 'shipments'].includes(type)) {
-      const pageMap = {
+        'routeeditor': 'Routes',
         'fleet': 'Fleet',
         'alerts': 'Alerts',
         'routes': 'Routes',
-        'shipments': 'Shipments'
+        'shipments': 'Shipments',
+        'crm': 'CRM',
+        'vehicles': 'Fleet',
+        'drivers': 'DriverManagement',
+        'maintenance': 'MaintenanceManagement'
       };
       
       return (
