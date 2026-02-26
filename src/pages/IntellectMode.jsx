@@ -194,10 +194,20 @@ const HologramWindow = React.memo(({ id, title, icon: Icon, children, position, 
 });
 
 export default function IntellectMode() {
-  const [input, setInput] = useState("");
-  const [messages, setMessages] = useState([
-    { role: "system", content: "⚡ FLEET AI online. World's most advanced logistics intelligence system ready. I can: perform predictive maintenance analysis, forecast demand, optimize routes multi-modally, generate CO2 reports, detect anomalies, assess risks, benchmark performance, and execute any fleet operation. Command me." }
-  ]);
+   const [input, setInput] = useState("");
+
+   const initialMessages = [
+     { role: "system", content: "⚡ FLEET AI online. World's most advanced logistics intelligence system ready. I can: perform predictive maintenance analysis, forecast demand, optimize routes multi-modally, generate CO2 reports, detect anomalies, assess risks, benchmark performance, and execute any fleet operation. Command me." }
+   ];
+
+   const [messages, setMessages] = useState(() => {
+     try {
+       const saved = localStorage.getItem('intellect_mode_messages');
+       return saved ? JSON.parse(saved) : initialMessages;
+     } catch (e) {
+       return initialMessages;
+     }
+   });
 
   const quickCommands = [
     { icon: Brain, label: "Predictive Maintenance", command: "predict vehicle maintenance needs", action: "predictiveAnalysis", color: "violet" },
