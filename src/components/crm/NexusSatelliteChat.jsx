@@ -607,8 +607,19 @@ export default function NexusSatelliteChat({ user: propUser, orgId, customers })
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Input */}
-            <div className="p-3 border-t border-slate-700/50 bg-slate-900/60">
+            {/* AI Enhanced Chat Input */}
+            <div className="p-3 border-t border-slate-700/50 bg-slate-900/60 space-y-2">
+              {/* AI Assistant Panel */}
+              <AIEnhancedChat
+                message={message}
+                onSuggest={(suggestion) => {
+                  setMessage(suggestion);
+                  setSuggestedText(suggestion);
+                }}
+                user={user}
+              />
+
+              {/* Message Input */}
               <div className="flex items-center gap-2 bg-slate-800/60 border border-slate-700/50 rounded-2xl px-4 py-2">
                 <input
                   value={message}
