@@ -1,12 +1,14 @@
 import React, { useState } from "react";
-import { Video, Copy, ExternalLink, AlertCircle } from "lucide-react";
+import { Video, Copy, ExternalLink, AlertCircle, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import AIVideoCall from "@/components/intellect/AIVideoCall";
 
 export default function VideoCallHologram({ videoUrl, onClose }) {
   const [urlInput, setUrlInput] = useState("");
   const [isValidUrl, setIsValidUrl] = useState(false);
   const [currentUrl, setCurrentUrl] = useState(videoUrl || "");
+  const [useAIMode, setUseAIMode] = useState(true);
 
   const validateVideoUrl = (url) => {
     if (!url.trim()) return false;
