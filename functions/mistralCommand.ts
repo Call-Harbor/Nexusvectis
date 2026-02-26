@@ -350,6 +350,8 @@ AVAILABLE WINDOWS:
 - greentms → "greentms" (synonyms: green, sustainability, bæredygtighed, co2)
 - gpsintegration → "gpsintegration" (synonyms: gps, tracking, sporing)
 - assignment → "assignment" (synonyms: assignments, tildeling, opgaver, tasks)
+- document_editor → "document_editor" (synonyms: document, dokument, editor, document editor, nexus cloud)
+- spreadsheet_editor → "spreadsheet_editor" (synonyms: spreadsheet, sheet, regneark, spreadsheet editor, data, calc)
 
 NOTE: "nexus satellite chat", "nexus chat", "chat", "satellite chat", "nexus" → use action OPEN_NEXUS_CHAT (NOT OPEN_WINDOW). This is a SEPARATE action, NOT a window type.
 CRITICAL: NEVER use action: OPEN_WINDOW with window_type: "nexus_chat" or window_type: "aioptimization" for chat commands. Always use action: OPEN_NEXUS_CHAT for any chat/nexus/satellite request.
