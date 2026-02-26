@@ -158,32 +158,37 @@ function NewChannelModal({ customers, user, orgId, onClose, onCreated }) {
   };
 
   const create = async () => {
-    if (selectedContacts.length === 0) return;
+    if (selectedContacts.length === 0 || !user?.email) return;
     setCreating(true);
-    const members = [user.email, ...selectedContacts.map(c => c.email).filter(Boolean)];
-    const memberNames = [user.full_name, ...selectedContacts.map(c => c.name)];
-    const colorIdx = Math.floor(Math.random() * AVATAR_COLORS.length);
-    const channel = await base44.entities.NexusChannel.create({
-      organization_id: orgId,
-      name: type === 'group' ? (groupName || selectedContacts.map(c => c.name).join(', ')) : selectedContacts[0]?.name,
-      type,
-      members,
-      member_names: memberNames,
-      contact_id: type === 'direct' ? selectedContacts[0]?.id : undefined,
-      contact_email: type === 'direct' ? selectedContacts[0]?.email : undefined,
-      avatar_color: AVATAR_COLORS[colorIdx],
-      last_message_at: new Date().toISOString()
-    });
-    await base44.entities.NexusMessage.create({
-      organization_id: orgId,
-      channel_id: channel.id,
-      sender_email: user.email,
-      sender_name: user.full_name,
-      content: `${user.full_name} created this ${type === 'group' ? 'group' : 'conversation'}. 🔒 End-to-end encrypted via Nexus Satellite.`,
-      message_type: "system"
-    });
-    setCreating(false);
-    onCreated(channel);
+    try {
+      const members = [user.email, ...selectedContacts.map(c => c.email).filter(Boolean)];
+      const memberNames = [user.full_name, ...selectedContacts.map(c => c.name)];
+      const colorIdx = Math.floor(Math.random() * AVATAR_COLORS.length);
+      const channel = await base44.entities.NexusChannel.create({
+        organization_id: orgId,
+        name: type === 'group' ? (groupName || selectedContacts.map(c => c.name).join(', ')) : selectedContacts[0]?.name,
+        type,
+        members,
+        member_names: memberNames,
+        contact_id: type === 'direct' ? selectedContacts[0]?.id : undefined,
+        contact_email: type === 'direct' ? selectedContacts[0]?.email : undefined,
+        avatar_color: AVATAR_COLORS[colorIdx],
+        last_message_at: new Date().toISOString()
+      });
+      await base44.entities.NexusMessage.create({
+        organization_id: orgId,
+        channel_id: channel.id,
+        sender_email: user.email,
+        sender_name: user.full_name,
+        content: `${user.full_name} created this ${type === 'group' ? 'group' : 'conversation'}. 🔒 End-to-end encrypted via Nexus Satellite.`,
+        message_type: "system"
+      });
+      setCreating(false);
+      onCreated(channel);
+    } catch (err) {
+      console.error('Failed to create channel:', err);
+      setCreating(false);
+    }
   };
 
   return (
