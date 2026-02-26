@@ -1695,6 +1695,16 @@ export default function IntellectMode() {
       );
     }
 
+    // Document Editor
+    if (type === 'document_editor') {
+      return <AIDocumentEditor />;
+    }
+
+    // Spreadsheet Editor
+    if (type === 'spreadsheet_editor') {
+      return <AISpreadsheetEditor />;
+    }
+
     // For full page iframes
     if (['dashboard', 'settings', 'aioptimization', 'invoices', 'apidocs', 'resources', 
          'warehouseautomation', 'demandforecasting', 'greentms', 'gpsintegration', 'assignment', 'routeeditor'].includes(type)) {
