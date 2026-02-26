@@ -266,13 +266,8 @@ export default function IntellectMode() {
     utterance.pitch = 1.2;
     utterance.volume = 1;
 
-    // Select female voice
-    const voices = synthRef.current.getVoices();
-    const femaleVoice = voices.find(v => v.name.includes('female') || v.name.includes('Female') || v.name.includes('woman') || v.name.includes('Woman')) || 
-                       voices.find(v => v.lang === lang && !v.name.toLowerCase().includes('male')) ||
-                       voices.find(v => v.lang === lang);
-    if (femaleVoice) {
-      utterance.voice = femaleVoice;
+    if (selectedVoiceRef.current) {
+      utterance.voice = selectedVoiceRef.current;
     }
 
     utterance.onstart = () => setIsSpeaking(true);
