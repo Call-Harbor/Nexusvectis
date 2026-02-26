@@ -1,0 +1,150 @@
+import React, { useState } from "react";
+import { Video, Copy, ExternalLink, AlertCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+
+export default function VideoCallHologram({ videoUrl, onClose }) {
+  const [urlInput, setUrlInput] = useState("");
+  const [isValidUrl, setIsValidUrl] = useState(false);
+  const [currentUrl, setCurrentUrl] = useState(videoUrl || "");
+
+  const validateVideoUrl = (url) => {
+    if (!url.trim()) return false;
+    try {
+      new URL(url);
+      // Check if it's a video call platform link
+      const videoPatterns = [
+        /teams\.microsoft\.com/i,
+        /zoom\.us/i,
+        /meet\.google\.com/i,
+        /webex\.com/i,
+        /whereby\.com/i,
+        /jitsi\.org/i,
+      ];
+      return videoPatterns.some(pattern => pattern.test(url));
+    } catch {
+      return false;
+    }
+  };
+
+  const handleAddUrl = () => {
+    if (validateVideoUrl(urlInput)) {
+      setCurrentUrl(urlInput);
+      setUrlInput("");
+      setIsValidUrl(false);
+      toast.success("Video call loaded");
+    } else {
+      toast.error("Invalid video call URL. Supported: Teams, Zoom, Meet, Webex, Whereby, Jitsi");
+    }
+  };
+
+  const handleUrlChange = (e) => {
+    const url = e.target.value;
+    setUrlInput(url);
+    setIsValidUrl(validateVideoUrl(url));
+  };
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(currentUrl);
+    toast.success("URL copied");
+  };
+
+  return (
+    <div className="flex flex-col h-full bg-slate-950">
+      {/* Header */}
+      <div className="p-4 border-b border-slate-800 flex-shrink-0">
+        <div className="flex items-center gap-2 mb-3">
+          <div className="p-2 rounded-lg bg-blue-500/20">
+            <Video className="w-4 h-4 text-blue-400" />
+          </div>
+          <h3 className="text-white font-bold">Video Call</h3>
+        </div>
+
+        {!currentUrl && (
+          <div className="space-y-3">
+            <div className="relative">
+              <input
+                type="text"
+                value={urlInput}
+                onChange={handleUrlChange}
+                placeholder="Paste Teams, Zoom, Meet, or Webex link..."
+                className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm placeholder:text-slate-500 focus:outline-none focus:border-blue-500"
+              />
+              {isValidUrl && (
+                <div className="absolute right-2 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-emerald-400" />
+              )}
+            </div>
+
+            <div className="flex gap-2">
+              <Button
+                onClick={handleAddUrl}
+                disabled={!isValidUrl}
+                size="sm"
+                className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
+              >
+                Load
+              </Button>
+            </div>
+
+            <div className="p-2 rounded bg-slate-800/50 border border-slate-700 text-slate-400 text-xs space-y-1">
+              <div className="flex items-start gap-2">
+                <AlertCircle className="w-3 h-3 mt-0.5 flex-shrink-0 text-blue-400" />
+                <div>
+                  <p className="font-semibold text-slate-300">Supported platforms:</p>
+                  <p>Microsoft Teams, Zoom, Google Meet, Webex, Whereby, Jitsi</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Video Call Frame */}
+      {currentUrl ? (
+        <div className="flex-1 relative overflow-hidden">
+          <iframe
+            src={currentUrl}
+            title="Video Call"
+            allow="camera; microphone; speaker; display-capture"
+            className="w-full h-full border-0"
+          />
+          
+          {/* Floating Controls */}
+          <div className="absolute top-3 right-3 flex gap-2 z-10">
+            <Button
+              onClick={copyToClipboard}
+              size="sm"
+              variant="ghost"
+              className="bg-slate-900/80 hover:bg-slate-800 text-slate-300 h-8 px-2"
+            >
+              <Copy className="w-3 h-3" />
+            </Button>
+            <Button
+              onClick={() => window.open(currentUrl, '_blank')}
+              size="sm"
+              variant="ghost"
+              className="bg-slate-900/80 hover:bg-slate-800 text-slate-300 h-8 px-2"
+            >
+              <ExternalLink className="w-3 h-3" />
+            </Button>
+            <Button
+              onClick={() => setCurrentUrl("")}
+              size="sm"
+              variant="ghost"
+              className="bg-slate-900/80 hover:bg-slate-800 text-red-400 h-8 px-2"
+            >
+              ✕
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <div className="flex-1 flex items-center justify-center text-slate-500">
+          <div className="text-center">
+            <Video className="w-12 h-12 mx-auto mb-3 opacity-30" />
+            <p className="text-sm">Paste a video call link to get started</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
