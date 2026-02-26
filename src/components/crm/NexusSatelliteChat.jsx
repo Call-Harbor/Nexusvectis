@@ -352,30 +352,36 @@ export default function NexusSatelliteChat({ user: propUser, orgId, customers })
       if (msg?.sender_email !== user?.email) {
         // Hvis det er aktive channel, vis visuelt
         if (msg?.channel_id === activeChannel?.id) {
-          queryClient.invalidateQueries({ queryKey: ['nexus-messages', activeChannel.id] });
+        queryClient.invalidateQueries({ queryKey: ['nexus-messages', activeChannel.id] });
         } else {
-          // Hvis det er en anden channel, vis notification og badge
-          queryClient.invalidateQueries({ queryKey: ['nexus-channels', orgId] });
+        // Mark channel as unread
+        setUnreadChannels(prev => ({
+          ...prev,
+          [msg?.channel_id]: (prev[msg?.channel_id] || 0) + 1
+        }));
 
-          // Browser notification
-          if (Notification.permission === 'granted') {
-            new Notification(`Ny besked fra ${msg?.sender_name}`, {
-              body: msg?.content?.slice(0, 50),
-              icon: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/697e930c62bf3e3832b34edb/bc9d40ccc_FullLogo_Transparent1.png'
-            });
-          }
+        // Hvis det er en anden channel, vis notification og badge
+        queryClient.invalidateQueries({ queryKey: ['nexus-channels', orgId] });
 
-          // Desktop notification via toast
-          toast.message(`${msg?.sender_name}`, {
-            description: msg?.content?.slice(0, 100),
-            action: {
-              label: 'Åbn',
-              onClick: () => {
-                const channel = channels.find(c => c.id === msg?.channel_id);
-                if (channel) setActiveChannel(channel);
-              }
-            }
+        // Browser notification
+        if (Notification.permission === 'granted') {
+          new Notification(`Ny besked fra ${msg?.sender_name}`, {
+            body: msg?.content?.slice(0, 50),
+            icon: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/697e930c62bf3e3832b34edb/bc9d40ccc_FullLogo_Transparent1.png'
           });
+        }
+
+        // Desktop notification via toast
+        toast.message(`${msg?.sender_name}`, {
+          description: msg?.content?.slice(0, 100),
+          action: {
+            label: 'Åbn',
+            onClick: () => {
+              const channel = channels.find(c => c.id === msg?.channel_id);
+              if (channel) setActiveChannel(channel);
+            }
+          }
+        });
         }
       }
     });
