@@ -257,7 +257,7 @@ export default function ProactiveThreatPilot() {
   };
 
   return (
-    <div className="fixed bottom-20 right-4 w-80 max-h-96 bg-slate-900/95 backdrop-blur-xl border border-red-500/40 rounded-2xl shadow-2xl shadow-red-500/20 z-30 overflow-hidden">
+    <div className="fixed top-24 right-4 w-72 max-h-96 bg-slate-900/95 backdrop-blur-xl border border-red-500/40 rounded-2xl shadow-2xl shadow-red-500/20 z-30 overflow-hidden">
       <div className="p-4 bg-gradient-to-r from-red-600/20 to-orange-600/20 border-b border-red-500/20">
         <div className="flex items-center gap-2">
           <Shield className="w-5 h-5 text-red-400 animate-pulse" />
