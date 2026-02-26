@@ -2013,6 +2013,8 @@ export default function IntellectMode() {
                   window.type === 'swarm_intelligence' ? Network :
                   window.type === 'neuro_risk' ? Shield :
                   window.type === 'digital_twin' ? Globe :
+                  window.type === 'document_editor' ? FileText :
+                  window.type === 'spreadsheet_editor' ? BarChart3 :
                   window.type === 'nexus_chat' ? MessageSquare : Activity
                   }
                 position={window.position}
