@@ -1254,6 +1254,16 @@ export default function IntellectMode() {
   }), [vehicles, alerts, routes, shipments]);
 
   const renderWindowContent = useCallback((type, data) => {
+    // Document Editor
+    if (type === 'document_editor') {
+      return <AIDocumentEditor />;
+    }
+
+    // Spreadsheet Editor
+    if (type === 'spreadsheet_editor') {
+      return <AISpreadsheetEditor />;
+    }
+
     // Nexus Satellite Chat
     if (type === 'nexus_chat') {
       return (
