@@ -212,6 +212,7 @@ export default function IntellectMode() {
     { icon: Shield, label: "Neuro-Symbolic Risk", command: "activate neuro-symbolic risk fusion analysis", action: "openNeuroRisk", color: "red" },
     { icon: Globe, label: "Digital Twin Federation", command: "activate digital twin federation for fleet", action: "openDigitalTwin", color: "cyan" },
     { icon: MessageSquare, label: "Nexus Satellite Chat", command: "open nexus satellite chat", action: "openNexusChat", color: "emerald" },
+    { icon: Video, label: "Video Call", command: "open video call interface", action: "openVideoCall", color: "blue" },
   ];
   const [isProcessing, setIsProcessing] = useState(false);
   const [activeWindows, setActiveWindows] = useState([]);
