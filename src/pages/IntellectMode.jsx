@@ -1042,6 +1042,7 @@ export default function IntellectMode() {
             queryClient.invalidateQueries({ queryKey: ['routes-intellect'] });
             addThinkingLog('result', `✅ Route created and stored`, null, 100);
             setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
+            if (voiceEnabled && message) speakMessage(message.replace(/\*\*/g, '').replace(/\n/g, ' ').substring(0, 300));
             if (open_window) openWindow(open_window);
           }
           break;
@@ -1057,6 +1058,7 @@ export default function IntellectMode() {
           });
           queryClient.invalidateQueries({ queryKey: ['vehicles-intellect'] });
           setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
+          if (voiceEnabled && message) speakMessage(message.replace(/\*\*/g, '').replace(/\n/g, ' ').substring(0, 300));
           if (open_window) openWindow(open_window);
           break;
 
@@ -1073,6 +1075,7 @@ export default function IntellectMode() {
           });
           queryClient.invalidateQueries({ queryKey: ['shipments-intellect'] });
           setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
+          if (voiceEnabled && message) speakMessage(message.replace(/\*\*/g, '').replace(/\n/g, ' ').substring(0, 300));
           if (open_window) openWindow(open_window);
           break;
 
@@ -1088,6 +1091,7 @@ export default function IntellectMode() {
           });
           queryClient.invalidateQueries({ queryKey: ['alerts-intellect'] });
           setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
+          if (voiceEnabled && message) speakMessage(message.replace(/\*\*/g, '').replace(/\n/g, ' ').substring(0, 300));
           if (open_window) openWindow(open_window);
           break;
 
@@ -1106,6 +1110,7 @@ export default function IntellectMode() {
           });
           queryClient.invalidateQueries({ queryKey: ['customers'] });
           setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
+          if (voiceEnabled && message) speakMessage(message.replace(/\*\*/g, '').replace(/\n/g, ' ').substring(0, 300));
           break;
 
         case "UPDATE_ALERTS":
@@ -1121,6 +1126,7 @@ export default function IntellectMode() {
             );
             queryClient.invalidateQueries({ queryKey: ['alerts-intellect'] });
             setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
+            if (voiceEnabled && message) speakMessage(message.replace(/\*\*/g, '').replace(/\n/g, ' ').substring(0, 300));
           }
           break;
 
@@ -1137,12 +1143,14 @@ export default function IntellectMode() {
             );
             queryClient.invalidateQueries({ queryKey: ['vehicles-intellect'] });
             setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
+            if (voiceEnabled && message) speakMessage(message.replace(/\*\*/g, '').replace(/\n/g, ' ').substring(0, 300));
           } else if (parameters.vehicle_name) {
             const vehicle = vehicles.find(v => v.name.toLowerCase().includes(parameters.vehicle_name.toLowerCase()));
             if (vehicle) {
               await base44.entities.Vehicle.update(vehicle.id, parameters.updates);
               queryClient.invalidateQueries({ queryKey: ['vehicles-intellect'] });
               setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
+              if (voiceEnabled && message) speakMessage(message.replace(/\*\*/g, '').replace(/\n/g, ' ').substring(0, 300));
             }
           }
           if (open_window) openWindow(open_window);
@@ -1157,6 +1165,7 @@ export default function IntellectMode() {
               await base44.entities.Route.update(route.id, parameters.updates);
               queryClient.invalidateQueries({ queryKey: ['routes-intellect'] });
               setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
+              if (voiceEnabled && message) speakMessage(message.replace(/\*\*/g, '').replace(/\n/g, ' ').substring(0, 300));
             } else {
               setMessages(prev => [...prev, { role: "system", content: `❌ Route not found: ${parameters.route_name}` }]);
             }
@@ -1164,6 +1173,7 @@ export default function IntellectMode() {
             await base44.entities.Route.update(parameters.route_id, parameters.updates);
             queryClient.invalidateQueries({ queryKey: ['routes-intellect'] });
             setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
+            if (voiceEnabled && message) speakMessage(message.replace(/\*\*/g, '').replace(/\n/g, ' ').substring(0, 300));
           }
           if (open_window) openWindow(open_window);
           break;
@@ -1180,6 +1190,7 @@ export default function IntellectMode() {
             );
             queryClient.invalidateQueries({ queryKey: ['routes-intellect'] });
             setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
+            if (voiceEnabled && message) speakMessage(message.replace(/\*\*/g, '').replace(/\n/g, ' ').substring(0, 300));
           }
           if (open_window) openWindow(open_window);
           break;
@@ -1191,6 +1202,7 @@ export default function IntellectMode() {
               await base44.entities.Shipment.update(shipment.id, parameters.updates);
               queryClient.invalidateQueries({ queryKey: ['shipments-intellect'] });
               setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
+              if (voiceEnabled && message) speakMessage(message.replace(/\*\*/g, '').replace(/\n/g, ' ').substring(0, 300));
             }
           }
           if (open_window) openWindow(open_window);
@@ -1201,6 +1213,7 @@ export default function IntellectMode() {
             await Promise.all(routes.map(r => base44.entities.Route.delete(r.id)));
             queryClient.invalidateQueries({ queryKey: ['routes-intellect'] });
             setMessages(prev => [...prev, { role: "system", content: `✅ Deleted ${routes.length} routes` }]);
+            if (voiceEnabled) speakMessage(`Deleted ${routes.length} routes successfully.`);
           }
           break;
 
@@ -1209,23 +1222,18 @@ export default function IntellectMode() {
             await Promise.all(vehicles.map(v => base44.entities.Vehicle.delete(v.id)));
             queryClient.invalidateQueries({ queryKey: ['vehicles-intellect'] });
             setMessages(prev => [...prev, { role: "system", content: `✅ Deleted ${vehicles.length} vehicles` }]);
+            if (voiceEnabled) speakMessage(`Deleted ${vehicles.length} vehicles successfully.`);
           }
           break;
 
         case "QUERY_DATA":
         case "ANSWER":
-           // Use reply from fleetAIChat if available
            const responseContent = reply || message || "Analysis complete.";
            setMessages(prev => [...prev, { role: "assistant", content: responseContent }]);
-
-           // Speak the response
            if (voiceEnabled && responseContent) {
-             const textToSpeak = responseContent.replace(/\*\*/g, '').replace(/\n/g, ' ').substring(0, 500);
-             speakMessage(textToSpeak);
+             speakMessage(responseContent.replace(/\*\*/g, '').replace(/\n/g, ' ').substring(0, 500));
            }
-
            if (open_window) openWindow(open_window);
-
           base44.analytics.track({
             eventName: "fleet_ai_query_answered",
             properties: { action }
@@ -1235,11 +1243,8 @@ export default function IntellectMode() {
         case "SHOW_ANALYSIS":
         case "VISUALIZE_DATA":
            setMessages(prev => [...prev, { role: "assistant", content: message }]);
-
-           // Speak the message
            if (voiceEnabled && message) {
-             const textToSpeak = message.replace(/\*\*/g, '').replace(/\n/g, ' ').substring(0, 500);
-             speakMessage(textToSpeak);
+             speakMessage(message.replace(/\*\*/g, '').replace(/\n/g, ' ').substring(0, 500));
            }
           
           // Open chart hologram with AI analysis data
