@@ -490,7 +490,9 @@ export default function NexusSatelliteChat({ user: propUser, orgId, customers })
               <button onClick={() => setShowNewChannel(true)} className="text-cyan-500 text-xs mt-2 hover:underline">Start a conversation</button>
             </div>
           )}
-          {filteredChannels.map(ch => (
+          {filteredChannels.map(ch => {
+            const unreadCount = unreadChannels[ch.id] || 0;
+            return (
             <button key={ch.id} onClick={() => selectChannel(ch)}
               className={`w-full flex items-center gap-3 p-2.5 rounded-xl transition-all text-left ${activeChannel?.id === ch.id ? 'bg-cyan-600/20 border border-cyan-500/30' : 'hover:bg-slate-800/60'}`}>
               <div className="relative">
@@ -501,19 +503,25 @@ export default function NexusSatelliteChat({ user: propUser, orgId, customers })
                 ) : (
                   <Avatar name={ch.name} color={ch.avatar_color || AVATAR_COLORS[0]} size="md" online />
                 )}
+                {unreadCount > 0 && (
+                  <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-white text-[10px] font-bold">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </div>
+                )}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between">
-                  <p className="text-white text-xs font-semibold truncate">{ch.name || ch.members?.filter(m => m !== user?.email).join(', ')}</p>
+                  <p className={`text-xs font-semibold truncate ${unreadCount > 0 ? 'text-white font-bold' : 'text-white'}`}>{ch.name || ch.members?.filter(m => m !== user?.email).join(', ')}</p>
                   {ch.last_message_at && <p className="text-slate-600 text-[9px] flex-shrink-0">{new Date(ch.last_message_at).toLocaleTimeString('da-DK', { hour: '2-digit', minute: '2-digit' })}</p>}
                 </div>
-                <p className="text-slate-500 text-[10px] truncate">{ch.last_message || 'No messages yet'}</p>
+                <p className={`text-[10px] truncate ${unreadCount > 0 ? 'text-slate-400 font-medium' : 'text-slate-500'}`}>{ch.last_message || 'No messages yet'}</p>
               </div>
               {ch.type === 'group' && (
                 <Badge className="text-[9px] bg-violet-500/20 text-violet-400 border-violet-500/30 flex-shrink-0">GROUP</Badge>
               )}
             </button>
-          ))}
+          );
+          })}
         </div>
       </div>
 
