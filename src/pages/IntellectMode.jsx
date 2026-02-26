@@ -1268,6 +1268,7 @@ export default function IntellectMode() {
 
         case "SHOW_3D":
           setMessages(prev => [...prev, { role: "assistant", content: message }]);
+          if (voiceEnabled && message) speakMessage(message.replace(/\*\*/g, '').replace(/\n/g, ' ').substring(0, 300));
           
           // Open 3D visualization
           if (parameters.visualization_type) {
