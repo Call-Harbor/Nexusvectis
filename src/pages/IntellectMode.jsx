@@ -1910,6 +1910,8 @@ export default function IntellectMode() {
                             window.type === 'neuro_risk' ? Shield :
                             window.type === 'digital_twin' ? Globe :
                             window.type === 'video_call' ? Video :
+                            window.type === 'document_editor' ? FileText :
+                            window.type === 'spreadsheet_editor' ? BarChart3 :
                             window.type.startsWith('chart_') ? BarChart3 : Activity;
 
                                    const title = window.type.startsWith('chart_') ? (window.data?.chartConfig?.title || 'Analysis Chart') :
