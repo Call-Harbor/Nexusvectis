@@ -9,8 +9,9 @@ import {
   Sparkles, Send, Mic, Brain, Zap, TrendingUp, AlertTriangle, 
   Truck, Route, Package, Activity, Maximize2, Minimize2, X, LayoutDashboard, Paperclip, FileText,
   Settings, Warehouse, Satellite, Globe, BarChart3, Box, Building2, Monitor, ExternalLink, ChevronDown, Users,
-  Lightbulb, Network, Shield
+  Lightbulb, Network, Shield, MessageSquare
 } from "lucide-react";
+import NexusSatelliteChat from "@/components/crm/NexusSatelliteChat";
 import FleetGlobe3D from "@/components/intellect/FleetGlobe3D";
 import ThinkingTerminalVisual from "@/components/intellect/ThinkingTerminalVisual";
 import CompanyAnalysisHologram from "@/components/intellect/CompanyAnalysisHologram";
@@ -209,6 +210,7 @@ export default function IntellectMode() {
     { icon: Network, label: "Swarm Intelligence", command: "activate swarm intelligence coordination for fleet", action: "openSwarmIntelligence", color: "emerald" },
     { icon: Shield, label: "Neuro-Symbolic Risk", command: "activate neuro-symbolic risk fusion analysis", action: "openNeuroRisk", color: "red" },
     { icon: Globe, label: "Digital Twin Federation", command: "activate digital twin federation for fleet", action: "openDigitalTwin", color: "cyan" },
+    { icon: MessageSquare, label: "Nexus Satellite Chat", command: "open nexus satellite chat", action: "openNexusChat", color: "emerald" },
   ];
   const [isProcessing, setIsProcessing] = useState(false);
   const [activeWindows, setActiveWindows] = useState([]);
@@ -299,6 +301,17 @@ export default function IntellectMode() {
     enabled: !!currentUser,
     refetchInterval: 15000,
     staleTime: 5000
+  });
+
+  const { data: customers = [] } = useQuery({
+    queryKey: ['customers-intellect'],
+    queryFn: async () => {
+      const userData = await base44.entities.User.filter({ email: currentUser.email });
+      if (!userData?.[0]?.organization_id) return [];
+      return base44.entities.Customer.filter({ organization_id: userData[0].organization_id });
+    },
+    enabled: !!currentUser,
+    staleTime: 30000
   });
 
   useEffect(() => {
@@ -475,6 +488,10 @@ export default function IntellectMode() {
       case 'openDigitalTwin':
         openWindow('digital_twin', { x: 160, y: 120 });
         setMessages(prev => [...prev, { role: "system", content: "🌐 Digital Twin Federation aktiveret — decentralt netværk af virtuelle replika-tvillinger koordinerer i realtid" }]);
+        break;
+      case 'openNexusChat':
+        openWindow('nexus_chat', { x: 120, y: 80 });
+        setMessages(prev => [...prev, { role: "system", content: "🛰️ Nexus Satellite Chat åbnet — krypteret E2E kommunikation med dine CRM kontakter" }]);
         break;
       default:
         break;
@@ -1847,7 +1864,8 @@ export default function IntellectMode() {
                             window.type === 'routeeditor' ? 'Route Editor' :
                             window.type === 'swarm_intelligence' ? '🐜 Swarm Intelligence' :
                             window.type === 'neuro_risk' ? '🧠 Neuro-Symbolic Risk' :
-                            window.type === 'digital_twin' ? '🌐 Digital Twin Federation' : '';
+                            window.type === 'digital_twin' ? '🌐 Digital Twin Federation' :
+                            window.type === 'nexus_chat' ? '🛰️ Nexus Satellite Chat' : '';
 
                           return (
                             <motion.div
@@ -1897,8 +1915,9 @@ export default function IntellectMode() {
                   window.type === 'swarm_intelligence' ? '🐜 Swarm Intelligence' :
                   window.type === 'neuro_risk' ? '🧠 Neuro-Symbolic Risk' :
                   window.type === 'digital_twin' ? '🌐 Digital Twin Federation' :
+                  window.type === 'nexus_chat' ? '🛰️ Nexus Satellite Chat' :
                   window.type.startsWith('chart_') ? (window.data?.chartConfig?.title || 'Analysis') : ''
-                }
+                  }
                 icon={
                   window.type.startsWith('chart_') ? BarChart3 :
                   window.type === 'fleet' ? Truck :
@@ -1919,7 +1938,8 @@ export default function IntellectMode() {
                   window.type === 'routeeditor' ? Route :
                   window.type === 'swarm_intelligence' ? Network :
                   window.type === 'neuro_risk' ? Shield :
-                  window.type === 'digital_twin' ? Globe : Activity
+                  window.type === 'digital_twin' ? Globe :
+                  window.type === 'nexus_chat' ? MessageSquare : Activity
                   }
                 position={window.position}
                 onClose={() => closeWindow(window.id)}
