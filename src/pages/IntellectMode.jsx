@@ -1987,6 +1987,8 @@ export default function IntellectMode() {
                   window.type === 'swarm_intelligence' ? '🐜 Swarm Intelligence' :
                   window.type === 'neuro_risk' ? '🧠 Neuro-Symbolic Risk' :
                   window.type === 'digital_twin' ? '🌐 Digital Twin Federation' :
+                  window.type === 'document_editor' ? '📄 Document Editor' :
+                  window.type === 'spreadsheet_editor' ? '📊 Spreadsheet Editor' :
                   window.type === 'nexus_chat' ? '🛰️ Nexus Satellite Chat' :
                   window.type.startsWith('chart_') ? (window.data?.chartConfig?.title || 'Analysis') : ''
                   }
