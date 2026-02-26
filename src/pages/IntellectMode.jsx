@@ -518,6 +518,14 @@ export default function IntellectMode() {
         openWindow('nexus_chat', { x: 120, y: 80 });
         setMessages(prev => [...prev, { role: "system", content: "🛰️ Nexus Satellite Chat åbnet — krypteret E2E kommunikation med dine CRM kontakter" }]);
         break;
+      case 'openDocEditor':
+        openWindow('document_editor', { x: 120, y: 80 });
+        setMessages(prev => [...prev, { role: "system", content: "📄 Document Editor opened - Create and save documents to Nexus Cloud" }]);
+        break;
+      case 'openSpreadsheet':
+        openWindow('spreadsheet_editor', { x: 140, y: 100 });
+        setMessages(prev => [...prev, { role: "system", content: "📊 Spreadsheet Editor opened - Build and analyze data in Nexus Cloud" }]);
+        break;
       default:
         break;
     }
