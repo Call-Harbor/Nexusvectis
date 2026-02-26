@@ -969,6 +969,7 @@ export default function IntellectMode() {
             openWindow(parameters.window_type);
             addThinkingLog('result', `✅ Window opened: ${parameters.window_type}`, null, 50);
             setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
+            if (voiceEnabled && message) speakMessage(message.replace(/\*\*/g, '').replace(/\n/g, ' ').substring(0, 300));
           } else {
             addThinkingLog('error', `Invalid window type: ${parameters.window_type}`, null, 30);
             setMessages(prev => [...prev, { role: "system", content: `❌ Invalid window type` }]);
@@ -978,6 +979,7 @@ export default function IntellectMode() {
         case "CLOSE_WINDOWS":
           setActiveWindows([]);
           setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
+          if (voiceEnabled && message) speakMessage(message.replace(/\*\*/g, '').replace(/\n/g, ' ').substring(0, 300));
           break;
 
         case "CREATE_ROUTE":
