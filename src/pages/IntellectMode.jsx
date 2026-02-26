@@ -9,9 +9,8 @@ import {
   Sparkles, Send, Mic, Brain, Zap, TrendingUp, AlertTriangle, 
   Truck, Route, Package, Activity, Maximize2, Minimize2, X, LayoutDashboard, Paperclip, FileText,
   Settings, Warehouse, Satellite, Globe, BarChart3, Box, Building2, Monitor, ExternalLink, ChevronDown, Users,
-  Lightbulb, Network, Shield, Volume2, AlertCircle, Volume, VolumeX
+  Lightbulb, Network, Shield
 } from "lucide-react";
-
 import FleetGlobe3D from "@/components/intellect/FleetGlobe3D";
 import ThinkingTerminalVisual from "@/components/intellect/ThinkingTerminalVisual";
 import CompanyAnalysisHologram from "@/components/intellect/CompanyAnalysisHologram";
@@ -32,8 +31,6 @@ import NeuroSymbolicRiskPanel from "@/components/intellect/NeuroSymbolicRiskPane
 import DigitalTwinFederation from "@/components/intellect/DigitalTwinFederation";
 import MistralStreamingEngine, { StreamingAnalysisVisual } from "@/components/intellect/MistralStreamingEngine";
 import IntelligentCommandAgent, { CommandInput, CommandExecution } from "@/components/intellect/IntelligentCommandAgent";
-import MultilingualVoiceCommands from "@/components/intellect/MultilingualVoiceCommands";
-import ProactiveThreatPilot from "@/components/intellect/ProactiveThreatPilot";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
@@ -244,74 +241,7 @@ export default function IntellectMode() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [commandExecution, setCommandExecution] = useState(null);
   const [suggestions, setSuggestions] = useState([]);
-  const [isSpeaking, setIsSpeaking] = useState(false);
-  const [voiceEnabled, setVoiceEnabled] = useState(true);
-  const synthRef = useRef(null);
-  const selectedVoiceRef = useRef(null);
   const messagesEndRef = useRef(null);
-
-  const detectLanguage = useCallback(() => {
-    const lang = navigator.language?.split('-')[0];
-    const langMap = { da: 'da-DK', en: 'en-US', de: 'de-DE', fr: 'fr-FR', es: 'es-ES' };
-    return langMap[lang] || 'en-US';
-  }, []);
-
-  const speakMessage = useCallback((text) => {
-    if (!voiceEnabled) return;
-    const synth = window.speechSynthesis;
-    if (!synth) return;
-
-    // Chrome requires a small delay after cancel before speaking again
-    synth.cancel();
-
-    setTimeout(() => {
-      const voices = synth.getVoices();
-      const lang = detectLanguage();
-
-      // Pick best voice if not already set
-      if (!selectedVoiceRef.current && voices.length > 0) {
-        const preferred = ["Samantha", "Karen", "Moira", "Tessa", "Victoria", "Fiona", "Google UK English Female", "Microsoft Zira"];
-        selectedVoiceRef.current = voices.find(v => preferred.some(p => v.name.includes(p)))
-          || voices.find(v => v.lang === lang && !v.name.toLowerCase().includes('male'))
-          || voices.find(v => !v.name.toLowerCase().includes('male'))
-          || voices[0]
-          || null;
-      }
-
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = lang;
-      utterance.rate = 0.9;
-      utterance.pitch = 1.1;
-      utterance.volume = 1;
-      if (selectedVoiceRef.current) utterance.voice = selectedVoiceRef.current;
-
-      utterance.onstart = () => setIsSpeaking(true);
-      utterance.onend = () => setIsSpeaking(false);
-      utterance.onerror = (e) => { console.warn('TTS error:', e.error); setIsSpeaking(false); };
-
-      synth.speak(utterance);
-    }, 150);
-  }, [voiceEnabled, detectLanguage]);
-
-  useEffect(() => {
-    synthRef.current = window.speechSynthesis;
-
-    const pickFemaleVoice = () => {
-      const voices = synthRef.current.getVoices();
-      if (!voices.length) return;
-      const lang = detectLanguage();
-      // Prioritize known high-quality female voices
-      const preferred = ["Samantha", "Karen", "Moira", "Tessa", "Victoria", "Fiona", "Google UK English Female", "Microsoft Zira", "Microsoft Susan"];
-      let voice = voices.find(v => preferred.some(p => v.name.includes(p)));
-      if (!voice) voice = voices.find(v => v.lang === lang && (v.name.toLowerCase().includes('female') || v.name.toLowerCase().includes('woman')));
-      if (!voice) voice = voices.find(v => v.lang.startsWith(lang.split('-')[0]) && !v.name.toLowerCase().includes('male'));
-      if (!voice) voice = voices.find(v => !v.name.toLowerCase().includes('male'));
-      selectedVoiceRef.current = voice || null;
-    };
-
-    pickFemaleVoice();
-    synthRef.current.onvoiceschanged = pickFemaleVoice;
-  }, [detectLanguage]);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const abortControllerRef = useRef(null);
@@ -767,81 +697,6 @@ export default function IntellectMode() {
           prediction_patterns: Object.keys(predictions).length
         }, 180, 40);
 
-        // If files attached, process based on file type
-        if (currentFiles.length > 0) {
-          addThinkingLog('files', `Processing ${currentFiles.length} file(s)...`, 
-            { file_count: currentFiles.length, types: currentFiles.map(f => f.name.split('.').pop()) }, 150, 45);
-
-          try {
-            const imageFiles = currentFiles.filter(f => /\.(jpg|jpeg|png|gif|webp)$/i.test(f.name));
-            const dataFiles = currentFiles.filter(f => /\.(pdf|xlsx?|csv|doc|docx|txt|json)$/i.test(f.name));
-
-            let fileAnalysisContent = '';
-
-            // Vision analysis for images
-            if (imageFiles.length > 0) {
-              addThinkingLog('vision', `Analyzing ${imageFiles.length} image(s)...`, 
-                { file_count: imageFiles.length }, 120, 48);
-
-              const visionResponse = await base44.integrations.Core.InvokeLLM({
-                prompt: `Du er en avanceret AI-assistent specialiseret i at analysere billeder.\n\nBrugerkommando: "${currentCommand}"\n\nAnalyser det/de vedlagte billede(r) detaljeret. Giv konkrete observationer, værdier og anbefalinger.`,
-                file_urls: imageFiles.map(f => f.url),
-                add_context_from_internet: true,
-                response_json_schema: {
-                  type: "object",
-                  properties: {
-                    observations: { type: "array", items: { type: "string" } },
-                    analysis: { type: "string" },
-                    detected_items: { type: "array", items: { type: "string" } },
-                    recommendations: { type: "array", items: { type: "string" } },
-                    confidence_score: { type: "number" }
-                  }
-                }
-              });
-
-              const visionData = visionResponse.data || visionResponse;
-              fileAnalysisContent += `📸 **Billede-Analyse:**\n\n**Observationer:**\n${visionData.observations?.map(o => `• ${o}`).join('\n') || 'Ingen'}\n\n**Analyse:**\n${visionData.analysis || 'N/A'}\n\n**Elementer:**\n${visionData.detected_items?.map(d => `• ${d}`).join('\n') || 'Ingen'}\n\n`;
-              addThinkingLog('vision', 'Billede-analyse fuldført', { confidence: visionData.confidence_score }, 80, 52);
-            }
-
-            // Data extraction for documents
-            if (dataFiles.length > 0) {
-              addThinkingLog('documents', `Extracting data from ${dataFiles.length} document(s)...`, 
-                { file_count: dataFiles.length }, 150, 54);
-
-              for (const file of dataFiles) {
-                try {
-                  const extractResponse = await base44.integrations.Core.ExtractDataFromUploadedFile({
-                    file_url: file.url,
-                    json_schema: {
-                      type: "object",
-                      properties: {
-                        summary: { type: "string" },
-                        key_data: { type: "array", items: { type: "string" } },
-                        extracted_values: { type: "object", additionalProperties: true }
-                      }
-                    }
-                  });
-
-                  const data = extractResponse.output || extractResponse;
-                  fileAnalysisContent += `📄 **${file.name}:**\n\n**Sammenfatning:**\n${data.summary || 'Ingen'}\n\n**Vigtige Data:**\n${data.key_data?.map(k => `• ${k}`).join('\n') || 'Ingen'}\n\n`;
-                  addThinkingLog('documents', `Extracted from ${file.name}`, { keys: Object.keys(data.extracted_values || {}).length }, 100, 58);
-                } catch (e) {
-                  console.error(`Error extracting ${file.name}:`, e);
-                  fileAnalysisContent += `📄 **${file.name}:** [Upload tilgængeligt for analyse]\n\n`;
-                }
-              }
-            }
-
-            if (fileAnalysisContent) {
-              setStreamingMessage(fileAnalysisContent);
-            }
-          } catch (fileError) {
-            console.error('File analysis error:', fileError);
-            addThinkingLog('files', 'Fil-analyse fejl', { error: fileError.message }, 50, 48);
-          }
-        }
-
         // Build conversation history from user/assistant messages (exclude system messages)
         const conversationHistory = messages
           .filter(m => m.role === 'user' || m.role === 'assistant')
@@ -964,7 +819,6 @@ export default function IntellectMode() {
             openWindow(parameters.window_type);
             addThinkingLog('result', `✅ Window opened: ${parameters.window_type}`, null, 50);
             setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
-            if (voiceEnabled && message) speakMessage(message.replace(/\*\*/g, '').replace(/\n/g, ' ').substring(0, 300));
           } else {
             addThinkingLog('error', `Invalid window type: ${parameters.window_type}`, null, 30);
             setMessages(prev => [...prev, { role: "system", content: `❌ Invalid window type` }]);
@@ -974,7 +828,6 @@ export default function IntellectMode() {
         case "CLOSE_WINDOWS":
           setActiveWindows([]);
           setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
-          if (voiceEnabled && message) speakMessage(message.replace(/\*\*/g, '').replace(/\n/g, ' ').substring(0, 300));
           break;
 
         case "CREATE_ROUTE":
@@ -1037,7 +890,6 @@ export default function IntellectMode() {
             queryClient.invalidateQueries({ queryKey: ['routes-intellect'] });
             addThinkingLog('result', `✅ Route created and stored`, null, 100);
             setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
-            if (voiceEnabled && message) speakMessage(message.replace(/\*\*/g, '').replace(/\n/g, ' ').substring(0, 300));
             if (open_window) openWindow(open_window);
           }
           break;
@@ -1053,7 +905,6 @@ export default function IntellectMode() {
           });
           queryClient.invalidateQueries({ queryKey: ['vehicles-intellect'] });
           setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
-          if (voiceEnabled && message) speakMessage(message.replace(/\*\*/g, '').replace(/\n/g, ' ').substring(0, 300));
           if (open_window) openWindow(open_window);
           break;
 
@@ -1070,7 +921,6 @@ export default function IntellectMode() {
           });
           queryClient.invalidateQueries({ queryKey: ['shipments-intellect'] });
           setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
-          if (voiceEnabled && message) speakMessage(message.replace(/\*\*/g, '').replace(/\n/g, ' ').substring(0, 300));
           if (open_window) openWindow(open_window);
           break;
 
@@ -1086,7 +936,6 @@ export default function IntellectMode() {
           });
           queryClient.invalidateQueries({ queryKey: ['alerts-intellect'] });
           setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
-          if (voiceEnabled && message) speakMessage(message.replace(/\*\*/g, '').replace(/\n/g, ' ').substring(0, 300));
           if (open_window) openWindow(open_window);
           break;
 
@@ -1105,7 +954,6 @@ export default function IntellectMode() {
           });
           queryClient.invalidateQueries({ queryKey: ['customers'] });
           setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
-          if (voiceEnabled && message) speakMessage(message.replace(/\*\*/g, '').replace(/\n/g, ' ').substring(0, 300));
           break;
 
         case "UPDATE_ALERTS":
@@ -1121,7 +969,6 @@ export default function IntellectMode() {
             );
             queryClient.invalidateQueries({ queryKey: ['alerts-intellect'] });
             setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
-            if (voiceEnabled && message) speakMessage(message.replace(/\*\*/g, '').replace(/\n/g, ' ').substring(0, 300));
           }
           break;
 
@@ -1138,14 +985,12 @@ export default function IntellectMode() {
             );
             queryClient.invalidateQueries({ queryKey: ['vehicles-intellect'] });
             setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
-            if (voiceEnabled && message) speakMessage(message.replace(/\*\*/g, '').replace(/\n/g, ' ').substring(0, 300));
           } else if (parameters.vehicle_name) {
             const vehicle = vehicles.find(v => v.name.toLowerCase().includes(parameters.vehicle_name.toLowerCase()));
             if (vehicle) {
               await base44.entities.Vehicle.update(vehicle.id, parameters.updates);
               queryClient.invalidateQueries({ queryKey: ['vehicles-intellect'] });
               setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
-              if (voiceEnabled && message) speakMessage(message.replace(/\*\*/g, '').replace(/\n/g, ' ').substring(0, 300));
             }
           }
           if (open_window) openWindow(open_window);
@@ -1160,7 +1005,6 @@ export default function IntellectMode() {
               await base44.entities.Route.update(route.id, parameters.updates);
               queryClient.invalidateQueries({ queryKey: ['routes-intellect'] });
               setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
-              if (voiceEnabled && message) speakMessage(message.replace(/\*\*/g, '').replace(/\n/g, ' ').substring(0, 300));
             } else {
               setMessages(prev => [...prev, { role: "system", content: `❌ Route not found: ${parameters.route_name}` }]);
             }
@@ -1168,7 +1012,6 @@ export default function IntellectMode() {
             await base44.entities.Route.update(parameters.route_id, parameters.updates);
             queryClient.invalidateQueries({ queryKey: ['routes-intellect'] });
             setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
-            if (voiceEnabled && message) speakMessage(message.replace(/\*\*/g, '').replace(/\n/g, ' ').substring(0, 300));
           }
           if (open_window) openWindow(open_window);
           break;
@@ -1185,7 +1028,6 @@ export default function IntellectMode() {
             );
             queryClient.invalidateQueries({ queryKey: ['routes-intellect'] });
             setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
-            if (voiceEnabled && message) speakMessage(message.replace(/\*\*/g, '').replace(/\n/g, ' ').substring(0, 300));
           }
           if (open_window) openWindow(open_window);
           break;
@@ -1197,7 +1039,6 @@ export default function IntellectMode() {
               await base44.entities.Shipment.update(shipment.id, parameters.updates);
               queryClient.invalidateQueries({ queryKey: ['shipments-intellect'] });
               setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
-              if (voiceEnabled && message) speakMessage(message.replace(/\*\*/g, '').replace(/\n/g, ' ').substring(0, 300));
             }
           }
           if (open_window) openWindow(open_window);
@@ -1208,7 +1049,6 @@ export default function IntellectMode() {
             await Promise.all(routes.map(r => base44.entities.Route.delete(r.id)));
             queryClient.invalidateQueries({ queryKey: ['routes-intellect'] });
             setMessages(prev => [...prev, { role: "system", content: `✅ Deleted ${routes.length} routes` }]);
-            if (voiceEnabled) speakMessage(`Deleted ${routes.length} routes successfully.`);
           }
           break;
 
@@ -1217,18 +1057,16 @@ export default function IntellectMode() {
             await Promise.all(vehicles.map(v => base44.entities.Vehicle.delete(v.id)));
             queryClient.invalidateQueries({ queryKey: ['vehicles-intellect'] });
             setMessages(prev => [...prev, { role: "system", content: `✅ Deleted ${vehicles.length} vehicles` }]);
-            if (voiceEnabled) speakMessage(`Deleted ${vehicles.length} vehicles successfully.`);
           }
           break;
 
         case "QUERY_DATA":
         case "ANSWER":
-           const responseContent = reply || message || "Analysis complete.";
-           setMessages(prev => [...prev, { role: "assistant", content: responseContent }]);
-           if (voiceEnabled && responseContent) {
-             speakMessage(responseContent.replace(/\*\*/g, '').replace(/\n/g, ' ').substring(0, 500));
-           }
-           if (open_window) openWindow(open_window);
+          // Use reply from fleetAIChat if available
+          const responseContent = reply || message || "Analysis complete.";
+          setMessages(prev => [...prev, { role: "assistant", content: responseContent }]);
+          if (open_window) openWindow(open_window);
+
           base44.analytics.track({
             eventName: "fleet_ai_query_answered",
             properties: { action }
@@ -1237,10 +1075,7 @@ export default function IntellectMode() {
 
         case "SHOW_ANALYSIS":
         case "VISUALIZE_DATA":
-           setMessages(prev => [...prev, { role: "assistant", content: message }]);
-           if (voiceEnabled && message) {
-             speakMessage(message.replace(/\*\*/g, '').replace(/\n/g, ' ').substring(0, 500));
-           }
+          setMessages(prev => [...prev, { role: "assistant", content: message }]);
           
           // Open chart hologram with AI analysis data
           if (parameters.chart_data && parameters.chart_config) {
@@ -1263,7 +1098,6 @@ export default function IntellectMode() {
 
         case "SHOW_3D":
           setMessages(prev => [...prev, { role: "assistant", content: message }]);
-          if (voiceEnabled && message) speakMessage(message.replace(/\*\*/g, '').replace(/\n/g, ' ').substring(0, 300));
           
           // Open 3D visualization
           if (parameters.visualization_type) {
@@ -1288,7 +1122,6 @@ export default function IntellectMode() {
 
         default:
           setMessages(prev => [...prev, { role: "assistant", content: message || "Command executed." }]);
-          if (voiceEnabled && message) speakMessage(message.replace(/\*\*/g, '').replace(/\n/g, ' ').substring(0, 400));
           if (open_window) openWindow(open_window);
           break;
       }
@@ -2328,40 +2161,13 @@ export default function IntellectMode() {
                     )}
                   </div>
                   {msg.files && msg.files.length > 0 && (
-                    <div className="flex flex-wrap gap-2 ml-4 mt-2">
-                      {msg.files.map((file, i) => {
-                        const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(file.name);
-                        const fileExt = file.name.split('.').pop().toLowerCase();
-                        const fileIcons = {
-                          pdf: '📄', xlsx: '📊', xls: '📊', csv: '📊',
-                          doc: '📝', docx: '📝', txt: '📝', json: '⚙️',
-                          zip: '📦', jpg: '🖼️', jpeg: '🖼️', png: '🖼️'
-                        };
-                        const icon = fileIcons[fileExt] || '📎';
-
-                        return (
-                          <div key={i} className="flex flex-col gap-1">
-                            {isImage ? (
-                              <>
-                                <img 
-                                  src={file.url} 
-                                  alt={file.name}
-                                  className="max-w-xs max-h-64 rounded border border-cyan-500/30"
-                                />
-                                <span className="text-[10px] text-slate-400">{file.name}</span>
-                              </>
-                            ) : (
-                              <div className="flex items-center gap-2 px-3 py-2 bg-cyan-500/10 border border-cyan-500/20 rounded text-[10px]">
-                                <span className="text-base">{icon}</span>
-                                <div className="flex-1">
-                                  <p className="text-slate-300 truncate font-medium">{file.name}</p>
-                                  <p className="text-slate-500 uppercase text-[9px]">.{fileExt}</p>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
+                    <div className="flex flex-wrap gap-1 ml-4">
+                      {msg.files.map((file, i) => (
+                        <div key={i} className="flex items-center gap-1 px-2 py-1 bg-cyan-500/10 border border-cyan-500/20 rounded text-[10px]">
+                          <FileText className="w-3 h-3 text-cyan-400" />
+                          <span className="text-slate-400">{file.name}</span>
+                        </div>
+                      ))}
                     </div>
                   )}
                 </motion.div>
@@ -2455,46 +2261,33 @@ export default function IntellectMode() {
               </AnimatePresence>
 
               <div className="flex gap-2 sm:gap-3">
-               <input
-                 type="text"
-                 value={input}
-                 onChange={(e) => {
-                   setInput(e.target.value);
-                   if (e.target.value) setShowSuggestions(false);
-                 }}
-                 onKeyDown={(e) => {
-                   if (e.key === 'Enter' && !e.shiftKey) {
-                     e.preventDefault();
-                     processCommand();
-                   } else if (e.key === 'ArrowUp' && commandHistory.length > 0) {
-                     e.preventDefault();
-                     const newIndex = historyIndex < commandHistory.length - 1 ? historyIndex + 1 : historyIndex;
-                     setHistoryIndex(newIndex);
-                     setInput(commandHistory[commandHistory.length - 1 - newIndex] || '');
-                   } else if (e.key === 'ArrowDown' && historyIndex > 0) {
-                     e.preventDefault();
-                     const newIndex = historyIndex - 1;
-                     setHistoryIndex(newIndex);
-                     setInput(commandHistory[commandHistory.length - 1 - newIndex] || '');
-                   }
-                 }}
-                 placeholder="Command FLEET AI... (e.g. 'predict maintenance', 'forecast demand', 'analyze CO2 emissions', 'optimize routes')"
-                 disabled={isProcessing}
-                 className="flex-1 px-3 py-2.5 sm:px-4 sm:py-3 lg:px-6 lg:py-4 bg-slate-900/60 border-2 border-cyan-500/40 rounded-xl sm:rounded-2xl text-sm sm:text-base text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-400 focus:shadow-lg focus:shadow-cyan-500/20 backdrop-blur-xl transition-all"
-               />
-               <motion.button
-                 whileHover={{ scale: 1.05 }}
-                 whileTap={{ scale: 0.95 }}
-                 onClick={() => setVoiceEnabled(!voiceEnabled)}
-                 className={`px-3 sm:px-4 lg:px-6 py-2.5 sm:py-3 lg:py-4 rounded-xl sm:rounded-2xl border-2 font-semibold transition-all shadow-lg ${
-                   voiceEnabled
-                     ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20'
-                     : 'border-slate-700/40 bg-slate-900/40 text-slate-400 hover:bg-slate-900/60'
-                 }`}
-                 title={voiceEnabled ? "AI Voice enabled" : "AI Voice disabled"}
-               >
-                 {voiceEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
-               </motion.button>
+              <input
+                type="text"
+                value={input}
+                onChange={(e) => {
+                  setInput(e.target.value);
+                  if (e.target.value) setShowSuggestions(false);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    processCommand();
+                  } else if (e.key === 'ArrowUp' && commandHistory.length > 0) {
+                    e.preventDefault();
+                    const newIndex = historyIndex < commandHistory.length - 1 ? historyIndex + 1 : historyIndex;
+                    setHistoryIndex(newIndex);
+                    setInput(commandHistory[commandHistory.length - 1 - newIndex] || '');
+                  } else if (e.key === 'ArrowDown' && historyIndex > 0) {
+                    e.preventDefault();
+                    const newIndex = historyIndex - 1;
+                    setHistoryIndex(newIndex);
+                    setInput(commandHistory[commandHistory.length - 1 - newIndex] || '');
+                  }
+                }}
+                placeholder="Command FLEET AI... (e.g. 'predict maintenance', 'forecast demand', 'analyze CO2 emissions', 'optimize routes')"
+                disabled={isProcessing}
+                className="flex-1 px-3 py-2.5 sm:px-4 sm:py-3 lg:px-6 lg:py-4 bg-slate-900/60 border-2 border-cyan-500/40 rounded-xl sm:rounded-2xl text-sm sm:text-base text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-400 focus:shadow-lg focus:shadow-cyan-500/20 backdrop-blur-xl transition-all"
+              />
               <input
                 ref={fileInputRef}
                 type="file"
@@ -2524,28 +2317,13 @@ export default function IntellectMode() {
               </Button>
               <Button
                 onClick={async () => {
-                  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                  if (!('webkitSpeechRecognition' in window)) {
                     toast.error('Voice input not supported in this browser');
                     return;
                   }
 
-                  // Request microphone permission first
-                  try {
-                    await navigator.mediaDevices.getUserMedia({ audio: true });
-                  } catch (error) {
-                    if (error.name === 'NotAllowedError') {
-                      toast.error('Mikrofontilladelse nægtet');
-                    } else if (error.name === 'NotFoundError') {
-                      toast.error('Ingen mikrofon fundet');
-                    } else {
-                      toast.error('Kunne ikke få adgang til mikrofon');
-                    }
-                    return;
-                  }
-
-                  const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
-                  const recognition = new SpeechRecognition();
-                  recognition.lang = detectLanguage();
+                  const recognition = new window.webkitSpeechRecognition();
+                  recognition.lang = 'en-US';
                   recognition.continuous = false;
                   recognition.interimResults = false;
 
@@ -2554,25 +2332,15 @@ export default function IntellectMode() {
                   recognition.onresult = (event) => {
                     const transcript = event.results[0][0].transcript;
                     setInput(transcript);
-                    // Auto-send after voice input
-                    setTimeout(async () => {
-                      setIsProcessing(true);
-                      try {
-                        await processCommand(transcript);
-                      } finally {
-                        setIsProcessing(false);
-                      }
-                    }, 300);
                   };
-                  recognition.onerror = (event) => {
-                    console.error('Voice error:', event.error);
-                    toast.error(`Voice input failed: ${event.error}`);
+                  recognition.onerror = () => {
+                    toast.error('Voice input failed');
                     setIsListening(false);
                   };
 
                   recognition.start();
                 }}
-                disabled={isProcessing || isListening}
+                disabled={isProcessing}
                 size="sm"
                 className={`px-3 sm:px-4 lg:px-6 ${isListening ? 'bg-red-500 hover:bg-red-600' : 'bg-slate-800 hover:bg-slate-700'} rounded-xl sm:rounded-2xl hidden sm:flex`}
               >
@@ -2617,39 +2385,6 @@ export default function IntellectMode() {
           />
         )}
       </AnimatePresence>
-
-      {/* Multilingual Voice Commands */}
-      <MultilingualVoiceCommands 
-        onCommand={(action, response) => {
-          const commandMap = {
-            'SHOW_FLEET': { title: "Fleet Status", icon: Truck },
-            'ANALYZE_DSV': { title: "DSV Analysis", icon: Building2 },
-            'OPTIMIZE_ROUTES': { title: "Route Optimization", icon: Route }
-          };
-
-          if (commandMap[action]) {
-            const cmd = commandMap[action];
-            setMessages(prev => [...prev, { 
-              role: "system", 
-              content: `🎯 ${response} - Opening hologram windows...` 
-            }]);
-
-            // Execute the corresponding action
-            if (action === 'SHOW_FLEET') {
-              setShow3DVisualization('fleet');
-            } else if (action === 'ANALYZE_DSV') {
-              setShowCompanyAnalysis(true);
-              setCompanyAnalysisTarget('DSV');
-            } else if (action === 'OPTIMIZE_ROUTES') {
-              setShowSwarmIntelligence(true);
-            }
-          }
-        }}
-      />
-
-      {/* Proactive Threat Pilot with Danish Alerts */}
-      <ProactiveThreatPilot />
-
-      </div>
-      );
-      }
+    </div>
+  );
+}

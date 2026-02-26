@@ -164,11 +164,11 @@ export default function Home() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2 }}
-              className="inline-flex items-center gap-1 px-3 sm:px-5 py-2 sm:py-2.5 rounded-full bg-gradient-to-r from-cyan-500/10 to-violet-500/10 border border-cyan-500/30 backdrop-blur-xl mb-6 sm:mb-8 shadow-lg shadow-cyan-500/10 max-w-[90vw]"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-cyan-500/10 to-violet-500/10 border border-cyan-500/30 backdrop-blur-xl mb-8 shadow-lg shadow-cyan-500/10"
             >
-              <Orbit className="w-3 h-3 sm:w-4 sm:h-4 text-cyan-400 animate-spin flex-shrink-0" style={{ animationDuration: "3s" }} />
-              <span className="text-xs sm:text-sm text-white font-medium truncate">Next-Generation Fleet Intelligence</span>
-              <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-violet-400 flex-shrink-0" />
+              <Orbit className="w-4 h-4 text-cyan-400 animate-spin" style={{ animationDuration: "3s" }} />
+              <span className="text-sm text-white font-medium">Next-Generation Fleet Intelligence Platform</span>
+              <Sparkles className="w-4 h-4 text-violet-400" />
             </motion.div>
             
             <motion.h1 
@@ -197,7 +197,7 @@ export default function Home() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5 }}
-              className="text-sm sm:text-base md:text-lg lg:text-xl text-slate-300 mb-6 sm:mb-12 max-w-3xl mx-auto leading-relaxed font-light px-2"
+              className="text-base sm:text-lg md:text-xl lg:text-2xl text-slate-300 mb-8 sm:mb-12 max-w-3xl mx-auto leading-relaxed font-light px-2"
             >
               Control your entire fleet through natural language with <span className="text-cyan-400 font-semibold">FLEET AI</span>.
               <span className="text-violet-400"> Automate</span>,

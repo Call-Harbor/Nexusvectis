@@ -59,7 +59,6 @@ import AnalyticsPage from './pages/AnalyticsPage';
 import AssetManagement from './pages/AssetManagement';
 import Assignment from './pages/Assignment';
 import Blog from './pages/Blog';
-import CRMManagement from './pages/CRMManagement';
 import Careers from './pages/Careers';
 import Contact from './pages/Contact';
 import ContractManagement from './pages/ContractManagement';
@@ -112,7 +111,6 @@ export const PAGES = {
     "AssetManagement": AssetManagement,
     "Assignment": Assignment,
     "Blog": Blog,
-    "CRMManagement": CRMManagement,
     "Careers": Careers,
     "Contact": Contact,
     "ContractManagement": ContractManagement,

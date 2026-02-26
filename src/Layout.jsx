@@ -59,7 +59,6 @@ const logisticsMenuItems = [
 ];
 
 const businessMenuItems = [
-  { name: "CRM", icon: Users, page: "CRMManagement" },
   { name: "Customers", icon: Users, page: "CustomerManagement" },
   { name: "Contracts", icon: FileText, page: "ContractManagement" },
   { name: "Invoices", icon: FileText, page: "Invoices" },
