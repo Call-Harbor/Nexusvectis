@@ -956,6 +956,11 @@ export default function IntellectMode() {
           if (open_window) openWindow(open_window);
           break;
 
+        case "OPEN_NEXUS_CHAT":
+          openWindow('nexus_chat', { x: 120, y: 80 });
+          setMessages(prev => [...prev, { role: "system", content: "🛰️ " + (message || "Nexus Satellite Chat åbnet") }]);
+          break;
+
         case "CREATE_CUSTOMER":
           await base44.entities.Customer.create({
             organization_id: orgId,
