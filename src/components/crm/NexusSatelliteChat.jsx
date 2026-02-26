@@ -151,7 +151,7 @@ function NewChannelModal({ customers, user, orgId, onClose, onCreated }) {
     c.company?.toLowerCase().includes(search.toLowerCase())
   );
 
-  const isInMyOrg = (c) => c._source === 'user' ? c._orgId === orgId : true;
+
 
   const toggle = (c) => {
     setSelectedContacts(prev => prev.find(x => x.id === c.id) ? prev.filter(x => x.id !== c.id) : [...prev, c]);
