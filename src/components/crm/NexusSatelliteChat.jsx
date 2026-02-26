@@ -33,134 +33,83 @@ function Avatar({ name, color = "bg-cyan-500", size = "md", online }) {
 }
 
 // ──────────────────────────────────────────────
-// VIDEO CALL MODAL
+// VIDEO CALL MODAL (JITSI)
 // ──────────────────────────────────────────────
 function VideoCallModal({ channel, user, onEnd }) {
-  const [micOn, setMicOn] = useState(true);
-  const [camOn, setCamOn] = useState(true);
-  const [speakerOn, setSpeakerOn] = useState(true);
-  const [screenShare, setScreenShare] = useState(false);
-  const [fullscreen, setFullscreen] = useState(false);
-  const [callDuration, setCallDuration] = useState(0);
-  const localVideoRef = useRef(null);
-  const streamRef = useRef(null);
+   const containerRef = useRef(null);
+   const jitsiRef = useRef(null);
 
-  useEffect(() => {
-    // Start local camera
-    navigator.mediaDevices?.getUserMedia({ video: true, audio: true })
-      .then(stream => {
-        streamRef.current = stream;
-        if (localVideoRef.current) localVideoRef.current.srcObject = stream;
-      })
-      .catch(() => {});
+   useEffect(() => {
+     if (!containerRef.current) return;
 
-    const timer = setInterval(() => setCallDuration(d => d + 1), 1000);
-    return () => {
-      clearInterval(timer);
-      streamRef.current?.getTracks().forEach(t => t.stop());
-    };
-  }, []);
+     const roomName = `nexus-${channel.id}-${Date.now()}`.replace(/[^a-z0-9-]/gi, '');
+     const displayName = user?.full_name || 'Guest';
 
-  const toggleCam = () => {
-    streamRef.current?.getVideoTracks().forEach(t => { t.enabled = !camOn; });
-    setCamOn(v => !v);
-  };
-  const toggleMic = () => {
-    streamRef.current?.getAudioTracks().forEach(t => { t.enabled = !micOn; });
-    setMicOn(v => !v);
-  };
+     const options = {
+       roomName: roomName,
+       height: '100%',
+       parentNode: containerRef.current,
+       userInfo: {
+         displayName: displayName,
+         email: user?.email
+       },
+       configOverwrite: {
+         startWithAudioMuted: false,
+         startWithVideoMuted: false,
+         prejoinPageEnabled: false,
+         disableThirdPartyRequests: false
+       },
+       interfaceConfigOverwrite: {
+         TOOLBAR_BUTTONS: [
+           'microphone', 'camera', 'closedcaptions', 'desktop', 'fullscreen',
+           'fodeviceselection', 'hangup', 'chat', 'recording',
+           'livestreaming', 'etherpad', 'sharedvideo', 'settings', 'raisehand',
+           'videoquality', 'filmstrip', 'invite', 'feedback', 'stats', 'shortcuts',
+           'tileview', 'download', 'help', 'mute-everyone', 'e2ee'
+         ],
+         HIDE_INVITE_MORE_HEADER: false,
+         MOBILE_APP_PROMO: false
+       }
+     };
 
-  const formatDuration = (s) => `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+     const script = document.createElement('script');
+     script.src = 'https://meet.jitsi.org/external_api.js';
+     script.async = true;
+     script.onload = () => {
+       jitsiRef.current = new window.JitsiMeetExternalAPI('meet.jitsi.org', options);
+       jitsiRef.current.addEventListener('videoConferenceLeft', onEnd);
+     };
+     document.head.appendChild(script);
 
-  const participants = channel.type === 'group' ? channel.member_names || channel.members : [channel.name || channel.contact_email, user?.full_name];
+     return () => {
+       if (jitsiRef.current) {
+         jitsiRef.current.dispose();
+         jitsiRef.current = null;
+       }
+       if (script.parentNode) script.parentNode.removeChild(script);
+     };
+   }, [channel.id, user, onEnd]);
 
-  return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.95 }}
-      className={`fixed z-[100] bg-slate-950 border border-cyan-500/30 rounded-2xl shadow-2xl overflow-hidden flex flex-col ${
-        fullscreen ? 'inset-0 rounded-none' : 'inset-4 md:inset-8 lg:inset-16'
-      }`}
-    >
-      {/* Header */}
-      <div className="flex items-center justify-between px-5 py-3 bg-gradient-to-r from-slate-900 to-slate-900 border-b border-slate-700/50">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-emerald-400 text-xs font-semibold">LIVE</span>
-          </div>
-          <span className="text-white font-semibold">{channel.name || channel.contact_email}</span>
-          <Badge className="bg-cyan-500/20 text-cyan-300 border-cyan-500/30 text-[10px]">
-            <Lock className="w-2.5 h-2.5 mr-1" /> E2E Encrypted
-          </Badge>
-        </div>
-        <div className="flex items-center gap-3">
-          <span className="text-slate-400 text-sm font-mono">{formatDuration(callDuration)}</span>
-          <button onClick={() => setFullscreen(v => !v)} className="text-slate-400 hover:text-white">
-            {fullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-          </button>
-        </div>
-      </div>
+   return (
+     <motion.div
+       initial={{ opacity: 0, scale: 0.95 }}
+       animate={{ opacity: 1, scale: 1 }}
+       exit={{ opacity: 0, scale: 0.95 }}
+       className="fixed inset-0 z-[100] bg-slate-950 rounded-none overflow-hidden"
+     >
+       {/* Close Button */}
+       <button
+         onClick={onEnd}
+         className="absolute top-4 right-4 z-10 p-3 rounded-full bg-red-600 hover:bg-red-700 text-white transition-all shadow-lg"
+       >
+         <X className="w-5 h-5" />
+       </button>
 
-      {/* Video Grid */}
-      <div className="flex-1 relative bg-slate-950 p-3 grid gap-3" style={{ gridTemplateColumns: participants.length > 2 ? 'repeat(2, 1fr)' : '1fr' }}>
-        {/* Remote participants (placeholder tiles) */}
-        {participants.filter(p => p !== user?.full_name).map((name, i) => (
-          <div key={i} className="relative bg-slate-900 rounded-xl overflow-hidden flex items-center justify-center border border-slate-700/50 min-h-[200px]">
-            <div className="text-center">
-              <div className={`w-20 h-20 ${AVATAR_COLORS[i % AVATAR_COLORS.length]} rounded-full flex items-center justify-center text-2xl font-bold text-white mx-auto mb-3`}>
-                {getInitials(name)}
-              </div>
-              <p className="text-white text-sm font-medium">{name}</p>
-              <p className="text-slate-500 text-xs mt-1">Connecting via Nexus Satellite...</p>
-            </div>
-            <div className="absolute top-3 right-3 flex gap-1">
-              <div className="bg-slate-800/80 rounded-lg px-2 py-1 flex items-center gap-1">
-                <Satellite className="w-3 h-3 text-cyan-400" />
-                <span className="text-[10px] text-cyan-400">SAT</span>
-              </div>
-            </div>
-          </div>
-        ))}
-
-        {/* Local video (picture-in-picture) */}
-        <div className="absolute bottom-6 right-6 w-36 h-28 bg-slate-800 rounded-xl overflow-hidden border-2 border-cyan-500/50 shadow-xl">
-          {camOn ? (
-            <video ref={localVideoRef} autoPlay muted playsInline className="w-full h-full object-cover" />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <div className={`w-12 h-12 ${AVATAR_COLORS[0]} rounded-full flex items-center justify-center font-bold text-white`}>
-                {getInitials(user?.full_name)}
-              </div>
-            </div>
-          )}
-          <div className="absolute bottom-1 left-1 text-[9px] text-white bg-black/60 rounded px-1">You</div>
-          {!micOn && <div className="absolute top-1 right-1 bg-red-500/80 rounded p-0.5"><MicOff className="w-2.5 h-2.5 text-white" /></div>}
-        </div>
-      </div>
-
-      {/* Controls */}
-      <div className="flex items-center justify-center gap-4 py-4 bg-slate-900/80 border-t border-slate-700/50">
-        <button onClick={toggleMic} className={`p-3 rounded-full transition-all ${micOn ? 'bg-slate-700 hover:bg-slate-600' : 'bg-red-500 hover:bg-red-600'}`}>
-          {micOn ? <Mic className="w-5 h-5 text-white" /> : <MicOff className="w-5 h-5 text-white" />}
-        </button>
-        <button onClick={toggleCam} className={`p-3 rounded-full transition-all ${camOn ? 'bg-slate-700 hover:bg-slate-600' : 'bg-red-500 hover:bg-red-600'}`}>
-          {camOn ? <Camera className="w-5 h-5 text-white" /> : <CameraOff className="w-5 h-5 text-white" />}
-        </button>
-        <button onClick={() => setSpeakerOn(v => !v)} className={`p-3 rounded-full transition-all ${speakerOn ? 'bg-slate-700 hover:bg-slate-600' : 'bg-red-500 hover:bg-red-600'}`}>
-          {speakerOn ? <Volume2 className="w-5 h-5 text-white" /> : <VolumeX className="w-5 h-5 text-white" />}
-        </button>
-        <button onClick={() => { setScreenShare(v => !v); toast.info(screenShare ? "Screen share stopped" : "Screen share started"); }} className={`p-3 rounded-full transition-all ${screenShare ? 'bg-cyan-600 hover:bg-cyan-700' : 'bg-slate-700 hover:bg-slate-600'}`}>
-          <Monitor className="w-5 h-5 text-white" />
-        </button>
-        <button onClick={onEnd} className="p-4 rounded-full bg-red-600 hover:bg-red-700 transition-all">
-          <PhoneOff className="w-5 h-5 text-white" />
-        </button>
-      </div>
-    </motion.div>
-  );
-}
+       {/* Jitsi Container */}
+       <div ref={containerRef} className="w-full h-full" />
+     </motion.div>
+   );
+ }
 
 // ──────────────────────────────────────────────
 // NEW CHANNEL MODAL
