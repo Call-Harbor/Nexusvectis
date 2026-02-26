@@ -1293,6 +1293,7 @@ export default function IntellectMode() {
 
         default:
           setMessages(prev => [...prev, { role: "assistant", content: message || "Command executed." }]);
+          if (voiceEnabled && message) speakMessage(message.replace(/\*\*/g, '').replace(/\n/g, ' ').substring(0, 400));
           if (open_window) openWindow(open_window);
           break;
       }
