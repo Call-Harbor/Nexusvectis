@@ -2085,17 +2085,20 @@ export default function IntellectMode() {
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: idx * 0.05 }}
                     onClick={() => {
-                      if (cmd.action === 'openCompanyAnalysis') {
-                        setShowCompanyAnalysis(true);
-                        setMessages(prev => [...prev, { role: "system", content: "🏢 Company Analytics Hologram activated - Search any company for deep insights" }]);
-                      } else if (cmd.action === 'openCandidateMatcher') {
-                        setShowCandidateMatcher(true);
-                        setMessages(prev => [...prev, { role: "system", content: "👥 Candidate Intelligence activated - Match candidates to job descriptions" }]);
-                      } else {
-                        setInput(cmd.command);
-                      }
-                      setShowSuggestions(false);
-                    }}
+                       if (cmd.action === 'openCompanyAnalysis') {
+                         setShowCompanyAnalysis(true);
+                         setMessages(prev => [...prev, { role: "system", content: "🏢 Company Analytics Hologram activated - Search any company for deep insights" }]);
+                       } else if (cmd.action === 'openCandidateMatcher') {
+                         setShowCandidateMatcher(true);
+                         setMessages(prev => [...prev, { role: "system", content: "👥 Candidate Intelligence activated - Match candidates to job descriptions" }]);
+                       } else if (cmd.action === 'openVideoCall') {
+                         setShowVideoCall(true);
+                         setMessages(prev => [...prev, { role: "system", content: "📞 Video Call Hologram activated - Paste Teams, Zoom, Meet, or other video call links" }]);
+                       } else {
+                         setInput(cmd.command);
+                       }
+                       setShowSuggestions(false);
+                     }}
                     className={`p-2 sm:p-3 rounded-lg sm:rounded-xl border-2 backdrop-blur-xl transition-all text-left active:scale-95 sm:hover:scale-105 ${
                       cmd.color === 'cyan' ? 'bg-cyan-500/10 border-cyan-500/30 hover:bg-cyan-500/20 hover:border-cyan-500/50' :
                       cmd.color === 'violet' ? 'bg-violet-500/10 border-violet-500/30 hover:bg-violet-500/20 hover:border-violet-500/50' :
