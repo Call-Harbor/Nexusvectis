@@ -864,7 +864,7 @@ export default function IntellectMode() {
           const validWindows = ['fleet', 'alerts', 'routes', 'shipments', 'dashboard', 'settings', 
                                 'aioptimization', 'invoices', 'apidocs', 'resources', 
                                 'warehouseautomation', 'demandforecasting', 'greentms', 
-                                'gpsintegration', 'assignment', 'routeeditor'];
+                                'gpsintegration', 'assignment', 'routeeditor', 'document_editor', 'spreadsheet_editor'];
           if (parameters.window_type && validWindows.includes(parameters.window_type)) {
             openWindow(parameters.window_type);
             addThinkingLog('result', `✅ Window opened: ${parameters.window_type}`, null, 50);
