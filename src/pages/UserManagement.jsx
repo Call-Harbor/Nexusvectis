@@ -122,8 +122,13 @@ export default function UserManagement() {
       return;
     }
 
+    if (!currentUser?.organization_id && !currentUser?.data?.organization_id) {
+      toast.error("You must be assigned to an organization to invite users");
+      return;
+    }
+
     // Only org admins can invite other admins
-    const isOrgAdmin = currentUser?.email === organization?.admin_email;
+    const isOrgAdmin = currentUser?.email === organization?.admin_email || currentUser?.role === 'admin';
     if (inviteRole === "admin" && !isOrgAdmin) {
       toast.error("Only admins can invite other admins");
       return;

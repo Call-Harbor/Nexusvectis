@@ -152,7 +152,7 @@ export const PAGES = {
 }
 
 export const pagesConfig = {
-    mainPage: "Home",
+    mainPage: "IntellectMode",
     Pages: PAGES,
     Layout: __Layout,
 };
