@@ -49,27 +49,40 @@ export default function UserManagement() {
     enabled: !!(currentUser?.organization_id || currentUser?.data?.organization_id),
   });
 
-  // List users from same organization
-  const { data: users = [], isLoading } = useQuery({
-    queryKey: ['users', currentUser?.organization_id, currentUser?.data?.organization_id],
+  // List organization members
+  const { data: members = [] } = useQuery({
+    queryKey: ['orgMembers', currentUser?.organization_id, currentUser?.data?.organization_id],
     queryFn: async () => {
       const orgId = currentUser?.organization_id || currentUser?.data?.organization_id;
-      if (!orgId) return [currentUser]; // Return current user even without org
-      
+      if (!orgId) return [];
+
+      const orgMembers = await base44.entities.OrganizationMember.filter({ organization_id: orgId });
+      return orgMembers;
+    },
+    enabled: !!(currentUser?.organization_id || currentUser?.data?.organization_id),
+    staleTime: 0,
+  });
+
+  // List users from same organization
+  const { data: users = [], isLoading } = useQuery({
+    queryKey: ['users', members],
+    queryFn: async () => {
+      if (members.length === 0) return [currentUser] || [];
+
       const allUsers = await base44.entities.User.list();
-      
-      // Get all users and filter by org, including current user
-      const filteredUsers = allUsers.filter(u => {
-        const userOrgId = u.organization_id || u.data?.organization_id;
-        return userOrgId === orgId;
-      });
-      
+
+      // Get active members' user data
+      const activeMembers = members.filter(m => m.status !== 'removed');
+      const memberEmails = activeMembers.map(m => m.user_email);
+
+      const filteredUsers = allUsers.filter(u => memberEmails.includes(u.email));
+
       // Always ensure current user is in the list
-      if (!filteredUsers.find(u => u.id === currentUser.id)) {
+      if (!filteredUsers.find(u => u.id === currentUser?.id) && currentUser) {
         return [currentUser, ...filteredUsers];
       }
-      
-      return filteredUsers;
+
+      return filteredUsers || [];
     },
     enabled: !!currentUser,
     staleTime: 0,
