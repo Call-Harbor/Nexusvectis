@@ -1900,6 +1900,7 @@ export default function IntellectMode() {
                             window.type === 'swarm_intelligence' ? '🐜 Swarm Intelligence' :
                             window.type === 'neuro_risk' ? '🧠 Neuro-Symbolic Risk' :
                             window.type === 'digital_twin' ? '🌐 Digital Twin Federation' :
+                            window.type === 'video_call' ? '📞 Video Call' :
                             window.type === 'nexus_chat' ? '🛰️ Nexus Satellite Chat' : '';
 
                           return (
