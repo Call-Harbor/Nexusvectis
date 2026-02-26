@@ -157,11 +157,15 @@ export default function UserManagement() {
     inviteMutation.mutate({ email: inviteEmail, role: inviteRole });
   };
 
-  // Determine admin based on organization's admin_email
-  const usersWithOrgs = users.map(user => ({
-    ...user,
-    isAdmin: user.email === organization?.admin_email
-  }));
+  // Determine admin based on OrganizationMember role
+  const usersWithOrgs = users.map(user => {
+    const memberRecord = members.find(m => m.user_email === user.email);
+    return {
+      ...user,
+      isAdmin: memberRecord?.role === 'admin',
+      memberStatus: memberRecord?.status || 'active'
+    };
+  });
 
   // Filter users
   const filteredUsers = usersWithOrgs.filter(user => {
