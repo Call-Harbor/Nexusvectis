@@ -214,13 +214,28 @@ function NewChannelModal({ customers, user, orgId, onClose, onCreated }) {
           <div className="flex gap-1 bg-slate-800/60 p-1 rounded-xl">
             <button onClick={() => setActiveTab("users")} className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-all ${activeTab === "users" ? 'bg-slate-700 text-white' : 'text-slate-500 hover:text-slate-300'}`}>
               <Users className="w-3 h-3 inline mr-1" />
-              Nexus Users ({platformContacts.length})
+              Nexus Users ({internalUsers.length})
             </button>
             <button onClick={() => setActiveTab("customers")} className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-all ${activeTab === "customers" ? 'bg-slate-700 text-white' : 'text-slate-500 hover:text-slate-300'}`}>
               <User className="w-3 h-3 inline mr-1" />
               Customers ({customerContacts.length})
             </button>
           </div>
+
+          {/* External users toggle */}
+          {activeTab === "users" && externalUsers.length > 0 && (
+            <label className="flex items-center gap-2 p-2 bg-slate-800/40 rounded-lg cursor-pointer hover:bg-slate-800/60 transition-all">
+              <input
+                type="checkbox"
+                checked={showExternal}
+                onChange={e => setShowExternal(e.target.checked)}
+                className="w-4 h-4 rounded accent-cyan-600 cursor-pointer"
+              />
+              <span className="text-xs text-slate-300">
+                Show external users (<span className="text-violet-400 font-medium">{externalUsers.length}</span>)
+              </span>
+            </label>
+          )}
 
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
