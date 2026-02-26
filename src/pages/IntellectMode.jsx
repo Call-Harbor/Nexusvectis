@@ -581,8 +581,8 @@ export default function IntellectMode() {
     }
   };
 
-   const executeParallelMicroAnalyses = async (mainPrompt, ctxVehicles = [], ctxAlerts = [], ctxRoutes = [], ctxShipments = []) => {
-     const mainCall = base44.functions.invoke('mistralCommand', { command: mainPrompt }).catch(() => ({ data: { action: 'ANALYZE', parameters: {} } }));
+   const executeParallelMicroAnalyses = async (mainPrompt, ctxVehicles = [], ctxAlerts = [], ctxRoutes = [], ctxShipments = [], extraPayload = {}) => {
+     const mainCall = base44.functions.invoke('mistralCommand', { command: mainPrompt, ...extraPayload }).catch(() => ({ data: { action: 'ANALYZE', parameters: {} } }));
      const microCalls = Array(49).fill(null).map((_, i) => {
        const p = [
          () => base44.integrations.Core.InvokeLLM({ prompt: `Vehicle efficiency gain?`, response_json_schema: { type: 'object', properties: { g: { type: 'number' } } } }).catch(() => ({})),

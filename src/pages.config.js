@@ -59,6 +59,7 @@ import AnalyticsPage from './pages/AnalyticsPage';
 import AssetManagement from './pages/AssetManagement';
 import Assignment from './pages/Assignment';
 import Blog from './pages/Blog';
+import CRM from './pages/CRM';
 import Careers from './pages/Careers';
 import Contact from './pages/Contact';
 import ContractManagement from './pages/ContractManagement';
@@ -75,7 +76,9 @@ import FleetAIPage from './pages/FleetAIPage';
 import GPSIntegration from './pages/GPSIntegration';
 import GreenTMS from './pages/GreenTMS';
 import HologramDesktop from './pages/HologramDesktop';
+import Home from './pages/Home';
 import IntegrationsPage from './pages/IntegrationsPage';
+import IntellectMode from './pages/IntellectMode';
 import Invoices from './pages/Invoices';
 import LiveTrackingPage from './pages/LiveTrackingPage';
 import MaintenanceManagement from './pages/MaintenanceManagement';
@@ -93,9 +96,6 @@ import Shipments from './pages/Shipments';
 import TermsOfService from './pages/TermsOfService';
 import UserManagement from './pages/UserManagement';
 import WarehouseAutomation from './pages/WarehouseAutomation';
-import IntellectMode from './pages/IntellectMode';
-import Home from './pages/Home';
-import CRM from './pages/CRM';
 import __Layout from './Layout.jsx';
 
 
@@ -112,6 +112,7 @@ export const PAGES = {
     "AssetManagement": AssetManagement,
     "Assignment": Assignment,
     "Blog": Blog,
+    "CRM": CRM,
     "Careers": Careers,
     "Contact": Contact,
     "ContractManagement": ContractManagement,
@@ -128,7 +129,9 @@ export const PAGES = {
     "GPSIntegration": GPSIntegration,
     "GreenTMS": GreenTMS,
     "HologramDesktop": HologramDesktop,
+    "Home": Home,
     "IntegrationsPage": IntegrationsPage,
+    "IntellectMode": IntellectMode,
     "Invoices": Invoices,
     "LiveTrackingPage": LiveTrackingPage,
     "MaintenanceManagement": MaintenanceManagement,
@@ -146,9 +149,6 @@ export const PAGES = {
     "TermsOfService": TermsOfService,
     "UserManagement": UserManagement,
     "WarehouseAutomation": WarehouseAutomation,
-    "IntellectMode": IntellectMode,
-    "Home": Home,
-    "CRM": CRM,
 }
 
 export const pagesConfig = {
