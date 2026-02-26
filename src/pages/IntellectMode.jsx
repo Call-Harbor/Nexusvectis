@@ -2193,59 +2193,8 @@ export default function IntellectMode() {
         </div>
 
         {/* Command Interface */}
-        <div className="p-3 sm:p-4 lg:p-6">
-          <div className="max-w-4xl mx-auto">
-            {/* Quick Commands */}
-            {showSuggestions && messages.length <= 1 && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mb-3 sm:mb-4 grid grid-cols-2 sm:grid-cols-3 gap-2"
-              >
-                {quickCommands.map((cmd, idx) => (
-                  <motion.button
-                    key={idx}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: idx * 0.05 }}
-                    onClick={() => {
-                       if (cmd.action === 'openCompanyAnalysis') {
-                         setShowCompanyAnalysis(true);
-                         setMessages(prev => [...prev, { role: "system", content: "🏢 Company Analytics Hologram activated - Search any company for deep insights" }]);
-                       } else if (cmd.action === 'openCandidateMatcher') {
-                         setShowCandidateMatcher(true);
-                         setMessages(prev => [...prev, { role: "system", content: "👥 Candidate Intelligence activated - Match candidates to job descriptions" }]);
-                       } else if (cmd.action === 'openVideoCall') {
-                         setShowVideoCall(true);
-                         setMessages(prev => [...prev, { role: "system", content: "📞 Video Call Hologram activated - Paste Teams, Zoom, Meet, or other video call links" }]);
-                       } else {
-                         setInput(cmd.command);
-                       }
-                       setShowSuggestions(false);
-                     }}
-                    className={`p-2 sm:p-3 rounded-lg sm:rounded-xl border-2 backdrop-blur-xl transition-all text-left active:scale-95 sm:hover:scale-105 ${
-                      cmd.color === 'cyan' ? 'bg-cyan-500/10 border-cyan-500/30 hover:bg-cyan-500/20 hover:border-cyan-500/50' :
-                      cmd.color === 'violet' ? 'bg-violet-500/10 border-violet-500/30 hover:bg-violet-500/20 hover:border-violet-500/50' :
-                      cmd.color === 'emerald' ? 'bg-emerald-500/10 border-emerald-500/30 hover:bg-emerald-500/20 hover:border-emerald-500/50' :
-                      cmd.color === 'amber' ? 'bg-amber-500/10 border-amber-500/30 hover:bg-amber-500/20 hover:border-amber-500/50' :
-                      'bg-blue-500/10 border-blue-500/30 hover:bg-blue-500/20 hover:border-blue-500/50'
-                    }`}
-                    >
-                    <div className="flex items-center gap-1.5 sm:gap-2 mb-0.5 sm:mb-1">
-                      <cmd.icon className={`w-3 h-3 sm:w-4 sm:h-4 ${
-                        cmd.color === 'cyan' ? 'text-cyan-400' :
-                        cmd.color === 'violet' ? 'text-violet-400' :
-                        cmd.color === 'emerald' ? 'text-emerald-400' :
-                        cmd.color === 'amber' ? 'text-amber-400' :
-                        'text-blue-400'
-                      }`} />
-                      <span className="text-white text-[11px] sm:text-xs font-semibold">{cmd.label}</span>
-                    </div>
-                    <p className="text-[9px] sm:text-[10px] text-slate-400">"{cmd.command}"</p>
-                    </motion.button>
-                ))}
-              </motion.div>
-            )}
+         <div className="p-3 sm:p-4 lg:p-6">
+           <div className="max-w-4xl mx-auto">
 
             {/* Advanced AI Visualizations - hidden */}
 
