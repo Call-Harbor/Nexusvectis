@@ -148,7 +148,8 @@ export default function UserManagement() {
     }
 
     // Only org admins can invite other admins
-    const isOrgAdmin = currentUser?.email === organization?.admin_email || currentUser?.role === 'admin';
+    const currentMember = members.find(m => m.user_email === currentUser?.email);
+    const isOrgAdmin = currentMember?.role === 'admin';
     if (inviteRole === "admin" && !isOrgAdmin) {
       toast.error("Only admins can invite other admins");
       return;
