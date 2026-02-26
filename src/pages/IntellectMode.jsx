@@ -247,6 +247,7 @@ export default function IntellectMode() {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [voiceEnabled, setVoiceEnabled] = useState(true);
   const synthRef = useRef(null);
+  const selectedVoiceRef = useRef(null);
   const messagesEndRef = useRef(null);
 
   const detectLanguage = useCallback(() => {
