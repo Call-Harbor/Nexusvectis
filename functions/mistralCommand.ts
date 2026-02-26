@@ -209,6 +209,7 @@ AVAILABLE ACTIONS:
 14. DELETE_VEHICLES - Remove vehicles with reassignment suggestions
 15. SHOW_ANALYSIS - Advanced analytics with hologram visualization
 16. SHOW_3D - Display 3D visualization of fleet, routes, warehouses, or cargo
+17. OPEN_NEXUS_CHAT - Open Nexus Satellite Chat (encrypted E2E team communication)
 
 3D VISUALIZATION CAPABILITIES (action: SHOW_3D):
 When user asks to "visualize", "show in 3D", "3D view", "vis i 3D", "3D visualisering":
