@@ -23,7 +23,8 @@ import {
   Zap,
   Activity,
   Wrench,
-  DollarSign
+  DollarSign,
+  Target
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -59,6 +60,7 @@ const logisticsMenuItems = [
 ];
 
 const businessMenuItems = [
+  { name: "CRM & Pipeline", icon: Target, page: "CRM" },
   { name: "Customers", icon: Users, page: "CustomerManagement" },
   { name: "Contracts", icon: FileText, page: "ContractManagement" },
   { name: "Invoices", icon: FileText, page: "Invoices" },

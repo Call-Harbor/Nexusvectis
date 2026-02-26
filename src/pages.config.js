@@ -95,6 +95,7 @@ import UserManagement from './pages/UserManagement';
 import WarehouseAutomation from './pages/WarehouseAutomation';
 import IntellectMode from './pages/IntellectMode';
 import Home from './pages/Home';
+import CRM from './pages/CRM';
 import __Layout from './Layout.jsx';
 
 
@@ -147,6 +148,7 @@ export const PAGES = {
     "WarehouseAutomation": WarehouseAutomation,
     "IntellectMode": IntellectMode,
     "Home": Home,
+    "CRM": CRM,
 }
 
 export const pagesConfig = {
