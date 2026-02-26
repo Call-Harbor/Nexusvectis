@@ -406,6 +406,9 @@ OUTPUT FORMAT (JSON):
 EXAMPLES:
 - "vis mig min flåde" → action: OPEN_WINDOW, parameters: {window_type: "fleet"}, message: "Opening fleet window", open_window: "fleet"
 - "show me alerts" → action: OPEN_WINDOW, parameters: {window_type: "alerts"}, message: "Opening alerts window", open_window: "alerts"
+- "open document editor" → action: OPEN_WINDOW, parameters: {window_type: "document_editor"}, message: "Opening document editor", open_window: "document_editor"
+- "open spreadsheet" → action: OPEN_WINDOW, parameters: {window_type: "spreadsheet_editor"}, message: "Opening spreadsheet editor", open_window: "spreadsheet_editor"
+- "nexus cloud document" → action: OPEN_WINDOW, parameters: {window_type: "document_editor"}, message: "Opening Nexus Cloud document editor", open_window: "document_editor"
 - "open nexus satellite chat" → action: OPEN_NEXUS_CHAT, parameters: {}, message: "Opening Nexus Satellite Chat"
 - "åbn nexus chat" → action: OPEN_NEXUS_CHAT, parameters: {}, message: "Opening Nexus Satellite Chat"
 - "open chat" → action: OPEN_NEXUS_CHAT, parameters: {}, message: "Opening Nexus Satellite Chat"
