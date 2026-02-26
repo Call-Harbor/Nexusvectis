@@ -51,6 +51,10 @@ export default function VideoCallHologram({ videoUrl, onClose }) {
     toast.success("URL copied");
   };
 
+  if (useAIMode && currentUrl) {
+    return <AIVideoCall currentUrl={currentUrl} onUrlChange={setCurrentUrl} />;
+  }
+
   return (
     <div className="flex flex-col h-full bg-slate-950">
       {/* Header */}
@@ -59,7 +63,22 @@ export default function VideoCallHologram({ videoUrl, onClose }) {
           <div className="p-2 rounded-lg bg-blue-500/20">
             <Video className="w-4 h-4 text-blue-400" />
           </div>
-          <h3 className="text-white font-bold">Video Call</h3>
+          <div className="flex-1">
+            <h3 className="text-white font-bold">Video Call</h3>
+            {currentUrl && (
+              <p className="text-[10px] text-slate-500">Enhanced mode available</p>
+            )}
+          </div>
+          {currentUrl && (
+            <button
+              onClick={() => setUseAIMode(true)}
+              className="text-xs px-2 py-1 bg-gradient-to-r from-violet-600 to-cyan-600 text-white rounded-lg flex items-center gap-1.5 hover:shadow-lg transition-all"
+              title="Switch to AI-enhanced mode"
+            >
+              <Sparkles className="w-3 h-3" />
+              AI Mode
+            </button>
+          )}
         </div>
 
         {!currentUrl && (
