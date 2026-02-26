@@ -115,28 +115,35 @@ function VideoCallModal({ channel, user, onEnd }) {
 // NEW CHANNEL MODAL
 // ──────────────────────────────────────────────
 function NewChannelModal({ customers, user, orgId, onClose, onCreated }) {
-  const [type, setType] = useState("direct");
-  const [selectedContacts, setSelectedContacts] = useState([]);
-  const [groupName, setGroupName] = useState("");
-  const [search, setSearch] = useState("");
-  const [creating, setCreating] = useState(false);
-  const [activeTab, setActiveTab] = useState("users"); // "users" | "customers"
+   const [type, setType] = useState("direct");
+   const [selectedContacts, setSelectedContacts] = useState([]);
+   const [groupName, setGroupName] = useState("");
+   const [search, setSearch] = useState("");
+   const [creating, setCreating] = useState(false);
+   const [activeTab, setActiveTab] = useState("users"); // "users" | "customers"
+   const [showExternal, setShowExternal] = useState(false); // Toggle for external users
 
-  // Fetch all platform users
-  const { data: allUsers = [] } = useQuery({
-    queryKey: ['all-nexus-users'],
-    queryFn: () => base44.entities.User.list('-created_date', 500),
-  });
+   // Fetch all platform users
+   const { data: allUsers = [] } = useQuery({
+     queryKey: ['all-nexus-users'],
+     queryFn: () => base44.entities.User.list('-created_date', 500),
+   });
 
-  // Merge: platform users (exclude self) + customers, deduplicate by email
-  const platformContacts = allUsers
-    .filter(u => u.email !== user?.email)
-    .map(u => ({ id: `user_${u.id}`, name: u.full_name, email: u.email, _source: 'user', _orgId: u.organization_id }));
+   // Merge: platform users (exclude self) + customers, deduplicate by email
+   const internalUsers = allUsers
+     .filter(u => u.email !== user?.email && u.organization_id === orgId)
+     .map(u => ({ id: `user_${u.id}`, name: u.full_name, email: u.email, _source: 'user', _orgId: u.organization_id, _internal: true }));
 
-  const customerContacts = customers
-    .map(c => ({ id: `cust_${c.id}`, name: c.name, email: c.email, company: c.company, _source: 'customer', _orgId: orgId }));
+   const externalUsers = allUsers
+     .filter(u => u.email !== user?.email && u.organization_id !== orgId)
+     .map(u => ({ id: `user_${u.id}`, name: u.full_name, email: u.email, _source: 'user', _orgId: u.organization_id, _internal: false }));
 
-  const allContacts = activeTab === "users" ? platformContacts : customerContacts;
+   const platformContacts = showExternal ? [...internalUsers, ...externalUsers] : internalUsers;
+
+   const customerContacts = customers
+     .map(c => ({ id: `cust_${c.id}`, name: c.name, email: c.email, company: c.company, _source: 'customer', _orgId: orgId }));
+
+   const allContacts = activeTab === "users" ? platformContacts : customerContacts;
 
   const filtered = allContacts.filter(c =>
     c.name?.toLowerCase().includes(search.toLowerCase()) ||
