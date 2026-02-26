@@ -5,6 +5,9 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 
 export const IntelligentCommandAgent = {
+  // Parse natural language commands
+  parseCommand: (command) => parseCommand(command),
+
   // Parse natural language commands and execute with AI
   executeCommand: async (command, fleetData) => {
     const parsed = parseCommand(command);
