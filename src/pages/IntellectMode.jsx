@@ -283,7 +283,23 @@ export default function IntellectMode() {
 
   useEffect(() => {
     synthRef.current = window.speechSynthesis;
-  }, []);
+
+    const pickFemaleVoice = () => {
+      const voices = synthRef.current.getVoices();
+      if (!voices.length) return;
+      const lang = detectLanguage();
+      // Prioritize known high-quality female voices
+      const preferred = ["Samantha", "Karen", "Moira", "Tessa", "Victoria", "Fiona", "Google UK English Female", "Microsoft Zira", "Microsoft Susan"];
+      let voice = voices.find(v => preferred.some(p => v.name.includes(p)));
+      if (!voice) voice = voices.find(v => v.lang === lang && (v.name.toLowerCase().includes('female') || v.name.toLowerCase().includes('woman')));
+      if (!voice) voice = voices.find(v => v.lang.startsWith(lang.split('-')[0]) && !v.name.toLowerCase().includes('male'));
+      if (!voice) voice = voices.find(v => !v.name.toLowerCase().includes('male'));
+      selectedVoiceRef.current = voice || null;
+    };
+
+    pickFemaleVoice();
+    synthRef.current.onvoiceschanged = pickFemaleVoice;
+  }, [detectLanguage]);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const abortControllerRef = useRef(null);

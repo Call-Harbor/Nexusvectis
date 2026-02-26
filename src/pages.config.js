@@ -59,6 +59,7 @@ import AnalyticsPage from './pages/AnalyticsPage';
 import AssetManagement from './pages/AssetManagement';
 import Assignment from './pages/Assignment';
 import Blog from './pages/Blog';
+import CRMManagement from './pages/CRMManagement';
 import Careers from './pages/Careers';
 import Contact from './pages/Contact';
 import ContractManagement from './pages/ContractManagement';
@@ -95,7 +96,6 @@ import Shipments from './pages/Shipments';
 import TermsOfService from './pages/TermsOfService';
 import UserManagement from './pages/UserManagement';
 import WarehouseAutomation from './pages/WarehouseAutomation';
-import CRMManagement from './pages/CRMManagement';
 import __Layout from './Layout.jsx';
 
 
@@ -112,6 +112,7 @@ export const PAGES = {
     "AssetManagement": AssetManagement,
     "Assignment": Assignment,
     "Blog": Blog,
+    "CRMManagement": CRMManagement,
     "Careers": Careers,
     "Contact": Contact,
     "ContractManagement": ContractManagement,
@@ -148,7 +149,6 @@ export const PAGES = {
     "TermsOfService": TermsOfService,
     "UserManagement": UserManagement,
     "WarehouseAutomation": WarehouseAutomation,
-    "CRMManagement": CRMManagement,
 }
 
 export const pagesConfig = {
