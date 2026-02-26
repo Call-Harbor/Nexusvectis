@@ -850,6 +850,11 @@ export default function IntellectMode() {
           }
           break;
 
+        case "OPEN_NEXUS_CHAT":
+          handleQuickAction('openNexusChat');
+          setMessages(prev => [...prev, { role: "system", content: `✅ ${message || "🛰️ Nexus Satellite Chat opened"}` }]);
+          break;
+
         case "CLOSE_WINDOWS":
           setActiveWindows([]);
           setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
