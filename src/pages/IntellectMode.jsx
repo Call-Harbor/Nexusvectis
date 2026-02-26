@@ -1828,8 +1828,8 @@ export default function IntellectMode() {
                     <ChevronDown className="w-3 h-3" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="bg-slate-900 border-slate-800">
-                  <DropdownMenuLabel className="text-cyan-400">Applications</DropdownMenuLabel>
+                <DropdownMenuContent align="start" className="bg-slate-900 border-slate-800 max-h-96 overflow-y-auto">
+                  <DropdownMenuLabel className="text-cyan-400">Communication & Tools</DropdownMenuLabel>
                   <DropdownMenuSeparator className="bg-slate-800" />
                   <DropdownMenuItem onClick={() => openWindow('nexus_chat')} className="text-slate-300 gap-2">
                     <MessageSquare className="w-4 h-4" />
@@ -1847,6 +1847,55 @@ export default function IntellectMode() {
                     <Video className="w-4 h-4" />
                     Video Call
                   </DropdownMenuItem>
+
+                  <DropdownMenuLabel className="text-cyan-400 mt-2">Fleet & Operations</DropdownMenuLabel>
+                  <DropdownMenuSeparator className="bg-slate-800" />
+                  <DropdownMenuItem onClick={() => openWindow('fleet')} className="text-slate-300 gap-2">
+                    <Truck className="w-4 h-4" />
+                    Fleet
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => openWindow('alerts')} className="text-slate-300 gap-2">
+                    <AlertTriangle className="w-4 h-4" />
+                    Alerts
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => openWindow('routes')} className="text-slate-300 gap-2">
+                    <Route className="w-4 h-4" />
+                    Routes
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => openWindow('shipments')} className="text-slate-300 gap-2">
+                    <Package className="w-4 h-4" />
+                    Shipments
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => openWindow('resources')} className="text-slate-300 gap-2">
+                    <Warehouse className="w-4 h-4" />
+                    Resources
+                  </DropdownMenuItem>
+
+                  <DropdownMenuLabel className="text-cyan-400 mt-2">Business & Analytics</DropdownMenuLabel>
+                  <DropdownMenuSeparator className="bg-slate-800" />
+                  <DropdownMenuItem onClick={() => openWindow('dashboard')} className="text-slate-300 gap-2">
+                    <LayoutDashboard className="w-4 h-4" />
+                    Dashboard
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => openWindow('crm')} className="text-slate-300 gap-2">
+                    <Users className="w-4 h-4" />
+                    CRM
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => openWindow('invoices')} className="text-slate-300 gap-2">
+                    <FileText className="w-4 h-4" />
+                    Invoices
+                  </DropdownMenuItem>
+
+                  <DropdownMenuLabel className="text-cyan-400 mt-2">Advanced</DropdownMenuLabel>
+                  <DropdownMenuSeparator className="bg-slate-800" />
+                  <DropdownMenuItem onClick={() => openWindow('aioptimization')} className="text-slate-300 gap-2">
+                    <Sparkles className="w-4 h-4" />
+                    AI Optimization
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => openWindow('gpsintegration')} className="text-slate-300 gap-2">
+                    <Satellite className="w-4 h-4" />
+                    GPS Integration
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
 
@@ -1859,29 +1908,66 @@ export default function IntellectMode() {
                     <ChevronDown className="w-3 h-3" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="bg-slate-900 border-slate-800">
-                  <DropdownMenuLabel className="text-violet-400">Intelligence & Analysis</DropdownMenuLabel>
+                <DropdownMenuContent align="start" className="bg-slate-900 border-slate-800 max-h-96 overflow-y-auto w-80">
+                  <DropdownMenuLabel className="text-violet-400">Fleet Operations</DropdownMenuLabel>
                   <DropdownMenuSeparator className="bg-slate-800" />
-                  <DropdownMenuItem onClick={() => openWindow('predictive_maintenance')} className="text-slate-300 gap-2">
-                    <TrendingUp className="w-4 h-4" />
+                  <DropdownMenuItem onClick={() => setInput("Analyser alle køretøjer og identificer dem med laveste effektivitetsscore. Giv detaljeret rapport over deres status, udstationeringshistorik, brændstofforbrug og vedligeholdelsesbehov.")} className="text-slate-300 text-xs">
+                    Vehicle Efficiency Analysis
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setInput("Optimer alle aktive ruter baseret på aktuel trafik, vejrforhold, køretøjstatus og brændstofpriser. Beregn potentielle tidsbesparelser og CO2-reduktion for hver rute.")} className="text-slate-300 text-xs">
+                    Route Optimization
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setInput("Gennemgå alle forsendelser i transit og identificer dem med risiko for forsinket levering. Giv årsager, påvirkning og anbefalede handlinger for hver.")} className="text-slate-300 text-xs">
+                    Shipment Risk Assessment
+                  </DropdownMenuItem>
+
+                  <DropdownMenuLabel className="text-violet-400 mt-2">Predictive Analytics</DropdownMenuLabel>
+                  <DropdownMenuSeparator className="bg-slate-800" />
+                  <DropdownMenuItem onClick={() => setInput("Forudsig vedligeholdelsesbehov for alle køretøjer i næste 30 dage baseret på running hours, sensor data og historiske mønstre. Prioriter efter kritikalitet og kostnad.")} className="text-slate-300 text-xs">
                     Predictive Maintenance
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => openWindow('demand_forecast')} className="text-slate-300 gap-2">
-                    <BarChart3 className="w-4 h-4" />
-                    Demand Forecast
+                  <DropdownMenuItem onClick={() => setInput("Lav 90-dages efterspørgselsprognose baseret på historiske data, sæsonaritet og markedstrends. Giv anbefalinger for lagerbeholdning og ressourceallokering.")} className="text-slate-300 text-xs">
+                    Demand Forecasting
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => openWindow('risk_assessment')} className="text-slate-300 gap-2">
-                    <AlertTriangle className="w-4 h-4" />
+                  <DropdownMenuItem onClick={() => setInput("Analyser ETA-nøjagtighed over sidste 60 dage. Identificer systematiske fejl, vejrpåvirkninger og driverfaktorer. Foreslå forbedringer til prediktionsmodellen.")} className="text-slate-300 text-xs">
+                    ETA Accuracy Analysis
+                  </DropdownMenuItem>
+
+                  <DropdownMenuLabel className="text-violet-400 mt-2">Risk & Compliance</DropdownMenuLabel>
+                  <DropdownMenuSeparator className="bg-slate-800" />
+                  <DropdownMenuItem onClick={() => setInput("Udfør omfattende risikovurdering af hele flåden. Identificer operationelle risici, sikkerhedsfaktorer, overholdelsesproblemer og compliance-gab. Giv handlingsplan.")} className="text-slate-300 text-xs">
                     Risk Assessment
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => openWindow('performance_analytics')} className="text-slate-300 gap-2">
-                    <Activity className="w-4 h-4" />
-                    Performance Analytics
+                  <DropdownMenuItem onClick={() => setInput("Analyser alle sikkerheds- og sikkerhedsvarsler fra sidste 90 dage. Identificer mønstre, root causes og systemindsendende problemer. Anbefalinger for forebyggelse.")} className="text-slate-300 text-xs">
+                    Safety Analysis
                   </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setInput("Kontroller compliance med alle gældende transportbestemmelser. Giv rapport over mangler, påkrævede rettelser og implementeringstidsplan.")} className="text-slate-300 text-xs">
+                    Compliance Check
+                  </DropdownMenuItem>
+
+                  <DropdownMenuLabel className="text-violet-400 mt-2">Financial & Performance</DropdownMenuLabel>
                   <DropdownMenuSeparator className="bg-slate-800" />
-                  <DropdownMenuItem onClick={() => setShowAdvancedPanel(!showAdvancedPanel)} className="text-slate-300 gap-2">
-                    <Brain className="w-4 h-4" />
-                    Advanced Intelligence
+                  <DropdownMenuItem onClick={() => setInput("Analyser transportomkostninger per km, per enhed, per rute. Identificer outliers, ineffektiviteter og besparelsesmuligheder. Sammenlign med benchmarks.")} className="text-slate-300 text-xs">
+                    Cost Analysis
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setInput("Beregn CO2-emissioner for alle forsendelser. Identificer højeste-emission ruter og køretøjer. Giv strategier til 20% reduktion uden at påvirke levering.")} className="text-slate-300 text-xs">
+                    Sustainability Report
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setInput("Evaluer præstationen for hver chauffør baseret på leveringstidlighed, brændstofeffektivitet, sikkerhed og kundebedømmelser. Giv coaching-anbefalinger.")} className="text-slate-300 text-xs">
+                    Driver Performance
+                  </DropdownMenuItem>
+
+                  <DropdownMenuLabel className="text-violet-400 mt-2">Strategic Planning</DropdownMenuLabel>
+                  <DropdownMenuSeparator className="bg-slate-800" />
+                  <DropdownMenuItem onClick={() => setInput("Analyser flådekapacitet mod efterspørgsel. Giv anbefalinger for køretøjstilskud eller reducering, baseret på belastningsprofiler og omkostningseffektivitet.")} className="text-slate-300 text-xs">
+                    Capacity Planning
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setInput("Identificer mønstre i forsinkelser, afvisninger og fejl. Analyser dybdegående root causes. Giv systematiske forbedringer til operationel styrke.")} className="text-slate-300 text-xs">
+                    Root Cause Analysis
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setShowAdvancedPanel(true)} className="text-slate-300 text-xs">
+                    <Brain className="w-4 h-4 mr-2" />
+                    Advanced Intelligence Panel
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
