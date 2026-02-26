@@ -1819,25 +1819,73 @@ export default function IntellectMode() {
             </div>
 
             <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 w-full sm:w-auto">
-              <Button
-                onClick={() => setShowAdvancedPanel(!showAdvancedPanel)}
-                className="bg-amber-600 hover:bg-amber-700 text-xs sm:text-sm hidden sm:flex"
-                title="Advanced Fleet Intelligence Commands"
-              >
-                <Lightbulb className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-amber-300" />
-                <span className="text-amber-100">Advanced</span>
-              </Button>
-              <div className="relative hidden sm:flex flex-col items-center">
-                <Button
-                  disabled
-                  className="bg-slate-800/50 border border-violet-500/20 text-xs sm:text-sm opacity-50 cursor-not-allowed"
-                  title="Coming Soon"
-                >
-                  <Monitor className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-violet-400/50" />
-                  <span className="text-violet-300/50">Multi-Screen</span>
-                </Button>
-                <span className="text-[9px] text-violet-400/70 font-semibold mt-0.5 tracking-wider uppercase">Coming Soon</span>
-              </div>
+              {/* Apps Dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button className="bg-blue-600 hover:bg-blue-700 text-xs sm:text-sm gap-1">
+                    <FileCode className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <span className="hidden sm:inline">Apps</span>
+                    <ChevronDown className="w-3 h-3" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="bg-slate-900 border-slate-800">
+                  <DropdownMenuLabel className="text-cyan-400">Applications</DropdownMenuLabel>
+                  <DropdownMenuSeparator className="bg-slate-800" />
+                  <DropdownMenuItem onClick={() => openWindow('nexus_chat')} className="text-slate-300 gap-2">
+                    <MessageSquare className="w-4 h-4" />
+                    Chat
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => openWindow('document_editor')} className="text-slate-300 gap-2">
+                    <FileText className="w-4 h-4" />
+                    Document Editor
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => openWindow('spreadsheet_editor')} className="text-slate-300 gap-2">
+                    <BarChart3 className="w-4 h-4" />
+                    Spreadsheet
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => openWindow('video_call')} className="text-slate-300 gap-2">
+                    <Video className="w-4 h-4" />
+                    Video Call
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              {/* AI Prompts Dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button className="bg-violet-600 hover:bg-violet-700 text-xs sm:text-sm gap-1">
+                    <Sparkles className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <span className="hidden sm:inline">AI Prompts</span>
+                    <ChevronDown className="w-3 h-3" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="bg-slate-900 border-slate-800">
+                  <DropdownMenuLabel className="text-violet-400">Intelligence & Analysis</DropdownMenuLabel>
+                  <DropdownMenuSeparator className="bg-slate-800" />
+                  <DropdownMenuItem onClick={() => openWindow('predictive_maintenance')} className="text-slate-300 gap-2">
+                    <TrendingUp className="w-4 h-4" />
+                    Predictive Maintenance
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => openWindow('demand_forecast')} className="text-slate-300 gap-2">
+                    <BarChart3 className="w-4 h-4" />
+                    Demand Forecast
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => openWindow('risk_assessment')} className="text-slate-300 gap-2">
+                    <AlertTriangle className="w-4 h-4" />
+                    Risk Assessment
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => openWindow('performance_analytics')} className="text-slate-300 gap-2">
+                    <Activity className="w-4 h-4" />
+                    Performance Analytics
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator className="bg-slate-800" />
+                  <DropdownMenuItem onClick={() => setShowAdvancedPanel(!showAdvancedPanel)} className="text-slate-300 gap-2">
+                    <Brain className="w-4 h-4" />
+                    Advanced Intelligence
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
               <Button
                 onClick={() => navigate(createPageUrl("Dashboard"))}
                 className="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs sm:text-sm flex-1 sm:flex-initial"
