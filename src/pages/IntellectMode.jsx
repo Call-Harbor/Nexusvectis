@@ -1877,6 +1877,7 @@ export default function IntellectMode() {
                             window.type === 'swarm_intelligence' ? Network :
                             window.type === 'neuro_risk' ? Shield :
                             window.type === 'digital_twin' ? Globe :
+                            window.type === 'video_call' ? Video :
                             window.type.startsWith('chart_') ? BarChart3 : Activity;
 
                                    const title = window.type.startsWith('chart_') ? (window.data?.chartConfig?.title || 'Analysis Chart') :
