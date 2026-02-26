@@ -194,7 +194,7 @@ Deno.serve(async (req) => {
     return Response.json({
       reply,
       role: "assistant",
-      model: "mistral-large-latest",
+      model,
       usage: data.usage || null
     });
 
