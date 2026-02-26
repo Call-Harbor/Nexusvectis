@@ -523,34 +523,34 @@ export default function IntellectMode() {
 
   const processAdvancedCommand = async (command) => {
     try {
-      // Parse command with AI agent
-      const parsed = IntelligentCommandAgent.parseCommand(command);
-      
-      // Generate scenarios
-      addThinkingLog('scenario', 'Generating 4 scenario forecasts...', { scenarios: 4 }, 120, 15);
       const fleetData = { vehicles, alerts, routes, shipments };
-      const generatedScenarios = ScenarioPredictionEngine.generateScenarios(fleetData, parsed);
-      const scoredScenarios = ScenarioPredictionEngine.scoreScenarios(generatedScenarios, vehicles);
-      setScenarios(scoredScenarios);
 
-      // Start streaming multi-model analysis
-      addThinkingLog('analysis', 'Starting 3-model consensus analysis...', null, 100, 20);
-      setIsStreaming(true);
-      
-      const analysis = await MistralStreamingEngine.multiModelAnalysis(fleetData);
-      setMultiModelAnalysis(analysis);
-      setIsStreaming(false);
+      // Generate scenarios (non-blocking)
+      try {
+        const parsed = IntelligentCommandAgent.parseCommand(command);
+        addThinkingLog('scenario', 'Generating scenario forecasts...', { scenarios: 4 }, 120, 15);
+        const generatedScenarios = ScenarioPredictionEngine.generateScenarios(fleetData, parsed);
+        const scoredScenarios = ScenarioPredictionEngine.scoreScenarios(generatedScenarios, vehicles);
+        setScenarios(scoredScenarios);
+      } catch (e) { /* non-critical */ }
 
-      // Execute command with agent
-      addThinkingLog('execution', 'Executing intelligent command agent...', null, 150, 25);
-      const execution = await IntelligentCommandAgent.executeCommand(command, fleetData);
-      setCommandExecution(execution);
+      // Multi-model streaming analysis (non-blocking)
+      try {
+        setIsStreaming(true);
+        const analysis = await MistralStreamingEngine.multiModelAnalysis(fleetData);
+        setMultiModelAnalysis(analysis);
+        setIsStreaming(false);
 
-      // Generate AI suggestions
-      const commandSuggestions = IntelligentCommandAgent.suggestActions(fleetData, analysis);
-      setSuggestions(commandSuggestions);
+        const commandSuggestions = IntelligentCommandAgent.suggestActions(fleetData, analysis);
+        setSuggestions(commandSuggestions);
+      } catch (e) { setIsStreaming(false); }
 
-      addThinkingLog('complete', 'Advanced AI processing complete', { total_steps: 4, confidence: 88 }, 50, 100);
+      // Command execution (non-blocking)
+      try {
+        const execution = await IntelligentCommandAgent.executeCommand(command, fleetData);
+        setCommandExecution(execution);
+      } catch (e) { /* non-critical */ }
+
     } catch (error) {
       console.error('Advanced command processing error:', error);
     }
