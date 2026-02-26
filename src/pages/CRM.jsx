@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { 
   Brain, TrendingUp, DollarSign, Users, Target, BarChart3, 
   Plus, Search, Sparkles, RefreshCw, LayoutGrid, List,
-  AlertTriangle, CheckCircle, Clock
+  AlertTriangle, CheckCircle, Clock, MessageSquare, Satellite
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,10 +14,11 @@ import { toast } from "sonner";
 import CRMPipeline from "../components/crm/CRMPipeline";
 import CRMAIInsights from "../components/crm/CRMAIInsights";
 import CRMDealEditor from "../components/crm/CRMDealEditor";
+import NexusSatelliteChat from "../components/crm/NexusSatelliteChat";
 
 export default function CRM() {
   const [user, setUser] = useState(null);
-  const [view, setView] = useState("pipeline"); // pipeline | insights
+  const [view, setView] = useState("pipeline"); // pipeline | insights | chat
   const [searchTerm, setSearchTerm] = useState("");
   const [stageFilter, setStageFilter] = useState("all");
   const [selectedDeal, setSelectedDeal] = useState(null);
@@ -141,6 +142,12 @@ export default function CRM() {
                 >
                   <Sparkles className="w-3.5 h-3.5" /> AI Insights
                 </button>
+                <button
+                  onClick={() => setView("chat")}
+                  className={`px-3 py-1.5 text-xs flex items-center gap-1.5 transition-all ${view === 'chat' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'}`}
+                >
+                  <Satellite className="w-3.5 h-3.5" /> Satellite Chat
+                </button>
               </div>
               <Button onClick={() => handleAddDeal()} className="bg-gradient-to-r from-cyan-600 to-violet-600 hover:from-cyan-700 hover:to-violet-700" size="sm">
                 <Plus className="w-4 h-4 mr-1.5" /> New Deal
@@ -227,6 +234,10 @@ export default function CRM() {
 
         {view === 'insights' && (
           <CRMAIInsights deals={deals} customers={customers} />
+        )}
+
+        {view === 'chat' && (
+          <NexusSatelliteChat user={user} orgId={user?.organization_id} customers={customers} />
         )}
       </div>
 
