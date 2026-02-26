@@ -2066,16 +2066,7 @@ export default function IntellectMode() {
               </motion.div>
             )}
 
-            {/* Advanced AI Visualizations */}
-            {scenarios.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mb-4 bg-slate-900/50 border border-slate-800 rounded-lg p-4"
-              >
-                <ScenarioVisualization scenarios={scenarios} />
-              </motion.div>
-            )}
+            {/* Advanced AI Visualizations - hidden */}
 
             {commandExecution && (
               <motion.div
