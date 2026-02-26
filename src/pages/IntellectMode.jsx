@@ -238,6 +238,7 @@ export default function IntellectMode() {
   const [showMultiScreenManager, setShowMultiScreenManager] = useState(false);
   const [showSwarmIntelligence, setShowSwarmIntelligence] = useState(false);
   const [showNeuroRisk, setShowNeuroRisk] = useState(false);
+  const [showVideoCall, setShowVideoCall] = useState(false);
   const [openDesktopWindows, setOpenDesktopWindows] = useState([]); // {id, label, ref}
   const [showAdvancedPanel, setShowAdvancedPanel] = useState(false);
   const [scenarios, setScenarios] = useState([]);
