@@ -780,7 +780,7 @@ export default function IntellectMode() {
         const startTime = Date.now();
         
         // Use universal 50-parallel micro-call system for this command
-        const microCalls = await executeParallelMicroAnalyses(input, vehicles, alerts, routes, shipments);
+        const microCalls = await executeParallelMicroAnalyses(currentCommand, vehicles, alerts, routes, shipments, payload);
         
         const duration = Date.now() - startTime;
         const mainCallResult = microCalls[0] || {};
