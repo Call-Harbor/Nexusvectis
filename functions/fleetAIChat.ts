@@ -85,33 +85,51 @@ Deno.serve(async (req) => {
 
     const hasImages = imageUrls.length > 0;
 
-    // Process non-image files
+    // Process non-image files by reading them directly
     let filesContent = '';
     if (otherFileUrls.length > 0) {
-      try {
-        const fileProcessingResponse = await fetch(Deno.env.get("BASE44_API_URL") || "http://localhost:3000", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${Deno.env.get("BASE44_SERVICE_TOKEN") || ''}`
-          },
-          body: JSON.stringify({
-            function_name: 'processFileContent',
-            payload: { file_urls: otherFileUrls }
-          })
-        }).catch(() => null);
+      const fileSegments = await Promise.all(otherFileUrls.map(async (fileUrl) => {
+        try {
+          const resp = await fetch(fileUrl);
+          if (!resp.ok) return `[FILE: ${fileUrl.split('/').pop().split('?')[0]} - could not fetch]`;
 
-        if (fileProcessingResponse?.ok) {
-          const fileData = await fileProcessingResponse.json();
-          if (fileData.processed_files) {
-            filesContent = fileData.processed_files.map(f => 
-              `[FILE: ${f.url.split('/').pop()} (${f.type})]\n${f.content}`
-            ).join('\n\n---\n\n');
+          const contentType = resp.headers.get('content-type') || '';
+          const fileName = fileUrl.split('/').pop().split('?')[0];
+          const lowerUrl = fileUrl.toLowerCase().split('?')[0];
+
+          const isText = contentType.includes('text') ||
+            ['.txt','.csv','.json','.js','.ts','.jsx','.tsx','.html','.css','.xml',
+             '.md','.yaml','.yml','.log','.env','.sh','.py','.rb','.php','.sql'].some(e => lowerUrl.endsWith(e));
+
+          if (isText) {
+            let text = await resp.text();
+            if (text.length > 40000) text = text.substring(0, 40000) + '\n[...truncated]';
+            return `[FILE: ${fileName}]\n${text}`;
           }
+
+          if (contentType.includes('pdf') || lowerUrl.endsWith('.pdf')) {
+            const buf = await resp.arrayBuffer();
+            const bytes = new Uint8Array(buf);
+            let extracted = '';
+            for (let i = 0; i < Math.min(bytes.length, 300000); i++) {
+              const b = bytes[i];
+              if (b >= 32 && b <= 126) extracted += String.fromCharCode(b);
+              else if (b === 10 || b === 13) extracted += '\n';
+            }
+            extracted = extracted.replace(/[^\x20-\x7E\n]{3,}/g, ' ').replace(/ {4,}/g, '   ').trim();
+            if (extracted.length > 30000) extracted = extracted.substring(0, 30000) + '\n[...truncated]';
+            return `[FILE: ${fileName} (PDF)]\n${extracted || '[PDF - no readable text extracted]'}`;
+          }
+
+          // Fallback: try reading as text
+          let text = await resp.text();
+          if (text.length > 20000) text = text.substring(0, 20000) + '\n[...truncated]';
+          return `[FILE: ${fileName}]\n${text}`;
+        } catch (err) {
+          return `[FILE: ${fileUrl.split('/').pop().split('?')[0]} - error: ${err.message}]`;
         }
-      } catch (e) {
-        console.log('File processing not available, proceeding with message only');
-      }
+      }));
+      filesContent = fileSegments.join('\n\n---\n\n');
     }
 
     // Build conversation messages
