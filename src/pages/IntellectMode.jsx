@@ -2022,7 +2022,24 @@ export default function IntellectMode() {
             )}
 
             {showCandidateMatcher && (
-              <CandidateMatcher onClose={() => setShowCandidateMatcher(false)} />
+               <CandidateMatcher onClose={() => setShowCandidateMatcher(false)} />
+            )}
+
+            {/* Video Call Hologram */}
+            {showVideoCall && (
+              <HologramWindow
+                id="video-call"
+                title="Video Call"
+                icon={Video}
+                position={{ x: 200, y: 150 }}
+                onClose={() => setShowVideoCall(false)}
+                onMinimize={() => toggleMinimize('video-call')}
+                isMinimized={minimizedWindows.has('video-call')}
+                onSendToScreen={multiScreenOps}
+                windowType="video_call"
+              >
+                <VideoCallHologram />
+              </HologramWindow>
             )}
 
             {/* 3D Visualization */}
