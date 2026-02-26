@@ -256,24 +256,46 @@ export default function IntellectMode() {
   }, []);
 
   const speakMessage = useCallback((text) => {
-    if (!voiceEnabled || !synthRef.current) return;
+    if (!voiceEnabled) return;
+    const synth = window.speechSynthesis;
+    if (!synth) return;
 
-    synthRef.current.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    const lang = detectLanguage();
-    utterance.lang = lang;
-    utterance.rate = 0.9;
-    utterance.pitch = 1.2;
-    utterance.volume = 1;
+    synth.cancel();
 
+    const doSpeak = () => {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = detectLanguage();
+      utterance.rate = 0.9;
+      utterance.pitch = 1.15;
+      utterance.volume = 1;
+
+      if (selectedVoiceRef.current) {
+        utterance.voice = selectedVoiceRef.current;
+      }
+
+      utterance.onstart = () => setIsSpeaking(true);
+      utterance.onend = () => setIsSpeaking(false);
+      utterance.onerror = (e) => { console.warn('TTS error:', e.error); setIsSpeaking(false); };
+
+      synth.speak(utterance);
+    };
+
+    // Chrome bug: voices may not be loaded yet, use a small delay if needed
     if (selectedVoiceRef.current) {
-      utterance.voice = selectedVoiceRef.current;
+      doSpeak();
+    } else {
+      // Try to pick voice once more then speak
+      const voices = synth.getVoices();
+      if (voices.length > 0) {
+        const lang = detectLanguage();
+        const preferred = ["Samantha", "Karen", "Moira", "Tessa", "Victoria", "Fiona", "Google UK English Female", "Microsoft Zira"];
+        selectedVoiceRef.current = voices.find(v => preferred.some(p => v.name.includes(p)))
+          || voices.find(v => v.lang === lang && !v.name.toLowerCase().includes('male'))
+          || voices.find(v => !v.name.toLowerCase().includes('male'))
+          || null;
+      }
+      doSpeak();
     }
-
-    utterance.onstart = () => setIsSpeaking(true);
-    utterance.onend = () => setIsSpeaking(false);
-
-    synthRef.current.speak(utterance);
   }, [voiceEnabled, detectLanguage]);
 
   useEffect(() => {
