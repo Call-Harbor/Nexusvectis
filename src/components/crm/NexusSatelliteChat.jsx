@@ -295,15 +295,22 @@ function NewChannelModal({ customers, user, orgId, onClose, onCreated }) {
 // ──────────────────────────────────────────────
 // MAIN CHAT COMPONENT
 // ──────────────────────────────────────────────
-export default function NexusSatelliteChat({ user, orgId, customers }) {
-  const [activeChannel, setActiveChannel] = useState(null);
-  const [message, setMessage] = useState("");
-  const [showNewChannel, setShowNewChannel] = useState(false);
-  const [activeCall, setActiveCall] = useState(null);
-  const [searchChannels, setSearchChannels] = useState("");
-  const [mobileShowChat, setMobileShowChat] = useState(false);
-  const messagesEndRef = useRef(null);
-  const queryClient = useQueryClient();
+export default function NexusSatelliteChat({ user: propUser, orgId, customers }) {
+   const [activeChannel, setActiveChannel] = useState(null);
+   const [message, setMessage] = useState("");
+   const [showNewChannel, setShowNewChannel] = useState(false);
+   const [activeCall, setActiveCall] = useState(null);
+   const [searchChannels, setSearchChannels] = useState("");
+   const [mobileShowChat, setMobileShowChat] = useState(false);
+   const messagesEndRef = useRef(null);
+   const queryClient = useQueryClient();
+
+   // Ensure user is loaded
+   const { data: user = propUser } = useQuery({
+     queryKey: ["currentUser"],
+     queryFn: () => base44.auth.me(),
+     enabled: !propUser
+   });
 
   const { data: channels = [], refetch: refetchChannels } = useQuery({
     queryKey: ['nexus-channels', orgId],
