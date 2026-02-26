@@ -92,18 +92,30 @@ function VideoCallModal({ channel, user, onEnd }) {
 
    return (
      <motion.div
-       initial={{ opacity: 0, scale: 0.95 }}
-       animate={{ opacity: 1, scale: 1 }}
-       exit={{ opacity: 0, scale: 0.95 }}
-       className="fixed inset-0 z-[100] bg-slate-950 rounded-none overflow-hidden"
+       initial={{ opacity: 0 }}
+       animate={{ opacity: 1 }}
+       exit={{ opacity: 0 }}
+       className="fixed inset-0 z-[100] bg-slate-950 overflow-hidden"
      >
-       {/* Close Button */}
-       <button
-         onClick={onEnd}
-         className="absolute top-4 right-4 z-10 p-3 rounded-full bg-red-600 hover:bg-red-700 text-white transition-all shadow-lg"
-       >
-         <X className="w-5 h-5" />
-       </button>
+       {/* Header with Channel Info */}
+       <div className="absolute top-0 left-0 right-0 z-20 bg-gradient-to-b from-slate-900 to-transparent p-4 flex items-center justify-between">
+         <div className="flex items-center gap-3">
+           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-violet-500 flex items-center justify-center text-white font-bold text-sm">
+             {getInitials(channel.name)}
+           </div>
+           <div>
+             <h3 className="text-white font-semibold text-sm">{channel.name}</h3>
+             <p className="text-slate-400 text-xs">Video Call</p>
+           </div>
+         </div>
+         <button
+           onClick={onEnd}
+           className="p-2.5 rounded-full bg-red-600/90 hover:bg-red-700 text-white transition-all shadow-lg hover:shadow-xl"
+           title="End Call"
+         >
+           <Phone className="w-5 h-5" />
+         </button>
+       </div>
 
        {/* Jitsi Container */}
        <div ref={containerRef} className="w-full h-full" />
