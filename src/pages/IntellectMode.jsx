@@ -2077,21 +2077,11 @@ export default function IntellectMode() {
               </motion.div>
             )}
 
-            {multiModelAnalysis && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mb-4"
-              >
-                <StreamingAnalysisVisual analysis={multiModelAnalysis} isStreaming={isStreaming} />
-              </motion.div>
-            )}
-
             {commandExecution && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mb-4"
+                className="mb-4 hidden"
               >
                 <CommandExecution 
                   execution={commandExecution.execution}
