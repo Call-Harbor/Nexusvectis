@@ -452,7 +452,7 @@ export default function IntellectMode() {
 
   const openWindow = useCallback((type, position = { x: 100 + Math.random() * 200, y: 100 + Math.random() * 200 }, data = null) => {
     // Allow multiple chart/document/spreadsheet windows
-    if (!type.startsWith('chart_') && !type.startsWith('document_') && !type.startsWith('spreadsheet_') && activeWindows.find(w => w.type === type)) {
+    if (!type.startsWith('chart_') && type !== 'document_editor' && type !== 'spreadsheet_editor' && activeWindows.find(w => w.type === type)) {
       toast.info(`${type} window already open`);
       return;
     }
