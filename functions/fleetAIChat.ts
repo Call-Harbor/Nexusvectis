@@ -75,9 +75,19 @@ Deno.serve(async (req) => {
       return Response.json({ error: "message is required" }, { status: 400 });
     }
 
-    // Process uploaded files if present
+    // Detect image URLs vs other file URLs
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp'];
+    const imageUrls = (file_urls || []).filter(url => {
+      const lower = url.toLowerCase().split('?')[0];
+      return imageExtensions.some(ext => lower.endsWith(ext));
+    });
+    const otherFileUrls = (file_urls || []).filter(url => !imageUrls.includes(url));
+
+    const hasImages = imageUrls.length > 0;
+
+    // Process non-image files
     let filesContent = '';
-    if (file_urls && file_urls.length > 0) {
+    if (otherFileUrls.length > 0) {
       try {
         const fileProcessingResponse = await fetch(Deno.env.get("BASE44_API_URL") || "http://localhost:3000", {
           method: "POST",
@@ -87,7 +97,7 @@ Deno.serve(async (req) => {
           },
           body: JSON.stringify({
             function_name: 'processFileContent',
-            payload: { file_urls }
+            payload: { file_urls: otherFileUrls }
           })
         }).catch(() => null);
 
@@ -107,13 +117,8 @@ Deno.serve(async (req) => {
     // Build conversation messages
     const historyMessages = (conversation_history || [])
       .filter(m => (m.role === "user" || m.role === "assistant") && m.content)
-      .slice(-20) // Keep last 20 messages
+      .slice(-20)
       .map(m => ({ role: m.role, content: m.content }));
-
-    // Combine file content with message
-    const enrichedMessage = filesContent 
-      ? `${message}\n\n[ATTACHED FILES CONTENT]\n${filesContent}`
-      : message;
 
     // Optionally enrich system prompt with fleet context
     let systemPrompt = SYSTEM_PROMPT;
@@ -127,6 +132,33 @@ Deno.serve(async (req) => {
     if (user) {
       systemPrompt += `\n\nUSER: ${user.full_name} (${user.email}), role: ${user.role}`;
     }
+    if (hasImages) {
+      systemPrompt += `\n\nIMAGE ANALYSIS MODE: The user has attached ${imageUrls.length} image(s). Analyze them in detail — identify vehicles, cargo, infrastructure, damage, safety hazards, license plates, container numbers, or any logistics-relevant information. Be specific and actionable.`;
+    }
+
+    // Build user message content — multimodal if images present
+    let userContent;
+    const textContent = filesContent
+      ? `${message}\n\n[ATTACHED FILES CONTENT]\n${filesContent}`
+      : message;
+
+    if (hasImages) {
+      // Build multimodal content array for Pixtral vision model
+      userContent = [
+        { type: "text", text: textContent }
+      ];
+      for (const imgUrl of imageUrls) {
+        userContent.push({
+          type: "image_url",
+          image_url: { url: imgUrl }
+        });
+      }
+    } else {
+      userContent = textContent;
+    }
+
+    // Use Pixtral (vision) model when images are present, otherwise Mistral Large
+    const model = hasImages ? "pixtral-large-latest" : "mistral-large-latest";
 
     const response = await fetch("https://api.mistral.ai/v1/chat/completions", {
       method: "POST",
@@ -135,11 +167,11 @@ Deno.serve(async (req) => {
         "Authorization": `Bearer ${mistralApiKey}`
       },
       body: JSON.stringify({
-        model: "mistral-large-latest",
+        model,
         messages: [
           { role: "system", content: systemPrompt },
           ...historyMessages,
-          { role: "user", content: enrichedMessage }
+          { role: "user", content: userContent }
         ],
         temperature: 0.4,
         max_tokens: 2000
