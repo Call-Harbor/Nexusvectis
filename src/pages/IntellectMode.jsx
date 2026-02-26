@@ -303,14 +303,22 @@ export default function IntellectMode() {
     staleTime: 5000
   });
 
-  const { data: customers = [] } = useQuery({
-    queryKey: ['customers-intellect'],
+  const { data: orgUser } = useQuery({
+    queryKey: ['org-user-intellect'],
     queryFn: async () => {
       const userData = await base44.entities.User.filter({ email: currentUser.email });
-      if (!userData?.[0]?.organization_id) return [];
-      return base44.entities.Customer.filter({ organization_id: userData[0].organization_id });
+      return userData?.[0] || null;
     },
     enabled: !!currentUser,
+    staleTime: 60000
+  });
+
+  const orgId = orgUser?.organization_id;
+
+  const { data: customers = [] } = useQuery({
+    queryKey: ['customers-intellect', orgId],
+    queryFn: () => base44.entities.Customer.filter({ organization_id: orgId }),
+    enabled: !!orgId,
     staleTime: 30000
   });
 
@@ -2120,7 +2128,7 @@ export default function IntellectMode() {
               </motion.div>
             )}
 
-            {suggestions.length > 0 && (
+            {false && suggestions.length > 0 && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
