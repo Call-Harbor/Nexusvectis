@@ -573,7 +573,7 @@ export default function NexusSatelliteChat({ user: propUser, orgId, customers })
         )}
       </AnimatePresence>
 
-      {showNewChannel && (
+      {showNewChannel && user && (
         <NewChannelModal
           customers={customers}
           user={user}
