@@ -225,6 +225,8 @@ export default function IntellectMode() {
     { icon: Globe, label: "Digital Twin Federation", command: "activate digital twin federation for fleet", action: "openDigitalTwin", color: "cyan" },
     { icon: MessageSquare, label: "Nexus Satellite Chat", command: "open nexus satellite chat", action: "openNexusChat", color: "emerald" },
     { icon: Video, label: "Video Call", command: "open video call interface", action: "openVideoCall", color: "blue" },
+    { icon: FileText, label: "Document Editor", command: "open document editor for nexus cloud", action: "openDocEditor", color: "cyan" },
+    { icon: BarChart3, label: "Spreadsheet Editor", command: "open spreadsheet editor for nexus cloud", action: "openSpreadsheet", color: "emerald" },
   ];
   const [isProcessing, setIsProcessing] = useState(false);
   const [activeWindows, setActiveWindows] = useState([]);
