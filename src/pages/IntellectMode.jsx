@@ -2035,7 +2035,6 @@ export default function IntellectMode() {
                 onClose={() => setShowVideoCall(false)}
                 onMinimize={() => toggleMinimize('video-call')}
                 isMinimized={minimizedWindows.has('video-call')}
-                onSendToScreen={multiScreenOps}
                 windowType="video_call"
               >
                 <VideoCallHologram />
