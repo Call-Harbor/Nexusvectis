@@ -78,19 +78,26 @@ export default function UserManagement() {
   // Invite user mutation
   const inviteMutation = useMutation({
     mutationFn: async ({ email, role }) => {
-      // Invite user
-      await base44.users.inviteUser(email, role);
-      
-      // Set organization_id for invited user (will be set when they accept)
-      // Note: The invited user will need to be assigned to organization on first login
-      
+      const orgId = currentUser?.organization_id || currentUser?.data?.organization_id;
+
+      // Create organization member record with specific role
+      await base44.entities.OrganizationMember.create({
+        organization_id: orgId,
+        user_email: email,
+        role: role,
+        status: 'invited'
+      });
+
+      // Invite user globally (creates user account if doesn't exist)
+      await base44.users.inviteUser(email, 'user');
+
       // Log security audit
       await base44.functions.invoke('auditLog', {
         action: 'user_invited',
         resource_type: 'user',
         resource_id: email,
         status: 'success',
-        details: `Invited user with role: ${role} to organization ${currentUser?.organization_id}`,
+        details: `Invited user with role: ${role} to organization ${orgId}`,
         severity: 'medium'
       }).catch(() => {}); // Don't fail if audit log fails
     },
@@ -103,7 +110,7 @@ export default function UserManagement() {
     },
     onError: (error) => {
       toast.error(error.message || "Failed to send invitation");
-      
+
       // Log failed attempt
       base44.functions.invoke('auditLog', {
         action: 'user_invite_failed',
