@@ -1216,6 +1216,19 @@ export default function IntellectMode() {
   }), [vehicles, alerts, routes, shipments]);
 
   const renderWindowContent = useCallback((type, data) => {
+    // Nexus Satellite Chat
+    if (type === 'nexus_chat') {
+      return (
+        <div className="w-full h-full overflow-hidden">
+          <NexusSatelliteChat
+            user={currentUser}
+            orgId={currentUser?.organization_id}
+            customers={customers}
+          />
+        </div>
+      );
+    }
+
     // Handle chart windows with custom data
     if (type.startsWith('chart_')) {
       const chartData = data?.chartData || [];
