@@ -314,6 +314,7 @@ export default function NexusSatelliteChat({ user: propUser, orgId, customers })
    const [activeCall, setActiveCall] = useState(null);
    const [searchChannels, setSearchChannels] = useState("");
    const [mobileShowChat, setMobileShowChat] = useState(false);
+   const [unreadChannels, setUnreadChannels] = useState({});
    const messagesEndRef = useRef(null);
    const queryClient = useQueryClient();
 
