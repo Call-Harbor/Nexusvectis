@@ -2820,6 +2820,15 @@ Return JSON with this EXACT structure:
           />
         )}
       </AnimatePresence>
+
+      {/* AI Coach — non-intrusive real-time coaching overlay */}
+      <AICoach
+        openWindows={activeWindows}
+        fleetData={{ vehicles, routes, shipments, alerts }}
+        courseSession={null}
+        userLevel={currentUser?.role === 'admin' ? 4 : 2}
+        performanceHistory={[]}
+      />
     </div>
   );
 }
