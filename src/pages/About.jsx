@@ -16,26 +16,53 @@ export default function About() {
 
   return (
     <div className="min-h-screen bg-black overflow-hidden relative">
-      {/* Animated Background */}
+      {/* Sci-Fi Animated Background */}
       <div className="fixed inset-0 z-0">
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-violet-950/20 to-cyan-950/20" />
+        {/* Base gradient - deeper blacks and neons */}
+        <div className="absolute inset-0 bg-gradient-to-br from-black via-slate-950 to-cyan-950/40" />
+        
+        {/* Massive pulsing orbs */}
         <motion.div
-          className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl"
+          className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-cyan-500/15 rounded-full blur-[100px]"
           animate={{
-            scale: [1, 1.2, 1],
-            opacity: [0.3, 0.5, 0.3],
+            scale: [1, 1.3, 1],
+            opacity: [0.2, 0.6, 0.2],
+            x: [0, 50, 0],
+            y: [0, -30, 0]
           }}
-          transition={{ duration: 8, repeat: Infinity }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
         />
         <motion.div
-          className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-violet-500/20 rounded-full blur-3xl"
+          className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-violet-600/15 rounded-full blur-[100px]"
           animate={{
             scale: [1.2, 1, 1.2],
-            opacity: [0.3, 0.5, 0.3],
+            opacity: [0.2, 0.6, 0.2],
+            x: [0, -50, 0],
+            y: [0, 40, 0]
           }}
-          transition={{ duration: 10, repeat: Infinity }}
+          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 1 }}
         />
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.05)_1px,transparent_1px)] bg-[size:100px_100px]" />
+        <motion.div
+          className="absolute top-1/2 left-1/2 w-[400px] h-[400px] bg-fuchsia-500/10 rounded-full blur-[90px]"
+          animate={{
+            scale: [1, 1.15, 1],
+            opacity: [0.1, 0.4, 0.1],
+          }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+        />
+        
+        {/* Holographic grid pattern */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.08)_1px,transparent_1px)] bg-[size:80px_80px]" />
+        
+        {/* Scanning lines effect */}
+        <motion.div
+          className="absolute inset-0 bg-[linear-gradient(0deg,rgba(6,182,212,0.03)_1px,transparent_2px)]"
+          style={{
+            backgroundSize: '100% 2px',
+          }}
+          animate={{ backgroundPosition: ['0 0', '0 20px'] }}
+          transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+        />
       </div>
 
       {/* 3D Hero Section */}
@@ -46,31 +73,33 @@ export default function About() {
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-2 gap-16 items-center">
             <motion.div
-              initial={{ opacity: 0, x: -30 }}
+              initial={{ opacity: 0, x: -40 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
+              transition={{ duration: 0.8 }}
             >
-              <h2 className="text-5xl md:text-6xl font-bold text-white mb-8">
-                Built <span className="text-cyan-400">From Scratch</span>
+              <h2 className="text-6xl md:text-7xl font-black text-white mb-8 leading-tight">
+                Built <span className="bg-gradient-to-r from-cyan-400 via-violet-400 to-cyan-400 bg-clip-text text-transparent">From Scratch</span>
               </h2>
-              <div className="space-y-6 text-xl text-slate-300 leading-relaxed">
-                <p>
-                  We started with a blank canvas. No legacy code. No compromises. Just modern AI architecture built for the challenges fleet operators face today.
+              <div className="space-y-6 text-lg text-slate-200 leading-relaxed font-light">
+                <p className="border-l-2 border-cyan-500/50 pl-6">
+                  We started with a blank canvas. No legacy code. No compromises. Just quantum-ready AI architecture built for the challenges fleet operators face in 2026.
                 </p>
                 <p>
-                  Every component—from FLEET AI's natural language engine to our swarm intelligence coordination to digital twin federation—was designed together as one unified system. 
-                  This is what a 2026 fleet platform looks like when you build it today.
+                  Every component—from FLEET AI's neuro-symbolic engine to our swarm intelligence coordination to digital twin federation—was designed together as one unified system. 
+                  <span className="text-cyan-300"> This is what a post-human fleet platform looks like</span>.
                 </p>
-                <p className="text-cyan-400 font-semibold">
-                  We're not adding AI to logistics. We're rebuilding logistics with AI as the foundation.
+                <p className="text-transparent bg-gradient-to-r from-cyan-300 via-violet-300 to-cyan-300 bg-clip-text font-semibold text-lg">
+                  We're not adding AI to logistics. We're encoding intelligence into every decision.
                 </p>
               </div>
             </motion.div>
 
             <motion.div
-              initial={{ opacity: 0, x: 30 }}
+              initial={{ opacity: 0, x: 40 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
+              transition={{ duration: 0.8 }}
               className="grid grid-cols-2 gap-6"
             >
               {[
@@ -83,18 +112,20 @@ export default function About() {
                 return (
                   <motion.div
                     key={idx}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
+                    initial={{ opacity: 0, scale: 0.8, y: 20 }}
+                    whileInView={{ opacity: 1, scale: 1, y: 0 }}
                     viewport={{ once: true }}
-                    transition={{ delay: idx * 0.1 }}
-                    whileHover={{ scale: 1.05 }}
-                    className="p-8 rounded-3xl bg-white/5 border border-white/10 text-center"
+                    transition={{ delay: idx * 0.15, duration: 0.6 }}
+                    whileHover={{ scale: 1.1, y: -10 }}
+                    className="p-8 rounded-3xl bg-gradient-to-br from-cyan-500/15 to-violet-500/10 border border-cyan-500/40 hover:border-cyan-400/80 text-center backdrop-blur-sm relative overflow-hidden group"
                   >
-                    <Icon className="w-12 h-12 text-cyan-400 mx-auto mb-4" />
-                    <div className="text-4xl font-black bg-gradient-to-br from-cyan-400 to-violet-400 bg-clip-text text-transparent mb-2">
+                    <motion.div whileHover={{ rotate: 360 }} transition={{ duration: 0.8 }}>
+                      <Icon className="w-12 h-12 text-cyan-400 mx-auto mb-4 group-hover:text-violet-300 transition-colors" />
+                    </motion.div>
+                    <div className="text-5xl font-black bg-gradient-to-r from-cyan-400 to-violet-300 bg-clip-text text-transparent mb-3 group-hover:from-violet-300 group-hover:to-cyan-300 transition-all">
                       {stat.value}
                     </div>
-                    <div className="text-sm text-slate-400">{stat.label}</div>
+                    <div className="text-sm text-slate-300 group-hover:text-cyan-300 transition-colors font-semibold">{stat.label}</div>
                   </motion.div>
                 );
               })}
@@ -120,16 +151,17 @@ export default function About() {
       <section className="relative py-32 px-6 z-10">
         <div className="max-w-5xl mx-auto text-center">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
           >
-            <h2 className="text-5xl md:text-6xl font-bold text-white mb-8">
-              Built by AI and Logistics <span className="text-cyan-400">Pioneers</span>
+            <h2 className="text-6xl md:text-7xl font-black text-white mb-8">
+              Built by <span className="bg-gradient-to-r from-violet-400 to-cyan-400 bg-clip-text text-transparent">Supergeniuses</span>
             </h2>
-            <p className="text-xl text-slate-300 leading-relaxed mb-12">
+            <p className="text-lg text-slate-200 leading-relaxed mb-12 max-w-3xl mx-auto font-light">
               We're not logistics experts who hired AI engineers. We're AI researchers who know logistics inside and out. 
-              This is why NexusVectis thinks differently—we solved this problem from first principles.
+              <span className="text-cyan-400 block mt-2 font-semibold">We solved this problem from first principles—on the first try.</span>
             </p>
             <div className="grid md:grid-cols-3 gap-6 mb-12">
               {[
@@ -139,15 +171,18 @@ export default function About() {
                ].map((team, idx) => (
                 <motion.div
                   key={idx}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
+                  initial={{ opacity: 0, scale: 0.85, y: 20 }}
+                  whileInView={{ opacity: 1, scale: 1, y: 0 }}
                   viewport={{ once: true }}
-                  transition={{ delay: idx * 0.1 }}
-                  className="p-6 rounded-2xl bg-white/5 border border-white/10"
+                  transition={{ delay: idx * 0.15, duration: 0.7 }}
+                  whileHover={{ scale: 1.05, y: -10 }}
+                  className="p-8 rounded-3xl bg-gradient-to-br from-violet-500/15 to-cyan-500/10 border border-violet-500/40 hover:border-violet-400/80 group relative overflow-hidden"
                 >
-                  <Award className="w-8 h-8 text-cyan-400 mx-auto mb-3" />
-                  <h4 className="text-lg font-bold text-white mb-2">{team.role}</h4>
-                  <p className="text-slate-400 text-sm">{team.desc}</p>
+                  <motion.div whileHover={{ rotate: 360, scale: 1.2 }} transition={{ duration: 0.8 }}>
+                    <Award className="w-10 h-10 text-violet-400 mx-auto mb-4 group-hover:text-cyan-300 transition-colors" />
+                  </motion.div>
+                  <h4 className="text-xl font-bold text-white mb-3 group-hover:text-violet-300 transition-colors">{team.role}</h4>
+                  <p className="text-slate-300 text-sm leading-relaxed group-hover:text-slate-200 transition-colors">{team.desc}</p>
                 </motion.div>
               ))}
             </div>
@@ -159,85 +194,104 @@ export default function About() {
       <section className="relative py-32 px-6 z-10">
         <div className="max-w-5xl mx-auto">
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
+            initial={{ opacity: 0, scale: 0.9, y: 40 }}
+            whileInView={{ opacity: 1, scale: 1, y: 0 }}
             viewport={{ once: true }}
-            className="rounded-[3rem] bg-gradient-to-br from-cyan-500/10 via-violet-500/10 to-fuchsia-500/10 border border-cyan-500/30 p-16 text-center"
+            transition={{ duration: 0.8 }}
+            whileHover={{ scale: 1.02 }}
+            className="rounded-[3rem] bg-gradient-to-br from-cyan-500/20 via-violet-500/15 to-fuchsia-500/10 border border-cyan-500/60 p-20 text-center backdrop-blur-sm relative overflow-hidden"
           >
-            <h2 className="text-5xl md:text-6xl font-bold text-white mb-6">
-              This is Just the Beginning
-            </h2>
-            <p className="text-xl text-slate-300 mb-12 max-w-2xl mx-auto">
-              We've reimagined fleet operations from scratch. Now we're scaling it globally. 
-              Join us in building the future of logistics.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-              <Link to={createPageUrl("Careers")}>
-                <button className="bg-white text-slate-900 text-xl px-12 py-6 rounded-2xl font-bold hover:scale-105 transition-transform inline-flex items-center gap-3">
-                  View Open Positions
-                  <ArrowRight className="w-6 h-6" />
-                </button>
-              </Link>
-              <button
-                onClick={() => base44.auth.redirectToLogin(createPageUrl("Dashboard"))}
-                className="bg-gradient-to-r from-cyan-500 to-violet-500 text-white text-xl px-12 py-6 rounded-2xl font-bold hover:scale-105 transition-transform inline-flex items-center gap-3"
-              >
-                Try NexusVectis
-                <Sparkles className="w-6 h-6" />
-              </button>
+            {/* Animated light rays */}
+            <motion.div
+              className="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-to-br from-cyan-500/0 to-violet-500/20 rounded-full blur-3xl"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+            />
+
+            <div className="relative z-10">
+              <h2 className="text-6xl md:text-7xl font-black text-white mb-8">
+                This is <span className="bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent">The Future</span>
+              </h2>
+              <p className="text-lg text-slate-200 mb-12 max-w-2xl mx-auto font-light">
+                We've built what will exist in 30 years, today. 
+                <span className="block text-cyan-400 font-semibold mt-2">Now we're scaling it globally.</span>
+              </p>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+                <Link to={createPageUrl("Careers")}>
+                  <motion.button 
+                    whileHover={{ scale: 1.08, boxShadow: "0 0 30px rgba(6, 182, 212, 0.5)" }}
+                    className="bg-white text-black text-lg px-14 py-6 rounded-2xl font-bold inline-flex items-center gap-3 relative overflow-hidden group"
+                  >
+                    View Open Positions
+                    <motion.div whileHover={{ x: 5 }}>
+                      <ArrowRight className="w-6 h-6" />
+                    </motion.div>
+                  </motion.button>
+                </Link>
+                <motion.button
+                  onClick={() => base44.auth.redirectToLogin(createPageUrl("Dashboard"))}
+                  whileHover={{ scale: 1.08, boxShadow: "0 0 40px rgba(6, 182, 212, 0.7)" }}
+                  className="bg-gradient-to-r from-cyan-500 to-violet-500 text-white text-lg px-14 py-6 rounded-2xl font-bold inline-flex items-center gap-3 hover:shadow-cyan-500/50 transition-shadow"
+                >
+                  Try NexusVectis
+                  <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 2, repeat: Infinity }}>
+                    <Sparkles className="w-6 h-6" />
+                  </motion.div>
+                </motion.button>
+              </div>
             </div>
           </motion.div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="relative py-20 px-6 border-t border-white/5 z-10 bg-slate-950/50">
+      <footer className="relative py-20 px-6 border-t border-cyan-500/20 z-10 bg-black/80 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-4 gap-12 mb-12">
             <div className="md:col-span-2">
               <Link to={createPageUrl("Home")}>
                 <motion.img 
-                  whileHover={{ scale: 1.05 }}
+                  whileHover={{ scale: 1.1, filter: "drop-shadow(0 0 20px rgba(6, 182, 212, 0.6))" }}
                   src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/697e930c62bf3e3832b34edb/bc9d40ccc_FullLogo_Transparent1.png" 
                   alt="NexusVectis Logo" 
-                  className="h-32 w-auto mb-6 opacity-90"
+                  className="h-32 w-auto mb-6 opacity-95"
                 />
               </Link>
-              <p className="text-slate-400 max-w-md">
-                Next-generation fleet intelligence platform powered by AI
+              <p className="text-slate-300 max-w-md font-light">
+                Logistics intelligence from 2056, deployed today.
               </p>
             </div>
-            
+
             <div>
-              <h4 className="text-white font-bold mb-4">Platform</h4>
+              <h4 className="text-white font-bold mb-4 text-cyan-400">Platform</h4>
               <ul className="space-y-2 text-slate-400">
-                <li><Link to={createPageUrl("FleetAIPage")} className="hover:text-cyan-400 transition-colors">FLEET AI</Link></li>
-                <li><Link to={createPageUrl("LiveTrackingPage")} className="hover:text-cyan-400 transition-colors">Live Tracking</Link></li>
-                <li><Link to={createPageUrl("AnalyticsPage")} className="hover:text-cyan-400 transition-colors">Analytics</Link></li>
-                <li><Link to={createPageUrl("IntegrationsPage")} className="hover:text-cyan-400 transition-colors">Integrations</Link></li>
+                <li><Link to={createPageUrl("FleetAIPage")} className="hover:text-cyan-300 transition-colors hover:translate-x-1 inline-block">FLEET AI</Link></li>
+                <li><Link to={createPageUrl("LiveTrackingPage")} className="hover:text-cyan-300 transition-colors hover:translate-x-1 inline-block">Live Tracking</Link></li>
+                <li><Link to={createPageUrl("AnalyticsPage")} className="hover:text-cyan-300 transition-colors hover:translate-x-1 inline-block">Analytics</Link></li>
+                <li><Link to={createPageUrl("IntegrationsPage")} className="hover:text-cyan-300 transition-colors hover:translate-x-1 inline-block">Integrations</Link></li>
               </ul>
             </div>
-            
+
             <div>
-              <h4 className="text-white font-bold mb-4">Company</h4>
+              <h4 className="text-white font-bold mb-4 text-cyan-400">Company</h4>
               <ul className="space-y-2 text-slate-400">
-                <li><Link to={createPageUrl("About")} className="hover:text-cyan-400 transition-colors">About</Link></li>
-                <li><Link to={createPageUrl("Careers")} className="hover:text-cyan-400 transition-colors">Careers</Link></li>
-                <li><Link to={createPageUrl("Contact")} className="hover:text-cyan-400 transition-colors">Contact</Link></li>
-                <li><Link to={createPageUrl("Blog")} className="hover:text-cyan-400 transition-colors">Blog</Link></li>
+                <li><Link to={createPageUrl("About")} className="hover:text-cyan-300 transition-colors hover:translate-x-1 inline-block">About</Link></li>
+                <li><Link to={createPageUrl("Careers")} className="hover:text-cyan-300 transition-colors hover:translate-x-1 inline-block">Careers</Link></li>
+                <li><Link to={createPageUrl("Contact")} className="hover:text-cyan-300 transition-colors hover:translate-x-1 inline-block">Contact</Link></li>
+                <li><Link to={createPageUrl("Blog")} className="hover:text-cyan-300 transition-colors hover:translate-x-1 inline-block">Blog</Link></li>
               </ul>
             </div>
           </div>
-          
+
           <motion.div
             initial={{ scaleX: 0 }}
             whileInView={{ scaleX: 1 }}
             viewport={{ once: true }}
-            className="h-px bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent mb-8"
+            className="h-px bg-gradient-to-r from-transparent via-cyan-500/60 to-transparent mb-8"
           />
-          
+
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <p className="text-slate-500 text-sm">&copy; 2026 NexusVectis. Shaping the future of logistics intelligence.</p>
+            <p className="text-slate-500 text-sm">&copy; 2026 NexusVectis. Building tomorrow, today.</p>
             <div className="flex gap-6 text-slate-400 text-sm">
               <Link to={createPageUrl("PrivacyPolicy")} className="hover:text-cyan-400 transition-colors">Privacy Policy</Link>
               <Link to={createPageUrl("TermsOfService")} className="hover:text-cyan-400 transition-colors">Terms of Service</Link>
