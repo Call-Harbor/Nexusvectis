@@ -265,6 +265,8 @@ export default function IntellectMode() {
   const [showCandidateMatcher, setShowCandidateMatcher] = useState(false);
   const [thinkingLogs, setThinkingLogs] = useState([]);
   const [showThinkingTerminal, setShowThinkingTerminal] = useState(false);
+  const [processTerminals, setProcessTerminals] = useState([]);
+  const [minimizedProcesses, setMinimizedProcesses] = useState(new Set());
   const [screens, setScreens] = useState([]);
   const [showMultiScreenPrompt, setShowMultiScreenPrompt] = useState(false);
   const [multiScreenDismissed, setMultiScreenDismissed] = useState(false);
