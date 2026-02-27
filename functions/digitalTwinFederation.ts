@@ -4,12 +4,23 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const body = await req.json().catch(() => ({}));
-    const orgId = body.organization_id;
 
-    if (!orgId) {
-      return Response.json({ error: 'organization_id required' }, { status: 400 });
+    // When called as a scheduled automation there's no body — run for all orgs
+    let orgIds = [];
+    if (body.organization_id) {
+      orgIds = [body.organization_id];
+    } else {
+      const orgs = await base44.asServiceRole.entities.Organization.list();
+      orgIds = orgs.map(o => o.id);
     }
 
+    if (orgIds.length === 0) {
+      return Response.json({ status: 'success', message: 'No organizations found', total_twins_created: 0 });
+    }
+
+    const allResults = [];
+
+    for (const orgId of orgIds) {
     // ── SPAWN DIGITAL TWINS FOR ALL VEHICLES ──────────────────────────────
     const vehicles = await base44.asServiceRole.entities.Vehicle.filter({ organization_id: orgId });
     const twins = [];
@@ -150,8 +161,7 @@ Deno.serve(async (req) => {
 
     console.log(`[DIGITAL-TWIN] Org: ${orgId}. Twins: ${createdCount}. Divergences: ${divergences.length}`);
 
-    return Response.json({
-      status: 'success',
+    allResults.push({
       organization_id: orgId,
       total_twins_created: createdCount,
       divergence_count: divergences.length,
@@ -161,6 +171,13 @@ Deno.serve(async (req) => {
         shipments: shipments.length,
         resources: resources.length,
       },
+    });
+    } // end for orgId loop
+
+    return Response.json({
+      status: 'success',
+      organizations_processed: allResults.length,
+      results: allResults,
     });
   } catch (error) {
     console.error('[DIGITAL-TWIN] Error:', error.message);
