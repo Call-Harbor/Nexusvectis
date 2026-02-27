@@ -367,6 +367,56 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
     if (companyInput.trim()) fetchData(companyInput.trim());
   };
 
+  const searchOwners = async () => {
+    if (!ownerSearch.trim()) return;
+    setOwnerLoading(true);
+    setOwnerData(null);
+    try {
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `Find real company ownership information for "${ownerSearch}"${companyName ? ` (${companyName})` : ''}. Look for: main owners/shareholders (names, companies, ownership percentages), board members, majority shareholders, private equity owners, institutional investors. Only verified data from official sources like business registries, SEC filings, company announcements. Return as a structured list with names, roles, and ownership %.`,
+        add_context_from_internet: true,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            owners: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  name: { type: "string" },
+                  role: { type: "string" },
+                  ownership_percentage: { type: "string" },
+                  entity_type: { type: "string" },
+                  background: { type: "string" }
+                }
+              }
+            },
+            board_members: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  name: { type: "string" },
+                  title: { type: "string" },
+                  company: { type: "string" }
+                }
+              }
+            },
+            ownership_structure: { type: "string" }
+          }
+        }
+      });
+
+      if (result && (result.owners?.length > 0 || result.board_members?.length > 0)) {
+        setOwnerData(result);
+      }
+    } catch (err) {
+      console.error('Owner search error:', err);
+    } finally {
+      setOwnerLoading(false);
+    }
+  };
+
   const searchPerson = async () => {
     if (!personSearch.trim()) return;
     setPersonLoading(true);
