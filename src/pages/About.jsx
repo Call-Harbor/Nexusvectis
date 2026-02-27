@@ -460,6 +460,99 @@ export default function About() {
         </div>
       </section>
 
+      {/* Major Tech Milestones */}
+      <section className="relative py-20 sm:py-32 px-4 sm:px-6 z-10">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-20"
+          >
+            <motion.div
+              animate={{
+                y: [0, -10, 0],
+              }}
+              transition={{ duration: 3, repeat: Infinity }}
+              className="inline-block mb-6"
+            >
+              <TrendingUp className="w-12 h-12 text-violet-400" />
+            </motion.div>
+            <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-6 leading-tight px-2">
+              Major Tech
+              <br />
+              <span className="bg-gradient-to-r from-violet-400 to-fuchsia-400 bg-clip-text text-transparent">
+                Breakthroughs
+              </span>
+            </h2>
+            <p className="text-lg text-slate-400 max-w-2xl mx-auto px-2">
+              Innovation milestones that transformed fleet logistics AI
+            </p>
+          </motion.div>
+
+          <div className="relative">
+            {/* Timeline Line */}
+            <div className="hidden md:block absolute left-1/2 transform -translate-x-1/2 w-1 h-full bg-gradient-to-b from-cyan-500/50 via-violet-500/50 to-fuchsia-500/50" />
+
+            <div className="space-y-12">
+              {majorMilestones.map((milestone, idx) => {
+                const Icon = milestone.icon;
+                const isLeft = idx % 2 === 0;
+
+                return (
+                  <motion.div
+                    key={idx}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: idx * 0.1 }}
+                    className="relative"
+                  >
+                    <div className={`grid md:grid-cols-2 gap-8 items-center ${isLeft ? "md:direction-rtl" : ""}`}>
+                      {/* Content */}
+                      <motion.div
+                        whileHover={{ scale: 1.02, y: -5 }}
+                        className={`p-8 rounded-2xl bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl border border-white/10 hover:border-violet-500/50 transition-all ${
+                          isLeft ? "" : "md:order-2"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3 mb-3">
+                          <Icon className="w-6 h-6 text-violet-400" />
+                          <span className="text-xs font-bold text-violet-300 uppercase tracking-wider">{milestone.year}</span>
+                        </div>
+                        <h3 className="text-2xl font-bold text-white mb-3">{milestone.title}</h3>
+                        <p className="text-slate-400 mb-4 leading-relaxed">{milestone.description}</p>
+                        <div className="pt-4 border-t border-white/10">
+                          <p className="text-sm text-cyan-300 flex items-center gap-2">
+                            <CheckCircle2 className="w-4 h-4" />
+                            {milestone.impact}
+                          </p>
+                        </div>
+                      </motion.div>
+
+                      {/* Timeline Dot */}
+                      <div className="hidden md:flex justify-center">
+                        <motion.div
+                          animate={{
+                            scale: [1, 1.2, 1],
+                            boxShadow: [
+                              "0 0 0 0 rgba(139, 92, 246, 0.4)",
+                              "0 0 0 20px rgba(139, 92, 246, 0)",
+                            ],
+                          }}
+                          transition={{ duration: 2, repeat: Infinity }}
+                          className="w-6 h-6 rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500 border-4 border-slate-950 relative z-10"
+                        />
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* FLEET AI Capabilities */}
       <section className="relative py-20 sm:py-32 px-4 sm:px-6 z-10">
         <div className="max-w-7xl mx-auto">
