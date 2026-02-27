@@ -50,7 +50,6 @@
 import AIOptimization from './pages/AIOptimization';
 import APIDocumentation from './pages/APIDocumentation';
 import APIMetrics from './pages/APIMetrics';
-import About from './pages/About';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminInvoices from './pages/AdminInvoices';
 import AdminMonitor from './pages/AdminMonitor';
@@ -105,7 +104,6 @@ export const PAGES = {
     "AIOptimization": AIOptimization,
     "APIDocumentation": APIDocumentation,
     "APIMetrics": APIMetrics,
-    "About": About,
     "AdminDashboard": AdminDashboard,
     "AdminInvoices": AdminInvoices,
     "AdminMonitor": AdminMonitor,
