@@ -663,15 +663,7 @@ export default function IntellectMode() {
   }, [input]);
 
   const processCommand = async () => {
-    if (!input.trim() || isProcessing) return;
-
-    const currentCommand = input;
-
-    // Reset processing state in case of stale state
-    if (isProcessing) {
-      setIsProcessing(false);
-      return;
-    }
+    if (!input.trim()) return;
 
     // Detect company analysis command locally — must contain "virksomhed" or explicit keywords
     const companyMatch = currentCommand.match(/(?:analyser(?:er)?\s+virksomheden?\s+|company analysis[:\s]+|analyze company[:\s]+)(.+)/i);
