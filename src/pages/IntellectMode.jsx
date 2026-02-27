@@ -1715,6 +1715,17 @@ export default function IntellectMode() {
       return <AISpreadsheetEditor />;
     }
 
+    // Global Search
+    if (type === 'global_search') {
+      return (
+        <GlobalSearch
+          orgId={data?.orgId}
+          onOpenWindow={(entityType, item) => openWindow(entityType, { x: 200, y: 150 })}
+          onClose={() => {}}
+        />
+      );
+    }
+
     // For full page iframes - all apps
     if (['dashboard', 'settings', 'aioptimization', 'invoices', 'apidocs', 'resources', 
          'warehouseautomation', 'demandforecasting', 'greentms', 'gpsintegration', 'assignment', 'routeeditor',
