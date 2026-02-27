@@ -2480,6 +2480,22 @@ Return JSON with this EXACT structure:
               </HologramWindow>
             )}
 
+            {/* Parallel Task Processor */}
+            {showParallelProcessor && (
+              <HologramWindow
+                id="parallel-processor"
+                title="Parallel Task Processor"
+                icon={Zap}
+                position={{ x: 150, y: 100 }}
+                onClose={() => setShowParallelProcessor(false)}
+                onMinimize={() => toggleMinimize('parallel-processor')}
+                isMinimized={minimizedWindows.has('parallel-processor')}
+                windowType="parallel_processor"
+              >
+                <ParallelTaskProcessor onClose={() => setShowParallelProcessor(false)} />
+              </HologramWindow>
+            )}
+
             {/* 3D Visualization */}
             {show3DVisualization && (
             <FleetGlobe3D
