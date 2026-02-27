@@ -418,6 +418,12 @@ export default function Layout({ children, currentPageName }) {
         </nav>
 
         <div className="absolute bottom-0 left-0 right-0 p-4 space-y-3">
+          {user && (
+            <div className="flex items-center justify-between px-2 py-1.5 rounded-xl bg-slate-800/40 border border-slate-700/40">
+              <span className="text-xs text-slate-400 truncate">{user.full_name || user.email}</span>
+              <NotificationCenter user={user} />
+            </div>
+          )}
           <Button
             onClick={() => navigate(createPageUrl("IntellectMode"))}
             className="w-full bg-gradient-to-r from-cyan-500 to-violet-500 hover:from-cyan-600 hover:to-violet-600 border-0"
