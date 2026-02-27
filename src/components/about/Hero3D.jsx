@@ -96,7 +96,7 @@ export default function Hero3D() {
             initial={{ opacity: 0, y: 80 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.6, type: "spring" }}
-            className="grid md:grid-cols-4 gap-6 mb-16"
+            className="grid md:grid-cols-4 gap-6 mb-20"
           >
             {capabilities.map((cap, idx) => {
               const Icon = cap.icon;
@@ -106,58 +106,26 @@ export default function Hero3D() {
                   initial={{ opacity: 0, y: 40, scale: 0.8 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   transition={{ duration: 0.7, delay: 0.7 + idx * 0.15, type: "spring" }}
-                  whileHover={{ y: -25, scale: 1.12, boxShadow: "0 0 60px rgba(6, 182, 212, 0.6)" }}
-                  className="p-10 rounded-3xl bg-gradient-to-br from-cyan-500/25 to-violet-500/15 border-2 border-cyan-500/50 hover:border-cyan-400/80 transition-all group cursor-pointer relative overflow-hidden backdrop-blur-sm"
+                  whileHover={{ y: -20, scale: 1.08 }}
+                  className="p-8 rounded-2xl bg-slate-900/60 border border-cyan-500/40 hover:border-cyan-400/80 transition-all group cursor-pointer relative overflow-hidden backdrop-blur-md"
                 >
-                  {/* Animated background on hover */}
-                  <motion.div
-                    whileHover={{ opacity: 1 }}
-                    className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-violet-500/5 opacity-0"
-                  />
-                  
                   <motion.div
                     whileHover={{ rotate: 360 }}
                     transition={{ duration: 0.6 }}
-                    className="mb-4 relative z-10"
+                    className="mb-5 relative z-10"
                   >
-                    <Icon className="w-10 h-10 text-cyan-400 group-hover:text-violet-400 transition-colors" />
+                    <Icon className="w-12 h-12 text-cyan-400 group-hover:text-cyan-300 transition-colors" />
                   </motion.div>
-                  <div className="text-sm font-semibold text-cyan-400 mb-2 group-hover:text-violet-400 transition-colors relative z-10">
+                  <h4 className="text-lg font-bold text-white mb-2 group-hover:text-cyan-300 transition-colors relative z-10">
                     {cap.label}
-                  </div>
-                  <div className="text-xs text-slate-400 group-hover:text-slate-300 transition-colors relative z-10">
+                  </h4>
+                  <p className="text-sm text-slate-400 group-hover:text-slate-300 transition-colors relative z-10">
                     {cap.value}
-                  </div>
+                  </p>
                 </motion.div>
               );
             })}
           </motion.div>
-
-          {/* AI Power Stats - Massive */}
-          <motion.div
-            initial={{ opacity: 0, y: 60 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.8 }}
-            className="grid md:grid-cols-4 gap-8 mb-20"
-          >
-            {capabilities.map((cap, idx) => {
-              const Icon = cap.icon;
-              return (
-                <motion.div
-                  key={idx}
-                  initial={{ opacity: 0, scale: 0.7, y: 40 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  transition={{ duration: 0.8, delay: 0.9 + idx * 0.15, type: "spring" }}
-                  whileHover={{ scale: 1.15, y: -30, boxShadow: "0 0 80px rgba(6, 182, 212, 0.9)" }}
-                  className="text-center p-12 rounded-3xl bg-gradient-to-br from-cyan-500/35 to-violet-500/20 border-2 border-cyan-500/70 hover:border-cyan-300/100 transition-all relative group"
-                >
-                  <motion.div
-                    whileHover={{ rotate: 360, scale: 1.3 }}
-                    transition={{ duration: 0.6 }}
-                    className="flex justify-center mb-6"
-                  >
-                    <Icon className="w-16 h-16 text-cyan-400 group-hover:text-yellow-300" />
-                  </motion.div>
                   <div className="text-2xl font-black text-white mb-3 group-hover:text-cyan-300">{cap.label}</div>
                   <div className="text-sm text-slate-300 group-hover:text-slate-100">{cap.value}</div>
                 </motion.div>
