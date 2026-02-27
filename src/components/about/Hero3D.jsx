@@ -17,35 +17,26 @@ export default function Hero3D() {
       {/* Intense Animated Background */}
       <div className="absolute inset-0 bg-gradient-to-b from-black via-slate-950 to-black" />
       
-      {/* MASSIVE Pulsing Orbs */}
+      {/* MASSIVE Pulsing Orbs - CYAN ONLY */}
       <motion.div
         animate={{
           scale: [1, 1.5, 1],
-          opacity: [0.4, 0.8, 0.4],
+          opacity: [0.2, 0.5, 0.2],
           x: [0, 100, 0],
           y: [0, -50, 0]
         }}
         transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute -top-1/3 -left-1/4 w-[800px] h-[800px] bg-cyan-500 rounded-full blur-[150px] opacity-30"
+        className="absolute -top-1/3 -left-1/4 w-[800px] h-[800px] bg-cyan-500 rounded-full blur-[150px] opacity-25"
       />
       <motion.div
         animate={{
-          scale: [1.3, 0.9, 1.3],
-          opacity: [0.3, 0.7, 0.3],
-          x: [0, -80, 0],
-          y: [0, 60, 0]
+          scale: [1.2, 0.8, 1.2],
+          opacity: [0.15, 0.4, 0.15],
+          x: [0, -60, 0],
+          y: [0, 40, 0]
         }}
         transition={{ duration: 14, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-        className="absolute -bottom-1/3 -right-1/4 w-[800px] h-[800px] bg-violet-600 rounded-full blur-[150px] opacity-35"
-      />
-      <motion.div
-        animate={{
-          scale: [1, 1.3, 1],
-          opacity: [0.2, 0.6, 0.2],
-          rotate: [0, 360, 0]
-        }}
-        transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-        className="absolute top-1/3 right-1/3 w-[700px] h-[700px] bg-fuchsia-600 rounded-full blur-[140px] opacity-25"
+        className="absolute -bottom-1/3 -right-1/4 w-[900px] h-[900px] bg-cyan-400 rounded-full blur-[160px] opacity-20"
       />
 
       {/* Hyper Grid Pattern */}
