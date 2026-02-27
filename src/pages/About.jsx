@@ -137,15 +137,15 @@ export default function About() {
   const majorMilestones = [
     {
       icon: Zap,
-      year: "2024",
-      title: "FLEET AI Engine Launch",
+      year: "2026",
+      title: "FLEET AI Engine v1 Launch",
       description: "Transformer-based LLM fine-tuned on 10M+ logistics commands. Achieves 98.7% intent accuracy with sub-100ms latency. Uses retrieval-augmented generation (RAG) to ground outputs in real-time fleet state. Handles 50+ concurrent natural language analysis threads simultaneously—each spawning independent AI sub-tasks.",
       technical: "GPT-4 base + LoRA fine-tuning | Token context: 128K | Inference: 4-bit quantization",
       impact: "50+ parallel analyses, 50-100ms latency per query"
     },
     {
       icon: Network,
-      year: "2024",
+      year: "2026",
       title: "Swarm Intelligence Protocol (ACO/PSO Hybrid)",
       description: "Implemented Ant Colony Optimization (ACO) and Particle Swarm Optimization (PSO) for decentralized vehicle coordination. No central optimizer—instead, vehicles broadcast local pheromone & position updates via mesh networks (5G/LoRa). Each agent locally solves its routing problem while respecting global fleet constraints via stigmergy (indirect communication).",
       technical: "ACO pheromone decay: O(n²) | PSO iterations: 200/cycle | Mesh sync: 50ms intervals",
@@ -153,7 +153,7 @@ export default function About() {
     },
     {
       icon: Shield,
-      year: "2025",
+      year: "2026",
       title: "Digital Twin Federation (Physics Simulation)",
       description: "Runs physics-based simulations (Kalman filtering + predictive kinematics) for every vehicle in parallel. Compares real state vs. predicted state—divergence > threshold triggers anomaly alerts. Detects GPS spoofing (impossible acceleration patterns), MITM attacks (position jumps), and sensor tampering. Fault-tolerant: if one digital twin crashes, federation continues.",
       technical: "Kalman filter: O(n) per update | Physics sim: 100Hz per vehicle | Anomaly scoring: Mahalanobis distance",
@@ -161,7 +161,7 @@ export default function About() {
     },
     {
       icon: Truck,
-      year: "2025",
+      year: "2026",
       title: "Multi-Signal Fusion (Bayesian State Estimation)",
       description: "Unified Kalman filter + Gaussian Mixture Models (GMM) combining GPS noise, AIS satellite delays, ADS-B radar errors, RFID ranging uncertainty, and LoRaWAN signal strength. Weights signals based on confidence. Handles GPS outages gracefully by falling back to inertial + 4G triangulation. Sub-meter accuracy in urban canyons.",
       technical: "Extended Kalman Filter (EKF) | GMM: 5-component mixture | GPS/GNSS fusion: RTKLIB algorithm",
@@ -169,7 +169,7 @@ export default function About() {
     },
     {
       icon: Brain,
-      year: "2025",
+      year: "2026",
       title: "Predictive ML Suite (LSTM + GBM Ensemble)",
       description: "LSTM networks trained on 2B+ historical trips for ETA prediction (95% within ±5min). Gradient Boosting Machines (XGBoost) for maintenance prediction—scans sensor telemetry (vibration, oil pressure, brake pad wear) to forecast failures 7+ days ahead. Genetic algorithms evolve route genes over 1000+ generations to discover emergent patterns.",
       technical: "LSTM: 3-layer, 256 hidden units | XGBoost: 300 trees, max_depth=8 | Genetic Algorithm: mutation_rate=0.15",
