@@ -158,8 +158,8 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
           }
         }),
         // Financial metrics
-        base44.integrations.Core.InvokeLLM({
-          prompt: `Give me key financial metrics for the company identified by "${name}" (could be a name, CVR number, registration number, or VAT number). Real data only.`,
+         base44.integrations.Core.InvokeLLM({
+           prompt: `Give me key financial metrics for the company identified by "${name}".${searchHint} Real data only from official sources.`,
           add_context_from_internet: true,
           response_json_schema: {
             type: "object",
