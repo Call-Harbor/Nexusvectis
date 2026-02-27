@@ -141,6 +141,39 @@ Deno.serve(async (req) => {
       yPos += 8;
     });
 
+    // Market Position & Impact
+    yPos += 10;
+    if (yPos > pageHeight - 70) {
+      pdf.addPage();
+      yPos = 20;
+    }
+
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(14);
+    pdf.text('Market Position & Impact', 20, yPos);
+    
+    yPos += 10;
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(11);
+    
+    const impact = [
+      'World\'s First: Only platform combining natural language control with multi-modal fleet tracking',
+      'Development Speed: Achieved production-ready status in 8 weeks - unprecedented in logistics AI',
+      'Accuracy: 99.2% command understanding rate in rigorous production testing',
+      'Scalability: Architecture designed to handle thousands of concurrent fleets globally',
+      'Sustainability: Green TMS capabilities reduce CO2 emissions through intelligent route optimization',
+      'Accessibility: Makes advanced AI-driven fleet optimization accessible to logistics companies of all sizes'
+    ];
+
+    impact.forEach(item => {
+      if (yPos > pageHeight - 30) {
+        pdf.addPage();
+        yPos = 20;
+      }
+      pdf.text('• ' + item, 25, yPos);
+      yPos += 8;
+    });
+
     // Contact
     yPos += 10;
     if (yPos > pageHeight - 40) {
@@ -150,7 +183,7 @@ Deno.serve(async (req) => {
 
     pdf.setFont('helvetica', 'bold');
     pdf.setFontSize(14);
-    pdf.text('Contact Information', 20, yPos);
+    pdf.text('Media & Press Contact', 20, yPos);
     
     yPos += 10;
     pdf.setFont('helvetica', 'normal');
@@ -160,7 +193,9 @@ Deno.serve(async (req) => {
     yPos += 8;
     pdf.text('Website: www.nexusvectis.com', 20, yPos);
     yPos += 8;
-    pdf.text('Location: Copenhagen, Denmark', 20, yPos);
+    pdf.text('Headquarters: Copenhagen, Denmark', 20, yPos);
+    yPos += 8;
+    pdf.text('Founded: January 2026', 20, yPos);
 
     // Generate PDF
     const pdfBytes = pdf.output('arraybuffer');
