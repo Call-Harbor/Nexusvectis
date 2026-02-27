@@ -642,32 +642,74 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
 
       {/* Search bar */}
       <div className="relative z-10 p-4 border-b border-slate-800/50 flex-shrink-0">
-        <div className="max-w-2xl mx-auto space-y-2">
-          <div className="flex gap-2 items-center text-xs text-slate-400 mb-2">
-            <span>Search type:</span>
+        <div className="max-w-3xl mx-auto space-y-2">
+          <div className="flex gap-1.5 items-center text-xs text-slate-400 mb-2 flex-wrap">
+            <span>Registreringstype:</span>
             <button 
               onClick={() => setSearchType('auto')}
-              className={`px-2.5 py-1 rounded-md transition-colors ${searchType === 'auto' ? 'bg-cyan-500/40 text-cyan-300' : 'hover:bg-slate-800 text-slate-400'}`}
+              className={`px-2 py-0.5 rounded-md transition-colors text-xs ${searchType === 'auto' ? 'bg-cyan-500/40 text-cyan-300' : 'hover:bg-slate-800 text-slate-400'}`}
             >
               Auto
             </button>
             <button 
               onClick={() => setSearchType('name')}
-              className={`px-2.5 py-1 rounded-md transition-colors ${searchType === 'name' ? 'bg-cyan-500/40 text-cyan-300' : 'hover:bg-slate-800 text-slate-400'}`}
+              className={`px-2 py-0.5 rounded-md transition-colors text-xs ${searchType === 'name' ? 'bg-cyan-500/40 text-cyan-300' : 'hover:bg-slate-800 text-slate-400'}`}
             >
-              Company Name
+              Navn
             </button>
             <button 
               onClick={() => setSearchType('cvr')}
-              className={`px-2.5 py-1 rounded-md transition-colors ${searchType === 'cvr' ? 'bg-cyan-500/40 text-cyan-300' : 'hover:bg-slate-800 text-slate-400'}`}
+              className={`px-2 py-0.5 rounded-md transition-colors text-xs ${searchType === 'cvr' ? 'bg-cyan-500/40 text-cyan-300' : 'hover:bg-slate-800 text-slate-400'}`}
             >
-              CVR/Registration
+              CVR (DK)
             </button>
             <button 
               onClick={() => setSearchType('vat')}
-              className={`px-2.5 py-1 rounded-md transition-colors ${searchType === 'vat' ? 'bg-cyan-500/40 text-cyan-300' : 'hover:bg-slate-800 text-slate-400'}`}
+              className={`px-2 py-0.5 rounded-md transition-colors text-xs ${searchType === 'vat' ? 'bg-cyan-500/40 text-cyan-300' : 'hover:bg-slate-800 text-slate-400'}`}
             >
-              VAT Number
+              VAT
+            </button>
+            <button 
+              onClick={() => setSearchType('se')}
+              className={`px-2 py-0.5 rounded-md transition-colors text-xs ${searchType === 'se' ? 'bg-cyan-500/40 text-cyan-300' : 'hover:bg-slate-800 text-slate-400'}`}
+            >
+              Org.nr (SE)
+            </button>
+            <button 
+              onClick={() => setSearchType('de')}
+              className={`px-2 py-0.5 rounded-md transition-colors text-xs ${searchType === 'de' ? 'bg-cyan-500/40 text-cyan-300' : 'hover:bg-slate-800 text-slate-400'}`}
+            >
+              HRB (DE)
+            </button>
+            <button 
+              onClick={() => setSearchType('fr')}
+              className={`px-2 py-0.5 rounded-md transition-colors text-xs ${searchType === 'fr' ? 'bg-cyan-500/40 text-cyan-300' : 'hover:bg-slate-800 text-slate-400'}`}
+            >
+              SIRET (FR)
+            </button>
+            <button 
+              onClick={() => setSearchType('it')}
+              className={`px-2 py-0.5 rounded-md transition-colors text-xs ${searchType === 'it' ? 'bg-cyan-500/40 text-cyan-300' : 'hover:bg-slate-800 text-slate-400'}`}
+            >
+              Partita IVA (IT)
+            </button>
+            <button 
+              onClick={() => setSearchType('nl')}
+              className={`px-2 py-0.5 rounded-md transition-colors text-xs ${searchType === 'nl' ? 'bg-cyan-500/40 text-cyan-300' : 'hover:bg-slate-800 text-slate-400'}`}
+            >
+              KvK (NL)
+            </button>
+            <button 
+              onClick={() => setSearchType('be')}
+              className={`px-2 py-0.5 rounded-md transition-colors text-xs ${searchType === 'be' ? 'bg-cyan-500/40 text-cyan-300' : 'hover:bg-slate-800 text-slate-400'}`}
+            >
+              BCE (BE)
+            </button>
+            <button 
+              onClick={() => setSearchType('no')}
+              className={`px-2 py-0.5 rounded-md transition-colors text-xs ${searchType === 'no' ? 'bg-cyan-500/40 text-cyan-300' : 'hover:bg-slate-800 text-slate-400'}`}
+            >
+              Org.nr (NO)
             </button>
           </div>
           <div className="flex gap-2">
@@ -675,7 +717,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
               value={companyInput}
               onChange={e => setCompanyInput(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleSearch()}
-              placeholder="Search company by name or registration number..."
+              placeholder="Søg virksomhed efter navn eller registreringsnummer..."
               className="flex-1 px-4 py-2.5 bg-slate-900/60 border-2 border-cyan-500/30 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-400 text-sm"
             />
             <Button
