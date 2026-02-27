@@ -2818,12 +2818,12 @@ Return JSON with this EXACT structure:
                 <Mic className="w-4 h-4 sm:w-5 sm:h-5" />
               </Button>
               <Button
-                onClick={processCommand}
-                disabled={isProcessing || !input.trim()}
-                size="sm"
-                className="px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-cyan-500 via-violet-500 to-cyan-500 bg-[length:200%_auto] hover:bg-right rounded-xl sm:rounded-2xl shadow-lg shadow-cyan-500/30 hover:shadow-xl hover:shadow-cyan-500/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden group"
-                style={{ animationDuration: '2s' }}
-              >
+                 onClick={processCommand}
+                 disabled={!input.trim()}
+                 size="sm"
+                 className="px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-cyan-500 via-violet-500 to-cyan-500 bg-[length:200%_auto] hover:bg-right rounded-xl sm:rounded-2xl shadow-lg shadow-cyan-500/30 hover:shadow-xl hover:shadow-cyan-500/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden group"
+                 style={{ animationDuration: '2s' }}
+               >
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
                 {isProcessing ? (
                   <div className="flex items-center gap-2 relative z-10">
