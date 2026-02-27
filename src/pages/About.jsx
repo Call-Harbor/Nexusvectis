@@ -4,7 +4,7 @@ import { createPageUrl } from "../utils";
 import { Target, Users, Sparkles, ArrowRight, Award, TrendingUp, Globe, Zap, Shield, Brain, Rocket, Heart } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useEffect } from "react";
-import CorneliusStory from "../components/about/CorneliusStory";
+import TechEvolution from "../components/about/TechEvolution";
 
 export default function About() {
   useEffect(() => {
@@ -211,8 +211,8 @@ export default function About() {
         </div>
       </section>
 
-      {/* Cornelio's Journey - Interactive Story */}
-      <CorneliusStory />
+      {/* Technology Evolution & Future Roadmap */}
+      <TechEvolution />
 
       {/* Team Section */}
       <section className="relative py-32 px-6 z-10">
