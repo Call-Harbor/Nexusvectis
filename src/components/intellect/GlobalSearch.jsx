@@ -162,8 +162,7 @@ function EntityResult({ entity, item, query, onNavigate, onOpenWindow }) {
   );
 }
 
-export default function GlobalSearch({ orgId, onOpenWindow, onClose }) {
-  const navigate = useNavigate();
+export default function GlobalSearch({ orgId, onOpenWindow, onOpenPageWindow }) {
   const inputRef = useRef(null);
 
   const [query, setQuery] = useState("");
