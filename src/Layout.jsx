@@ -78,6 +78,7 @@ const aiMenuItems = [
 
 const systemMenuItems = [
   { name: "Users", icon: Users, page: "UserManagement" },
+  { name: "HR Management", icon: Users, page: "HRManagement" },
   { name: "Security", icon: Shield, page: "Security" },
   { name: "Reports", icon: FileText, page: "Reports" },
   { name: "Notifications", icon: Bell, page: "NotificationSettings" },

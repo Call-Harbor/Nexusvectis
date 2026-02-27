@@ -83,6 +83,7 @@ import Invoices from './pages/Invoices';
 import LiveTrackingPage from './pages/LiveTrackingPage';
 import MaintenanceManagement from './pages/MaintenanceManagement';
 import MapMonitor from './pages/MapMonitor';
+import NotificationSettings from './pages/NotificationSettings';
 import OrganizationSetup from './pages/OrganizationSetup';
 import PeopleSearch from './pages/PeopleSearch';
 import PrivacyPolicy from './pages/PrivacyPolicy';
@@ -96,7 +97,7 @@ import Shipments from './pages/Shipments';
 import TermsOfService from './pages/TermsOfService';
 import UserManagement from './pages/UserManagement';
 import WarehouseAutomation from './pages/WarehouseAutomation';
-import NotificationSettings from './pages/NotificationSettings';
+import HRManagement from './pages/HRManagement';
 import __Layout from './Layout.jsx';
 
 
@@ -137,6 +138,7 @@ export const PAGES = {
     "LiveTrackingPage": LiveTrackingPage,
     "MaintenanceManagement": MaintenanceManagement,
     "MapMonitor": MapMonitor,
+    "NotificationSettings": NotificationSettings,
     "OrganizationSetup": OrganizationSetup,
     "PeopleSearch": PeopleSearch,
     "PrivacyPolicy": PrivacyPolicy,
@@ -150,7 +152,7 @@ export const PAGES = {
     "TermsOfService": TermsOfService,
     "UserManagement": UserManagement,
     "WarehouseAutomation": WarehouseAutomation,
-    "NotificationSettings": NotificationSettings,
+    "HRManagement": HRManagement,
 }
 
 export const pagesConfig = {
