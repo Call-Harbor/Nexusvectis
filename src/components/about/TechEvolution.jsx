@@ -246,13 +246,9 @@ export default function TechEvolution() {
                   ))}
                 </div>
 
-                <div className={`p-6 rounded-2xl bg-white/5 border border-white/10`}>
+                <div className="p-6 rounded-2xl bg-slate-800/50 border border-cyan-500/30">
                   <div className="text-sm text-slate-400 mb-2">Current Achievement</div>
-                  <div className={`text-xl font-bold ${
-                    current.color === 'violet' ? 'text-violet-400' :
-                    current.color === 'cyan' ? 'text-cyan-400' :
-                    current.color === 'fuchsia' ? 'text-fuchsia-400' : 'text-rose-400'
-                  }`}>
+                  <div className="text-xl font-bold text-cyan-400">
                     {current.achievement}
                   </div>
                 </div>
