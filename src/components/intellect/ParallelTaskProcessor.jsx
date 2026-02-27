@@ -129,22 +129,31 @@ export default function ParallelTaskProcessor({ onClose }) {
         </div>
 
         {/* Input */}
-        <div className="flex gap-2">
-          <input
+        <div className="space-y-2">
+          <textarea
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Enter prompt... (Shift+Enter for new line)"
-            className="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm placeholder:text-slate-500 focus:outline-none focus:border-cyan-500"
+            placeholder="Skriv prompts (en per linje for batch processing)"
+            className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm placeholder:text-slate-500 focus:outline-none focus:border-cyan-500 resize-none h-20"
           />
-          <Button
-            onClick={handleSubmit}
-            className="bg-cyan-600 hover:bg-cyan-700"
-            size="sm"
-          >
-            <Zap className="w-3 h-3 mr-1.5" />
-            Send
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              onClick={handleSubmit}
+              className="flex-1 bg-blue-600 hover:bg-blue-700"
+              size="sm"
+            >
+              <Zap className="w-3 h-3 mr-1.5" />
+              Add Single
+            </Button>
+            <Button
+              onClick={() => addBatchPrompts()}
+              className="flex-1 bg-violet-600 hover:bg-violet-700"
+              size="sm"
+            >
+              <Zap className="w-3 h-3 mr-1.5" />
+              Add Batch
+            </Button>
+          </div>
         </div>
       </div>
 
