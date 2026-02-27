@@ -14,42 +14,55 @@ export default function Hero3D() {
 
   return (
     <section className="relative w-full overflow-hidden">
-      {/* Animated Background */}
-      <div className="absolute inset-0 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950" />
+      {/* Intense Animated Background */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black via-slate-950 to-black" />
       
-      {/* Animated Orbs */}
+      {/* MASSIVE Pulsing Orbs */}
       <motion.div
         animate={{
-          scale: [1, 1.2, 1],
-          opacity: [0.3, 0.5, 0.3],
+          scale: [1, 1.5, 1],
+          opacity: [0.4, 0.8, 0.4],
+          x: [0, 100, 0],
+          y: [0, -50, 0]
         }}
-        transition={{ duration: 8, repeat: Infinity }}
-        className="absolute top-20 left-10 w-96 h-96 bg-cyan-500 rounded-full blur-3xl opacity-20"
+        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute -top-1/3 -left-1/4 w-[800px] h-[800px] bg-cyan-500 rounded-full blur-[150px] opacity-30"
       />
       <motion.div
         animate={{
-          scale: [1.2, 1, 1.2],
-          opacity: [0.2, 0.4, 0.2],
+          scale: [1.3, 0.9, 1.3],
+          opacity: [0.3, 0.7, 0.3],
+          x: [0, -80, 0],
+          y: [0, 60, 0]
         }}
-        transition={{ duration: 10, repeat: Infinity }}
-        className="absolute bottom-20 right-10 w-96 h-96 bg-violet-500 rounded-full blur-3xl opacity-20"
+        transition={{ duration: 14, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+        className="absolute -bottom-1/3 -right-1/4 w-[800px] h-[800px] bg-violet-600 rounded-full blur-[150px] opacity-35"
       />
       <motion.div
         animate={{
-          scale: [1, 1.15, 1],
-          opacity: [0.25, 0.45, 0.25],
+          scale: [1, 1.3, 1],
+          opacity: [0.2, 0.6, 0.2],
+          rotate: [0, 360, 0]
         }}
-        transition={{ duration: 9, repeat: Infinity }}
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-fuchsia-500 rounded-full blur-3xl opacity-15"
+        transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+        className="absolute top-1/3 right-1/3 w-[700px] h-[700px] bg-fuchsia-600 rounded-full blur-[140px] opacity-25"
       />
 
-      {/* Grid Pattern Overlay */}
+      {/* Hyper Grid Pattern */}
       <div 
-        className="absolute inset-0 opacity-5"
+        className="absolute inset-0 opacity-10"
         style={{
-          backgroundImage: `linear-gradient(0deg, transparent 24%, rgba(6, 182, 212, .05) 25%, rgba(6, 182, 212, .05) 26%, transparent 27%, transparent 74%, rgba(6, 182, 212, .05) 75%, rgba(6, 182, 212, .05) 76%, transparent 77%, transparent), linear-gradient(90deg, transparent 24%, rgba(6, 182, 212, .05) 25%, rgba(6, 182, 212, .05) 26%, transparent 27%, transparent 74%, rgba(6, 182, 212, .05) 75%, rgba(6, 182, 212, .05) 76%, transparent 77%, transparent)`,
-          backgroundSize: '50px 50px'
+          backgroundImage: `linear-gradient(0deg, transparent 24%, rgba(6, 182, 212, .15) 25%, rgba(6, 182, 212, .15) 26%, transparent 27%, transparent 74%, rgba(6, 182, 212, .15) 75%, rgba(6, 182, 212, .15) 76%, transparent 77%, transparent), linear-gradient(90deg, transparent 24%, rgba(6, 182, 212, .15) 25%, rgba(6, 182, 212, .15) 26%, transparent 27%, transparent 74%, rgba(6, 182, 212, .15) 75%, rgba(6, 182, 212, .15) 76%, transparent 77%, transparent)`,
+          backgroundSize: '60px 60px'
         }}
+      />
+      
+      {/* Animated Scanning Lines */}
+      <motion.div
+        animate={{ y: ["0%", "100%"] }}
+        transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+        className="absolute inset-0 bg-[linear-gradient(0deg,transparent_0%,rgba(6,182,212,0.1)_50%,transparent_100%)] opacity-20"
+        style={{ backgroundSize: "100% 200px" }}
       />
 
       {/* Content */}
@@ -73,10 +86,10 @@ export default function Hero3D() {
 
           {/* Main Headline */}
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-center mb-20"
+            initial={{ opacity: 0, y: 100, scale: 0.5 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 1.2, delay: 0.2, type: "spring", stiffness: 50 }}
+            className="text-center mb-20 relative"
           >
             <h1 className="text-7xl md:text-8xl font-black text-white mb-8 leading-tight">
               <span className="block mb-4">The Platform</span>
@@ -95,9 +108,9 @@ export default function Hero3D() {
 
           {/* Capability Grid */}
           <motion.div
-            initial={{ opacity: 0, y: 40 }}
+            initial={{ opacity: 0, y: 80 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
+            transition={{ duration: 1, delay: 0.6, type: "spring" }}
             className="grid md:grid-cols-4 gap-6 mb-16"
           >
             {capabilities.map((cap, idx) => {
@@ -105,11 +118,11 @@ export default function Hero3D() {
               return (
                 <motion.div
                   key={idx}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.4 + idx * 0.1 }}
-                  whileHover={{ y: -15, scale: 1.08 }}
-                  className="p-8 rounded-2xl bg-gradient-to-br from-cyan-500/10 to-violet-500/10 border border-cyan-500/30 hover:border-cyan-500/60 transition-all group cursor-pointer relative overflow-hidden"
+                  initial={{ opacity: 0, y: 40, scale: 0.8 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ duration: 0.7, delay: 0.7 + idx * 0.15, type: "spring" }}
+                  whileHover={{ y: -25, scale: 1.12, boxShadow: "0 0 60px rgba(6, 182, 212, 0.6)" }}
+                  className="p-10 rounded-3xl bg-gradient-to-br from-cyan-500/25 to-violet-500/15 border-2 border-cyan-500/50 hover:border-cyan-400/80 transition-all group cursor-pointer relative overflow-hidden backdrop-blur-sm"
                 >
                   {/* Animated background on hover */}
                   <motion.div
