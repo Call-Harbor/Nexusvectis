@@ -441,7 +441,7 @@ export default function GlobalSearch({ orgId, onOpenWindow, onOpenPageWindow }) 
                           entity={entity}
                           item={item}
                           query={debouncedQuery}
-                          onNavigate={(page) => navigate(createPageUrl(page))}
+                          onNavigate={(page) => onOpenPageWindow && onOpenPageWindow(page)}
                           onOpenWindow={onOpenWindow}
                         />
                       ))}
