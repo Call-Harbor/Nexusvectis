@@ -1885,6 +1885,19 @@ Return JSON with this EXACT structure:
       );
     }
 
+    // Deep Analysis Engine (anomalies + what-if + proactive)
+    if (type === 'deep_analysis') {
+      return (
+        <DeepAnalysisEngine
+          vehicles={vehicles}
+          routes={routes}
+          shipments={shipments}
+          alerts={alerts}
+          onInsightCommand={(cmd) => { setInput(cmd); }}
+        />
+      );
+    }
+
     // Document Editor
     if (type === 'document_editor') {
       return <AIDocumentEditor />;
