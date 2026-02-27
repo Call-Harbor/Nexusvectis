@@ -117,11 +117,39 @@ export default function Newsroom() {
             </p>
 
             <div className="grid md:grid-cols-2 gap-4">
-              <button className="flex items-center gap-3 p-4 rounded-xl bg-white/5 border border-white/10 hover:border-blue-500/50 transition-all hover:bg-white/10">
+              <button 
+                onClick={async () => {
+                  const response = await base44.functions.invoke('downloadLogoPakke', {});
+                  const blob = new Blob([response.data], { type: 'text/plain' });
+                  const url = window.URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = 'NexusVectis-Logo-Package.txt';
+                  document.body.appendChild(a);
+                  a.click();
+                  window.URL.revokeObjectURL(url);
+                  a.remove();
+                }}
+                className="flex items-center gap-3 p-4 rounded-xl bg-white/5 border border-white/10 hover:border-blue-500/50 transition-all hover:bg-white/10"
+              >
                 <Download className="w-5 h-5 text-blue-400" />
                 <span className="text-white font-semibold">Download Logo Pack</span>
               </button>
-              <button className="flex items-center gap-3 p-4 rounded-xl bg-white/5 border border-white/10 hover:border-blue-500/50 transition-all hover:bg-white/10">
+              <button 
+                onClick={async () => {
+                  const response = await base44.functions.invoke('generateCompanyFactSheet', {});
+                  const blob = new Blob([response.data], { type: 'application/pdf' });
+                  const url = window.URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = 'NexusVectis-Company-Fact-Sheet.pdf';
+                  document.body.appendChild(a);
+                  a.click();
+                  window.URL.revokeObjectURL(url);
+                  a.remove();
+                }}
+                className="flex items-center gap-3 p-4 rounded-xl bg-white/5 border border-white/10 hover:border-blue-500/50 transition-all hover:bg-white/10"
+              >
                 <Download className="w-5 h-5 text-blue-400" />
                 <span className="text-white font-semibold">Company Fact Sheet</span>
               </button>
