@@ -605,33 +605,6 @@ export default function IntellectMode() {
     }
   };
 
-  const createProcessTerminal = (name) => {
-    const id = Date.now().toString();
-    setProcessTerminals(prev => [...prev, { id, name, logs: [] }]);
-    return id;
-  };
-
-  const closeProcessTerminal = (processId) => {
-    setProcessTerminals(prev => prev.filter(p => p.id !== processId));
-    setMinimizedProcesses(prev => {
-      const next = new Set(prev);
-      next.delete(processId);
-      return next;
-    });
-  };
-
-  const toggleProcessMinimize = (processId) => {
-    setMinimizedProcesses(prev => {
-      const next = new Set(prev);
-      if (next.has(processId)) {
-        next.delete(processId);
-      } else {
-        next.add(processId);
-      }
-      return next;
-    });
-  };
-
   const processAdvancedCommand = async (command) => {
     try {
       const fleetData = { vehicles, alerts, routes, shipments };
