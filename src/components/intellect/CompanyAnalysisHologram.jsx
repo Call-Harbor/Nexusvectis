@@ -176,8 +176,8 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
           }
         }),
         // Revenue chart + competitors + geo markets + ratings
-        base44.integrations.Core.InvokeLLM({
-          prompt: `For the company identified by "${name}" (could be a name, CVR, registration number, or VAT number), give me: 5 years of revenue/profit/ebitda data, top 3 competitors with market share %, geographic revenue split by region %, and ratings 1-10 for financial_health, growth_potential, innovation, brand_strength, management_quality, market_position, esg_rating, overall. Real data only.`,
+         base44.integrations.Core.InvokeLLM({
+           prompt: `For the company identified by "${name}"${searchHint}, give me: 5 years of revenue/profit/ebitda data, top 3 competitors with market share %, geographic revenue split by region %, and ratings 1-10 for financial_health, growth_potential, innovation, brand_strength, management_quality, market_position, esg_rating, overall. Real data only.`,
           add_context_from_internet: true,
           response_json_schema: {
             type: "object",
