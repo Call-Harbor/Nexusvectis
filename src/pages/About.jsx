@@ -237,7 +237,7 @@ export default function About() {
       id: 'demand-forecast',
       title: "Demand Forecasting",
       icon: TrendingUp,
-      position: { x: 350, y: 600 },
+      position: { x: 300, y: 480 },
       content: (
         <>
           <div className="space-y-4">
