@@ -73,10 +73,10 @@ export default function Home() {
   ];
 
   const stats = [
-    { value: "AI", label: "Powered" },
-    { value: "Real-time", label: "Tracking" },
-    { value: "Multi-modal", label: "Transport" },
-    { value: "Global", label: "Coverage" }
+    { value: "50+", label: "Parallel AI Analyses" },
+    { value: "100M+", label: "Optimization Decisions" },
+    { value: "99.99%", label: "Model Uptime" },
+    { value: "10x", label: "Faster Decisions" }
   ];
 
   return (
