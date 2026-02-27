@@ -28,7 +28,7 @@ export default function OrgChart({ employees }) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-slate-500">
         <Users className="w-10 h-10 mb-3 text-slate-700" />
-        <p>Ingen medarbejdere endnu</p>
+        <p>No employees yet</p>
       </div>
     );
   }
@@ -65,7 +65,7 @@ export default function OrgChart({ employees }) {
 
       {/* Stats bar */}
       <div className="bg-slate-900/60 border border-slate-700/50 rounded-xl p-4">
-        <p className="text-xs text-slate-500 uppercase font-semibold mb-3">Fordeling per afdeling</p>
+        <p className="text-xs text-slate-500 uppercase font-semibold mb-3">Distribution by Department</p>
         <div className="space-y-2">
           {depts.map(dept => {
             const pct = Math.round((grouped[dept].length / employees.length) * 100);

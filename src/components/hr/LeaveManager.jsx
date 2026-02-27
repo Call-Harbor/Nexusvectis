@@ -9,15 +9,15 @@ import { CalendarDays, Check, X, Clock, Plus, ChevronDown, ChevronUp } from "luc
 import { format, differenceInBusinessDays, parseISO } from "date-fns";
 
 const typeLabels = {
-  annual: "Ferie", sick: "Sygdom", personal: "Personlig",
-  maternity: "Barsel", paternity: "Fædreorlov", unpaid: "Ulønnet", other: "Andet"
+  annual: "Annual Leave", sick: "Sick Leave", personal: "Personal",
+  maternity: "Maternity", paternity: "Paternity", unpaid: "Unpaid", other: "Other"
 };
 
 const statusConfig = {
-  pending:   { label: "Afventer",  className: "bg-amber-500/20 text-amber-400 border-amber-500/30" },
-  approved:  { label: "Godkendt", className: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" },
-  rejected:  { label: "Afvist",   className: "bg-rose-500/20 text-rose-400 border-rose-500/30" },
-  cancelled: { label: "Annulleret", className: "bg-slate-500/20 text-slate-400 border-slate-500/30" },
+  pending:   { label: "Pending",   className: "bg-amber-500/20 text-amber-400 border-amber-500/30" },
+  approved:  { label: "Approved",  className: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" },
+  rejected:  { label: "Rejected",  className: "bg-rose-500/20 text-rose-400 border-rose-500/30" },
+  cancelled: { label: "Cancelled", className: "bg-slate-500/20 text-slate-400 border-slate-500/30" },
 };
 
 export default function LeaveManager({ orgId, employees }) {
@@ -79,9 +79,9 @@ export default function LeaveManager({ orgId, employees }) {
       {/* Stats */}
       <div className="grid grid-cols-3 gap-3">
         {[
-          { label: "Afventer godkendelse", value: stats.pending, color: "text-amber-400" },
-          { label: "Godkendte ansøgninger", value: stats.approved, color: "text-emerald-400" },
-          { label: "Godkendte dage (total)", value: stats.total_days, color: "text-cyan-400" },
+          { label: "Pending Approval",   value: stats.pending,    color: "text-amber-400" },
+          { label: "Approved Requests",  value: stats.approved,   color: "text-emerald-400" },
+          { label: "Approved Days Total",value: stats.total_days, color: "text-cyan-400" },
         ].map(s => (
           <div key={s.label} className="bg-slate-900/60 border border-slate-700/50 rounded-xl p-3 text-center">
             <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
@@ -99,12 +99,12 @@ export default function LeaveManager({ orgId, employees }) {
               onClick={() => setFilterStatus(s)}
               className={`text-xs px-3 py-1.5 rounded-md transition-all ${filterStatus === s ? "bg-cyan-500/20 text-cyan-400" : "text-slate-500 hover:text-slate-300"}`}
             >
-              {s === "all" ? "Alle" : statusConfig[s]?.label}
+              {s === "all" ? "All" : statusConfig[s]?.label}
             </button>
           ))}
         </div>
         <Button onClick={() => setShowForm(!showForm)} className="ml-auto bg-cyan-600 hover:bg-cyan-500 h-9 text-sm">
-          <Plus className="w-4 h-4 mr-2" /> Ny ansøgning
+          <Plus className="w-4 h-4 mr-2" /> New Request
           {showForm ? <ChevronUp className="w-3 h-3 ml-1" /> : <ChevronDown className="w-3 h-3 ml-1" />}
         </Button>
       </div>
@@ -112,13 +112,13 @@ export default function LeaveManager({ orgId, employees }) {
       {/* Form */}
       {showForm && (
         <div className="bg-slate-900/60 border border-slate-700/50 rounded-xl p-4 space-y-4">
-          <h3 className="text-sm font-semibold text-white">Ny orlovsansøgning</h3>
+          <h3 className="text-sm font-semibold text-white">New Leave Request</h3>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <Label className="text-xs text-slate-400">Medarbejder</Label>
+              <Label className="text-xs text-slate-400">Employee</Label>
               <Select value={form.employee_id} onValueChange={v => set("employee_id", v)}>
                 <SelectTrigger className="bg-slate-800/60 border-slate-700 text-white h-9">
-                  <SelectValue placeholder="Vælg medarbejder" />
+                  <SelectValue placeholder="Select employee" />
                 </SelectTrigger>
                 <SelectContent className="bg-slate-900 border-slate-700 text-white">
                   {employees.map(e => (
@@ -128,7 +128,7 @@ export default function LeaveManager({ orgId, employees }) {
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs text-slate-400">Orlovstype</Label>
+              <Label className="text-xs text-slate-400">Leave Type</Label>
               <Select value={form.leave_type} onValueChange={v => set("leave_type", v)}>
                 <SelectTrigger className="bg-slate-800/60 border-slate-700 text-white h-9">
                   <SelectValue />
@@ -139,21 +139,21 @@ export default function LeaveManager({ orgId, employees }) {
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs text-slate-400">Startdato</Label>
+              <Label className="text-xs text-slate-400">Start Date</Label>
               <Input type="date" value={form.start_date} onChange={e => set("start_date", e.target.value)} className="bg-slate-800/60 border-slate-700 text-white h-9" />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs text-slate-400">Slutdato</Label>
+              <Label className="text-xs text-slate-400">End Date</Label>
               <Input type="date" value={form.end_date} onChange={e => set("end_date", e.target.value)} className="bg-slate-800/60 border-slate-700 text-white h-9" />
             </div>
             <div className="col-span-2 space-y-1.5">
-              <Label className="text-xs text-slate-400">Begrundelse</Label>
-              <Input value={form.reason} onChange={e => set("reason", e.target.value)} placeholder="Valgfri begrundelse..." className="bg-slate-800/60 border-slate-700 text-white" />
+              <Label className="text-xs text-slate-400">Reason</Label>
+              <Input value={form.reason} onChange={e => set("reason", e.target.value)} placeholder="Optional reason..." className="bg-slate-800/60 border-slate-700 text-white" />
             </div>
           </div>
           <div className="flex justify-end gap-2">
-            <Button variant="ghost" size="sm" onClick={() => setShowForm(false)} className="text-slate-400">Annuller</Button>
-            <Button size="sm" onClick={handleSubmit} className="bg-cyan-600 hover:bg-cyan-500">Indsend ansøgning</Button>
+            <Button variant="ghost" size="sm" onClick={() => setShowForm(false)} className="text-slate-400">Cancel</Button>
+            <Button size="sm" onClick={handleSubmit} className="bg-cyan-600 hover:bg-cyan-500">Submit Request</Button>
           </div>
         </div>
       )}
@@ -163,7 +163,7 @@ export default function LeaveManager({ orgId, employees }) {
         {filtered.length === 0 ? (
           <div className="text-center py-10 text-slate-500">
             <CalendarDays className="w-8 h-8 mx-auto mb-2 text-slate-700" />
-            <p className="text-sm">Ingen orlovsansøgninger</p>
+            <p className="text-sm">No leave requests</p>
           </div>
         ) : filtered.map(req => {
           const sc = statusConfig[req.status] || statusConfig.pending;
@@ -177,7 +177,7 @@ export default function LeaveManager({ orgId, employees }) {
                   <div>
                     <p className="text-sm font-medium text-white">{req.employee_name}</p>
                     <p className="text-xs text-slate-400">
-                      {typeLabels[req.leave_type]} · {req.days_requested} dag{req.days_requested !== 1 ? "e" : ""}
+                      {typeLabels[req.leave_type]} · {req.days_requested} day{req.days_requested !== 1 ? "s" : ""}
                     </p>
                   </div>
                 </div>

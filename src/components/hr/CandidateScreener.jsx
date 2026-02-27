@@ -8,10 +8,10 @@ import {
 } from "lucide-react";
 
 const RECOMMENDATION_CONFIG = {
-  strong_yes: { label: "Stærkt anbefalet",  icon: ThumbsUp,  cls: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30" },
-  yes:        { label: "Anbefalet",         icon: ThumbsUp,  cls: "bg-blue-500/15 text-blue-400 border-blue-500/30" },
-  maybe:      { label: "Mulig kandidat",    icon: Minus,     cls: "bg-amber-500/15 text-amber-400 border-amber-500/30" },
-  no:         { label: "Ikke anbefalet",    icon: ThumbsDown,cls: "bg-rose-500/15 text-rose-400 border-rose-500/30" },
+  strong_yes: { label: "Strongly Recommended", icon: ThumbsUp,  cls: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30" },
+  yes:        { label: "Recommended",          icon: ThumbsUp,  cls: "bg-blue-500/15 text-blue-400 border-blue-500/30" },
+  maybe:      { label: "Possible Candidate",   icon: Minus,     cls: "bg-amber-500/15 text-amber-400 border-amber-500/30" },
+  no:         { label: "Not Recommended",      icon: ThumbsDown,cls: "bg-rose-500/15 text-rose-400 border-rose-500/30" },
 };
 
 export default function CandidateScreener({ candidate, job, onSave, onClose }) {
@@ -92,7 +92,7 @@ Analyser kandidatens egnethed og svar med JSON (dansk):
             <div>
               <p className="text-sm font-semibold text-white">{candidate.name}</p>
               <p className="text-xs text-slate-400 flex items-center gap-1">
-                <Brain className="w-3 h-3 text-violet-400" /> AI Kandidat-screening · {job.job_title}
+                <Brain className="w-3 h-3 text-violet-400" /> AI Candidate Screening · {job.job_title}
               </p>
             </div>
           </div>
@@ -108,13 +108,13 @@ Analyser kandidatens egnethed og svar med JSON (dansk):
               <div className="w-16 h-16 rounded-full bg-violet-500/10 border border-violet-500/20 flex items-center justify-center mx-auto mb-4">
                 <Sparkles className="w-8 h-8 text-violet-400" />
               </div>
-              <p className="text-sm text-slate-300 mb-1">Klar til AI-screening</p>
+              <p className="text-sm text-slate-300 mb-1">Ready for AI Screening</p>
               <p className="text-xs text-slate-500 max-w-xs mx-auto">
-                AI'en vil analysere kandidatens profil op mod stillingskravene og give en struktureret vurdering.
+                AI will analyse the candidate's profile against the job requirements and provide a structured assessment.
               </p>
               {!candidate.cv_summary && (
                 <p className="text-xs text-amber-400 mt-3 flex items-center justify-center gap-1">
-                  <AlertCircle className="w-3.5 h-3.5" /> Ingen CV-information — resultatet baseres på stillingsprofil alene
+                  <AlertCircle className="w-3.5 h-3.5" /> No CV information — result will be based on job profile only
                 </p>
               )}
             </div>
@@ -123,7 +123,7 @@ Analyser kandidatens egnethed og svar med JSON (dansk):
           {screening && (
             <div className="text-center py-8">
               <Loader2 className="w-10 h-10 text-violet-400 animate-spin mx-auto mb-3" />
-              <p className="text-sm text-violet-300 animate-pulse">AI screener kandidaten...</p>
+              <p className="text-sm text-violet-300 animate-pulse">AI is screening candidate...</p>
             </div>
           )}
 
@@ -147,11 +147,11 @@ Analyser kandidatens egnethed og svar med JSON (dansk):
               {/* Fit dimensions */}
               {result.fit_dimensions && (
                 <div className="space-y-2">
-                  <p className="text-[10px] text-slate-500 uppercase font-semibold">Match-dimensioner</p>
+                  <p className="text-[10px] text-slate-500 uppercase font-semibold">Match Dimensions</p>
                   {[
-                    { key: "skills_match",      label: "Kompetencer" },
-                    { key: "experience_match",  label: "Erfaring" },
-                    { key: "culture_fit",       label: "Kultur-fit" },
+                    { key: "skills_match",      label: "Skills" },
+                    { key: "experience_match",  label: "Experience" },
+                    { key: "culture_fit",       label: "Culture Fit" },
                   ].map(d => {
                     const val = result.fit_dimensions[d.key] || 0;
                     return (
@@ -171,7 +171,7 @@ Analyser kandidatens egnethed og svar med JSON (dansk):
               {/* Strengths */}
               {result.strengths?.length > 0 && (
                 <div>
-                  <p className="text-[10px] text-slate-500 uppercase font-semibold mb-1.5">Styrker</p>
+                  <p className="text-[10px] text-slate-500 uppercase font-semibold mb-1.5">Strengths</p>
                   <div className="space-y-1">
                     {result.strengths.map((s, i) => (
                       <div key={i} className="flex items-start gap-2 text-xs text-emerald-300">
@@ -186,7 +186,7 @@ Analyser kandidatens egnethed og svar med JSON (dansk):
               {/* Concerns */}
               {result.concerns?.length > 0 && (
                 <div>
-                  <p className="text-[10px] text-slate-500 uppercase font-semibold mb-1.5">Bekymringer</p>
+                  <p className="text-[10px] text-slate-500 uppercase font-semibold mb-1.5">Concerns</p>
                   <div className="space-y-1">
                     {result.concerns.map((c, i) => (
                       <div key={i} className="flex items-start gap-2 text-xs text-rose-300">
@@ -201,7 +201,7 @@ Analyser kandidatens egnethed og svar med JSON (dansk):
               {/* Interview questions */}
               {result.interview_questions?.length > 0 && (
                 <div>
-                  <p className="text-[10px] text-slate-500 uppercase font-semibold mb-1.5">Foreslåede interviewspørgsmål</p>
+                  <p className="text-[10px] text-slate-500 uppercase font-semibold mb-1.5">Suggested Interview Questions</p>
                   <div className="space-y-1.5">
                     {result.interview_questions.map((q, i) => (
                       <div key={i} className="flex items-start gap-2 text-xs text-slate-300 bg-slate-800/40 rounded-lg px-3 py-2">
@@ -218,21 +218,21 @@ Analyser kandidatens egnethed og svar med JSON (dansk):
 
         {/* Footer */}
         <div className="flex-shrink-0 flex items-center justify-between px-5 py-4 border-t border-slate-800">
-          <Button variant="ghost" onClick={onClose} className="text-slate-400 h-9 text-sm">Luk</Button>
+          <Button variant="ghost" onClick={onClose} className="text-slate-400 h-9 text-sm">Close</Button>
           <div className="flex gap-2">
             {result && (
               <Button onClick={() => runScreening()} variant="outline"
                 className="h-9 text-sm border-slate-700 text-slate-300">
-                <Sparkles className="w-3.5 h-3.5 mr-1.5" /> Regenerer
+                <Sparkles className="w-3.5 h-3.5 mr-1.5" /> Regenerate
               </Button>
             )}
             {result ? (
               <Button onClick={() => onSave(result)} className="bg-violet-600 hover:bg-violet-500 h-9 text-sm">
-                <Save className="w-3.5 h-3.5 mr-1.5" /> Gem screening
+                <Save className="w-3.5 h-3.5 mr-1.5" /> Save Screening
               </Button>
             ) : (
               <Button onClick={runScreening} disabled={screening} className="bg-violet-600 hover:bg-violet-500 h-9 text-sm">
-                {screening ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Brain className="w-3.5 h-3.5 mr-1.5" /> Start screening</>}
+                {screening ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Brain className="w-3.5 h-3.5 mr-1.5" /> Start Screening</>}
               </Button>
             )}
           </div>

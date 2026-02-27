@@ -12,15 +12,15 @@ import {
 } from "lucide-react";
 
 const TYPE_CONFIG = {
-  course:        { label: "Kursus",         icon: BookOpen,     cls: "bg-blue-500/15 text-blue-400 border-blue-500/20" },
-  workshop:      { label: "Workshop",       icon: Users,        cls: "bg-violet-500/15 text-violet-400 border-violet-500/20" },
-  elearning:     { label: "E-læring",       icon: Monitor,      cls: "bg-cyan-500/15 text-cyan-400 border-cyan-500/20" },
-  certification: { label: "Certificering",  icon: Award,        cls: "bg-amber-500/15 text-amber-400 border-amber-500/20" },
-  mentoring:     { label: "Mentoring",      icon: Users,        cls: "bg-pink-500/15 text-pink-400 border-pink-500/20" },
-  seminar:       { label: "Seminar",        icon: GraduationCap,cls: "bg-emerald-500/15 text-emerald-400 border-emerald-500/20" },
+  course:        { label: "Course",        icon: BookOpen,     cls: "bg-blue-500/15 text-blue-400 border-blue-500/20" },
+  workshop:      { label: "Workshop",      icon: Users,        cls: "bg-violet-500/15 text-violet-400 border-violet-500/20" },
+  elearning:     { label: "E-Learning",    icon: Monitor,      cls: "bg-cyan-500/15 text-cyan-400 border-cyan-500/20" },
+  certification: { label: "Certification", icon: Award,        cls: "bg-amber-500/15 text-amber-400 border-amber-500/20" },
+  mentoring:     { label: "Mentoring",     icon: Users,        cls: "bg-pink-500/15 text-pink-400 border-pink-500/20" },
+  seminar:       { label: "Seminar",       icon: GraduationCap,cls: "bg-emerald-500/15 text-emerald-400 border-emerald-500/20" },
 };
 
-const FORMAT_LABELS = { in_person: "Fysisk", online: "Online", hybrid: "Hybrid", self_paced: "Selvstudium" };
+const FORMAT_LABELS = { in_person: "In Person", online: "Online", hybrid: "Hybrid", self_paced: "Self-paced" };
 const DEPARTMENTS = ["Operations", "Logistics", "Fleet", "Finance", "HR", "IT", "Sales", "Management"];
 
 const defaultForm = (orgId) => ({
@@ -107,7 +107,7 @@ export default function LearningCatalog({ courses, orgId, onRefresh }) {
           {Object.entries(TYPE_CONFIG).map(([k, v]) => <option key={k} value={k} className="bg-slate-900">{v.label}</option>)}
         </select>
         <Button onClick={openNew} className="bg-emerald-600 hover:bg-emerald-500 h-9 text-sm flex-shrink-0">
-          <Plus className="w-4 h-4 mr-2" /> Nyt kursus
+          <Plus className="w-4 h-4 mr-2" /> New Course
         </Button>
       </div>
 
@@ -115,7 +115,7 @@ export default function LearningCatalog({ courses, orgId, onRefresh }) {
       {filtered.length === 0 ? (
         <div className="text-center py-16 text-slate-500">
           <BookOpen className="w-10 h-10 mx-auto mb-3 text-slate-700" />
-          <p className="text-sm">Ingen kurser oprettet endnu</p>
+          <p className="text-sm">No courses created yet</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -179,7 +179,7 @@ export default function LearningCatalog({ courses, orgId, onRefresh }) {
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 flex-shrink-0">
               <h2 className="text-white font-semibold flex items-center gap-2">
                 <BookOpen className="w-5 h-5 text-emerald-400" />
-                {editing ? "Rediger kursus" : "Nyt kursus"}
+                {editing ? "Edit Course" : "New Course"}
               </h2>
               <Button size="icon" variant="ghost" onClick={closeForm} className="h-8 w-8 text-slate-400 hover:text-white"><X className="w-4 h-4" /></Button>
             </div>
@@ -187,8 +187,8 @@ export default function LearningCatalog({ courses, orgId, onRefresh }) {
             <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
               <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2 space-y-1.5">
-                  <Label className="text-xs text-slate-400">Titel *</Label>
-                  <Input value={form.title} onChange={e => set("title", e.target.value)} placeholder="Kursusnavn..." className="bg-slate-800/60 border-slate-700 text-white" />
+                  <Label className="text-xs text-slate-400">Title *</Label>
+                  <Input value={form.title} onChange={e => set("title", e.target.value)} placeholder="Course name..." className="bg-slate-800/60 border-slate-700 text-white" />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs text-slate-400">Type</Label>
@@ -209,19 +209,19 @@ export default function LearningCatalog({ courses, orgId, onRefresh }) {
                   </Select>
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-slate-400">Kategori</Label>
-                  <Input value={form.category || ""} onChange={e => set("category", e.target.value)} placeholder="fx. Lederskab, Teknik..." className="bg-slate-800/60 border-slate-700 text-white h-9" />
+                  <Label className="text-xs text-slate-400">Category</Label>
+                  <Input value={form.category || ""} onChange={e => set("category", e.target.value)} placeholder="e.g. Leadership, Engineering..." className="bg-slate-800/60 border-slate-700 text-white h-9" />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-slate-400">Udbyder</Label>
-                  <Input value={form.provider || ""} onChange={e => set("provider", e.target.value)} placeholder="Intern / Extern udbyder..." className="bg-slate-800/60 border-slate-700 text-white h-9" />
+                  <Label className="text-xs text-slate-400">Provider</Label>
+                  <Input value={form.provider || ""} onChange={e => set("provider", e.target.value)} placeholder="Internal / External provider..." className="bg-slate-800/60 border-slate-700 text-white h-9" />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-slate-400">Varighed (timer)</Label>
+                  <Label className="text-xs text-slate-400">Duration (hours)</Label>
                   <Input type="number" value={form.duration_hours || ""} onChange={e => set("duration_hours", Number(e.target.value))} className="bg-slate-800/60 border-slate-700 text-white h-9" />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-slate-400">Pris per person</Label>
+                  <Label className="text-xs text-slate-400">Price per person</Label>
                   <div className="flex gap-2">
                     <Input type="number" value={form.cost_per_person || ""} onChange={e => set("cost_per_person", Number(e.target.value))} className="bg-slate-800/60 border-slate-700 text-white h-9 flex-1" />
                     <Select value={form.currency || "DKK"} onValueChange={v => set("currency", v)}>
@@ -233,15 +233,15 @@ export default function LearningCatalog({ courses, orgId, onRefresh }) {
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-slate-400">Kapacitet</Label>
+                  <Label className="text-xs text-slate-400">Capacity</Label>
                   <Input type="number" value={form.capacity || ""} onChange={e => set("capacity", Number(e.target.value))} className="bg-slate-800/60 border-slate-700 text-white h-9" />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-slate-400">Startdato</Label>
+                  <Label className="text-xs text-slate-400">Start Date</Label>
                   <Input type="date" value={form.start_date || ""} onChange={e => set("start_date", e.target.value)} className="bg-slate-800/60 border-slate-700 text-white h-9" />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-slate-400">Slutdato</Label>
+                  <Label className="text-xs text-slate-400">End Date</Label>
                   <Input type="date" value={form.end_date || ""} onChange={e => set("end_date", e.target.value)} className="bg-slate-800/60 border-slate-700 text-white h-9" />
                 </div>
                 <div className="col-span-2 space-y-1.5">
@@ -249,16 +249,16 @@ export default function LearningCatalog({ courses, orgId, onRefresh }) {
                   <Input value={form.url || ""} onChange={e => set("url", e.target.value)} placeholder="https://..." className="bg-slate-800/60 border-slate-700 text-white h-9" />
                 </div>
                 <div className="col-span-2 space-y-1.5">
-                  <Label className="text-xs text-slate-400">Beskrivelse</Label>
+                  <Label className="text-xs text-slate-400">Description</Label>
                   <textarea value={form.description || ""} onChange={e => set("description", e.target.value)} rows={3} className="w-full bg-slate-800/60 border border-slate-700 text-white text-sm rounded-lg px-3 py-2 resize-none focus:outline-none focus:border-emerald-500/50" />
                 </div>
               </div>
 
               {/* Target skills */}
               <div className="space-y-2">
-                <Label className="text-xs text-slate-400">Kompetencer der udvikles</Label>
+                <Label className="text-xs text-slate-400">Skills Developed</Label>
                 <div className="flex gap-2">
-                  <Input value={newSkill} onChange={e => setNewSkill(e.target.value)} placeholder="Tilføj kompetence..." className="bg-slate-800/60 border-slate-700 text-white h-8 text-sm" onKeyDown={e => e.key === "Enter" && addSkill()} />
+                  <Input value={newSkill} onChange={e => setNewSkill(e.target.value)} placeholder="Add skill..." className="bg-slate-800/60 border-slate-700 text-white h-8 text-sm" onKeyDown={e => e.key === "Enter" && addSkill()} />
                   <Button size="sm" onClick={addSkill} className="bg-emerald-600 hover:bg-emerald-500 h-8"><Plus className="w-3.5 h-3.5" /></Button>
                 </div>
                 <div className="flex flex-wrap gap-1.5">
@@ -272,7 +272,7 @@ export default function LearningCatalog({ courses, orgId, onRefresh }) {
 
               {/* Target departments */}
               <div className="space-y-2">
-                <Label className="text-xs text-slate-400">Målafdelinger</Label>
+                <Label className="text-xs text-slate-400">Target Departments</Label>
                 <div className="flex flex-wrap gap-2">
                   {DEPARTMENTS.map(d => {
                     const active = (form.target_departments || []).includes(d);
@@ -288,9 +288,9 @@ export default function LearningCatalog({ courses, orgId, onRefresh }) {
 
               {/* Learning objectives */}
               <div className="space-y-2">
-                <Label className="text-xs text-slate-400">Læringsmål</Label>
+                <Label className="text-xs text-slate-400">Learning Objectives</Label>
                 <div className="flex gap-2">
-                  <Input value={newObjective} onChange={e => setNewObjective(e.target.value)} placeholder="Tilføj læringsmål..." className="bg-slate-800/60 border-slate-700 text-white h-8 text-sm" onKeyDown={e => e.key === "Enter" && addObjective()} />
+                  <Input value={newObjective} onChange={e => setNewObjective(e.target.value)} placeholder="Add learning objective..." className="bg-slate-800/60 border-slate-700 text-white h-8 text-sm" onKeyDown={e => e.key === "Enter" && addObjective()} />
                   <Button size="sm" onClick={addObjective} className="bg-emerald-600 hover:bg-emerald-500 h-8"><Plus className="w-3.5 h-3.5" /></Button>
                 </div>
                 <div className="space-y-1">
@@ -306,9 +306,9 @@ export default function LearningCatalog({ courses, orgId, onRefresh }) {
             </div>
 
             <div className="flex-shrink-0 flex items-center justify-end gap-2 px-6 py-4 border-t border-slate-800">
-              <Button variant="ghost" onClick={closeForm} className="text-slate-400 h-9">Annuller</Button>
+              <Button variant="ghost" onClick={closeForm} className="text-slate-400 h-9">Cancel</Button>
               <Button onClick={handleSave} disabled={saving || !form.title} className="bg-emerald-600 hover:bg-emerald-500 h-9">
-                <Save className="w-4 h-4 mr-2" />{saving ? "Gemmer..." : editing ? "Gem ændringer" : "Opret kursus"}
+                <Save className="w-4 h-4 mr-2" />{saving ? "Saving..." : editing ? "Save Changes" : "Create Course"}
               </Button>
             </div>
           </motion.div>

@@ -8,20 +8,20 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 const DEPARTMENTS = ["Operations", "Logistics", "Fleet", "Finance", "HR", "IT", "Sales", "Management"];
 const EMP_TYPES = [
-  { value: "full_time",   label: "Fuldtid" },
-  { value: "part_time",   label: "Deltid" },
-  { value: "contractor",  label: "Konsulent" },
-  { value: "intern",      label: "Praktikant" },
+  { value: "full_time",   label: "Full-time" },
+  { value: "part_time",   label: "Part-time" },
+  { value: "contractor",  label: "Contractor" },
+  { value: "intern",      label: "Intern" },
 ];
 const STATUSES = [
-  { value: "active",     label: "Aktiv" },
-  { value: "probation",  label: "Prøvetid" },
-  { value: "on_leave",   label: "På orlov" },
-  { value: "terminated", label: "Fratrådt" },
+  { value: "active",     label: "Active" },
+  { value: "probation",  label: "Probation" },
+  { value: "on_leave",   label: "On Leave" },
+  { value: "terminated", label: "Terminated" },
 ];
 const CAREER_INTERESTS_OPTIONS = [
-  "Lederskab", "Projektledelse", "Teknik", "Analyse", "Salg",
-  "Operations", "HR", "Finance", "IT", "Logistik", "Kundeservice",
+  "Leadership", "Project Management", "Engineering", "Analytics", "Sales",
+  "Operations", "HR", "Finance", "IT", "Logistics", "Customer Service",
 ];
 
 const EMPTY_CERT = { name: "", issuer: "", issued_date: "", expiry_date: "", credential_id: "" };
@@ -99,7 +99,7 @@ export default function EmployeeEditor({ employee, orgId, onSave, onClose }) {
             <div className="w-8 h-8 rounded-lg bg-cyan-500/20 flex items-center justify-center">
               <User className="w-4 h-4 text-cyan-400" />
             </div>
-            <h2 className="text-white font-semibold">{isEdit ? "Rediger medarbejder" : "Ny medarbejder"}</h2>
+            <h2 className="text-white font-semibold">{isEdit ? "Edit Employee" : "New Employee"}</h2>
           </div>
           <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
             <X className="w-5 h-5" />
@@ -108,28 +108,28 @@ export default function EmployeeEditor({ employee, orgId, onSave, onClose }) {
 
         <div className="p-6 space-y-6">
           {/* Personal info */}
-          <Section title="Personlige oplysninger">
+          <Section title="Personal Information">
             <div className="grid grid-cols-2 gap-4">
-              <Field label="Fornavn *"><Input value={form.first_name} onChange={e => set("first_name", e.target.value)} className="bg-slate-800/60 border-slate-700 text-white" /></Field>
-              <Field label="Efternavn *"><Input value={form.last_name} onChange={e => set("last_name", e.target.value)} className="bg-slate-800/60 border-slate-700 text-white" /></Field>
-              <Field label="E-mail *"><Input type="email" value={form.email} onChange={e => set("email", e.target.value)} className="bg-slate-800/60 border-slate-700 text-white" /></Field>
-              <Field label="Telefon"><Input value={form.phone} onChange={e => set("phone", e.target.value)} className="bg-slate-800/60 border-slate-700 text-white" /></Field>
-              <Field label="Medarbejder ID"><Input value={form.employee_id || ""} onChange={e => set("employee_id", e.target.value)} className="bg-slate-800/60 border-slate-700 text-white" /></Field>
-              <Field label="Lokation"><Input value={form.location || ""} onChange={e => set("location", e.target.value)} className="bg-slate-800/60 border-slate-700 text-white" /></Field>
+              <Field label="First Name *"><Input value={form.first_name} onChange={e => set("first_name", e.target.value)} className="bg-slate-800/60 border-slate-700 text-white" /></Field>
+              <Field label="Last Name *"><Input value={form.last_name} onChange={e => set("last_name", e.target.value)} className="bg-slate-800/60 border-slate-700 text-white" /></Field>
+              <Field label="Email *"><Input type="email" value={form.email} onChange={e => set("email", e.target.value)} className="bg-slate-800/60 border-slate-700 text-white" /></Field>
+              <Field label="Phone"><Input value={form.phone} onChange={e => set("phone", e.target.value)} className="bg-slate-800/60 border-slate-700 text-white" /></Field>
+              <Field label="Employee ID"><Input value={form.employee_id || ""} onChange={e => set("employee_id", e.target.value)} className="bg-slate-800/60 border-slate-700 text-white" /></Field>
+              <Field label="Location"><Input value={form.location || ""} onChange={e => set("location", e.target.value)} className="bg-slate-800/60 border-slate-700 text-white" /></Field>
             </div>
           </Section>
 
           {/* Job info */}
-          <Section title="Joboplysninger">
+          <Section title="Job Information">
             <div className="grid grid-cols-2 gap-4">
-              <Field label="Stilling"><Input value={form.job_title || ""} onChange={e => set("job_title", e.target.value)} className="bg-slate-800/60 border-slate-700 text-white" /></Field>
-              <Field label="Afdeling *">
+              <Field label="Job Title"><Input value={form.job_title || ""} onChange={e => set("job_title", e.target.value)} className="bg-slate-800/60 border-slate-700 text-white" /></Field>
+              <Field label="Department *">
                 <Select value={form.department} onValueChange={v => set("department", v)}>
                   <SelectTrigger className="bg-slate-800/60 border-slate-700 text-white"><SelectValue /></SelectTrigger>
                   <SelectContent className="bg-slate-900 border-slate-700 text-white">{DEPARTMENTS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
                 </Select>
               </Field>
-              <Field label="Ansættelsestype">
+              <Field label="Employment Type">
                 <Select value={form.employment_type} onValueChange={v => set("employment_type", v)}>
                   <SelectTrigger className="bg-slate-800/60 border-slate-700 text-white"><SelectValue /></SelectTrigger>
                   <SelectContent className="bg-slate-900 border-slate-700 text-white">{EMP_TYPES.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}</SelectContent>
@@ -141,18 +141,18 @@ export default function EmployeeEditor({ employee, orgId, onSave, onClose }) {
                   <SelectContent className="bg-slate-900 border-slate-700 text-white">{STATUSES.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}</SelectContent>
                 </Select>
               </Field>
-              <Field label="Ansættelsesdato"><Input type="date" value={form.hire_date || ""} onChange={e => set("hire_date", e.target.value)} className="bg-slate-800/60 border-slate-700 text-white" /></Field>
-              <Field label="Leder"><Input value={form.manager_name || ""} onChange={e => set("manager_name", e.target.value)} className="bg-slate-800/60 border-slate-700 text-white" /></Field>
+              <Field label="Hire Date"><Input type="date" value={form.hire_date || ""} onChange={e => set("hire_date", e.target.value)} className="bg-slate-800/60 border-slate-700 text-white" /></Field>
+              <Field label="Manager"><Input value={form.manager_name || ""} onChange={e => set("manager_name", e.target.value)} className="bg-slate-800/60 border-slate-700 text-white" /></Field>
             </div>
           </Section>
 
           {/* Salary */}
-          <Section title="Løn & økonomi">
+          <Section title="Salary & Compensation">
             <div className="grid grid-cols-3 gap-4">
               <div className="col-span-2">
-                <Field label="Årsløn"><Input type="number" value={form.salary || ""} onChange={e => set("salary", Number(e.target.value))} className="bg-slate-800/60 border-slate-700 text-white" /></Field>
+                <Field label="Annual Salary"><Input type="number" value={form.salary || ""} onChange={e => set("salary", Number(e.target.value))} className="bg-slate-800/60 border-slate-700 text-white" /></Field>
               </div>
-              <Field label="Valuta">
+              <Field label="Currency">
                 <Select value={form.currency || "EUR"} onValueChange={v => set("currency", v)}>
                   <SelectTrigger className="bg-slate-800/60 border-slate-700 text-white"><SelectValue /></SelectTrigger>
                   <SelectContent className="bg-slate-900 border-slate-700 text-white">{["EUR", "DKK", "USD", "GBP"].map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
@@ -162,9 +162,9 @@ export default function EmployeeEditor({ employee, orgId, onSave, onClose }) {
           </Section>
 
           {/* Leave balance */}
-          <Section title="Orlovssaldo">
+          <Section title="Leave Balance">
             <div className="grid grid-cols-3 gap-4">
-              {[["annual", "Ferie"], ["sick", "Sygedage"], ["personal", "Personlig orlov"]].map(([k, label]) => (
+              {[["annual", "Annual Leave"], ["sick", "Sick Days"], ["personal", "Personal Leave"]].map(([k, label]) => (
                 <Field key={k} label={label}>
                   <Input type="number" value={form.leave_balance?.[k] ?? ""} onChange={e => set("leave_balance", { ...form.leave_balance, [k]: Number(e.target.value) })} className="bg-slate-800/60 border-slate-700 text-white" />
                 </Field>
@@ -173,9 +173,9 @@ export default function EmployeeEditor({ employee, orgId, onSave, onClose }) {
           </Section>
 
           {/* Skills */}
-          <Section title="Kompetencer" icon={Star}>
+          <Section title="Skills" icon={Star}>
             <div className="flex gap-2 mb-2">
-              <Input value={newSkill} onChange={e => setNewSkill(e.target.value)} placeholder="Tilføj kompetence..." className="bg-slate-800/60 border-slate-700 text-white" onKeyDown={e => e.key === "Enter" && addSkill()} />
+              <Input value={newSkill} onChange={e => setNewSkill(e.target.value)} placeholder="Add skill..." className="bg-slate-800/60 border-slate-700 text-white" onKeyDown={e => e.key === "Enter" && addSkill()} />
               <Button size="sm" onClick={addSkill} className="bg-cyan-600 hover:bg-cyan-500"><Plus className="w-4 h-4" /></Button>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -189,12 +189,12 @@ export default function EmployeeEditor({ employee, orgId, onSave, onClose }) {
           </Section>
 
           {/* Certifications */}
-          <Section title="Certificeringer" icon={Award}>
+          <Section title="Certifications" icon={Award}>
             {(form.certifications || []).map((cert, i) => (
               <div key={i} className="flex items-start gap-3 bg-slate-800/40 rounded-lg px-3 py-2.5 mb-2 border border-slate-700/40">
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-white">{cert.name}</p>
-                  <p className="text-xs text-slate-400">{cert.issuer}{cert.issued_date && ` · udstedt ${cert.issued_date}`}{cert.expiry_date && ` · udløber ${cert.expiry_date}`}</p>
+                  <p className="text-xs text-slate-400">{cert.issuer}{cert.issued_date && ` · issued ${cert.issued_date}`}{cert.expiry_date && ` · expires ${cert.expiry_date}`}</p>
                   {cert.credential_id && <p className="text-[10px] text-slate-600 mt-0.5">ID: {cert.credential_id}</p>}
                 </div>
                 <button onClick={() => removeCert(i)} className="text-slate-600 hover:text-rose-400 transition-colors mt-0.5">
@@ -206,41 +206,41 @@ export default function EmployeeEditor({ employee, orgId, onSave, onClose }) {
             {showCertForm ? (
               <div className="bg-slate-800/50 border border-slate-700/50 rounded-lg p-3 space-y-2">
                 <div className="grid grid-cols-2 gap-2">
-                  <Input placeholder="Certifikatnavn *" value={newCert.name} onChange={e => setNewCert(p => ({ ...p, name: e.target.value }))} className="bg-slate-900/60 border-slate-700 text-white h-8 text-xs" />
-                  <Input placeholder="Udsteder" value={newCert.issuer} onChange={e => setNewCert(p => ({ ...p, issuer: e.target.value }))} className="bg-slate-900/60 border-slate-700 text-white h-8 text-xs" />
-                  <Input type="date" placeholder="Udstedelsesdato" value={newCert.issued_date} onChange={e => setNewCert(p => ({ ...p, issued_date: e.target.value }))} className="bg-slate-900/60 border-slate-700 text-white h-8 text-xs" />
-                  <Input type="date" placeholder="Udløbsdato" value={newCert.expiry_date} onChange={e => setNewCert(p => ({ ...p, expiry_date: e.target.value }))} className="bg-slate-900/60 border-slate-700 text-white h-8 text-xs" />
+                  <Input placeholder="Certificate name *" value={newCert.name} onChange={e => setNewCert(p => ({ ...p, name: e.target.value }))} className="bg-slate-900/60 border-slate-700 text-white h-8 text-xs" />
+                  <Input placeholder="Issuer" value={newCert.issuer} onChange={e => setNewCert(p => ({ ...p, issuer: e.target.value }))} className="bg-slate-900/60 border-slate-700 text-white h-8 text-xs" />
+                  <Input type="date" placeholder="Issue date" value={newCert.issued_date} onChange={e => setNewCert(p => ({ ...p, issued_date: e.target.value }))} className="bg-slate-900/60 border-slate-700 text-white h-8 text-xs" />
+                  <Input type="date" placeholder="Expiry date" value={newCert.expiry_date} onChange={e => setNewCert(p => ({ ...p, expiry_date: e.target.value }))} className="bg-slate-900/60 border-slate-700 text-white h-8 text-xs" />
                   <Input placeholder="Credential ID" value={newCert.credential_id} onChange={e => setNewCert(p => ({ ...p, credential_id: e.target.value }))} className="bg-slate-900/60 border-slate-700 text-white h-8 text-xs col-span-2" />
                 </div>
                 <div className="flex gap-2">
-                  <Button size="sm" onClick={addCert} className="h-7 text-xs bg-amber-600 hover:bg-amber-500">Tilføj</Button>
-                  <Button size="sm" variant="ghost" onClick={() => setShowCertForm(false)} className="h-7 text-xs text-slate-400">Annuller</Button>
+                  <Button size="sm" onClick={addCert} className="h-7 text-xs bg-amber-600 hover:bg-amber-500">Add</Button>
+                  <Button size="sm" variant="ghost" onClick={() => setShowCertForm(false)} className="h-7 text-xs text-slate-400">Cancel</Button>
                 </div>
               </div>
             ) : (
               <Button size="sm" variant="outline" onClick={() => setShowCertForm(true)}
                 className="h-8 text-xs border-slate-700 text-slate-400 hover:text-white mt-1">
-                <Plus className="w-3.5 h-3.5 mr-1.5" /> Tilføj certifikat
+                <Plus className="w-3.5 h-3.5 mr-1.5" /> Add Certificate
               </Button>
             )}
           </Section>
 
           {/* Career Goals */}
-          <Section title="Karriereønsker" icon={Target}>
+          <Section title="Career Aspirations" icon={Target}>
             <div className="space-y-4">
-              <Field label="Karrieremål & ambitioner">
+              <Field label="Career Goals & Ambitions">
                 <textarea
                   value={form.career_goals || ""}
                   onChange={e => set("career_goals", e.target.value)}
                   rows={3}
-                  placeholder="Beskriv dine karrieremål og ambitioner..."
+                  placeholder="Describe your career goals and ambitions..."
                   className="w-full bg-slate-800/60 border border-slate-700 text-white text-sm rounded-lg px-3 py-2 resize-none focus:outline-none focus:border-violet-500/50 placeholder:text-slate-600"
                 />
               </Field>
 
-              <Field label="Ønskede roller">
+              <Field label="Desired Roles">
                 <div className="flex gap-2 mb-2">
-                  <Input value={newRole} onChange={e => setNewRole(e.target.value)} placeholder="fx. Operations Manager..." className="bg-slate-800/60 border-slate-700 text-white" onKeyDown={e => e.key === "Enter" && addRole()} />
+                  <Input value={newRole} onChange={e => setNewRole(e.target.value)} placeholder="e.g. Operations Manager..." className="bg-slate-800/60 border-slate-700 text-white" onKeyDown={e => e.key === "Enter" && addRole()} />
                   <Button size="sm" onClick={addRole} className="bg-violet-600 hover:bg-violet-500"><Plus className="w-4 h-4" /></Button>
                 </div>
                 <div className="flex flex-wrap gap-2">
@@ -253,7 +253,7 @@ export default function EmployeeEditor({ employee, orgId, onSave, onClose }) {
                 </div>
               </Field>
 
-              <Field label="Interesseområder">
+              <Field label="Areas of Interest">
                 <div className="flex flex-wrap gap-2">
                   {CAREER_INTERESTS_OPTIONS.map(interest => {
                     const active = (form.career_interests || []).includes(interest);
@@ -273,26 +273,26 @@ export default function EmployeeEditor({ employee, orgId, onSave, onClose }) {
                 </div>
               </Field>
 
-              <Field label="Foretrukket læringsformat">
-                <Input value={form.learning_preferences || ""} onChange={e => set("learning_preferences", e.target.value)} placeholder="fx. online kurser, mentoring, workshops..." className="bg-slate-800/60 border-slate-700 text-white" />
+              <Field label="Preferred Learning Format">
+                <Input value={form.learning_preferences || ""} onChange={e => set("learning_preferences", e.target.value)} placeholder="e.g. online courses, mentoring, workshops..." className="bg-slate-800/60 border-slate-700 text-white" />
               </Field>
             </div>
           </Section>
 
           {/* Emergency contact */}
-          <Section title="Nødkontakt">
+          <Section title="Emergency Contact">
             <div className="grid grid-cols-2 gap-4">
-              <Field label="Navn"><Input value={form.emergency_contact_name || ""} onChange={e => set("emergency_contact_name", e.target.value)} className="bg-slate-800/60 border-slate-700 text-white" /></Field>
-              <Field label="Telefon"><Input value={form.emergency_contact_phone || ""} onChange={e => set("emergency_contact_phone", e.target.value)} className="bg-slate-800/60 border-slate-700 text-white" /></Field>
+              <Field label="Name"><Input value={form.emergency_contact_name || ""} onChange={e => set("emergency_contact_name", e.target.value)} className="bg-slate-800/60 border-slate-700 text-white" /></Field>
+              <Field label="Phone"><Input value={form.emergency_contact_phone || ""} onChange={e => set("emergency_contact_phone", e.target.value)} className="bg-slate-800/60 border-slate-700 text-white" /></Field>
             </div>
           </Section>
         </div>
 
         <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-800 sticky bottom-0 bg-slate-900">
-          <Button variant="ghost" onClick={onClose} className="text-slate-400">Annuller</Button>
+          <Button variant="ghost" onClick={onClose} className="text-slate-400">Cancel</Button>
           <Button onClick={handleSave} disabled={saving} className="bg-cyan-600 hover:bg-cyan-500">
             <Save className="w-4 h-4 mr-2" />
-            {saving ? "Gemmer..." : "Gem medarbejder"}
+            {saving ? "Saving..." : "Save Employee"}
           </Button>
         </div>
       </div>

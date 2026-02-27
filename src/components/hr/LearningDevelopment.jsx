@@ -7,9 +7,9 @@ import LearningEnrollments from "./LearningEnrollments";
 import LearningAIRecommender from "./LearningAIRecommender";
 
 const SUBTABS = [
-  { key: "catalog",      label: "Kurskatalog",   icon: BookOpen },
-  { key: "enrollments",  label: "Tilmeldinger",  icon: Users },
-  { key: "ai",           label: "AI Anbefalinger", icon: Sparkles },
+  { key: "catalog",      label: "Course Catalog",      icon: BookOpen },
+  { key: "enrollments",  label: "Enrollments",         icon: Users },
+  { key: "ai",           label: "AI Recommendations",  icon: Sparkles },
 ];
 
 export default function LearningDevelopment({ orgId, employees }) {
@@ -38,15 +38,15 @@ export default function LearningDevelopment({ orgId, employees }) {
       <div className="grid grid-cols-3 gap-3">
         <div className="bg-slate-900/60 border border-slate-700/50 rounded-xl p-4 text-center">
           <p className="text-2xl font-bold text-emerald-400">{activeCourses}</p>
-          <p className="text-xs text-slate-500 mt-0.5">Aktive kurser</p>
+          <p className="text-xs text-slate-500 mt-0.5">Active Courses</p>
         </div>
         <div className="bg-slate-900/60 border border-slate-700/50 rounded-xl p-4 text-center">
           <p className="text-2xl font-bold text-cyan-400">{totalEnrollments}</p>
-          <p className="text-xs text-slate-500 mt-0.5">Totale tilmeldinger</p>
+          <p className="text-xs text-slate-500 mt-0.5">Total Enrollments</p>
         </div>
         <div className="bg-slate-900/60 border border-slate-700/50 rounded-xl p-4 text-center">
           <p className="text-2xl font-bold text-amber-400">{completed}</p>
-          <p className="text-xs text-slate-500 mt-0.5">Gennemførte</p>
+          <p className="text-xs text-slate-500 mt-0.5">Completed</p>
         </div>
       </div>
 

@@ -4,10 +4,10 @@ import { User, Mail, Phone, MapPin, Calendar, Edit, Briefcase } from "lucide-rea
 import { format } from "date-fns";
 
 const statusConfig = {
-  active:     { label: "Aktiv",         className: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" },
-  on_leave:   { label: "På orlov",      className: "bg-amber-500/20 text-amber-400 border-amber-500/30" },
-  terminated: { label: "Fratrådt",      className: "bg-rose-500/20 text-rose-400 border-rose-500/30" },
-  probation:  { label: "Prøvetid",      className: "bg-blue-500/20 text-blue-400 border-blue-500/30" },
+  active:     { label: "Active",        className: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" },
+  on_leave:   { label: "On Leave",      className: "bg-amber-500/20 text-amber-400 border-amber-500/30" },
+  terminated: { label: "Terminated",   className: "bg-rose-500/20 text-rose-400 border-rose-500/30" },
+  probation:  { label: "Probation",    className: "bg-blue-500/20 text-blue-400 border-blue-500/30" },
 };
 
 const deptColors = {
@@ -68,7 +68,7 @@ export default function EmployeeCard({ employee, onEdit, onView }) {
             {employee.hire_date && (
               <div className="flex items-center gap-1 text-[11px] text-slate-500">
                 <Calendar className="w-3 h-3" />
-                <span>Ansat {format(new Date(employee.hire_date), "dd MMM yyyy")}</span>
+                <span>Hired {format(new Date(employee.hire_date), "dd MMM yyyy")}</span>
               </div>
             )}
           </div>
@@ -82,7 +82,7 @@ export default function EmployeeCard({ employee, onEdit, onView }) {
           className="h-6 text-[11px] text-slate-400 hover:text-white px-2 opacity-0 group-hover:opacity-100 transition-opacity"
           onClick={(e) => { e.stopPropagation(); onEdit(); }}
         >
-          <Edit className="w-3 h-3 mr-1" /> Rediger
+          <Edit className="w-3 h-3 mr-1" /> Edit
         </Button>
       </div>
     </div>

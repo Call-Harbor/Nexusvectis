@@ -10,8 +10,8 @@ import {
 import { STAGES } from "./RecruitmentPipeline";
 
 const TABS = [
-  { key: "generator", label: "Stillingsbeskrivelse", icon: FileText },
-  { key: "analysis",  label: "Pipeline-analyse",    icon: BarChart3 },
+  { key: "generator", label: "Job Description",  icon: FileText },
+  { key: "analysis",  label: "Pipeline Analysis", icon: BarChart3 },
 ];
 
 export default function RecruitmentAIPanel({ job, onDescriptionGenerated, onClose }) {
@@ -119,7 +119,7 @@ Svar med JSON i dette format (alle tekster på dansk):
       <div className="flex items-center justify-between px-4 py-2.5 border-b border-slate-800 bg-violet-500/5">
         <div className="flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-violet-400" />
-          <span className="text-sm font-semibold text-white">AI Rekrutteringsassistent</span>
+          <span className="text-sm font-semibold text-white">AI Recruitment Assistant</span>
         </div>
         <Button size="icon" variant="ghost" onClick={onClose} className="h-6 w-6 text-slate-400 hover:text-white">
           <X className="w-3.5 h-3.5" />
@@ -146,12 +146,12 @@ Svar med JSON i dette format (alle tekster på dansk):
         {tab === "generator" && (
           <div className="space-y-3">
             <div>
-              <p className="text-xs text-slate-400 mb-1.5">Nøgleord / krav til stillingen</p>
+              <p className="text-xs text-slate-400 mb-1.5">Keywords / requirements for the position</p>
               <div className="flex gap-2">
                 <Input
                   value={keywords}
                   onChange={e => setKeywords(e.target.value)}
-                  placeholder="fx. Python, teamwork, 3 års erfaring, B-kørekort..."
+                  placeholder="e.g. Python, teamwork, 3 years experience, driver's license..."
                   className="bg-slate-800/60 border-slate-700 text-white h-9 text-sm flex-1"
                   onKeyDown={e => e.key === "Enter" && generateDescription()}
                 />
@@ -165,7 +165,7 @@ Svar med JSON i dette format (alle tekster på dansk):
             {generating && (
               <div className="flex items-center gap-2 text-xs text-violet-400 animate-pulse">
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                AI genererer stillingsbeskrivelse...
+                AI is generating job description...
               </div>
             )}
 
@@ -179,11 +179,11 @@ Svar med JSON i dette format (alle tekster på dansk):
               <div className="flex gap-2">
                 <Button size="sm" onClick={copyAndApply}
                   className={`h-8 text-xs ${copied ? "bg-emerald-600 hover:bg-emerald-500" : "bg-violet-600 hover:bg-violet-500"}`}>
-                  {copied ? <><Check className="w-3.5 h-3.5 mr-1.5" /> Kopieret!</> : <><Copy className="w-3.5 h-3.5 mr-1.5" /> Anvend på stilling</>}
+                  {copied ? <><Check className="w-3.5 h-3.5 mr-1.5" /> Copied!</> : <><Copy className="w-3.5 h-3.5 mr-1.5" /> Apply to Position</>}
                 </Button>
                 <Button size="sm" variant="ghost" onClick={generateDescription} disabled={generating}
                   className="h-8 text-xs text-slate-400">
-                  Regenerer
+                  Regenerate
                 </Button>
               </div>
             )}
@@ -194,16 +194,16 @@ Svar med JSON i dette format (alle tekster på dansk):
         {tab === "analysis" && (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <p className="text-xs text-slate-400">Analyser pipeline for <span className="text-white font-medium">{job.job_title}</span></p>
+              <p className="text-xs text-slate-400">Analyse pipeline for <span className="text-white font-medium">{job.job_title}</span></p>
               <Button size="sm" onClick={analysePipeline} disabled={analysing}
                 className="bg-cyan-600 hover:bg-cyan-500 h-8 text-xs">
                 {analysing ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" /> : <BarChart3 className="w-3.5 h-3.5 mr-1.5" />}
-                {analysing ? "Analyserer..." : "Kør analyse"}
+                {analysing ? "Analysing..." : "Run Analysis"}
               </Button>
             </div>
 
             {(job.candidates || []).length === 0 && (
-              <p className="text-xs text-slate-500 italic">Tilføj kandidater til pipelinen for at aktivere analysen.</p>
+              <p className="text-xs text-slate-500 italic">Add candidates to the pipeline to enable analysis.</p>
             )}
 
             {analysis && (
@@ -224,7 +224,7 @@ Svar med JSON i dette format (alle tekster på dansk):
                   </div>
                   <div className="ml-auto text-right flex-shrink-0">
                     <p className="text-lg font-bold text-cyan-400">{analysis.estimated_hire_days}</p>
-                    <p className="text-[9px] text-slate-500">dage til ansættelse</p>
+                    <p className="text-[9px] text-slate-500">days to hire</p>
                   </div>
                 </div>
 
@@ -234,12 +234,12 @@ Svar med JSON i dette format (alle tekster på dansk):
                     {[
                       { label: "Screening", val: analysis.time_predictions.screening_days },
                       { label: "Interview", val: analysis.time_predictions.interview_days },
-                      { label: "Tilbud",    val: analysis.time_predictions.offer_days },
-                      { label: "I alt",     val: analysis.time_predictions.total_days },
+                      { label: "Offer",     val: analysis.time_predictions.offer_days },
+                      { label: "Total",     val: analysis.time_predictions.total_days },
                     ].map(p => (
                       <div key={p.label} className="bg-slate-800/50 rounded-lg p-2 text-center border border-slate-700/40">
                         <p className="text-sm font-bold text-white">{p.val ?? "?"}</p>
-                        <p className="text-[9px] text-slate-500">{p.label} dage</p>
+                        <p className="text-[9px] text-slate-500">{p.label} days</p>
                       </div>
                     ))}
                   </div>
@@ -249,7 +249,7 @@ Svar med JSON i dette format (alle tekster på dansk):
                 {analysis.bottlenecks?.length > 0 && (
                   <div>
                     <p className="text-[10px] text-slate-500 uppercase font-semibold mb-1.5 flex items-center gap-1">
-                      <AlertTriangle className="w-3 h-3" /> Flaskehalse ({analysis.bottlenecks.length})
+                      <AlertTriangle className="w-3 h-3" /> Bottlenecks ({analysis.bottlenecks.length})
                     </p>
                     <div className="space-y-1.5">
                       {analysis.bottlenecks.map((b, i) => (
@@ -269,7 +269,7 @@ Svar med JSON i dette format (alle tekster på dansk):
                 {/* Recommendations */}
                 {analysis.recommendations?.length > 0 && (
                   <div>
-                    <p className="text-[10px] text-slate-500 uppercase font-semibold mb-1.5">Anbefalinger</p>
+                    <p className="text-[10px] text-slate-500 uppercase font-semibold mb-1.5">Recommendations</p>
                     <div className="space-y-1">
                       {analysis.recommendations.map((r, i) => (
                         <div key={i} className="flex items-start gap-2 text-xs text-slate-300">

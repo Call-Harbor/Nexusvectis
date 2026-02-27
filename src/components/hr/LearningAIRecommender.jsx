@@ -16,8 +16,10 @@ const TYPE_LABELS = {
 
 const PRIORITY_CLS = {
   høj: "bg-rose-500/15 text-rose-400 border-rose-500/20",
+  high: "bg-rose-500/15 text-rose-400 border-rose-500/20",
   medium: "bg-amber-500/15 text-amber-400 border-amber-500/20",
   lav: "bg-slate-700/40 text-slate-400 border-slate-600/30",
+  low: "bg-slate-700/40 text-slate-400 border-slate-600/30",
 };
 
 export default function LearningAIRecommender({ employees, courses, orgId }) {
@@ -124,7 +126,7 @@ Svar med JSON (dansk):
       <div className="w-60 flex-shrink-0 flex flex-col gap-3">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
-          <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Søg medarbejder..." className="pl-9 bg-slate-900/60 border-slate-700/60 text-white h-9" />
+          <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search employees..." className="pl-9 bg-slate-900/60 border-slate-700/60 text-white h-9" />
         </div>
         <div className="flex-1 overflow-y-auto space-y-1.5">
           {filteredEmps.map(emp => (
@@ -149,15 +151,15 @@ Svar med JSON (dansk):
         {!selected && !loading && (
           <div className="flex flex-col items-center justify-center h-full text-slate-500">
             <Sparkles className="w-12 h-12 mb-3 text-slate-700" />
-            <p className="text-sm">Vælg en medarbejder for AI-kursusanbefalinger</p>
-            <p className="text-xs mt-1 text-slate-600">Baseret på kompetencer, karrieremål og performance</p>
+            <p className="text-sm">Select an employee for AI course recommendations</p>
+            <p className="text-xs mt-1 text-slate-600">Based on skills, career goals and performance</p>
           </div>
         )}
 
         {loading && (
           <div className="flex flex-col items-center justify-center h-full">
             <Loader2 className="w-10 h-10 text-emerald-400 animate-spin mb-3" />
-            <p className="text-sm text-emerald-300 animate-pulse">AI analyserer og matcher kurser...</p>
+            <p className="text-sm text-emerald-300 animate-pulse">AI is analysing and matching courses...</p>
           </div>
         )}
 
@@ -187,7 +189,7 @@ Svar med JSON (dansk):
             {result.recommendations?.length > 0 && (
               <div>
                 <p className="text-[10px] text-slate-500 uppercase font-semibold mb-2 flex items-center gap-1.5">
-                  <BookOpen className="w-3 h-3 text-emerald-400" /> Anbefalede kurser ({result.recommendations.length})
+                  <BookOpen className="w-3 h-3 text-emerald-400" /> Recommended Courses ({result.recommendations.length})
                 </p>
                 <div className="space-y-3">
                   {result.recommendations.map((rec, i) => {
@@ -220,7 +222,7 @@ Svar med JSON (dansk):
                                 </Button>
                               )
                             ) : (
-                              <span className="text-[10px] text-slate-600 italic">Ikke i katalog</span>
+                              <span className="text-[10px] text-slate-600 italic">Not in catalog</span>
                             )}
                           </div>
                         </div>
@@ -244,7 +246,7 @@ Svar med JSON (dansk):
             {result.missing_courses?.length > 0 && (
               <div>
                 <p className="text-[10px] text-slate-500 uppercase font-semibold mb-2 flex items-center gap-1.5">
-                  <Star className="w-3 h-3 text-amber-400" /> Mangler i kataloget
+                  <Star className="w-3 h-3 text-amber-400" /> Missing from Catalog
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {result.missing_courses.map((c, i) => (

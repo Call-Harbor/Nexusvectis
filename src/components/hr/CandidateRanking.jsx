@@ -10,10 +10,10 @@ import {
 } from "lucide-react";
 
 const RECOMMENDATION_CONFIG = {
-  strong_yes: { label: "Stærkt anbefalet", cls: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30", rank_cls: "border-l-emerald-500" },
-  yes:        { label: "Anbefalet",        cls: "bg-blue-500/15 text-blue-400 border-blue-500/30",          rank_cls: "border-l-blue-500" },
-  maybe:      { label: "Mulig kandidat",   cls: "bg-amber-500/15 text-amber-400 border-amber-500/30",       rank_cls: "border-l-amber-500" },
-  no:         { label: "Ikke anbefalet",   cls: "bg-rose-500/15 text-rose-400 border-rose-500/30",          rank_cls: "border-l-rose-500" },
+  strong_yes: { label: "Strongly Recommended", cls: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30", rank_cls: "border-l-emerald-500" },
+  yes:        { label: "Recommended",          cls: "bg-blue-500/15 text-blue-400 border-blue-500/30",          rank_cls: "border-l-blue-500" },
+  maybe:      { label: "Possible Candidate",   cls: "bg-amber-500/15 text-amber-400 border-amber-500/30",       rank_cls: "border-l-amber-500" },
+  no:         { label: "Not Recommended",      cls: "bg-rose-500/15 text-rose-400 border-rose-500/30",          rank_cls: "border-l-rose-500" },
 };
 
 const MEDAL_COLORS = ["text-amber-400", "text-slate-300", "text-amber-600"];
@@ -135,8 +135,8 @@ Lav en komplet vurdering af ALLE kandidater og rangorden dem fra bedst til ringe
               <Trophy className="w-5 h-5 text-cyan-400" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-white">AI Kandidat-rangordning</p>
-              <p className="text-xs text-slate-400">{job.job_title} · {candidates.length} kandidater</p>
+              <p className="text-sm font-semibold text-white">AI Candidate Ranking</p>
+              <p className="text-xs text-slate-400">{job.job_title} · {candidates.length} candidates</p>
             </div>
           </div>
           <Button size="icon" variant="ghost" onClick={onClose} className="h-8 w-8 text-slate-400 hover:text-white">
@@ -151,8 +151,8 @@ Lav en komplet vurdering af ALLE kandidater og rangorden dem fra bedst til ringe
           {candidates.length === 0 && (
             <div className="text-center py-10">
               <AlertCircle className="w-10 h-10 mx-auto mb-3 text-slate-700" />
-              <p className="text-sm text-slate-400">Ingen aktive kandidater at rangordne</p>
-              <p className="text-xs text-slate-600 mt-1">Tilføj kandidater med CV-information for bedste resultater</p>
+              <p className="text-sm text-slate-400">No active candidates to rank</p>
+              <p className="text-xs text-slate-600 mt-1">Add candidates with CV information for best results</p>
             </div>
           )}
 
@@ -161,7 +161,7 @@ Lav en komplet vurdering af ALLE kandidater og rangorden dem fra bedst til ringe
             <div className="space-y-4">
               <div className="bg-slate-800/40 rounded-xl p-4 border border-slate-700/40">
                 <p className="text-sm font-medium text-white mb-2 flex items-center gap-2">
-                  <BarChart3 className="w-4 h-4 text-cyan-400" /> Kandidater der screenes
+                  <BarChart3 className="w-4 h-4 text-cyan-400" /> Candidates to be screened
                 </p>
                 <div className="space-y-1.5">
                   {candidates.map((c, i) => (
@@ -169,12 +169,12 @@ Lav en komplet vurdering af ALLE kandidater og rangorden dem fra bedst til ringe
                       <div className="w-5 h-5 rounded-full bg-slate-700 flex items-center justify-center text-[9px] font-bold text-slate-400">{i + 1}</div>
                       <span className="text-white">{c.name}</span>
                       {c.cv_summary ? (
-                        <Badge className="text-[9px] bg-emerald-500/10 text-emerald-400 border-emerald-500/20 ml-auto">CV tilgængeligt</Badge>
+                        <Badge className="text-[9px] bg-emerald-500/10 text-emerald-400 border-emerald-500/20 ml-auto">CV available</Badge>
                       ) : (
-                        <Badge className="text-[9px] bg-amber-500/10 text-amber-400 border-amber-500/20 ml-auto">Ingen CV</Badge>
+                        <Badge className="text-[9px] bg-amber-500/10 text-amber-400 border-amber-500/20 ml-auto">No CV</Badge>
                       )}
                       {c.ai_screening && (
-                        <Badge className="text-[9px] bg-violet-500/10 text-violet-400 border-violet-500/20">Screenet</Badge>
+                        <Badge className="text-[9px] bg-violet-500/10 text-violet-400 border-violet-500/20">Screened</Badge>
                       )}
                     </div>
                   ))}
@@ -196,8 +196,8 @@ Lav en komplet vurdering af ALLE kandidater og rangorden dem fra bedst til ringe
                 <Loader2 className="w-16 h-16 text-cyan-500/30 animate-spin absolute inset-0" />
                 <Brain className="w-8 h-8 text-cyan-400 absolute inset-0 m-auto" />
               </div>
-              <p className="text-sm text-cyan-300 font-medium">AI rangordner {candidates.length} kandidater...</p>
-              <p className="text-xs text-slate-500 mt-1">Analyserer kompetencer, erfaring og kultur-fit</p>
+              <p className="text-sm text-cyan-300 font-medium">AI is ranking {candidates.length} candidates...</p>
+              <p className="text-xs text-slate-500 mt-1">Analysing skills, experience and culture fit</p>
             </div>
           )}
 
@@ -207,7 +207,7 @@ Lav en komplet vurdering af ALLE kandidater og rangorden dem fra bedst til ringe
               {/* Key requirements */}
               {results.job_key_requirements?.length > 0 && (
                 <div>
-                  <p className="text-[10px] text-slate-500 uppercase font-semibold mb-2">Identificerede nøglekrav</p>
+                  <p className="text-[10px] text-slate-500 uppercase font-semibold mb-2">Identified Key Requirements</p>
                   <div className="flex flex-wrap gap-1.5">
                     {results.job_key_requirements.map((req, i) => (
                       <span key={i} className="text-xs px-2 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300">{req}</span>
@@ -218,7 +218,7 @@ Lav en komplet vurdering af ALLE kandidater og rangorden dem fra bedst til ringe
 
               {/* Rankings */}
               <div>
-                <p className="text-[10px] text-slate-500 uppercase font-semibold mb-2">Rangordning ({sortedRankings.length} kandidater)</p>
+                <p className="text-[10px] text-slate-500 uppercase font-semibold mb-2">Ranking ({sortedRankings.length} candidates)</p>
                 <div className="space-y-2">
                   {sortedRankings.map((r, i) => {
                     const cfg = RECOMMENDATION_CONFIG[r.recommendation] || RECOMMENDATION_CONFIG.maybe;
@@ -255,9 +255,9 @@ Lav en komplet vurdering af ALLE kandidater og rangorden dem fra bedst til ringe
                             {/* Score bars */}
                             <div className="grid grid-cols-3 gap-3">
                               {[
-                                { label: "Kompetencer", val: r.skills_match },
-                                { label: "Erfaring", val: r.experience_match },
-                                { label: "Kultur-fit", val: r.culture_fit },
+                                { label: "Skills", val: r.skills_match },
+                                { label: "Experience", val: r.experience_match },
+                                { label: "Culture Fit", val: r.culture_fit },
                               ].map(d => (
                                 <div key={d.label} className="text-center">
                                   <p className="text-[10px] text-slate-500 mb-1">{d.label}</p>
@@ -274,7 +274,7 @@ Lav en komplet vurdering af ALLE kandidater og rangorden dem fra bedst til ringe
                             <div className="grid grid-cols-2 gap-3">
                               {r.top_strengths?.length > 0 && (
                                 <div>
-                                  <p className="text-[10px] text-slate-500 uppercase mb-1">Styrker</p>
+                                  <p className="text-[10px] text-slate-500 uppercase mb-1">Strengths</p>
                                   {r.top_strengths.map((s, si) => (
                                     <div key={si} className="flex items-start gap-1.5 text-xs text-emerald-300 mb-0.5">
                                       <CheckCircle2 className="w-3 h-3 text-emerald-500 flex-shrink-0 mt-0.5" />{s}
@@ -284,7 +284,7 @@ Lav en komplet vurdering af ALLE kandidater og rangorden dem fra bedst til ringe
                               )}
                               {r.key_concerns?.length > 0 && (
                                 <div>
-                                  <p className="text-[10px] text-slate-500 uppercase mb-1">Bekymringer</p>
+                                  <p className="text-[10px] text-slate-500 uppercase mb-1">Concerns</p>
                                   {r.key_concerns.map((c, ci) => (
                                     <div key={ci} className="flex items-start gap-1.5 text-xs text-rose-300 mb-0.5">
                                       <XCircle className="w-3 h-3 text-rose-500 flex-shrink-0 mt-0.5" />{c}
@@ -296,8 +296,8 @@ Lav en komplet vurdering af ALLE kandidater og rangorden dem fra bedst til ringe
 
                             {/* Interview questions */}
                             {r.interview_questions?.length > 0 && (
-                              <div>
-                                <p className="text-[10px] text-slate-500 uppercase mb-1.5">Foreslåede interviewspørgsmål</p>
+                            <div>
+                              <p className="text-[10px] text-slate-500 uppercase mb-1.5">Suggested Interview Questions</p>
                                 {r.interview_questions.map((q, qi) => (
                                   <div key={qi} className="flex items-start gap-2 text-xs text-slate-300 bg-slate-800/40 rounded-lg px-2.5 py-1.5 mb-1">
                                     <span className="text-cyan-400 font-bold flex-shrink-0">Q{qi+1}.</span>{q}
@@ -316,7 +316,7 @@ Lav en komplet vurdering af ALLE kandidater og rangorden dem fra bedst til ringe
               {/* Overall assessment */}
               {results.overall_assessment && (
                 <div className="bg-cyan-500/5 border border-cyan-500/20 rounded-xl px-4 py-3">
-                  <p className="text-[10px] text-cyan-400 uppercase font-semibold mb-1 flex items-center gap-1.5"><Brain className="w-3 h-3" /> AI Samlet vurdering</p>
+                  <p className="text-[10px] text-cyan-400 uppercase font-semibold mb-1 flex items-center gap-1.5"><Brain className="w-3 h-3" /> AI Overall Assessment</p>
                   <p className="text-xs text-slate-300 leading-relaxed">{results.overall_assessment}</p>
                   {results.recommendation_text && (
                     <p className="text-xs text-cyan-300 mt-2 font-medium">→ {results.recommendation_text}</p>
@@ -329,24 +329,24 @@ Lav en komplet vurdering af ALLE kandidater og rangorden dem fra bedst til ringe
 
         {/* Footer */}
         <div className="flex-shrink-0 flex items-center justify-between px-5 py-4 border-t border-slate-800">
-          <Button variant="ghost" onClick={onClose} className="text-slate-400 h-9 text-sm">Luk</Button>
+          <Button variant="ghost" onClick={onClose} className="text-slate-400 h-9 text-sm">Close</Button>
           <div className="flex gap-2">
             {results && (
               <Button onClick={runBulkScreening} variant="outline" disabled={loading}
                 className="h-9 text-sm border-slate-700 text-slate-300">
-                <Sparkles className="w-3.5 h-3.5 mr-1.5" /> Kør igen
+                <Sparkles className="w-3.5 h-3.5 mr-1.5" /> Run Again
               </Button>
             )}
             {results ? (
               <Button onClick={handleSaveAll} disabled={saving} className="bg-cyan-600 hover:bg-cyan-500 h-9 text-sm">
-                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Save className="w-3.5 h-3.5 mr-1.5" /> Gem alle resultater</>}
+                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Save className="w-3.5 h-3.5 mr-1.5" /> Save All Results</>}
               </Button>
             ) : (
               <Button onClick={runBulkScreening} disabled={loading || candidates.length === 0}
                 className="bg-cyan-600 hover:bg-cyan-500 h-9 text-sm">
                 {loading
                   ? <Loader2 className="w-4 h-4 animate-spin" />
-                  : <><Brain className="w-3.5 h-3.5 mr-1.5" /> Rangordner {candidates.length} kandidater</>
+                  : <><Brain className="w-3.5 h-3.5 mr-1.5" /> Rank {candidates.length} Candidates</>
                 }
               </Button>
             )}

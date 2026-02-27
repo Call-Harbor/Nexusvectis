@@ -14,18 +14,18 @@ import PerformanceReviewDetail from "./PerformanceReviewDetail";
 
 export const COMPETENCIES = [
   { key: "teamwork",        label: "Teamwork" },
-  { key: "communication",   label: "Kommunikation" },
-  { key: "initiative",      label: "Initiativ" },
-  { key: "technical_skills",label: "Tekniske færdigheder" },
-  { key: "leadership",      label: "Lederskab" },
-  { key: "problem_solving", label: "Problemløsning" },
+  { key: "communication",   label: "Communication" },
+  { key: "initiative",      label: "Initiative" },
+  { key: "technical_skills",label: "Technical Skills" },
+  { key: "leadership",      label: "Leadership" },
+  { key: "problem_solving", label: "Problem Solving" },
 ];
 
 export const STATUS_CONFIG = {
-  draft:     { label: "Kladde",     cls: "bg-slate-500/20 text-slate-400 border-slate-500/30" },
-  submitted: { label: "Indsendt",   cls: "bg-amber-500/20 text-amber-400 border-amber-500/30" },
-  completed: { label: "Afsluttet", cls: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" },
-  archived:  { label: "Arkiveret", cls: "bg-slate-700/40 text-slate-500 border-slate-600/30" },
+  draft:     { label: "Draft",     cls: "bg-slate-500/20 text-slate-400 border-slate-500/30" },
+  submitted: { label: "Submitted", cls: "bg-amber-500/20 text-amber-400 border-amber-500/30" },
+  completed: { label: "Completed", cls: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" },
+  archived:  { label: "Archived",  cls: "bg-slate-700/40 text-slate-500 border-slate-600/30" },
 };
 
 export function StarRating({ value = 0, onChange, max = 5, size = "sm" }) {
@@ -43,9 +43,9 @@ export function StarRating({ value = 0, onChange, max = 5, size = "sm" }) {
 }
 
 const VIEW_MODES = [
-  { key: "overview",  label: "Oversigt",   icon: BarChart3 },
-  { key: "list",      label: "Alle reviews", icon: ClipboardList },
-  { key: "history",   label: "Historik",   icon: History },
+  { key: "overview",  label: "Overview",    icon: BarChart3 },
+  { key: "list",      label: "All Reviews", icon: ClipboardList },
+  { key: "history",   label: "History",     icon: History },
 ];
 
 export default function PerformancePanel({ orgId, employees }) {
@@ -112,10 +112,10 @@ export default function PerformancePanel({ orgId, employees }) {
       {/* Top stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { label: "Samlede reviews",  value: reviews.length,                             color: "text-cyan-400",    icon: ClipboardList },
-          { label: "Gns. bedømmelse",  value: `${avgRating.toFixed(1)}/5`,                color: "text-amber-400",   icon: Star },
-          { label: "Afsluttede",        value: reviews.filter(r=>r.status==="completed").length, color: "text-emerald-400", icon: CheckCircle2 },
-          { label: "Under udarbejdelse",value: reviews.filter(r=>r.status==="draft"||r.status==="submitted").length, color: "text-blue-400", icon: Clock },
+          { label: "Total Reviews",   value: reviews.length,                             color: "text-cyan-400",    icon: ClipboardList },
+          { label: "Avg. Rating",     value: `${avgRating.toFixed(1)}/5`,                color: "text-amber-400",   icon: Star },
+          { label: "Completed",       value: reviews.filter(r=>r.status==="completed").length, color: "text-emerald-400", icon: CheckCircle2 },
+          { label: "In Progress",     value: reviews.filter(r=>r.status==="draft"||r.status==="submitted").length, color: "text-blue-400", icon: Clock },
         ].map(s => {
           const Icon = s.icon;
           return (
@@ -147,7 +147,7 @@ export default function PerformancePanel({ orgId, employees }) {
         </div>
         <Button onClick={() => { setEditingReview(null); setShowEditor(true); }}
           className="bg-amber-600 hover:bg-amber-500 h-9 text-sm">
-          <Plus className="w-4 h-4 mr-2" /> Nyt review
+          <Plus className="w-4 h-4 mr-2" /> New Review
         </Button>
       </div>
 
@@ -157,16 +157,16 @@ export default function PerformancePanel({ orgId, employees }) {
           <div className="relative flex-1 min-w-[200px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
             <Input value={search} onChange={e => setSearch(e.target.value)}
-              placeholder="Søg i reviews..." className="pl-9 bg-slate-900/60 border-slate-700/60 text-white h-9" />
+              placeholder="Search reviews..." className="pl-9 bg-slate-900/60 border-slate-700/60 text-white h-9" />
           </div>
           <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
             className="bg-slate-900/60 border border-slate-700/60 text-sm text-white rounded-lg px-3 py-2 h-9 focus:outline-none">
-            <option value="all">Alle statusser</option>
+            <option value="all">All Statuses</option>
             {Object.entries(STATUS_CONFIG).map(([k, v]) => <option key={k} value={k} className="bg-slate-900">{v.label}</option>)}
           </select>
           <select value={selectedEmployee} onChange={e => setSelectedEmployee(e.target.value)}
             className="bg-slate-900/60 border border-slate-700/60 text-sm text-white rounded-lg px-3 py-2 h-9 focus:outline-none">
-            <option value="all">Alle medarbejdere</option>
+            <option value="all">All Employees</option>
             {employees.map(e => <option key={e.id} value={e.id} className="bg-slate-900">{e.first_name} {e.last_name}</option>)}
           </select>
         </div>
@@ -180,7 +180,7 @@ export default function PerformancePanel({ orgId, employees }) {
               {byEmployee.length === 0 ? (
                 <div className="col-span-2 text-center py-16 text-slate-500">
                   <TrendingUp className="w-10 h-10 mx-auto mb-3 text-slate-700" />
-                  <p className="text-sm">Ingen performance reviews endnu</p>
+                  <p className="text-sm">No performance reviews yet</p>
                 </div>
               ) : byEmployee.map(emp => (
                 <div key={emp.id} className="bg-slate-900/60 border border-slate-700/50 rounded-xl p-4">
@@ -191,7 +191,7 @@ export default function PerformancePanel({ orgId, employees }) {
                       </div>
                       <div>
                         <p className="text-sm font-semibold text-white">{emp.name}</p>
-                        <p className="text-xs text-slate-500">{emp.reviews.length} review{emp.reviews.length !== 1 ? "s" : ""}</p>
+                        <p className="text-xs text-slate-500">{emp.reviews.length} review{emp.reviews.length !== 1 ? "s" : ""} total</p>
                       </div>
                     </div>
                     <div className="text-right">
@@ -228,7 +228,7 @@ export default function PerformancePanel({ orgId, employees }) {
                     <Button size="sm" variant="ghost"
                       onClick={() => { setSelectedEmployee(emp.id); setViewMode("history"); }}
                       className="text-xs text-cyan-400 hover:text-cyan-300 h-7">
-                      <History className="w-3 h-3 mr-1" /> Se historik
+                      <History className="w-3 h-3 mr-1" /> View History
                     </Button>
                   </div>
                 </div>
@@ -245,7 +245,7 @@ export default function PerformancePanel({ orgId, employees }) {
             ) : filtered.length === 0 ? (
               <div className="text-center py-16 text-slate-500">
                 <ClipboardList className="w-10 h-10 mx-auto mb-3 text-slate-700" />
-                <p className="text-sm">Ingen reviews matcher dine filtre</p>
+                <p className="text-sm">No reviews match your filters</p>
               </div>
             ) : filtered.map(rev => <ReviewRow key={rev.id} review={rev}
                 onView={() => setDetailReview(rev)}
@@ -260,7 +260,7 @@ export default function PerformancePanel({ orgId, employees }) {
             {selectedEmployee === "all" ? (
               <div className="text-center py-12 text-slate-400">
                 <Users className="w-10 h-10 mx-auto mb-3 text-slate-600" />
-                <p className="text-sm">Vælg en medarbejder for at se historik</p>
+                <p className="text-sm">Select an employee to view history</p>
               </div>
             ) : (
               <EmployeeHistory
@@ -340,7 +340,7 @@ function EmployeeHistory({ reviews, employee, onView, onEdit, onStatusChange }) 
         </div>
         <div>
           <p className="font-semibold text-white">{employee?.first_name} {employee?.last_name}</p>
-          <p className="text-xs text-slate-500">{employee?.job_title} · {sorted.length} reviews totalt</p>
+          <p className="text-xs text-slate-500">{employee?.job_title} · {sorted.length} reviews total</p>
         </div>
       </div>
 
@@ -348,7 +348,7 @@ function EmployeeHistory({ reviews, employee, onView, onEdit, onStatusChange }) 
       {ratingTrend.length > 1 && (
         <div className="bg-slate-900/60 border border-slate-700/50 rounded-xl p-4">
           <p className="text-xs text-slate-500 uppercase font-semibold mb-3 flex items-center gap-1.5">
-            <TrendingUp className="w-3.5 h-3.5" /> Bedømmelsesudvikling
+            <TrendingUp className="w-3.5 h-3.5" /> Rating Trend
           </p>
           <div className="flex items-end gap-2 h-16">
             {ratingTrend.map((r, i) => (
@@ -392,15 +392,15 @@ function EmployeeHistory({ reviews, employee, onView, onEdit, onStatusChange }) 
                         {g.achieved ? "✓" : "○"} {g.title}
                       </span>
                     ))}
-                    {rev.goals.length > 2 && <span className="text-[10px] text-slate-600">+{rev.goals.length - 2} mål</span>}
+                    {rev.goals.length > 2 && <span className="text-[10px] text-slate-600">+{rev.goals.length - 2} goals</span>}
                   </div>
                 )}
                 <div className="flex gap-1 mt-2">
                   <Button size="sm" variant="ghost" className="h-6 text-[10px] text-cyan-400 px-2" onClick={() => onView(rev)}>
-                    <Eye className="w-3 h-3 mr-1" /> Vis
+                    <Eye className="w-3 h-3 mr-1" /> View
                   </Button>
                   <Button size="sm" variant="ghost" className="h-6 text-[10px] text-slate-400 px-2" onClick={() => onEdit(rev)}>
-                    <Edit2 className="w-3 h-3 mr-1" /> Rediger
+                    <Edit2 className="w-3 h-3 mr-1" /> Edit
                   </Button>
                 </div>
               </div>

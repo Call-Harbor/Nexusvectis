@@ -91,15 +91,17 @@ Svar med JSON (dansk):
   };
 
   const readinessCfg = {
-    "klar":           { label: "Klar nu",          cls: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30" },
-    "næsten_klar":    { label: "Næsten klar",       cls: "bg-amber-500/15 text-amber-400 border-amber-500/30" },
-    "med_udvikling":  { label: "Med udvikling",     cls: "bg-blue-500/15 text-blue-400 border-blue-500/30" },
+    "klar":           { label: "Ready Now",        cls: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30" },
+    "næsten_klar":    { label: "Almost Ready",     cls: "bg-amber-500/15 text-amber-400 border-amber-500/30" },
+    "med_udvikling":  { label: "With Development", cls: "bg-blue-500/15 text-blue-400 border-blue-500/30" },
   };
 
   const priorityCls = {
     "høj":    "text-rose-400",
     "medium": "text-amber-400",
     "lav":    "text-slate-400",
+    "high":   "text-rose-400",
+    "low":    "text-slate-400",
   };
 
   const typeCls = {
@@ -108,6 +110,9 @@ Svar med JSON (dansk):
     "mentoring":      "bg-violet-500/10 text-violet-400 border-violet-500/20",
     "projekt":        "bg-cyan-500/10 text-cyan-400 border-cyan-500/20",
     "workshop":       "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+    "course":         "bg-blue-500/10 text-blue-400 border-blue-500/20",
+    "certification":  "bg-amber-500/10 text-amber-400 border-amber-500/20",
+    "project":        "bg-cyan-500/10 text-cyan-400 border-cyan-500/20",
   };
 
   return (
@@ -116,7 +121,7 @@ Svar med JSON (dansk):
       <div className="w-64 flex-shrink-0 flex flex-col gap-3">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
-          <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Søg medarbejder..." className="pl-9 bg-slate-900/60 border-slate-700/60 text-white h-9" />
+          <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search employees..." className="pl-9 bg-slate-900/60 border-slate-700/60 text-white h-9" />
         </div>
         <div className="flex-1 overflow-y-auto space-y-1.5">
           {filtered.map(emp => {
@@ -138,14 +143,14 @@ Svar med JSON (dansk):
                 {hasProfile && (
                   <div className="mt-1.5 flex items-center gap-1">
                     <Target className="w-2.5 h-2.5 text-violet-400" />
-                    <span className="text-[9px] text-violet-400">Karriereprofil udfyldt</span>
+                    <span className="text-[9px] text-violet-400">Career profile filled</span>
                   </div>
                 )}
               </button>
             );
           })}
           {filtered.length === 0 && (
-            <p className="text-xs text-slate-500 text-center py-8">Ingen medarbejdere fundet</p>
+            <p className="text-xs text-slate-500 text-center py-8">No employees found</p>
           )}
         </div>
       </div>
@@ -155,15 +160,15 @@ Svar med JSON (dansk):
         {!selected && !loading && (
           <div className="flex flex-col items-center justify-center h-full text-slate-500">
             <Brain className="w-12 h-12 mb-3 text-slate-700" />
-            <p className="text-sm">Vælg en medarbejder for AI-karriereanalyse</p>
-            <p className="text-xs mt-1 text-slate-600">Matcher kompetencer og ønsker med interne muligheder</p>
+            <p className="text-sm">Select an employee for AI career analysis</p>
+            <p className="text-xs mt-1 text-slate-600">Matches skills and goals with internal opportunities</p>
           </div>
         )}
 
         {loading && (
           <div className="flex flex-col items-center justify-center h-full">
             <Loader2 className="w-10 h-10 text-violet-400 animate-spin mb-3" />
-            <p className="text-sm text-violet-300 animate-pulse">AI analyserer karrieremuligheder...</p>
+            <p className="text-sm text-violet-300 animate-pulse">AI is analysing career opportunities...</p>
           </div>
         )}
 
@@ -182,17 +187,17 @@ Svar med JSON (dansk):
                 <p className="text-xs text-slate-300 leading-relaxed">{result.career_summary}</p>
               </div>
               {result.development_timeline && (
-                <div className="flex-shrink-0 text-right">
-                  <p className="text-xs text-slate-500">Næste karrieretrin</p>
-                  <p className="text-sm font-semibold text-cyan-400">{result.development_timeline}</p>
-                </div>
+              <div className="flex-shrink-0 text-right">
+                <p className="text-xs text-slate-500">Next career step</p>
+                <p className="text-sm font-semibold text-cyan-400">{result.development_timeline}</p>
+              </div>
               )}
             </div>
 
             {/* Strengths */}
             {result.strengths_summary?.length > 0 && (
               <div>
-                <p className="text-[10px] text-slate-500 uppercase font-semibold mb-2 flex items-center gap-1.5"><Star className="w-3 h-3 text-amber-400" /> Nøglestyrker</p>
+                <p className="text-[10px] text-slate-500 uppercase font-semibold mb-2 flex items-center gap-1.5"><Star className="w-3 h-3 text-amber-400" /> Key Strengths</p>
                 <div className="flex flex-wrap gap-2">
                   {result.strengths_summary.map((s, i) => (
                     <span key={i} className="text-xs px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300">{s}</span>
@@ -204,7 +209,7 @@ Svar med JSON (dansk):
             {/* Internal opportunities */}
             {result.internal_opportunities?.length > 0 && (
               <div>
-                <p className="text-[10px] text-slate-500 uppercase font-semibold mb-2 flex items-center gap-1.5"><TrendingUp className="w-3 h-3 text-cyan-400" /> Interne karrieremuligheder</p>
+                <p className="text-[10px] text-slate-500 uppercase font-semibold mb-2 flex items-center gap-1.5"><TrendingUp className="w-3 h-3 text-cyan-400" /> Internal Career Opportunities</p>
                 <div className="space-y-2">
                   {result.internal_opportunities.map((opp, i) => {
                     const rcfg = readinessCfg[opp.readiness] || readinessCfg["med_udvikling"];
@@ -238,7 +243,7 @@ Svar med JSON (dansk):
             {/* Skill gaps */}
             {result.skill_gaps?.length > 0 && (
               <div>
-                <p className="text-[10px] text-slate-500 uppercase font-semibold mb-2 flex items-center gap-1.5"><Target className="w-3 h-3 text-rose-400" /> Kompetencegab</p>
+                <p className="text-[10px] text-slate-500 uppercase font-semibold mb-2 flex items-center gap-1.5"><Target className="w-3 h-3 text-rose-400" /> Skill Gaps</p>
                 <div className="flex flex-wrap gap-2">
                   {result.skill_gaps.map((g, i) => (
                     <span key={i} className="text-xs px-2.5 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-300">{g}</span>
@@ -250,7 +255,7 @@ Svar med JSON (dansk):
             {/* Learning plan */}
             {result.learning_plan?.length > 0 && (
               <div>
-                <p className="text-[10px] text-slate-500 uppercase font-semibold mb-2 flex items-center gap-1.5"><BookOpen className="w-3 h-3 text-blue-400" /> Uddannelsesplan</p>
+                <p className="text-[10px] text-slate-500 uppercase font-semibold mb-2 flex items-center gap-1.5"><BookOpen className="w-3 h-3 text-blue-400" /> Learning Plan</p>
                 <div className="space-y-2">
                   {result.learning_plan.map((item, i) => (
                     <div key={i} className="flex items-start gap-3 bg-slate-900/60 border border-slate-700/50 rounded-lg px-3 py-2.5">

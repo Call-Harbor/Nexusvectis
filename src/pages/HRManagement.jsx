@@ -19,13 +19,13 @@ import CandidateMatcher from "../components/hr/CandidateMatcher";
 import LearningDevelopment from "../components/hr/LearningDevelopment";
 
 const TABS = [
-  { key: "employees",    label: "Medarbejdere",        icon: Users },
-  { key: "leave",        label: "Orlov & Fravær",      icon: CalendarDays },
-  { key: "recruitment",  label: "Rekruttering",        icon: Briefcase },
+  { key: "employees",    label: "Employees",           icon: Users },
+  { key: "leave",        label: "Leave & Absence",     icon: CalendarDays },
+  { key: "recruitment",  label: "Recruitment",         icon: Briefcase },
   { key: "performance",  label: "Performance",         icon: TrendingUp },
-  { key: "career",       label: "Karriere & Matching", icon: Brain },
-  { key: "learning",     label: "Uddannelse & Udvikling", icon: GraduationCap },
-  { key: "orgchart",     label: "Organisationsdiagram",icon: Network },
+  { key: "career",       label: "Career & Matching",   icon: Brain },
+  { key: "learning",     label: "Learning & Development", icon: GraduationCap },
+  { key: "orgchart",     label: "Org Chart",           icon: Network },
 ];
 
 export default function HRManagement() {
@@ -93,7 +93,7 @@ export default function HRManagement() {
               </div>
               HR Management
             </h1>
-            <p className="text-sm text-slate-400 mt-0.5">Medarbejdere, rekruttering, orlov og performance</p>
+            <p className="text-sm text-slate-400 mt-0.5">Employees, recruitment, leave and performance</p>
           </div>
           <div className="flex items-center gap-3">
             <Button
@@ -109,7 +109,7 @@ export default function HRManagement() {
               onClick={() => { setEditingEmployee(null); setShowEditor(true); }}
               className="bg-pink-600 hover:bg-pink-500 h-9 text-sm"
             >
-              <UserPlus className="w-4 h-4 mr-2" /> Ny medarbejder
+              <UserPlus className="w-4 h-4 mr-2" /> New Employee
             </Button>
           </div>
         </div>
@@ -119,10 +119,10 @@ export default function HRManagement() {
       <div className="max-w-7xl mx-auto px-6 py-4">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
           {[
-            { label: "Ansatte i alt",   value: stats.total,     icon: Users,        color: "text-white",        bg: "bg-slate-800/60" },
-            { label: "Aktive",          value: stats.active,    icon: CheckCircle2, color: "text-emerald-400",  bg: "bg-emerald-500/10 border-emerald-500/20" },
-            { label: "På orlov",        value: stats.on_leave,  icon: CalendarDays, color: "text-amber-400",    bg: "bg-amber-500/10 border-amber-500/20" },
-            { label: "Prøvetid",        value: stats.probation, icon: Clock,        color: "text-blue-400",     bg: "bg-blue-500/10 border-blue-500/20" },
+            { label: "Total Employees", value: stats.total,     icon: Users,        color: "text-white",        bg: "bg-slate-800/60" },
+            { label: "Active",          value: stats.active,    icon: CheckCircle2, color: "text-emerald-400",  bg: "bg-emerald-500/10 border-emerald-500/20" },
+            { label: "On Leave",        value: stats.on_leave,  icon: CalendarDays, color: "text-amber-400",    bg: "bg-amber-500/10 border-amber-500/20" },
+            { label: "Probation",       value: stats.probation, icon: Clock,        color: "text-blue-400",     bg: "bg-blue-500/10 border-blue-500/20" },
           ].map(s => {
             const Icon = s.icon;
             return (
@@ -176,13 +176,13 @@ export default function HRManagement() {
                     <Input
                       value={search}
                       onChange={e => setSearch(e.target.value)}
-                      placeholder="Søg medarbejder..."
+                      placeholder="Search employees..."
                       className="pl-9 bg-slate-900/60 border-slate-700/60 text-white h-9"
                     />
                   </div>
                   <div className="flex gap-2 flex-wrap">
-                    <FilterSelect value={deptFilter} onChange={setDeptFilter} options={[["all", "Alle afdelinger"], ...depts.map(d => [d, d])]} />
-                    <FilterSelect value={statusFilter} onChange={setStatusFilter} options={[["all", "Alle statusser"], ["active", "Aktive"], ["on_leave", "På orlov"], ["probation", "Prøvetid"], ["terminated", "Fratrådte"]]} />
+                    <FilterSelect value={deptFilter} onChange={setDeptFilter} options={[["all", "All Departments"], ...depts.map(d => [d, d])]} />
+                    <FilterSelect value={statusFilter} onChange={setStatusFilter} options={[["all", "All Statuses"], ["active", "Active"], ["on_leave", "On Leave"], ["probation", "Probation"], ["terminated", "Terminated"]]} />
                   </div>
                 </div>
 

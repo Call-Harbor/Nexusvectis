@@ -48,7 +48,7 @@ export default function PerformanceReviewDetail({ review, onClose, onEdit, onSta
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
           {/* Overall rating */}
           <div className="flex items-center justify-between bg-amber-500/5 border border-amber-500/20 rounded-xl px-4 py-3">
-            <span className="text-sm text-slate-300">Samlet bedømmelse</span>
+            <span className="text-sm text-slate-300">Overall Rating</span>
             <div className="flex items-center gap-3">
               <StarRating value={review.overall_rating || 0} size="lg" />
               <span className="text-2xl font-bold text-amber-400">{review.overall_rating || "—"}<span className="text-sm text-slate-500">/5</span></span>
@@ -57,7 +57,7 @@ export default function PerformanceReviewDetail({ review, onClose, onEdit, onSta
 
           {/* Competencies */}
           {review.competencies && Object.values(review.competencies).some(v => v > 0) && (
-            <Section icon={TrendingUp} title="Kompetencer" color="text-cyan-400">
+            <Section icon={TrendingUp} title="Competencies" color="text-cyan-400">
               <div className="space-y-2">
                 {COMPETENCIES.map(c => {
                   const val = review.competencies[c.key] || 0;
@@ -81,7 +81,7 @@ export default function PerformanceReviewDetail({ review, onClose, onEdit, onSta
 
           {/* Goals */}
           {review.goals?.length > 0 && (
-            <Section icon={Target} title={`Mål (${goalsAchieved}/${review.goals.length} opnået)`} color="text-emerald-400">
+            <Section icon={Target} title={`Goals (${goalsAchieved}/${review.goals.length} achieved)`} color="text-emerald-400">
               <div className="space-y-2">
                 {review.goals.map((goal, i) => (
                   <div key={goal.id || i} className={`flex items-start gap-3 rounded-lg px-3 py-2.5 border ${goal.achieved ? "bg-emerald-500/5 border-emerald-500/20" : "bg-slate-800/40 border-slate-700/40"}`}>
@@ -91,7 +91,7 @@ export default function PerformanceReviewDetail({ review, onClose, onEdit, onSta
                     <div>
                       <p className={`text-sm ${goal.achieved ? "line-through text-slate-500" : "text-white"}`}>{goal.title}</p>
                       {goal.description && <p className="text-xs text-slate-500 mt-0.5">{goal.description}</p>}
-                      {goal.target_date && <p className="text-[10px] text-slate-600 mt-0.5">Deadline: {goal.target_date}</p>}
+                      {goal.target_date && <p className="text-[10px] text-slate-600 mt-0.5">Target date: {goal.target_date}</p>}
                     </div>
                   </div>
                 ))}
@@ -101,25 +101,25 @@ export default function PerformanceReviewDetail({ review, onClose, onEdit, onSta
 
           {/* Feedback */}
           {review.strengths && (
-            <Section icon={Lightbulb} title="Styrker" color="text-amber-400">
+            <Section icon={Lightbulb} title="Strengths" color="text-amber-400">
               <p className="text-sm text-slate-300 leading-relaxed">{review.strengths}</p>
             </Section>
           )}
 
           {review.areas_for_improvement && (
-            <Section icon={TrendingUp} title="Udviklingsområder" color="text-blue-400">
+            <Section icon={TrendingUp} title="Areas for Improvement" color="text-blue-400">
               <p className="text-sm text-slate-300 leading-relaxed">{review.areas_for_improvement}</p>
             </Section>
           )}
 
           {review.development_plan && (
-            <Section icon={ClipboardList} title="Udviklingsplan" color="text-violet-400">
+            <Section icon={ClipboardList} title="Development Plan" color="text-violet-400">
               <p className="text-sm text-slate-300 leading-relaxed">{review.development_plan}</p>
             </Section>
           )}
 
           {review.manager_comments && (
-            <Section icon={MessageSquare} title="Lederkommentarer" color="text-pink-400">
+            <Section icon={MessageSquare} title="Manager Comments" color="text-pink-400">
               <p className="text-sm text-slate-300 leading-relaxed">{review.manager_comments}</p>
             </Section>
           )}
@@ -131,24 +131,24 @@ export default function PerformanceReviewDetail({ review, onClose, onEdit, onSta
             {review.status === "draft" && (
               <Button size="sm" onClick={() => onStatusChange(review.id, "submitted")}
                 className="h-8 text-xs bg-amber-600 hover:bg-amber-500">
-                Indsend review
+                Submit Review
               </Button>
             )}
             {review.status === "submitted" && (
               <Button size="sm" onClick={() => onStatusChange(review.id, "completed")}
                 className="h-8 text-xs bg-emerald-600 hover:bg-emerald-500">
-                Afslut review
+                Complete Review
               </Button>
             )}
             {review.status === "completed" && (
               <Button size="sm" variant="outline" onClick={() => onStatusChange(review.id, "archived")}
                 className="h-8 text-xs border-slate-700 text-slate-400">
-                Arkiver
+                Archive
               </Button>
             )}
           </div>
           <Button size="sm" onClick={onEdit} variant="ghost" className="h-8 text-xs text-amber-400 hover:text-amber-300">
-            <Edit2 className="w-3.5 h-3.5 mr-1.5" /> Rediger
+            <Edit2 className="w-3.5 h-3.5 mr-1.5" /> Edit
           </Button>
         </div>
       </motion.div>

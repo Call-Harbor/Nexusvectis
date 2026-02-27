@@ -83,7 +83,7 @@ export default function PerformanceReviewEditor({ review, orgId, employees, onSa
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 flex-shrink-0">
           <h2 className="text-base font-semibold text-white flex items-center gap-2">
             <Award className="w-5 h-5 text-amber-400" />
-            {review ? "Rediger performance review" : "Nyt performance review"}
+            {review ? "Edit Performance Review" : "New Performance Review"}
           </h2>
           <Button size="icon" variant="ghost" onClick={onClose} className="h-8 w-8 text-slate-400 hover:text-white">
             <X className="w-4 h-4" />
@@ -93,13 +93,13 @@ export default function PerformanceReviewEditor({ review, orgId, employees, onSa
         {/* Body */}
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
           {/* Basic info */}
-          <Section title="Grundoplysninger">
+          <Section title="Basic Information">
             <div className="grid grid-cols-3 gap-4">
               <div className="space-y-1.5">
-                <Label className="text-xs text-slate-400">Medarbejder *</Label>
+                <Label className="text-xs text-slate-400">Employee *</Label>
                 <Select value={form.employee_id} onValueChange={v => set("employee_id", v)}>
                   <SelectTrigger className="bg-slate-800/60 border-slate-700 text-white h-9">
-                    <SelectValue placeholder="Vælg medarbejder..." />
+                    <SelectValue placeholder="Select employee..." />
                   </SelectTrigger>
                   <SelectContent className="bg-slate-900 border-slate-700 text-white">
                     {employees.map(e => (
@@ -109,12 +109,12 @@ export default function PerformanceReviewEditor({ review, orgId, employees, onSa
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs text-slate-400">Periode</Label>
+                <Label className="text-xs text-slate-400">Period</Label>
                 <Input value={form.review_period} onChange={e => set("review_period", e.target.value)}
-                  placeholder="fx. Q1 2026" className="bg-slate-800/60 border-slate-700 text-white h-9" />
+                  placeholder="e.g. Q1 2026" className="bg-slate-800/60 border-slate-700 text-white h-9" />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs text-slate-400">Dato</Label>
+                <Label className="text-xs text-slate-400">Date</Label>
                 <Input type="date" value={form.review_date} onChange={e => set("review_date", e.target.value)}
                   className="bg-slate-800/60 border-slate-700 text-white h-9" />
               </div>
@@ -134,7 +134,7 @@ export default function PerformanceReviewEditor({ review, orgId, employees, onSa
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs text-slate-400">Samlet bedømmelse</Label>
+                <Label className="text-xs text-slate-400">Overall Rating</Label>
                 <div className="flex items-center gap-3 h-9">
                   <StarRating value={form.overall_rating} onChange={v => set("overall_rating", v)} size="lg" />
                   <span className="text-sm text-amber-400 font-bold">{form.overall_rating}/5</span>
@@ -144,7 +144,7 @@ export default function PerformanceReviewEditor({ review, orgId, employees, onSa
           </Section>
 
           {/* Competencies */}
-          <Section title="Kompetencevurdering">
+          <Section title="Competency Assessment">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {COMPETENCIES.map(c => (
                 <div key={c.key} className="flex items-center justify-between bg-slate-800/40 rounded-lg px-3 py-2">
@@ -159,10 +159,10 @@ export default function PerformanceReviewEditor({ review, orgId, employees, onSa
           </Section>
 
           {/* Goals */}
-          <Section title="Mål & resultater" action={
+          <Section title="Goals & Results" action={
             <Button size="sm" variant="ghost" onClick={() => setShowGoalForm(true)}
               className="h-7 text-xs text-amber-400 hover:text-amber-300">
-              <Plus className="w-3.5 h-3.5 mr-1" /> Tilføj mål
+              <Plus className="w-3.5 h-3.5 mr-1" /> Add Goal
             </Button>
           }>
             {form.goals.length > 0 ? (
@@ -177,7 +177,7 @@ export default function PerformanceReviewEditor({ review, orgId, employees, onSa
                     <div className="flex-1 min-w-0">
                       <p className={`text-sm ${goal.achieved ? "line-through text-slate-500" : "text-white"}`}>{goal.title}</p>
                       {goal.description && <p className="text-xs text-slate-500 mt-0.5">{goal.description}</p>}
-                      {goal.target_date && <p className="text-[10px] text-slate-600 mt-0.5">Deadline: {goal.target_date}</p>}
+                      {goal.target_date && <p className="text-[10px] text-slate-600 mt-0.5">Target date: {goal.target_date}</p>}
                     </div>
                     <button onClick={() => removeGoal(goal.id)} className="text-slate-600 hover:text-rose-400 transition-colors">
                       <Trash2 className="w-3.5 h-3.5" />
@@ -186,44 +186,44 @@ export default function PerformanceReviewEditor({ review, orgId, employees, onSa
                 ))}
               </div>
             ) : (
-              <p className="text-xs text-slate-500 italic">Ingen mål tilføjet endnu</p>
+              <p className="text-xs text-slate-500 italic">No goals added yet</p>
             )}
 
             {showGoalForm && (
               <div className="mt-3 bg-slate-800/60 border border-slate-700/60 rounded-lg p-3 space-y-2">
-                <p className="text-xs font-medium text-slate-300">Nyt mål</p>
+                <p className="text-xs font-medium text-slate-300">New Goal</p>
                 <Input value={newGoal.title} onChange={e => setNewGoal(p => ({ ...p, title: e.target.value }))}
-                  placeholder="Måltitel..." className="bg-slate-900/60 border-slate-700 text-white h-8 text-sm" />
+                  placeholder="Goal title..." className="bg-slate-900/60 border-slate-700 text-white h-8 text-sm" />
                 <Input value={newGoal.description} onChange={e => setNewGoal(p => ({ ...p, description: e.target.value }))}
-                  placeholder="Beskrivelse (valgfrit)..." className="bg-slate-900/60 border-slate-700 text-white h-8 text-sm" />
+                  placeholder="Description (optional)..." className="bg-slate-900/60 border-slate-700 text-white h-8 text-sm" />
                 <div className="flex gap-2 items-center">
                   <Input type="date" value={newGoal.target_date} onChange={e => setNewGoal(p => ({ ...p, target_date: e.target.value }))}
                     className="bg-slate-900/60 border-slate-700 text-white h-8 text-sm flex-1" />
                   <label className="flex items-center gap-1.5 text-xs text-slate-400 cursor-pointer">
-                    <input type="checkbox" checked={newGoal.achieved} onChange={e => setNewGoal(p => ({ ...p, achieved: e.target.checked }))}
-                      className="w-3 h-3 accent-emerald-500" />
-                    Opnået
+                  <input type="checkbox" checked={newGoal.achieved} onChange={e => setNewGoal(p => ({ ...p, achieved: e.target.checked }))}
+                    className="w-3 h-3 accent-emerald-500" />
+                  Achieved
                   </label>
                 </div>
                 <div className="flex gap-2">
-                  <Button size="sm" onClick={addGoal} className="h-7 text-xs bg-amber-600 hover:bg-amber-500">Tilføj</Button>
-                  <Button size="sm" variant="ghost" onClick={() => setShowGoalForm(false)} className="h-7 text-xs text-slate-400">Annuller</Button>
+                  <Button size="sm" onClick={addGoal} className="h-7 text-xs bg-amber-600 hover:bg-amber-500">Add</Button>
+                  <Button size="sm" variant="ghost" onClick={() => setShowGoalForm(false)} className="h-7 text-xs text-slate-400">Cancel</Button>
                 </div>
               </div>
             )}
           </Section>
 
           {/* Feedback */}
-          <Section title="Feedback & plan">
+          <Section title="Feedback & Plan">
             <div className="grid grid-cols-2 gap-4">
-              <Textarea label="Styrker" value={form.strengths} onChange={v => set("strengths", v)} rows={3} />
-              <Textarea label="Udviklingsområder" value={form.areas_for_improvement} onChange={v => set("areas_for_improvement", v)} rows={3} />
+              <Textarea label="Strengths" value={form.strengths} onChange={v => set("strengths", v)} rows={3} />
+              <Textarea label="Areas for Improvement" value={form.areas_for_improvement} onChange={v => set("areas_for_improvement", v)} rows={3} />
               <div className="col-span-2">
-                <Textarea label="Udviklingsplan" value={form.development_plan} onChange={v => set("development_plan", v)} rows={3}
-                  placeholder="Beskriv konkrete tiltag og ressourcer til medarbejderens udvikling..." />
+                <Textarea label="Development Plan" value={form.development_plan} onChange={v => set("development_plan", v)} rows={3}
+                  placeholder="Describe concrete actions and resources for the employee's development..." />
               </div>
               <div className="col-span-2">
-                <Textarea label="Lederkommentarer" value={form.manager_comments} onChange={v => set("manager_comments", v)} rows={2} />
+                <Textarea label="Manager Comments" value={form.manager_comments} onChange={v => set("manager_comments", v)} rows={2} />
               </div>
             </div>
           </Section>
@@ -231,11 +231,11 @@ export default function PerformanceReviewEditor({ review, orgId, employees, onSa
 
         {/* Footer */}
         <div className="flex-shrink-0 flex items-center justify-end gap-2 px-6 py-4 border-t border-slate-800">
-          <Button variant="ghost" onClick={onClose} className="text-slate-400 h-9">Annuller</Button>
+          <Button variant="ghost" onClick={onClose} className="text-slate-400 h-9">Cancel</Button>
           <Button onClick={handleSave} disabled={saving || !form.employee_id}
             className="bg-amber-600 hover:bg-amber-500 h-9">
             <Save className="w-4 h-4 mr-2" />
-            {saving ? "Gemmer..." : review ? "Gem ændringer" : "Opret review"}
+            {saving ? "Saving..." : review ? "Save Changes" : "Create Review"}
           </Button>
         </div>
       </motion.div>
