@@ -73,19 +73,18 @@ export default function About() {
               viewport={{ once: true }}
             >
               <h2 className="text-5xl md:text-6xl font-bold text-white mb-8">
-                Our <span className="text-cyan-400">Mission</span>
+                Built <span className="text-cyan-400">From Scratch</span>
               </h2>
               <div className="space-y-6 text-xl text-slate-300 leading-relaxed">
                 <p>
-                  For decades, advanced fleet intelligence was reserved for Fortune 500 companies with massive IT budgets. 
-                  We're changing that.
+                  We started with a blank canvas. No legacy code. No compromises. Just modern AI architecture built for the challenges fleet operators face today.
                 </p>
                 <p>
-                  NexusVectis brings enterprise-grade AI, real-time tracking, and predictive analytics to businesses of all sizes. 
-                  Our platform scales from 5 vehicles to 5,000, adapting to your growth.
+                  Every component—from FLEET AI's natural language engine to our swarm intelligence coordination to digital twin federation—was designed together as one unified system. 
+                  This is what a 2026 fleet platform looks like when you build it today.
                 </p>
                 <p className="text-cyan-400 font-semibold">
-                  We believe powerful technology should be accessible, not exclusive.
+                  We're not adding AI to logistics. We're rebuilding logistics with AI as the foundation.
                 </p>
               </div>
             </motion.div>
