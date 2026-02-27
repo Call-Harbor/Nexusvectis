@@ -22,9 +22,7 @@ const HEADING_OPTIONS = [
 ];
 
 const modules = {
-  toolbar: {
-    container: '#ql-toolbar-custom',
-  },
+  toolbar: false,
   history: { delay: 1000, maxStack: 100, userOnly: true },
 };
 
