@@ -849,8 +849,8 @@ Return JSON with this EXACT structure:
           }
         });
 
-        addThinkingLog('calculate', 'Statistical models converged', { iterations: 847, convergence: '0.0001', models_run: 6 }, 400, 75);
-        addThinkingLog('result', 'Research analysis complete — opening hologram visualization', null, 100);
+        addThinkingLog('calculate', 'Statistical models converged', { iterations: 847, convergence: '0.0001', models_run: 6 }, 400, 75, processId);
+        addThinkingLog('result', 'Research analysis complete — opening hologram visualization', null, 100, null, processId);
 
         const chartId = `chart_${Date.now()}`;
         openWindow(chartId, { x: 80 + Math.random() * 60, y: 60 + Math.random() * 40 }, {
