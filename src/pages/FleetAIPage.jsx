@@ -1,7 +1,7 @@
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "../utils";
-import { Sparkles, Brain, Zap, ArrowRight, CheckCircle2, MessageSquare, Globe, TrendingUp, Target, BarChart3, Rocket } from "lucide-react";
+import { Sparkles, Brain, Zap, ArrowRight, CheckCircle2, GitBranch, Network, Cpu, Database, Wifi, Target, TrendingUp, Layers } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useEffect, useState } from "react";
 
@@ -87,21 +87,19 @@ export default function FleetAIPage() {
               transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
               className="inline-block mb-8"
             >
-              <Sparkles className="w-20 h-20 text-cyan-400" />
+              <Brain className="w-20 h-20 text-violet-400" />
             </motion.div>
             
             <h1 className="text-7xl md:text-8xl font-black text-white mb-8 leading-tight">
-              <span className="bg-gradient-to-r from-cyan-400 via-violet-400 to-fuchsia-400 bg-clip-text text-transparent">
-                FLEET AI
-              </span>
+              How <span className="bg-gradient-to-r from-cyan-400 via-violet-400 to-fuchsia-400 bg-clip-text text-transparent">FLEET AI</span> Thinks
             </h1>
             
             <p className="text-2xl md:text-3xl text-slate-300 mb-8 leading-relaxed">
-              The world's first natural language interface for fleet operations
+              Distributed AI orchestration for real-time fleet intelligence
             </p>
 
             <p className="text-xl text-slate-400 mb-12 max-w-3xl mx-auto">
-              No complex interfaces. No training required. Just speak naturally and watch AI transform your commands into instant action across your entire fleet.
+              Understanding the technical architecture behind natural language fleet control. 50+ parallel AI analyses running in real-time, processing thousands of data signals simultaneously.
             </p>
 
             <button
@@ -116,7 +114,7 @@ export default function FleetAIPage() {
         </div>
       </section>
 
-      {/* How It Works */}
+      {/* AI Processing Pipeline */}
       <section className="relative py-32 px-6 z-10">
         <div className="max-w-7xl mx-auto">
           <motion.div
@@ -126,55 +124,81 @@ export default function FleetAIPage() {
             className="text-center mb-20"
           >
             <h2 className="text-5xl md:text-6xl font-bold text-white mb-6">
-              How <span className="text-cyan-400">FLEET AI</span> Works
+              The <span className="text-cyan-400">Processing Pipeline</span>
             </h2>
             <p className="text-xl text-slate-400 max-w-3xl mx-auto">
-              Three simple steps to transform your fleet operations
+              From natural language input to distributed execution across the fleet
             </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-5 gap-4 max-w-6xl mx-auto">
             {[
               {
-                icon: MessageSquare,
-                title: "Speak Naturally",
-                description: "Type or speak your command in plain language. \"Route vehicle 47 to Copenhagen warehouse\" or \"Show delayed shipments\"",
-                color: "cyan"
-              },
-              {
+                stage: "1",
+                title: "Natural Language Understanding",
                 icon: Brain,
-                title: "AI Understands",
-                description: "Advanced language models interpret intent, access real-time data, and determine the optimal action to take",
-                color: "violet"
+                tech: "LLM • Intent Detection",
+                description: "Parse user commands and extract intent, parameters, and constraints"
               },
               {
+                stage: "2",
+                title: "Semantic Analysis",
+                icon: Layers,
+                tech: "AST • Graph Analysis",
+                description: "Build knowledge graphs from fleet context and real-time data"
+              },
+              {
+                stage: "3",
+                title: "Plan Generation",
+                icon: Target,
+                tech: "STRIPS • Graph Planning",
+                description: "Generate optimal execution plans with constraint satisfaction"
+              },
+              {
+                stage: "4",
+                title: "Parallel Execution",
                 icon: Zap,
-                title: "Instant Execution",
-                description: "Run 10+ tasks with 50+ parallel AI analyses simultaneously. Routes optimized, assignments made, analytics generated - all in seconds",
-                color: "fuchsia"
+                tech: "Task Orchestration • 50+ AI",
+                description: "Execute 50+ AI analyses simultaneously across the fleet network"
+              },
+              {
+                stage: "5",
+                title: "Distributed Results",
+                icon: Network,
+                tech: "Result Aggregation",
+                description: "Collect and synthesize results from parallel AI processors"
               }
-            ].map((feature, idx) => {
-              const Icon = feature.icon;
+            ].map((item, idx) => {
+              const Icon = item.icon;
               return (
                 <motion.div
                   key={idx}
-                  initial={{ opacity: 0, y: 30 }}
+                  initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  transition={{ delay: idx * 0.2 }}
-                  whileHover={{ scale: 1.05, y: -10 }}
-                  className="relative p-10 rounded-3xl bg-white/5 border border-white/10 hover:border-cyan-500/50 transition-all group"
+                  transition={{ delay: idx * 0.15 }}
+                  className="relative"
                 >
-                  <motion.div
-                    animate={{ rotate: [0, 5, -5, 0] }}
-                    transition={{ duration: 3, repeat: Infinity, delay: idx * 0.5 }}
-                    className={`w-20 h-20 rounded-2xl bg-gradient-to-br from-${feature.color}-500/20 to-${feature.color}-500/5 flex items-center justify-center mb-6`}
-                  >
-                    <Icon className={`w-10 h-10 text-${feature.color}-400`} />
-                  </motion.div>
-                  <div className="text-4xl font-black text-cyan-400 mb-4">{idx + 1}</div>
-                  <h3 className="text-2xl font-bold text-white mb-4">{feature.title}</h3>
-                  <p className="text-slate-400 leading-relaxed text-lg">{feature.description}</p>
+                  <div className="p-6 rounded-2xl bg-gradient-to-br from-slate-900/50 to-slate-950/50 border border-cyan-500/20 hover:border-cyan-500/50 transition-all h-full">
+                    <div className="w-10 h-10 rounded-lg bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center mb-4">
+                      <span className="text-cyan-400 font-bold text-sm">{item.stage}</span>
+                    </div>
+                    <Icon className="w-5 h-5 text-violet-400 mb-3" />
+                    <h3 className="text-sm font-bold text-white mb-2">{item.title}</h3>
+                    <p className="text-slate-400 text-xs mb-3">{item.description}</p>
+                    <div className="text-[10px] text-cyan-300 font-mono bg-cyan-500/5 px-2 py-1 rounded border border-cyan-500/20">
+                      {item.tech}
+                    </div>
+                  </div>
+                  {idx < 4 && (
+                    <motion.div
+                      animate={{ x: [0, 8, 0] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                      className="hidden md:flex absolute top-1/2 -right-6 text-cyan-500/40"
+                    >
+                      <ArrowRight className="w-4 h-4" />
+                    </motion.div>
+                  )}
                 </motion.div>
               );
             })}
@@ -182,7 +206,7 @@ export default function FleetAIPage() {
         </div>
       </section>
 
-      {/* Command Examples */}
+      {/* Parallel AI Analysis */}
       <section className="relative py-32 px-6 z-10">
         <div className="max-w-7xl mx-auto">
           <motion.div
@@ -192,50 +216,213 @@ export default function FleetAIPage() {
             className="text-center mb-20"
           >
             <h2 className="text-5xl md:text-6xl font-bold text-white mb-6">
-              Real Command <span className="text-cyan-400">Examples</span>
+              <span className="text-violet-400">50+ Parallel AI Analyses</span>
             </h2>
             <p className="text-xl text-slate-400 max-w-3xl mx-auto">
-              See how natural language transforms into powerful fleet actions
+              Multiple specialized AI models running simultaneously on different aspects of your fleet
             </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
             {[
-              { cmd: "Show me all delayed shipments", response: "Found 3 delayed shipments. Vehicle 12 is 45min behind schedule due to traffic..." },
-              { cmd: "Optimize routes for minimal CO2", response: "Analyzed 47 routes. Reduced emissions by 18% through smart consolidation..." },
-              { cmd: "Which vehicles need maintenance this week?", response: "Vehicle 8 requires service in 2 days. Predicted brake pad wear at 82%..." },
-              { cmd: "Assign closest truck to pickup in Copenhagen", response: "Vehicle 23 assigned. ETA to pickup: 12 minutes. Route optimized for fuel..." },
-              { cmd: "Generate cost analysis for last month", response: "Total operating cost: €127,450. Fuel efficiency improved 8% vs previous month..." },
-              { cmd: "What's the average delivery time to Stockholm?", response: "Average: 4.2 hours. 94% on-time delivery rate. Fastest route via E4..." }
-            ].map((example, idx) => (
+              { name: "Route Optimization", desc: "Multi-objective pathfinding with ML", color: "cyan" },
+              { name: "ETA Prediction", desc: "LSTM neural networks + real-time data", color: "violet" },
+              { name: "Maintenance Forecast", desc: "Anomaly detection on sensor data", color: "fuchsia" },
+              { name: "Cost Analysis", desc: "Dynamic pricing optimization", color: "emerald" },
+              { name: "Fuel Consumption", desc: "Physics-based ML models", color: "blue" },
+              { name: "Risk Assessment", desc: "Threat detection & prediction", color: "rose" },
+              { name: "Load Balancing", desc: "Graph theory algorithms", color: "amber" },
+              { name: "Traffic Prediction", desc: "Time-series forecasting", color: "indigo" },
+              { name: "Exception Handling", desc: "Anomaly-driven decision trees", color: "teal" },
+            ].map((analysis, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, scale: 0.8 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.08 }}
+                whileHover={{ scale: 1.05 }}
+                className={`p-6 rounded-2xl bg-${analysis.color}-500/5 border border-${analysis.color}-500/30 hover:border-${analysis.color}-500/60 transition-all`}
+              >
+                <Cpu className={`w-5 h-5 text-${analysis.color}-400 mb-3`} />
+                <h3 className="text-lg font-semibold text-white mb-2">{analysis.name}</h3>
+                <p className="text-slate-400 text-sm">{analysis.desc}</p>
+                <motion.div
+                  animate={{ width: ["0%", "100%", "0%"] }}
+                  transition={{ duration: 3, repeat: Infinity, delay: idx * 0.1 }}
+                  className={`h-0.5 mt-3 bg-${analysis.color}-500`}
+                />
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Data Flow Architecture */}
+      <section className="relative py-32 px-6 z-10">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-20"
+          >
+            <h2 className="text-5xl md:text-6xl font-bold text-white mb-6">
+              Real-Time <span className="text-cyan-400">Data Architecture</span>
+            </h2>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="rounded-3xl bg-gradient-to-br from-slate-900/50 to-slate-950/50 border border-cyan-500/20 p-12 max-w-5xl mx-auto overflow-hidden"
+          >
+            <div className="grid md:grid-cols-4 gap-8">
+              {[
+                {
+                  icon: Wifi,
+                  title: "Data Sources",
+                  items: ["GPS Signals", "AIS/ADS-B", "Sensor Feeds", "Weather APIs"],
+                  color: "cyan"
+                },
+                {
+                  icon: Cpu,
+                  title: "Edge Processing",
+                  items: ["Stream Processing", "Feature Extraction", "Real-time Aggregation", "Event Streaming"],
+                  color: "violet"
+                },
+                {
+                  icon: Database,
+                  title: "Central Store",
+                  items: ["Time-Series DB", "Vector Store", "Graph DB", "Cache Layer"],
+                  color: "fuchsia"
+                },
+                {
+                  icon: Brain,
+                  title: "AI Inference",
+                  items: ["Model Serving", "Multi-GPU", "Batch Processing", "Real-time Scoring"],
+                  color: "emerald"
+                }
+              ].map((arch, idx) => {
+                const Icon = arch.icon;
+                return (
+                  <motion.div
+                    key={idx}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: idx * 0.1 }}
+                  >
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className={`w-10 h-10 rounded-lg bg-${arch.color}-500/20 border border-${arch.color}-500/40 flex items-center justify-center`}>
+                        <Icon className={`w-5 h-5 text-${arch.color}-400`} />
+                      </div>
+                      <h3 className="text-lg font-bold text-white">{arch.title}</h3>
+                    </div>
+                    <ul className="space-y-2">
+                      {arch.items.map((item, itemIdx) => (
+                        <li key={itemIdx} className="flex items-center gap-2">
+                          <div className={`w-1.5 h-1.5 rounded-full bg-${arch.color}-400`} />
+                          <span className="text-sm text-slate-300">{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </motion.div>
+                );
+              })}
+            </div>
+
+            <motion.div
+              animate={{ opacity: [0.3, 0.8, 0.3] }}
+              transition={{ duration: 3, repeat: Infinity }}
+              className="mt-8 p-4 rounded-lg bg-cyan-500/10 border border-cyan-500/20"
+            >
+              <p className="text-cyan-300 text-sm text-center font-mono">
+                ↓ Continuous Data Flow: Sub-second latency, millions of events/second ↓
+              </p>
+            </motion.div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Technical Capabilities */}
+      <section className="relative py-32 px-6 z-10">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-20"
+          >
+            <h2 className="text-5xl md:text-6xl font-bold text-white mb-6">
+              Technical <span className="text-violet-400">Capabilities</span>
+            </h2>
+          </motion.div>
+
+          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            {[
+              {
+                title: "Multi-Model Ensemble",
+                features: [
+                  "GPT-4 for natural language understanding",
+                  "Mistral for specialized domain reasoning",
+                  "Custom LSTM networks for time-series prediction",
+                  "Graph neural networks for network optimization"
+                ]
+              },
+              {
+                title: "Scalable Inference",
+                features: [
+                  "Distributed model serving across GPU clusters",
+                  "Automatic batching for throughput optimization",
+                  "Real-time model updates without downtime",
+                  "Sub-100ms inference latency for 90th percentile"
+                ]
+              },
+              {
+                title: "Advanced Analytics",
+                features: [
+                  "Causal inference for root cause analysis",
+                  "Counterfactual reasoning for decision support",
+                  "Uncertainty quantification in all predictions",
+                  "Explainability through attention mechanisms"
+                ]
+              },
+              {
+                title: "Enterprise Integration",
+                features: [
+                  "Real-time data ingestion from 100+ sources",
+                  "API-first architecture for custom workflows",
+                  "Webhook support for event-driven automation",
+                  "Audit logging and compliance tracking"
+                ]
+              }
+            ].map((capability, idx) => (
               <motion.div
                 key={idx}
                 initial={{ opacity: 0, x: idx % 2 === 0 ? -30 : 30 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: idx * 0.1 }}
-                whileHover={{ scale: 1.03 }}
-                className="p-6 rounded-2xl bg-slate-900/50 border border-slate-800 hover:border-cyan-500/50 transition-all"
+                className="p-8 rounded-3xl bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 hover:border-cyan-500/50 transition-all"
               >
-                <div className="flex items-start gap-3 mb-3">
-                  <Sparkles className="w-5 h-5 text-cyan-400 flex-shrink-0 mt-1" />
-                  <p className="text-white font-medium">"{example.cmd}"</p>
-                </div>
-                <motion.div
-                  initial={{ width: 0 }}
-                  whileInView={{ width: "100%" }}
-                  viewport={{ once: true }}
-                  transition={{ delay: idx * 0.1 + 0.3, duration: 0.8 }}
-                  className="h-px bg-gradient-to-r from-cyan-500/50 to-transparent mb-3"
-                />
-                <p className="text-slate-400 text-sm leading-relaxed">{example.response}</p>
+                <h3 className="text-2xl font-bold text-white mb-6">{capability.title}</h3>
+                <ul className="space-y-4">
+                  {capability.features.map((feature, featureIdx) => (
+                    <li key={featureIdx} className="flex items-start gap-3">
+                      <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
+                      <span className="text-slate-300">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Benefits */}
+      {/* Performance Metrics */}
       <section className="relative py-32 px-6 z-10">
         <div className="max-w-7xl mx-auto">
           <motion.div
@@ -245,110 +432,37 @@ export default function FleetAIPage() {
             className="text-center mb-20"
           >
             <h2 className="text-5xl md:text-6xl font-bold text-white mb-6">
-              Why Choose <span className="text-cyan-400">FLEET AI</span>
+              Performance <span className="text-cyan-400">Metrics</span>
             </h2>
           </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-4 gap-6 max-w-5xl mx-auto">
             {[
-              { value: "90%", label: "Faster Decisions", desc: "Make fleet decisions in seconds, not minutes" },
-              { value: "Zero", label: "Training Required", desc: "No manuals, no courses - just natural conversation" },
-              { value: "24/7", label: "Always Available", desc: "AI never sleeps, always ready to assist" }
-            ].map((benefit, idx) => (
+              { value: "50+", label: "Parallel AI Analyses", metric: "per command" },
+              { value: "<100ms", label: "End-to-End Latency", metric: "p90 response time" },
+              { value: "10K+", label: "Requests/sec", metric: "throughput" },
+              { value: "99.99%", label: "Availability SLA", metric: "enterprise grade" }
+            ].map((stat, idx) => (
               <motion.div
                 key={idx}
                 initial={{ opacity: 0, scale: 0.8 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
-                transition={{ delay: idx * 0.2 }}
-                whileHover={{ scale: 1.05, y: -10 }}
-                className="text-center p-10 rounded-3xl bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl border border-white/10 hover:border-cyan-500/50 transition-all"
+                transition={{ delay: idx * 0.1 }}
+                whileHover={{ scale: 1.05 }}
+                className="p-8 rounded-2xl bg-gradient-to-br from-cyan-500/10 to-violet-500/10 border border-cyan-500/30 text-center"
               >
                 <motion.div
                   animate={{ scale: [1, 1.1, 1] }}
-                  transition={{ duration: 2, repeat: Infinity, delay: idx * 0.3 }}
-                  className="text-7xl font-black bg-gradient-to-br from-cyan-400 via-violet-400 to-fuchsia-400 bg-clip-text text-transparent mb-4"
+                  transition={{ duration: 2, repeat: Infinity, delay: idx * 0.2 }}
+                  className="text-5xl font-black bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent mb-3"
                 >
-                  {benefit.value}
+                  {stat.value}
                 </motion.div>
-                <h3 className="text-2xl font-bold text-white mb-3">{benefit.label}</h3>
-                <p className="text-slate-400 leading-relaxed">{benefit.desc}</p>
+                <h3 className="text-lg font-semibold text-white mb-1">{stat.label}</h3>
+                <p className="text-sm text-slate-400">{stat.metric}</p>
               </motion.div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Use Cases */}
-      <section className="relative py-32 px-6 z-10">
-        <div className="max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-20"
-          >
-            <h2 className="text-5xl md:text-6xl font-bold text-white mb-6">
-              Perfect For <span className="text-cyan-400">Every Role</span>
-            </h2>
-          </motion.div>
-
-          <div className="grid md:grid-cols-2 gap-8">
-            {[
-              {
-                role: "Fleet Managers",
-                icon: Target,
-                tasks: ["Route optimization", "Resource allocation", "Performance monitoring"],
-                example: "\"Reassign vehicles to balance workload across regions\""
-              },
-              {
-                role: "Dispatchers",
-                icon: Rocket,
-                tasks: ["Real-time assignments", "Exception handling", "Driver communication"],
-                example: "\"Find available driver near postal code 2100\""
-              },
-              {
-                role: "Operations Teams",
-                icon: BarChart3,
-                tasks: ["Cost analysis", "Efficiency reports", "KPI tracking"],
-                example: "\"Show fuel consumption trends this quarter\""
-              },
-              {
-                role: "Executives",
-                icon: TrendingUp,
-                tasks: ["Strategic insights", "Performance summaries", "Cost optimization"],
-                example: "\"What's our average delivery cost per shipment?\""
-              }
-            ].map((useCase, idx) => {
-              const Icon = useCase.icon;
-              return (
-                <motion.div
-                  key={idx}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: idx * 0.1 }}
-                  whileHover={{ scale: 1.02 }}
-                  className="p-10 rounded-3xl bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 hover:border-cyan-500/50 transition-all"
-                >
-                  <div className="flex items-center gap-4 mb-6">
-                    <Icon className="w-12 h-12 text-cyan-400" />
-                    <h3 className="text-3xl font-bold text-white">{useCase.role}</h3>
-                  </div>
-                  <div className="space-y-3 mb-6">
-                    {useCase.tasks.map((task, taskIdx) => (
-                      <div key={taskIdx} className="flex items-center gap-3">
-                        <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0" />
-                        <span className="text-slate-400">{task}</span>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="p-4 rounded-xl bg-slate-900/50 border border-cyan-500/30">
-                    <p className="text-cyan-400 italic text-sm">{useCase.example}</p>
-                  </div>
-                </motion.div>
-              );
-            })}
           </div>
         </div>
       </section>
@@ -364,10 +478,10 @@ export default function FleetAIPage() {
           >
             <Sparkles className="w-16 h-16 text-cyan-400 mx-auto mb-6" />
             <h2 className="text-5xl md:text-6xl font-black text-white mb-6">
-              Experience the Future of <span className="text-cyan-400">Fleet Control</span>
+              Experience <span className="text-cyan-400">Fleet AI</span> Intelligence
             </h2>
             <p className="text-2xl text-slate-300 mb-12 max-w-3xl mx-auto">
-              Join thousands of fleet operators using FLEET AI to transform their operations
+              See how distributed AI orchestration transforms fleet operations in real-time
             </p>
             <button
               onClick={() => base44.auth.redirectToLogin(createPageUrl("IntellectMode"))}
