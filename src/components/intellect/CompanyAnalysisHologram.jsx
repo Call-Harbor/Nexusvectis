@@ -1107,7 +1107,79 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
 
               {/* OWNERSHIP TAB */}
               {activeTab === 'ownership' && (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div>
+                  {/* Search bar */}
+                  <div className="flex gap-2 mb-6 max-w-xl">
+                    <div className="flex-1 relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                      <input
+                        value={ownerSearch}
+                        onChange={e => setOwnerSearch(e.target.value)}
+                        onKeyDown={e => e.key === 'Enter' && searchOwners()}
+                        placeholder={`Search owners for ${companyName || 'company'}...`}
+                        className="w-full pl-10 pr-4 py-3 bg-slate-900/60 border-2 border-amber-500/30 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-amber-400"
+                      />
+                    </div>
+                    <Button
+                      onClick={searchOwners}
+                      disabled={ownerLoading || !ownerSearch.trim()}
+                      className="bg-amber-600 hover:bg-amber-700 px-6"
+                    >
+                      {ownerLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+                    </Button>
+                  </div>
+
+                  {ownerLoading && (
+                    <div className="text-center py-12">
+                      <Loader2 className="w-8 h-8 animate-spin text-amber-400 mx-auto mb-2" />
+                      <p className="text-slate-400">Searching ownership data...</p>
+                    </div>
+                  )}
+
+                  {ownerData && (
+                    <div className="grid grid-cols-1 gap-4 mb-6">
+                      {ownerData.ownership_structure && (
+                        <div className="p-4 rounded-2xl border border-amber-500/30 bg-amber-500/5">
+                          <p className="text-amber-400 text-xs font-semibold uppercase mb-2">Structure</p>
+                          <p className="text-slate-300 text-sm">{ownerData.ownership_structure}</p>
+                        </div>
+                      )}
+
+                      {ownerData.owners?.length > 0 && (
+                        <div className="p-4 rounded-2xl border border-slate-700/50 bg-slate-900/30">
+                          <p className="text-slate-400 text-xs font-semibold mb-3 uppercase">Owners & Shareholders</p>
+                          <div className="space-y-2">
+                            {ownerData.owners.map((owner, i) => (
+                              <div key={i} className="flex items-start justify-between text-sm p-2 rounded border border-slate-700/30">
+                                <div>
+                                  <p className="text-white font-semibold">{owner.name}</p>
+                                  <p className="text-slate-400 text-xs">{owner.role} {owner.entity_type ? `· ${owner.entity_type}` : ''}</p>
+                                  {owner.background && <p className="text-slate-500 text-xs mt-1">{owner.background}</p>}
+                                </div>
+                                {owner.ownership_percentage && <span className="text-amber-400 font-bold text-sm">{owner.ownership_percentage}%</span>}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {ownerData.board_members?.length > 0 && (
+                        <div className="p-4 rounded-2xl border border-slate-700/50 bg-slate-900/30">
+                          <p className="text-slate-400 text-xs font-semibold mb-3 uppercase">Board Members</p>
+                          <div className="space-y-2">
+                            {ownerData.board_members.map((member, i) => (
+                              <div key={i} className="text-sm p-2 rounded border border-slate-700/30">
+                                <p className="text-white font-semibold">{member.name}</p>
+                                <p className="text-slate-400 text-xs">{member.title} {member.company ? `at ${member.company}` : ''}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   {/* Ownership type */}
                   {data.ownership?.ownership_type && (
                     <div className="p-4 rounded-2xl border border-amber-500/30 bg-amber-500/5 flex items-center gap-3">
