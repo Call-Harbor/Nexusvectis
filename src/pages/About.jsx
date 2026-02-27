@@ -145,39 +145,39 @@ export default function About() {
           <div className="grid md:grid-cols-3 gap-8">
             {[
               { 
-                icon: Sparkles, 
-                title: "Innovation First", 
-                desc: "We push the boundaries of what's possible with AI. Our FLEET AI represents years of research in natural language understanding and logistics optimization.",
+                icon: Brain, 
+                title: "AI-Native Architecture", 
+                desc: "Every decision—routing, prediction, optimization—flows through distributed AI. No bolted-on ML. The platform thinks.",
                 color: "cyan"
               },
               { 
-                icon: Heart, 
-                title: "Customer Obsessed", 
-                desc: "Your success is our success. We build features based on real operator feedback, not theoretical needs. Every update solves actual problems.",
+                icon: Zap, 
+                title: "Real-Time Intelligence", 
+                desc: "50+ parallel AI analyses running simultaneously. Not delayed reports. Not batch processing. Answers in milliseconds.",
                 color: "violet"
               },
               { 
-                icon: Target, 
-                title: "Radical Simplicity", 
-                desc: "Complex technology should feel simple. We hide advanced algorithms behind intuitive interfaces. If you need a manual, we've failed.",
+                icon: Rocket, 
+                title: "Modern Tech Stack", 
+                desc: "Built on current best practices: vector databases, graph neural networks, edge computing, and cloud-native architecture.",
                 color: "fuchsia"
               },
               {
                 icon: Shield,
-                title: "Security & Trust",
-                desc: "Enterprise-grade security is non-negotiable. SOC 2 compliance, end-to-end encryption, and rigorous auditing protect your data.",
+                title: "Security First",
+                desc: "Not an afterthought. Designed in from day one with SOC 2, encryption, audit trails, and digital twin anomaly detection.",
                 color: "emerald"
               },
               {
-                icon: Rocket,
-                title: "Move Fast, Stay Reliable",
-                desc: "We ship features weekly without compromising stability. 99.9% uptime isn't a target—it's our baseline commitment.",
+                icon: Target,
+                title: "No Legacy Baggage",
+                desc: "We didn't inherit tech debt. No migration challenges. No 'we'd rebuild this if we started over' regrets.",
                 color: "amber"
               },
               {
                 icon: Globe,
-                title: "Global Thinking",
-                desc: "Logistics is global. Our platform supports 50+ countries, multiple languages, and diverse transport modes from day one.",
+                title: "Global from Day One",
+                desc: "Multi-modal transport, 50+ countries, real-time currency conversion, and compliance built into the foundation.",
                 color: "rose"
               }
             ].map((value, idx) => {
