@@ -52,23 +52,24 @@ Deno.serve(async (req) => {
     
     const facts = [
       'Founded: January 2026 in Copenhagen, Denmark',
-      'Development Timeline: 8-week intensive sprint from concept to production',
-      'Team: Lean, highly specialized team combining logistics domain expertise with advanced AI',
-      'Primary Technology: Mistral 7B fine-tuned specifically on logistics data and operations',
-      'Supported Transport Modes: Trucks, Ships, Drones, Trains, Aircraft - complete modal coverage',
-      'Tracking Technologies: GPS, AIS (Automatic Identification System), ADS-B, LoRa, RFID',
-      'Production Status: FLEET AI Core Engine achieved 99.2% command accuracy in testing',
-      'Architecture: Digital Twin Federation for enterprise-grade security with GDPR compliance',
-      'Predictive Capabilities: ETA prediction, maintenance forecasting (92% accuracy), demand forecasting'
+      'Development Timeline: 8-week sprint from concept to production',
+      'Team: Specialized team combining logistics expertise with advanced AI',
+      'Primary Technology: Mistral 7B fine-tuned on logistics data',
+      'Transport Modes: Trucks, Ships, Drones, Trains, Aircraft',
+      'Tracking: GPS, AIS, ADS-B, LoRa, RFID',
+      'Production Status: 99.2% command accuracy achieved',
+      'Architecture: Digital Twin Federation with GDPR compliance',
+      'Predictive: ETA, maintenance (92% accuracy), demand forecasting'
     ];
 
     facts.forEach(fact => {
-      if (yPos > pageHeight - 30) {
+      if (yPos > pageHeight - 20) {
         pdf.addPage();
         yPos = 20;
       }
-      pdf.text('• ' + fact, 25, yPos);
-      yPos += 8;
+      const factLines = pdf.splitTextToSize(fact, pageWidth - 50);
+      pdf.text(factLines, 25, yPos);
+      yPos += (factLines.length * 4) + 3;
     });
 
     // AI Technology
