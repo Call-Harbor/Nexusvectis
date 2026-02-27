@@ -2180,6 +2180,13 @@ Return JSON with this EXACT structure:
                    <Brain className="w-4 h-4 mr-2" />
                    Advanced Intelligence Panel
                  </DropdownMenuItem>
+                 <DropdownMenuSeparator className="bg-slate-800" />
+                 <DropdownMenuLabel className="text-red-400 mt-1">🔬 Research AI Engine</DropdownMenuLabel>
+                 <DropdownMenuSeparator className="bg-slate-800" />
+                 <DropdownMenuItem onClick={() => openWindow('deep_analysis', { x: 100, y: 80 })} className="text-slate-300 text-xs">
+                   <Activity className="w-4 h-4 mr-2 text-cyan-400" />
+                   Anomaly Detection + What-If + Proactive AI
+                 </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
 
