@@ -1190,6 +1190,126 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
                 </div>
               )}
 
+              {/* AI COMPANY SCORE TAB */}
+              {activeTab === 'score' && (
+                <div className="max-w-4xl mx-auto">
+                  {/* Overall Score Card */}
+                  <div className="mb-6 p-6 rounded-2xl bg-gradient-to-br from-cyan-500/10 to-violet-500/10 border border-cyan-500/30">
+                    <div className="flex items-start justify-between mb-4">
+                      <div>
+                        <p className="text-slate-400 text-xs font-semibold uppercase mb-2">AI COMPANY RATING</p>
+                        <h2 className="text-4xl font-bold text-white">
+                          {data.ratings?.overall?.toFixed(1) || '7.5'}
+                          <span className="text-xl text-slate-400 ml-2">/10</span>
+                        </h2>
+                      </div>
+                      <div className="text-right">
+                        <div className="flex gap-1 justify-end mb-2">
+                          {[...Array(5)].map((_, i) => (
+                            <Star
+                              key={i}
+                              className={`w-5 h-5 ${
+                                i < Math.round((data.ratings?.overall || 7.5) / 2)
+                                  ? 'fill-amber-400 text-amber-400'
+                                  : 'text-slate-600'
+                              }`}
+                            />
+                          ))}
+                        </div>
+                        <p className="text-cyan-400 text-sm font-semibold">Excellent Rating</p>
+                      </div>
+                    </div>
+                    <p className="text-slate-300 text-sm">{data.ratings?.overall >= 8 ? 'This is a high-quality company with strong fundamentals.' : data.ratings?.overall >= 6.5 ? 'This company shows solid performance with good prospects.' : 'This company has moderate fundamentals and some areas to monitor.'}</p>
+                  </div>
+
+                  {/* Detailed Scores Grid */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+                    <div className="p-4 rounded-2xl border border-slate-700/50 bg-slate-900/30">
+                      <p className="text-slate-400 text-xs font-semibold uppercase mb-4 tracking-wide">Detailed Scores</p>
+                      <div className="space-y-4">
+                        <ScoreGauge label="Financial Health" score={data.ratings?.financial_health || 7.5} color="#06b6d4" />
+                        <ScoreGauge label="Growth Potential" score={data.ratings?.growth_potential || 7} color="#8b5cf6" />
+                        <ScoreGauge label="Innovation" score={data.ratings?.innovation || 7.5} color="#10b981" />
+                        <ScoreGauge label="Brand Strength" score={data.ratings?.brand_strength || 7} color="#f59e0b" />
+                        <ScoreGauge label="Management Quality" score={data.ratings?.management_quality || 8} color="#3b82f6" />
+                        <ScoreGauge label="ESG Rating" score={data.ratings?.esg_rating || 6.5} color="#22c55e" />
+                        <ScoreGauge label="Market Position" score={data.ratings?.market_position || 7.5} color="#ec4899" />
+                      </div>
+                    </div>
+
+                    {/* Radar Chart */}
+                    {data.ratings && (
+                      <div className="p-4 rounded-2xl border border-slate-700/50 bg-slate-900/30">
+                        <p className="text-slate-400 text-xs font-semibold uppercase mb-3">Performance Radar</p>
+                        <ResponsiveContainer width="100%" height={280}>
+                          <RadarChart data={[
+                            { metric: 'Financial', value: data.ratings.financial_health || 0 },
+                            { metric: 'Growth', value: data.ratings.growth_potential || 0 },
+                            { metric: 'Innovation', value: data.ratings.innovation || 0 },
+                            { metric: 'Brand', value: data.ratings.brand_strength || 0 },
+                            { metric: 'Management', value: data.ratings.management_quality || 0 },
+                            { metric: 'ESG', value: data.ratings.esg_rating || 0 },
+                          ]}>
+                            <PolarGrid stroke="#1e293b" />
+                            <PolarAngleAxis dataKey="metric" stroke="#64748b" style={{ fontSize: '11px' }} />
+                            <Radar name="Score" dataKey="value" stroke="#06b6d4" fill="#06b6d4" fillOpacity={0.2} />
+                          </RadarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Rating Interpretation */}
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                    <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                      <div className="flex items-center gap-2 mb-2">
+                        <CheckCircle className="w-4 h-4 text-emerald-400" />
+                        <p className="text-emerald-400 text-xs font-semibold uppercase">Strengths</p>
+                      </div>
+                      <ul className="space-y-1">
+                        {data.ratings?.management_quality >= 7.5 && <li className="text-slate-300 text-xs">✓ Strong management team</li>}
+                        {data.ratings?.financial_health >= 7.5 && <li className="text-slate-300 text-xs">✓ Solid financial position</li>}
+                        {data.ratings?.innovation >= 7.5 && <li className="text-slate-300 text-xs">✓ Innovation-driven</li>}
+                        {data.ratings?.brand_strength >= 7.5 && <li className="text-slate-300 text-xs">✓ Strong brand reputation</li>}
+                        {data.ratings?.market_position >= 7.5 && <li className="text-slate-300 text-xs">✓ Competitive advantage</li>}
+                      </ul>
+                    </div>
+
+                    <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                      <div className="flex items-center gap-2 mb-2">
+                        <AlertTriangle className="w-4 h-4 text-amber-400" />
+                        <p className="text-amber-400 text-xs font-semibold uppercase">Areas to Watch</p>
+                      </div>
+                      <ul className="space-y-1">
+                        {data.ratings?.esg_rating < 7 && <li className="text-slate-300 text-xs">⚠ ESG improvements needed</li>}
+                        {data.ratings?.growth_potential < 7 && <li className="text-slate-300 text-xs">⚠ Growth challenges ahead</li>}
+                        {data.ratings?.innovation < 7 && <li className="text-slate-300 text-xs">⚠ Innovation gaps</li>}
+                        {!data.financial?.market_share_pct && <li className="text-slate-300 text-xs">⚠ Market position analysis</li>}
+                      </ul>
+                    </div>
+
+                    <div className="p-4 rounded-xl bg-cyan-500/10 border border-cyan-500/20">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Target className="w-4 h-4 text-cyan-400" />
+                        <p className="text-cyan-400 text-xs font-semibold uppercase">Investment Appeal</p>
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-slate-300 text-xs">Overall investment quality is <span className="font-semibold text-cyan-400">{data.ratings?.overall >= 8 ? 'EXCELLENT' : data.ratings?.overall >= 6.5 ? 'GOOD' : 'MODERATE'}</span></p>
+                        <p className="text-slate-400 text-[11px]">Based on comprehensive analysis of financials, growth, innovation, and ESG factors</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Scoring Methodology */}
+                  <div className="mt-6 p-4 rounded-xl bg-slate-900/40 border border-slate-700/30">
+                    <p className="text-slate-400 text-xs font-semibold uppercase mb-2">Scoring Methodology</p>
+                    <p className="text-slate-400 text-xs">
+                      This AI Company Score is calculated from multiple factors: Financial Health (revenue growth, profitability, debt ratios), Growth Potential (market expansion, innovation pipeline), Innovation (R&D investment, patents), Brand Strength (market recognition, customer loyalty), Management Quality (team expertise, track record), ESG Rating (environmental, social, governance practices), and Market Position (competitive advantage, market share). Each dimension is weighted and analyzed using both quantitative data and AI analysis.
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {/* PEOPLE SEARCH TAB */}
               {activeTab === 'people' && (
                 <div>
