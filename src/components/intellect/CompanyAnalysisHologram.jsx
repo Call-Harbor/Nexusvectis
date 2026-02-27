@@ -1003,7 +1003,13 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
               {/* LEADERSHIP TAB */}
               {activeTab === 'leadership' && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {data.leadership_team?.map((person, i) => (
+                  {(data.leadership_team && data.leadership_team.length > 0 ? data.leadership_team : [
+                    {
+                      name: 'Leadership Team',
+                      title: 'Executive Leadership',
+                      background: 'Search for specific executives in the "People Search" tab to view detailed profiles and career history.'
+                    }
+                  ]).map((person, i) => (
                     <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
                       className="p-4 rounded-2xl border border-slate-700/50 bg-slate-900/40 hover:border-cyan-500/30 transition-all">
                       <div className="flex items-center gap-3 mb-3">
@@ -1032,18 +1038,17 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
                       {person.background && (
                         <p className="text-slate-400 text-xs leading-relaxed">{person.background}</p>
                       )}
-                      <button
-                        onClick={() => { setPersonSearch(person.name); setActiveTab('people'); setTimeout(searchPerson, 100); }}
-                        className="mt-3 flex items-center gap-1 text-[10px] text-blue-400 hover:text-blue-300 transition-colors"
-                      >
-                        <Linkedin className="w-3 h-3" />
-                        Search profile
-                      </button>
+                      {person.name !== 'Leadership Team' && (
+                        <button
+                          onClick={() => { setPersonSearch(person.name); setActiveTab('people'); setTimeout(searchPerson, 100); }}
+                          className="mt-3 flex items-center gap-1 text-[10px] text-blue-400 hover:text-blue-300 transition-colors"
+                        >
+                          <Linkedin className="w-3 h-3" />
+                          Search profile
+                        </button>
+                      )}
                     </motion.div>
                   ))}
-                  {(!data.leadership_team || data.leadership_team.length === 0) && (
-                    <p className="text-slate-500 text-sm col-span-full text-center py-8">No leadership data found</p>
-                  )}
                 </div>
               )}
 
