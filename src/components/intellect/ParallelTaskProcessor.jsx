@@ -77,14 +77,25 @@ export default function ParallelTaskProcessor({ onClose }) {
 
     setQueuedTasks(prev => [...prev, newTask]);
     setInputValue("");
-    toast.success("Prompt sendt til køen");
+    toast.success("1 prompt tilføjet til køen");
   };
 
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSubmit();
+  const addBatchPrompts = () => {
+    const lines = inputValue.trim().split('\n').filter(l => l.trim());
+    if (lines.length === 0) {
+      toast.error("Ingen prompts fundet");
+      return;
     }
+
+    const newTasks = lines.map(prompt => ({
+      id: taskIdRef.current++,
+      prompt: prompt.trim(),
+      status: 'queued'
+    }));
+
+    setQueuedTasks(prev => [...prev, ...newTasks]);
+    setInputValue("");
+    toast.success(`${lines.length} prompts tilføjet til køen`);
   };
 
   const totalTasks = runningTasks.length + queuedTasks.length + completedTasks.length;
