@@ -565,17 +565,20 @@ export default function About() {
                             <h3 className="text-3xl font-bold text-white mb-3 group-hover:text-violet-300 transition-colors">
                               {milestone.title}
                             </h3>
-                            <p className="text-slate-300 mb-6 leading-relaxed text-lg">
+                            <p className="text-slate-300 mb-4 leading-relaxed text-base">
                               {milestone.description}
                             </p>
+                            <div className="p-3 rounded-lg bg-slate-800/50 border border-slate-700/50 mb-4">
+                              <p className="text-xs text-slate-400 font-mono">{milestone.technical}</p>
+                            </div>
                             <motion.div
                               initial={{ width: 0 }}
                               whileInView={{ width: "100%" }}
                               viewport={{ once: true }}
                               transition={{ delay: idx * 0.15 + 0.3, duration: 1 }}
-                              className="h-0.5 bg-gradient-to-r from-violet-500 to-transparent mb-6"
+                              className="h-0.5 bg-gradient-to-r from-violet-500 to-transparent mb-4"
                             />
-                            <div className="flex items-center gap-2 p-4 rounded-xl bg-violet-500/10 border border-violet-500/20">
+                            <div className="flex items-center gap-2 p-3 rounded-xl bg-violet-500/10 border border-violet-500/20">
                               <div className="w-2 h-2 rounded-full bg-violet-400 animate-pulse" />
                               <span className="text-sm font-semibold text-violet-300">
                                 {milestone.impact}
