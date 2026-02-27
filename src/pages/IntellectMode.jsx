@@ -2769,7 +2769,7 @@ Return JSON with this EXACT structure:
               />
               <Button
                 onClick={() => fileInputRef.current?.click()}
-                disabled={isProcessing || isUploading}
+                disabled={isUploading}
                 size="sm"
                 className={`px-3 sm:px-4 lg:px-6 border-2 rounded-xl sm:rounded-2xl transition-all shadow-lg ${
                   isUploading 
