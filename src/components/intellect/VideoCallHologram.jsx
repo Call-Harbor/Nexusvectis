@@ -14,7 +14,6 @@ export default function VideoCallHologram({ videoUrl, onClose }) {
     if (!url.trim()) return false;
     try {
       new URL(url);
-      // Check if it's a video call platform link
       const videoPatterns = [
         /teams\.microsoft\.com/i,
         /zoom\.us/i,
@@ -27,6 +26,47 @@ export default function VideoCallHologram({ videoUrl, onClose }) {
     } catch {
       return false;
     }
+  };
+
+  const convertUrlToIframeCompatible = (url) => {
+    if (!url) return "";
+    
+    // Google Meet: convert to embed format
+    if (url.includes("meet.google.com")) {
+      const meetId = url.split("/").pop().split("?")[0];
+      return `https://meet.google.com/${meetId}`;
+    }
+    
+    // Whereby: already iframe compatible
+    if (url.includes("whereby.com")) {
+      return url.includes("?") ? url : url + "?view=embed";
+    }
+    
+    // Jitsi: convert to iframe embed
+    if (url.includes("jitsi.org") || url.includes("meet.jit.si")) {
+      const roomName = url.split("/").pop();
+      return `https://meet.jit.si/${roomName}`;
+    }
+    
+    // Webex: use embed URL
+    if (url.includes("webex.com")) {
+      if (url.includes("meetingid=")) {
+        return url.replace(/https:\/\/.*?\.webex\.com/, "https://webex.com/wbxmjs/joinservice/sites/webex/meeting/embed");
+      }
+      return url;
+    }
+    
+    // Zoom: cannot be embedded directly - return warning message
+    if (url.includes("zoom.us")) {
+      return null;
+    }
+    
+    // Teams: cannot be embedded directly - return warning message
+    if (url.includes("teams.microsoft.com")) {
+      return null;
+    }
+    
+    return url;
   };
 
   const handleAddUrl = () => {
