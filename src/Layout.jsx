@@ -26,6 +26,7 @@ import {
   DollarSign,
   Target
 } from "lucide-react";
+import NotificationCenter from "./components/notifications/NotificationCenter";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -79,6 +80,7 @@ const systemMenuItems = [
   { name: "Users", icon: Users, page: "UserManagement" },
   { name: "Security", icon: Shield, page: "Security" },
   { name: "Reports", icon: FileText, page: "Reports" },
+  { name: "Notifications", icon: Bell, page: "NotificationSettings" },
   { name: "Settings", icon: Settings, page: "Settings" },
 ];
 
