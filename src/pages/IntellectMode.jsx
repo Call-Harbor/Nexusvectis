@@ -1886,6 +1886,17 @@ Return JSON with this EXACT structure:
       );
     }
 
+    // Fleet AI Course Engine
+    if (type === 'course_ai') {
+      return (
+        <CourseAIEngine
+          vehicles={vehicles}
+          routes={routes}
+          shipments={shipments}
+        />
+      );
+    }
+
     // Deep Analysis Engine (anomalies + what-if + proactive)
     if (type === 'deep_analysis') {
       return (
