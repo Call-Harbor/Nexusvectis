@@ -74,15 +74,28 @@ export default function MissionVision() {
             ].map((value, idx) => (
               <motion.div
                 key={idx}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, y: 20, rotateX: -20 }}
+                whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: idx * 0.1 }}
-                className="p-6 rounded-2xl bg-white/5 border border-white/10 text-center hover:border-cyan-500/30 transition-all"
+                transition={{ delay: idx * 0.1, duration: 0.6 }}
+                whileHover={{ y: -8, scale: 1.05 }}
+                className="p-6 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 border border-white/10 hover:border-cyan-500/50 text-center transition-all group cursor-pointer relative overflow-hidden"
               >
-                <Sparkles className="w-8 h-8 text-cyan-400 mx-auto mb-3" />
-                <h4 className="font-bold text-white mb-2">{value.label}</h4>
-                <p className="text-sm text-slate-400">{value.desc}</p>
+                {/* Hover gradient background */}
+                <motion.div
+                  whileHover={{ opacity: 1 }}
+                  className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 to-violet-500/10 opacity-0"
+                />
+                
+                <motion.div
+                  whileHover={{ rotate: 360, scale: 1.2 }}
+                  transition={{ duration: 0.6 }}
+                  className="relative z-10"
+                >
+                  <Sparkles className="w-8 h-8 text-cyan-400 mx-auto mb-3 group-hover:text-violet-400 transition-colors" />
+                </motion.div>
+                <h4 className="font-bold text-white mb-2 relative z-10 group-hover:text-cyan-400 transition-colors">{value.label}</h4>
+                <p className="text-sm text-slate-400 relative z-10 group-hover:text-slate-300 transition-colors">{value.desc}</p>
               </motion.div>
             ))}
           </div>

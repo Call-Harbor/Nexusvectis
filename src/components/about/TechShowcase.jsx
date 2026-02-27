@@ -75,34 +75,41 @@ export default function TechShowcase() {
               amber: "from-amber-500/20 to-amber-500/5 border-amber-500/30 text-amber-400",
               rose: "from-rose-500/20 to-rose-500/5 border-rose-500/30 text-rose-400"
             };
+            const colorName = tech.color;
 
             return (
               <motion.div
                 key={idx}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, y: 40, rotateY: -20 }}
+                whileInView={{ opacity: 1, y: 0, rotateY: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: idx * 0.1 }}
-                whileHover={{ y: -15, scale: 1.02 }}
-                className={`p-8 rounded-3xl bg-gradient-to-br ${colorMap[tech.color]} border hover:border-opacity-60 transition-all group`}
+                transition={{ delay: idx * 0.1, duration: 0.6 }}
+                whileHover={{ y: -20, scale: 1.05 }}
+                className={`p-8 rounded-3xl bg-gradient-to-br ${colorMap[tech.color]} border hover:border-opacity-100 transition-all group relative overflow-hidden`}
               >
+                {/* Animated gradient overlay on hover */}
                 <motion.div
-                  whileHover={{ rotate: 360 }}
+                  whileHover={{ opacity: 1 }}
+                  className={`absolute inset-0 bg-gradient-to-br from-${colorName}-500/10 to-transparent opacity-0`}
+                />
+
+                <motion.div
+                  whileHover={{ rotate: 360, scale: 1.2 }}
                   transition={{ duration: 0.6 }}
-                  className="mb-6"
+                  className="mb-6 relative z-10"
                 >
-                  <Icon className={`w-12 h-12 ${colorMap[tech.color].split(" ").pop()}`} />
+                  <Icon className={`w-12 h-12 ${colorMap[tech.color].split(" ").pop()} group-hover:scale-110 transition-transform`} />
                 </motion.div>
 
-                <h3 className="text-xl font-bold text-white mb-3 group-hover:text-cyan-400 transition-colors">
+                <h3 className="text-xl font-bold text-white mb-3 group-hover:text-cyan-400 transition-colors relative z-10">
                   {tech.title}
                 </h3>
 
-                <p className="text-slate-300 mb-6 leading-relaxed">
+                <p className="text-slate-300 mb-6 leading-relaxed relative z-10">
                   {tech.desc}
                 </p>
 
-                <div className="space-y-2">
+                <div className="space-y-2 relative z-10">
                   {tech.features.map((feature, fidx) => (
                     <motion.div
                       key={fidx}
@@ -110,9 +117,13 @@ export default function TechShowcase() {
                       whileInView={{ opacity: 1, x: 0 }}
                       viewport={{ once: true }}
                       transition={{ delay: idx * 0.1 + fidx * 0.05 }}
-                      className="flex items-center gap-2 text-sm text-slate-400"
+                      whileHover={{ x: 5 }}
+                      className="flex items-center gap-2 text-sm text-slate-400 group-hover:text-slate-300 transition-colors"
                     >
-                      <div className={`w-1.5 h-1.5 rounded-full ${colorMap[tech.color].split(" ").pop()}`} />
+                      <motion.div 
+                        whileHover={{ scale: 1.5 }}
+                        className={`w-1.5 h-1.5 rounded-full ${colorMap[tech.color].split(" ").pop()}`} 
+                      />
                       {feature}
                     </motion.div>
                   ))}

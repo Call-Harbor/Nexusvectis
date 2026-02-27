@@ -105,20 +105,29 @@ export default function Hero3D() {
               return (
                 <motion.div
                   key={idx}
-                  whileHover={{ y: -10, scale: 1.05 }}
-                  className="p-8 rounded-2xl bg-gradient-to-br from-cyan-500/10 to-violet-500/10 border border-cyan-500/30 hover:border-cyan-500/60 transition-all group cursor-pointer"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.4 + idx * 0.1 }}
+                  whileHover={{ y: -15, scale: 1.08 }}
+                  className="p-8 rounded-2xl bg-gradient-to-br from-cyan-500/10 to-violet-500/10 border border-cyan-500/30 hover:border-cyan-500/60 transition-all group cursor-pointer relative overflow-hidden"
                 >
+                  {/* Animated background on hover */}
+                  <motion.div
+                    whileHover={{ opacity: 1 }}
+                    className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-violet-500/5 opacity-0"
+                  />
+                  
                   <motion.div
                     whileHover={{ rotate: 360 }}
                     transition={{ duration: 0.6 }}
-                    className="mb-4"
+                    className="mb-4 relative z-10"
                   >
                     <Icon className="w-10 h-10 text-cyan-400 group-hover:text-violet-400 transition-colors" />
                   </motion.div>
-                  <div className="text-sm font-semibold text-cyan-400 mb-2 group-hover:text-violet-400 transition-colors">
+                  <div className="text-sm font-semibold text-cyan-400 mb-2 group-hover:text-violet-400 transition-colors relative z-10">
                     {cap.label}
                   </div>
-                  <div className="text-xs text-slate-400 group-hover:text-slate-300 transition-colors">
+                  <div className="text-xs text-slate-400 group-hover:text-slate-300 transition-colors relative z-10">
                     {cap.value}
                   </div>
                 </motion.div>
@@ -141,19 +150,20 @@ export default function Hero3D() {
             ].map((stat, idx) => (
               <motion.div
                 key={idx}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.7 + idx * 0.1 }}
-                className="text-center"
+                whileHover={{ scale: 1.05 }}
+                className="text-center p-8 rounded-2xl bg-gradient-to-br from-white/5 to-transparent border border-white/10 hover:border-cyan-500/30 transition-all"
               >
                 <motion.div
-                  animate={{ scale: [1, 1.1, 1] }}
+                  animate={{ scale: [1, 1.15, 1] }}
                   transition={{ duration: 3, repeat: Infinity, delay: idx * 0.2 }}
-                  className={`text-5xl font-black bg-gradient-to-r from-${stat.color}-400 to-${stat.color}-600 bg-clip-text text-transparent mb-2`}
+                  className={`text-5xl font-black bg-gradient-to-r from-${stat.color}-400 to-${stat.color}-600 bg-clip-text text-transparent mb-3`}
                 >
                   {stat.number}
                 </motion.div>
-                <div className="text-slate-400 font-medium">{stat.label}</div>
+                <div className="text-slate-400 font-medium group-hover:text-slate-200 transition-colors">{stat.label}</div>
               </motion.div>
             ))}
           </motion.div>
