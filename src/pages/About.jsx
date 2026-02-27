@@ -259,10 +259,11 @@ export default function About() {
             className="rounded-[3rem] bg-gradient-to-br from-cyan-500/10 via-violet-500/10 to-fuchsia-500/10 border border-cyan-500/30 p-16 text-center"
           >
             <h2 className="text-5xl md:text-6xl font-bold text-white mb-6">
-              Join Our Mission
+              This is Just the Beginning
             </h2>
             <p className="text-xl text-slate-300 mb-12 max-w-2xl mx-auto">
-              We're always looking for passionate individuals who want to revolutionize logistics
+              We've reimagined fleet operations from scratch. Now we're scaling it globally. 
+              Join us in building the future of logistics.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
               <Link to={createPageUrl("Careers")}>
