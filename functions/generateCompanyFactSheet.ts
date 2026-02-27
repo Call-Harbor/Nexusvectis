@@ -160,21 +160,22 @@ Deno.serve(async (req) => {
     pdf.setFontSize(11);
     
     const impact = [
-      'World\'s First: Only platform combining natural language control with multi-modal fleet tracking',
-      'Development Speed: Achieved production-ready status in 8 weeks - unprecedented in logistics AI',
-      'Accuracy: 99.2% command understanding rate in rigorous production testing',
-      'Scalability: Architecture designed to handle thousands of concurrent fleets globally',
-      'Sustainability: Green TMS capabilities reduce CO2 emissions through intelligent route optimization',
-      'Accessibility: Makes advanced AI-driven fleet optimization accessible to logistics companies of all sizes'
+      'Unique: Only platform combining natural language with multi-modal tracking',
+      'Speed: Production-ready in 8 weeks - unprecedented in logistics AI',
+      'Accuracy: 99.2% command understanding rate in testing',
+      'Scalable: Designed to handle thousands of concurrent fleets',
+      'Green: Reduces CO2 emissions through intelligent routing',
+      'Accessible: Advanced optimization for companies of all sizes'
     ];
 
     impact.forEach(item => {
-      if (yPos > pageHeight - 30) {
+      if (yPos > pageHeight - 20) {
         pdf.addPage();
         yPos = 20;
       }
-      pdf.text('• ' + item, 25, yPos);
-      yPos += 8;
+      const impactLines = pdf.splitTextToSize(item, pageWidth - 50);
+      pdf.text(impactLines, 25, yPos);
+      yPos += (impactLines.length * 4) + 3;
     });
 
     // Contact
