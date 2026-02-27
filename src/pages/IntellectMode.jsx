@@ -2477,6 +2477,8 @@ Return JSON with this EXACT structure:
                 onMinimize={() => toggleMinimize('video-call')}
                 isMinimized={minimizedWindows.has('video-call')}
                 windowType="video_call"
+                isFocused={focusedWindow === 'video-call'}
+                onFocus={setFocusedWindow}
               >
                 <VideoCallHologram onClose={() => setShowVideoCall(false)} />
               </HologramWindow>
@@ -2493,6 +2495,8 @@ Return JSON with this EXACT structure:
                 onMinimize={() => toggleMinimize('parallel-processor')}
                 isMinimized={minimizedWindows.has('parallel-processor')}
                 windowType="parallel_processor"
+                isFocused={focusedWindow === 'parallel-processor'}
+                onFocus={setFocusedWindow}
               >
                 <ParallelTaskProcessor onClose={() => setShowParallelProcessor(false)} />
               </HologramWindow>
