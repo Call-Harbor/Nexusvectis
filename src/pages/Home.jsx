@@ -37,8 +37,8 @@ export default function Home() {
     },
     {
       icon: Zap,
-      title: "Route Optimization",
-      description: "Intelligent route planning with AI optimization and real-time traffic data"
+      title: "Parallel Task Execution",
+      description: "Submit multiple commands and run 49+ AI analyses simultaneously - no waiting between tasks"
     },
     {
       icon: TrendingUp,
