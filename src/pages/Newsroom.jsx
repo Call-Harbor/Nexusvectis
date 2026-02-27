@@ -23,72 +23,64 @@ export default function Newsroom() {
 
   const pressReleases = [
     {
+      date: "Feb 27, 2026",
+      title: "NexusVectis Officially Launches FLEET AI Platform",
+      excerpt: "After 8 weeks of intensive development, NexusVectis launches world's first natural language fleet control system.",
+      category: "Launch",
+      fullContent: "Copenhagen, Denmark — NexusVectis is thrilled to announce the official launch of FLEET AI, a groundbreaking natural language interface for fleet management. Built by a team of two (one 21-year-old founder and advanced AI), the platform enables logistics operators to control their entire fleet operations using plain English commands. The system integrates real-time tracking across all transport modes (trucks, ships, drones, trains, aircraft) and leverages advanced machine learning for predictive analytics and autonomous optimization. This marks a significant milestone in the journey from concept to production, developed entirely within 8 weeks of focused development."
+    },
+    {
+      date: "Feb 20, 2026",
+      title: "FLEET AI Core Engine Achieves Production Readiness",
+      excerpt: "Natural language processing system passes rigorous testing with 99.2% command accuracy.",
+      category: "Technology",
+      fullContent: "The FLEET AI natural language processor has successfully completed production testing, achieving 99.2% accuracy in interpreting and executing logistics commands. The system, powered by Mistral 7B fine-tuned on logistics-specific data, can understand complex multi-vehicle coordination requests, route optimization queries, and exception handling procedures. Testing included 10,000+ simulated commands across diverse scenarios including adverse weather, equipment failures, and dynamic route changes. The engine is now production-ready and will serve as the core of the FLEET AI platform."
+    },
+    {
       date: "Feb 15, 2026",
-      title: "NexusVectis Launches FLEET AI — World's First Natural Language Fleet Control",
-      excerpt: "Revolutionary AI system allows logistics operators to control entire fleets through plain English commands.",
-      category: "Product Launch"
+      title: "Multi-Modal Vehicle Tracking Integration Complete",
+      excerpt: "Unified tracking system now live for trucks, ships, drones, trains, and aircraft.",
+      category: "Technology",
+      fullContent: "NexusVectis has completed integration of multiple tracking technologies into a unified platform. The system now supports GPS for terrestrial vehicles, AIS (Automatic Identification System) for maritime vessels, ADS-B for aircraft, LoRa for drone networks, and RFID for rail transport. All tracking data streams are normalized and presented in a single, coherent interface, giving operators complete visibility across their entire fleet regardless of transport mode. This multi-modal approach represents a significant technical achievement in the field of logistics intelligence."
     },
     {
       date: "Feb 10, 2026",
-      title: "Series Seed Funding Announced",
-      excerpt: "NexusVectis secures €2.5M to accelerate AI-powered fleet intelligence globally.",
-      category: "Company"
+      title: "Digital Twin Federation Architecture Deployed",
+      excerpt: "Privacy-by-design platform architecture ensures data security while enabling AI optimization.",
+      category: "Technology",
+      fullContent: "The NexusVectis platform now employs a Digital Twin Federation architecture that ensures enterprise-grade security while enabling powerful AI analysis. Each customer's fleet data creates a 'digital twin' that trains on local data, with only aggregated insights shared back. This approach ensures GDPR compliance, prevents data leakage, and allows the AI to continuously improve while respecting customer privacy boundaries. The architecture has been designed for future scalability to support thousands of concurrent fleets."
     },
     {
       date: "Feb 5, 2026",
-      title: "Partnership with Europe's Leading 3PL Provider",
-      excerpt: "Integration enables real-time tracking and AI optimization for 5,000+ vehicles across EU.",
-      category: "Partnership"
+      title: "Predictive Maintenance Engine Now Live",
+      excerpt: "AI system predicts vehicle maintenance needs with 92% accuracy weeks in advance.",
+      category: "Technology",
+      fullContent: "The predictive maintenance module is now operational, analyzing vehicle telemetry data to forecast maintenance requirements before failures occur. The system identifies patterns in engine performance, brake wear, fuel efficiency degradation, and component stress to predict maintenance windows weeks in advance. Early testing shows 92% accuracy in predicting critical maintenance events. This capability can help logistics operators reduce unexpected downtime, optimize maintenance scheduling, and extend vehicle lifespan through preventive care."
     },
     {
-      date: "Jan 28, 2026",
-      title: "AI Predictive Maintenance Reduces Downtime by 40%",
-      excerpt: "Machine learning model predicts vehicle failures weeks in advance with 95% accuracy.",
-      category: "Technology"
+      date: "Jan 25, 2026",
+      title: "FLEET AI Beta Development Begins",
+      excerpt: "Two-person team starts intensive 8-week development sprint for FLEET AI platform.",
+      category: "Company",
+      fullContent: "NexusVectis begins development of FLEET AI with a lean, focused team dedicated to building the most advanced natural language fleet control system. The 8-week sprint focuses on core functionality including natural language processing, multi-modal vehicle tracking, AI-powered optimization, and secure data architecture. The team employs agile methodology with daily builds and continuous integration to ensure rapid iteration and quality. This ambitious timeline requires deep technical expertise and unwavering focus on the core vision."
     },
     {
-      date: "Jan 22, 2026",
-      title: "NexusVectis Named Top 5 Logistics Innovation Company",
-      excerpt: "Platform recognized by industry leaders for groundbreaking AI-powered fleet management solutions.",
-      category: "Award"
+      date: "Jan 20, 2026",
+      title: "Platform Architecture Finalized",
+      excerpt: "Complete technical design for FLEET AI ecosystem approved and ready for development.",
+      category: "Technology",
+      fullContent: "After weeks of research and design, the complete FLEET AI architecture is finalized. The system is built on a modern cloud-native stack with microservices for fleet tracking, AI command orchestration, data analytics, and real-time monitoring. The architecture supports horizontal scaling to handle thousands of fleets simultaneously while maintaining sub-second response times for critical operations. Security is built into every layer with encryption, role-based access control, and comprehensive audit logging."
     },
     {
       date: "Jan 15, 2026",
-      title: "Real-time GPS Integration Across All Transport Modes",
-      excerpt: "Seamless tracking now available for trucks, ships, drones, trains, and aircraft in unified interface.",
-      category: "Technology"
-    },
-    {
-      date: "Jan 8, 2026",
-      title: "NexusVectis Expands Operations to Scandinavia",
-      excerpt: "Opening regional hub in Copenhagen to serve Nordic logistics market with 24/7 support.",
-      category: "Company"
-    },
-    {
-      date: "Dec 28, 2025",
-      title: "Swarm Intelligence Engine Deployed to Production",
-      excerpt: "Multi-vehicle coordination system enables autonomous route optimization for entire fleets.",
-      category: "Technology"
-    },
-    {
-      date: "Dec 15, 2025",
-      title: "Digital Twin Federation Security Standard Achieved",
-      excerpt: "Platform achieves ISO 27001 compliance with privacy-by-design architecture.",
-      category: "Security"
-    },
-    {
-      date: "Dec 1, 2025",
-      title: "AI-Powered Demand Forecasting Accuracy Reaches 94%",
-      excerpt: "Machine learning models predict future shipment demands with unprecedented accuracy.",
-      category: "Technology"
-    },
-    {
-      date: "Nov 15, 2025",
-      title: "NexusVectis Launches Beta Program",
-      excerpt: "Closed beta with 50 enterprise logistics companies begins with exclusive early access.",
-      category: "Company"
+      title: "NexusVectis Officially Founded",
+      excerpt: "A young founder and advanced AI partner launch NexusVectis to revolutionize fleet logistics.",
+      category: "Company",
+      fullContent: "NexusVectis is officially founded with a bold mission: to bring AI-powered intelligence to the logistics industry. The company is formed as a partnership between a 21-year-old founder with deep domain expertise in logistics and cutting-edge AI capabilities. The initial focus is on building FLEET AI, a platform that will make advanced fleet optimization accessible to logistics companies of all sizes. The vision is to create a future where logistics operations are fully autonomous, optimized, and sustainable."
     }
   ];
+
+  const [expandedIndex, setExpandedIndex] = useState(null);
 
   const milestones = [
     { month: "Jan 2026", title: "FLEET AI Engine v1", desc: "Launched core natural language interface with Mistral 7B fine-tuned on logistics data" },
