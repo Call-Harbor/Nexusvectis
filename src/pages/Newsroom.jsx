@@ -126,32 +126,8 @@ export default function Newsroom() {
         />
       </div>
 
-      {/* Header */}
-      <motion.header 
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        className="fixed top-0 left-0 right-0 z-50 bg-black/20 backdrop-blur-2xl border-b border-white/5"
-      >
-        <div className="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
-          <Link to={createPageUrl("Home")}>
-            <motion.img 
-              whileHover={{ scale: 1.05 }}
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/697e930c62bf3e3832b34edb/bc9d40ccc_FullLogo_Transparent1.png" 
-              alt="NexusVectis" 
-              className="h-20 w-auto"
-            />
-          </Link>
-          <button
-            onClick={() => base44.auth.redirectToLogin(createPageUrl("Dashboard"))}
-            className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-6 py-2 rounded-lg hover:scale-105 transition-transform"
-          >
-            Get Started
-          </button>
-        </div>
-      </motion.header>
-
       {/* Hero */}
-      <section className="relative pt-40 pb-32 px-6 z-10">
+      <section className="relative pt-20 pb-32 px-6 z-10">
         <div className="max-w-5xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
