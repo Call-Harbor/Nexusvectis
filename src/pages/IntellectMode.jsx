@@ -118,8 +118,8 @@ const HologramWindow = React.memo(({ id, title, icon: Icon, children, position, 
       animate={{ scale: 1, opacity: 1, y: 0 }}
       exit={{ scale: 0.9, opacity: 0, y: 20 }}
       transition={{ type: "spring", damping: 25, stiffness: 300 }}
-      style={isMobile ? {} : { left: pos.x, top: pos.y, width: size.width, height: size.height }}
-      className={isMobile ? "fixed inset-4 z-50" : "fixed z-50 resize overflow-auto"}
+      style={isMobile ? {} : { left: pos.x, top: pos.y, width: size.width, height: size.height, zIndex: isFocused ? 9999 : 50 }}
+      className={isMobile ? "fixed inset-4" : "fixed resize overflow-auto"}
       onPointerDown={handlePointerDown}
     >
       <div className="bg-slate-900/60 backdrop-blur-2xl rounded-2xl border-2 border-cyan-500/50 shadow-2xl shadow-cyan-500/40 overflow-hidden h-full flex flex-col relative group">
