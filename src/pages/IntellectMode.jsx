@@ -656,8 +656,8 @@ export default function IntellectMode() {
 
     const currentCommand = input;
 
-    // Detect company analysis command locally
-    const companyMatch = currentCommand.match(/(?:analyser(?:er)?\s+(?:virksomheden?\s+)?|company analysis[:\s]+|analyze company[:\s]+)(.+)/i);
+    // Detect company analysis command locally — must contain "virksomhed" or explicit keywords
+    const companyMatch = currentCommand.match(/(?:analyser(?:er)?\s+virksomheden?\s+|company analysis[:\s]+|analyze company[:\s]+)(.+)/i);
     if (companyMatch) {
       const cName = companyMatch[1].trim();
       setMessages(prev => [...prev, { role: "user", content: currentCommand }]);
