@@ -1729,7 +1729,7 @@ export default function IntellectMode() {
     // For full page iframes - all apps
     if (['dashboard', 'settings', 'aioptimization', 'invoices', 'apidocs', 'resources', 
          'warehouseautomation', 'demandforecasting', 'greentms', 'gpsintegration', 'assignment', 'routeeditor',
-         'fleet', 'alerts', 'routes', 'shipments', 'crm', 'vehicles', 'drivers', 'maintenance'].includes(type)) {
+         'fleet', 'alerts', 'routes', 'shipments', 'crm', 'vehicles', 'drivers', 'maintenance', 'hr'].includes(type)) {
       const pageMap = {
         'dashboard': 'Dashboard',
         'settings': 'Settings',
@@ -1750,7 +1750,8 @@ export default function IntellectMode() {
         'crm': 'CRM',
         'vehicles': 'Fleet',
         'drivers': 'DriverManagement',
-        'maintenance': 'MaintenanceManagement'
+        'maintenance': 'MaintenanceManagement',
+        'hr': 'HRManagement'
       };
       
       return (
@@ -1887,16 +1888,20 @@ export default function IntellectMode() {
                   <DropdownMenuLabel className="text-cyan-400 mt-2">Business & Analytics</DropdownMenuLabel>
                   <DropdownMenuSeparator className="bg-slate-800" />
                   <DropdownMenuItem onClick={() => openWindow('dashboard')} className="text-slate-300 gap-2">
-                    <LayoutDashboard className="w-4 h-4" />
-                    Dashboard
+                   <LayoutDashboard className="w-4 h-4" />
+                   Dashboard
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => openWindow('crm')} className="text-slate-300 gap-2">
-                    <Users className="w-4 h-4" />
-                    CRM
+                   <Users className="w-4 h-4" />
+                   CRM
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => openWindow('hr')} className="text-slate-300 gap-2">
+                   <Users className="w-4 h-4" />
+                   HR Management
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => openWindow('invoices')} className="text-slate-300 gap-2">
-                    <FileText className="w-4 h-4" />
-                    Invoices
+                   <FileText className="w-4 h-4" />
+                   Invoices
                   </DropdownMenuItem>
 
                   <DropdownMenuLabel className="text-cyan-400 mt-2">Advanced</DropdownMenuLabel>
