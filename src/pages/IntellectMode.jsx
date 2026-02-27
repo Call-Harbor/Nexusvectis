@@ -736,12 +736,10 @@ export default function IntellectMode() {
     if (isDeepAnalysisPrompt) {
       setMessages(prev => [...prev, { role: "user", content: currentCommand }]);
       setInput("");
-      setIsProcessing(true);
-      setThinkingLogs([]);
-      setShowThinkingTerminal(true);
-      addThinkingLog('parse', `Deep research analysis initiated`, null, 0);
-      addThinkingLog('analyze', 'Gathering fleet telemetry, sensor data & historical records', { vehicles: vehicles.length, routes: routes.length, shipments: shipments.length }, 200, 20);
-      addThinkingLog('think', 'Running multi-dimensional statistical models', { models: ['time-series', 'regression', 'clustering', 'anomaly-detection'], dimensions: 12 }, 300, 40);
+      const processId = createProcessTerminal(currentCommand.substring(0, 40) + '...');
+      addThinkingLog('parse', `Deep research analysis initiated`, null, 0, null, processId);
+      addThinkingLog('analyze', 'Gathering fleet telemetry, sensor data & historical records', { vehicles: vehicles.length, routes: routes.length, shipments: shipments.length }, 200, 20, processId);
+      addThinkingLog('think', 'Running multi-dimensional statistical models', { models: ['time-series', 'regression', 'clustering', 'anomaly-detection'], dimensions: 12 }, 300, 40, processId);
 
       try {
         const fleetContext = `
