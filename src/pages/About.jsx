@@ -156,7 +156,7 @@ export default function About() {
             transition={{ duration: 0.8 }}
           >
             <h2 className="text-6xl md:text-7xl font-black text-white mb-8">
-              Built by <span className="bg-gradient-to-r from-violet-400 to-cyan-400 bg-clip-text text-transparent">Supergeniuses</span>
+              Built by <span className="text-cyan-400">Supergeniuses</span>
             </h2>
             <p className="text-lg text-slate-200 leading-relaxed mb-12 max-w-3xl mx-auto font-light">
               We're not logistics experts who hired AI engineers. We're AI researchers who know logistics inside and out. 
@@ -175,13 +175,13 @@ export default function About() {
                   viewport={{ once: true }}
                   transition={{ delay: idx * 0.15, duration: 0.7 }}
                   whileHover={{ scale: 1.05, y: -10 }}
-                  className="p-8 rounded-3xl bg-gradient-to-br from-violet-500/15 to-cyan-500/10 border border-violet-500/40 hover:border-violet-400/80 group relative overflow-hidden"
+                  className="p-8 rounded-2xl bg-slate-900/60 border border-cyan-500/40 hover:border-cyan-400/80 group relative overflow-hidden backdrop-blur-md"
                 >
                   <motion.div whileHover={{ rotate: 360, scale: 1.2 }} transition={{ duration: 0.8 }}>
-                    <Award className="w-10 h-10 text-violet-400 mx-auto mb-4 group-hover:text-cyan-300 transition-colors" />
+                    <Award className="w-10 h-10 text-cyan-400 mx-auto mb-4 group-hover:text-cyan-300 transition-colors" />
                   </motion.div>
-                  <h4 className="text-xl font-bold text-white mb-3 group-hover:text-violet-300 transition-colors">{team.role}</h4>
-                  <p className="text-slate-300 text-sm leading-relaxed group-hover:text-slate-200 transition-colors">{team.desc}</p>
+                  <h4 className="text-xl font-bold text-white mb-3 group-hover:text-cyan-300 transition-colors">{team.role}</h4>
+                  <p className="text-slate-400 text-sm leading-relaxed group-hover:text-slate-300 transition-colors">{team.desc}</p>
                 </motion.div>
               ))}
             </div>
