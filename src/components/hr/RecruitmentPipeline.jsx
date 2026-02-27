@@ -5,10 +5,11 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
-  Briefcase, Plus, Users, X, Sparkles, BarChart3, Brain
+  Briefcase, Plus, Users, X, Sparkles, BarChart3, Brain, Trophy
 } from "lucide-react";
 import RecruitmentAIPanel from "./RecruitmentAIPanel";
 import CandidateScreener from "./CandidateScreener";
+import CandidateRanking from "./CandidateRanking";
 
 export const STAGES = [
   { key: "applied",   label: "Ansøgt",    color: "bg-slate-500/20 text-slate-400" },
@@ -35,6 +36,7 @@ export default function RecruitmentPipeline({ orgId }) {
   const [showJobForm, setShowJobForm] = useState(false);
   const [showCandidateForm, setShowCandidateForm] = useState(false);
   const [showAI, setShowAI] = useState(false);
+  const [showRanking, setShowRanking] = useState(false);
   const [screeningCandidate, setScreeningCandidate] = useState(null);
   const [jobForm, setJobForm] = useState({ job_title: "", department: "Operations", employment_type: "full_time", status: "open", priority: "medium", description: "", requirements: "", location: "", salary_min: "", salary_max: "", hiring_manager: "" });
   const [candForm, setCandForm] = useState({ name: "", email: "", phone: "", stage: "applied", notes: "", cv_summary: "" });
@@ -102,6 +104,13 @@ export default function RecruitmentPipeline({ orgId }) {
     setScreeningCandidate(null);
   };
 
+  const saveAllCandidates = async (updatedCandidates) => {
+    await base44.entities.Recruitment.update(selected.id, { candidates: updatedCandidates });
+    const refreshed = { ...selected, candidates: updatedCandidates };
+    setSelected(refreshed);
+    setJobs(prev => prev.map(j => j.id === selected.id ? refreshed : j));
+  };
+
   return (
     <div className="flex gap-4" style={{ minHeight: "600px" }}>
       {/* Job list */}
@@ -115,6 +124,13 @@ export default function RecruitmentPipeline({ orgId }) {
               className={`h-9 border-violet-500/40 px-3 ${showAI ? "bg-violet-500/20 text-violet-300" : "text-violet-400 hover:bg-violet-500/10"}`}
               title="AI-assistent">
               <Sparkles className="w-4 h-4" />
+            </Button>
+          )}
+          {selected && (selected.candidates || []).length > 0 && (
+            <Button onClick={() => setShowRanking(true)} variant="outline"
+              className="h-9 border-cyan-500/40 px-3 text-cyan-400 hover:bg-cyan-500/10"
+              title="Rangordne kandidater">
+              <Trophy className="w-4 h-4" />
             </Button>
           )}
         </div>
@@ -170,10 +186,18 @@ export default function RecruitmentPipeline({ orgId }) {
                 <h3 className="text-white font-semibold truncate">{selected.job_title}</h3>
                 <p className="text-xs text-slate-400">{selected.department}{selected.location && ` · ${selected.location}`}</p>
               </div>
-              <Button size="sm" onClick={() => setShowCandidateForm(!showCandidateForm)}
-                className="bg-violet-600 hover:bg-violet-500 h-8 text-xs flex-shrink-0">
-                <Plus className="w-3.5 h-3.5 mr-1" /> Tilføj kandidat
-              </Button>
+              <div className="flex gap-2 flex-shrink-0">
+                {(selected.candidates || []).length > 1 && (
+                  <Button size="sm" onClick={() => setShowRanking(true)}
+                    className="bg-cyan-700 hover:bg-cyan-600 h-8 text-xs">
+                    <Trophy className="w-3.5 h-3.5 mr-1" /> Rangordne alle
+                  </Button>
+                )}
+                <Button size="sm" onClick={() => setShowCandidateForm(!showCandidateForm)}
+                  className="bg-violet-600 hover:bg-violet-500 h-8 text-xs">
+                  <Plus className="w-3.5 h-3.5 mr-1" /> Tilføj kandidat
+                </Button>
+              </div>
             </div>
 
             {/* AI Panel */}
@@ -283,6 +307,15 @@ export default function RecruitmentPipeline({ orgId }) {
           job={selected}
           onSave={(result) => updateCandidateScreening(screeningCandidate.candidateIdx, result)}
           onClose={() => setScreeningCandidate(null)}
+        />
+      )}
+
+      {/* Bulk Ranking modal */}
+      {showRanking && selected && (
+        <CandidateRanking
+          job={selected}
+          onSaveAll={saveAllCandidates}
+          onClose={() => setShowRanking(false)}
         />
       )}
     </div>
