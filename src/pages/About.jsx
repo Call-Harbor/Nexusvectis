@@ -210,6 +210,91 @@ export default function About() {
         </div>
       </section>
 
+      {/* Founder's Journey Section */}
+      <section className="relative py-32 px-6 z-10">
+        <div className="max-w-6xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-20"
+          >
+            <h2 className="text-5xl md:text-6xl font-bold text-white mb-6">
+              The Story of <span className="text-cyan-400">Cornelio</span>
+            </h2>
+            <p className="text-xl text-slate-400 max-w-3xl mx-auto">
+              From a 21-year-old developer's vision to a global logistics revolution
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="space-y-6"
+            >
+              <div className="p-8 rounded-3xl bg-white/5 border border-cyan-500/30 hover:border-cyan-500/60 transition-all">
+                <h3 className="text-2xl font-bold text-cyan-400 mb-3">The Vision at 21</h3>
+                <p className="text-slate-300 leading-relaxed">
+                  At just 21 years old, Cornelio saw what nobody else saw: logistics wasn't broken because people were incompetent. 
+                  It was broken because it was being run with tools built in the 2000s, in an age where AI could solve everything.
+                </p>
+              </div>
+
+              <div className="p-8 rounded-3xl bg-white/5 border border-violet-500/30 hover:border-violet-500/60 transition-all">
+                <h3 className="text-2xl font-bold text-violet-400 mb-3">The Blank Canvas</h3>
+                <p className="text-slate-300 leading-relaxed">
+                  Instead of patching legacy systems, he asked the radical question: "What if we built logistics from scratch in 2026?" 
+                  No compromises. No inherited debt. Just modern AI architecture solving real problems.
+                </p>
+              </div>
+
+              <div className="p-8 rounded-3xl bg-white/5 border border-fuchsia-500/30 hover:border-fuchsia-500/60 transition-all">
+                <h3 className="text-2xl font-bold text-fuchsia-400 mb-3">FLEET AI was Born</h3>
+                <p className="text-slate-300 leading-relaxed">
+                  The result? FLEET AI—an AI system that doesn't just analyze logistics. It orchestrates entire supply chains in natural language. 
+                  Fleet operators could finally talk to their logistics network like talking to an expert.
+                </p>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="space-y-6"
+            >
+              <div className="p-8 rounded-3xl bg-white/5 border border-emerald-500/30 hover:border-emerald-500/60 transition-all">
+                <h3 className="text-2xl font-bold text-emerald-400 mb-3">Real-Time Intelligence</h3>
+                <p className="text-slate-300 leading-relaxed">
+                  Cornelio didn't just want faster—he wanted different. 50+ parallel AI analyses. Digital twins of every vehicle. 
+                  Swarm intelligence coordinating fleets across continents. The platform thinks so logistics operators don't have to.
+                </p>
+              </div>
+
+              <div className="p-8 rounded-3xl bg-white/5 border border-amber-500/30 hover:border-amber-500/60 transition-all">
+                <h3 className="text-2xl font-bold text-amber-400 mb-3">A Global Movement</h3>
+                <p className="text-slate-300 leading-relaxed">
+                  What started as one 21-year-old's idea became NexusVectis. Now, thousands of fleet operators worldwide use his platform 
+                  to make 100 million+ optimization decisions every single day.
+                </p>
+              </div>
+
+              <div className="p-8 rounded-3xl bg-gradient-to-br from-cyan-500/20 to-violet-500/20 border border-cyan-500/40 hover:border-cyan-500/70 transition-all">
+                <h3 className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent mb-3">
+                  The Legacy
+                </h3>
+                <p className="text-slate-300 leading-relaxed">
+                  At 21, Cornelio proved that age isn't a limitation—it's an asset. He had no legacy thinking to unlearn. 
+                  He could build the future because he wasn't constrained by the past.
+                </p>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
       {/* Team Section */}
       <section className="relative py-32 px-6 z-10">
         <div className="max-w-5xl mx-auto text-center">
