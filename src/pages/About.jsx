@@ -138,7 +138,7 @@ export default function About() {
               Our <span className="text-cyan-400">Values</span>
             </h2>
             <p className="text-xl text-slate-400 max-w-3xl mx-auto">
-              The principles that guide everything we build
+              What makes a platform built in 2026 fundamentally different
             </p>
           </motion.div>
 
