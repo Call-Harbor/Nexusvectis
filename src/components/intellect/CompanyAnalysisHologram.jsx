@@ -495,6 +495,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
     { id: 'esg', label: 'ESG' },
     { id: 'leadership', label: 'Leadership' },
     { id: 'ownership', label: 'Ownership' },
+    { id: 'score', label: 'AI Company Score' },
     { id: 'verdict', label: 'AI Verdict' },
     { id: 'people', label: 'People Search' },
   ];
