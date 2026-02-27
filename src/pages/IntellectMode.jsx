@@ -73,6 +73,7 @@ const HologramWindow = React.memo(({ id, title, icon: Icon, children, position, 
   }, []);
 
   const handlePointerDown = (e) => {
+    onFocus(id);
     if (e.target === headerRef.current || headerRef.current.contains(e.target)) {
       const rect = e.currentTarget.getBoundingClientRect();
       setDragOffset({
