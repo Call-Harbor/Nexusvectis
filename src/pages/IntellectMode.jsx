@@ -665,6 +665,8 @@ export default function IntellectMode() {
   const processCommand = async () => {
     if (!input.trim()) return;
 
+    const currentCommand = input;
+
     // Detect company analysis command locally — must contain "virksomhed" or explicit keywords
     const companyMatch = currentCommand.match(/(?:analyser(?:er)?\s+virksomheden?\s+|company analysis[:\s]+|analyze company[:\s]+)(.+)/i);
     if (companyMatch) {
