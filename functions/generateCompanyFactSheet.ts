@@ -88,23 +88,24 @@ Deno.serve(async (req) => {
     pdf.setFontSize(11);
 
     const aiTech = [
-      'Base Model: Mistral 7B - an open-source, lightweight language model optimized for efficiency',
-      'Fine-tuning: Trained on extensive logistics-specific datasets and operational protocols',
-      'Natural Language Processing: Understands complex multi-step logistics commands with context awareness',
-      'Parallel AI Analysis: Capable of running 50+ concurrent AI analyses for simultaneous fleet optimization',
-      'Distributed Intelligence: Edge AI processing combined with central optimization for sub-second latency',
-      'Autonomous Decision-Making: AI-powered recommendations for route optimization, maintenance scheduling, resource allocation',
-      'Federated Learning: Privacy-preserving AI that improves continuously without sharing raw customer data',
-      'Multi-Modal Understanding: Processes diverse data types - telemetry, GPS, AIS, weather, traffic patterns, regulatory constraints'
+      'Base Model: Mistral 7B - lightweight language model optimized for efficiency',
+      'Fine-tuning: Trained on logistics-specific datasets and operational protocols',
+      'Natural Language: Understands complex multi-step logistics commands with context awareness',
+      'Parallel Analysis: Runs 50+ concurrent AI analyses for simultaneous optimization',
+      'Distributed Intelligence: Edge AI + central optimization for sub-second latency',
+      'Autonomous Decisions: AI-powered recommendations for routes, maintenance, resources',
+      'Federated Learning: Privacy-preserving AI that improves continuously',
+      'Multi-Modal: Processes telemetry, GPS, AIS, weather, traffic, regulatory constraints'
     ];
 
     aiTech.forEach(tech => {
-      if (yPos > pageHeight - 30) {
+      if (yPos > pageHeight - 20) {
         pdf.addPage();
         yPos = 20;
       }
-      pdf.text('• ' + tech, 25, yPos);
-      yPos += 8;
+      const techLines = pdf.splitTextToSize(tech, pageWidth - 50);
+      pdf.text(techLines, 25, yPos);
+      yPos += (techLines.length * 4) + 3;
     });
 
     // Core Features
