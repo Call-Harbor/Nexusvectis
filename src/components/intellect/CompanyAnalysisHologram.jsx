@@ -124,7 +124,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
       const [r1, r2, r3, r4, r5, r6] = await Promise.all([
         // Basic info
         base44.integrations.Core.InvokeLLM({
-          prompt: `Give me basic info about the company "${name}". Real data only.`,
+          prompt: `Give me basic info about the company identified by "${name}". This could be a company name, CVR number, company registration number, VAT number, or any other company identifier. Look up the real company. Real data only.`,
           add_context_from_internet: true,
           response_json_schema: {
             type: "object",
@@ -145,7 +145,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
         }),
         // Financial metrics
         base44.integrations.Core.InvokeLLM({
-          prompt: `Give me key financial metrics for the company "${name}". Real data only.`,
+          prompt: `Give me key financial metrics for the company identified by "${name}" (could be a name, CVR number, registration number, or VAT number). Real data only.`,
           add_context_from_internet: true,
           response_json_schema: {
             type: "object",
@@ -163,7 +163,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
         }),
         // Revenue chart + competitors + geo markets + ratings
         base44.integrations.Core.InvokeLLM({
-          prompt: `For "${name}", give me: 5 years of revenue/profit/ebitda data, top 3 competitors with market share %, geographic revenue split by region %, and ratings 1-10 for financial_health, growth_potential, innovation, brand_strength, management_quality, market_position, esg_rating, overall. Real data only.`,
+          prompt: `For the company identified by "${name}" (could be a name, CVR, registration number, or VAT number), give me: 5 years of revenue/profit/ebitda data, top 3 competitors with market share %, geographic revenue split by region %, and ratings 1-10 for financial_health, growth_potential, innovation, brand_strength, management_quality, market_position, esg_rating, overall. Real data only.`,
           add_context_from_internet: true,
           response_json_schema: {
             type: "object",
@@ -178,7 +178,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
         }),
         // SWOT + history
         base44.integrations.Core.InvokeLLM({
-          prompt: `For "${name}", give me: SWOT analysis (3 points each) and company history including description, business model, USP, 3 recent news headlines, 3 core values, and 3 key milestones (year + event). Real data only.`,
+          prompt: `For the company identified by "${name}" (could be a name, CVR, registration number, or VAT number), give me: SWOT analysis (3 points each) and company history including description, business model, USP, 3 recent news headlines, 3 core values, and 3 key milestones (year + event). Real data only.`,
           add_context_from_internet: true,
           response_json_schema: {
             type: "object",
@@ -190,7 +190,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
         }),
         // ESG + leadership
         base44.integrations.Core.InvokeLLM({
-          prompt: `For "${name}", give me: ESG scores (overall, environmental, social, governance out of 100), rating agency, CO2 target, renewable energy %, 3 sustainability initiatives, any controversies. Also give me the top 3 executives (name, title, background, education).`,
+          prompt: `For the company identified by "${name}" (could be a name, CVR, registration number, or VAT number), give me: ESG scores (overall, environmental, social, governance out of 100), rating agency, CO2 target, renewable energy %, 3 sustainability initiatives, any controversies. Also give me the top 3 executives (name, title, background, education).`,
           add_context_from_internet: true,
           response_json_schema: {
             type: "object",
@@ -221,7 +221,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
         }),
         // Ownership + AI verdict
         base44.integrations.Core.InvokeLLM({
-          prompt: `For "${name}", give me: ownership details (type, exchange, founder name, founder year, founder story, founder current role, top 3 shareholders with % and type). Also give an AI investment verdict: summary, investment thesis, recommendation (BUY/HOLD/SELL), 3 key risks, 3 key catalysts. Real data only.`,
+          prompt: `For the company identified by "${name}" (could be a name, CVR, registration number, or VAT number), give me: ownership details (type, exchange, founder name, founder year, founder story, founder current role, top 3 shareholders with % and type). Also give an AI investment verdict: summary, investment thesis, recommendation (BUY/HOLD/SELL), 3 key risks, 3 key catalysts. Real data only.`,
           add_context_from_internet: true,
           response_json_schema: {
             type: "object",
@@ -478,7 +478,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
             value={companyInput}
             onChange={e => setCompanyInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleSearch()}
-            placeholder="Search company (e.g. Maersk, Apple, Novo Nordisk, Tesla)..."
+            placeholder="Search company by name or registration number (CVR, VAT, etc.)..."
             className="flex-1 px-4 py-2.5 bg-slate-900/60 border-2 border-cyan-500/30 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-400 text-sm"
           />
           <Button
