@@ -1721,7 +1721,7 @@ export default function IntellectMode() {
         <GlobalSearch
           orgId={data?.orgId}
           onOpenWindow={(entityType, item) => openWindow(entityType, { x: 200, y: 150 })}
-          onClose={() => {}}
+          onOpenPageWindow={(page) => openWindow(page.toLowerCase(), { x: 200 + Math.random() * 100, y: 150 + Math.random() * 60 })}
         />
       );
     }
