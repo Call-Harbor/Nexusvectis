@@ -126,12 +126,6 @@ export default function Hero3D() {
               );
             })}
           </motion.div>
-                  <div className="text-2xl font-black text-white mb-3 group-hover:text-cyan-300">{cap.label}</div>
-                  <div className="text-sm text-slate-300 group-hover:text-slate-100">{cap.value}</div>
-                </motion.div>
-              );
-            })}
-          </motion.div>
 
           {/* CTA */}
           <motion.div
