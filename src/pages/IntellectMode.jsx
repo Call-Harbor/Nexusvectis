@@ -675,6 +675,38 @@ export default function IntellectMode() {
     }
   }, [input]);
 
+  const createProcessTerminal = (commandName) => {
+    const processId = `process_${Date.now()}`;
+    setProcessTerminals(prev => [...prev, {
+      id: processId,
+      name: commandName,
+      logs: [],
+      startTime: Date.now()
+    }]);
+    return processId;
+  };
+
+  const closeProcessTerminal = (processId) => {
+    setProcessTerminals(prev => prev.filter(p => p.id !== processId));
+    setMinimizedProcesses(prev => {
+      const next = new Set(prev);
+      next.delete(processId);
+      return next;
+    });
+  };
+
+  const toggleProcessMinimize = (processId) => {
+    setMinimizedProcesses(prev => {
+      const next = new Set(prev);
+      if (next.has(processId)) {
+        next.delete(processId);
+      } else {
+        next.add(processId);
+      }
+      return next;
+    });
+  };
+
   const processCommand = async () => {
     if (!input.trim()) return;
 
