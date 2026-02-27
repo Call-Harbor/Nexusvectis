@@ -2885,6 +2885,24 @@ Return JSON with this EXACT structure:
         </div>
       </div>
 
+      {/* Process Thinking Terminals */}
+      <div className="fixed bottom-6 right-6 space-y-3 z-50 pointer-events-none">
+        <AnimatePresence>
+          {processTerminals.map((process, idx) => (
+            <div key={process.id} className="pointer-events-auto" style={{ transform: `translateY(${idx * 20}px)` }}>
+              <ProcessThinkingTerminal
+                processId={process.id}
+                processName={process.name}
+                thinkingLogs={process.logs || []}
+                isMinimized={minimizedProcesses.has(process.id)}
+                onClose={() => closeProcessTerminal(process.id)}
+                onToggleMinimize={() => toggleProcessMinimize(process.id)}
+              />
+            </div>
+          ))}
+        </AnimatePresence>
+      </div>
+
       {/* Multi-Screen Manager */}
       <AnimatePresence>
         {showMultiScreenManager && (
@@ -2903,6 +2921,6 @@ Return JSON with this EXACT structure:
         userLevel={currentUser?.role === 'admin' ? 4 : 2}
         performanceHistory={[]}
       />
-    </div>
-  );
-}
+      </div>
+      );
+      }
