@@ -172,7 +172,8 @@ export default function VideoCallHologram({ videoUrl, onClose }) {
           <iframe
             src={currentUrl}
             title="Video Call"
-            allow="camera; microphone; speaker; display-capture"
+            allow="camera; microphone; speaker; display-capture; fullscreen"
+            sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-top-navigation allow-popups-to-escape-sandbox"
             className="w-full h-full border-0"
           />
           
