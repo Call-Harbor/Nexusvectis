@@ -5,6 +5,8 @@ import { Target, Users, Sparkles, ArrowRight, Award, TrendingUp, Globe, Zap, Shi
 import { base44 } from "@/api/base44Client";
 import { useEffect } from "react";
 import TechEvolution from "../components/about/TechEvolution";
+import MissionVision from "../components/about/MissionVision";
+import TechShowcase from "../components/about/TechShowcase";
 
 export default function About() {
   useEffect(() => {
@@ -126,143 +128,16 @@ export default function About() {
         </div>
       </section>
 
-      {/* Core Pillars Section */}
-      <section className="relative py-32 px-6 z-10">
-        <div className="max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-20"
-          >
-            <h2 className="text-5xl md:text-6xl font-bold text-white mb-6">
-              The Four <span className="text-cyan-400">Core Pillars</span>
-            </h2>
-            <p className="text-xl text-slate-400 max-w-3xl mx-auto">
-              What makes a platform built in 2026 fundamentally different
-            </p>
-          </motion.div>
+      {/* Mission & Vision */}
+      <MissionVision />
 
-          <div className="grid md:grid-cols-2 gap-8">
-            {[
-              { 
-                icon: Brain, 
-                title: "AI-Native Architecture", 
-                desc: "Every decision—routing, prediction, optimization—flows through distributed AI. No bolted-on ML. The platform thinks.",
-                color: "cyan"
-              },
-              { 
-                icon: Zap, 
-                title: "Real-Time Intelligence", 
-                desc: "50+ parallel AI analyses running simultaneously. Not delayed reports. Not batch processing. Answers in milliseconds.",
-                color: "violet"
-              },
-              { 
-                icon: Rocket, 
-                title: "Modern Tech Stack", 
-                desc: "Built on current best practices: vector databases, graph neural networks, edge computing, and cloud-native architecture.",
-                color: "fuchsia"
-              },
-              {
-                icon: Shield,
-                title: "Security by Design",
-                desc: "Not an afterthought. Designed in from day one with SOC 2, encryption, audit trails, and digital twin anomaly detection.",
-                color: "emerald"
-              }
-            ].map((pillar, idx) => {
-              const Icon = pillar.icon;
-              const colorMap = {
-                cyan: "from-cyan-500/20 to-cyan-500/5 border-cyan-500/30",
-                violet: "from-violet-500/20 to-violet-500/5 border-violet-500/30",
-                fuchsia: "from-fuchsia-500/20 to-fuchsia-500/5 border-fuchsia-500/30",
-                emerald: "from-emerald-500/20 to-emerald-500/5 border-emerald-500/30"
-              };
-              return (
-                <motion.div
-                  key={idx}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: idx * 0.1 }}
-                  whileHover={{ scale: 1.02, y: -10 }}
-                  className={`p-10 rounded-3xl bg-gradient-to-br ${colorMap[pillar.color]} border hover:border-opacity-60 transition-all group`}
-                >
-                  <motion.div
-                    whileHover={{ rotate: 360 }}
-                    transition={{ duration: 0.6 }}
-                    className={`w-16 h-16 rounded-2xl bg-${pillar.color}-500/10 flex items-center justify-center mb-6`}
-                  >
-                    <Icon className={`w-8 h-8 text-${pillar.color}-400`} />
-                  </motion.div>
-                  <h3 className="text-2xl font-bold text-white mb-4 group-hover:text-cyan-400 transition-colors">
-                    {pillar.title}
-                  </h3>
-                  <p className="text-slate-400 leading-relaxed">{pillar.desc}</p>
-                </motion.div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
+      {/* Technology Showcase */}
+      <TechShowcase />
 
       {/* Technology Evolution & Future Roadmap */}
       <TechEvolution />
 
-      {/* Why We're Different Section */}
-      <section className="relative py-32 px-6 z-10">
-        <div className="max-w-6xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-5xl md:text-6xl font-bold text-white mb-6">
-              Why We're <span className="text-cyan-400">Different</span>
-            </h2>
-            <p className="text-xl text-slate-400 max-w-3xl mx-auto">
-              Not an upgrade. Not legacy software with AI slapped on top. A complete reimagining from first principles.
-            </p>
-          </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                title: "No Legacy Debt",
-                desc: "We didn't inherit 20 years of patches and workarounds. Every line of code was written knowing what we know in 2026.",
-                icon: Sparkles
-              },
-              {
-                title: "AI-First Thinking",
-                desc: "We didn't bolt AI onto logistics. We asked: 'How would logistics work if AI could do anything?' and built from that.",
-                icon: Brain
-              },
-              {
-                title: "Continuous Evolution",
-                desc: "We're already building the 2027 version. Autonomous negotiation, quantum computing, multi-agent governance—it's coming.",
-                icon: Rocket
-              }
-            ].map((item, idx) => {
-              const Icon = item.icon;
-              return (
-                <motion.div
-                  key={idx}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: idx * 0.1 }}
-                  whileHover={{ y: -10 }}
-                  className="p-10 rounded-3xl bg-gradient-to-br from-white/5 to-transparent border border-white/10 text-center"
-                >
-                  <Icon className="w-16 h-16 text-cyan-400 mx-auto mb-6" />
-                  <h3 className="text-2xl font-bold text-white mb-4">{item.title}</h3>
-                  <p className="text-slate-400 leading-relaxed">{item.desc}</p>
-                </motion.div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
 
       {/* Team Section */}
       <section className="relative py-32 px-6 z-10">
