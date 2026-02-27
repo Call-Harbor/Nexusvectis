@@ -2467,7 +2467,7 @@ Return JSON with this EXACT structure:
                 isMinimized={minimizedWindows.has('video-call')}
                 windowType="video_call"
               >
-                <VideoCallHologram />
+                <VideoCallHologram onClose={() => setShowVideoCall(false)} />
               </HologramWindow>
             )}
 
