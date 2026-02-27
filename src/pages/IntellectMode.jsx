@@ -47,6 +47,7 @@ import AICoach from "@/components/intellect/AICoach";
 import AIDocumentEditor from "@/components/intellect/AIDocumentEditor";
 import AISpreadsheetEditor from "@/components/intellect/AISpreadsheetEditor";
 import GlobalSearch from "@/components/intellect/GlobalSearch";
+import ParallelTaskProcessor from "@/components/intellect/ParallelTaskProcessor";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
