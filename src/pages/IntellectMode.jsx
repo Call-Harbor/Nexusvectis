@@ -274,6 +274,7 @@ export default function IntellectMode() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [commandExecution, setCommandExecution] = useState(null);
   const [suggestions, setSuggestions] = useState([]);
+  const [showParallelProcessor, setShowParallelProcessor] = useState(false);
   const messagesEndRef = useRef(null);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
