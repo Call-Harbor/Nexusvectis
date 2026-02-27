@@ -93,16 +93,19 @@ export default function UserManagement() {
     mutationFn: async ({ email, role }) => {
       const orgId = currentUser?.organization_id || currentUser?.data?.organization_id;
 
-      // Create organization member record with specific role
-      await base44.entities.OrganizationMember.create({
-        organization_id: orgId,
-        user_email: email,
-        role: role,
-        status: 'invited'
-      });
-
       // Invite user globally (creates user account if doesn't exist)
-      await base44.users.inviteUser(email, 'user');
+      // Use 'admin' role if inviting an admin, otherwise 'user'
+      await base44.users.inviteUser(email, role === 'admin' ? 'admin' : 'user');
+
+      // Create organization member record with specific role (only if org exists)
+      if (orgId) {
+        await base44.entities.OrganizationMember.create({
+          organization_id: orgId,
+          user_email: email,
+          role: role,
+          status: 'invited'
+        });
+      }
 
       // Log security audit
       await base44.functions.invoke('auditLog', {
@@ -110,7 +113,7 @@ export default function UserManagement() {
         resource_type: 'user',
         resource_id: email,
         status: 'success',
-        details: `Invited user with role: ${role} to organization ${orgId}`,
+        details: `Invited user with role: ${role}${orgId ? ` to organization ${orgId}` : ''}`,
         severity: 'medium'
       }).catch(() => {}); // Don't fail if audit log fails
     },
@@ -142,15 +145,8 @@ export default function UserManagement() {
       return;
     }
 
-    if (!currentUser?.organization_id && !currentUser?.data?.organization_id) {
-      toast.error("You must be assigned to an organization to invite users");
-      return;
-    }
-
-    // Only org admins can invite other admins
-    const currentMember = members.find(m => m.user_email === currentUser?.email);
-    const isOrgAdmin = currentMember?.role === 'admin';
-    if (inviteRole === "admin" && !isOrgAdmin) {
+    // Only platform admins can invite other admins
+    if (inviteRole === "admin" && currentUser?.role !== 'admin') {
       toast.error("Only admins can invite other admins");
       return;
     }
