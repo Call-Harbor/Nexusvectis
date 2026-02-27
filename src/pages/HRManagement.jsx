@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Users, UserPlus, CalendarDays, TrendingUp, Briefcase,
   Network, Search, Filter, Download, RefreshCw,
-  Building2, CheckCircle2, AlertCircle, Clock, ChevronDown
+  Building2, CheckCircle2, AlertCircle, Clock, ChevronDown, Brain
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,13 +15,15 @@ import LeaveManager from "../components/hr/LeaveManager";
 import RecruitmentPipeline from "../components/hr/RecruitmentPipeline";
 import PerformancePanel from "../components/hr/PerformancePanel";
 import OrgChart from "../components/hr/OrgChart";
+import CandidateMatcher from "../components/hr/CandidateMatcher";
 
 const TABS = [
-  { key: "employees",    label: "Medarbejdere",  icon: Users },
-  { key: "leave",        label: "Orlov & Fravær", icon: CalendarDays },
-  { key: "recruitment",  label: "Rekruttering",  icon: Briefcase },
-  { key: "performance",  label: "Performance",   icon: TrendingUp },
-  { key: "orgchart",     label: "Organisationsdiagram", icon: Network },
+  { key: "employees",    label: "Medarbejdere",        icon: Users },
+  { key: "leave",        label: "Orlov & Fravær",      icon: CalendarDays },
+  { key: "recruitment",  label: "Rekruttering",        icon: Briefcase },
+  { key: "performance",  label: "Performance",         icon: TrendingUp },
+  { key: "career",       label: "Karriere & Matching", icon: Brain },
+  { key: "orgchart",     label: "Organisationsdiagram",icon: Network },
 ];
 
 export default function HRManagement() {
@@ -218,6 +220,10 @@ export default function HRManagement() {
 
             {activeTab === "performance" && (
               <PerformancePanel orgId={orgId} employees={employees} />
+            )}
+
+            {activeTab === "career" && (
+              <CandidateMatcher employees={employees} orgId={orgId} />
             )}
 
             {activeTab === "orgchart" && (
