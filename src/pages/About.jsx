@@ -227,10 +227,10 @@ export default function About() {
             </p>
             <div className="grid md:grid-cols-3 gap-6 mb-12">
               {[
-                { role: "Operations Veterans", desc: "25+ years combined in logistics" },
-                { role: "AI Researchers", desc: "PhDs from leading tech companies" },
-                { role: "Engineers", desc: "Built systems handling millions of shipments" }
-              ].map((team, idx) => (
+                 { role: "AI Researchers", desc: "PhDs in machine learning, natural language processing, and distributed systems" },
+                 { role: "Logistics Operators", desc: "10+ years in dispatch, routing, and warehouse automation" },
+                 { role: "Systems Architects", desc: "Built platforms handling billions of events at scale" }
+               ].map((team, idx) => (
                 <motion.div
                   key={idx}
                   initial={{ opacity: 0, scale: 0.9 }}
