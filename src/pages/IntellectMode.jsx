@@ -48,6 +48,7 @@ import AIDocumentEditor from "@/components/intellect/AIDocumentEditor";
 import AISpreadsheetEditor from "@/components/intellect/AISpreadsheetEditor";
 import GlobalSearch from "@/components/intellect/GlobalSearch";
 import ParallelTaskProcessor from "@/components/intellect/ParallelTaskProcessor";
+import ProcessThinkingTerminal from "@/components/intellect/ProcessThinkingTerminal";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
