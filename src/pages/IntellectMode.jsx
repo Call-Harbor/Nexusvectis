@@ -275,6 +275,7 @@ export default function IntellectMode() {
   const [commandExecution, setCommandExecution] = useState(null);
   const [suggestions, setSuggestions] = useState([]);
   const [showParallelProcessor, setShowParallelProcessor] = useState(false);
+  const [focusedWindow, setFocusedWindow] = useState(null);
   const messagesEndRef = useRef(null);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
