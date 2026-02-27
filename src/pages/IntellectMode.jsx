@@ -1823,6 +1823,15 @@ export default function IntellectMode() {
             </div>
 
             <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 w-full sm:w-auto">
+              {/* Global Search Button */}
+              <Button
+                onClick={() => openWindow('global_search', { x: 120, y: 80 }, { orgId })}
+                className="bg-slate-700 hover:bg-slate-600 text-xs sm:text-sm gap-1"
+              >
+                <Search className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">Søg</span>
+              </Button>
+
               {/* Apps Dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
