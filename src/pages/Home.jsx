@@ -73,10 +73,10 @@ export default function Home() {
   ];
 
   const stats = [
-    { value: "50+", label: "Parallel AI Analyses" },
-    { value: "100M+", label: "Optimization Decisions" },
-    { value: "99.99%", label: "Model Uptime" },
-    { value: "10x", label: "Faster Decisions" }
+    { value: "AI", label: "Powered" },
+    { value: "Real-time", label: "Tracking" },
+    { value: "Multi-modal", label: "Transport" },
+    { value: "Global", label: "Coverage" }
   ];
 
   return (
@@ -816,19 +816,19 @@ export default function Home() {
           <div className="grid md:grid-cols-3 gap-8">
             {[
               {
-                stat: "10M+",
-                label: "Shipments Tracked",
-                desc: "Real-time monitoring across global supply chains"
+                stat: "50+",
+                label: "Parallel AI Analyses Running",
+                desc: "Complete multiple complex analyses simultaneously for instant insights"
               },
               {
-                stat: "500K+",
-                label: "AI Commands Daily",
-                desc: "Fleet operators automating with natural language"
+                stat: "100M+",
+                label: "Optimization Decisions Daily",
+                desc: "AI-driven decisions for routing, scheduling, and resource allocation"
               },
               {
-                stat: "45%",
-                label: "Avg. Cost Savings",
-                desc: "Through intelligent route and resource optimization"
+                stat: "10x",
+                label: "Faster Decision Making",
+                desc: "Real-time intelligence replaces delayed batch processing"
               }
             ].map((stat, idx) => (
               <motion.div
