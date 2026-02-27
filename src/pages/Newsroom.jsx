@@ -166,27 +166,50 @@ export default function Newsroom() {
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: idx * 0.1 }}
-                whileHover={{ scale: 1.02 }}
-                className="p-8 rounded-2xl bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 hover:border-blue-500/50 transition-all group cursor-pointer"
+                transition={{ delay: idx * 0.05 }}
+                className="rounded-2xl bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 hover:border-blue-500/50 transition-all overflow-hidden"
               >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <span className="text-blue-400 text-sm font-mono font-bold">{release.category}</span>
+                <button
+                  onClick={() => setExpandedIndex(expandedIndex === idx ? null : idx)}
+                  className="w-full p-8 text-left hover:bg-white/[0.05] transition-colors"
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <span className="text-blue-400 text-sm font-mono font-bold">{release.category}</span>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <span className="text-slate-500 text-sm flex items-center gap-1">
+                        <Calendar className="w-4 h-4" />
+                        {release.date}
+                      </span>
+                      <motion.div
+                        animate={{ rotate: expandedIndex === idx ? 180 : 0 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <ChevronDown className="w-5 h-5 text-slate-500" />
+                      </motion.div>
+                    </div>
                   </div>
-                  <span className="text-slate-500 text-sm flex items-center gap-1">
-                    <Calendar className="w-4 h-4" />
-                    {release.date}
-                  </span>
-                </div>
-                <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-blue-400 transition-colors">
-                  {release.title}
-                </h3>
-                <p className="text-slate-400 leading-relaxed mb-4">{release.excerpt}</p>
-                <button className="text-blue-400 font-semibold flex items-center gap-2 group-hover:gap-3 transition-all">
-                  Read Full Release
-                  <ArrowRight className="w-4 h-4" />
+                  <h3 className="text-2xl font-bold text-white group-hover:text-blue-400 transition-colors">
+                    {release.title}
+                  </h3>
                 </button>
+
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{
+                    height: expandedIndex === idx ? "auto" : 0,
+                    opacity: expandedIndex === idx ? 1 : 0
+                  }}
+                  transition={{ duration: 0.3 }}
+                  className="overflow-hidden"
+                >
+                  <div className="px-8 pb-8 pt-4 border-t border-white/10">
+                    <p className="text-slate-300 leading-relaxed mb-4">{release.excerpt}</p>
+                    <div className="h-px bg-gradient-to-r from-blue-500/50 to-transparent mb-4" />
+                    <p className="text-slate-400 leading-relaxed">{release.fullContent}</p>
+                  </div>
+                </motion.div>
               </motion.div>
             ))}
           </div>
