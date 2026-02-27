@@ -50,14 +50,14 @@ export default function About() {
               />
             </Link>
             <h1 className="text-6xl md:text-8xl font-black text-white mb-8 leading-tight">
-              Building the Future of <br />
-              <span className="bg-gradient-to-r from-cyan-400 via-violet-400 to-fuchsia-400 bg-clip-text text-transparent">
-                Logistics Intelligence
-              </span>
+              The <span className="bg-gradient-to-r from-cyan-400 via-violet-400 to-fuchsia-400 bg-clip-text text-transparent">
+                Next-Generation
+              </span> <br />
+              Fleet Intelligence Platform
             </h1>
             <p className="text-2xl md:text-3xl text-slate-300 leading-relaxed max-w-5xl mx-auto">
-              We're on a mission to democratize AI-powered logistics technology. 
-              Every operator, from small fleets to global enterprises, deserves world-class intelligence tools.
+              NexusVectis is a brand-new platform built from the ground up with AI at its core. 
+              Not an upgrade. Not a plug-in. A completely reimagined approach to fleet operations powered by distributed AI orchestration.
             </p>
           </motion.div>
         </div>
