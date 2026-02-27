@@ -38,7 +38,7 @@ export default function Home() {
     {
       icon: Zap,
       title: "Parallel Task Execution",
-      description: "Run 10+ tasks simultaneously with 49 parallel AI analyses - complete complex operations without waiting"
+      description: "Run 50+ parallel AI analyses simultaneously - complete complex operations in seconds without waiting"
     },
     {
       icon: TrendingUp,
