@@ -2199,6 +2199,13 @@ Return JSON with this EXACT structure:
                    <Activity className="w-4 h-4 mr-2 text-cyan-400" />
                    Anomaly Detection + What-If + Proactive AI
                  </DropdownMenuItem>
+                 <DropdownMenuSeparator className="bg-slate-800" />
+                 <DropdownMenuLabel className="text-amber-400 mt-1">🎓 AI Learning Engine</DropdownMenuLabel>
+                 <DropdownMenuSeparator className="bg-slate-800" />
+                 <DropdownMenuItem onClick={() => openWindow('course_ai', { x: 120, y: 60 })} className="text-slate-300 text-xs">
+                   <GraduationCap className="w-4 h-4 mr-2 text-amber-400" />
+                   Adaptive Fleet AI Courses
+                 </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
 
