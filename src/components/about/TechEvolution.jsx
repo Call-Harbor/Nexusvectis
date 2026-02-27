@@ -224,14 +224,10 @@ export default function TechEvolution() {
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className={`p-10 rounded-3xl bg-gradient-to-br ${colorMap[current.color]} border`}
+                className="p-10 rounded-2xl bg-slate-900/60 border border-cyan-500/40 backdrop-blur-md"
               >
                 <div className="flex items-center gap-4 mb-6">
-                  <Icon className={`w-12 h-12 ${
-                    current.color === 'violet' ? 'text-violet-400' :
-                    current.color === 'cyan' ? 'text-cyan-400' :
-                    current.color === 'fuchsia' ? 'text-fuchsia-400' : 'text-rose-400'
-                  }`} />
+                  <Icon className="w-12 h-12 text-cyan-400" />
                   <h3 className="text-3xl font-bold text-white">{current.title}</h3>
                 </div>
 
