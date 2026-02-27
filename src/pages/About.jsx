@@ -7,6 +7,7 @@ import { useEffect } from "react";
 import TechEvolution from "../components/about/TechEvolution";
 import MissionVision from "../components/about/MissionVision";
 import TechShowcase from "../components/about/TechShowcase";
+import Hero3D from "../components/about/Hero3D";
 
 export default function About() {
   useEffect(() => {
@@ -37,34 +38,8 @@ export default function About() {
         <div className="absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.05)_1px,transparent_1px)] bg-[size:100px_100px]" />
       </div>
 
-      {/* Hero Section */}
-      <section className="relative pt-32 pb-20 px-6 z-10">
-        <div className="max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-16"
-          >
-            <Link to={createPageUrl("Home")} className="inline-block mb-8">
-              <img 
-                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/697e930c62bf3e3832b34edb/bc9d40ccc_FullLogo_Transparent1.png" 
-                alt="NexusVectis Logo" 
-                className="h-32 w-auto mx-auto opacity-90"
-              />
-            </Link>
-            <h1 className="text-6xl md:text-8xl font-black text-white mb-8 leading-tight">
-              The <span className="bg-gradient-to-r from-cyan-400 via-violet-400 to-fuchsia-400 bg-clip-text text-transparent">
-                Next-Generation
-              </span> <br />
-              Fleet Intelligence Platform
-            </h1>
-            <p className="text-2xl md:text-3xl text-slate-300 leading-relaxed max-w-5xl mx-auto">
-              NexusVectis is a brand-new platform built from the ground up with AI at its core. 
-              Not an upgrade. Not a plug-in. A completely reimagined approach to fleet operations powered by distributed AI orchestration.
-            </p>
-          </motion.div>
-        </div>
-      </section>
+      {/* 3D Hero Section */}
+      <Hero3D />
 
       {/* Mission Section */}
       <section className="relative py-32 px-6 z-10">
@@ -129,7 +104,9 @@ export default function About() {
       </section>
 
       {/* Mission & Vision */}
-      <MissionVision />
+      <div id="mission-vision">
+        <MissionVision />
+      </div>
 
       {/* Technology Showcase */}
       <TechShowcase />
