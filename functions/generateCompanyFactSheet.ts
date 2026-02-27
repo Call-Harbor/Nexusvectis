@@ -36,7 +36,7 @@ Deno.serve(async (req) => {
     yPos += 10;
     pdf.setFont('helvetica', 'normal');
     pdf.setFontSize(11);
-    const companyText = 'NexusVectis is a Copenhagen-based logistics intelligence company founded in January 2026. We build AI-powered fleet management software that enables logistics operators to control their entire fleet operations using natural language commands.';
+    const companyText = 'NexusVectis is a Copenhagen-based logistics intelligence company founded in January 2026. We build AI-powered fleet management software that enables logistics operators to control their entire fleet operations using natural language commands. Developed by a lean team combining deep logistics expertise with cutting-edge AI capabilities, NexusVectis has achieved production readiness in just 8 weeks, demonstrating the power of focused innovation in the logistics sector.';
     const companyLines = pdf.splitTextToSize(companyText, pageWidth - 40);
     pdf.text(companyLines, 20, yPos);
     yPos += (companyLines.length * 5) + 10;
