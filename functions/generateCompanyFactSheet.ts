@@ -124,23 +124,24 @@ Deno.serve(async (req) => {
     pdf.setFontSize(11);
 
     const features = [
-      'FLEET AI Natural Language Interface: Control entire fleet operations using plain English commands',
-      'Multi-Modal Real-Time Tracking: Unified visibility across trucks, ships, drones, trains, and aircraft',
-      'Predictive Maintenance: AI predicts maintenance needs 92% accurately weeks in advance, preventing costly downtime',
-      'Advanced Route Optimization: Minimizes distance, fuel consumption, and delivery times while considering regulatory constraints',
-      'Digital Twin Federation: Privacy-by-design architecture ensuring GDPR compliance and enterprise-grade security',
-      'Autonomous Immune System: AI-powered security detection and response with zero-trust architecture',
-      'Cost Analysis & Optimization: Real-time visibility into operational costs with AI-driven efficiency recommendations',
-      'Enterprise Integrations: REST API, webhooks, and pre-built connectors for seamless ERP/WMS integration'
+      'FLEET AI: Natural language control for entire fleet operations',
+      'Real-Time Tracking: Visibility across all transport modes',
+      'Predictive Maintenance: AI predicts needs 92% accurately in advance',
+      'Route Optimization: Minimizes distance, fuel, and delivery times',
+      'Digital Twin: Privacy-focused, GDPR-compliant architecture',
+      'Security: AI-powered detection and response with zero-trust',
+      'Cost Analysis: Real-time visibility with efficiency recommendations',
+      'Integrations: REST API, webhooks, and ERP/WMS connectors'
     ];
 
     features.forEach(feature => {
-      if (yPos > pageHeight - 30) {
+      if (yPos > pageHeight - 20) {
         pdf.addPage();
         yPos = 20;
       }
-      pdf.text('• ' + feature, 25, yPos);
-      yPos += 8;
+      const featureLines = pdf.splitTextToSize(feature, pageWidth - 50);
+      pdf.text(featureLines, 25, yPos);
+      yPos += (featureLines.length * 4) + 3;
     });
 
     // Market Position & Impact
