@@ -240,11 +240,7 @@ export default function TechEvolution() {
                       transition={{ delay: idx * 0.1 }}
                       className="flex items-start gap-3"
                     >
-                      <Sparkles className={`w-5 h-5 mt-1 flex-shrink-0 ${
-                        current.color === 'violet' ? 'text-violet-400' :
-                        current.color === 'cyan' ? 'text-cyan-400' :
-                        current.color === 'fuchsia' ? 'text-fuchsia-400' : 'text-rose-400'
-                      }`} />
+                      <Sparkles className="w-5 h-5 mt-1 flex-shrink-0 text-cyan-400" />
                       <span className="text-slate-300">{feature}</span>
                     </motion.div>
                   ))}
