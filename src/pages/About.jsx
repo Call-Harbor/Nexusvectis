@@ -172,7 +172,7 @@ export default function About() {
       id: 'predictive-engine',
       title: "Predictive Maintenance",
       icon: Gauge,
-      position: { x: 650, y: 150 },
+      position: { x: 560, y: 100 },
       content: (
         <>
           <div className="space-y-4">
