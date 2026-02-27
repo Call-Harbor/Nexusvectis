@@ -636,6 +636,87 @@ export default function IntellectMode() {
 
 
 
+  const executePrompt = useCallback((prompt) => {
+    setInput(prompt);
+    // Use a small delay to allow state to update, then trigger via a ref-based approach
+    setMessages(prev => [...prev, { role: "user", content: prompt }]);
+    // Directly run the command logic with the given prompt
+    runCommandWithInput(prompt);
+  }, []);
+
+  const runCommandWithInput = useCallback(async (currentCommand) => {
+    if (!currentCommand.trim() || isProcessing) return;
+
+    setCommandHistory(prev => [...prev, currentCommand]);
+    setHistoryIndex(-1);
+    base44.analytics.track({ eventName: "fleet_ai_command_sent", properties: { command_length: currentCommand.length, has_files: false } });
+    setInput("");
+    setIsProcessing(true);
+    setThinkingLogs([]);
+    setShowThinkingTerminal(true);
+    addThinkingLog('parse', `Parsing command: "${currentCommand}"`, null, 0);
+    await processAdvancedCommand(currentCommand);
+
+    const maxRetries = 3;
+    let attempts = 0;
+    while (attempts < maxRetries) {
+      try {
+        const user = await base44.auth.me();
+        const orgId = user?.organization_id;
+        setMessages(prev => [...prev, { role: "system", content: "⚡ FLEET analyzing..." }]);
+        setStreamingMessage("");
+        const streamingMsgIndex = messages.length + 1;
+        setMessages(prev => [...prev, { role: "assistant", content: "", streaming: true }]);
+        const tokenCount = Math.ceil(currentCommand.length / 4);
+        addThinkingLog('parse', `Tokenizing input (${tokenCount} tokens)`, { characters: currentCommand.length, estimated_tokens: tokenCount }, 80, 15);
+        const fleetData = { vehicles, alerts, routes, shipments };
+        const contextAnalysis = AdvancedIntelligenceEngine.analyzeContext(fleetData);
+        const predictions = AdvancedIntelligenceEngine.predictiveReasoning(contextAnalysis, vehicles, shipments, routes);
+        const multiPerspective = AdvancedIntelligenceEngine.multiPerspectiveAnalysis(currentCommand, fleetData);
+        const decisionQuality = AdvancedIntelligenceEngine.scoreDecisionQuality({}, contextAnalysis, predictions);
+        addThinkingLog('analyze', 'Analyzing context and fleet data', { vehicles: vehicles.length, alerts: alerts.length, routes: routes.length, shipments: shipments.length }, 150, 25);
+        const conversationHistory = messages.filter(m => m.role === 'user' || m.role === 'assistant').filter(m => m.content && !m.streaming).map(m => ({ role: m.role, content: m.content }));
+        const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const userLocalTime = new Date().toLocaleString('en-GB', { timeZone: userTimezone, hour12: false });
+        const payload = {
+          message: currentCommand,
+          conversation_history: conversationHistory,
+          context: { current_datetime: userLocalTime, user_timezone: userTimezone, vehicles_count: vehicles.length, alerts_count: alerts.length, routes_count: routes.length, shipments_count: shipments.length, vehicles: vehicles.slice(0, 3).map(v => ({ name: v.name, type: v.type, status: v.status })), alerts: alerts.slice(0, 3).map(a => ({ title: a.title, type: a.type })), routes: routes.slice(0, 3).map(r => ({ name: r.name, status: r.status })), shipments: shipments.slice(0, 3).map(s => ({ tracking_number: s.tracking_number, status: s.status })) }
+        };
+        addThinkingLog('think', 'Initializing Mistral model inference', { model: 'Mistral Large', temperature: 0.7, max_tokens: 2000 }, 50, 45);
+        const startTime = Date.now();
+        const microCalls = await executeParallelMicroAnalyses(currentCommand, vehicles, alerts, routes, shipments, payload);
+        const duration = Date.now() - startTime;
+        const mainCallResult = microCalls[0] || {};
+        const mistralResponse = (mainCallResult.data || mainCallResult) || { action: 'ANALYZE', parameters: {} };
+        addThinkingLog('think', `Model inference complete`, { model: 'Mistral Large', action: mistralResponse.action || 'ANALYZE', inference_time_ms: duration }, duration, 95);
+        setMessages(prev => prev.filter((_, idx) => idx !== streamingMsgIndex));
+        const { reply, action, parameters, message, open_window } = mistralResponse;
+        setRetryCount(0);
+        try {
+          await base44.entities.FleetAIUsage.create({ organization_id: user.organization_id, user_email: user.email, command: currentCommand, action: action, success: true });
+        } catch (logError) {}
+        addThinkingLog('execute', `Executing action: ${action}`, parameters, 100, 75);
+        const responseContent = reply || message || "Analysis complete.";
+        setMessages(prev => [...prev, { role: "assistant", content: responseContent }]);
+        if (open_window) openWindow(open_window);
+        base44.analytics.track({ eventName: "fleet_ai_command_success", properties: { action, command: currentCommand } });
+        addThinkingLog('result', 'Command executed successfully', null, 100);
+        break;
+      } catch (error) {
+        attempts++;
+        addThinkingLog('error', `Error (attempt ${attempts}/${maxRetries}): ${error.message}`, error, 100);
+        if (attempts >= maxRetries) {
+          setMessages(prev => [...prev, { role: "system", content: `❌ Error: ${error.message}. Please try again.` }]);
+          break;
+        }
+        await new Promise(resolve => setTimeout(resolve, 1000 * attempts));
+      }
+    }
+    setIsProcessing(false);
+    addThinkingLog('result', 'Processing complete', null, 100);
+  }, [vehicles, alerts, routes, shipments, messages, isProcessing, openWindow]);
+
   const processCommand = async () => {
     if (!input.trim() || isProcessing) return;
 
