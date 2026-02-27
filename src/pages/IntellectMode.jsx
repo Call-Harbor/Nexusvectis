@@ -42,6 +42,7 @@ import MistralStreamingEngine, { StreamingAnalysisVisual } from "@/components/in
 import IntelligentCommandAgent, { CommandInput, CommandExecution } from "@/components/intellect/IntelligentCommandAgent";
 import VideoCallHologram from "@/components/intellect/VideoCallHologram";
 import DeepAnalysisEngine from "@/components/intellect/DeepAnalysisEngine";
+import CourseAIEngine from "@/components/intellect/CourseAIEngine";
 import AIDocumentEditor from "@/components/intellect/AIDocumentEditor";
 import AISpreadsheetEditor from "@/components/intellect/AISpreadsheetEditor";
 import GlobalSearch from "@/components/intellect/GlobalSearch";
