@@ -33,13 +33,17 @@ export default function NotificationCenter({ user }) {
 
   const loadNotifications = async () => {
     if (!email || !orgId) return;
-    const data = await base44.entities.Notification.filter(
-      { organization_id: orgId, user_email: email },
-      "-created_date",
-      30
-    );
-    setNotifications(data);
-    setUnreadCount(data.filter(n => !n.is_read).length);
+    try {
+      const data = await base44.entities.Notification.filter(
+        { organization_id: orgId, user_email: email },
+        "-created_date",
+        30
+      );
+      setNotifications(data);
+      setUnreadCount(data.filter(n => !n.is_read).length);
+    } catch (_) {
+      // Silently ignore — entity may not have data yet
+    }
   };
 
   useEffect(() => {
