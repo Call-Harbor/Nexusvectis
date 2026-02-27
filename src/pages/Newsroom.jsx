@@ -45,6 +45,48 @@ export default function Newsroom() {
       title: "AI Predictive Maintenance Reduces Downtime by 40%",
       excerpt: "Machine learning model predicts vehicle failures weeks in advance with 95% accuracy.",
       category: "Technology"
+    },
+    {
+      date: "Jan 22, 2026",
+      title: "NexusVectis Named Top 5 Logistics Innovation Company",
+      excerpt: "Platform recognized by industry leaders for groundbreaking AI-powered fleet management solutions.",
+      category: "Award"
+    },
+    {
+      date: "Jan 15, 2026",
+      title: "Real-time GPS Integration Across All Transport Modes",
+      excerpt: "Seamless tracking now available for trucks, ships, drones, trains, and aircraft in unified interface.",
+      category: "Technology"
+    },
+    {
+      date: "Jan 8, 2026",
+      title: "NexusVectis Expands Operations to Scandinavia",
+      excerpt: "Opening regional hub in Copenhagen to serve Nordic logistics market with 24/7 support.",
+      category: "Company"
+    },
+    {
+      date: "Dec 28, 2025",
+      title: "Swarm Intelligence Engine Deployed to Production",
+      excerpt: "Multi-vehicle coordination system enables autonomous route optimization for entire fleets.",
+      category: "Technology"
+    },
+    {
+      date: "Dec 15, 2025",
+      title: "Digital Twin Federation Security Standard Achieved",
+      excerpt: "Platform achieves ISO 27001 compliance with privacy-by-design architecture.",
+      category: "Security"
+    },
+    {
+      date: "Dec 1, 2025",
+      title: "AI-Powered Demand Forecasting Accuracy Reaches 94%",
+      excerpt: "Machine learning models predict future shipment demands with unprecedented accuracy.",
+      category: "Technology"
+    },
+    {
+      date: "Nov 15, 2025",
+      title: "NexusVectis Launches Beta Program",
+      excerpt: "Closed beta with 50 enterprise logistics companies begins with exclusive early access.",
+      category: "Company"
     }
   ];
 
