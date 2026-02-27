@@ -152,7 +152,8 @@ export default function ParallelTaskProcessor({ onClose }) {
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Skriv prompt og tryk Enter for at sende... (Shift+Enter for nyt linje)"
-            className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm placeholder:text-slate-500 focus:outline-none focus:border-cyan-500 resize-none h-16"
+            className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm placeholder:text-slate-500 focus:outline-none focus:border-cyan-500 resize-none h-16 focus:ring-0"
+            autoFocus
           />
           <div className="flex gap-2">
             <Button
