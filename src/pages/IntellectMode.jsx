@@ -876,14 +876,15 @@ Return JSON with this EXACT structure:
         });
 
         setMessages(prev => [...prev, { role: "assistant", content: `**${result.title}**\n\n${result.summary || result.description}\n\n📊 Hologram visualization opened with full research data, forecasts, risk analysis, and recommendations.` }]);
-        setMessages(prev => [...prev, { role: "system", content: `✅ Research-grade analysis complete — hologram window opened` }]);
-      } catch (err) {
-        setMessages(prev => [...prev, { role: "system", content: `❌ Analysis failed: ${err.message}` }]);
-      }
+          setMessages(prev => [...prev, { role: "system", content: `✅ Research-grade analysis complete — hologram window opened` }]);
+        } catch (err) {
+          setMessages(prev => [...prev, { role: "system", content: `❌ Analysis failed: ${err.message}` }]);
+          addThinkingLog('error', `Analysis failed: ${err.message}`, null, null, null, processId);
+        }
 
-      setIsProcessing(false);
-      addThinkingLog('result', 'Processing complete', null, 100);
-      return;
+        addThinkingLog('result', 'Processing complete', null, 100, null, processId);
+        closeProcessTerminal(processId);
+        return;
     }
 
     // Save to history
