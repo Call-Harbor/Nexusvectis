@@ -119,7 +119,10 @@ const TechInsightChart = ({ data, title, type = 'line' }) => {
 };
 
 export default function About() {
-  const [activeWindows, setActiveWindows] = useState([]);
+  const [activeWindows, setActiveWindows] = useState([
+    'neural-architecture', 'predictive-engine', 'route-optimization', 
+    'demand-forecast', 'anomaly-detection'
+  ]);
   const [minimizedWindows, setMinimizedWindows] = useState(new Set());
   const [focusedWindow, setFocusedWindow] = useState(null);
 
