@@ -234,8 +234,8 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
           }
         }),
         // Ownership + AI verdict
-        base44.integrations.Core.InvokeLLM({
-          prompt: `For the company identified by "${name}" (could be a name, CVR, registration number, or VAT number), give me: ownership details (type, exchange, founder name, founder year, founder story, founder current role, top 3 shareholders with % and type). Also give an AI investment verdict: summary, investment thesis, recommendation (BUY/HOLD/SELL), 3 key risks, 3 key catalysts. Real data only.`,
+         base44.integrations.Core.InvokeLLM({
+           prompt: `For the company identified by "${name}"${searchHint}, give me: ownership details (type, exchange, founder name, founder year, founder story, founder current role, top 3 shareholders with % and type). Also give an AI investment verdict: summary, investment thesis, recommendation (BUY/HOLD/SELL), 3 key risks, 3 key catalysts. Real data only from official registries.`,
           add_context_from_internet: true,
           response_json_schema: {
             type: "object",
