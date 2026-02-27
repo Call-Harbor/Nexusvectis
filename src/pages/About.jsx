@@ -578,35 +578,42 @@ export default function About() {
                       <div className="relative p-10 rounded-3xl bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl border border-white/10 group-hover:border-violet-500/50 transition-all overflow-hidden">
                         <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-violet-500/10 to-fuchsia-500/10 rounded-full blur-3xl -z-10" />
                         
-                        <div className="flex items-start gap-6">
+                        <div className="flex items-start gap-8">
                           <motion.div
-                            whileHover={{ rotate: 360 }}
-                            transition={{ duration: 0.6 }}
-                            className="w-20 h-20 rounded-2xl bg-gradient-to-br from-violet-500/20 to-fuchsia-500/10 flex items-center justify-center flex-shrink-0"
+                            whileHover={{ rotate: 360, scale: 1.1 }}
+                            transition={{ duration: 0.8 }}
+                            className="w-24 h-24 rounded-3xl bg-gradient-to-br from-violet-500/30 to-fuchsia-500/20 flex items-center justify-center flex-shrink-0 border border-violet-500/40 shadow-lg shadow-violet-500/30"
                           >
-                            <Icon className="w-10 h-10 text-violet-400" />
+                            <Icon className="w-12 h-12 text-violet-300" />
                           </motion.div>
                           
                           <div className="flex-1">
-                            <h3 className="text-3xl font-bold text-white mb-3 group-hover:text-violet-300 transition-colors">
+                            <h3 className="text-4xl md:text-5xl font-black text-white mb-4 group-hover:text-violet-200 transition-colors leading-tight">
                               {milestone.title}
                             </h3>
-                            <p className="text-slate-300 mb-4 leading-relaxed text-base">
+                            <p className="text-slate-200 mb-5 leading-relaxed text-lg">
                               {milestone.description}
                             </p>
-                            <div className="p-3 rounded-lg bg-slate-800/50 border border-slate-700/50 mb-4">
-                              <p className="text-xs text-slate-400 font-mono">{milestone.technical}</p>
+                            <div className="p-4 rounded-xl bg-slate-900/70 border border-slate-700/70 mb-5 backdrop-blur-sm">
+                              <p className="text-xs text-cyan-300 font-mono tracking-wide font-semibold">{milestone.technical}</p>
                             </div>
                             <motion.div
-                              initial={{ width: 0 }}
-                              whileInView={{ width: "100%" }}
+                              initial={{ width: 0, scaleX: 0 }}
+                              whileInView={{ width: "100%", scaleX: 1 }}
                               viewport={{ once: true }}
-                              transition={{ delay: idx * 0.15 + 0.3, duration: 1 }}
-                              className="h-0.5 bg-gradient-to-r from-violet-500 to-transparent mb-4"
+                              transition={{ delay: idx * 0.15 + 0.3, duration: 1.2 }}
+                              className="h-1 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-transparent mb-5 rounded-full"
+                              style={{ transformOrigin: "left" }}
                             />
-                            <div className="flex items-center gap-2 p-3 rounded-xl bg-violet-500/10 border border-violet-500/20">
-                              <div className="w-2 h-2 rounded-full bg-violet-400 animate-pulse" />
-                              <span className="text-sm font-semibold text-violet-300">
+                            <div className="flex items-center gap-3 p-4 rounded-2xl bg-gradient-to-r from-violet-500/15 to-fuchsia-500/10 border border-violet-500/30 hover:border-violet-400/60 transition-all">
+                              <motion.div
+                                animate={{
+                                  scale: [1, 1.3, 1],
+                                }}
+                                transition={{ duration: 2, repeat: Infinity }}
+                                className="w-3 h-3 rounded-full bg-gradient-to-r from-violet-400 to-fuchsia-400"
+                              />
+                              <span className="text-base font-bold text-violet-200">
                                 {milestone.impact}
                               </span>
                             </div>
