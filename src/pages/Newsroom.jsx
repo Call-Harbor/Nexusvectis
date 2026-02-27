@@ -1,7 +1,7 @@
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "../utils";
-import { Newspaper, TrendingUp, Download, Calendar, ArrowRight } from "lucide-react";
+import { Newspaper, TrendingUp, Download, Calendar, ArrowRight, ChevronDown } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useEffect, useState } from "react";
 
