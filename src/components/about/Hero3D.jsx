@@ -97,13 +97,7 @@ export default function Hero3D() {
                 Dispatchers
               </span>
             </h1>
-            
-            <p className="text-2xl text-slate-300 max-w-4xl mx-auto leading-relaxed mb-8">
-              50+ parallel AI models orchestrating your entire fleet operation in real-time. 
-              <span className="block text-cyan-400 font-semibold mt-4">
-                One platform. Infinite intelligence.
-              </span>
-            </p>
+
           </motion.div>
 
           {/* Capability Grid */}
