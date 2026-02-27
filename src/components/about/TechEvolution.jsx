@@ -132,11 +132,11 @@ export default function TechEvolution() {
            className="text-center mb-16"
           >
            <h2 className="text-5xl md:text-6xl font-bold text-white mb-6">
-             30 Years of <span className="text-cyan-400">Compressed Innovation</span>
-           </h2>
-           <p className="text-xl text-slate-300 max-w-3xl mx-auto">
-             We built the 3-month MVP. Now we're showing you what comes next. We're not following the market—we're dragging it 30 years into the future.
-           </p>
+              What Comes <span className="text-cyan-400">Next</span>
+            </h2>
+            <p className="text-xl text-slate-300 max-w-3xl mx-auto">
+              From autonomous fleets to superintelligence. This is the 30-year roadmap that will make human dispatchers completely irrelevant.
+            </p>
           </motion.div>
 
           <div className="grid md:grid-cols-2 gap-12 items-center">
