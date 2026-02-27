@@ -8,7 +8,7 @@ export default function VideoCallHologram({ videoUrl, onClose }) {
   const [urlInput, setUrlInput] = useState("");
   const [isValidUrl, setIsValidUrl] = useState(false);
   const [currentUrl, setCurrentUrl] = useState(videoUrl || "");
-  const [useAIMode, setUseAIMode] = useState(true);
+  const [useAIMode, setUseAIMode] = useState(false);
 
   const validateVideoUrl = (url) => {
     if (!url.trim()) return false;
