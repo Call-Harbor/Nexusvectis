@@ -11,6 +11,8 @@ const FloatingHologramWindow = ({ id, title, icon: Icon, children, onClose, posi
   const [pos, setPos] = useState(position);
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [size, setSize] = useState({ width: 480, height: 'auto' });
+  const [isResizing, setIsResizing] = useState(false);
   const headerRef = useRef(null);
 
   const handlePointerDown = (e) => {
@@ -28,10 +30,13 @@ const FloatingHologramWindow = ({ id, title, icon: Icon, children, onClose, posi
     }
   };
 
-  const handlePointerUp = () => setIsDragging(false);
+  const handlePointerUp = () => {
+    setIsDragging(false);
+    setIsResizing(false);
+  };
 
   useEffect(() => {
-    if (isDragging) {
+    if (isDragging || isResizing) {
       window.addEventListener('pointermove', handlePointerMove);
       window.addEventListener('pointerup', handlePointerUp);
       return () => {
@@ -39,18 +44,18 @@ const FloatingHologramWindow = ({ id, title, icon: Icon, children, onClose, posi
         window.removeEventListener('pointerup', handlePointerUp);
       };
     }
-  }, [isDragging, dragOffset]);
+  }, [isDragging, isResizing, dragOffset]);
 
   if (isMinimized) return null;
 
   return (
     <motion.div
-      initial={{ scale: 0.8, opacity: 0, y: 100 }}
+      initial={{ scale: 0.7, opacity: 0, y: 150 }}
       animate={{ scale: 1, opacity: 1, y: 0 }}
-      exit={{ scale: 0.8, opacity: 0, y: 100 }}
-      transition={{ type: "spring", damping: 25, stiffness: 300 }}
-      style={{ left: pos.x, top: pos.y, zIndex: isFocused ? 9999 : 50, width: '520px' }}
-      className="fixed resize overflow-auto"
+      exit={{ scale: 0.7, opacity: 0, y: 150 }}
+      transition={{ type: "spring", damping: 20, stiffness: 350 }}
+      style={{ left: pos.x, top: pos.y, zIndex: isFocused ? 9999 : 50, width: size.width }}
+      className="fixed"
       onPointerDown={handlePointerDown}
     >
       <div className="bg-slate-900/60 backdrop-blur-2xl rounded-2xl border-2 border-cyan-500/50 shadow-2xl shadow-cyan-500/40 overflow-hidden flex flex-col relative group h-fit">
