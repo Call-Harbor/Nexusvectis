@@ -251,9 +251,16 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
             }
           }
         }),
-        // Ownership + AI verdict
+        // Ownership + AI verdict + competitive analysis
          base44.integrations.Core.InvokeLLM({
-           prompt: `For the company identified by "${name}"${searchHint}, give me: ownership details (type, exchange, founder name, founder year, founder story, founder current role, top 3 shareholders with % and type). Also give an AI investment verdict: summary, investment thesis, recommendation (BUY/HOLD/SELL), 3 key risks, 3 key catalysts. Real data only from official registries.`,
+           prompt: `For the company identified by "${name}"${searchHint}, give me: 
+           Ownership: company type (public/private/cooperative), stock exchange (if public), founder name/background, founder current role (if active), IPO date/price, top 10 shareholders with % holdings and type (PE, institutional, founder, etc).
+           Capital structure: # shares outstanding, market cap (if public), enterprise value, dilution from options/warrants.
+           Dividend: dividend per share, yield %, history last 5 years.
+           Competitive analysis: vs top 3 competitors - revenue comparison, margin comparison, growth rate comparison, R&D intensity comparison, employee productivity comparison.
+           Valuation: P/E ratio, Price/Sales, Price/Book, EV/EBITDA, PEG ratio (if applicable).
+           AI Verdict: investment summary, investment thesis (1 paragraph), recommendation (BUY/HOLD/SELL/AVOID), confidence level (%), 5 key risks with severity (high/medium/low), 5 key catalysts with timeline (6-12 months, 1-2 years, 2+ years).
+           Real data only from official sources.`,
           add_context_from_internet: true,
           response_json_schema: {
             type: "object",
