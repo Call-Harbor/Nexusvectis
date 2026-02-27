@@ -142,37 +142,36 @@ export default function Hero3D() {
             })}
           </motion.div>
 
-          {/* AI Power Stats */}
+          {/* AI Power Stats - Massive */}
           <motion.div
-            initial={{ opacity: 0, y: 40 }}
+            initial={{ opacity: 0, y: 60 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
-            className="grid md:grid-cols-4 gap-6 mb-12"
+            transition={{ duration: 1, delay: 0.8 }}
+            className="grid md:grid-cols-4 gap-8 mb-20"
           >
-            {[
-              { number: "100M+", label: "Daily Optimizations", color: "cyan" },
-              { number: "50+", label: "Parallel Analyses", color: "violet" },
-              { number: "99.99%", label: "Model Accuracy", color: "fuchsia" },
-              { number: "10x", label: "Speed Improvement", color: "emerald" }
-            ].map((stat, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.7 + idx * 0.1 }}
-                whileHover={{ scale: 1.05 }}
-                className="text-center p-8 rounded-2xl bg-gradient-to-br from-white/5 to-transparent border border-white/10 hover:border-cyan-500/30 transition-all"
-              >
+            {capabilities.map((cap, idx) => {
+              const Icon = cap.icon;
+              return (
                 <motion.div
-                  animate={{ scale: [1, 1.15, 1] }}
-                  transition={{ duration: 3, repeat: Infinity, delay: idx * 0.2 }}
-                  className={`text-5xl font-black bg-gradient-to-r from-${stat.color}-400 to-${stat.color}-600 bg-clip-text text-transparent mb-3`}
+                  key={idx}
+                  initial={{ opacity: 0, scale: 0.7, y: 40 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: 0.9 + idx * 0.15, type: "spring" }}
+                  whileHover={{ scale: 1.15, y: -30, boxShadow: "0 0 80px rgba(6, 182, 212, 0.9)" }}
+                  className="text-center p-12 rounded-3xl bg-gradient-to-br from-cyan-500/35 to-violet-500/20 border-2 border-cyan-500/70 hover:border-cyan-300/100 transition-all relative group"
                 >
-                  {stat.number}
+                  <motion.div
+                    whileHover={{ rotate: 360, scale: 1.3 }}
+                    transition={{ duration: 0.6 }}
+                    className="flex justify-center mb-6"
+                  >
+                    <Icon className="w-16 h-16 text-cyan-400 group-hover:text-yellow-300" />
+                  </motion.div>
+                  <div className="text-2xl font-black text-white mb-3 group-hover:text-cyan-300">{cap.label}</div>
+                  <div className="text-sm text-slate-300 group-hover:text-slate-100">{cap.value}</div>
                 </motion.div>
-                <div className="text-slate-400 font-medium group-hover:text-slate-200 transition-colors">{stat.label}</div>
-              </motion.div>
-            ))}
+              );
+            })}
           </motion.div>
 
           {/* CTA */}
