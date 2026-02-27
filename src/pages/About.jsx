@@ -58,13 +58,13 @@ const FloatingHologramWindow = ({ id, title, icon: Icon, children, onClose, posi
       className="fixed"
       onPointerDown={handlePointerDown}
     >
-      <div className="bg-slate-900/60 backdrop-blur-2xl rounded-2xl border-2 border-cyan-500/50 shadow-2xl shadow-cyan-500/40 overflow-hidden flex flex-col relative group h-fit">
-        <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-cyan-500/20 via-transparent to-violet-500/20 pointer-events-none" />
-        <div className="absolute inset-0 rounded-2xl animate-pulse bg-gradient-to-r from-transparent via-cyan-500/20 to-transparent pointer-events-none" style={{ animationDuration: '3s' }} />
-        <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-cyan-400/50 rounded-tl-2xl" />
-        <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-cyan-400/50 rounded-tr-2xl" />
-        <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-violet-400/50 rounded-bl-2xl" />
-        <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-violet-400/50 rounded-br-2xl" />
+      <div className="bg-slate-900/70 backdrop-blur-xl rounded-xl border border-cyan-500/60 shadow-2xl shadow-cyan-500/30 overflow-hidden flex flex-col relative group h-fit">
+        <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-cyan-500/15 via-transparent to-violet-500/15 pointer-events-none" />
+        <div className="absolute inset-0 rounded-xl animate-pulse bg-gradient-to-r from-transparent via-cyan-500/15 to-transparent pointer-events-none" style={{ animationDuration: '4s' }} />
+        <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-cyan-400/40 rounded-tl-lg" />
+        <div className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-cyan-400/40 rounded-tr-lg" />
+        <div className="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-violet-400/40 rounded-bl-lg" />
+        <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-violet-400/40 rounded-br-lg" />
         
         <div className="relative flex flex-col">
           <div ref={headerRef} className="flex items-center justify-between p-4 border-b border-cyan-500/30 cursor-move touch-none bg-slate-900/40">
