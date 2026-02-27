@@ -2763,7 +2763,6 @@ Return JSON with this EXACT structure:
                   }
                 }}
                 placeholder="Command FLEET AI... (e.g. 'predict maintenance', 'forecast demand', 'analyze CO2 emissions', 'optimize routes')"
-                disabled={isProcessing}
                 className="flex-1 px-3 py-2.5 sm:px-4 sm:py-3 lg:px-6 lg:py-4 bg-slate-900/60 border-2 border-cyan-500/40 rounded-xl sm:rounded-2xl text-sm sm:text-base text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-400 focus:shadow-lg focus:shadow-cyan-500/20 backdrop-blur-xl transition-all"
               />
               <input
