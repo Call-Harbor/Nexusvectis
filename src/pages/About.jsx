@@ -266,7 +266,7 @@ export default function About() {
       id: 'anomaly-detection',
       title: "Anomaly Detection",
       icon: AlertTriangle,
-      position: { x: 900, y: 700 },
+      position: { x: 820, y: 520 },
       content: (
         <>
           <div className="space-y-3">
