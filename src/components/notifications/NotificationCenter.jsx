@@ -73,8 +73,17 @@ export default function NotificationCenter({ user }) {
   const [markingAll, setMarkingAll]   = useState(false);
   const ref = useRef(null);
 
-  const orgId = user?.organization_id || user?.data?.organization_id;
+  const [orgId, setOrgId] = useState(user?.organization_id || user?.data?.organization_id || null);
   const email = user?.email;
+
+  // Resolve organization_id from User entity if not present on the auth object
+  useEffect(() => {
+    if (orgId || !email) return;
+    base44.entities.User.filter({ email }).then(users => {
+      const found = users?.[0]?.organization_id;
+      if (found) setOrgId(found);
+    }).catch(() => {});
+  }, [email, orgId]);
 
   const loadNotifications = useCallback(async () => {
     if (!email || !orgId) return;
