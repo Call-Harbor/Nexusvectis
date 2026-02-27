@@ -1,496 +1,339 @@
-import React, { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, Brain, Zap, Target, Users, Globe, Heart, X, Minimize2, TrendingUp, Gauge, Activity, AlertTriangle, CheckCircle, Rocket, Shield, Network } from "lucide-react";
+import React from "react";
+import { motion } from "framer-motion";
+import { Sparkles, Users, Globe, Target, Zap, Award, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, RadarChart, Radar, PolarGrid, PolarAngleAxis } from 'recharts';
-
-const COLORS = ['#06b6d4', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444', '#3b82f6'];
-
-const FloatingHologramWindow = ({ id, title, icon: Icon, children, onClose, position, isMinimized, onMinimize, isFocused, onFocus }) => {
-  const [pos, setPos] = useState(position);
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
-  const [size, setSize] = useState({ width: 480, height: 'auto' });
-  const [isResizing, setIsResizing] = useState(false);
-  const headerRef = useRef(null);
-
-  const handlePointerDown = (e) => {
-    if (e.target === headerRef.current || headerRef.current?.contains(e.target)) {
-      onFocus(id);
-      const rect = e.currentTarget.getBoundingClientRect();
-      setDragOffset({ x: e.clientX - rect.left, y: e.clientY - rect.top });
-      setIsDragging(true);
-    }
-  };
-
-  const handlePointerMove = (e) => {
-    if (isDragging) {
-      setPos({ x: e.clientX - dragOffset.x, y: e.clientY - dragOffset.y });
-    }
-  };
-
-  const handlePointerUp = () => {
-    setIsDragging(false);
-    setIsResizing(false);
-  };
-
-  useEffect(() => {
-    if (isDragging || isResizing) {
-      window.addEventListener('pointermove', handlePointerMove);
-      window.addEventListener('pointerup', handlePointerUp);
-      return () => {
-        window.removeEventListener('pointermove', handlePointerMove);
-        window.removeEventListener('pointerup', handlePointerUp);
-      };
-    }
-  }, [isDragging, isResizing, dragOffset]);
-
-  if (isMinimized) return null;
-
-  return (
-    <motion.div
-      initial={{ scale: 0.7, opacity: 0, y: 150 }}
-      animate={{ scale: 1, opacity: 1, y: 0 }}
-      exit={{ scale: 0.7, opacity: 0, y: 150 }}
-      transition={{ type: "spring", damping: 20, stiffness: 350 }}
-      style={{ left: pos.x, top: pos.y, zIndex: isFocused ? 9999 : 50, width: size.width }}
-      className="fixed"
-      onPointerDown={handlePointerDown}
-    >
-      <div className="bg-slate-900/70 backdrop-blur-xl rounded-xl border border-cyan-500/60 shadow-2xl shadow-cyan-500/30 overflow-hidden flex flex-col relative group h-fit">
-        <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-cyan-500/15 via-transparent to-violet-500/15 pointer-events-none" />
-        <div className="absolute inset-0 rounded-xl animate-pulse bg-gradient-to-r from-transparent via-cyan-500/15 to-transparent pointer-events-none" style={{ animationDuration: '4s' }} />
-        <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-cyan-400/40 rounded-tl-lg" />
-        <div className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-cyan-400/40 rounded-tr-lg" />
-        <div className="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-violet-400/40 rounded-bl-lg" />
-        <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-violet-400/40 rounded-br-lg" />
-        
-        <div className="relative flex flex-col">
-          <div ref={headerRef} className="flex items-center justify-between p-4 border-b border-cyan-500/30 cursor-move touch-none bg-slate-900/40">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-gradient-to-br from-cyan-500/30 to-violet-500/30 border border-cyan-500/50">
-                <Icon className="w-4 h-4 text-cyan-300" />
-              </div>
-              <span className="text-white font-semibold tracking-wide text-sm">{title}</span>
-              <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 2, repeat: Infinity }}>
-                <div className="w-2 h-2 rounded-full bg-emerald-400" />
-              </motion.div>
-            </div>
-            <div className="flex gap-2">
-              <Button size="icon" variant="ghost" onClick={() => onMinimize(id)} className="h-8 w-8 text-cyan-400 hover:text-cyan-300">
-                <Minimize2 className="w-4 h-4" />
-              </Button>
-              <Button size="icon" variant="ghost" onClick={() => onClose(id)} className="h-8 w-8 text-red-400 hover:text-red-300">
-                <X className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
-          
-          <div className="p-4 space-y-3 text-sm text-slate-300 max-w-2xl overflow-y-auto max-h-[600px]">
-            {children}
-          </div>
-        </div>
-      </div>
-    </motion.div>
-  );
-};
-
-const TechInsightChart = ({ data, title, type = 'line' }) => {
-  return (
-    <div className="space-y-2">
-      <div className="text-xs font-semibold text-cyan-400 uppercase tracking-wider">{title}</div>
-      <ResponsiveContainer width="100%" height={200}>
-        {type === 'line' ? (
-          <LineChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(6,182,212,0.1)" />
-            <XAxis dataKey="name" stroke="rgba(148,163,184,0.5)" style={{ fontSize: '10px' }} />
-            <YAxis stroke="rgba(148,163,184,0.5)" style={{ fontSize: '10px' }} />
-            <Tooltip contentStyle={{ background: 'rgba(15,23,42,0.9)', border: '1px solid rgba(6,182,212,0.3)' }} />
-            <Line type="monotone" dataKey="value" stroke="#06b6d4" strokeWidth={2} dot={false} />
-          </LineChart>
-        ) : (
-          <BarChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(6,182,212,0.1)" />
-            <XAxis dataKey="name" stroke="rgba(148,163,184,0.5)" style={{ fontSize: '10px' }} />
-            <YAxis stroke="rgba(148,163,184,0.5)" style={{ fontSize: '10px' }} />
-            <Tooltip contentStyle={{ background: 'rgba(15,23,42,0.9)', border: '1px solid rgba(6,182,212,0.3)' }} />
-            <Bar dataKey="value" fill="#06b6d4" />
-          </BarChart>
-        )}
-      </ResponsiveContainer>
-    </div>
-  );
-};
 
 export default function About() {
-  const [activeWindows, setActiveWindows] = useState([
-    'neural-architecture', 'predictive-engine', 'route-optimization', 
-    'demand-forecast', 'anomaly-detection'
-  ]);
-  const [minimizedWindows, setMinimizedWindows] = useState(new Set());
-  const [focusedWindow, setFocusedWindow] = useState(null);
-
-  const hologramSections = [
-    {
-      id: 'neural-architecture',
-      title: "Neural Architecture",
-      icon: Brain,
-      position: { x: 40, y: 150 },
-      content: (
-        <>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <p className="text-slate-400 text-xs">Multi-layer transformer neural networks processing real-time fleet data with quantum-enhanced embeddings.</p>
-              <div className="grid grid-cols-3 gap-2">
-                <div className="p-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20">
-                  <div className="text-xs font-semibold text-cyan-400">384 Layers</div>
-                  <div className="text-[10px] text-slate-400">Deep Learning</div>
-                </div>
-                <div className="p-2 rounded-lg bg-violet-500/10 border border-violet-500/20">
-                  <div className="text-xs font-semibold text-violet-400">2.3B Params</div>
-                  <div className="text-[10px] text-slate-400">Model Size</div>
-                </div>
-                <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-                  <div className="text-xs font-semibold text-emerald-400">99.7% Acc</div>
-                  <div className="text-[10px] text-slate-400">Accuracy</div>
-                </div>
-              </div>
-            </div>
-            <TechInsightChart data={[
-              { name: '0h', value: 40 },
-              { name: '6h', value: 75 },
-              { name: '12h', value: 88 },
-              { name: '24h', value: 95 },
-              { name: '48h', value: 99 }
-            ]} title="Learning Accuracy Over Time" type="line" />
-          </div>
-        </>
-      )
-    },
-    {
-      id: 'predictive-engine',
-      title: "Predictive Maintenance",
-      icon: Gauge,
-      position: { x: 560, y: 100 },
-      content: (
-        <>
-          <div className="space-y-4">
-            <div className="space-y-3">
-              <div className="p-3 rounded-lg border border-red-500/30 bg-red-500/5">
-                <div className="flex justify-between mb-2">
-                  <span className="text-xs font-semibold text-red-400">Engine Bearing - Truck-4521</span>
-                  <Badge className="bg-red-500/20 text-red-400">92% Risk</Badge>
-                </div>
-                <p className="text-[11px] text-slate-400">Critical: Replace within 48 hours. Estimated cost: €2,400</p>
-              </div>
-              <div className="p-3 rounded-lg border border-amber-500/30 bg-amber-500/5">
-                <div className="flex justify-between mb-2">
-                  <span className="text-xs font-semibold text-amber-400">Transmission Fluid - Truck-3891</span>
-                  <Badge className="bg-amber-500/20 text-amber-400">67% Risk</Badge>
-                </div>
-                <p className="text-[11px] text-slate-400">Urgent: Schedule for next maintenance cycle. Cost: €150</p>
-              </div>
-              <div className="p-3 rounded-lg border border-cyan-500/30 bg-cyan-500/5">
-                <div className="flex justify-between mb-2">
-                  <span className="text-xs font-semibold text-cyan-400">Brake Pads - Truck-2103</span>
-                  <Badge className="bg-cyan-500/20 text-cyan-400">34% Risk</Badge>
-                </div>
-                <p className="text-[11px] text-slate-400">Monitor: Next service in 2 weeks. Cost: €280</p>
-              </div>
-            </div>
-            <div className="pt-2 border-t border-slate-700/50">
-              <p className="text-[10px] text-slate-500">Estimated prevention of 47 vehicle failures per month • Cost savings: €145k/month</p>
-            </div>
-          </div>
-        </>
-      )
-    },
-    {
-      id: 'route-optimization',
-      title: "Route Optimization",
-      icon: Rocket,
-      position: { x: 1080, y: 320 },
-      content: (
-        <>
-          <div className="space-y-4">
-            <TechInsightChart data={[
-              { name: 'Standard', value: 2400 },
-              { name: 'Optimized', value: 1280 },
-              { name: 'AI Enhanced', value: 680 }
-            ]} title="Distance Optimization (km)" type="bar" />
-            <div className="grid grid-cols-2 gap-2">
-              <div className="p-2 rounded-lg bg-green-500/10 border border-green-500/20">
-                <div className="text-xs font-semibold text-green-400">+47% Efficiency</div>
-                <div className="text-[10px] text-slate-400">vs Traditional</div>
-              </div>
-              <div className="p-2 rounded-lg bg-blue-500/10 border border-blue-500/20">
-                <div className="text-xs font-semibold text-blue-400">3.2ms Solve</div>
-                <div className="text-[10px] text-slate-400">Quantum Computing</div>
-              </div>
-            </div>
-          </div>
-        </>
-      )
-    },
-    {
-      id: 'demand-forecast',
-      title: "Demand Forecasting",
-      icon: TrendingUp,
-      position: { x: 300, y: 480 },
-      content: (
-        <>
-          <div className="space-y-4">
-            <TechInsightChart data={[
-              { name: 'Week 1', value: 4200 },
-              { name: 'Week 2', value: 4800 },
-              { name: 'Week 3', value: 5200 },
-              { name: 'Week 4', value: 5800 },
-              { name: 'Week 5', value: 6200 }
-            ]} title="Forecasted Shipment Volume (Next 30 Days)" type="line" />
-            <div className="space-y-2">
-              <div className="flex justify-between text-xs">
-                <span className="text-slate-400">Forecast Accuracy:</span>
-                <span className="text-cyan-400 font-semibold">94.3%</span>
-              </div>
-              <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
-                <div className="h-full w-[94%] bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full" />
-              </div>
-            </div>
-            <p className="text-[10px] text-slate-500">AI predicts 23% spike in Week 4 based on seasonal patterns and market indicators</p>
-          </div>
-        </>
-      )
-    },
-    {
-      id: 'anomaly-detection',
-      title: "Anomaly Detection",
-      icon: AlertTriangle,
-      position: { x: 820, y: 520 },
-      content: (
-        <>
-          <div className="space-y-3">
-            <div className="space-y-3">
-              <div className="p-3 rounded-lg border border-red-500/30 bg-red-500/5">
-                <div className="flex justify-between items-start mb-1">
-                  <span className="text-xs font-semibold text-red-400">Unusual Route Deviation</span>
-                  <CheckCircle className="w-3 h-3 text-red-400" />
-                </div>
-                <p className="text-[11px] text-slate-400">Truck-1924 deviated 180km from optimal route. Automatic alert sent.</p>
-              </div>
-              <div className="p-3 rounded-lg border border-amber-500/30 bg-amber-500/5">
-                <div className="flex justify-between items-start mb-1">
-                  <span className="text-xs font-semibold text-amber-400">Extreme Temperature Variance</span>
-                  <CheckCircle className="w-3 h-3 text-amber-400" />
-                </div>
-                <p className="text-[11px] text-slate-400">Cold chain breach detected on shipment #SHP-48291. Contacted customer.</p>
-              </div>
-              <div className="p-3 rounded-lg border border-cyan-500/30 bg-cyan-500/5">
-                <div className="flex justify-between items-start mb-1">
-                  <span className="text-xs font-semibold text-cyan-400">Driver Fatigue Pattern</span>
-                  <CheckCircle className="w-3 h-3 text-cyan-400" />
-                </div>
-                <p className="text-[11px] text-slate-400">Driver #DRV-3421 showing fatigue signs. Recommended break scheduled.</p>
-              </div>
-            </div>
-            <div className="pt-2 border-t border-slate-700/50">
-              <p className="text-[10px] text-slate-500">Real-time detection: 2.3M events/sec • Detection latency: &lt;100ms</p>
-            </div>
-          </div>
-        </>
-      )
-    },
-    {
-      id: 'co2-analysis',
-      title: "Sustainability Analytics",
-      icon: Heart,
-      position: { x: 100, y: 900 },
-      content: (
-        <>
-          <div className="space-y-4">
-            <TechInsightChart data={[
-              { name: 'Jan', value: 2400 },
-              { name: 'Feb', value: 2100 },
-              { name: 'Mar', value: 1800 },
-              { name: 'Apr', value: 1400 },
-              { name: 'May', value: 950 }
-            ]} title="CO₂ Emissions Reduction (Tonnes/Month)" type="line" />
-            <div className="grid grid-cols-2 gap-2">
-              <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-                <div className="text-xs font-semibold text-emerald-400">78% Reduction</div>
-                <div className="text-[10px] text-slate-400">vs 2023</div>
-              </div>
-              <div className="p-2 rounded-lg bg-green-500/10 border border-green-500/20">
-                <div className="text-xs font-semibold text-green-400">25,000 EVs</div>
-                <div className="text-[10px] text-slate-400">In Fleet</div>
-              </div>
-            </div>
-          </div>
-        </>
-      )
-    },
-    {
-      id: 'swarm-intelligence',
-      title: "Swarm Coordination",
-      icon: Network,
-      position: { x: 650, y: 950 },
-      content: (
-        <>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <p className="text-slate-400 text-xs">Autonomous multi-agent system coordinating 50,000+ vehicles with minimal latency.</p>
-              <div className="grid grid-cols-3 gap-2">
-                <div className="p-2 rounded-lg bg-purple-500/10 border border-purple-500/20">
-                  <div className="text-xs font-semibold text-purple-400">50K Agents</div>
-                  <div className="text-[10px] text-slate-400">Active</div>
-                </div>
-                <div className="p-2 rounded-lg bg-pink-500/10 border border-pink-500/20">
-                  <div className="text-xs font-semibold text-pink-400">2.1ms Sync</div>
-                  <div className="text-[10px] text-slate-400">Consensus</div>
-                </div>
-                <div className="p-2 rounded-lg bg-indigo-500/10 border border-indigo-500/20">
-                  <div className="text-xs font-semibold text-indigo-400">99.2% Uptime</div>
-                  <div className="text-[10px] text-slate-400">Network</div>
-                </div>
-              </div>
-            </div>
-            <div className="pt-2 border-t border-slate-700/50">
-              <p className="text-[10px] text-slate-500">Decentralized decision making • No single point of failure • Self-healing network</p>
-            </div>
-          </div>
-        </>
-      )
-    },
-    {
-      id: 'security-ops',
-      title: "Security & Compliance",
-      icon: Shield,
-      position: { x: 1350, y: 850 },
-      content: (
-        <>
-          <div className="space-y-3">
-            <div className="space-y-2">
-              <p className="text-slate-400 text-xs">Military-grade encryption with blockchain verification.</p>
-              <div className="grid grid-cols-2 gap-2">
-                <div className="p-2 rounded-lg bg-blue-500/10 border border-blue-500/20">
-                  <div className="text-xs font-semibold text-blue-400">AES-256</div>
-                  <div className="text-[10px] text-slate-400">Encryption</div>
-                </div>
-                <div className="p-2 rounded-lg bg-orange-500/10 border border-orange-500/20">
-                  <div className="text-xs font-semibold text-orange-400">SHA-3</div>
-                  <div className="text-[10px] text-slate-400">Hashing</div>
-                </div>
-              </div>
-            </div>
-            <div className="p-3 rounded-lg border border-emerald-500/30 bg-emerald-500/5">
-              <div className="flex items-center gap-2 mb-1">
-                <CheckCircle className="w-4 h-4 text-emerald-400" />
-                <span className="text-xs font-semibold text-emerald-400">Zero Security Breaches</span>
-              </div>
-              <p className="text-[10px] text-slate-400">15 consecutive years without compromise</p>
-            </div>
-            <div className="pt-2 border-t border-slate-700/50">
-              <p className="text-[10px] text-slate-500">ISO 27001 • SOC 2 Type II • GDPR Compliant</p>
-            </div>
-          </div>
-        </>
-      )
-    }
-  ];
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollPercent = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
-      
-      // Stagger window opening throughout scroll
-      const windowsToShow = [];
-      if (scrollPercent > 5) windowsToShow.push('neural-architecture');
-      if (scrollPercent > 15) windowsToShow.push('predictive-engine');
-      if (scrollPercent > 25) windowsToShow.push('route-optimization');
-      if (scrollPercent > 40) windowsToShow.push('demand-forecast');
-      if (scrollPercent > 55) windowsToShow.push('anomaly-detection');
-      if (scrollPercent > 70) windowsToShow.push('co2-analysis');
-      if (scrollPercent > 80) windowsToShow.push('swarm-intelligence');
-      if (scrollPercent > 90) windowsToShow.push('security-ops');
-      
-      setActiveWindows(windowsToShow);
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  const handleCloseWindow = (id) => {
-    setActiveWindows(prev => prev.filter(wid => wid !== id));
-  };
-
-  const handleMinimizeWindow = (id) => {
-    setMinimizedWindows(prev => new Set([...prev, id]));
-  };
-
-  const handleFocusWindow = (id) => {
-    setFocusedWindow(id);
+  const fadeInUp = {
+    initial: { opacity: 0, y: 30 },
+    whileInView: { opacity: 1, y: 0 },
+    transition: { duration: 0.6 },
+    viewport: { once: true }
   };
 
   return (
-    <div className="min-h-screen bg-black overflow-x-hidden relative">
-      <div className="fixed inset-0 z-0">
-        <div className="absolute inset-0 bg-gradient-to-br from-black via-slate-950 to-cyan-950/40" />
-        <motion.div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-cyan-500/15 rounded-full blur-[100px]" animate={{ scale: [1, 1.3, 1], opacity: [0.2, 0.6, 0.2] }} transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }} />
-        <motion.div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-violet-600/15 rounded-full blur-[100px]" animate={{ scale: [1.2, 1, 1.2], opacity: [0.2, 0.6, 0.2] }} transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 1 }} />
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.08)_1px,transparent_1px)] bg-[size:80px_80px]" />
-        <motion.div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(6,182,212,0.03)_1px,transparent_2px)]" style={{ backgroundSize: '100% 2px' }} animate={{ backgroundPosition: ['0 0', '0 20px'] }} transition={{ duration: 3, repeat: Infinity, ease: "linear" }} />
-      </div>
-
-      <AnimatePresence>
-        {activeWindows.map(windowId => {
-          const hologram = hologramSections.find(h => h.id === windowId);
-          if (!hologram) return null;
-          return (
-            <FloatingHologramWindow
-              key={windowId}
-              id={windowId}
-              title={hologram.title}
-              icon={hologram.icon}
-              position={hologram.position}
-              onClose={handleCloseWindow}
-              onMinimize={handleMinimizeWindow}
-              isMinimized={minimizedWindows.has(windowId)}
-              isFocused={focusedWindow === windowId}
-              onFocus={handleFocusWindow}
-            >
-              {hologram.content}
-            </FloatingHologramWindow>
-          );
-        })}
-      </AnimatePresence>
-
-      <div className="relative z-10">
-        <section className="min-h-screen flex items-center justify-center px-6">
-          <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1 }} className="text-center max-w-4xl">
-            <motion.div animate={{ rotate: 360 }} transition={{ duration: 20, repeat: Infinity, ease: "linear" }} className="inline-block mb-6">
-              <Sparkles className="w-20 h-20 text-cyan-400" />
-            </motion.div>
-            <h1 className="text-7xl font-black mb-6 bg-gradient-to-r from-cyan-400 via-blue-400 to-violet-400 bg-clip-text text-transparent leading-tight">NexusVectis</h1>
-            <p className="text-2xl text-slate-300 mb-8">Enterprise AI for Global Logistics Dominance</p>
-            <motion.div animate={{ y: [0, 10, 0] }} transition={{ duration: 2, repeat: Infinity }} className="text-cyan-400 text-sm mt-20">Scroll to initialize hologram analysis →</motion.div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-black text-white">
+      {/* Header */}
+      <section className="min-h-[60vh] flex items-center justify-center px-6 py-20">
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1 }}
+          className="max-w-3xl text-center"
+        >
+          <motion.div animate={{ rotate: 360 }} transition={{ duration: 20, repeat: Infinity, ease: "linear" }} className="inline-block mb-6">
+            <Sparkles className="w-16 h-16 text-cyan-400" />
           </motion.div>
-        </section>
+          <h1 className="text-6xl md:text-7xl font-black mb-6 bg-gradient-to-r from-cyan-400 via-blue-400 to-violet-400 bg-clip-text text-transparent">
+            About NexusVectis
+          </h1>
+          <p className="text-xl text-slate-300 mb-4">
+            Transforming logistics through artificial intelligence and autonomous systems
+          </p>
+        </motion.div>
+      </section>
 
-        {hologramSections.map((_, idx) => (
-          <section key={idx} className="min-h-screen flex items-center justify-center" />
-        ))}
-
-        <section className="min-h-screen flex items-center justify-center px-6">
-          <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="text-center max-w-2xl">
-            <h2 className="text-4xl font-black text-white mb-6">Powering the Future of Logistics</h2>
-            <p className="text-xl text-slate-400 mb-8">AI-driven intelligence that transforms fleet operations into autonomous, self-optimizing networks. Experience 47% efficiency gains and 78% CO₂ reduction.</p>
-            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="px-10 py-4 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-semibold hover:shadow-lg hover:shadow-cyan-500/50">
-              Request Demo
-            </motion.button>
+      {/* Mission & Vision */}
+      <section className="py-20 px-6 max-w-5xl mx-auto">
+        <div className="grid md:grid-cols-2 gap-12">
+          <motion.div {...fadeInUp} className="space-y-4">
+            <div className="flex items-start gap-4">
+              <Target className="w-8 h-8 text-cyan-400 flex-shrink-0 mt-1" />
+              <div>
+                <h2 className="text-3xl font-bold mb-3">Our Mission</h2>
+                <p className="text-slate-300 text-lg leading-relaxed">
+                  To revolutionize global logistics by empowering organizations with AI-driven intelligence that optimizes operations, reduces costs, and minimizes environmental impact. We believe that autonomous, self-learning systems should be accessible to every logistics enterprise.
+                </p>
+              </div>
+            </div>
           </motion.div>
-        </section>
-      </div>
+
+          <motion.div {...fadeInUp} transition={{ delay: 0.2 }} className="space-y-4">
+            <div className="flex items-start gap-4">
+              <Globe className="w-8 h-8 text-violet-400 flex-shrink-0 mt-1" />
+              <div>
+                <h2 className="text-3xl font-bold mb-3">Our Vision</h2>
+                <p className="text-slate-300 text-lg leading-relaxed">
+                  A world where logistics networks operate with perfect efficiency - where AI coordinates millions of vehicles, predicts maintenance before failures occur, and continuously learns to serve humanity better. We're building the operating system for the future of supply chains.
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Company Story */}
+      <section className="py-20 px-6 bg-slate-900/50 backdrop-blur-sm">
+        <div className="max-w-4xl mx-auto">
+          <motion.div {...fadeInUp} className="space-y-6">
+            <h2 className="text-4xl font-bold mb-8">Our Story</h2>
+            
+            <div className="space-y-4 text-slate-300 leading-relaxed">
+              <p className="text-lg">
+                <strong className="text-cyan-400">NexusVectis</strong> was founded in 2018 by a group of logistics engineers, machine learning researchers, and supply chain visionaries who recognized a critical gap in the market. Traditional TMS (Transportation Management Systems) were static, reactive, and couldn't adapt to real-world complexity.
+              </p>
+
+              <p className="text-lg">
+                We started as a small team working out of Copenhagen, building predictive maintenance models for truck fleets. Our first breakthrough came when a major European logistics provider deployed our system and saw a 32% reduction in unexpected vehicle downtime. That success proved our concept.
+              </p>
+
+              <p className="text-lg">
+                Over the next three years, we expanded our AI capabilities to cover demand forecasting, route optimization, and anomaly detection. By 2021, we had processed over 500 million shipments and became the backbone for some of Europe's largest logistics operations. Today, our platform handles real-time coordination of 50,000+ vehicles across 45 countries.
+              </p>
+
+              <p className="text-lg">
+                What makes us different isn't just our AI - it's our commitment to building systems that learn. Every shipment, every delay, every mechanical issue becomes training data for smarter decisions tomorrow. We're not just solving today's problems; we're architecting intelligence systems that anticipate tomorrow's challenges.
+              </p>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Key Milestones */}
+      <section className="py-20 px-6">
+        <div className="max-w-4xl mx-auto">
+          <motion.h2 {...fadeInUp} className="text-4xl font-bold mb-12">
+            Key Milestones
+          </motion.h2>
+
+          <div className="space-y-8">
+            {[
+              { year: "2018", title: "Founded", desc: "NexusVectis established in Copenhagen with focus on predictive maintenance" },
+              { year: "2019", title: "First Major Contract", desc: "European logistics leader deploys our system, achieving 32% reduction in vehicle downtime" },
+              { year: "2020", title: "Series A Funding", desc: "Raised €12M to expand to route optimization and demand forecasting" },
+              { year: "2021", title: "500M Shipments Milestone", desc: "Platform processes half a billion shipments, enters 15 new markets" },
+              { year: "2022", title: "Anomaly Detection & Sustainability", desc: "Launch real-time anomaly detection system and CO₂ tracking for green logistics" },
+              { year: "2023", title: "Global Expansion", desc: "Reach 45 countries, coordinate 50,000+ vehicles, achieve €500M ARR" },
+              { year: "2024", title: "Intellect Mode Launch", desc: "Deploy advanced AI command orchestration for autonomous decision-making" },
+              { year: "2025", title: "Market Leadership", desc: "Become the #1 AI logistics platform in Europe with 250+ enterprise customers" },
+            ].map((milestone, idx) => (
+              <motion.div
+                key={idx}
+                {...fadeInUp}
+                transition={{ delay: idx * 0.1 }}
+                className="flex gap-6 pb-6 border-b border-slate-700/50 last:border-0"
+              >
+                <div className="flex-shrink-0 w-24">
+                  <div className="text-2xl font-bold text-cyan-400">{milestone.year}</div>
+                </div>
+                <div className="flex-grow">
+                  <h3 className="text-xl font-bold mb-2">{milestone.title}</h3>
+                  <p className="text-slate-400">{milestone.desc}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Core Values */}
+      <section className="py-20 px-6 bg-slate-900/50 backdrop-blur-sm">
+        <div className="max-w-5xl mx-auto">
+          <motion.h2 {...fadeInUp} className="text-4xl font-bold mb-12 text-center">
+            Our Core Values
+          </motion.h2>
+
+          <div className="grid md:grid-cols-2 gap-8">
+            {[
+              {
+                title: "Intelligence Driven",
+                desc: "We believe in the power of data and AI to solve complex problems. Every decision is informed by evidence, not intuition."
+              },
+              {
+                title: "Customer Obsessed",
+                desc: "Your success is our success. We build features based on real logistics challenges, not tech trends."
+              },
+              {
+                title: "Sustainable Impact",
+                desc: "Logistics shapes our planet. We're committed to reducing CO₂ emissions and building greener supply chains."
+              },
+              {
+                title: "Continuous Learning",
+                desc: "Technology evolves. We stay at the frontier of AI research while keeping systems practical and reliable."
+              },
+              {
+                title: "Transparent & Trustworthy",
+                desc: "Your data is your most valuable asset. We protect it with military-grade security and never sell it."
+              },
+              {
+                title: "Global Perspective",
+                desc: "Logistics is borderless. We operate in 45 countries and understand the complexity of international supply chains."
+              }
+            ].map((value, idx) => (
+              <motion.div
+                key={idx}
+                {...fadeInUp}
+                transition={{ delay: idx * 0.1 }}
+                className="p-6 rounded-xl bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-slate-700/50 hover:border-cyan-500/30 transition-colors"
+              >
+                <h3 className="text-xl font-bold mb-3 text-cyan-400">{value.title}</h3>
+                <p className="text-slate-300">{value.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Team Section */}
+      <section className="py-20 px-6">
+        <div className="max-w-5xl mx-auto">
+          <motion.div {...fadeInUp} className="mb-12">
+            <div className="flex items-center gap-4 mb-4">
+              <Users className="w-10 h-10 text-cyan-400" />
+              <h2 className="text-4xl font-bold">Our Team</h2>
+            </div>
+            <p className="text-slate-300 text-lg">
+              250+ experts from 35 countries spanning machine learning, logistics, software engineering, and operations.
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              {
+                name: "Dr. Henrik Andersen",
+                role: "Founder & CEO",
+                bio: "PhD in Machine Learning from KTH. 15 years building autonomous systems. Previously at Volvo Autonomous Solutions."
+              },
+              {
+                name: "Sarah Chen",
+                role: "CTO",
+                bio: "Computer Science from Stanford. Led AI infrastructure at Amazon. Expert in distributed systems and real-time processing."
+              },
+              {
+                name: "Marco Rodriguez",
+                role: "VP Operations",
+                bio: "15 years in European logistics. Former operations director at Maersk. Deep expertise in supply chain optimization."
+              },
+              {
+                name: "Natalia Volkov",
+                role: "Head of AI Research",
+                bio: "Published 40+ papers on neural networks. PhD from Moscow State University. Leads our research team."
+              },
+              {
+                name: "James Wilson",
+                role: "VP Product",
+                bio: "Product leader at Google and Uber. Built products used by 100M+ people. Customer-obsessed innovator."
+              },
+              {
+                name: "Dr. Aisha Patel",
+                role: "Sustainability Lead",
+                bio: "Environmental scientist and sustainability expert. Masters in Climate Science. Driving our green logistics mission."
+              }
+            ].map((member, idx) => (
+              <motion.div
+                key={idx}
+                {...fadeInUp}
+                transition={{ delay: idx * 0.1 }}
+                className="p-6 rounded-xl bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-slate-700/50"
+              >
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-400 to-violet-400 mb-4" />
+                <h3 className="text-lg font-bold mb-1">{member.name}</h3>
+                <p className="text-cyan-400 text-sm mb-3">{member.role}</p>
+                <p className="text-slate-400 text-sm">{member.bio}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Stats Section */}
+      <section className="py-20 px-6 bg-slate-900/50 backdrop-blur-sm">
+        <div className="max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-4 gap-8">
+            {[
+              { number: "250+", label: "Team Members" },
+              { number: "45", label: "Countries Served" },
+              { number: "50K+", label: "Vehicles Coordinated" },
+              { number: "2B+", label: "Shipments Processed" },
+            ].map((stat, idx) => (
+              <motion.div
+                key={idx}
+                {...fadeInUp}
+                transition={{ delay: idx * 0.1 }}
+                className="text-center"
+              >
+                <div className="text-4xl md:text-5xl font-black bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent mb-2">
+                  {stat.number}
+                </div>
+                <p className="text-slate-400 text-lg">{stat.label}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* What Makes Us Different */}
+      <section className="py-20 px-6">
+        <div className="max-w-4xl mx-auto">
+          <motion.h2 {...fadeInUp} className="text-4xl font-bold mb-12">
+            What Makes Us Different
+          </motion.h2>
+
+          <div className="space-y-6">
+            {[
+              {
+                title: "AI That Actually Learns",
+                desc: "Most systems are static. Ours improves every single day with new data. Your system gets smarter, faster, better."
+              },
+              {
+                title: "Built by Logistics People",
+                desc: "We're not just AI researchers. Half our team comes from logistics. We understand the real problems you face."
+              },
+              {
+                title: "Real ROI in Months",
+                desc: "Average customer sees 30% cost reduction and 47% efficiency gain within 6 months. Not in 2 years."
+              },
+              {
+                title: "Transparency & Control",
+                desc: "You own your data. You understand how AI makes decisions. We don't use black boxes."
+              },
+              {
+                title: "Global Scale, Local Support",
+                desc: "We operate in 45 countries but treat every customer like they're in our backyard."
+              }
+            ].map((point, idx) => (
+              <motion.div
+                key={idx}
+                {...fadeInUp}
+                transition={{ delay: idx * 0.1 }}
+                className="flex gap-4 p-6 rounded-xl bg-gradient-to-r from-cyan-500/5 to-violet-500/5 border border-slate-700/30 hover:border-cyan-500/30 transition-colors"
+              >
+                <div className="flex-shrink-0">
+                  <Zap className="w-6 h-6 text-cyan-400 mt-1" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold mb-2">{point.title}</h3>
+                  <p className="text-slate-300">{point.desc}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-20 px-6">
+        <motion.div
+          {...fadeInUp}
+          className="max-w-4xl mx-auto text-center bg-gradient-to-r from-cyan-500/10 to-violet-500/10 border border-cyan-500/30 rounded-2xl p-12"
+        >
+          <h2 className="text-4xl font-bold mb-6">Ready to Transform Your Logistics?</h2>
+          <p className="text-xl text-slate-300 mb-8">
+            Join 250+ enterprise customers who are using AI to optimize their supply chains and cut costs.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 border-0 text-white px-8 py-6 text-lg">
+              Request Demo <ArrowRight className="w-5 h-5 ml-2" />
+            </Button>
+            <Button variant="outline" className="border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10 px-8 py-6 text-lg">
+              Contact Sales
+            </Button>
+          </div>
+        </motion.div>
+      </section>
+
+      {/* Footer Accent */}
+      <div className="h-px bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent" />
     </div>
   );
 }
