@@ -157,9 +157,9 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
             }
           }
         }),
-        // Financial metrics
+        // Financial metrics - deep dive
          base44.integrations.Core.InvokeLLM({
-           prompt: `Give me key financial metrics for the company identified by "${name}".${searchHint} Real data only from official sources.`,
+           prompt: `Give me DETAILED financial metrics for the company identified by "${name}".${searchHint} Include: current ratio, quick ratio, debt-to-equity, ROIC, ROCE, gross margin %, operating margin %, net margin %, asset turnover, inventory turnover, receivables days, payables days, cash conversion cycle, working capital, CAPEX as % of revenue, R&D as % of revenue, marketing spend as % of revenue, dividend yield %, payout ratio, book value per share, earnings per share (EPS), price-to-earnings ratio if public. Real data only.`,
           add_context_from_internet: true,
           response_json_schema: {
             type: "object",
