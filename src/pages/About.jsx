@@ -219,11 +219,11 @@ export default function About() {
             viewport={{ once: true }}
           >
             <h2 className="text-5xl md:text-6xl font-bold text-white mb-8">
-              Built by Logistics <span className="text-cyan-400">Experts</span>
+              Built by AI and Logistics <span className="text-cyan-400">Pioneers</span>
             </h2>
             <p className="text-xl text-slate-300 leading-relaxed mb-12">
-              Our team combines decades of logistics operations experience with cutting-edge AI expertise. 
-              We've lived the problems we're solving—from warehouse floors to dispatch centers.
+              We're not logistics experts who hired AI engineers. We're AI researchers who know logistics inside and out. 
+              This is why NexusVectis thinks differently—we solved this problem from first principles.
             </p>
             <div className="grid md:grid-cols-3 gap-6 mb-12">
               {[
