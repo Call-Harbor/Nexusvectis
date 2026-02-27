@@ -96,10 +96,10 @@ export default function About() {
               className="grid grid-cols-2 gap-6"
             >
               {[
-                { value: "10M+", label: "Shipments Tracked", icon: Globe },
-                { value: "500K+", label: "AI Commands Daily", icon: Brain },
-                { value: "99.9%", label: "Uptime", icon: Zap },
-                { value: "45%", label: "Avg. Cost Savings", icon: TrendingUp }
+                { value: "50+", label: "Parallel AI Analyses", icon: Brain },
+                { value: "100M+", label: "Optimization Decisions", icon: TrendingUp },
+                { value: "99.99%", label: "Model Uptime", icon: Zap },
+                { value: "10x", label: "Faster Decisions", icon: Rocket }
               ].map((stat, idx) => {
                 const Icon = stat.icon;
                 return (
