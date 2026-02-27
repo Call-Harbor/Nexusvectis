@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Users, UserPlus, CalendarDays, TrendingUp, Briefcase,
   Network, Search, Filter, Download, RefreshCw,
-  Building2, CheckCircle2, AlertCircle, Clock, ChevronDown, Brain
+  Building2, CheckCircle2, AlertCircle, Clock, ChevronDown, Brain, GraduationCap
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +16,7 @@ import RecruitmentPipeline from "../components/hr/RecruitmentPipeline";
 import PerformancePanel from "../components/hr/PerformancePanel";
 import OrgChart from "../components/hr/OrgChart";
 import CandidateMatcher from "../components/hr/CandidateMatcher";
+import LearningDevelopment from "../components/hr/LearningDevelopment";
 
 const TABS = [
   { key: "employees",    label: "Medarbejdere",        icon: Users },
@@ -23,6 +24,7 @@ const TABS = [
   { key: "recruitment",  label: "Rekruttering",        icon: Briefcase },
   { key: "performance",  label: "Performance",         icon: TrendingUp },
   { key: "career",       label: "Karriere & Matching", icon: Brain },
+  { key: "learning",     label: "Uddannelse & Udvikling", icon: GraduationCap },
   { key: "orgchart",     label: "Organisationsdiagram",icon: Network },
 ];
 
@@ -224,6 +226,10 @@ export default function HRManagement() {
 
             {activeTab === "career" && (
               <CandidateMatcher employees={employees} orgId={orgId} />
+            )}
+
+            {activeTab === "learning" && (
+              <LearningDevelopment orgId={orgId} employees={employees} />
             )}
 
             {activeTab === "orgchart" && (
