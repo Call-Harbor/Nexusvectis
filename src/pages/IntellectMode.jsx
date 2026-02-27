@@ -2419,12 +2419,14 @@ Return JSON with this EXACT structure:
                   window.type === 'nexus_chat' ? MessageSquare : Activity
                   }
                 position={window.position}
-                onClose={() => closeWindow(window.id)}
-                onMinimize={() => toggleMinimize(window.id)}
-                isMinimized={minimizedWindows.has(window.id)}
-              >
-                {renderWindowContent(window.type, window.data)}
-              </HologramWindow>
+                 onClose={() => closeWindow(window.id)}
+                 onMinimize={() => toggleMinimize(window.id)}
+                 isMinimized={minimizedWindows.has(window.id)}
+                 isFocused={focusedWindow === window.id}
+                 onFocus={setFocusedWindow}
+                >
+                 {renderWindowContent(window.type, window.data)}
+                </HologramWindow>
             ))}
             </AnimatePresence>
 
