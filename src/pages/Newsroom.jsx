@@ -105,52 +105,7 @@ export default function Newsroom() {
         </div>
       </section>
 
-      {/* Company Milestones */}
-      <section className="relative py-24 px-6 z-10">
-        <div className="max-w-5xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="mb-16"
-          >
-            <h2 className="text-4xl font-bold text-white mb-12">Company Milestones</h2>
-          </motion.div>
-
-          <div className="space-y-8">
-            {milestones.map((milestone, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, x: idx % 2 === 0 ? -30 : 30 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.1 }}
-                className={`flex gap-8 ${idx % 2 === 1 ? 'flex-row-reverse' : ''}`}
-              >
-                <div className="flex-1">
-                  <div className="p-8 rounded-2xl bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 hover:border-blue-500/50 transition-all h-full">
-                    <div className="text-blue-400 text-sm font-mono font-bold mb-2">{milestone.month}</div>
-                    <h3 className="text-xl font-bold text-white mb-3">{milestone.title}</h3>
-                    <p className="text-slate-400 leading-relaxed">{milestone.desc}</p>
-                  </div>
-                </div>
-                <div className="flex flex-col items-center gap-4 py-4">
-                  <motion.div
-                    animate={{ scale: [1, 1.3, 1] }}
-                    transition={{ duration: 2, repeat: Infinity, delay: idx * 0.2 }}
-                    className="w-4 h-4 rounded-full bg-gradient-to-r from-blue-400 to-cyan-400"
-                  />
-                  {idx < milestones.length - 1 && (
-                    <div className="h-12 w-0.5 bg-gradient-to-b from-blue-500/50 to-transparent" />
-                  )}
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Media Kit */}
+{/* Media Kit */}
       <section className="relative py-24 px-6 z-10">
         <div className="max-w-4xl mx-auto">
           <motion.div
