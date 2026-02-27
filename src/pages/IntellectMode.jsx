@@ -264,6 +264,7 @@ export default function IntellectMode() {
   const [showVideoCall, setShowVideoCall] = useState(false);
   const [openDesktopWindows, setOpenDesktopWindows] = useState([]); // {id, label, ref}
   const [showAdvancedPanel, setShowAdvancedPanel] = useState(false);
+  const [showGlobalSearch, setShowGlobalSearch] = useState(false);
   const [scenarios, setScenarios] = useState([]);
   const [multiModelAnalysis, setMultiModelAnalysis] = useState(null);
   const [isStreaming, setIsStreaming] = useState(false);
