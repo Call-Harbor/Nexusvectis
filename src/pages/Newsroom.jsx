@@ -23,13 +23,6 @@ export default function Newsroom() {
 
 
 
-  const milestones = [
-    { month: "Jan 2026", title: "FLEET AI Engine v1", desc: "Launched core natural language interface with Mistral 7B fine-tuned on logistics data" },
-    { month: "Feb 2026", title: "Real-time Fleet Tracking", desc: "Unified GPS, AIS, ADS-B integration deployed across all supported transport modes" },
-    { month: "Feb 2026", title: "Predictive AI Suite Live", desc: "ETA prediction, maintenance forecasting, and demand forecasting deployed to production" },
-    { month: "Mar 2026", title: "Advanced Command Orchestration", desc: "Multi-step command execution and parallel AI analysis engine launched" }
-  ];
-
   return (
     <div className="min-h-screen bg-black overflow-hidden relative">
       {/* Animated Background */}
