@@ -123,12 +123,22 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
     setError(null);
     setData(null);
     setCompanyName(name);
+    
+    let searchHint = '';
+    if (searchType === 'cvr') {
+      searchHint = ' This is a Danish CVR number - search Danish business registry first.';
+    } else if (searchType === 'name') {
+      searchHint = ' Search by company name.';
+    } else if (searchType === 'vat') {
+      searchHint = ' This is a VAT/company registration number - search business registries.';
+    }
+    
     try {
       // 6 small focused parallel calls — each with a tiny simple schema
       const [r1, r2, r3, r4, r5, r6] = await Promise.all([
         // Basic info
         base44.integrations.Core.InvokeLLM({
-          prompt: `Give me basic info about the company identified by "${name}". This could be a company name, CVR number, company registration number, VAT number, or any other company identifier. Look up the real company. Real data only.`,
+          prompt: `Give me basic info about the company identified by "${name}".${searchHint} Real data only from official business registries and public sources.`,
           add_context_from_internet: true,
           response_json_schema: {
             type: "object",
