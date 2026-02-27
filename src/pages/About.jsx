@@ -134,6 +134,51 @@ export default function About() {
     }
   ];
 
+  const majorMilestones = [
+    {
+      icon: Zap,
+      year: "2024",
+      title: "FLEET AI Engine Launch",
+      description: "Breakthrough in natural language processing for logistics. First system to understand complex fleet commands in conversational language.",
+      impact: "50+ simultaneous AI analyses, sub-second decision latency"
+    },
+    {
+      icon: Network,
+      year: "2024",
+      title: "Swarm Intelligence Protocol",
+      description: "Revolutionary decentralized coordination without central command. Vehicles operate autonomously while maintaining fleet-wide optimization.",
+      impact: "Zero single points of failure, edge AI computing across entire fleet"
+    },
+    {
+      icon: Shield,
+      year: "2025",
+      title: "Digital Twin Federation",
+      description: "Real-time virtual replicas of entire operations. Anomaly detection, attack prevention, and predictive failure forecasting before impact.",
+      impact: "99.99% uptime guarantee, real-time threat detection"
+    },
+    {
+      icon: Truck,
+      year: "2025",
+      title: "Multi-Signal Integration",
+      description: "Unified tracking across GPS, AIS, ADS-B, RFID, and LoRaWAN. First platform to seamlessly fuse 5+ signal types in real-time.",
+      impact: "Coverage in maritime, aviation, ground, and IoT networks"
+    },
+    {
+      icon: Brain,
+      year: "2025",
+      title: "Predictive Analytics Suite",
+      description: "AI models forecasting demand, ETAs, maintenance with 95%+ accuracy. Genetic algorithms enabling continuous fleet evolution.",
+      impact: "7-day maintenance forecasting, dynamic route optimization"
+    },
+    {
+      icon: Radio,
+      year: "2026",
+      title: "Autonomous Edge Computing",
+      description: "Lightweight neural networks running directly on vehicles. 100% real-time decision-making without cloud dependency.",
+      impact: "Ultra-low latency, offline-capable intelligence"
+    }
+  ];
+
   return (
     <div className="min-h-screen bg-black overflow-hidden relative">
       {/* Animated Background */}
