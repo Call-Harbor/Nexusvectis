@@ -319,7 +319,7 @@ export default function Home() {
                   {
                     icon: Zap,
                     title: "Parallel Multi-Analysis",
-                    description: "\"Analyze entire fleet\" - Runs 49 AI analyses simultaneously for complete insights in seconds",
+                    description: "\"Analyze entire fleet\" - Run 10+ tasks with 50+ parallel AI analyses simultaneously for complete insights in seconds",
                     color: "violet"
                   },
                   {
