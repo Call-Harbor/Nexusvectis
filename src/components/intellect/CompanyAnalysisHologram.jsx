@@ -1180,8 +1180,8 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
                   )}
 
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                  {/* Ownership type */}
-                  {data.ownership?.ownership_type && (
+                    {/* Ownership type */}
+                    {data.ownership?.ownership_type && (
                     <div className="p-4 rounded-2xl border border-amber-500/30 bg-amber-500/5 flex items-center gap-3">
                       <Shield className="w-8 h-8 text-amber-400" />
                       <div>
