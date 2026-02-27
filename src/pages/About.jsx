@@ -493,27 +493,53 @@ export default function About() {
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-24"
+            className="text-center mb-32"
           >
             <motion.div
               animate={{
                 rotate: [0, 360],
+                scale: [1, 1.1, 1],
               }}
               transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-              className="inline-block mb-6"
+              className="inline-block mb-8"
             >
-              <TrendingUp className="w-16 h-16 text-violet-400" />
+              <TrendingUp className="w-20 h-20 text-violet-400 drop-shadow-lg drop-shadow-violet-500/50" />
             </motion.div>
-            <h2 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-black text-white mb-6 leading-tight px-2">
-              6 Major Tech
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+              className="text-5xl sm:text-6xl md:text-8xl lg:text-9xl font-black text-white mb-8 leading-[0.9] px-2"
+            >
+              The 6 Tech
               <br />
-              <span className="bg-gradient-to-r from-violet-400 via-fuchsia-400 to-cyan-400 bg-clip-text text-transparent">
-                Breakthroughs
+              <span className="relative inline-block">
+                <span className="bg-gradient-to-r from-violet-400 via-fuchsia-400 via-cyan-400 to-emerald-400 bg-clip-text text-transparent animate-pulse">
+                  Leaps Forward
+                </span>
+                <motion.div
+                  className="absolute -inset-4 bg-gradient-to-r from-violet-500/40 via-fuchsia-500/40 to-cyan-500/40 blur-3xl -z-10"
+                  animate={{
+                    opacity: [0.4, 0.8, 0.4],
+                    scale: [0.95, 1.05, 0.95],
+                  }}
+                  transition={{ duration: 4, repeat: Infinity }}
+                />
               </span>
-            </h2>
-            <p className="text-lg sm:text-xl md:text-2xl text-slate-300 max-w-3xl mx-auto px-2 leading-relaxed">
-              Innovation milestones that transformed fleet logistics into autonomous intelligence systems
-            </p>
+            </motion.h2>
+            <motion.p
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+              className="text-xl sm:text-2xl md:text-3xl text-slate-200 max-w-4xl mx-auto px-2 leading-relaxed font-light"
+            >
+              Built in 2026. Reshaping the entire logistics industry with
+              <span className="text-cyan-400 font-semibold"> physics-defying AI</span>,
+              <span className="text-violet-400 font-semibold"> swarm intelligence</span>, and
+              <span className="text-fuchsia-400 font-semibold"> autonomous everything</span>.
+            </motion.p>
           </motion.div>
 
           <div className="space-y-16">
