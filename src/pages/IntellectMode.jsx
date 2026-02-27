@@ -9,7 +9,7 @@ import {
   Sparkles, Send, Mic, Brain, Zap, TrendingUp, AlertTriangle, 
   Truck, Route, Package, Activity, Maximize2, Minimize2, X, LayoutDashboard, Paperclip, FileText,
   Settings, Warehouse, Satellite, Globe, BarChart3, Box, Building2, Monitor, ExternalLink, ChevronDown, Users,
-  Lightbulb, Network, Shield, MessageSquare, Video, FileTextIcon, FileCode, CalculatorIcon
+  Lightbulb, Network, Shield, MessageSquare, Video, FileTextIcon, FileCode, CalculatorIcon, Search
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -43,6 +43,7 @@ import IntelligentCommandAgent, { CommandInput, CommandExecution } from "@/compo
 import VideoCallHologram from "@/components/intellect/VideoCallHologram";
 import AIDocumentEditor from "@/components/intellect/AIDocumentEditor";
 import AISpreadsheetEditor from "@/components/intellect/AISpreadsheetEditor";
+import GlobalSearch from "@/components/intellect/GlobalSearch";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
