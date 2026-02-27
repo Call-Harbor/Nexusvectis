@@ -150,7 +150,7 @@ export default function FleetAIPage() {
               {
                 icon: Zap,
                 title: "Instant Execution",
-                description: "Commands execute immediately. Routes optimized, assignments made, analytics generated - all in seconds",
+                description: "Run 10+ tasks with 50+ parallel AI analyses simultaneously. Routes optimized, assignments made, analytics generated - all in seconds",
                 color: "fuchsia"
               }
             ].map((feature, idx) => {
