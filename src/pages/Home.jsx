@@ -318,14 +318,14 @@ export default function Home() {
                   },
                   {
                     icon: Zap,
-                    title: "Instant Automation",
-                    description: "\"Optimize all routes for fuel efficiency\" - AI analyzes and implements in seconds",
+                    title: "Parallel Multi-Analysis",
+                    description: "\"Analyze entire fleet\" - Runs 50+ AI analyses simultaneously for complete insights in seconds",
                     color: "violet"
                   },
                   {
                     icon: TrendingUp,
-                    title: "Predictive Intelligence",
-                    description: "\"Show maintenance predictions\" - AI forecasts issues before they happen",
+                    title: "Real-Time Intelligence",
+                    description: "\"Show maintenance predictions\" - AI forecasts issues before they happen with live data",
                     color: "fuchsia"
                   }
                 ].map((item, idx) => {
