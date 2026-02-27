@@ -100,6 +100,7 @@ const SWOTItem = ({ icon: Icon, label, items, color, bg }) => (
 
 export default function CompanyAnalysisHologram({ companyName: initialName, onClose, onSendToScreen }) {
   const [companyInput, setCompanyInput] = useState(initialName || '');
+  const [searchType, setSearchType] = useState('auto');
   const [companyName, setCompanyName] = useState(initialName || '');
   const [loading, setLoading] = useState(!!initialName);
   const [data, setData] = useState(null);
