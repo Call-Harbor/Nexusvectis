@@ -177,7 +177,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
         }),
         // Revenue chart + competitors + geo markets + ratings
          base44.integrations.Core.InvokeLLM({
-           prompt: `For the company identified by "${name}"${searchHint}, give me: 5 years of revenue/profit/ebitda data, top 3 competitors with market share %, geographic revenue split by region %, and ratings 1-10 for financial_health, growth_potential, innovation, brand_strength, management_quality, market_position, esg_rating, overall. Real data only.`,
+           prompt: `For the company identified by "${name}"${searchHint}, give me: 10 years of revenue/EBITDA/net income/operating income/free cash flow data. Top 5 competitors ranked by market cap with % market share. Geographic revenue by continent + top 3 countries %. Supply chain insights (key suppliers, vertical integration level). Patent portfolio data (# patents, major categories, pending patents). Technology stack & digital maturity assessment. Customer concentration (% from top 10 customers). Debt structure (bonds, loans, maturity profile). Acquisition history (last 5 acquisitions with dates/values). Ratings 1-10 for: financial_health, profitability_trend, growth_momentum, innovation_index, brand_value, market_position, operational_efficiency, management_quality, esg_score, cyber_security_posture, overall. Real data only.`,
           add_context_from_internet: true,
           response_json_schema: {
             type: "object",
