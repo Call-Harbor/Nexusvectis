@@ -210,7 +210,7 @@ export default function About() {
       id: 'route-optimization',
       title: "Route Optimization",
       icon: Rocket,
-      position: { x: 1200, y: 250 },
+      position: { x: 1080, y: 320 },
       content: (
         <>
           <div className="space-y-4">
