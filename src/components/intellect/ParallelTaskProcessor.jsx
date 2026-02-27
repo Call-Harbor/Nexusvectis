@@ -77,7 +77,13 @@ export default function ParallelTaskProcessor({ onClose }) {
 
     setQueuedTasks(prev => [...prev, newTask]);
     setInputValue("");
-    toast.success("1 prompt tilføjet til køen");
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit();
+    }
   };
 
   const addBatchPrompts = () => {
