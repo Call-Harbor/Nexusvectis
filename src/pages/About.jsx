@@ -460,95 +460,151 @@ export default function About() {
         </div>
       </section>
 
-      {/* Major Tech Milestones */}
-      <section className="relative py-20 sm:py-32 px-4 sm:px-6 z-10">
-        <div className="max-w-7xl mx-auto">
+      {/* Major Tech Milestones - EPIC SECTION */}
+      <section className="relative py-20 sm:py-32 px-4 sm:px-6 z-10 overflow-hidden">
+        {/* Animated Background Orbs */}
+        <div className="absolute inset-0">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            animate={{
+              scale: [1, 1.3, 1],
+              opacity: [0.3, 0.6, 0.3],
+            }}
+            transition={{ duration: 8, repeat: Infinity }}
+            className="absolute top-1/4 right-1/4 w-96 h-96 bg-violet-500/20 rounded-full blur-3xl"
+          />
+          <motion.div
+            animate={{
+              scale: [1.2, 1, 1.2],
+              opacity: [0.3, 0.6, 0.3],
+            }}
+            transition={{ duration: 10, repeat: Infinity, delay: 1 }}
+            className="absolute bottom-1/4 left-1/4 w-96 h-96 bg-fuchsia-500/20 rounded-full blur-3xl"
+          />
+        </div>
+
+        <div className="max-w-7xl mx-auto relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-20"
+            className="text-center mb-24"
           >
             <motion.div
               animate={{
-                y: [0, -10, 0],
+                rotate: [0, 360],
               }}
-              transition={{ duration: 3, repeat: Infinity }}
+              transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
               className="inline-block mb-6"
             >
-              <TrendingUp className="w-12 h-12 text-violet-400" />
+              <TrendingUp className="w-16 h-16 text-violet-400" />
             </motion.div>
-            <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-6 leading-tight px-2">
-              Major Tech
+            <h2 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-black text-white mb-6 leading-tight px-2">
+              6 Major Tech
               <br />
-              <span className="bg-gradient-to-r from-violet-400 to-fuchsia-400 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-violet-400 via-fuchsia-400 to-cyan-400 bg-clip-text text-transparent">
                 Breakthroughs
               </span>
             </h2>
-            <p className="text-lg text-slate-400 max-w-2xl mx-auto px-2">
-              Innovation milestones that transformed fleet logistics AI
+            <p className="text-lg sm:text-xl md:text-2xl text-slate-300 max-w-3xl mx-auto px-2 leading-relaxed">
+              Innovation milestones that transformed fleet logistics into autonomous intelligence systems
             </p>
           </motion.div>
 
-          <div className="relative">
-            {/* Timeline Line */}
-            <div className="hidden md:block absolute left-1/2 transform -translate-x-1/2 w-1 h-full bg-gradient-to-b from-cyan-500/50 via-violet-500/50 to-fuchsia-500/50" />
+          <div className="space-y-16">
+            {majorMilestones.map((milestone, idx) => {
+              const Icon = milestone.icon;
 
-            <div className="space-y-12">
-              {majorMilestones.map((milestone, idx) => {
-                const Icon = milestone.icon;
-                const isLeft = idx % 2 === 0;
+              return (
+                <motion.div
+                  key={idx}
+                  initial={{ opacity: 0, y: 40 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: idx * 0.15 }}
+                  className="group"
+                >
+                  <div className="grid md:grid-cols-12 gap-8 items-center">
+                    {/* Year Badge */}
+                    <motion.div
+                      whileHover={{ scale: 1.1 }}
+                      className="md:col-span-2"
+                    >
+                      <div className="p-6 rounded-2xl bg-gradient-to-br from-violet-500/20 to-fuchsia-500/10 border border-violet-500/30 text-center">
+                        <span className="text-4xl font-black bg-gradient-to-r from-violet-400 to-fuchsia-400 bg-clip-text text-transparent">
+                          {milestone.year}
+                        </span>
+                      </div>
+                    </motion.div>
 
-                return (
-                  <motion.div
-                    key={idx}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: idx * 0.1 }}
-                    className="relative"
-                  >
-                    <div className={`grid md:grid-cols-2 gap-8 items-center ${isLeft ? "md:direction-rtl" : ""}`}>
-                      {/* Content */}
+                    {/* Content Card */}
+                    <motion.div
+                      whileHover={{ scale: 1.02, y: -8 }}
+                      className="md:col-span-10 relative"
+                    >
+                      <div className="absolute -inset-1 bg-gradient-to-r from-violet-500/20 to-fuchsia-500/10 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                      
+                      <div className="relative p-10 rounded-3xl bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl border border-white/10 group-hover:border-violet-500/50 transition-all overflow-hidden">
+                        <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-violet-500/10 to-fuchsia-500/10 rounded-full blur-3xl -z-10" />
+                        
+                        <div className="flex items-start gap-6">
+                          <motion.div
+                            whileHover={{ rotate: 360 }}
+                            transition={{ duration: 0.6 }}
+                            className="w-20 h-20 rounded-2xl bg-gradient-to-br from-violet-500/20 to-fuchsia-500/10 flex items-center justify-center flex-shrink-0"
+                          >
+                            <Icon className="w-10 h-10 text-violet-400" />
+                          </motion.div>
+                          
+                          <div className="flex-1">
+                            <h3 className="text-3xl font-bold text-white mb-3 group-hover:text-violet-300 transition-colors">
+                              {milestone.title}
+                            </h3>
+                            <p className="text-slate-300 mb-6 leading-relaxed text-lg">
+                              {milestone.description}
+                            </p>
+                            <motion.div
+                              initial={{ width: 0 }}
+                              whileInView={{ width: "100%" }}
+                              viewport={{ once: true }}
+                              transition={{ delay: idx * 0.15 + 0.3, duration: 1 }}
+                              className="h-0.5 bg-gradient-to-r from-violet-500 to-transparent mb-6"
+                            />
+                            <div className="flex items-center gap-2 p-4 rounded-xl bg-violet-500/10 border border-violet-500/20">
+                              <div className="w-2 h-2 rounded-full bg-violet-400 animate-pulse" />
+                              <span className="text-sm font-semibold text-violet-300">
+                                {milestone.impact}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+
+                    {/* Connecting Line */}
+                    {idx < majorMilestones.length - 1 && (
                       <motion.div
-                        whileHover={{ scale: 1.02, y: -5 }}
-                        className={`p-8 rounded-2xl bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl border border-white/10 hover:border-violet-500/50 transition-all ${
-                          isLeft ? "" : "md:order-2"
-                        }`}
+                        initial={{ height: 0 }}
+                        whileInView={{ height: 60 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: idx * 0.15 + 0.5, duration: 0.6 }}
+                        className="hidden md:block md:col-span-2 h-16 mx-auto"
                       >
-                        <div className="flex items-center gap-3 mb-3">
-                          <Icon className="w-6 h-6 text-violet-400" />
-                          <span className="text-xs font-bold text-violet-300 uppercase tracking-wider">{milestone.year}</span>
-                        </div>
-                        <h3 className="text-2xl font-bold text-white mb-3">{milestone.title}</h3>
-                        <p className="text-slate-400 mb-4 leading-relaxed">{milestone.description}</p>
-                        <div className="pt-4 border-t border-white/10">
-                          <p className="text-sm text-cyan-300 flex items-center gap-2">
-                            <CheckCircle2 className="w-4 h-4" />
-                            {milestone.impact}
-                          </p>
-                        </div>
-                      </motion.div>
-
-                      {/* Timeline Dot */}
-                      <div className="hidden md:flex justify-center">
                         <motion.div
                           animate={{
-                            scale: [1, 1.2, 1],
                             boxShadow: [
                               "0 0 0 0 rgba(139, 92, 246, 0.4)",
-                              "0 0 0 20px rgba(139, 92, 246, 0)",
+                              "0 0 0 10px rgba(139, 92, 246, 0)",
                             ],
                           }}
                           transition={{ duration: 2, repeat: Infinity }}
-                          className="w-6 h-6 rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500 border-4 border-slate-950 relative z-10"
+                          className="w-1 h-16 mx-auto bg-gradient-to-b from-violet-500 to-fuchsia-500"
                         />
-                      </div>
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </div>
+                      </motion.div>
+                    )}
+                  </div>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       </section>
