@@ -79,18 +79,17 @@ export default function About() {
               transition={{ duration: 0.8 }}
             >
               <h2 className="text-6xl md:text-7xl font-black text-white mb-8 leading-tight">
-                Built <span className="bg-gradient-to-r from-cyan-400 via-violet-400 to-cyan-400 bg-clip-text text-transparent">From Scratch</span>
+                We <span className="bg-gradient-to-r from-cyan-400 via-violet-400 to-cyan-400 bg-clip-text text-transparent">Didn't Compromise</span>
               </h2>
               <div className="space-y-6 text-lg text-slate-200 leading-relaxed font-light">
                 <p className="border-l-2 border-cyan-500/50 pl-6">
-                  We started with a blank canvas. No legacy code. No compromises. Just quantum-ready AI architecture built for the challenges fleet operators face in 2026.
+                  No "AI bolted onto old software." No Python notebooks. We built this from scratch in 3 months with a vision: <span className="text-cyan-400 font-bold">what if logistics had no humans?</span>
                 </p>
                 <p>
-                  Every component—from FLEET AI's neuro-symbolic engine to our swarm intelligence coordination to digital twin federation—was designed together as one unified system. 
-                  <span className="text-cyan-300"> This is what a post-human fleet platform looks like</span>.
+                  Every line of code is optimized for one thing: <span className="text-violet-400 font-semibold">making faster, smarter decisions than any human team ever could</span>. Swarm coordination. Digital twins. Neural routing. All working together. All flawless.
                 </p>
-                <p className="text-transparent bg-gradient-to-r from-cyan-300 via-violet-300 to-cyan-300 bg-clip-text font-semibold text-lg">
-                  We're not adding AI to logistics. We're encoding intelligence into every decision.
+                <p className="text-transparent bg-gradient-to-r from-red-400 via-orange-400 to-red-400 bg-clip-text font-bold text-lg">
+                  Your competitors are still hiring dispatchers. You just automated them away.
                 </p>
               </div>
             </motion.div>

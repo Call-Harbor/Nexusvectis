@@ -6,10 +6,10 @@ import { createPageUrl } from "../../utils";
 
 export default function Hero3D() {
   const [capabilities] = useState([
-    { icon: Brain, label: "50+ Parallel AI Models", value: "Real-time analysis" },
-    { icon: Zap, label: "100M+ Decisions/Day", value: "Sub-millisecond speed" },
-    { icon: Globe, label: "99.99% Uptime", value: "Enterprise reliability" },
-    { icon: Sparkles, label: "10x Faster", value: "Than legacy systems" }
+    { icon: Brain, label: "Replaces 500 Humans", value: "At 1/100th the cost" },
+    { icon: Zap, label: "Optimizes in Real-Time", value: "While your team sleeps" },
+    { icon: Globe, label: "Thinks in 40 Languages", value: "But only speaks profit" },
+    { icon: Sparkles, label: "Never Gets Sick", value: "Never asks for a raise" }
   ]);
 
   return (
@@ -91,10 +91,10 @@ export default function Hero3D() {
             transition={{ duration: 1.2, delay: 0.2, type: "spring", stiffness: 50 }}
             className="text-center mb-20 relative"
           >
-            <h1 className="text-7xl md:text-8xl font-black text-white mb-8 leading-tight">
-              <span className="block mb-4">The Platform</span>
+            <h1 className="text-8xl md:text-9xl font-black text-white mb-8 leading-tight">
+              <span className="block mb-4">We Fired All Your</span>
               <span className="bg-gradient-to-r from-cyan-400 via-violet-400 to-fuchsia-400 bg-clip-text text-transparent">
-                That Thinks
+                Dispatchers
               </span>
             </h1>
             
