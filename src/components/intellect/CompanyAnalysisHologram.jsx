@@ -642,21 +642,50 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
 
       {/* Search bar */}
       <div className="relative z-10 p-4 border-b border-slate-800/50 flex-shrink-0">
-        <div className="max-w-2xl mx-auto flex gap-2">
-          <input
-            value={companyInput}
-            onChange={e => setCompanyInput(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && handleSearch()}
-            placeholder="Search company by name or registration number (CVR, VAT, etc.)..."
-            className="flex-1 px-4 py-2.5 bg-slate-900/60 border-2 border-cyan-500/30 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-400 text-sm"
-          />
-          <Button
-            onClick={handleSearch}
-            disabled={loading || !companyInput.trim()}
-            className="bg-gradient-to-r from-cyan-500 to-violet-500 rounded-xl px-5"
-          >
-            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
-          </Button>
+        <div className="max-w-2xl mx-auto space-y-2">
+          <div className="flex gap-2 items-center text-xs text-slate-400 mb-2">
+            <span>Search type:</span>
+            <button 
+              onClick={() => setSearchType('auto')}
+              className={`px-2.5 py-1 rounded-md transition-colors ${searchType === 'auto' ? 'bg-cyan-500/40 text-cyan-300' : 'hover:bg-slate-800 text-slate-400'}`}
+            >
+              Auto
+            </button>
+            <button 
+              onClick={() => setSearchType('name')}
+              className={`px-2.5 py-1 rounded-md transition-colors ${searchType === 'name' ? 'bg-cyan-500/40 text-cyan-300' : 'hover:bg-slate-800 text-slate-400'}`}
+            >
+              Company Name
+            </button>
+            <button 
+              onClick={() => setSearchType('cvr')}
+              className={`px-2.5 py-1 rounded-md transition-colors ${searchType === 'cvr' ? 'bg-cyan-500/40 text-cyan-300' : 'hover:bg-slate-800 text-slate-400'}`}
+            >
+              CVR/Registration
+            </button>
+            <button 
+              onClick={() => setSearchType('vat')}
+              className={`px-2.5 py-1 rounded-md transition-colors ${searchType === 'vat' ? 'bg-cyan-500/40 text-cyan-300' : 'hover:bg-slate-800 text-slate-400'}`}
+            >
+              VAT Number
+            </button>
+          </div>
+          <div className="flex gap-2">
+            <input
+              value={companyInput}
+              onChange={e => setCompanyInput(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleSearch()}
+              placeholder="Search company by name or registration number..."
+              className="flex-1 px-4 py-2.5 bg-slate-900/60 border-2 border-cyan-500/30 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-400 text-sm"
+            />
+            <Button
+              onClick={handleSearch}
+              disabled={loading || !companyInput.trim()}
+              className="bg-gradient-to-r from-cyan-500 to-violet-500 rounded-xl px-5"
+            >
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+            </Button>
+          </div>
         </div>
       </div>
 
