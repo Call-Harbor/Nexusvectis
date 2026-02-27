@@ -2825,13 +2825,7 @@ Return JSON with this EXACT structure:
                  style={{ animationDuration: '2s' }}
                >
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-                {isProcessing ? (
-                  <div className="flex items-center gap-2 relative z-10">
-                    <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  </div>
-                ) : (
-                  <Send className="w-4 h-4 sm:w-5 sm:h-5 relative z-10" />
-                )}
+                <Send className="w-4 h-4 sm:w-5 sm:h-5 relative z-10" />
               </Button>
               </div>
               </div>
