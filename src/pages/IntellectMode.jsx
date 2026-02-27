@@ -591,8 +591,18 @@ export default function IntellectMode() {
     setUploadedFiles(prev => prev.filter((_, i) => i !== index));
   };
 
-  const addThinkingLog = (type, message, details = null, duration = null, percentage = null) => {
-    setThinkingLogs(prev => [...prev, { type, message, details, duration, percentage, timestamp: Date.now() }]);
+  const addThinkingLog = (type, message, details = null, duration = null, percentage = null, processId = null) => {
+    if (processId) {
+      setProcessTerminals(prev =>
+        prev.map(p =>
+          p.id === processId
+            ? { ...p, logs: [...(p.logs || []), { type, message, details, duration, percentage, timestamp: Date.now() }] }
+            : p
+        )
+      );
+    } else {
+      setThinkingLogs(prev => [...prev, { type, message, details, duration, percentage, timestamp: Date.now() }]);
+    }
   };
 
   const processAdvancedCommand = async (command) => {
