@@ -73,14 +73,18 @@ const HologramWindow = React.memo(({ id, title, icon: Icon, children, position, 
   }, []);
 
   const handlePointerDown = (e) => {
-    onFocus(id);
-    if (e.target === headerRef.current || headerRef.current.contains(e.target)) {
+    // Only focus on the window container click, not content
+    if (e.target === headerRef.current || headerRef.current?.contains(e.target)) {
+      onFocus(id);
       const rect = e.currentTarget.getBoundingClientRect();
       setDragOffset({
         x: e.clientX - rect.left,
         y: e.clientY - rect.top
       });
       setIsDragging(true);
+    } else if (e.currentTarget === e.target) {
+      // Click on window border area only brings to front
+      onFocus(id);
     }
   };
 
