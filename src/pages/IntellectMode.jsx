@@ -2811,10 +2811,10 @@ Return JSON with this EXACT structure:
 
                   recognition.start();
                 }}
-                disabled={isProcessing}
-                size="sm"
-                className={`px-3 sm:px-4 lg:px-6 ${isListening ? 'bg-red-500 hover:bg-red-600' : 'bg-slate-800 hover:bg-slate-700'} rounded-xl sm:rounded-2xl hidden sm:flex`}
-              >
+                disabled={false}
+                 size="sm"
+                 className={`px-3 sm:px-4 lg:px-6 ${isListening ? 'bg-red-500 hover:bg-red-600' : 'bg-slate-800 hover:bg-slate-700'} rounded-xl sm:rounded-2xl hidden sm:flex`}
+                >
                 <Mic className="w-4 h-4 sm:w-5 sm:h-5" />
               </Button>
               <Button
