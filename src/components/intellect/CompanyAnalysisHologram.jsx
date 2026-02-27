@@ -190,9 +190,20 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
             }
           }
         }),
-        // SWOT + history
+        // SWOT + history + operations
          base44.integrations.Core.InvokeLLM({
-           prompt: `For the company identified by "${name}"${searchHint}, give me: SWOT analysis (3 points each) and company history including description, business model, USP, 3 recent news headlines, 3 core values, and 3 key milestones (year + event). Real data only.`,
+           prompt: `For the company identified by "${name}"${searchHint}, give me: 
+           SWOT analysis (5 points each).
+           History: founding story, business model evolution, pivots, 5 major milestones with dates.
+           Operations: number of employees by region, employee headcount growth % YoY, salary competitiveness vs industry average.
+           Facilities: # of manufacturing plants/offices/distribution centers by country.
+           Digital: main software/platforms used, digital transformation initiatives, cloud adoption %.
+           Market position: market share %, market rank, TAM (total addressable market), SAM (serviceable market).
+           Product portfolio: # of products/SKUs, top 5 products by revenue contribution.
+           R&D: R&D head count, key research labs, published patents this year, technology focus areas.
+           Recent news: 5 recent headlines (last 6 months) with dates.
+           Strategic alliances: key partnerships, joint ventures.
+           Real data only.`,
           add_context_from_internet: true,
           response_json_schema: {
             type: "object",
