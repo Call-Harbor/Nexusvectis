@@ -348,31 +348,58 @@ export default function About() {
       </section>
 
       {/* Core Architectures */}
-      <section className="relative py-20 sm:py-32 px-4 sm:px-6 z-10">
-        <div className="max-w-7xl mx-auto">
+      <section className="relative py-20 sm:py-32 px-4 sm:px-6 z-10 overflow-hidden">
+        {/* Background Orbs */}
+        <div className="absolute inset-0">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            animate={{
+              scale: [1, 1.2, 1],
+              opacity: [0.2, 0.4, 0.2],
+            }}
+            transition={{ duration: 8, repeat: Infinity }}
+            className="absolute top-1/3 left-1/4 w-80 h-80 bg-cyan-500/15 rounded-full blur-3xl"
+          />
+        </div>
+        <div className="max-w-7xl mx-auto relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="text-center mb-20"
+            className="text-center mb-24"
           >
             <motion.div
               animate={{
-                y: [0, -10, 0],
+                rotate: [0, 360],
+                scale: [1, 1.1, 1],
               }}
-              transition={{ duration: 3, repeat: Infinity }}
-              className="inline-block mb-6"
+              transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+              className="inline-block mb-8"
             >
-              <Brain className="w-12 h-12 text-cyan-400" />
+              <Brain className="w-16 h-16 text-cyan-400 drop-shadow-lg drop-shadow-cyan-500/50" />
             </motion.div>
-            <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-6 leading-tight px-2">
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+              className="text-5xl sm:text-6xl md:text-8xl font-black text-white mb-8 leading-tight px-2"
+            >
               Three Pillars of
               <br />
-              <span className="bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent">
-                Our Architecture
+              <span className="relative inline-block">
+                <span className="bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent">
+                  Our Architecture
+                </span>
+                <motion.div
+                  className="absolute -inset-2 bg-gradient-to-r from-cyan-500/30 to-violet-500/30 blur-2xl -z-10"
+                  animate={{
+                    opacity: [0.4, 0.7, 0.4],
+                  }}
+                  transition={{ duration: 3, repeat: Infinity }}
+                />
               </span>
-            </h2>
+            </motion.h2>
           </motion.div>
 
           <div className="grid md:grid-cols-3 gap-8">
