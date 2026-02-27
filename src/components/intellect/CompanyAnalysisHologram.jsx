@@ -109,6 +109,9 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
   const [personData, setPersonData] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
   const [showScreenMenu, setShowScreenMenu] = useState(false);
+  const [ownerSearch, setOwnerSearch] = useState('');
+  const [ownerLoading, setOwnerLoading] = useState(false);
+  const [ownerData, setOwnerData] = useState(null);
 
   useEffect(() => {
     if (initialName) fetchData(initialName);
