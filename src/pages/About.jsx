@@ -136,7 +136,7 @@ export default function About() {
       id: 'neural-architecture',
       title: "Neural Architecture",
       icon: Brain,
-      position: { x: 80, y: 200 },
+      position: { x: 40, y: 150 },
       content: (
         <>
           <div className="space-y-4">
