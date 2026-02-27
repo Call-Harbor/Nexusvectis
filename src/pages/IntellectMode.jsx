@@ -41,6 +41,7 @@ import DigitalTwinFederation from "@/components/intellect/DigitalTwinFederation"
 import MistralStreamingEngine, { StreamingAnalysisVisual } from "@/components/intellect/MistralStreamingEngine";
 import IntelligentCommandAgent, { CommandInput, CommandExecution } from "@/components/intellect/IntelligentCommandAgent";
 import VideoCallHologram from "@/components/intellect/VideoCallHologram";
+import DeepAnalysisEngine from "@/components/intellect/DeepAnalysisEngine";
 import AIDocumentEditor from "@/components/intellect/AIDocumentEditor";
 import AISpreadsheetEditor from "@/components/intellect/AISpreadsheetEditor";
 import GlobalSearch from "@/components/intellect/GlobalSearch";
