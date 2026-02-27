@@ -71,10 +71,16 @@ export default function VideoCallHologram({ videoUrl, onClose }) {
 
   const handleAddUrl = () => {
     if (validateVideoUrl(urlInput)) {
-      setCurrentUrl(urlInput);
-      setUrlInput("");
-      setIsValidUrl(false);
-      toast.success("Video call loaded");
+      const iframeUrl = convertUrlToIframeCompatible(urlInput);
+      if (iframeUrl === null) {
+        toast.error("This platform requires opening in a new window");
+        window.open(urlInput, '_blank');
+      } else {
+        setCurrentUrl(iframeUrl);
+        setUrlInput("");
+        setIsValidUrl(false);
+        toast.success("Video call loaded");
+      }
     } else {
       toast.error("Invalid video call URL. Supported: Teams, Zoom, Meet, Webex, Whereby, Jitsi");
     }
