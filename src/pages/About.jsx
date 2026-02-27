@@ -2,8 +2,9 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "../utils";
 import { 
-  Globe, Sparkles, Users, Award, Zap, TrendingUp, 
-  ArrowRight, CheckCircle2, Orbit, Brain, Shield, Network
+  Globe, Sparkles, Zap, Shield, TrendingUp, Brain, Cpu,
+  ArrowRight, CheckCircle2, Orbit, Network, Wifi, Bug, Dna, Package,
+  GitBranch, AlertCircle, Truck, BarChart3, MapPin, Radio
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useEffect, useState } from "react";
@@ -12,7 +13,6 @@ export default function About() {
   const { scrollY } = useScroll();
   const y1 = useTransform(scrollY, [0, 300], [0, 100]);
   const y2 = useTransform(scrollY, [0, 300], [0, -100]);
-  const opacity = useTransform(scrollY, [0, 200], [1, 0]);
   
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
@@ -24,52 +24,113 @@ export default function About() {
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
-  const values = [
+  const coreArchitectures = [
     {
-      icon: Brain,
-      title: "Innovation First",
-      description: "We push the boundaries of what's possible with AI and logistics technology"
+      icon: Sparkles,
+      title: "FLEET AI Engine",
+      description: "Natural language processing system that understands and executes complex logistics commands. Multi-modal AI that learns from fleet behavior patterns.",
+      features: ["Natural Language Understanding", "Real-time Execution", "Continuous Learning", "Multi-modal Analysis"]
     },
     {
-      icon: Globe,
-      title: "Global Vision",
-      description: "Built to serve enterprises across continents with local expertise"
+      icon: Network,
+      title: "Swarm Intelligence",
+      description: "Decentralized coordination system inspired by nature's collective intelligence - ants, bees, flocks. Each vehicle operates autonomously while coordinating with the fleet.",
+      features: ["Edge AI Computing", "P2P Communication", "Self-Organization", "Zero Central Failure Point"]
     },
     {
-      icon: Award,
-      title: "Excellence",
-      description: "We're obsessed with delivering measurable results for our customers"
-    },
-    {
-      icon: Users,
-      title: "People-Centric",
-      description: "Our team is our greatest asset - we invest in talent and culture"
+      icon: Shield,
+      title: "Digital Twin Federation",
+      description: "Virtual replicas of your entire fleet running in parallel with real-time data. Detect anomalies, attacks, and failures before they impact operations.",
+      features: ["Real-time Simulation", "Anomaly Detection", "Predictive Alerts", "Security Monitoring"]
     }
   ];
 
-  const stats = [
-    { value: "Founded 2018", label: "Copenhagen" },
-    { value: "50+", label: "Team Members" },
-    { value: "15+", label: "Industry Veterans" },
-    { value: "100%", label: "Customer Focused" }
+  const technologies = [
+    {
+      category: "Data Integration",
+      icon: Wifi,
+      color: "cyan",
+      items: [
+        { title: "Multi-Signal Tracking", desc: "GPS, AIS, ADS-B, RFID, LoRaWAN" },
+        { title: "Real-time Streaming", desc: "Sub-second data ingestion and processing" },
+        { title: "Edge Computing", desc: "Process data where it's generated" },
+        { title: "Mesh Networks", desc: "Vehicle-to-vehicle communication" }
+      ]
+    },
+    {
+      category: "AI & Analytics",
+      icon: Brain,
+      color: "violet",
+      items: [
+        { title: "Predictive Analytics", desc: "Forecast demand, ETAs, maintenance needs" },
+        { title: "ML Models", desc: "Route optimization, anomaly detection, pattern recognition" },
+        { title: "Neural Networks", desc: "Lightweight edge AI for autonomous decision-making" },
+        { title: "Genetic Algorithms", desc: "Fleet evolution and continuous improvement" }
+      ]
+    },
+    {
+      category: "Security & Trust",
+      icon: Shield,
+      color: "rose",
+      items: [
+        { title: "Cryptographic Verification", desc: "Immutable data integrity checks" },
+        { title: "Anomaly Detection", desc: "Detect GPS spoofing and sensor tampering" },
+        { title: "Distributed Ledger", desc: "Audit trail for all operations" },
+        { title: "Role-based Access", desc: "Enterprise-grade permission systems" }
+      ]
+    },
+    {
+      category: "Infrastructure",
+      icon: Cpu,
+      color: "emerald",
+      items: [
+        { title: "Parallel Processing", desc: "50+ simultaneous AI analyses" },
+        { title: "Cloud Architecture", desc: "Serverless, auto-scaling compute" },
+        { title: "Real-time Database", desc: "Sub-millisecond query responses" },
+        { title: "API-first Design", desc: "100+ REST endpoints, WebSocket streams" }
+      ]
+    }
   ];
 
-  const team = [
+  const capabilities = [
     {
-      name: "Leadership Vision",
-      description: "Built by logistics experts and AI pioneers with decades of combined experience"
+      stat: "50+",
+      title: "Parallel AI Analyses",
+      description: "Run dozens of analyses simultaneously across your entire fleet"
     },
     {
-      name: "Diverse Expertise",
-      description: "Engineers, data scientists, logistics professionals, and business leaders"
+      stat: "Sub-1s",
+      title: "Decision Latency",
+      description: "Real-time intelligence without batch processing delays"
     },
     {
-      name: "Continuous Learning",
-      description: "We stay at the cutting edge of AI, IoT, and supply chain innovation"
+      stat: "99.99%",
+      title: "Uptime SLA",
+      description: "Enterprise-grade reliability and redundancy"
     },
     {
-      name: "Customer Success",
-      description: "Your success is our mission - we measure ourselves by your results"
+      stat: "5 Signal Types",
+      title: "Multi-modal Tracking",
+      description: "GPS, AIS, ADS-B, RFID, LoRa integration seamlessly"
+    }
+  ];
+
+  const fleetAICapabilities = [
+    {
+      command: '"Show delayed shipments"',
+      output: "Analyzes 1000+ shipments in real-time. Identifies 3 delays with predicted impact and auto-suggests rerouting"
+    },
+    {
+      command: '"Optimize routes for CO2"',
+      output: "Evaluates 47 route combinations. Reduces emissions by 18% while maintaining SLAs"
+    },
+    {
+      command: '"Predict maintenance needs"',
+      output: "Analyzes sensor data from 150+ vehicles. Forecasts failures 7 days in advance with 95% accuracy"
+    },
+    {
+      command: '"Assign closest vehicle to order"',
+      output: "Evaluates real-time position, capacity, and schedule of 200+ vehicles instantly"
     }
   ];
 
@@ -150,8 +211,8 @@ export default function About() {
               transition={{ delay: 0.2 }}
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-cyan-500/10 to-violet-500/10 border border-cyan-500/30 backdrop-blur-xl mb-8 shadow-lg shadow-cyan-500/10"
             >
-              <Globe className="w-4 h-4 text-cyan-400" />
-              <span className="text-sm text-white font-medium">About NexusVectis</span>
+              <Cpu className="w-4 h-4 text-cyan-400" />
+              <span className="text-sm text-white font-medium">Our Technology Stack</span>
               <Sparkles className="w-4 h-4 text-violet-400" />
             </motion.div>
             
@@ -161,11 +222,11 @@ export default function About() {
               transition={{ delay: 0.3 }}
               className="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-black text-white mb-8 leading-[1.1] tracking-tight"
             >
-              Transforming Logistics
+              Enterprise AI for
               <br />
               <span className="relative inline-block mt-2">
                 <span className="bg-gradient-to-r from-cyan-400 via-violet-400 to-fuchsia-400 bg-clip-text text-transparent">
-                  Through Innovation
+                  Fleet Operations
                 </span>
                 <motion.div
                   className="absolute -inset-2 bg-gradient-to-r from-cyan-500/20 to-violet-500/20 blur-2xl -z-10"
@@ -183,7 +244,7 @@ export default function About() {
               transition={{ delay: 0.5 }}
               className="text-base sm:text-lg md:text-xl lg:text-2xl text-slate-300 mb-8 sm:mb-12 max-w-3xl mx-auto leading-relaxed font-light px-2"
             >
-              We're building the next generation of logistics intelligence. Our mission is to empower enterprises with AI that optimizes operations, reduces costs, and creates sustainable supply chains.
+              Advanced AI, real-time intelligence, and autonomous coordination. This is the technology powering the next generation of logistics.
             </motion.p>
 
             <motion.div 
@@ -197,20 +258,20 @@ export default function About() {
                 className="bg-gradient-to-r from-cyan-500 via-violet-500 to-fuchsia-500 text-white text-lg px-10 py-6 rounded-2xl font-semibold group transition-transform hover:scale-105 flex items-center gap-3"
               >
                 <Sparkles className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                Get Started
+                Experience It
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
               </button>
             </motion.div>
           </motion.div>
 
-          {/* Stats */}
+          {/* Core Stats */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1 }}
             className="grid grid-cols-2 lg:grid-cols-4 gap-6 mt-24 max-w-5xl mx-auto"
           >
-            {stats.map((stat, idx) => (
+            {capabilities.map((cap, idx) => (
               <motion.div
                 key={idx}
                 initial={{ opacity: 0, y: 20 }}
@@ -222,10 +283,11 @@ export default function About() {
                 <div className="text-center p-6 rounded-2xl bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl border border-white/10 hover:border-cyan-500/50 transition-all">
                   <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 to-violet-500/10 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity blur-xl" />
                   <div className="relative">
-                    <div className="text-4xl font-black bg-gradient-to-br from-cyan-400 via-violet-400 to-fuchsia-400 bg-clip-text text-transparent mb-3">
-                      {stat.value}
+                    <div className="text-4xl font-black bg-gradient-to-br from-cyan-400 via-violet-400 to-fuchsia-400 bg-clip-text text-transparent mb-2">
+                      {cap.stat}
                     </div>
-                    <div className="text-sm text-slate-400 font-medium uppercase tracking-wider">{stat.label}</div>
+                    <div className="text-white font-bold text-sm mb-2">{cap.title}</div>
+                    <div className="text-xs text-slate-400">{cap.description}</div>
                   </div>
                 </div>
               </motion.div>
@@ -234,7 +296,7 @@ export default function About() {
         </div>
       </section>
 
-      {/* Values Section */}
+      {/* Core Architectures */}
       <section className="relative py-20 sm:py-32 px-4 sm:px-6 z-10">
         <div className="max-w-7xl mx-auto">
           <motion.div
@@ -251,61 +313,49 @@ export default function About() {
               transition={{ duration: 3, repeat: Infinity }}
               className="inline-block mb-6"
             >
-              <Award className="w-12 h-12 text-cyan-400" />
+              <Brain className="w-12 h-12 text-cyan-400" />
             </motion.div>
             <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-6 leading-tight px-2">
-              Our Core Values
+              Three Pillars of
               <br />
               <span className="bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent">
-                Driving Everything
+                Our Architecture
               </span>
             </h2>
-            <p className="text-base sm:text-lg md:text-xl text-slate-400 max-w-3xl mx-auto px-2">
-              These values guide every decision we make
-            </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {values.map((value, idx) => {
-              const Icon = value.icon;
+          <div className="grid md:grid-cols-3 gap-8">
+            {coreArchitectures.map((arch, idx) => {
+              const Icon = arch.icon;
               return (
                 <motion.div
                   key={idx}
                   initial={{ opacity: 0, y: 30 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  transition={{ delay: idx * 0.1, duration: 0.5 }}
+                  transition={{ delay: idx * 0.2 }}
                   whileHover={{ scale: 1.05, y: -10 }}
                   className="relative p-8 rounded-3xl bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl border border-white/10 hover:border-cyan-500/50 transition-all group overflow-hidden"
                 >
-                  <motion.div 
-                    className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-violet-500/5 opacity-0 group-hover:opacity-100 transition-opacity"
-                    animate={{
-                      scale: [1, 1.1, 1],
-                    }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  />
-                  
                   <div className="relative">
                     <motion.div 
                       whileHover={{ rotate: 360 }}
                       transition={{ duration: 0.6 }}
-                      className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500/20 via-violet-500/20 to-fuchsia-500/20 flex items-center justify-center mb-6 shadow-lg shadow-cyan-500/20"
+                      className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500/20 via-violet-500/20 to-fuchsia-500/20 flex items-center justify-center mb-6"
                     >
                       <Icon className="w-8 h-8 text-cyan-400" />
                     </motion.div>
-                    <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-cyan-400 transition-colors">{value.title}</h3>
-                    <p className="text-slate-400 leading-relaxed text-base">{value.description}</p>
+                    <h3 className="text-2xl font-bold text-white mb-3">{arch.title}</h3>
+                    <p className="text-slate-400 leading-relaxed text-base mb-6">{arch.description}</p>
+                    <div className="space-y-2">
+                      {arch.features.map((feature, fidx) => (
+                        <div key={fidx} className="flex items-center gap-2">
+                          <CheckCircle2 className="w-4 h-4 text-cyan-400 flex-shrink-0" />
+                          <span className="text-sm text-slate-300">{feature}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                  
-                  <motion.div 
-                    className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-cyan-500/10 to-transparent rounded-full blur-2xl -z-10"
-                    animate={{
-                      scale: [1, 1.5, 1],
-                      opacity: [0.3, 0.6, 0.3],
-                    }}
-                    transition={{ duration: 3, repeat: Infinity, delay: idx * 0.2 }}
-                  />
                 </motion.div>
               );
             })}
@@ -313,71 +363,59 @@ export default function About() {
         </div>
       </section>
 
-      {/* Team Section */}
+      {/* Technology Stack */}
       <section className="relative py-20 sm:py-32 px-4 sm:px-6 z-10">
         <div className="max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
             className="text-center mb-20"
           >
-            <motion.div
-              animate={{
-                rotate: [0, 360],
-              }}
-              transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-              className="inline-block mb-6"
-            >
-              <Users className="w-12 h-12 text-cyan-400" />
-            </motion.div>
             <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-6 leading-tight px-2">
-              Our Team
+              Complete Technology
               <br />
               <span className="bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent">
-                Logistics Experts & AI Pioneers
+                Stack
               </span>
             </h2>
-            <p className="text-base sm:text-lg md:text-xl text-slate-400 max-w-3xl mx-auto px-2">
-              We're built by people who understand logistics, data, and innovation
-            </p>
           </motion.div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {team.map((item, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.1, duration: 0.5 }}
-                whileHover={{ scale: 1.05, y: -10 }}
-                className="relative p-8 rounded-3xl bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl border border-white/10 hover:border-violet-500/50 transition-all group overflow-hidden"
-              >
-                <motion.div 
-                  className="absolute inset-0 bg-gradient-to-br from-violet-500/5 to-cyan-500/5 opacity-0 group-hover:opacity-100 transition-opacity"
-                />
-                
-                <div className="relative">
-                  <motion.div 
-                    animate={{
-                      y: [0, -10, 0],
-                    }}
-                    transition={{ duration: 2, repeat: Infinity, delay: idx * 0.3 }}
-                  >
-                    <Users className="w-12 h-12 text-violet-400 mb-4" />
-                  </motion.div>
-                  <h3 className="text-xl font-bold text-white mb-3 group-hover:text-violet-400 transition-colors">{item.name}</h3>
-                  <p className="text-slate-400 leading-relaxed text-base">{item.description}</p>
-                </div>
-              </motion.div>
-            ))}
+            {technologies.map((tech, idx) => {
+              const Icon = tech.icon;
+              return (
+                <motion.div
+                  key={idx}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: idx * 0.1 }}
+                  whileHover={{ scale: 1.05, y: -10 }}
+                  className="relative p-8 rounded-3xl bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl border border-white/10 hover:border-cyan-500/50 transition-all group overflow-hidden"
+                >
+                  <div className="relative">
+                    <div className={`w-14 h-14 rounded-2xl bg-${tech.color}-500/20 border border-${tech.color}-500/30 flex items-center justify-center mb-4`}>
+                      <Icon className={`w-7 h-7 text-${tech.color}-400`} />
+                    </div>
+                    <h3 className="text-lg font-bold text-white mb-4">{tech.category}</h3>
+                    <div className="space-y-4">
+                      {tech.items.map((item, iidx) => (
+                        <div key={iidx}>
+                          <p className="text-sm font-semibold text-slate-300">{item.title}</p>
+                          <p className="text-xs text-slate-500">{item.desc}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* Mission Section */}
+      {/* FLEET AI Capabilities */}
       <section className="relative py-20 sm:py-32 px-4 sm:px-6 z-10">
         <div className="max-w-7xl mx-auto">
           <motion.div
@@ -386,25 +424,6 @@ export default function About() {
             viewport={{ once: true }}
             className="relative rounded-[3rem] bg-gradient-to-br from-cyan-500/10 via-violet-500/10 to-fuchsia-500/10 border border-cyan-500/30 p-12 md:p-20 overflow-hidden"
           >
-            <div className="absolute inset-0">
-              <motion.div
-                animate={{
-                  scale: [1, 1.2, 1],
-                  opacity: [0.3, 0.6, 0.3],
-                }}
-                transition={{ duration: 8, repeat: Infinity }}
-                className="absolute top-0 right-0 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl"
-              />
-              <motion.div
-                animate={{
-                  scale: [1.2, 1, 1.2],
-                  opacity: [0.3, 0.6, 0.3],
-                }}
-                transition={{ duration: 10, repeat: Infinity, delay: 1 }}
-                className="absolute bottom-0 left-0 w-96 h-96 bg-violet-500/20 rounded-full blur-3xl"
-              />
-            </div>
-
             <div className="relative z-10">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -422,45 +441,72 @@ export default function About() {
                   <Sparkles className="w-16 h-16 text-cyan-400" />
                 </motion.div>
                 <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-white mb-6 leading-tight px-2">
-                  Our <span className="bg-gradient-to-r from-cyan-400 via-violet-400 to-fuchsia-400 bg-clip-text text-transparent">Mission</span>
+                  FLEET AI in Action
                 </h2>
-                <p className="text-lg sm:text-xl md:text-2xl text-slate-300 max-w-4xl mx-auto leading-relaxed px-2">
-                  To revolutionize global logistics through intelligent technology that reduces costs, improves sustainability, and empowers businesses to compete on a global scale. We believe every company deserves access to enterprise-grade AI, not just the largest corporations.
+                <p className="text-lg sm:text-xl text-slate-300 max-w-3xl mx-auto px-2">
+                  Real capabilities, real results
                 </p>
               </motion.div>
+
+              <div className="grid md:grid-cols-2 gap-6">
+                {fleetAICapabilities.map((example, idx) => (
+                  <motion.div
+                    key={idx}
+                    initial={{ opacity: 0, x: idx % 2 === 0 ? -30 : 30 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: idx * 0.2 }}
+                    className="text-left p-8 rounded-2xl bg-slate-900/50 border border-slate-800 hover:border-cyan-500/50 transition-all"
+                  >
+                    <div className="flex items-start gap-3 mb-4">
+                      <Sparkles className="w-5 h-5 text-cyan-400 flex-shrink-0 mt-1" />
+                      <p className="text-white font-bold text-lg">{example.command}</p>
+                    </div>
+                    <motion.div
+                      initial={{ width: 0 }}
+                      whileInView={{ width: "100%" }}
+                      viewport={{ once: true }}
+                      transition={{ delay: idx * 0.2 + 0.3, duration: 0.8 }}
+                      className="h-px bg-gradient-to-r from-cyan-500/50 to-transparent mb-4"
+                    />
+                    <p className="text-slate-300 text-base leading-relaxed">{example.output}</p>
+                  </motion.div>
+                ))}
+              </div>
             </div>
           </motion.div>
         </div>
       </section>
 
-      {/* CTA Section */}
+      {/* CTA */}
       <section className="relative py-20 sm:py-32 px-4 sm:px-6 z-10">
         <div className="max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
             className="relative rounded-[3rem] bg-gradient-to-br from-cyan-500/10 via-violet-500/10 to-fuchsia-500/10 border border-cyan-500/30 p-16 md:p-20 overflow-hidden"
           >
             <div className="relative z-10 text-center max-w-4xl mx-auto">
               <h2 className="text-4xl sm:text-5xl md:text-6xl font-black text-white mb-6 leading-tight px-2">
-                Ready to Transform Your Logistics?
+                See The Technology
+                <br />
+                <span className="bg-gradient-to-r from-cyan-400 via-violet-400 to-fuchsia-400 bg-clip-text text-transparent">
+                  In Action
+                </span>
               </h2>
-              <p className="text-lg sm:text-xl md:text-2xl text-slate-300 mb-8 sm:mb-12 font-light px-2">
-                Join the enterprises reimagining supply chains with NexusVectis
+              <p className="text-lg sm:text-xl text-slate-300 mb-8 font-light px-2">
+                Experience enterprise-grade AI logistics firsthand
               </p>
               
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-                <button
-                  onClick={() => base44.auth.redirectToLogin(createPageUrl("Dashboard"))}
-                  className="bg-white text-slate-900 text-xl px-12 py-7 rounded-2xl font-bold group transition-transform hover:scale-105 flex items-center gap-3"
-                >
-                  <Sparkles className="w-6 h-6 text-cyan-500" />
-                  Get Started Today
-                  <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
-                </button>
-              </div>
+              <button
+                onClick={() => base44.auth.redirectToLogin(createPageUrl("Dashboard"))}
+                className="bg-white text-slate-900 text-xl px-12 py-7 rounded-2xl font-bold group transition-transform hover:scale-105 flex items-center gap-3 mx-auto"
+              >
+                <Sparkles className="w-6 h-6 text-cyan-500" />
+                Get Started
+                <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
+              </button>
             </div>
           </motion.div>
         </div>
@@ -470,10 +516,10 @@ export default function About() {
       <footer className="relative py-12 sm:py-20 px-4 sm:px-6 border-t border-white/5 z-10 bg-slate-950/50">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <p className="text-slate-500 text-sm">&copy; 2026 NexusVectis. Transforming logistics through innovation.</p>
+            <p className="text-slate-500 text-sm">&copy; 2026 NexusVectis. Enterprise AI for Fleet Operations.</p>
             <div className="flex gap-6 text-slate-400 text-sm">
-              <Link to={createPageUrl("PrivacyPolicy")} className="hover:text-cyan-400 transition-colors">Privacy Policy</Link>
-              <Link to={createPageUrl("TermsOfService")} className="hover:text-cyan-400 transition-colors">Terms of Service</Link>
+              <Link to={createPageUrl("PrivacyPolicy")} className="hover:text-cyan-400 transition-colors">Privacy</Link>
+              <Link to={createPageUrl("TermsOfService")} className="hover:text-cyan-400 transition-colors">Terms</Link>
               <Link to={createPageUrl("SecurityPage")} className="hover:text-cyan-400 transition-colors">Security</Link>
             </div>
           </div>
