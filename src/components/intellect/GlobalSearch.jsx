@@ -8,8 +8,6 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { createPageUrl } from "../../utils";
-import { useNavigate } from "react-router-dom";
 
 const ENTITY_CONFIG = [
   {
