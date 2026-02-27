@@ -1,120 +1,56 @@
 import { motion } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { Brain, Zap, Globe, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "../../utils";
 
 export default function Hero3D() {
-  const canvasRef = useRef(null);
-  const [capabilities, setCapabilities] = useState([
+  const [capabilities] = useState([
     { icon: Brain, label: "50+ Parallel AI Models", value: "Real-time analysis" },
     { icon: Zap, label: "100M+ Decisions/Day", value: "Sub-millisecond speed" },
     { icon: Globe, label: "99.99% Uptime", value: "Enterprise reliability" },
     { icon: Sparkles, label: "10x Faster", value: "Than legacy systems" }
   ]);
 
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    canvas.width = canvas.offsetWidth;
-    canvas.height = canvas.offsetHeight;
-
-    let animationId;
-    let time = 0;
-
-    const drawNetwork = () => {
-      ctx.fillStyle = 'rgba(2, 8, 23, 0.05)';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      const centerX = canvas.width / 2;
-      const centerY = canvas.height / 2;
-      
-      // Draw animated nodes and connections
-      const nodeCount = 8;
-      const nodes = [];
-
-      for (let i = 0; i < nodeCount; i++) {
-        const angle = (i / nodeCount) * Math.PI * 2 + time * 0.3;
-        const radius = 150 + Math.sin(time * 0.5 + i) * 30;
-        
-        const x = centerX + Math.cos(angle) * radius;
-        const y = centerY + Math.sin(angle) * radius;
-        
-        nodes.push({ x, y, angle });
-
-        // Draw node glow
-        const gradient = ctx.createRadialGradient(x, y, 0, x, y, 20);
-        gradient.addColorStop(0, 'rgba(6, 182, 212, 0.6)');
-        gradient.addColorStop(1, 'rgba(6, 182, 212, 0)');
-        ctx.fillStyle = gradient;
-        ctx.fillRect(x - 20, y - 20, 40, 40);
-
-        // Draw core node
-        ctx.fillStyle = 'rgba(6, 182, 212, 1)';
-        ctx.beginPath();
-        ctx.arc(x, y, 4, 0, Math.PI * 2);
-        ctx.fill();
-      }
-
-      // Draw connections
-      ctx.strokeStyle = 'rgba(6, 182, 212, 0.2)';
-      ctx.lineWidth = 1;
-      for (let i = 0; i < nodes.length; i++) {
-        for (let j = i + 1; j < nodes.length; j++) {
-          if ((i + j) % 2 === 0) {
-            ctx.beginPath();
-            ctx.moveTo(nodes[i].x, nodes[i].y);
-            ctx.lineTo(nodes[j].x, nodes[j].y);
-            ctx.stroke();
-          }
-        }
-      }
-
-      // Draw central core
-      const coreGradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, 100);
-      coreGradient.addColorStop(0, 'rgba(139, 92, 246, 0.3)');
-      coreGradient.addColorStop(1, 'rgba(139, 92, 246, 0)');
-      ctx.fillStyle = coreGradient;
-      ctx.beginPath();
-      ctx.arc(centerX, centerY, 100, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.fillStyle = 'rgba(139, 92, 246, 0.8)';
-      ctx.beginPath();
-      ctx.arc(centerX, centerY, 8, 0, Math.PI * 2);
-      ctx.fill();
-
-      time += 0.01;
-      animationId = requestAnimationFrame(drawNetwork);
-    };
-
-    drawNetwork();
-
-    const handleResize = () => {
-      canvas.width = canvas.offsetWidth;
-      canvas.height = canvas.offsetHeight;
-    };
-
-    window.addEventListener('resize', handleResize);
-
-    return () => {
-      cancelAnimationFrame(animationId);
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []);
-
   return (
-    <section className="relative w-full overflow-hidden bg-black">
-      {/* Canvas Background */}
-      <canvas
-        ref={canvasRef}
-        className="absolute inset-0 w-full h-full"
+    <section className="relative w-full overflow-hidden">
+      {/* Animated Background */}
+      <div className="absolute inset-0 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950" />
+      
+      {/* Animated Orbs */}
+      <motion.div
+        animate={{
+          scale: [1, 1.2, 1],
+          opacity: [0.3, 0.5, 0.3],
+        }}
+        transition={{ duration: 8, repeat: Infinity }}
+        className="absolute top-20 left-10 w-96 h-96 bg-cyan-500 rounded-full blur-3xl opacity-20"
+      />
+      <motion.div
+        animate={{
+          scale: [1.2, 1, 1.2],
+          opacity: [0.2, 0.4, 0.2],
+        }}
+        transition={{ duration: 10, repeat: Infinity }}
+        className="absolute bottom-20 right-10 w-96 h-96 bg-violet-500 rounded-full blur-3xl opacity-20"
+      />
+      <motion.div
+        animate={{
+          scale: [1, 1.15, 1],
+          opacity: [0.25, 0.45, 0.25],
+        }}
+        transition={{ duration: 9, repeat: Infinity }}
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-fuchsia-500 rounded-full blur-3xl opacity-15"
       />
 
-      {/* Gradient Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-slate-950/20 to-slate-950" />
+      {/* Grid Pattern Overlay */}
+      <div 
+        className="absolute inset-0 opacity-5"
+        style={{
+          backgroundImage: `linear-gradient(0deg, transparent 24%, rgba(6, 182, 212, .05) 25%, rgba(6, 182, 212, .05) 26%, transparent 27%, transparent 74%, rgba(6, 182, 212, .05) 75%, rgba(6, 182, 212, .05) 76%, transparent 77%, transparent), linear-gradient(90deg, transparent 24%, rgba(6, 182, 212, .05) 25%, rgba(6, 182, 212, .05) 26%, transparent 27%, transparent 74%, rgba(6, 182, 212, .05) 75%, rgba(6, 182, 212, .05) 76%, transparent 77%, transparent)`,
+          backgroundSize: '50px 50px'
+        }}
+      />
 
       {/* Content */}
       <div className="relative z-10 py-48 px-6">
