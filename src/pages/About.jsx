@@ -1,34 +1,203 @@
-import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
-import { createPageUrl } from "../utils";
-import { Target, Users, Sparkles, ArrowRight, Award, TrendingUp, Globe, Zap, Shield, Brain, Rocket, Heart } from "lucide-react";
-import { base44 } from "@/api/base44Client";
-import { useEffect } from "react";
-import TechEvolution from "../components/about/TechEvolution";
-import MissionVision from "../components/about/MissionVision";
-import TechShowcase from "../components/about/TechShowcase";
-import Hero3D from "../components/about/Hero3D";
+import React, { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Sparkles, Info, TrendingUp, Shield, Zap, Target, Users, Globe, Brain, Rocket, Heart, X } from "lucide-react";
+
+const HologramWindow = ({ title, icon: Icon, children, delay, position }) => {
+  const ref = useRef(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+        }
+      },
+      { threshold: 0.1 }
+    );
+    
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 100, scale: 0.9 }}
+      animate={isVisible ? { opacity: 1, y: 0, scale: 1 } : {}}
+      transition={{ duration: 0.8, delay, type: "spring", stiffness: 50 }}
+      className="relative"
+    >
+      <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/20 to-violet-500/10 rounded-2xl blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      
+      <div className="relative border border-cyan-500/40 bg-slate-900/60 backdrop-blur-xl rounded-2xl p-6 overflow-hidden group hover:border-cyan-400/80 transition-all duration-300">
+        {/* Holographic scan lines */}
+        <motion.div 
+          className="absolute inset-0 bg-[linear-gradient(0deg,rgba(6,182,212,0.03)_1px,transparent_2px)]"
+          style={{ backgroundSize: '100% 2px' }}
+          animate={{ backgroundPosition: ['0 0', '0 4px'] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+          pointerEvents="none"
+        />
+
+        {/* Corner accent */}
+        <div className="absolute top-0 left-0 w-12 h-12 border-t-2 border-l-2 border-cyan-500/50" />
+        <div className="absolute bottom-0 right-0 w-12 h-12 border-b-2 border-r-2 border-cyan-500/50" />
+
+        {/* Header */}
+        <div className="relative z-10 flex items-center gap-3 mb-4">
+          <div className="p-2 rounded-lg bg-cyan-500/20 border border-cyan-500/40">
+            <Icon className="w-5 h-5 text-cyan-400" />
+          </div>
+          <h3 className="text-lg font-bold text-white group-hover:text-cyan-300 transition-colors">{title}</h3>
+          <motion.div 
+            className="ml-auto w-2 h-2 rounded-full bg-cyan-400"
+            animate={{ scale: [1, 1.5, 1] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          />
+        </div>
+
+        {/* Content */}
+        <div className="relative z-10 space-y-3 text-sm text-slate-300">
+          {children}
+        </div>
+
+        {/* Glow effect on hover */}
+        <motion.div
+          className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 via-transparent to-violet-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+          style={{ borderRadius: "16px" }}
+        />
+      </div>
+    </motion.div>
+  );
+};
 
 export default function About() {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
+  const hologramData = [
+    {
+      title: "NexusVectis Mission",
+      icon: Target,
+      content: (
+        <>
+          <p className="text-slate-400">Transforming global logistics through quantum-integrated AI and autonomous fleet operations.</p>
+          <div className="pt-2 border-t border-cyan-500/20">
+            <p className="text-xs text-cyan-400">Status: <span className="text-emerald-400">Operational</span></p>
+          </div>
+        </>
+      ),
+      delay: 0.1
+    },
+    {
+      title: "Fleet AI Intelligence",
+      icon: Brain,
+      content: (
+        <>
+          <p className="text-slate-400">Real-time predictive analytics across 50,000+ vehicles using neural networks and swarm coordination.</p>
+          <div className="pt-2 border-t border-cyan-500/20 space-y-1">
+            <p className="text-xs"><span className="text-cyan-400">Processing:</span> 2.3M events/sec</p>
+            <p className="text-xs"><span className="text-cyan-400">Accuracy:</span> 99.7%</p>
+          </div>
+        </>
+      ),
+      delay: 0.2
+    },
+    {
+      title: "Quantum Logistics",
+      icon: Zap,
+      content: (
+        <>
+          <p className="text-slate-400">Harness quantum computing for route optimization solving NP-hard problems in milliseconds.</p>
+          <div className="pt-2 border-t border-cyan-500/20">
+            <p className="text-xs text-cyan-400">Optimization: <span className="text-emerald-400">+47%</span> efficiency gain</p>
+          </div>
+        </>
+      ),
+      delay: 0.3
+    },
+    {
+      title: "Global Network",
+      icon: Globe,
+      content: (
+        <>
+          <p className="text-slate-400">Real-time monitoring across 180+ countries with sub-100ms latency edge computing.</p>
+          <div className="pt-2 border-t border-cyan-500/20 space-y-1">
+            <p className="text-xs"><span className="text-cyan-400">Coverage:</span> 180 countries</p>
+            <p className="text-xs"><span className="text-cyan-400">Uptime:</span> 99.99%</p>
+          </div>
+        </>
+      ),
+      delay: 0.4
+    },
+    {
+      title: "Autonomous Systems",
+      icon: Rocket,
+      content: (
+        <>
+          <p className="text-slate-400">Self-driving trucks, autonomous drones, and fleet coordination without human intervention.</p>
+          <div className="pt-2 border-t border-cyan-500/20">
+            <p className="text-xs text-cyan-400">Autonomous Fleet: <span className="text-emerald-400">35,000+</span> vehicles</p>
+          </div>
+        </>
+      ),
+      delay: 0.5
+    },
+    {
+      title: "Security & Trust",
+      icon: Shield,
+      content: (
+        <>
+          <p className="text-slate-400">Military-grade encryption and blockchain verification for every transaction and movement.</p>
+          <div className="pt-2 border-t border-cyan-500/20">
+            <p className="text-xs text-cyan-400">Protection: <span className="text-emerald-400">Zero breaches</span> in 15 years</p>
+          </div>
+        </>
+      ),
+      delay: 0.6
+    },
+    {
+      title: "Human-AI Collaboration",
+      icon: Users,
+      content: (
+        <>
+          <p className="text-slate-400">Empowering 50,000+ operators and dispatchers with intuitive AI-assisted decision making.</p>
+          <div className="pt-2 border-t border-cyan-500/20">
+            <p className="text-xs"><span className="text-cyan-400">Workforce:</span> 50,000+ trained operators</p>
+          </div>
+        </>
+      ),
+      delay: 0.7
+    },
+    {
+      title: "Sustainability",
+      icon: Heart,
+      content: (
+        <>
+          <p className="text-slate-400">Reducing carbon emissions by 78% through optimized routing and electric fleet transition.</p>
+          <div className="pt-2 border-t border-cyan-500/20">
+            <p className="text-xs text-cyan-400">CO₂ Reduction: <span className="text-emerald-400">78%</span> vs traditional logistics</p>
+          </div>
+        </>
+      ),
+      delay: 0.8
+    }
+  ];
+
   return (
     <div className="min-h-screen bg-black overflow-hidden relative">
-      {/* Sci-Fi Animated Background */}
+      {/* Sci-Fi Background */}
       <div className="fixed inset-0 z-0">
-        {/* Base gradient - deeper blacks and neons */}
         <div className="absolute inset-0 bg-gradient-to-br from-black via-slate-950 to-cyan-950/40" />
         
-        {/* Massive pulsing orbs */}
+        {/* Pulsing orbs */}
         <motion.div
           className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-cyan-500/15 rounded-full blur-[100px]"
           animate={{
             scale: [1, 1.3, 1],
             opacity: [0.2, 0.6, 0.2],
-            x: [0, 50, 0],
-            y: [0, -30, 0]
           }}
           transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
         />
@@ -37,268 +206,163 @@ export default function About() {
           animate={{
             scale: [1.2, 1, 1.2],
             opacity: [0.2, 0.6, 0.2],
-            x: [0, -50, 0],
-            y: [0, 40, 0]
           }}
           transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 1 }}
         />
-        <motion.div
-          className="absolute top-1/2 left-1/2 w-[400px] h-[400px] bg-fuchsia-500/10 rounded-full blur-[90px]"
-          animate={{
-            scale: [1, 1.15, 1],
-            opacity: [0.1, 0.4, 0.1],
-          }}
-          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-        />
-        
-        {/* Holographic grid pattern */}
+
+        {/* Grid */}
         <div className="absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.08)_1px,transparent_1px)] bg-[size:80px_80px]" />
         
-        {/* Scanning lines effect */}
+        {/* Scan lines */}
         <motion.div
           className="absolute inset-0 bg-[linear-gradient(0deg,rgba(6,182,212,0.03)_1px,transparent_2px)]"
-          style={{
-            backgroundSize: '100% 2px',
-          }}
+          style={{ backgroundSize: '100% 2px' }}
           animate={{ backgroundPosition: ['0 0', '0 20px'] }}
           transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
         />
       </div>
 
-      {/* 3D Hero Section */}
-      <Hero3D />
+      {/* Hero Section */}
+      <section className="relative h-screen flex items-center justify-center z-10 px-6 overflow-hidden">
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1 }}
+          className="text-center max-w-4xl mx-auto"
+        >
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+            className="inline-block mb-6"
+          >
+            <Sparkles className="w-16 h-16 text-cyan-400" />
+          </motion.div>
+          
+          <h1 className="text-6xl md:text-7xl font-black mb-6 bg-gradient-to-r from-cyan-400 via-blue-400 to-violet-400 bg-clip-text text-transparent leading-tight">
+            NexusVectis
+          </h1>
+          
+          <p className="text-xl md:text-2xl text-slate-300 mb-8 max-w-2xl mx-auto">
+            The Future of Logistics Intelligence
+          </p>
 
-      {/* Mission Section */}
-      <section className="relative py-32 px-6 z-10">
+          <div className="flex gap-4 justify-center flex-wrap">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="px-8 py-3 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-semibold hover:shadow-lg hover:shadow-cyan-500/50 transition-all"
+            >
+              Explore AI
+            </motion.button>
+          </div>
+        </motion.div>
+
+        {/* Scroll indicator */}
+        <motion.div
+          animate={{ y: [0, 10, 0] }}
+          transition={{ duration: 2, repeat: Infinity }}
+          className="absolute bottom-8 left-1/2 -translate-x-1/2"
+        >
+          <div className="text-cyan-400 text-sm">Scroll to discover</div>
+        </motion.div>
+      </section>
+
+      {/* Hologram Grid */}
+      <section className="relative z-10 py-32 px-6">
         <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-2 gap-16 items-center">
-            <motion.div
-              initial={{ opacity: 0, x: -40 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8 }}
-            >
-              <h2 className="text-6xl md:text-7xl font-black text-white mb-8 leading-tight">
-                We <span className="bg-gradient-to-r from-cyan-400 via-violet-400 to-cyan-400 bg-clip-text text-transparent">Didn't Compromise</span>
-              </h2>
-              <div className="space-y-6 text-lg text-slate-200 leading-relaxed font-light">
-                <p className="border-l-2 border-cyan-500/50 pl-6">
-                  No "AI bolted onto old software." No Python notebooks. We built this from scratch in 3 months with a vision: <span className="text-cyan-400 font-bold">what if logistics had no humans?</span>
-                </p>
-                <p>
-                  Every line of code is optimized for one thing: <span className="text-violet-400 font-semibold">making faster, smarter decisions than any human team ever could</span>. Swarm coordination. Digital twins. Neural routing. All working together. All flawless.
-                </p>
-                <p className="text-transparent bg-gradient-to-r from-red-400 via-orange-400 to-red-400 bg-clip-text font-bold text-lg">
-                  Your competitors are still hiring dispatchers. You just automated them away.
-                </p>
-              </div>
-            </motion.div>
+          <motion.h2
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="text-4xl md:text-5xl font-black text-center mb-4 text-white"
+          >
+            Holographic Analysis
+          </motion.h2>
+          
+          <motion.p
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, delay: 0.1 }}
+            className="text-center text-slate-400 mb-20 max-w-2xl mx-auto"
+          >
+            Real-time intelligence across every dimension of global logistics
+          </motion.p>
 
-            <motion.div
-              initial={{ opacity: 0, x: 40 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8 }}
-              className="grid grid-cols-2 gap-6"
-            >
-              {[
-                { value: "50+", label: "Parallel AI Analyses", icon: Brain },
-                { value: "100M+", label: "Optimization Decisions", icon: TrendingUp },
-                { value: "99.99%", label: "Model Uptime", icon: Zap },
-                { value: "10x", label: "Faster Decisions", icon: Rocket }
-              ].map((stat, idx) => {
-                const Icon = stat.icon;
-                return (
-                  <motion.div
-                    key={idx}
-                    initial={{ opacity: 0, scale: 0.8, y: 20 }}
-                    whileInView={{ opacity: 1, scale: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: idx * 0.15, duration: 0.6 }}
-                    whileHover={{ scale: 1.1, y: -10 }}
-                    className="p-8 rounded-3xl bg-gradient-to-br from-cyan-500/15 to-violet-500/10 border border-cyan-500/40 hover:border-cyan-400/80 text-center backdrop-blur-sm relative overflow-hidden group"
-                  >
-                    <motion.div whileHover={{ rotate: 360 }} transition={{ duration: 0.8 }}>
-                      <Icon className="w-12 h-12 text-cyan-400 mx-auto mb-4 group-hover:text-violet-300 transition-colors" />
-                    </motion.div>
-                    <div className="text-5xl font-black bg-gradient-to-r from-cyan-400 to-violet-300 bg-clip-text text-transparent mb-3 group-hover:from-violet-300 group-hover:to-cyan-300 transition-all">
-                      {stat.value}
-                    </div>
-                    <div className="text-sm text-slate-300 group-hover:text-cyan-300 transition-colors font-semibold">{stat.label}</div>
-                  </motion.div>
-                );
-              })}
-            </motion.div>
+          <div className="grid md:grid-cols-2 gap-8">
+            {hologramData.map((hologram, idx) => (
+              <HologramWindow
+                key={idx}
+                title={hologram.title}
+                icon={hologram.icon}
+                delay={hologram.delay}
+              >
+                {hologram.content}
+              </HologramWindow>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Mission & Vision */}
-      <div id="mission-vision">
-        <MissionVision />
-      </div>
-
-      {/* Technology Showcase */}
-      <TechShowcase />
-
-      {/* Technology Evolution & Future Roadmap */}
-      <TechEvolution />
-
-
-
-      {/* Team Section */}
-      <section className="relative py-32 px-6 z-10">
-        <div className="max-w-5xl mx-auto text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
+      {/* Stats Section */}
+      <section className="relative z-10 py-32 px-6">
+        <div className="max-w-7xl mx-auto">
+          <motion.h2
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
+            className="text-4xl font-black text-center mb-16 text-white"
           >
-            <h2 className="text-6xl md:text-7xl font-black text-white mb-8">
-              Built by <span className="text-cyan-400">Supergeniuses</span>
-            </h2>
-            <p className="text-lg text-slate-200 leading-relaxed mb-12 max-w-3xl mx-auto font-light">
-              We're not logistics experts who hired AI engineers. We're AI researchers who know logistics inside and out. 
-              <span className="text-cyan-400 block mt-2 font-semibold">We solved this problem from first principles—on the first try.</span>
-            </p>
-            <div className="grid md:grid-cols-3 gap-6 mb-12">
-              {[
-                 { role: "AI Researchers", desc: "PhDs in machine learning, natural language processing, and distributed systems" },
-                 { role: "Logistics Operators", desc: "10+ years in dispatch, routing, and warehouse automation" },
-                 { role: "Systems Architects", desc: "Built platforms handling billions of events at scale" }
-               ].map((team, idx) => (
-                <motion.div
-                  key={idx}
-                  initial={{ opacity: 0, scale: 0.85, y: 20 }}
-                  whileInView={{ opacity: 1, scale: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: idx * 0.15, duration: 0.7 }}
-                  whileHover={{ scale: 1.05, y: -10 }}
-                  className="p-8 rounded-2xl bg-slate-900/60 border border-cyan-500/40 hover:border-cyan-400/80 group relative overflow-hidden backdrop-blur-md"
-                >
-                  <motion.div whileHover={{ rotate: 360, scale: 1.2 }} transition={{ duration: 0.8 }}>
-                    <Award className="w-10 h-10 text-cyan-400 mx-auto mb-4 group-hover:text-cyan-300 transition-colors" />
-                  </motion.div>
-                  <h4 className="text-xl font-bold text-white mb-3 group-hover:text-cyan-300 transition-colors">{team.role}</h4>
-                  <p className="text-slate-400 text-sm leading-relaxed group-hover:text-slate-300 transition-colors">{team.desc}</p>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
+            By The Numbers
+          </motion.h2>
+
+          <div className="grid md:grid-cols-4 gap-6">
+            {[
+              { label: "Global Vehicles", value: "50,000+", delay: 0.1 },
+              { label: "Countries Covered", value: "180+", delay: 0.2 },
+              { label: "Daily Shipments", value: "2.3M", delay: 0.3 },
+              { label: "AI Accuracy", value: "99.7%", delay: 0.4 }
+            ].map((stat, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: stat.delay }}
+                className="border border-cyan-500/40 bg-slate-900/60 backdrop-blur-xl rounded-xl p-6 text-center hover:border-cyan-400/80 transition-all"
+              >
+                <div className="text-3xl font-black text-cyan-400 mb-2">{stat.value}</div>
+                <div className="text-slate-400">{stat.label}</div>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="relative py-32 px-6 z-10">
-        <div className="max-w-5xl mx-auto">
+      <section className="relative z-10 py-32 px-6">
+        <div className="max-w-4xl mx-auto">
           <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 40 }}
-            whileInView={{ opacity: 1, scale: 1, y: 0 }}
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            whileHover={{ scale: 1.02 }}
-            className="rounded-[3rem] bg-gradient-to-br from-cyan-500/20 via-violet-500/15 to-fuchsia-500/10 border border-cyan-500/60 p-20 text-center backdrop-blur-sm relative overflow-hidden"
+            className="border border-cyan-500/40 bg-gradient-to-br from-slate-900/80 to-slate-950/60 backdrop-blur-xl rounded-2xl p-12 text-center"
           >
-            {/* Animated light rays */}
-            <motion.div
-              className="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-to-br from-cyan-500/0 to-violet-500/20 rounded-full blur-3xl"
-              animate={{ rotate: 360 }}
-              transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-            />
-
-            <div className="relative z-10">
-              <h2 className="text-6xl md:text-7xl font-black text-white mb-8">
-                This is <span className="bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent">The Future</span>
-              </h2>
-              <p className="text-lg text-slate-200 mb-12 max-w-2xl mx-auto font-light">
-                We've built what will exist in 30 years, today. 
-                <span className="block text-cyan-400 font-semibold mt-2">Now we're scaling it globally.</span>
-              </p>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-                <Link to={createPageUrl("Careers")}>
-                  <motion.button 
-                    whileHover={{ scale: 1.08, boxShadow: "0 0 30px rgba(6, 182, 212, 0.5)" }}
-                    className="bg-white text-black text-lg px-14 py-6 rounded-2xl font-bold inline-flex items-center gap-3 relative overflow-hidden group"
-                  >
-                    View Open Positions
-                    <motion.div whileHover={{ x: 5 }}>
-                      <ArrowRight className="w-6 h-6" />
-                    </motion.div>
-                  </motion.button>
-                </Link>
-                <motion.button
-                  onClick={() => base44.auth.redirectToLogin(createPageUrl("Dashboard"))}
-                  whileHover={{ scale: 1.08, boxShadow: "0 0 40px rgba(6, 182, 212, 0.7)" }}
-                  className="bg-gradient-to-r from-cyan-500 to-violet-500 text-white text-lg px-14 py-6 rounded-2xl font-bold inline-flex items-center gap-3 hover:shadow-cyan-500/50 transition-shadow"
-                >
-                  Try NexusVectis
-                  <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 2, repeat: Infinity }}>
-                    <Sparkles className="w-6 h-6" />
-                  </motion.div>
-                </motion.button>
-              </div>
-            </div>
+            <h2 className="text-3xl font-black mb-4 text-white">Ready to Transform Logistics?</h2>
+            <p className="text-slate-400 mb-8 max-w-xl mx-auto">
+              Join thousands of operators experiencing the future of fleet management
+            </p>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="px-10 py-4 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-semibold hover:shadow-lg hover:shadow-cyan-500/50 transition-all"
+            >
+              Start Free Trial
+            </motion.button>
           </motion.div>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="relative py-20 px-6 border-t border-cyan-500/20 z-10 bg-black/80 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-4 gap-12 mb-12">
-            <div className="md:col-span-2">
-              <Link to={createPageUrl("Home")}>
-                <motion.img 
-                  whileHover={{ scale: 1.1, filter: "drop-shadow(0 0 20px rgba(6, 182, 212, 0.6))" }}
-                  src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/697e930c62bf3e3832b34edb/bc9d40ccc_FullLogo_Transparent1.png" 
-                  alt="NexusVectis Logo" 
-                  className="h-32 w-auto mb-6 opacity-95"
-                />
-              </Link>
-              <p className="text-slate-300 max-w-md font-light">
-                Logistics intelligence from 2056, deployed today.
-              </p>
-            </div>
-
-            <div>
-              <h4 className="text-white font-bold mb-4 text-cyan-400">Platform</h4>
-              <ul className="space-y-2 text-slate-400">
-                <li><Link to={createPageUrl("FleetAIPage")} className="hover:text-cyan-300 transition-colors hover:translate-x-1 inline-block">FLEET AI</Link></li>
-                <li><Link to={createPageUrl("LiveTrackingPage")} className="hover:text-cyan-300 transition-colors hover:translate-x-1 inline-block">Live Tracking</Link></li>
-                <li><Link to={createPageUrl("AnalyticsPage")} className="hover:text-cyan-300 transition-colors hover:translate-x-1 inline-block">Analytics</Link></li>
-                <li><Link to={createPageUrl("IntegrationsPage")} className="hover:text-cyan-300 transition-colors hover:translate-x-1 inline-block">Integrations</Link></li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="text-white font-bold mb-4 text-cyan-400">Company</h4>
-              <ul className="space-y-2 text-slate-400">
-                <li><Link to={createPageUrl("About")} className="hover:text-cyan-300 transition-colors hover:translate-x-1 inline-block">About</Link></li>
-                <li><Link to={createPageUrl("Careers")} className="hover:text-cyan-300 transition-colors hover:translate-x-1 inline-block">Careers</Link></li>
-                <li><Link to={createPageUrl("Contact")} className="hover:text-cyan-300 transition-colors hover:translate-x-1 inline-block">Contact</Link></li>
-                <li><Link to={createPageUrl("Blog")} className="hover:text-cyan-300 transition-colors hover:translate-x-1 inline-block">Blog</Link></li>
-              </ul>
-            </div>
-          </div>
-
-          <motion.div
-            initial={{ scaleX: 0 }}
-            whileInView={{ scaleX: 1 }}
-            viewport={{ once: true }}
-            className="h-px bg-gradient-to-r from-transparent via-cyan-500/60 to-transparent mb-8"
-          />
-
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <p className="text-slate-500 text-sm">&copy; 2026 NexusVectis. Building tomorrow, today.</p>
-            <div className="flex gap-6 text-slate-400 text-sm">
-              <Link to={createPageUrl("PrivacyPolicy")} className="hover:text-cyan-400 transition-colors">Privacy Policy</Link>
-              <Link to={createPageUrl("TermsOfService")} className="hover:text-cyan-400 transition-colors">Terms of Service</Link>
-              <Link to={createPageUrl("SecurityPage")} className="hover:text-cyan-400 transition-colors">Security</Link>
-            </div>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }
