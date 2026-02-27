@@ -177,25 +177,25 @@ export default function Hero3D() {
 
           {/* CTA */}
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 1 }}
+            transition={{ duration: 1.2, delay: 1 }}
             className="flex items-center justify-center gap-6 flex-wrap"
           >
             <motion.button
-              whileHover={{ scale: 1.05 }}
+              whileHover={{ scale: 1.1, boxShadow: "0 0 40px rgba(6, 182, 212, 0.8)" }}
               whileTap={{ scale: 0.95 }}
               onClick={() => document.getElementById('mission-vision')?.scrollIntoView({ behavior: 'smooth' })}
-              className="px-8 py-4 rounded-xl bg-white text-slate-900 font-bold text-lg hover:shadow-2xl transition-all"
+              className="px-10 py-5 rounded-2xl bg-gradient-to-r from-cyan-500 to-cyan-600 text-white font-black text-xl hover:shadow-2xl transition-all tracking-wide"
             >
-              Explore Capabilities
+              See The Future
             </motion.button>
             <motion.button
-              whileHover={{ scale: 1.05 }}
+              whileHover={{ scale: 1.1, boxShadow: "0 0 40px rgba(168, 85, 247, 0.8)" }}
               whileTap={{ scale: 0.95 }}
-              className="px-8 py-4 rounded-xl bg-gradient-to-r from-cyan-500 to-violet-500 text-white font-bold text-lg hover:shadow-2xl transition-all"
+              className="px-10 py-5 rounded-2xl bg-gradient-to-r from-violet-500 to-violet-600 text-white font-black text-xl hover:shadow-2xl transition-all tracking-wide"
             >
-              View Platform
+              Get Demo
             </motion.button>
           </motion.div>
         </div>
