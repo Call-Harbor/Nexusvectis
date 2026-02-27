@@ -213,9 +213,16 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
             }
           }
         }),
-        // ESG + leadership
+        // ESG + leadership + governance
          base44.integrations.Core.InvokeLLM({
-           prompt: `For the company identified by "${name}"${searchHint}, give me: ESG scores (overall, environmental, social, governance out of 100), rating agency, CO2 target, renewable energy %, 3 sustainability initiatives, any controversies. Also give me the top 3 executives (name, title, background, education).`,
+           prompt: `For the company identified by "${name}"${searchHint}, give me: 
+           ESG: overall/environmental/social/governance scores (0-100), rating agencies, CO2 emissions (tons), reduction target %, renewable energy %, water consumption, waste to landfill %.
+           Sustainability: 5 key initiatives, science-based targets, SBTi approval status, net-zero target year.
+           Controversies: major incidents (labor, environmental, corruption) last 5 years.
+           Governance: board composition (# independent directors, diversity %), CEO tenure (years), CFO tenure, audit committee structure.
+           Top 5 executives: name, title, start date, previous roles, education, salary band.
+           Board ownership: % shares held by CEO/board members.
+           Real data only.`,
           add_context_from_internet: true,
           response_json_schema: {
             type: "object",
