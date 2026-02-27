@@ -191,8 +191,8 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
           }
         }),
         // SWOT + history
-        base44.integrations.Core.InvokeLLM({
-          prompt: `For the company identified by "${name}" (could be a name, CVR, registration number, or VAT number), give me: SWOT analysis (3 points each) and company history including description, business model, USP, 3 recent news headlines, 3 core values, and 3 key milestones (year + event). Real data only.`,
+         base44.integrations.Core.InvokeLLM({
+           prompt: `For the company identified by "${name}"${searchHint}, give me: SWOT analysis (3 points each) and company history including description, business model, USP, 3 recent news headlines, 3 core values, and 3 key milestones (year + event). Real data only.`,
           add_context_from_internet: true,
           response_json_schema: {
             type: "object",
