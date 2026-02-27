@@ -396,11 +396,19 @@ export default function About() {
   useEffect(() => {
     const handleScroll = () => {
       const scrollPercent = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
-      const newWindows = hologramSections.filter((_, idx) => {
-        const threshold = (idx + 1) * (100 / (hologramSections.length + 1));
-        return scrollPercent >= threshold;
-      });
-      setActiveWindows(newWindows.map(w => w.id));
+      
+      // Stagger window opening throughout scroll
+      const windowsToShow = [];
+      if (scrollPercent > 5) windowsToShow.push('neural-architecture');
+      if (scrollPercent > 15) windowsToShow.push('predictive-engine');
+      if (scrollPercent > 25) windowsToShow.push('route-optimization');
+      if (scrollPercent > 40) windowsToShow.push('demand-forecast');
+      if (scrollPercent > 55) windowsToShow.push('anomaly-detection');
+      if (scrollPercent > 70) windowsToShow.push('co2-analysis');
+      if (scrollPercent > 80) windowsToShow.push('swarm-intelligence');
+      if (scrollPercent > 90) windowsToShow.push('security-ops');
+      
+      setActiveWindows(windowsToShow);
     };
 
     window.addEventListener('scroll', handleScroll);
