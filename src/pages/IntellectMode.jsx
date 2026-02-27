@@ -2209,8 +2209,15 @@ Return JSON with this EXACT structure:
                    <GraduationCap className="w-4 h-4 mr-2 text-amber-400" />
                    Adaptive Fleet AI Courses
                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                 <DropdownMenuSeparator className="bg-slate-800" />
+                 <DropdownMenuLabel className="text-cyan-400 mt-1">⚡ Parallel Processing</DropdownMenuLabel>
+                 <DropdownMenuSeparator className="bg-slate-800" />
+                 <DropdownMenuItem onClick={() => setShowParallelProcessor(true)} className="text-slate-300 text-xs">
+                   <Zap className="w-4 h-4 mr-2 text-amber-400" />
+                   Parallel Task Processor (10x Tasks)
+                 </DropdownMenuItem>
+                 </DropdownMenuContent>
+                 </DropdownMenu>
 
               <Button
                 onClick={() => navigate(createPageUrl("Dashboard"))}
