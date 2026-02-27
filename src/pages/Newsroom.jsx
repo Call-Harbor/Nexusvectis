@@ -154,65 +154,13 @@ export default function Newsroom() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="mb-16"
+            className="p-12 rounded-3xl bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 text-center"
           >
-            <h2 className="text-4xl font-bold text-white mb-12">Latest Press Releases</h2>
+            <h2 className="text-4xl font-bold text-white mb-4">Press Releases</h2>
+            <p className="text-xl text-slate-400">
+              Press releases will be available as we hit major milestones and partnerships.
+            </p>
           </motion.div>
-
-          <div className="space-y-6">
-            {pressReleases.map((release, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.05 }}
-                className="rounded-2xl bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 hover:border-blue-500/50 transition-all overflow-hidden"
-              >
-                <button
-                  onClick={() => setExpandedIndex(expandedIndex === idx ? null : idx)}
-                  className="w-full p-8 text-left hover:bg-white/[0.05] transition-colors"
-                >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <span className="text-blue-400 text-sm font-mono font-bold">{release.category}</span>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <span className="text-slate-500 text-sm flex items-center gap-1">
-                        <Calendar className="w-4 h-4" />
-                        {release.date}
-                      </span>
-                      <motion.div
-                        animate={{ rotate: expandedIndex === idx ? 180 : 0 }}
-                        transition={{ duration: 0.3 }}
-                      >
-                        <ChevronDown className="w-5 h-5 text-slate-500" />
-                      </motion.div>
-                    </div>
-                  </div>
-                  <h3 className="text-2xl font-bold text-white group-hover:text-blue-400 transition-colors">
-                    {release.title}
-                  </h3>
-                </button>
-
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{
-                    height: expandedIndex === idx ? "auto" : 0,
-                    opacity: expandedIndex === idx ? 1 : 0
-                  }}
-                  transition={{ duration: 0.3 }}
-                  className="overflow-hidden"
-                >
-                  <div className="px-8 pb-8 pt-4 border-t border-white/10">
-                    <p className="text-slate-300 leading-relaxed mb-4">{release.excerpt}</p>
-                    <div className="h-px bg-gradient-to-r from-blue-500/50 to-transparent mb-4" />
-                    <p className="text-slate-400 leading-relaxed">{release.fullContent}</p>
-                  </div>
-                </motion.div>
-              </motion.div>
-            ))}
-          </div>
         </div>
       </section>
 
