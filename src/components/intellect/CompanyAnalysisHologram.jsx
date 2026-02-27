@@ -1238,10 +1238,11 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
                       {data.ownership.founder_story && (
                         <p className="text-slate-300 text-xs leading-relaxed">{data.ownership.founder_story}</p>
                       )}
-                    </div>
-                  )}
-                </div>
-              )}
+                     </div>
+                   )}
+                   </div>
+                 </div>
+               )}
 
               {/* AI VERDICT TAB */}
               {activeTab === 'verdict' && (
