@@ -442,21 +442,56 @@ export default function About() {
       </section>
 
       {/* Technology Stack */}
-      <section className="relative py-20 sm:py-32 px-4 sm:px-6 z-10">
-        <div className="max-w-7xl mx-auto">
+      <section className="relative py-20 sm:py-32 px-4 sm:px-6 z-10 overflow-hidden">
+        {/* Background Orbs */}
+        <div className="absolute inset-0">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            animate={{
+              scale: [1.2, 1, 1.2],
+              opacity: [0.2, 0.4, 0.2],
+            }}
+            transition={{ duration: 10, repeat: Infinity, delay: 1 }}
+            className="absolute bottom-1/3 right-1/3 w-80 h-80 bg-violet-500/15 rounded-full blur-3xl"
+          />
+        </div>
+        <div className="max-w-7xl mx-auto relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-20"
+            className="text-center mb-24"
           >
-            <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-6 leading-tight px-2">
+            <motion.div
+              animate={{
+                rotate: [360, 0],
+              }}
+              transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+              className="inline-block mb-8"
+            >
+              <Cpu className="w-16 h-16 text-violet-400 drop-shadow-lg drop-shadow-violet-500/50" />
+            </motion.div>
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+              className="text-5xl sm:text-6xl md:text-8xl font-black text-white mb-8 leading-tight px-2"
+            >
               Complete Technology
               <br />
-              <span className="bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent">
-                Stack
+              <span className="relative inline-block">
+                <span className="bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent">
+                  Stack
+                </span>
+                <motion.div
+                  className="absolute -inset-2 bg-gradient-to-r from-violet-500/30 to-cyan-500/30 blur-2xl -z-10"
+                  animate={{
+                    opacity: [0.4, 0.7, 0.4],
+                  }}
+                  transition={{ duration: 3, repeat: Infinity }}
+                />
               </span>
-            </h2>
+            </motion.h2>
           </motion.div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
