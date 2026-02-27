@@ -71,28 +71,65 @@ Deno.serve(async (req) => {
       yPos += 8;
     });
 
-    // Core Features
+    // AI Technology
     yPos += 5;
-    if (yPos > pageHeight - 50) {
+    if (yPos > pageHeight - 70) {
       pdf.addPage();
       yPos = 20;
     }
 
     pdf.setFont('helvetica', 'bold');
     pdf.setFontSize(14);
-    pdf.text('Core Features', 20, yPos);
+    pdf.text('AI Technology & Innovation', 20, yPos);
+    
+    yPos += 10;
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(11);
+
+    const aiTech = [
+      'Base Model: Mistral 7B - an open-source, lightweight language model optimized for efficiency',
+      'Fine-tuning: Trained on extensive logistics-specific datasets and operational protocols',
+      'Natural Language Processing: Understands complex multi-step logistics commands with context awareness',
+      'Parallel AI Analysis: Capable of running 50+ concurrent AI analyses for simultaneous fleet optimization',
+      'Distributed Intelligence: Edge AI processing combined with central optimization for sub-second latency',
+      'Autonomous Decision-Making: AI-powered recommendations for route optimization, maintenance scheduling, resource allocation',
+      'Federated Learning: Privacy-preserving AI that improves continuously without sharing raw customer data',
+      'Multi-Modal Understanding: Processes diverse data types - telemetry, GPS, AIS, weather, traffic patterns, regulatory constraints'
+    ];
+
+    aiTech.forEach(tech => {
+      if (yPos > pageHeight - 30) {
+        pdf.addPage();
+        yPos = 20;
+      }
+      pdf.text('• ' + tech, 25, yPos);
+      yPos += 8;
+    });
+
+    // Core Features
+    yPos += 5;
+    if (yPos > pageHeight - 70) {
+      pdf.addPage();
+      yPos = 20;
+    }
+
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(14);
+    pdf.text('Core Platform Features', 20, yPos);
     
     yPos += 10;
     pdf.setFont('helvetica', 'normal');
     pdf.setFontSize(11);
 
     const features = [
-      'FLEET AI: Natural language command interface for fleet control',
-      'Live Tracking: Real-time position, speed, heading for all transport modes',
-      'Predictive Analytics: ETA prediction, maintenance forecasting, demand forecasting',
-      'AI Optimization: Route optimization, fuel efficiency, cost reduction',
-      'Security: Military-grade encryption, role-based access control, audit logging',
-      'Integrations: REST API, webhooks, pre-built connectors'
+      'FLEET AI Natural Language Interface: Control entire fleet operations using plain English commands',
+      'Multi-Modal Real-Time Tracking: Unified visibility across trucks, ships, drones, trains, and aircraft',
+      'Predictive Maintenance: AI predicts maintenance needs 92% accurately weeks in advance, preventing costly downtime',
+      'Advanced Route Optimization: Minimizes distance, fuel consumption, and delivery times while considering regulatory constraints',
+      'Digital Twin Federation: Privacy-by-design architecture ensuring GDPR compliance and enterprise-grade security',
+      'Autonomous Immune System: AI-powered security detection and response with zero-trust architecture',
+      'Cost Analysis & Optimization: Real-time visibility into operational costs with AI-driven efficiency recommendations',
+      'Enterprise Integrations: REST API, webhooks, and pre-built connectors for seamless ERP/WMS integration'
     ];
 
     features.forEach(feature => {
