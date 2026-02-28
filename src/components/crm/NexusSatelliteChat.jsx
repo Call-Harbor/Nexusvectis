@@ -165,6 +165,12 @@ function NewChannelModal({ customers, user, orgId, onClose, onCreated }) {
      enabled: !!user,
    });
 
+   useEffect(() => {
+     if (nexusUsersData?.data?.currentUserId) {
+       setCurrentUserId(nexusUsersData.data.currentUserId);
+     }
+   }, [nexusUsersData]);
+
    const allPlatformUsers = (nexusUsersData?.data?.users || [])
      .map(u => ({ id: `user_${u.id}`, _rawId: u.id, name: u.name, email: u.email, _source: 'user' }));
 
