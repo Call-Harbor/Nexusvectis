@@ -37,7 +37,7 @@ export default function SatelliteWeatherIntelligence({ routes, vehicles, onRoute
   const analyzeRouteIntelligence = async () => {
     setLoading(true);
     try {
-      const route = routes?.find(r => r.id === selectedRoute);
+      const route = localRoutes?.find(r => r.id === selectedRoute);
       if (!route) return;
 
       // Run all analyses in parallel
