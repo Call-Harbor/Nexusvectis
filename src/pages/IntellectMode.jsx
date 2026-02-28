@@ -25,7 +25,6 @@ import WindowContentRenderer from "@/components/intellect/WindowContentRenderer"
 import { getWindowMeta } from "@/components/intellect/WindowRegistry";
 import IntellectHeader from "@/components/intellect/IntellectHeader";
 import IntellectCommandBar from "@/components/intellect/IntellectCommandBar";
-import NexusSatelliteChat from "@/components/crm/NexusSatelliteChat";
 import FleetGlobe3D from "@/components/intellect/FleetGlobe3D";
 import ThinkingTerminalVisual from "@/components/intellect/ThinkingTerminalVisual";
 import CompanyAnalysisHologram from "@/components/intellect/CompanyAnalysisHologram";
