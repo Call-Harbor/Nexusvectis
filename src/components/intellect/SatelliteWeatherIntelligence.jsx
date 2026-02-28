@@ -23,56 +23,71 @@ export default function SatelliteWeatherIntelligence({ routes, vehicles, onRoute
       const route = routes?.find(r => r.id === selectedRoute);
       if (!route) return;
 
-      // Get weather and satellite analysis from LLM
-      const response = await base44.integrations.Core.InvokeLLM({
-        prompt: `Analyze satellite imagery and weather conditions for logistics route:
-        Origin: ${route.origin}
-        Destination: ${route.destination}
-        Distance: ${route.distance_km}km
-        Transport: ${route.transport_type}
-        
-        Provide:
-        1. Current weather conditions and alerts
-        2. Satellite imagery insights (cloud cover, terrain, visibility)
-        3. Route optimization recommendations
-        4. Risk assessment (weather, terrain, visibility)
-        5. ETA impact from weather conditions
-        
-        Format as JSON with: weather, satellite_insights, recommendations, risks, eta_impact`,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            weather: {
-              type: "object",
-              properties: {
-                temperature: { type: "number" },
-                wind_speed: { type: "number" },
-                wind_direction: { type: "string" },
-                precipitation: { type: "string" },
-                visibility: { type: "number" },
-                alerts: { type: "array", items: { type: "string" } }
+      // Run all analyses in parallel
+      const [weatherResponse, satelliteResponse, recommendationResponse] = await Promise.all([
+        // Weather analysis
+        base44.integrations.Core.InvokeLLM({
+          prompt: `Current weather conditions for route from ${route.origin} to ${route.destination}:
+          Provide: temperature, wind_speed, wind_direction, precipitation, visibility, alerts array.
+          Format as JSON with: weather object containing these fields.`,
+          response_json_schema: {
+            type: "object",
+            properties: {
+              weather: {
+                type: "object",
+                properties: {
+                  temperature: { type: "number" },
+                  wind_speed: { type: "number" },
+                  wind_direction: { type: "string" },
+                  precipitation: { type: "string" },
+                  visibility: { type: "number" },
+                  alerts: { type: "array", items: { type: "string" } }
+                }
               }
-            },
-            satellite_insights: {
-              type: "object",
-              properties: {
-                cloud_cover: { type: "number" },
-                terrain_analysis: { type: "string" },
-                surface_conditions: { type: "string" },
-                visual_quality: { type: "string" }
+            }
+          },
+          add_context_from_internet: true
+        }),
+        // Satellite imagery analysis
+        base44.integrations.Core.InvokeLLM({
+          prompt: `Satellite imagery analysis for route from ${route.origin} to ${route.destination}:
+          Provide: cloud_cover percentage, terrain_analysis, surface_conditions, visual_quality.
+          Format as JSON with: satellite_insights object.`,
+          response_json_schema: {
+            type: "object",
+            properties: {
+              satellite_insights: {
+                type: "object",
+                properties: {
+                  cloud_cover: { type: "number" },
+                  terrain_analysis: { type: "string" },
+                  surface_conditions: { type: "string" },
+                  visual_quality: { type: "string" }
+                }
               }
-            },
-            recommendations: { type: "array", items: { type: "string" } },
-            risks: { type: "array", items: { type: "string" } },
-            eta_impact: { type: "string" }
-          }
-        },
-        add_context_from_internet: true
-      });
+            }
+          },
+          add_context_from_internet: true
+        }),
+        // Route optimization recommendations
+        base44.integrations.Core.InvokeLLM({
+          prompt: `Route optimization recommendations for ${route.distance_km}km ${route.transport_type} route from ${route.origin} to ${route.destination}.
+          Provide: array of recommendations and array of risks.
+          Format as JSON with: recommendations array, risks array.`,
+          response_json_schema: {
+            type: "object",
+            properties: {
+              recommendations: { type: "array", items: { type: "string" } },
+              risks: { type: "array", items: { type: "string" } }
+            }
+          },
+          add_context_from_internet: true
+        })
+      ]);
 
-      setWeatherData(response.weather);
-      setSatelliteAnalysis(response.satellite_insights);
-      setRecommendations(response.recommendations || []);
+      setWeatherData(weatherResponse.weather);
+      setSatelliteAnalysis(satelliteResponse.satellite_insights);
+      setRecommendations(recommendationResponse.recommendations || []);
     } catch (error) {
       console.error("Error analyzing route intelligence:", error);
     } finally {
