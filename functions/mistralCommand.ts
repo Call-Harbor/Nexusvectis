@@ -460,7 +460,7 @@ Context data: ${JSON.stringify(context)}`;
       const llmResponse = await base44.asServiceRole.integrations.Core.InvokeLLM({
         prompt: enhancedPrompt,
         file_urls: file_urls,
-        add_context_from_internet: false,
+        add_context_from_internet: true,
         response_json_schema: {
           type: 'object',
           properties: {
