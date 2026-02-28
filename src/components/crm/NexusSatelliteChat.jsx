@@ -155,7 +155,8 @@ function NewChannelModal({ customers, user, orgId, onClose, onCreated }) {
    const [search, setSearch] = useState("");
    const [creating, setCreating] = useState(false);
    const [activeTab, setActiveTab] = useState("users"); // "users" | "customers"
-   const [showExternal, setShowExternal] = useState(false); // Toggle for external users
+   const [searchResult, setSearchResult] = useState(null); // found user from Nexus ID / exact name search
+   const [searching, setSearching] = useState(false);
 
    // Fetch all platform users via backend function (bypasses security rules)
    const { data: nexusUsersData } = useQuery({
@@ -164,23 +165,32 @@ function NewChannelModal({ customers, user, orgId, onClose, onCreated }) {
      enabled: !!user,
    });
 
-   const internalUsers = (nexusUsersData?.data?.users || [])
-     .map(u => ({ id: `user_${u.id}`, name: u.name, email: u.email, _source: 'user', _internal: true }));
-
-   const platformContacts = internalUsers;
+   const allPlatformUsers = (nexusUsersData?.data?.users || [])
+     .map(u => ({ id: `user_${u.id}`, _rawId: u.id, name: u.name, email: u.email, _source: 'user' }));
 
    const customerContacts = customers
      .map(c => ({ id: `cust_${c.id}`, name: c.name, email: c.email, company: c.company, _source: 'customer', _orgId: orgId }));
 
-   const allContacts = activeTab === "users" ? platformContacts : customerContacts;
+   // Search users by exact name OR Nexus ID (#XXXX)
+   const handleSearch = () => {
+     const q = search.trim();
+     if (!q) return;
+     setSearching(true);
+     const nexusIdMatch = q.startsWith('#') ? q.slice(1) : null;
+     const found = allPlatformUsers.find(u => {
+       if (nexusIdMatch) return getNexusId(u._rawId) === nexusIdMatch;
+       return u.name?.toLowerCase() === q.toLowerCase();
+     });
+     setSearchResult(found || null);
+     if (!found) setSearchResult(undefined); // undefined = searched but not found
+     setSearching(false);
+   };
 
-  const filtered = allContacts.filter(c =>
-    c.name?.toLowerCase().includes(search.toLowerCase()) ||
-    c.email?.toLowerCase().includes(search.toLowerCase()) ||
-    c.company?.toLowerCase().includes(search.toLowerCase())
-  );
-
-
+   const filteredCustomers = customerContacts.filter(c =>
+     c.name?.toLowerCase().includes(search.toLowerCase()) ||
+     c.email?.toLowerCase().includes(search.toLowerCase()) ||
+     c.company?.toLowerCase().includes(search.toLowerCase())
+   );
 
   const toggle = (c) => {
     setSelectedContacts(prev => prev.find(x => x.id === c.id) ? prev.filter(x => x.id !== c.id) : [...prev, c]);
