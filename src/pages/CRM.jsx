@@ -14,7 +14,6 @@ import { toast } from "sonner";
 import CRMPipeline from "../components/crm/CRMPipeline";
 import CRMAIInsights from "../components/crm/CRMAIInsights";
 import CRMDealEditor from "../components/crm/CRMDealEditor";
-import NexusSatelliteChat from "../components/crm/NexusSatelliteChat";
 
 export default function CRM() {
   const [user, setUser] = useState(null);
