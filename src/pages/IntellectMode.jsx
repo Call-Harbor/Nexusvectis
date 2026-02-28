@@ -196,9 +196,10 @@ export default function IntellectMode() {
       openNexusChat: () => { openWindow('nexus_chat', { x: 120, y: 80 }); setMessages(prev => [...prev, { role: "system", content: "🛰️ Nexus Satellite Chat opened" }]); },
       openDocEditor: () => { openWindow('document_editor', { x: 120, y: 80 }); setMessages(prev => [...prev, { role: "system", content: "📄 Document Editor opened" }]); },
       openSpreadsheet: () => { openWindow('spreadsheet_editor', { x: 140, y: 100 }); setMessages(prev => [...prev, { role: "system", content: "📊 Spreadsheet Editor opened" }]); },
+      openSatelliteWeather: () => { openWindow('satellite_weather', { x: 100, y: 80 }); setMessages(prev => [...prev, { role: "system", content: "🛰️ Satellite & Weather Intelligence activated" }]); },
     };
     actionMap[action]?.();
-  }, [openWindow, vehicles, routes]);
+  }, [openWindow, vehicles, routes, setMessages]);
 
   const executePrompt = useCallback((prompt) => {
     pendingPromptRef.current = prompt;
