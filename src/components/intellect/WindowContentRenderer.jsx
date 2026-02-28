@@ -14,6 +14,7 @@ import CourseAIEngine from "@/components/intellect/CourseAIEngine";
 import DeepAnalysisEngine from "@/components/intellect/DeepAnalysisEngine";
 import GlobalSearch from "@/components/intellect/GlobalSearch";
 import WebBrowser from "@/components/intellect/WebBrowser";
+import VideoCallHologram from "@/components/intellect/VideoCallHologram";
 
 const CHART_COLORS = ['#06b6d4', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444'];
 
