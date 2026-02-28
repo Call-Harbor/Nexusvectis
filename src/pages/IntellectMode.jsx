@@ -9,7 +9,7 @@ import {
   Sparkles, Send, Mic, Brain, Zap, TrendingUp, AlertTriangle, 
   Truck, Route, Package, Activity, Maximize2, Minimize2, X, LayoutDashboard, Paperclip, FileText,
   Settings, Warehouse, Satellite, Globe, BarChart3, Box, Building2, Monitor, ExternalLink, ChevronDown, Users,
-  Lightbulb, Network, Shield, MessageSquare, Video, FileTextIcon, FileCode, CalculatorIcon, Search, GraduationCap, Globe2
+  Lightbulb, Network, Shield, MessageSquare, Video, FileTextIcon, FileCode, CalculatorIcon, Search, GraduationCap
 } from "lucide-react";
 import {
   DropdownMenu,
