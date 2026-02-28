@@ -263,21 +263,6 @@ function NewChannelModal({ customers, user, orgId, onClose, onCreated }) {
             </button>
           </div>
 
-          {/* External users toggle */}
-          {activeTab === "users" && externalUsers.length > 0 && (
-            <label className="flex items-center gap-2 p-2 bg-slate-800/40 rounded-lg cursor-pointer hover:bg-slate-800/60 transition-all">
-              <input
-                type="checkbox"
-                checked={showExternal}
-                onChange={e => setShowExternal(e.target.checked)}
-                className="w-4 h-4 rounded accent-cyan-600 cursor-pointer"
-              />
-              <span className="text-xs text-slate-300">
-                Show external users (<span className="text-violet-400 font-medium">{externalUsers.length}</span>)
-              </span>
-            </label>
-          )}
-
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
             <Input value={search} onChange={e => setSearch(e.target.value)} placeholder={activeTab === "users" ? "Search all Nexus users..." : "Search customers..."} className="pl-9 bg-slate-800/50 border-slate-700 text-white" />
