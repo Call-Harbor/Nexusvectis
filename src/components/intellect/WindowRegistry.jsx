@@ -38,6 +38,7 @@ export const WINDOW_META = {
   web_browser: { title: '🌐 Web Browser', icon: Globe },
   profile_search: { title: '🔍 People Intelligence', icon: Users },
   parallel_processor: { title: 'Parallel Task Processor', icon: Zap },
+  satellite_weather: { title: '🛰️ Satellite & Weather', icon: Satellite },
 };
 
 export function getWindowMeta(type) {

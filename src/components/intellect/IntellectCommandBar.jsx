@@ -1,7 +1,7 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
-import { Send, Mic, Zap, Paperclip, FileText, X, Sparkles, Shield, Building2 } from "lucide-react";
+import { Send, Mic, Zap, Paperclip, FileText, X, Sparkles, Shield, Building2, Satellite } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
@@ -85,6 +85,9 @@ export default function IntellectCommandBar({
           </Button>
           <Button onClick={() => setShowProfileSearch(true)} variant="outline" size="sm" className="border-blue-500/30 text-blue-400 hover:bg-blue-500/10">
             <Building2 className="w-3.5 h-3.5 mr-1.5" />People Search
+          </Button>
+          <Button onClick={() => handleQuickAction('openSatelliteWeather')} variant="outline" size="sm" className="border-violet-500/30 text-violet-400 hover:bg-violet-500/10">
+            <Satellite className="w-3.5 h-3.5 mr-1.5" />Satellite & Weather
           </Button>
           <Button onClick={() => handleQuickAction('openNeuroRisk')} variant="outline" size="sm" className="border-red-500/30 text-red-400 hover:bg-red-500/10">
             <Shield className="w-3.5 h-3.5 mr-1.5" />Neuro Risk Fusion
