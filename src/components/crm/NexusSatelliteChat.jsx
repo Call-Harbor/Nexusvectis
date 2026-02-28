@@ -146,18 +146,16 @@ function NewChannelModal({ customers, user, orgId, onClose, onCreated }) {
    const [activeTab, setActiveTab] = useState("users"); // "users" | "customers"
    const [showExternal, setShowExternal] = useState(false); // Toggle for external users
 
-   // Fetch all platform users
-   const { data: allUsers = [] } = useQuery({
-     queryKey: ['all-nexus-users'],
-     queryFn: () => base44.entities.User.list('-created_date', 500),
+   // Fetch org members to show as contacts
+   const { data: orgMembers = [] } = useQuery({
+     queryKey: ['all-nexus-org-members', orgId],
+     queryFn: () => base44.entities.OrganizationMember.filter({ organization_id: orgId, status: 'active' }),
+     enabled: !!orgId,
    });
 
-   // Merge: platform users (exclude self) + customers, deduplicate by email
-   const internalUsers = allUsers
-     .filter(u => u.email !== user?.email)
-     .map(u => ({ id: `user_${u.id}`, name: u.full_name, email: u.email, _source: 'user', _internal: true }));
-
-   const externalUsers = [];
+   const internalUsers = orgMembers
+     .filter(m => m.user_email !== user?.email)
+     .map(m => ({ id: `member_${m.id}`, name: m.user_name || m.user_email, email: m.user_email, _source: 'user', _internal: true }));
 
    const platformContacts = internalUsers;
 
