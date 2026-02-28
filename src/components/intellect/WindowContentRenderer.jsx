@@ -272,7 +272,7 @@ export default function WindowContentRenderer({ type, data, vehicles, routes, sh
 
   if (type === 'nexus_chat') return (
     <div className="w-full h-full overflow-hidden">
-      <NexusSatelliteChat user={currentUser} orgId={orgId} customers={customers} propUser={currentUser} />
+      <NexusSatelliteChat user={currentUser} orgId={orgId} customers={customers} />
     </div>
   );
 
