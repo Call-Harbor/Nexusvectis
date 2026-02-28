@@ -10,6 +10,23 @@ export default function SatelliteWeatherIntelligence({ routes, vehicles, onRoute
   const [satelliteAnalysis, setSatelliteAnalysis] = useState(null);
   const [loading, setLoading] = useState(false);
   const [recommendations, setRecommendations] = useState([]);
+  const [localRoutes, setLocalRoutes] = useState(routes || []);
+
+  useEffect(() => {
+    const loadRoutes = async () => {
+      if (routes && routes.length > 0) {
+        setLocalRoutes(routes);
+      } else {
+        try {
+          const allRoutes = await base44.entities.Route.list();
+          setLocalRoutes(allRoutes || []);
+        } catch (error) {
+          console.error('Error loading routes:', error);
+        }
+      }
+    };
+    loadRoutes();
+  }, [routes]);
 
   useEffect(() => {
     if (selectedRoute) {
