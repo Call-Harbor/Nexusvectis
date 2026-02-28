@@ -463,67 +463,77 @@ export default function NexusSatelliteChat({ user: propUser, orgId, customers })
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Real-time subscription
+  // Real-time subscription for messages and calls
   useEffect(() => {
-    if (!orgId) return;
-    const unsub = base44.entities.NexusMessage.subscribe(event => {
+    if (!orgId || !user?.email) return;
+    
+    const messageUnsub = base44.entities.NexusMessage.subscribe(event => {
       const msg = event.data;
-      if (msg?.sender_email !== user?.email) {
+      if (!msg || msg.sender_email === user?.email) return;
 
-        // Incoming call invite
-        if (msg?.message_type === 'call_invite') {
-          // Check if this call is directed to us (we're a member of the channel)
-          const targetChannel = channels.find(c => c.id === msg.channel_id);
-          if (targetChannel && targetChannel.members?.includes(user?.email)) {
-            setIncomingCall({
-              channel_id: msg.channel_id,
-              channel_name: targetChannel?.name || msg.channel_name,
-              caller_name: msg.sender_name,
-              call_type: msg.call_type || 'video',
-              room_name: msg.room_name,
-              channel: targetChannel,
-            });
-          }
-          return;
-        }
+      // Check if we're a member of this channel
+      const targetChannel = channels.find(c => c.id === msg.channel_id);
+      if (!targetChannel || !targetChannel.members?.includes(user?.email)) return;
 
-        // Cancelled / ended call invite
-        if (msg?.message_type === 'call_cancelled') {
-          setIncomingCall(prev => prev?.channel_id === msg.channel_id ? null : prev);
-          return;
-        }
+      // Incoming call invite
+      if (msg.message_type === 'call_invite') {
+        setIncomingCall({
+          channel_id: msg.channel_id,
+          channel_name: targetChannel.name || msg.channel_name,
+          caller_name: msg.sender_name,
+          call_type: msg.call_type || 'video',
+          room_name: msg.room_name,
+          channel: targetChannel,
+        });
+        return;
+      }
 
-        if (msg?.channel_id === activeChannel?.id) {
-          queryClient.invalidateQueries({ queryKey: ['nexus-messages', activeChannel.id] });
-        } else {
-          setUnreadChannels(prev => ({
-            ...prev,
-            [msg?.channel_id]: (prev[msg?.channel_id] || 0) + 1
-          }));
-          queryClient.invalidateQueries({ queryKey: ['nexus-channels', orgId] });
+      // Cancelled / ended call invite
+      if (msg.message_type === 'call_cancelled' || msg.message_type === 'call_declined') {
+        setIncomingCall(prev => prev?.channel_id === msg.channel_id ? null : prev);
+        return;
+      }
 
-          if (Notification.permission === 'granted') {
-            new Notification(`Ny besked fra ${msg?.sender_name}`, {
-              body: msg?.content?.slice(0, 50),
-              icon: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/697e930c62bf3e3832b34edb/bc9d40ccc_FullLogo_Transparent1.png'
-            });
-          }
-
-          toast.message(`${msg?.sender_name}`, {
-            description: msg?.content?.slice(0, 100),
-            action: {
-              label: 'Åbn',
-              onClick: () => {
-                const channel = channels.find(c => c.id === msg?.channel_id);
-                if (channel) setActiveChannel(channel);
-              }
-            }
+      // Regular messages
+      if (msg.channel_id === activeChannel?.id) {
+        queryClient.invalidateQueries({ queryKey: ['nexus-messages', activeChannel.id] });
+      } else {
+        setUnreadChannels(prev => ({
+          ...prev,
+          [msg.channel_id]: (prev[msg.channel_id] || 0) + 1
+        }));
+        
+        if (Notification.permission === 'granted') {
+          new Notification(`Ny besked fra ${msg.sender_name}`, {
+            body: msg.content?.slice(0, 50),
+            icon: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/697e930c62bf3e3832b34edb/bc9d40ccc_FullLogo_Transparent1.png'
           });
         }
+
+        toast.message(`${msg.sender_name}`, {
+          description: msg.content?.slice(0, 100),
+          action: {
+            label: 'Åbn',
+            onClick: () => setActiveChannel(targetChannel)
+          }
+        });
       }
     });
-    return unsub;
-  }, [activeChannel?.id, orgId, user?.email, channels]);
+
+    const channelUnsub = base44.entities.NexusChannel.subscribe(event => {
+      const ch = event.data;
+      if (!ch || ch.organization_id !== orgId) return;
+      if (!ch.members?.includes(user?.email)) return;
+      
+      // Refetch channels when a new one is created or updated
+      queryClient.invalidateQueries({ queryKey: ['nexus-channels', orgId] });
+    });
+
+    return () => {
+      messageUnsub();
+      channelUnsub();
+    };
+  }, [orgId, user?.email, activeChannel?.id, channels]);
 
   const sendMessage = async () => {
     if (!message.trim() || !activeChannel) return;
