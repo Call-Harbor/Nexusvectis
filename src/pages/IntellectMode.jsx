@@ -297,13 +297,51 @@ export default function IntellectMode() {
     setMessages(prev => [...prev, { role: "user", content: currentCommand }]);
     setInput("");
     const processId = createProcessTerminal(currentCommand.substring(0, 40) + '...');
-    addThinkingLog('parse', `Deep research analysis initiated`, null, 0, null, processId);
+    addThinkingLog('parse', `🔬 Deep research analysis initiated`, null, 0, null, processId);
     addThinkingLog('analyze', 'Gathering fleet telemetry & historical records', { vehicles: vehicles.length, routes: routes.length, shipments: shipments.length }, 200, 20, processId);
-    addThinkingLog('think', 'Running multi-dimensional statistical models', null, 300, 40, processId);
+    addThinkingLog('think', 'Running multi-dimensional statistical models & predictive algorithms', null, 300, 40, processId);
+    addThinkingLog('model', 'Initializing predictive engines and correlation matrices', null, 250, 55, processId);
 
-    const fleetContext = `Fleet data: ${vehicles.length} vehicles, ${routes.length} routes, ${shipments.length} shipments, ${alerts.length} active alerts.`;
-    const result = await base44.integrations.Core.InvokeLLM({
-      prompt: `You are a world-class logistics research analyst. Perform a deep, research-grade analysis for: "${currentCommand}"\n\nFleet context: ${fleetContext}\n\nGenerate a comprehensive analysis with rich visualizations. Include statistical breakdown, trend analysis (12+ data points), predictive models, correlations, risk quantification, benchmarking, root cause analysis, recommendations with ROI, KPIs.\n\nReturn JSON with: title, description, type (bar/line/pie/area), chart_data (array of 12-16 objects), xKey, bars/lines/areas (array with key+name), summary, insights (array with text+severity), technical_details (object), recommendations (array with action+savings_dkk+timeframe+confidence), forecasts (array with name+description+value+timeframe+confidence), risks (array with name+description+severity+likelihood+impact), correlations (array with variables+coefficient), advanced_metrics (array with label+value+change), data_quality (accuracy+completeness+reliability).`,
+    const fleetContext = `Fleet Statistics: ${vehicles.length} vehicles (${vehicles.filter(v => v.status === 'active').length} active), ${routes.length} routes, ${shipments.length} shipments, ${alerts.length} active alerts. Transport types: ${[...new Set(vehicles.map(v => v.type))].join(', ')}`;
+    
+    try {
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `You are an advanced logistics AI researcher performing DEEP RESEARCH ANALYSIS for: "${currentCommand}"
+
+FLEET CONTEXT: ${fleetContext}
+
+CRITICAL REQUIREMENTS - Generate comprehensive research-grade analysis:
+1. TITLE & DESCRIPTION - Professional academic-level analysis title and overview
+2. CHART DATA - Create 14-18 high-quality data points across multiple metrics for rich visualization
+3. VISUALIZATIONS - Multiple chart types (bar/line/area) with several data series
+4. STATISTICAL DEEP DIVE - Trend analysis, seasonal patterns, anomalies, statistical significance tests
+5. PREDICTIVE MODELING - Forecasts with confidence intervals for 30/60/90 days
+6. CORRELATION ANALYSIS - Find relationships between metrics, identify root causes
+7. RISK QUANTIFICATION - Assess risks with severity, likelihood, and financial impact (DKK)
+8. ADVANCED RECOMMENDATIONS - Actionable insights with ROI calculations in DKK, implementation timeframes
+9. KPI DASHBOARD - Key performance indicators with percentage changes and benchmarks
+10. COMPREHENSIVE INSIGHTS - Technical findings with severity levels (critical/high/medium/low)
+
+Return ONLY valid JSON matching this exact structure - NO markdown, NO explanation:
+{
+  "title": "string (research-level professional title)",
+  "description": "string (detailed 2-3 sentence overview)",
+  "type": "bar|line|area|pie",
+  "summary": "string (4-5 paragraph executive summary with key findings)",
+  "chart_data": [{label: string, value1: number, value2: number, value3: number, ...}],
+  "xKey": "label",
+  "bars": [{key: string, name: string}],
+  "lines": [{key: string, name: string}],
+  "areas": [{key: string, name: string}],
+  "insights": [{text: string, severity: "critical|high|medium|low", impact: string}],
+  "recommendations": [{action: string, savings_dkk: number, timeframe: "30d|60d|90d", confidence: 0.0-1.0}],
+  "forecasts": [{name: string, value: number, timeframe: "30d|60d|90d", confidence: 0.0-1.0}],
+  "risks": [{name: string, severity: "critical|high|medium|low", likelihood: 0.0-1.0, impact_dkk: number}],
+  "correlations": [{variables: string, coefficient: number, interpretation: string}],
+  "advanced_metrics": [{label: string, value: number, unit: string, change_percent: number}],
+  "technical_details": {methodology: string, data_sources: string, quality_score: 0.0-1.0},
+  "data_quality": {accuracy: 0.0-1.0, completeness: 0.0-1.0, reliability: 0.0-1.0}
+}`,
       add_context_from_internet: true,
       response_json_schema: {
         type: "object",
@@ -325,19 +363,37 @@ export default function IntellectMode() {
       }
     });
 
-    addThinkingLog('result', 'Research analysis complete — opening hologram visualization', null, 100, null, processId);
-    const chartId = `chart_${Date.now()}`;
-    openWindow(chartId, { x: 80, y: 60 }, {
-      chartData: result.chart_data || [],
-      chartConfig: {
-        title: result.title, description: result.description, type: result.type || 'bar',
-        xKey: result.xKey || 'label', bars: result.bars, lines: result.lines, areas: result.areas,
-        summary: result.summary, insights: result.insights, technical_details: result.technical_details,
-        recommendations: result.recommendations, forecasts: result.forecasts, risks: result.risks,
-        correlations: result.correlations, advanced_metrics: result.advanced_metrics, data_quality: result.data_quality
-      }
-    });
-    setMessages(prev => [...prev, { role: "assistant", content: `**${result.title}**\n\n${result.summary || result.description}\n\n📊 Hologram visualization opened.` }]);
+      addThinkingLog('visualize', 'Rendering advanced holographic dashboard with multi-dimensional analysis', null, 150, 85, processId);
+      const chartId = `chart_${Date.now()}`;
+      openWindow(chartId, { x: 80, y: 60 }, {
+        chartData: result.chart_data || [],
+        chartConfig: {
+          title: result.title,
+          description: result.description,
+          type: result.type || 'bar',
+          xKey: result.xKey || 'label',
+          bars: result.bars || [],
+          lines: result.lines || [],
+          areas: result.areas || [],
+          summary: result.summary,
+          insights: result.insights || [],
+          technical_details: result.technical_details || {},
+          recommendations: result.recommendations || [],
+          forecasts: result.forecasts || [],
+          risks: result.risks || [],
+          correlations: result.correlations || [],
+          advanced_metrics: result.advanced_metrics || [],
+          data_quality: result.data_quality || {}
+        }
+      });
+      
+      setMessages(prev => [...prev, { role: "assistant", content: `**🔬 ${result.title}**\n\n${result.summary || result.description}\n\n📊 **Advanced holographic research dashboard opened** — Explore detailed statistical analysis, predictive models, risk assessment, KPIs, and strategic recommendations with ROI calculations.` }]);
+      addThinkingLog('complete', 'Deep research analysis rendered successfully', null, 100, 100, processId);
+    } catch (error) {
+      addThinkingLog('error', `Deep analysis failed: ${error.message}`, null, 100, null, processId);
+      setMessages(prev => [...prev, { role: "system", content: `❌ Deep analysis failed: ${error.message}` }]);
+    }
+    
     closeProcessTerminal(processId);
   };
 
