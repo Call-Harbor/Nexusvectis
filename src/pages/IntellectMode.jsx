@@ -358,11 +358,12 @@ export default function IntellectMode() {
     }
 
     // Deep analysis detection
-    const deepKeywords = ["Analyser alle køretøjer", "Optimer alle aktive ruter", "Gennemgå alle forsendelser", "Forudsig vedligeholdelsesbehov", "Lav 90-dages", "Analyser ETA-nøjagtighed", "Udfør omfattende risikovurdering", "Analyser alle sikkerheds", "Kontroller compliance", "Analyser transportomkostninger", "Beregn CO2-emissioner", "Evaluer præstationen", "Analyser flådekapacitet", "Identificer mønstre i forsinkelser"];
-    if (deepKeywords.some(kw => currentCommand.includes(kw))) {
-      await runDeepAnalysis(currentCommand);
-      return;
-    }
+     const deepKeywords = ["Analyser alle", "Optimer alle", "Gennemgå alle", "omfattende", "dybde", "forskel", "sammenligning", "tendenser", "mønstre", "statistik", "rapport", "analyse", "evaluering", "review"];
+     const isDeeAnalysis = deepKeywords.some(kw => currentCommand.toLowerCase().includes(kw.toLowerCase()));
+     if (isDeeAnalysis && currentCommand.length > 20) {
+       await runDeepAnalysis(currentCommand);
+       return;
+     }
 
     setCommandHistory(prev => [...prev, currentCommand]);
     setHistoryIndex(-1);
