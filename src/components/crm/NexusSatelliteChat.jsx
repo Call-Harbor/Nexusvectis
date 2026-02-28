@@ -271,44 +271,85 @@ function NewChannelModal({ customers, user, orgId, onClose, onCreated }) {
 
           {/* Source tab */}
           <div className="flex gap-1 bg-slate-800/60 p-1 rounded-xl">
-            <button onClick={() => setActiveTab("users")} className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-all ${activeTab === "users" ? 'bg-slate-700 text-white' : 'text-slate-500 hover:text-slate-300'}`}>
+            <button onClick={() => { setActiveTab("users"); setSearch(""); setSearchResult(null); }} className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-all ${activeTab === "users" ? 'bg-slate-700 text-white' : 'text-slate-500 hover:text-slate-300'}`}>
               <Users className="w-3 h-3 inline mr-1" />
-              Platform Users ({internalUsers.length})
+              Nexus Users
             </button>
-            <button onClick={() => setActiveTab("customers")} className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-all ${activeTab === "customers" ? 'bg-slate-700 text-white' : 'text-slate-500 hover:text-slate-300'}`}>
+            <button onClick={() => { setActiveTab("customers"); setSearch(""); setSearchResult(null); }} className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-all ${activeTab === "customers" ? 'bg-slate-700 text-white' : 'text-slate-500 hover:text-slate-300'}`}>
               <User className="w-3 h-3 inline mr-1" />
               Customers ({customerContacts.length})
             </button>
           </div>
 
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-            <Input value={search} onChange={e => setSearch(e.target.value)} placeholder={activeTab === "users" ? "Search all Nexus users..." : "Search customers..."} className="pl-9 bg-slate-800/50 border-slate-700 text-white" />
-          </div>
-
-          <div className="max-h-52 overflow-y-auto space-y-1">
-            {filtered.length === 0 && (
-              <p className="text-slate-600 text-xs text-center py-6">No results found</p>
-            )}
-            {filtered.map(c => (
-              <button key={c.id} onClick={() => type === 'direct' ? setSelectedContacts([c]) : toggle(c)}
-                className={`w-full flex items-center gap-3 p-2.5 rounded-xl transition-all ${selectedContacts.find(x => x.id === c.id) ? 'bg-cyan-600/20 border border-cyan-500/40' : 'hover:bg-slate-800'}`}>
-                <Avatar name={c.name} color={AVATAR_COLORS[c.name?.length % AVATAR_COLORS.length || 0]} size="sm" />
-                <div className="flex-1 text-left min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <p className="text-white text-sm font-medium truncate">{c.name}</p>
-                    {c._source === 'user' && (
-                      <Badge className={`text-[9px] flex-shrink-0 ${c._internal ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-violet-500/20 text-violet-400 border-violet-500/30'}`}>
-                        {c._internal ? 'My Org' : 'External'}
-                      </Badge>
-                    )}
-                  </div>
-                  <p className="text-slate-500 text-xs truncate">{c.email || c.company}</p>
+          {activeTab === "users" ? (
+            <>
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                  <Input
+                    value={search}
+                    onChange={e => { setSearch(e.target.value); setSearchResult(null); }}
+                    onKeyDown={e => e.key === 'Enter' && handleSearch()}
+                    placeholder="Exact name or #NexusID..."
+                    className="pl-9 bg-slate-800/50 border-slate-700 text-white"
+                  />
                 </div>
-                {selectedContacts.find(x => x.id === c.id) && <div className="w-4 h-4 rounded-full bg-cyan-500 flex items-center justify-center flex-shrink-0"><X className="w-2.5 h-2.5 text-white" /></div>}
-              </button>
-            ))}
-          </div>
+                <Button onClick={handleSearch} size="sm" className="bg-cyan-600 hover:bg-cyan-700 px-3">
+                  <Search className="w-3.5 h-3.5" />
+                </Button>
+              </div>
+              <p className="text-slate-600 text-[10px] px-1">Søg på præcist brugernavn eller Nexus ID (fx #2314)</p>
+
+              <div className="max-h-52 overflow-y-auto space-y-1">
+                {searchResult === undefined && (
+                  <p className="text-slate-600 text-xs text-center py-6">Ingen bruger fundet</p>
+                )}
+                {searchResult === null && search && (
+                  <p className="text-slate-500 text-xs text-center py-6">Tryk Søg for at finde en bruger</p>
+                )}
+                {!search && (
+                  <p className="text-slate-600 text-xs text-center py-6">
+                    <Search className="w-6 h-6 mx-auto mb-2 opacity-30" />
+                    Skriv et præcist navn eller Nexus ID
+                  </p>
+                )}
+                {searchResult && (
+                  <button onClick={() => type === 'direct' ? setSelectedContacts([searchResult]) : toggle(searchResult)}
+                    className={`w-full flex items-center gap-3 p-2.5 rounded-xl transition-all ${selectedContacts.find(x => x.id === searchResult.id) ? 'bg-cyan-600/20 border border-cyan-500/40' : 'hover:bg-slate-800'}`}>
+                    <Avatar name={searchResult.name} color={AVATAR_COLORS[searchResult.name?.length % AVATAR_COLORS.length || 0]} size="sm" />
+                    <div className="flex-1 text-left min-w-0">
+                      <p className="text-white text-sm font-medium truncate">{searchResult.name}</p>
+                      <p className="text-slate-500 text-xs truncate">#{getNexusId(searchResult._rawId)} · {searchResult.email}</p>
+                    </div>
+                    {selectedContacts.find(x => x.id === searchResult.id) && <div className="w-4 h-4 rounded-full bg-cyan-500 flex items-center justify-center flex-shrink-0"><X className="w-2.5 h-2.5 text-white" /></div>}
+                  </button>
+                )}
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Søg kunder..." className="pl-9 bg-slate-800/50 border-slate-700 text-white" />
+              </div>
+              <div className="max-h-52 overflow-y-auto space-y-1">
+                {filteredCustomers.length === 0 && (
+                  <p className="text-slate-600 text-xs text-center py-6">Ingen kunder fundet</p>
+                )}
+                {filteredCustomers.map(c => (
+                  <button key={c.id} onClick={() => type === 'direct' ? setSelectedContacts([c]) : toggle(c)}
+                    className={`w-full flex items-center gap-3 p-2.5 rounded-xl transition-all ${selectedContacts.find(x => x.id === c.id) ? 'bg-cyan-600/20 border border-cyan-500/40' : 'hover:bg-slate-800'}`}>
+                    <Avatar name={c.name} color={AVATAR_COLORS[c.name?.length % AVATAR_COLORS.length || 0]} size="sm" />
+                    <div className="flex-1 text-left min-w-0">
+                      <p className="text-white text-sm font-medium truncate">{c.name}</p>
+                      <p className="text-slate-500 text-xs truncate">{c.email || c.company}</p>
+                    </div>
+                    {selectedContacts.find(x => x.id === c.id) && <div className="w-4 h-4 rounded-full bg-cyan-500 flex items-center justify-center flex-shrink-0"><X className="w-2.5 h-2.5 text-white" /></div>}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
 
           {selectedContacts.length > 0 && type === 'group' && (
             <div className="flex flex-wrap gap-1.5">
