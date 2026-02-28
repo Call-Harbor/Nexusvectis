@@ -6,6 +6,7 @@ import {
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import AIDocumentEditor from "@/components/intellect/AIDocumentEditor";
 import AISpreadsheetEditor from "@/components/intellect/AISpreadsheetEditor";
+import SatelliteWeatherIntelligence from "@/components/intellect/SatelliteWeatherIntelligence";
 import SwarmIntelligencePanel from "@/components/intellect/SwarmIntelligencePanel";
 import NeuroSymbolicRiskPanel from "@/components/intellect/NeuroSymbolicRiskPanel";
 import DigitalTwinFederation from "@/components/intellect/DigitalTwinFederation";
@@ -281,6 +282,7 @@ export default function WindowContentRenderer({ type, data, vehicles, routes, sh
   if (type === 'global_search') return <GlobalSearch orgId={data?.orgId} onOpenWindow={(entityType) => openWindow(entityType, { x: 200, y: 150 })} onOpenPageWindow={(page) => openWindow(page.toLowerCase(), { x: 200, y: 150 })} />;
   if (type === 'web_browser') return <WebBrowser />;
   if (type === 'profile_search') return <ProfileSearch />;
+  if (type === 'satellite_weather') return <SatelliteWeatherIntelligence routes={routes} vehicles={vehicles} onRouteSelect={(routeId) => setInput(`Analyzing route ${routeId}`)} />;
   if (PAGE_MAP[type]) {
     return <iframe src={`${createPageUrl(PAGE_MAP[type])}?hologram=true`} className="w-full h-full border-0" title={PAGE_MAP[type]} />;
   }
