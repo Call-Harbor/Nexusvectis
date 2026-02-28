@@ -596,6 +596,18 @@ export default function NexusSatelliteChat({ user: propUser, orgId, customers })
     setIncomingCall(null);
   };
 
+  const deleteChannel = async (ch, e) => {
+    e.stopPropagation();
+    if (!confirm(`Slet samtalen "${ch.name}"? Alle beskeder slettes permanent.`)) return;
+    // Delete all messages in channel
+    const msgs = await base44.entities.NexusMessage.filter({ channel_id: ch.id });
+    await Promise.all(msgs.map(m => base44.entities.NexusMessage.delete(m.id)));
+    await base44.entities.NexusChannel.delete(ch.id);
+    if (activeChannel?.id === ch.id) setActiveChannel(null);
+    queryClient.invalidateQueries({ queryKey: ['nexus-channels', orgId] });
+    toast.success("Samtale slettet");
+  };
+
   const filteredChannels = channels.filter(c =>
     c.name?.toLowerCase().includes(searchChannels.toLowerCase()) ||
     c.members?.some(m => m.toLowerCase().includes(searchChannels.toLowerCase()))
