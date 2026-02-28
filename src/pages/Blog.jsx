@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "../utils";
-import { FileText, Calendar, ArrowRight, Clock, User, Tag } from "lucide-react";
+import { FileText } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useEffect } from "react";
 
