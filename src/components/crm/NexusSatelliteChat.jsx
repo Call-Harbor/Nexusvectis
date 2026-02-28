@@ -905,6 +905,7 @@ export default function NexusSatelliteChat({ user: propUser, orgId, customers })
             refetchChannels();
             selectChannel(ch);
           }}
+          setCurrentUserId={setCurrentUserId}
         />
       )}
     </div>
