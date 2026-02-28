@@ -285,6 +285,7 @@ export default function WindowContentRenderer({ type, data, vehicles, routes, sh
   if (type === 'course_ai') return <CourseAIEngine vehicles={vehicles} routes={routes} shipments={shipments} />;
   if (type === 'deep_analysis') return <DeepAnalysisEngine vehicles={vehicles} routes={routes} shipments={shipments} alerts={alerts} onInsightCommand={setInput} />;
   if (type === 'global_search') return <GlobalSearch orgId={data?.orgId} onOpenWindow={(entityType) => openWindow(entityType, { x: 200, y: 150 })} onOpenPageWindow={(page) => openWindow(page.toLowerCase(), { x: 200, y: 150 })} />;
+  if (type === 'web_browser') return <WebBrowser />;
 
   if (PAGE_MAP[type]) {
     return <iframe src={`${createPageUrl(PAGE_MAP[type])}?hologram=true`} className="w-full h-full border-0" title={PAGE_MAP[type]} />;
