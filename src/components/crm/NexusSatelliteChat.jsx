@@ -664,40 +664,40 @@ export default function NexusSatelliteChat({ user: propUser, orgId, customers })
           {filteredChannels.map(ch => {
             const unreadCount = unreadChannels[ch.id] || 0;
             return (
-            <div key={ch.id} className={`group relative flex items-center gap-3 p-2.5 rounded-xl transition-all ${activeChannel?.id === ch.id ? 'bg-cyan-600/20 border border-cyan-500/30' : 'hover:bg-slate-800/60'}`}>
-            <button onClick={() => selectChannel(ch)} className="flex items-center gap-3 flex-1 text-left min-w-0">
-              <div className="relative">
-                {ch.type === 'group' ? (
-                  <div className="w-9 h-9 bg-gradient-to-br from-violet-600 to-cyan-600 rounded-full flex items-center justify-center">
-                    <Hash className="w-4 h-4 text-white" />
-                  </div>
-                ) : (
-                  <Avatar name={ch.name} color={ch.avatar_color || AVATAR_COLORS[0]} size="md" online />
-                )}
-                {unreadCount > 0 && (
-                  <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-white text-[10px] font-bold">
-                    {unreadCount > 9 ? '9+' : unreadCount}
-                  </div>
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between">
-                  <p className={`text-xs font-semibold truncate ${unreadCount > 0 ? 'text-white font-bold' : 'text-white'}`}>{ch.name || ch.members?.filter(m => m !== user?.email).join(', ')}</p>
-                  {ch.last_message_at && <p className="text-slate-600 text-[9px] flex-shrink-0">{new Date(ch.last_message_at).toLocaleTimeString('da-DK', { hour: '2-digit', minute: '2-digit' })}</p>}
+            <div key={ch.id} className={`group relative flex items-center rounded-xl transition-all ${activeChannel?.id === ch.id ? 'bg-cyan-600/20 border border-cyan-500/30' : 'hover:bg-slate-800/60'}`}>
+              <button onClick={() => selectChannel(ch)} className="flex items-center gap-3 flex-1 text-left min-w-0 p-2.5">
+                <div className="relative flex-shrink-0">
+                  {ch.type === 'group' ? (
+                    <div className="w-9 h-9 bg-gradient-to-br from-violet-600 to-cyan-600 rounded-full flex items-center justify-center">
+                      <Hash className="w-4 h-4 text-white" />
+                    </div>
+                  ) : (
+                    <Avatar name={ch.name} color={ch.avatar_color || AVATAR_COLORS[0]} size="md" online />
+                  )}
+                  {unreadCount > 0 && (
+                    <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-white text-[10px] font-bold">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </div>
+                  )}
                 </div>
-                <p className={`text-[10px] truncate ${unreadCount > 0 ? 'text-slate-400 font-medium' : 'text-slate-500'}`}>{ch.last_message || 'No messages yet'}</p>
-              </div>
-              {ch.type === 'group' && (
-                <Badge className="text-[9px] bg-violet-500/20 text-violet-400 border-violet-500/30 flex-shrink-0">GROUP</Badge>
-              )}
-            </button>
-            <button
-              onClick={(e) => deleteChannel(ch, e)}
-              className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-red-600/30 text-slate-500 hover:text-red-400 transition-all flex-shrink-0 ml-1"
-              title="Slet samtale"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-            </button>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <p className={`text-xs font-semibold truncate ${unreadCount > 0 ? 'text-white font-bold' : 'text-white'}`}>{ch.name || ch.members?.filter(m => m !== user?.email).join(', ')}</p>
+                    {ch.last_message_at && <p className="text-slate-600 text-[9px] flex-shrink-0">{new Date(ch.last_message_at).toLocaleTimeString('da-DK', { hour: '2-digit', minute: '2-digit' })}</p>}
+                  </div>
+                  <p className={`text-[10px] truncate ${unreadCount > 0 ? 'text-slate-400 font-medium' : 'text-slate-500'}`}>{ch.last_message || 'No messages yet'}</p>
+                </div>
+                {ch.type === 'group' && (
+                  <Badge className="text-[9px] bg-violet-500/20 text-violet-400 border-violet-500/30 flex-shrink-0">GROUP</Badge>
+                )}
+              </button>
+              <button
+                onClick={(e) => deleteChannel(ch, e)}
+                className="opacity-0 group-hover:opacity-100 p-1.5 mr-1.5 rounded-lg hover:bg-red-600/30 text-slate-500 hover:text-red-400 transition-all flex-shrink-0"
+                title="Slet samtale"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
             </div>
           );
           })}
