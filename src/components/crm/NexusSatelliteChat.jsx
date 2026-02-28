@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  MessageSquare, Send, Video, VideoOff, Mic, MicOff, Phone, PhoneOff,
+  MessageSquare, Send, Video, VideoOff, Mic, MicOff, Phone, PhoneOff, PhoneCall,
   Plus, Search, Users, Lock, Satellite, Shield, X, ChevronLeft,
   MoreVertical, Paperclip, Smile, Hash, User, Volume2, VolumeX,
   Monitor, Camera, CameraOff, Maximize2, Minimize2, Settings, Sparkles,
