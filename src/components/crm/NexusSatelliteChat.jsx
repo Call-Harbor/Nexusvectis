@@ -744,6 +744,21 @@ export default function NexusSatelliteChat({ user: propUser, orgId, customers })
           );
           })}
         </div>
+
+        {/* Nexus ID footer */}
+        {user && (
+          <div className="p-3 border-t border-slate-800/60 bg-slate-900/80">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 bg-gradient-to-br from-cyan-500/30 to-violet-500/30 rounded-full flex items-center justify-center flex-shrink-0">
+                <Satellite className="w-3 h-3 text-cyan-400" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-white text-[10px] font-semibold truncate">{user.full_name}</p>
+                <p className="text-slate-500 text-[10px] font-mono">Nexus ID: <span className="text-cyan-400 font-bold">#{getNexusId(user.id)}</span></p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Chat Area */}
