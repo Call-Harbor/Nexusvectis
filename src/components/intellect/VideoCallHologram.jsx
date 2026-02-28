@@ -140,13 +140,10 @@ export default function VideoCallHologram({ videoUrl, onClose }) {
               </Button>
             </div>
 
-            <div className="p-2 rounded bg-slate-800/50 border border-slate-700 text-slate-400 text-xs space-y-1">
+            <div className="p-2 rounded bg-slate-800/50 border border-slate-700 text-slate-400 text-xs">
               <div className="flex items-start gap-2">
                 <AlertCircle className="w-3 h-3 mt-0.5 flex-shrink-0 text-blue-400" />
-                <div>
-                  <p className="font-semibold text-slate-300">Supported platforms:</p>
-                  <p>Microsoft Teams, Zoom, Google Meet, Webex, Whereby, Jitsi</p>
-                </div>
+                <p>Indsæt dit mødelink (Teams, Zoom, Meet, Webex, Whereby, Jitsi m.fl.)</p>
               </div>
             </div>
           </div>
