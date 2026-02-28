@@ -7,7 +7,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
-const MAX_PARALLEL = 10;
+const MAX_PARALLEL = 50;
 const MAX_RETRIES = 3;
 
 export default function ParallelTaskProcessor({ onClose, externalTasks = [] }) {
