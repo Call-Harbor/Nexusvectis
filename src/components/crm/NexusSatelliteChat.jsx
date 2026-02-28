@@ -22,6 +22,17 @@ function getInitials(name) {
   return name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
 }
 
+// Generates a consistent 4-digit Nexus ID from a user's database ID
+function getNexusId(userId) {
+  if (!userId) return "0000";
+  let hash = 0;
+  for (let i = 0; i < userId.length; i++) {
+    hash = ((hash << 5) - hash) + userId.charCodeAt(i);
+    hash |= 0;
+  }
+  return String(Math.abs(hash) % 10000).padStart(4, '0');
+}
+
 function Avatar({ name, color = "bg-cyan-500", size = "md", online }) {
   const sizes = { sm: "w-7 h-7 text-[10px]", md: "w-9 h-9 text-xs", lg: "w-12 h-12 text-sm" };
   return (
