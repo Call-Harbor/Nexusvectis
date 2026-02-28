@@ -695,7 +695,7 @@ export default function NexusSatelliteChat({ user: propUser, orgId, customers })
         </div>
 
         {/* Channel list */}
-        <div className="flex-1 overflow-y-auto p-2 space-y-1">
+        <div className="flex-1 overflow-y-auto p-2 space-y-1 pb-0">
           {filteredChannels.length === 0 && (
             <div className="text-center py-10 text-slate-600">
               <MessageSquare className="w-8 h-8 mx-auto mb-2 opacity-50" />
