@@ -494,7 +494,7 @@ Context data: ${JSON.stringify(context)}`;
           messages: [
             { role: 'system', content: systemPrompt },
             ...historyMessages,
-            { role: 'user', content: command }
+            { role: 'user', content: command + '\n\n[SYSTEM NOTE: Use add_context_from_internet=true equivalent — search for live weather, news, satellite, and market data if the user\'s query relates to world events, weather, ports, freight markets, or geopolitical conditions.]' }
           ],
           response_format: { type: 'json_object' },
           temperature: 0.3
