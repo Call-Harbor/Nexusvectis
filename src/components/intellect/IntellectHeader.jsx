@@ -78,7 +78,7 @@ export default function IntellectHeader({ orgId, openWindow, executePrompt, setS
             <DropdownMenuContent align="start" className="bg-slate-900 border-slate-800 max-h-96 overflow-y-auto">
               <DropdownMenuLabel className="text-cyan-400">Communication & Tools</DropdownMenuLabel>
               <DropdownMenuSeparator className="bg-slate-800" />
-              {[['nexus_chat', MessageSquare, 'Chat'], ['document_editor', FileText, 'Document Editor'], ['spreadsheet_editor', BarChart3, 'Spreadsheet'], ['web_browser', Globe, 'Web Browser'], ['profile_search', Search, 'People Intelligence']].map(([type, Icon, label]) => (
+              {[['document_editor', FileText, 'Document Editor'], ['spreadsheet_editor', BarChart3, 'Spreadsheet'], ['web_browser', Globe, 'Web Browser'], ['profile_search', Search, 'People Intelligence']].map(([type, Icon, label]) => (
                 <DropdownMenuItem key={type} onClick={() => openWindow(type)} className="text-slate-300 gap-2"><Icon className="w-4 h-4" />{label}</DropdownMenuItem>
               ))}
               <DropdownMenuLabel className="text-cyan-400 mt-2">Fleet & Operations</DropdownMenuLabel>
