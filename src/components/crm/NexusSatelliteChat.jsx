@@ -412,14 +412,28 @@ export default function NexusSatelliteChat({ user: propUser, orgId, customers })
     queryClient.invalidateQueries({ queryKey: ['nexus-channels'] });
   };
 
-  const startCall = async (channel) => {
-    setActiveCall(channel);
+  const startCall = async (channel, audioOnly = false) => {
+    try {
+      // Request permissions first
+      const constraints = audioOnly ? { audio: true, video: false } : { audio: true, video: true };
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      // Stop the test stream immediately - Jitsi will handle its own
+      stream.getTracks().forEach(t => t.stop());
+    } catch (err) {
+      toast.error(audioOnly
+        ? "Mikrofonadgang nægtet. Tillad mikrofon i browserindstillinger."
+        : "Kamera/mikrofon adgang nægtet. Tillad adgang i browserindstillinger."
+      );
+      return;
+    }
+
+    setActiveCall({ ...channel, audioOnly });
     await base44.entities.NexusMessage.create({
       organization_id: orgId,
       channel_id: channel.id,
       sender_email: user.email,
       sender_name: user.full_name,
-      content: `📹 ${user.full_name} started a video call`,
+      content: audioOnly ? `📞 ${user.full_name} started an audio call` : `📹 ${user.full_name} started a video call`,
       message_type: "call_started"
     });
     queryClient.invalidateQueries({ queryKey: ['nexus-messages'] });
