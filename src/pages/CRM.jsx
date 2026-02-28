@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { 
   Brain, TrendingUp, DollarSign, Users, Target, BarChart3, 
   Plus, Search, Sparkles, RefreshCw, LayoutGrid, List,
-  AlertTriangle, CheckCircle, Clock, MessageSquare, Satellite
+  AlertTriangle, CheckCircle, Clock, MessageSquare
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
