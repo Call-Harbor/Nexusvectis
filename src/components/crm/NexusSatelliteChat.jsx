@@ -45,7 +45,7 @@ function VideoCallModal({ channel, user, onEnd }) {
    useEffect(() => {
      if (!containerRef.current) return;
 
-     const roomName = `nexusvectis-${channel.id}`.replace(/[^a-z0-9-]/gi, '-').toLowerCase();
+     const roomName = channel.roomName || `nexusvectis-${channel.id}`.replace(/[^a-z0-9-]/gi, '-').toLowerCase();
      const displayName = user?.full_name || 'Guest';
 
      const initJitsi = () => {
