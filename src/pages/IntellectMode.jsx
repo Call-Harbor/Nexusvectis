@@ -89,6 +89,7 @@ export default function IntellectMode() {
   const [suggestions, setSuggestions] = useState([]);
   const [showParallelProcessor, setShowParallelProcessor] = useState(false);
   const [focusedWindow, setFocusedWindow] = useState(null);
+  const [parallelProcessorTasks, setParallelProcessorTasks] = useState([]);
 
   const messagesEndRef = useRef(null);
   const queryClient = useQueryClient();
@@ -366,6 +367,9 @@ export default function IntellectMode() {
     setCommandHistory(prev => [...prev, currentCommand]);
     setHistoryIndex(-1);
     base44.analytics.track({ eventName: "fleet_ai_command_sent", properties: { command_length: currentCommand.length, has_files: uploadedFiles.length > 0 } });
+
+    // Add to parallel processor
+    setParallelProcessorTasks(prev => [...prev, currentCommand]);
 
     setMessages(prev => [...prev, { role: "user", content: currentCommand, files: uploadedFiles.length > 0 ? uploadedFiles : undefined }]);
     const currentFiles = [...uploadedFiles];
@@ -717,7 +721,7 @@ export default function IntellectMode() {
               onClose={() => setShowParallelProcessor(false)} onMinimize={() => toggleMinimize('parallel-processor')}
               isMinimized={minimizedWindows.has('parallel-processor')} windowType="parallel_processor"
               isFocused={focusedWindow === 'parallel-processor'} onFocus={setFocusedWindow}>
-              <ParallelTaskProcessor onClose={() => setShowParallelProcessor(false)} />
+              <ParallelTaskProcessor onClose={() => setShowParallelProcessor(false)} externalTasks={parallelProcessorTasks} />
             </HologramWindow>
           )}
 
