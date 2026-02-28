@@ -7,8 +7,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
-const MAX_PARALLEL = 3;
-const TASK_DELAY_MS = 1000;
+const MAX_PARALLEL = 10;
 const MAX_RETRIES = 3;
 
 export default function ParallelTaskProcessor({ onClose, externalTasks = [] }) {
@@ -17,7 +16,6 @@ export default function ParallelTaskProcessor({ onClose, externalTasks = [] }) {
   const [queuedTasks, setQueuedTasks] = useState([]);
   const [completedTasks, setCompletedTasks] = useState([]);
   const taskIdRef = useRef(0);
-  const lastTaskStartRef = useRef(0);
 
   // Add external tasks to the queue
   useEffect(() => {
@@ -37,27 +35,9 @@ export default function ParallelTaskProcessor({ onClose, externalTasks = [] }) {
       return;
     }
 
-    const now = Date.now();
-    const timeSinceLastStart = now - lastTaskStartRef.current;
-    
-    if (timeSinceLastStart < TASK_DELAY_MS) {
-      const delay = TASK_DELAY_MS - timeSinceLastStart;
-      const timer = setTimeout(() => {
-        if (queuedTasks.length > 0 && runningTasks.length < MAX_PARALLEL) {
-          const nextTask = queuedTasks[0];
-          setQueuedTasks(prev => prev.slice(1));
-          setRunningTasks(prev => [...prev, { ...nextTask, status: 'running', retries: 0 }]);
-          lastTaskStartRef.current = Date.now();
-          executeTask(nextTask);
-        }
-      }, delay);
-      return () => clearTimeout(timer);
-    }
-
     const nextTask = queuedTasks[0];
     setQueuedTasks(prev => prev.slice(1));
     setRunningTasks(prev => [...prev, { ...nextTask, status: 'running', retries: 0 }]);
-    lastTaskStartRef.current = Date.now();
     executeTask(nextTask);
   }, [runningTasks.length, queuedTasks]);
 
@@ -106,7 +86,7 @@ export default function ParallelTaskProcessor({ onClose, externalTasks = [] }) {
 
   const handleSubmit = () => {
     if (!inputValue.trim()) {
-      toast.error("Prompt kan ikke være tom");
+      toast.error("Prompt cannot be empty");
       return;
     }
 
@@ -118,6 +98,7 @@ export default function ParallelTaskProcessor({ onClose, externalTasks = [] }) {
 
     setQueuedTasks(prev => [...prev, newTask]);
     setInputValue("");
+    toast.success("Task queued");
   };
 
   const handleKeyDown = (e) => {
@@ -130,7 +111,7 @@ export default function ParallelTaskProcessor({ onClose, externalTasks = [] }) {
   const addBatchPrompts = () => {
     const lines = inputValue.trim().split('\n').filter(l => l.trim());
     if (lines.length === 0) {
-      toast.error("Ingen prompts fundet");
+      toast.error("No prompts found");
       return;
     }
 
@@ -142,7 +123,7 @@ export default function ParallelTaskProcessor({ onClose, externalTasks = [] }) {
 
     setQueuedTasks(prev => [...prev, ...newTasks]);
     setInputValue("");
-    toast.success(`${lines.length} prompts tilføjet til køen`);
+    toast.success(`${lines.length} tasks queued for processing`);
   };
 
   const totalTasks = runningTasks.length + queuedTasks.length + completedTasks.length;
@@ -169,15 +150,15 @@ export default function ParallelTaskProcessor({ onClose, externalTasks = [] }) {
         {/* Stats */}
         <div className="grid grid-cols-4 gap-2 mb-4">
           <div className="p-2 bg-blue-500/10 rounded border border-blue-500/30">
-            <p className="text-[10px] text-blue-400">Kørende</p>
+            <p className="text-[10px] text-blue-400">Running</p>
             <p className="text-white font-bold text-lg">{runningTasks.length}/{MAX_PARALLEL}</p>
           </div>
           <div className="p-2 bg-purple-500/10 rounded border border-purple-500/30">
-            <p className="text-[10px] text-purple-400">Kø</p>
+            <p className="text-[10px] text-purple-400">Queue</p>
             <p className="text-white font-bold text-lg">{queuedTasks.length}</p>
           </div>
           <div className="p-2 bg-emerald-500/10 rounded border border-emerald-500/30">
-            <p className="text-[10px] text-emerald-400">Færdig</p>
+            <p className="text-[10px] text-emerald-400">Completed</p>
             <p className="text-white font-bold text-lg">{completedTasks.length}</p>
           </div>
           <div className="p-2 bg-cyan-500/10 rounded border border-cyan-500/30">
@@ -192,7 +173,7 @@ export default function ParallelTaskProcessor({ onClose, externalTasks = [] }) {
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Skriv prompt og tryk Enter for at sende... (Shift+Enter for nyt linje)"
+            placeholder="Enter prompt and press Enter to send... (Shift+Enter for new line)"
             className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm placeholder:text-slate-500 focus:outline-none focus:border-cyan-500 resize-none h-16 focus:ring-0"
             autoFocus
           />
@@ -216,7 +197,7 @@ export default function ParallelTaskProcessor({ onClose, externalTasks = [] }) {
           <div className="p-4 border-b border-slate-800/50">
             <h4 className="text-cyan-400 font-semibold text-sm mb-3 flex items-center gap-2">
               <Loader2 className="w-4 h-4 animate-spin" />
-              Kørende ({runningTasks.length})
+              Running ({runningTasks.length})
             </h4>
             <div className="space-y-2">
               {runningTasks.map(task => (
@@ -247,7 +228,7 @@ export default function ParallelTaskProcessor({ onClose, externalTasks = [] }) {
         {queuedTasks.length > 0 && (
           <div className="p-4 border-b border-slate-800/50">
             <h4 className="text-purple-400 font-semibold text-sm mb-3 flex items-center gap-2">
-              Køen ({queuedTasks.length})
+              Queue ({queuedTasks.length})
             </h4>
             <div className="space-y-2">
               {queuedTasks.map((task, idx) => (
@@ -257,7 +238,7 @@ export default function ParallelTaskProcessor({ onClose, externalTasks = [] }) {
                   animate={{ opacity: 1, y: 0 }}
                   className="p-3 bg-purple-500/10 border border-purple-500/30 rounded-lg"
                 >
-                  <p className="text-purple-300 text-[10px] font-semibold mb-1">#{idx + 1} i køen</p>
+                  <p className="text-purple-300 text-[10px] font-semibold mb-1">#{idx + 1} in queue</p>
                   <p className="text-white text-xs">{task.prompt}</p>
                 </motion.div>
               ))}
@@ -270,7 +251,7 @@ export default function ParallelTaskProcessor({ onClose, externalTasks = [] }) {
           <div className="p-4">
             <h4 className="text-emerald-400 font-semibold text-sm mb-3 flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4" />
-              Færdig ({completedTasks.length})
+              Completed ({completedTasks.length})
             </h4>
             <div className="space-y-2">
               {completedTasks.map(task => (
@@ -301,7 +282,7 @@ export default function ParallelTaskProcessor({ onClose, externalTasks = [] }) {
                       <p className="font-semibold text-emerald-300">{task.result.summary}</p>
                       {task.result.recommendations?.length > 0 && (
                         <div>
-                          <p className="text-emerald-400 font-semibold">Anbefalinger:</p>
+                          <p className="text-emerald-400 font-semibold">Recommendations:</p>
                           {task.result.recommendations.slice(0, 2).map((rec, i) => (
                             <p key={i} className="ml-2">• {rec}</p>
                           ))}
@@ -309,10 +290,10 @@ export default function ParallelTaskProcessor({ onClose, externalTasks = [] }) {
                       )}
                     </div>
                   )}
-                  
+
                   {task.status === 'error' && (
                     <div className="ml-6 text-[10px] text-red-300">
-                      Fejl: {task.error}
+                      Error: {task.error}
                     </div>
                   )}
                 </motion.div>
@@ -326,7 +307,7 @@ export default function ParallelTaskProcessor({ onClose, externalTasks = [] }) {
           <div className="flex-1 flex items-center justify-center text-slate-500">
             <div className="text-center">
               <Zap className="w-12 h-12 mx-auto mb-3 opacity-30" />
-              <p className="text-sm">Skriv en prompt for at starte</p>
+              <p className="text-sm">Enter a prompt to start</p>
             </div>
           </div>
         )}
