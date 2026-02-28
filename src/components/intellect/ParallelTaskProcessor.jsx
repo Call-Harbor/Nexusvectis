@@ -7,7 +7,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
-const MAX_PARALLEL = 10;
+const MAX_PARALLEL = 3;
+const TASK_DELAY_MS = 1000;
+const MAX_RETRIES = 3;
 
 export default function ParallelTaskProcessor({ onClose, externalTasks = [] }) {
   const [inputValue, setInputValue] = useState("");
@@ -15,6 +17,7 @@ export default function ParallelTaskProcessor({ onClose, externalTasks = [] }) {
   const [queuedTasks, setQueuedTasks] = useState([]);
   const [completedTasks, setCompletedTasks] = useState([]);
   const taskIdRef = useRef(0);
+  const lastTaskStartRef = useRef(0);
 
   // Add external tasks to the queue
   useEffect(() => {
@@ -34,14 +37,31 @@ export default function ParallelTaskProcessor({ onClose, externalTasks = [] }) {
       return;
     }
 
+    const now = Date.now();
+    const timeSinceLastStart = now - lastTaskStartRef.current;
+    
+    if (timeSinceLastStart < TASK_DELAY_MS) {
+      const delay = TASK_DELAY_MS - timeSinceLastStart;
+      const timer = setTimeout(() => {
+        if (queuedTasks.length > 0 && runningTasks.length < MAX_PARALLEL) {
+          const nextTask = queuedTasks[0];
+          setQueuedTasks(prev => prev.slice(1));
+          setRunningTasks(prev => [...prev, { ...nextTask, status: 'running', retries: 0 }]);
+          lastTaskStartRef.current = Date.now();
+          executeTask(nextTask);
+        }
+      }, delay);
+      return () => clearTimeout(timer);
+    }
+
     const nextTask = queuedTasks[0];
     setQueuedTasks(prev => prev.slice(1));
-    setRunningTasks(prev => [...prev, { ...nextTask, status: 'running' }]);
-
+    setRunningTasks(prev => [...prev, { ...nextTask, status: 'running', retries: 0 }]);
+    lastTaskStartRef.current = Date.now();
     executeTask(nextTask);
   }, [runningTasks.length, queuedTasks]);
 
-  const executeTask = async (task) => {
+  const executeTask = async (task, retryCount = 0) => {
     try {
       const result = await base44.integrations.Core.InvokeLLM({
         prompt: task.prompt,
@@ -65,6 +85,15 @@ export default function ParallelTaskProcessor({ onClose, externalTasks = [] }) {
         timestamp: new Date().toLocaleTimeString()
       }]);
     } catch (error) {
+      const isRateLimit = error.message.includes('rate') || error.message.includes('Rate');
+      
+      // Retry on rate limit with exponential backoff
+      if (isRateLimit && retryCount < MAX_RETRIES) {
+        const backoffMs = 2000 * Math.pow(2, retryCount);
+        await new Promise(resolve => setTimeout(resolve, backoffMs));
+        return executeTask(task, retryCount + 1);
+      }
+
       setRunningTasks(prev => prev.filter(t => t.id !== task.id));
       setCompletedTasks(prev => [...prev, {
         ...task,
