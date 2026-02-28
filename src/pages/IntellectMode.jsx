@@ -824,7 +824,7 @@ Return JSON with this EXACT structure:
     "reliability": "99.2%"
   }
 }`,
-          add_context_from_internet: false,
+          add_context_from_internet: true,
           response_json_schema: {
             type: "object",
             properties: {
