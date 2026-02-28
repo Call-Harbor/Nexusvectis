@@ -7,7 +7,7 @@ import {
   Plus, Search, Users, Lock, Satellite, Shield, X, ChevronLeft,
   MoreVertical, Paperclip, Smile, Hash, User, Volume2, VolumeX,
   Monitor, Camera, CameraOff, Maximize2, Minimize2, Settings, Sparkles,
-  Brain, Wand2
+  Brain, Wand2, Trash2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
