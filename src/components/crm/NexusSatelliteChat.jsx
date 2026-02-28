@@ -154,14 +154,12 @@ function NewChannelModal({ customers, user, orgId, onClose, onCreated }) {
 
    // Merge: platform users (exclude self) + customers, deduplicate by email
    const internalUsers = allUsers
-     .filter(u => u.email !== user?.email && u.organization_id === orgId)
-     .map(u => ({ id: `user_${u.id}`, name: u.full_name, email: u.email, _source: 'user', _orgId: u.organization_id, _internal: true }));
+     .filter(u => u.email !== user?.email)
+     .map(u => ({ id: `user_${u.id}`, name: u.full_name, email: u.email, _source: 'user', _internal: true }));
 
-   const externalUsers = allUsers
-     .filter(u => u.email !== user?.email && u.organization_id !== orgId)
-     .map(u => ({ id: `user_${u.id}`, name: u.full_name, email: u.email, _source: 'user', _orgId: u.organization_id, _internal: false }));
+   const externalUsers = [];
 
-   const platformContacts = showExternal ? [...internalUsers, ...externalUsers] : internalUsers;
+   const platformContacts = internalUsers;
 
    const customerContacts = customers
      .map(c => ({ id: `cust_${c.id}`, name: c.name, email: c.email, company: c.company, _source: 'customer', _orgId: orgId }));
