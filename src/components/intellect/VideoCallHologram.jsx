@@ -64,17 +64,12 @@ export default function VideoCallHologram({ videoUrl, onClose }) {
   const handleAddUrl = () => {
     if (validateVideoUrl(urlInput)) {
       const iframeUrl = convertUrlToIframeCompatible(urlInput);
-      if (iframeUrl === null) {
-        toast.error("This platform requires opening in a new window");
-        window.open(urlInput, '_blank');
-      } else {
-        setCurrentUrl(iframeUrl);
-        setUrlInput("");
-        setIsValidUrl(false);
-        toast.success("Video call loaded");
-      }
+      setCurrentUrl(iframeUrl || urlInput);
+      setUrlInput("");
+      setIsValidUrl(false);
+      toast.success("Møde indlæst");
     } else {
-      toast.error("Invalid video call URL. Supported: Teams, Zoom, Meet, Webex, Whereby, Jitsi");
+      toast.error("Ugyldigt link");
     }
   };
 
