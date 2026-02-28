@@ -691,6 +691,14 @@ export default function NexusSatelliteChat({ user: propUser, orgId, customers })
                 <Badge className="text-[9px] bg-violet-500/20 text-violet-400 border-violet-500/30 flex-shrink-0">GROUP</Badge>
               )}
             </button>
+            <button
+              onClick={(e) => deleteChannel(ch, e)}
+              className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-red-600/30 text-slate-500 hover:text-red-400 transition-all flex-shrink-0 ml-1"
+              title="Slet samtale"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
+            </div>
           );
           })}
         </div>
