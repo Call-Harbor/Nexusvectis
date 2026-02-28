@@ -425,7 +425,6 @@ export default function IntellectMode() {
 
         setMessages(prev => prev.filter(m => !m.streaming));
         const { reply, action, parameters, message, open_window } = mistralResponse;
-        setRetryCount?.(0);
 
         try {
           await base44.entities.FleetAIUsage.create({ organization_id: userOrgId, user_email: user.email, command: currentCommand, action, success: true });
