@@ -2334,11 +2334,79 @@ Return JSON with this EXACT structure:
           )}
 
           {/* Minimized Windows Stack */}
-                  <MinimizedWindowsBar
-                    activeWindows={activeWindows}
-                    minimizedWindows={minimizedWindows}
-                    onRestore={toggleMinimize}
-                  />
+                  <div className="fixed bottom-4 left-4 flex flex-col gap-2 z-40">
+                    <AnimatePresence>
+                      {activeWindows
+                        .filter(w => minimizedWindows.has(w.id))
+                        .map((window) => {
+                          const Icon = window.type === 'fleet' ? Truck :
+                            window.type === 'alerts' ? AlertTriangle :
+                            window.type === 'routes' ? Route :
+                            window.type === 'shipments' ? Package :
+                            window.type === 'dashboard' ? LayoutDashboard :
+                            window.type === 'settings' ? Settings :
+                            window.type === 'aioptimization' ? Sparkles :
+                            window.type === 'invoices' ? FileText :
+                            window.type === 'apidocs' ? FileText :
+                            window.type === 'resources' ? Warehouse :
+                            window.type === 'warehouseautomation' ? Warehouse :
+                            window.type === 'demandforecasting' ? TrendingUp :
+                            window.type === 'greentms' ? Activity :
+                            window.type === 'gpsintegration' ? Satellite :
+                            window.type === 'assignment' ? Route :
+                            window.type === 'routeeditor' ? Route :
+                            window.type === 'swarm_intelligence' ? Network :
+                            window.type === 'neuro_risk' ? Shield :
+                            window.type === 'digital_twin' ? Globe :
+                            window.type === 'video_call' ? Video :
+                            window.type === 'document_editor' ? FileText :
+                            window.type === 'spreadsheet_editor' ? BarChart3 :
+                            window.type.startsWith('chart_') ? BarChart3 : Activity;
+
+                                   const title = window.type.startsWith('chart_') ? (window.data?.chartConfig?.title || 'Analysis Chart') :
+                            window.type === 'fleet' ? 'Fleet' :
+                            window.type === 'alerts' ? 'Alerts' :
+                            window.type === 'routes' ? 'Routes' :
+                            window.type === 'shipments' ? 'Shipments' :
+                            window.type === 'dashboard' ? 'Dashboard' :
+                            window.type === 'settings' ? 'Settings' :
+                            window.type === 'aioptimization' ? 'AI Optimization' :
+                            window.type === 'invoices' ? 'Invoices' :
+                            window.type === 'apidocs' ? 'API Docs' :
+                            window.type === 'resources' ? 'Resources' :
+                            window.type === 'warehouseautomation' ? 'Warehouse Automation' :
+                            window.type === 'demandforecasting' ? 'Demand Forecasting' :
+                            window.type === 'greentms' ? 'Green TMS' :
+                            window.type === 'gpsintegration' ? 'GPS Integration' :
+                            window.type === 'assignment' ? 'Assignments' :
+                            window.type === 'routeeditor' ? 'Route Editor' :
+                            window.type === 'swarm_intelligence' ? '🐜 Swarm Intelligence' :
+                            window.type === 'neuro_risk' ? '🧠 Neuro-Symbolic Risk' :
+                            window.type === 'digital_twin' ? '🌐 Digital Twin Federation' :
+                            window.type === 'video_call' ? '📞 Video Call' :
+                            window.type === 'document_editor' ? '📄 Document Editor' :
+                            window.type === 'spreadsheet_editor' ? '📊 Spreadsheet Editor' :
+                            window.type === 'nexus_chat' ? '🛰️ Nexus Satellite Chat' : '';
+
+                          return (
+                            <motion.div
+                              key={window.id}
+                              initial={{ scale: 0, opacity: 0 }}
+                              animate={{ scale: 1, opacity: 1 }}
+                              exit={{ scale: 0, opacity: 0 }}
+                            >
+                              <Button
+                                onClick={() => toggleMinimize(window.id)}
+                                className="bg-gradient-to-r from-cyan-500/30 to-violet-500/30 border-2 border-cyan-500/50 backdrop-blur-xl hover:from-cyan-500/40 hover:to-violet-500/40 shadow-lg shadow-cyan-500/20 text-xs sm:text-sm"
+                              >
+                                <Icon className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-cyan-400" />
+                                <span className="text-white font-medium">{title}</span>
+                              </Button>
+                            </motion.div>
+                          );
+                        })}
+                    </AnimatePresence>
+                  </div>
 
                   {/* Hologram Windows */}
                   <AnimatePresence>
