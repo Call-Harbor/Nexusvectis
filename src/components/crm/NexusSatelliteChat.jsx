@@ -484,10 +484,8 @@ export default function NexusSatelliteChat({ user: propUser, orgId, customers })
 
   const startCall = async (channel, audioOnly = false) => {
     try {
-      // Request permissions first
       const constraints = audioOnly ? { audio: true, video: false } : { audio: true, video: true };
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      // Stop the test stream immediately - Jitsi will handle its own
       stream.getTracks().forEach(t => t.stop());
     } catch (err) {
       toast.error(audioOnly
@@ -497,31 +495,90 @@ export default function NexusSatelliteChat({ user: propUser, orgId, customers })
       return;
     }
 
-    setActiveCall({ ...channel, audioOnly });
+    const roomName = `nexusvectis-${channel.id}`.replace(/[^a-z0-9-]/gi, '-').toLowerCase();
+
+    // Send ringing invite to other members
     await base44.entities.NexusMessage.create({
       organization_id: orgId,
       channel_id: channel.id,
       sender_email: user.email,
       sender_name: user.full_name,
-      content: audioOnly ? `📞 ${user.full_name} started an audio call` : `📹 ${user.full_name} started a video call`,
-      message_type: "call_started"
+      content: audioOnly ? `📞 ${user.full_name} ringer...` : `📹 ${user.full_name} starter et videoopkald...`,
+      message_type: "call_invite",
+      call_type: audioOnly ? 'audio' : 'video',
+      room_name: roomName,
+      channel_name: channel.name,
     });
+
+    setActiveCall({ ...channel, audioOnly, roomName });
     queryClient.invalidateQueries({ queryKey: ['nexus-messages'] });
   };
 
   const endCall = async () => {
     if (activeCall) {
+      // Cancel the invite so others dismiss the ringing UI
       await base44.entities.NexusMessage.create({
         organization_id: orgId,
         channel_id: activeCall.id,
         sender_email: user.email,
         sender_name: user.full_name,
-        content: `📵 Call ended`,
+        content: `📵 Opkald afsluttet`,
+        message_type: "call_cancelled"
+      });
+      // Post a visible "call ended" system message
+      await base44.entities.NexusMessage.create({
+        organization_id: orgId,
+        channel_id: activeCall.id,
+        sender_email: user.email,
+        sender_name: user.full_name,
+        content: `📵 Opkald afsluttet`,
         message_type: "call_ended"
       });
       queryClient.invalidateQueries({ queryKey: ['nexus-messages'] });
     }
     setActiveCall(null);
+  };
+
+  const acceptCall = async () => {
+    if (!incomingCall) return;
+    const ch = incomingCall.channel;
+    const audioOnly = incomingCall.call_type === 'audio';
+
+    try {
+      const constraints = audioOnly ? { audio: true, video: false } : { audio: true, video: true };
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      stream.getTracks().forEach(t => t.stop());
+    } catch (err) {
+      toast.error("Adgang til mikrofon/kamera nægtet.");
+      setIncomingCall(null);
+      return;
+    }
+
+    setIncomingCall(null);
+    setActiveCall({ ...ch, audioOnly, roomName: incomingCall.room_name });
+
+    await base44.entities.NexusMessage.create({
+      organization_id: orgId,
+      channel_id: ch.id,
+      sender_email: user.email,
+      sender_name: user.full_name,
+      content: `${user.full_name} svarede opkaldet`,
+      message_type: "call_accepted"
+    });
+    queryClient.invalidateQueries({ queryKey: ['nexus-messages'] });
+  };
+
+  const declineCall = async () => {
+    if (!incomingCall) return;
+    await base44.entities.NexusMessage.create({
+      organization_id: orgId,
+      channel_id: incomingCall.channel_id,
+      sender_email: user.email,
+      sender_name: user.full_name,
+      content: `${user.full_name} afviste opkaldet`,
+      message_type: "call_declined"
+    });
+    setIncomingCall(null);
   };
 
   const filteredChannels = channels.filter(c =>
