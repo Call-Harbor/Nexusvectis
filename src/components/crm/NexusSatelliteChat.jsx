@@ -664,8 +664,8 @@ export default function NexusSatelliteChat({ user: propUser, orgId, customers })
           {filteredChannels.map(ch => {
             const unreadCount = unreadChannels[ch.id] || 0;
             return (
-            <button key={ch.id} onClick={() => selectChannel(ch)}
-              className={`w-full flex items-center gap-3 p-2.5 rounded-xl transition-all text-left ${activeChannel?.id === ch.id ? 'bg-cyan-600/20 border border-cyan-500/30' : 'hover:bg-slate-800/60'}`}>
+            <div key={ch.id} className={`group relative flex items-center gap-3 p-2.5 rounded-xl transition-all ${activeChannel?.id === ch.id ? 'bg-cyan-600/20 border border-cyan-500/30' : 'hover:bg-slate-800/60'}`}>
+            <button onClick={() => selectChannel(ch)} className="flex items-center gap-3 flex-1 text-left min-w-0">
               <div className="relative">
                 {ch.type === 'group' ? (
                   <div className="w-9 h-9 bg-gradient-to-br from-violet-600 to-cyan-600 rounded-full flex items-center justify-center">
