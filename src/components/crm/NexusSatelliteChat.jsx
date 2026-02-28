@@ -316,6 +316,49 @@ function NewChannelModal({ customers, user, orgId, onClose, onCreated }) {
 }
 
 // ──────────────────────────────────────────────
+// INCOMING CALL NOTIFICATION
+// ──────────────────────────────────────────────
+function IncomingCallNotification({ invite, onAccept, onDecline }) {
+  const isVideo = invite.call_type !== 'audio';
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9, y: -20 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.9, y: -20 }}
+      className="fixed top-6 right-6 z-[200] bg-slate-900 border border-cyan-500/40 rounded-2xl shadow-2xl p-5 w-80"
+    >
+      <div className="flex items-center gap-4 mb-4">
+        <div className="relative">
+          <div className="w-14 h-14 bg-gradient-to-br from-cyan-500 to-violet-500 rounded-full flex items-center justify-center text-white font-bold text-lg">
+            {getInitials(invite.caller_name)}
+          </div>
+          <div className="absolute inset-0 rounded-full border-2 border-cyan-400 animate-ping opacity-50" />
+        </div>
+        <div>
+          <p className="text-white font-bold text-sm">{invite.caller_name}</p>
+          <p className="text-slate-400 text-xs">{isVideo ? '📹 Indkommende videoopkald' : '📞 Indkommende lydopkald'}</p>
+          <p className="text-slate-500 text-xs truncate">{invite.channel_name}</p>
+        </div>
+      </div>
+      <div className="flex gap-3">
+        <button
+          onClick={onDecline}
+          className="flex-1 py-2.5 rounded-xl bg-red-600/20 hover:bg-red-600/40 text-red-400 font-medium text-sm transition-all flex items-center justify-center gap-2"
+        >
+          <PhoneOff className="w-4 h-4" /> Afvis
+        </button>
+        <button
+          onClick={onAccept}
+          className="flex-1 py-2.5 rounded-xl bg-emerald-600/80 hover:bg-emerald-600 text-white font-medium text-sm transition-all flex items-center justify-center gap-2"
+        >
+          {isVideo ? <Video className="w-4 h-4" /> : <Phone className="w-4 h-4" />} Svar
+        </button>
+      </div>
+    </motion.div>
+  );
+}
+
+// ──────────────────────────────────────────────
 // MAIN CHAT COMPONENT
 // ──────────────────────────────────────────────
 export default function NexusSatelliteChat({ user: propUser, orgId, customers }) {
@@ -323,6 +366,7 @@ export default function NexusSatelliteChat({ user: propUser, orgId, customers })
    const [message, setMessage] = useState("");
    const [showNewChannel, setShowNewChannel] = useState(false);
    const [activeCall, setActiveCall] = useState(null);
+   const [incomingCall, setIncomingCall] = useState(null);
    const [searchChannels, setSearchChannels] = useState("");
    const [mobileShowChat, setMobileShowChat] = useState(false);
    const [unreadChannels, setUnreadChannels] = useState({});
