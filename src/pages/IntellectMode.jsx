@@ -530,7 +530,7 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
 
         switch (action) {
           case "OPEN_WINDOW": {
-            const validWindows = ['fleet', 'alerts', 'routes', 'shipments', 'dashboard', 'settings', 'aioptimization', 'invoices', 'apidocs', 'resources', 'warehouseautomation', 'demandforecasting', 'greentms', 'gpsintegration', 'assignment', 'routeeditor', 'document_editor', 'spreadsheet_editor'];
+            const validWindows = ['fleet', 'alerts', 'routes', 'shipments', 'dashboard', 'settings', 'aioptimization', 'invoices', 'apidocs', 'resources', 'warehouseautomation', 'demandforecasting', 'greentms', 'gpsintegration', 'assignment', 'routeeditor', 'document_editor', 'spreadsheet_editor', 'satellite_weather', 'deep_analysis', 'swarm_intelligence', 'neuro_risk', 'digital_twin'];
             if (parameters.window_type && validWindows.includes(parameters.window_type)) {
               openWindow(parameters.window_type);
               setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
