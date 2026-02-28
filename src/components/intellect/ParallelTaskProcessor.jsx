@@ -9,12 +9,24 @@ import { toast } from "sonner";
 
 const MAX_PARALLEL = 10;
 
-export default function ParallelTaskProcessor({ onClose }) {
+export default function ParallelTaskProcessor({ onClose, externalTasks = [] }) {
   const [inputValue, setInputValue] = useState("");
   const [runningTasks, setRunningTasks] = useState([]);
   const [queuedTasks, setQueuedTasks] = useState([]);
   const [completedTasks, setCompletedTasks] = useState([]);
   const taskIdRef = useRef(0);
+
+  // Add external tasks to the queue
+  useEffect(() => {
+    if (externalTasks.length > 0) {
+      const newTasks = externalTasks.map(task => ({
+        id: taskIdRef.current++,
+        prompt: task,
+        status: 'queued'
+      }));
+      setQueuedTasks(prev => [...prev, ...newTasks]);
+    }
+  }, [externalTasks]);
 
   // Process queue when a task completes or we have space
   useEffect(() => {
