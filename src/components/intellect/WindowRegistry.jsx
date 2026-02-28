@@ -36,6 +36,7 @@ export const WINDOW_META = {
   deep_analysis: { title: 'Deep Analysis Engine', icon: Activity },
   course_ai: { title: 'AI Learning Engine', icon: Sparkles },
   global_search: { title: 'Global Search', icon: Satellite },
+  web_browser: { title: '🌐 Web Browser', icon: Globe },
   parallel_processor: { title: 'Parallel Task Processor', icon: Zap },
 };
 
