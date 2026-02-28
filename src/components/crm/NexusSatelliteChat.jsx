@@ -586,7 +586,7 @@ export default function NexusSatelliteChat({ user: propUser, orgId, customers })
                 <button onClick={() => startCall(activeChannel)} className="p-2 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-400 transition-all" title="Start video call">
                   <Video className="w-4 h-4" />
                 </button>
-                <button className="p-2 rounded-xl bg-slate-700/50 hover:bg-slate-700 text-slate-400 hover:text-white transition-all">
+                <button onClick={() => startCall(activeChannel, true)} className="p-2 rounded-xl bg-blue-600/20 hover:bg-blue-600/40 text-blue-400 hover:text-white transition-all" title="Start audio call">
                   <Phone className="w-4 h-4" />
                 </button>
               </div>
