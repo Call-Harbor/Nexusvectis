@@ -4,7 +4,7 @@ import { createPageUrl } from "../../utils";
 import {
   Brain, Sparkles, Zap, Activity, LayoutDashboard, Search,
   MessageSquare, FileText, BarChart3, Truck, AlertTriangle, Route,
-  Package, Warehouse, Users, Satellite, ChevronDown, GraduationCap, FileCode, Globe
+  Package, Warehouse, Users, Satellite, ChevronDown, GraduationCap, FileCode, Globe, Video
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
