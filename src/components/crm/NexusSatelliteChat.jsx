@@ -761,7 +761,7 @@ export default function NexusSatelliteChat({ user: propUser, orgId, customers })
               </div>
               <div className="min-w-0">
                 <p className="text-white text-[10px] font-semibold truncate">{user.full_name || user.email}</p>
-                <p className="text-slate-500 text-[10px] font-mono">Nexus ID: <span className="text-cyan-400 font-bold">#{getNexusId(user.id || user.email)}</span></p>
+                <p className="text-slate-500 text-[10px] font-mono">Nexus ID: <span className="text-cyan-400 font-bold">#{getNexusId(currentUserId || user.email)}</span></p>
               </div>
             </div>
           </div>
