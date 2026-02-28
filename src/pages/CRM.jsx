@@ -228,10 +228,6 @@ export default function CRM() {
         {view === 'insights' && (
           <CRMAIInsights deals={deals} customers={customers} />
         )}
-
-        {view === 'chat' && (
-          <NexusSatelliteChat user={user} orgId={user?.organization_id} customers={customers} />
-        )}
       </div>
 
       {/* Deal Editor Modal */}
