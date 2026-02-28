@@ -808,11 +808,8 @@ export default function NexusSatelliteChat({ user: propUser, orgId, customers })
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <button onClick={() => startCall(activeChannel)} className="p-2 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-400 transition-all" title="Start video call">
+                <button onClick={() => startCall(activeChannel)} className="p-2 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-400 transition-all" title="Start call">
                   <Video className="w-4 h-4" />
-                </button>
-                <button onClick={() => startCall(activeChannel, true)} className="p-2 rounded-xl bg-blue-600/20 hover:bg-blue-600/40 text-blue-400 hover:text-white transition-all" title="Start audio call">
-                  <Phone className="w-4 h-4" />
                 </button>
               </div>
             </div>
