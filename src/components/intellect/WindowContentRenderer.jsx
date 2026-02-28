@@ -269,12 +269,6 @@ export default function WindowContentRenderer({ type, data, vehicles, routes, sh
   if (type === 'document_editor') return <AIDocumentEditor />;
   if (type === 'spreadsheet_editor') return <AISpreadsheetEditor />;
 
-  if (type === 'nexus_chat') return (
-    <div className="w-full h-full overflow-hidden">
-      <NexusSatelliteChat propUser={currentUser} orgId={orgId} customers={customers} />
-    </div>
-  );
-
   if (type.startsWith('chart_')) {
     return <ChartWindow data={data?.chartData} config={data?.chartConfig} />;
   }
