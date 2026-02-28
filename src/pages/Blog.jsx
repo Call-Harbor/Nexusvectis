@@ -61,140 +61,17 @@ export default function Blog() {
             </p>
           </motion.div>
 
-          {/* Categories */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="flex flex-wrap items-center justify-center gap-3 mb-16"
+            className="flex justify-center mt-8"
           >
-            {categories.map((cat, idx) => (
-              <button
-                key={idx}
-                className={`px-6 py-2 rounded-full text-sm font-semibold transition-all ${
-                  idx === 0 
-                    ? "bg-cyan-500 text-white" 
-                    : "bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white border border-white/10"
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </motion.div>
-
-          {/* Featured Post */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="mb-20"
-          >
-            <div className="relative rounded-[3rem] overflow-hidden bg-white/5 border border-white/10 hover:border-cyan-500/50 transition-all group">
-              <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/20 to-violet-500/20 opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="relative grid md:grid-cols-2 gap-0">
-                <div className="h-[400px] bg-cover bg-center" style={{ backgroundImage: `url(${featuredPost.image})` }} />
-                <div className="p-12 flex flex-col justify-center">
-                  <div className="flex items-center gap-3 mb-4">
-                    <span className="px-4 py-1 rounded-full bg-amber-500/20 text-amber-400 text-sm font-semibold">
-                      {featuredPost.category}
-                    </span>
-                    <span className="text-slate-400 text-sm">FEATURED</span>
-                  </div>
-                  <h2 className="text-4xl font-bold text-white mb-4 group-hover:text-cyan-400 transition-colors">
-                    {featuredPost.title}
-                  </h2>
-                  <p className="text-slate-300 text-lg mb-6 leading-relaxed">
-                    {featuredPost.excerpt}
-                  </p>
-                  <div className="flex items-center gap-6 text-slate-400 text-sm mb-6">
-                    <div className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4" />
-                      {featuredPost.date}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4" />
-                      {featuredPost.readTime}
-                    </div>
-                  </div>
-                  <button className="text-cyan-400 font-semibold flex items-center gap-2 group-hover:gap-4 transition-all">
-                    Read Full Story
-                    <ArrowRight className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
+            <div className="rounded-3xl bg-white/5 border border-white/10 px-16 py-20 text-center max-w-xl">
+              <FileText className="w-14 h-14 text-cyan-400 mx-auto mb-6 opacity-60" />
+              <h2 className="text-2xl font-bold text-white mb-3">Ingen indlæg endnu</h2>
+              <p className="text-slate-400">Vi arbejder på spændende indhold. Tilmeld dig nyhedsbrevet herunder for at blive den første til at vide det.</p>
             </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* All Posts */}
-      <section className="relative py-20 px-6 z-10">
-        <div className="max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="mb-12"
-          >
-            <h2 className="text-4xl font-bold text-white">Latest Articles</h2>
-          </motion.div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {posts.map((post, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.05 }}
-                className="rounded-3xl overflow-hidden bg-white/5 border border-white/10 hover:border-cyan-500/50 transition-all group"
-              >
-                <div 
-                  className="h-48 bg-cover bg-center"
-                  style={{ backgroundImage: `url(${post.image})` }}
-                />
-                <div className="p-8">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Tag className="w-4 h-4 text-cyan-400" />
-                    <span className="text-cyan-400 text-sm font-semibold">{post.category}</span>
-                  </div>
-                  <h3 className="text-2xl font-bold text-white mb-4 group-hover:text-cyan-400 transition-colors leading-tight">
-                    {post.title}
-                  </h3>
-                  <p className="text-slate-400 mb-6 leading-relaxed">
-                    {post.excerpt}
-                  </p>
-                  <div className="flex items-center justify-between text-slate-500 text-sm mb-6">
-                    <div className="flex items-center gap-2">
-                      <User className="w-4 h-4" />
-                      {post.author}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4" />
-                      {post.readTime}
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-400 text-sm">{post.date}</span>
-                    <button className="text-cyan-400 font-semibold flex items-center gap-2 group-hover:gap-3 transition-all">
-                      Read
-                      <ArrowRight className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mt-16"
-          >
-            <button className="px-8 py-4 rounded-xl bg-white/5 border border-white/10 hover:border-cyan-500/50 text-white font-semibold hover:scale-105 transition-all">
-              Load More Articles
-            </button>
           </motion.div>
         </div>
       </section>
