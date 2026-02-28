@@ -69,8 +69,8 @@ export default function Blog() {
           >
             <div className="rounded-3xl bg-white/5 border border-white/10 px-16 py-20 text-center max-w-xl">
               <FileText className="w-14 h-14 text-cyan-400 mx-auto mb-6 opacity-60" />
-              <h2 className="text-2xl font-bold text-white mb-3">Ingen indlæg endnu</h2>
-              <p className="text-slate-400">Vi arbejder på spændende indhold. Tilmeld dig nyhedsbrevet herunder for at blive den første til at vide det.</p>
+              <h2 className="text-2xl font-bold text-white mb-3">No posts yet</h2>
+              <p className="text-slate-400">We're working on great content. Subscribe to the newsletter below to be the first to know.</p>
             </div>
           </motion.div>
         </div>
