@@ -552,6 +552,7 @@ export default function NexusSatelliteChat({ user: propUser, orgId, customers })
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       stream.getTracks().forEach(t => t.stop());
     } catch (err) {
+      console.error('Media permission error:', err);
       toast.error(audioOnly
         ? "Mikrofonadgang nægtet. Tillad mikrofon i browserindstillinger."
         : "Kamera/mikrofon adgang nægtet. Tillad adgang i browserindstillinger."
@@ -559,23 +560,28 @@ export default function NexusSatelliteChat({ user: propUser, orgId, customers })
       return;
     }
 
-    const roomName = `nexusvectis-${channel.id}`.replace(/[^a-z0-9-]/gi, '-').toLowerCase();
+    try {
+      const roomName = `nexusvectis-${channel.id}`.replace(/[^a-z0-9-]/gi, '-').toLowerCase();
 
-    // Send ringing invite to other members
-    await base44.entities.NexusMessage.create({
-      organization_id: orgId,
-      channel_id: channel.id,
-      sender_email: user.email,
-      sender_name: user.full_name,
-      content: audioOnly ? `📞 ${user.full_name} ringer...` : `📹 ${user.full_name} starter et videoopkald...`,
-      message_type: "call_invite",
-      call_type: audioOnly ? 'audio' : 'video',
-      room_name: roomName,
-      channel_name: channel.name,
-    });
+      // Send ringing invite to other members
+      await base44.entities.NexusMessage.create({
+        organization_id: orgId,
+        channel_id: channel.id,
+        sender_email: user.email,
+        sender_name: user.full_name,
+        content: audioOnly ? `📞 ${user.full_name} ringer...` : `📹 ${user.full_name} starter et videoopkald...`,
+        message_type: "call_invite",
+        call_type: audioOnly ? 'audio' : 'video',
+        room_name: roomName,
+        channel_name: channel.name,
+      });
 
-    setActiveCall({ ...channel, audioOnly, roomName });
-    queryClient.invalidateQueries({ queryKey: ['nexus-messages'] });
+      setActiveCall({ ...channel, audioOnly, roomName });
+      queryClient.invalidateQueries({ queryKey: ['nexus-messages'] });
+    } catch (err) {
+      console.error('Call creation error:', err);
+      toast.error("Fejl ved start af opkald. Prøv igen.");
+    }
   };
 
   const endCall = async () => {
