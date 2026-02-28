@@ -1,7 +1,7 @@
 import { 
   Truck, AlertTriangle, Route, Package, LayoutDashboard, Settings, Sparkles, 
   FileText, Warehouse, TrendingUp, Activity, Satellite, Network, Shield, 
-  Globe, Video, MessageSquare, BarChart3, Zap, Users
+  Globe, MessageSquare, BarChart3, Zap, Users
 } from "lucide-react";
 
 export const WINDOW_META = {
@@ -24,7 +24,6 @@ export const WINDOW_META = {
   swarm_intelligence: { title: '🐜 Swarm Intelligence', icon: Network },
   neuro_risk: { title: '🧠 Neuro-Symbolic Risk', icon: Shield },
   digital_twin: { title: '🌐 Digital Twin Federation', icon: Globe },
-  video_call: { title: '📞 Video Call', icon: Video },
   document_editor: { title: '📄 Document Editor', icon: FileText },
   spreadsheet_editor: { title: '📊 Spreadsheet Editor', icon: BarChart3 },
   nexus_chat: { title: '🛰️ Nexus Satellite Chat', icon: MessageSquare },
