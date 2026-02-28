@@ -148,7 +148,7 @@ function VideoCallModal({ channel, user, onEnd }) {
 // ──────────────────────────────────────────────
 // NEW CHANNEL MODAL
 // ──────────────────────────────────────────────
-function NewChannelModal({ customers, user, orgId, onClose, onCreated }) {
+function NewChannelModal({ customers, user, orgId, onClose, onCreated, setCurrentUserId }) {
    const [type, setType] = useState("direct");
    const [selectedContacts, setSelectedContacts] = useState([]);
    const [groupName, setGroupName] = useState("");
