@@ -40,6 +40,7 @@ function Avatar({ name, color = "bg-cyan-500", size = "md", online }) {
 function VideoCallModal({ channel, user, onEnd }) {
    const containerRef = useRef(null);
    const jitsiRef = useRef(null);
+   const audioOnly = channel.audioOnly || false;
 
    useEffect(() => {
      if (!containerRef.current) return;
@@ -57,7 +58,7 @@ function VideoCallModal({ channel, user, onEnd }) {
        },
        configOverwrite: {
          startWithAudioMuted: false,
-         startWithVideoMuted: false,
+         startWithVideoMuted: audioOnly,
          prejoinPageEnabled: false,
          disableThirdPartyRequests: false
        },
