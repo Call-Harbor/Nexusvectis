@@ -4,7 +4,6 @@ import {
   Sparkles, AlertTriangle, TrendingUp, Zap, Activity, Brain
 } from "lucide-react";
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area } from 'recharts';
-import NexusSatelliteChat from "@/components/crm/NexusSatelliteChat";
 import AIDocumentEditor from "@/components/intellect/AIDocumentEditor";
 import AISpreadsheetEditor from "@/components/intellect/AISpreadsheetEditor";
 import SwarmIntelligencePanel from "@/components/intellect/SwarmIntelligencePanel";
