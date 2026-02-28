@@ -117,14 +117,25 @@ function ChartWindow({ data, config }) {
 
       {config?.insights?.length > 0 && (
         <div className="mt-6 space-y-3">
-          <div className="flex items-center gap-2 mb-3"><Sparkles className="w-5 h-5 text-cyan-400" /><h4 className="text-white font-bold">Key Insights</h4></div>
+          <div className="flex items-center gap-2 mb-3"><Sparkles className="w-5 h-5 text-cyan-400" /><h4 className="text-white font-bold">🎯 Actionable Insights</h4></div>
           {config.insights.map((insight, idx) => {
             const text = typeof insight === 'string' ? insight : insight?.text || '';
             const sev = insight?.severity || 'info';
+            const impact = insight?.impact || '';
+            const severityMap = {
+              critical: { bg: 'bg-red-500/15', border: 'border-red-500/50', icon: 'text-red-400', label: '🚨 CRITICAL' },
+              high: { bg: 'bg-orange-500/15', border: 'border-orange-500/50', icon: 'text-orange-400', label: '⚠️ HIGH' },
+              medium: { bg: 'bg-amber-500/15', border: 'border-amber-500/50', icon: 'text-amber-400', label: '⚡ MEDIUM' },
+              low: { bg: 'bg-blue-500/15', border: 'border-blue-500/50', icon: 'text-blue-400', label: 'ℹ️ INSIGHT' }
+            };
+            const style = severityMap[sev] || severityMap.low;
             return (
-              <div key={idx} className={`flex items-start gap-3 p-3 rounded-lg border ${severityColors[sev] || severityColors.info}`}>
-                <Zap className={`w-4 h-4 mt-0.5 flex-shrink-0 ${severityIconColors[sev] || severityIconColors.info}`} />
+              <div key={idx} className={`flex flex-col gap-2 p-4 rounded-lg border ${style.bg} ${style.border}`}>
+                <div className="flex items-start gap-2">
+                  <div className={`font-bold text-xs mt-0.5 px-2 py-1 rounded ${style.icon} bg-white/5`}>{style.label}</div>
+                </div>
                 <p className="text-white text-sm font-medium leading-relaxed">{text}</p>
+                {impact && <p className="text-slate-300 text-xs leading-relaxed">📈 <strong>Impact:</strong> {impact}</p>}
               </div>
             );
           })}
@@ -147,22 +158,28 @@ function ChartWindow({ data, config }) {
 
       {config?.recommendations?.length > 0 && (
         <div className="mt-6 p-4 rounded-xl bg-gradient-to-br from-emerald-500/10 to-cyan-500/10 border border-emerald-500/30">
-          <div className="flex items-center gap-2 mb-3"><Zap className="w-5 h-5 text-emerald-400" /><h4 className="text-white font-bold">AI Recommendations</h4></div>
-          <div className="space-y-2">
+          <div className="flex items-center gap-2 mb-3"><Zap className="w-5 h-5 text-emerald-400" /><h4 className="text-white font-bold">💡 Strategic Actions</h4></div>
+          <div className="space-y-3">
             {config.recommendations.map((rec, idx) => {
               const recText = typeof rec === 'string' ? rec : rec?.action || rec?.benefit || '';
+              const advantage = rec?.competitive_advantage || '';
+              const savings = rec?.savings_dkk ? (typeof rec.savings_dkk === 'number' ? `${rec.savings_dkk.toLocaleString()} DKK` : rec.savings_dkk) : null;
+              const confidence = rec?.confidence ? Math.round(rec.confidence * 100) : null;
               return (
-                <div key={idx} className="flex items-start gap-2 p-3 rounded bg-emerald-500/5 border border-emerald-500/20">
-                  <div className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-emerald-400 text-xs font-bold">{idx + 1}</span>
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-slate-200 text-sm leading-relaxed mb-2">{recText}</p>
-                    <div className="flex flex-wrap gap-2 text-xs">
-                      {rec?.savings_dkk && <span className="px-2 py-1 rounded bg-emerald-500/10 text-emerald-300">💰 {rec.savings_dkk}</span>}
-                      {rec?.timeframe && <span className="px-2 py-1 rounded bg-cyan-500/10 text-cyan-300">⏱️ {rec.timeframe}</span>}
-                      {rec?.confidence && <span className="px-2 py-1 rounded bg-violet-500/10 text-violet-300">📊 {rec.confidence}%</span>}
+                <div key={idx} className="p-4 rounded-lg bg-emerald-500/5 border border-emerald-500/25 hover:border-emerald-500/50 transition">
+                  <div className="flex gap-3 mb-2">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-400 flex items-center justify-center flex-shrink-0 font-bold text-slate-950">
+                      {idx + 1}
                     </div>
+                    <div className="flex-1">
+                      <p className="text-white font-semibold text-sm mb-1">{recText}</p>
+                      {advantage && <p className="text-emerald-300 text-xs italic mb-2">✨ {advantage}</p>}
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-2 ml-11 text-xs">
+                    {savings && <span className="px-3 py-1.5 rounded-full bg-emerald-500/20 text-emerald-200 font-semibold">💰 {savings}</span>}
+                    {rec?.timeframe && <span className="px-3 py-1.5 rounded-full bg-cyan-500/20 text-cyan-200">⏱️ {rec.timeframe}</span>}
+                    {confidence && <span className="px-3 py-1.5 rounded-full bg-violet-500/20 text-violet-200">✓ {confidence}% confidence</span>}
                   </div>
                 </div>
               );
@@ -184,15 +201,27 @@ function ChartWindow({ data, config }) {
 
       {config?.advanced_metrics?.length > 0 && (
         <div className="mt-6 p-4 rounded-xl bg-slate-900/60 border border-slate-700/50">
-          <div className="flex items-center gap-2 mb-3"><TrendingUp className="w-5 h-5 text-blue-400" /><h4 className="text-white font-bold">Advanced Metrics</h4></div>
+          <div className="flex items-center gap-2 mb-3"><TrendingUp className="w-5 h-5 text-blue-400" /><h4 className="text-white font-bold">📊 KPI Dashboard</h4></div>
           <div className="grid grid-cols-2 gap-3">
-            {config.advanced_metrics.map((metric, idx) => (
-              <div key={idx} className="p-3 rounded-lg bg-slate-800/50 border border-slate-700/50">
-                <p className="text-slate-400 text-xs mb-1 font-medium">{metric.label}</p>
-                <p className="text-white text-base font-bold">{metric.value}</p>
-                {metric.change && <p className={`text-xs mt-1 ${metric.change.includes('+') ? 'text-emerald-400' : 'text-red-400'}`}>{metric.change}</p>}
-              </div>
-            ))}
+            {config.advanced_metrics.map((metric, idx) => {
+              const change = metric.change_percent || metric.change;
+              const isPositive = !change || change >= 0 || (typeof change === 'string' && change.includes('+'));
+              return (
+                <div key={idx} className="p-4 rounded-lg bg-slate-800/50 border border-slate-700/50 hover:border-slate-600/50 transition">
+                  <p className="text-slate-400 text-xs mb-2 font-medium uppercase tracking-wide">{metric.label}</p>
+                  <div className="flex items-baseline justify-between">
+                    <p className="text-white text-2xl font-bold">{metric.value}</p>
+                    {metric.unit && <p className="text-slate-500 text-xs">{metric.unit}</p>}
+                  </div>
+                  {change && (
+                    <p className={`text-xs mt-2 font-semibold ${isPositive ? 'text-emerald-400' : 'text-red-400'}`}>
+                      {isPositive ? '📈' : '📉'} {typeof change === 'string' ? change : `${change > 0 ? '+' : ''}${change}%`}
+                    </p>
+                  )}
+                  {metric.story && <p className="text-slate-300 text-xs mt-2 italic">{metric.story}</p>}
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
