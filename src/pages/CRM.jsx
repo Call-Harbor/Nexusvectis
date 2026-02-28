@@ -17,7 +17,7 @@ import CRMDealEditor from "../components/crm/CRMDealEditor";
 
 export default function CRM() {
   const [user, setUser] = useState(null);
-  const [view, setView] = useState("pipeline"); // pipeline | insights | chat
+  const [view, setView] = useState("pipeline"); // pipeline | insights
   const [searchTerm, setSearchTerm] = useState("");
   const [stageFilter, setStageFilter] = useState("all");
   const [selectedDeal, setSelectedDeal] = useState(null);
