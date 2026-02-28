@@ -45,53 +45,61 @@ function VideoCallModal({ channel, user, onEnd }) {
    useEffect(() => {
      if (!containerRef.current) return;
 
-     const roomName = `nexus-${channel.id}-${Date.now()}`.replace(/[^a-z0-9-]/gi, '');
+     const roomName = `nexusvectis-${channel.id}`.replace(/[^a-z0-9-]/gi, '-').toLowerCase();
      const displayName = user?.full_name || 'Guest';
 
-     const options = {
-       roomName: roomName,
-       height: '100%',
-       parentNode: containerRef.current,
-       userInfo: {
-         displayName: displayName,
-         email: user?.email
-       },
-       configOverwrite: {
-         startWithAudioMuted: false,
-         startWithVideoMuted: audioOnly,
-         prejoinPageEnabled: false,
-         disableThirdPartyRequests: false
-       },
-       interfaceConfigOverwrite: {
-         TOOLBAR_BUTTONS: [
-           'microphone', 'camera', 'closedcaptions', 'desktop', 'fullscreen',
-           'fodeviceselection', 'hangup', 'chat', 'recording',
-           'livestreaming', 'etherpad', 'sharedvideo', 'settings', 'raisehand',
-           'videoquality', 'filmstrip', 'invite', 'feedback', 'stats', 'shortcuts',
-           'tileview', 'download', 'help', 'mute-everyone', 'e2ee'
-         ],
-         HIDE_INVITE_MORE_HEADER: false,
-         MOBILE_APP_PROMO: false
-       }
+     const initJitsi = () => {
+       if (!containerRef.current) return;
+       const options = {
+         roomName,
+         height: '100%',
+         parentNode: containerRef.current,
+         userInfo: { displayName, email: user?.email },
+         configOverwrite: {
+           startWithAudioMuted: false,
+           startWithVideoMuted: audioOnly,
+           prejoinPageEnabled: false,
+           disableThirdPartyRequests: false,
+           disableDeepLinking: true,
+         },
+         interfaceConfigOverwrite: {
+           TOOLBAR_BUTTONS: [
+             'microphone', 'camera', 'desktop', 'fullscreen',
+             'fodeviceselection', 'hangup', 'chat', 'settings', 'raisehand',
+             'videoquality', 'filmstrip', 'tileview', 'help',
+           ],
+           MOBILE_APP_PROMO: false,
+           HIDE_INVITE_MORE_HEADER: true,
+         }
+       };
+       jitsiRef.current = new window.JitsiMeetExternalAPI('meet.jit.si', options);
+       jitsiRef.current.addEventListener('videoConferenceLeft', onEnd);
+       jitsiRef.current.addEventListener('readyToClose', onEnd);
      };
 
-     const script = document.createElement('script');
-     script.src = 'https://meet.jitsi.org/external_api.js';
-     script.async = true;
-     script.onload = () => {
-       jitsiRef.current = new window.JitsiMeetExternalAPI('meet.jitsi.org', options);
-       jitsiRef.current.addEventListener('videoConferenceLeft', onEnd);
-     };
-     document.head.appendChild(script);
+     if (window.JitsiMeetExternalAPI) {
+       initJitsi();
+     } else {
+       const existing = document.getElementById('jitsi-script');
+       if (existing) {
+         existing.addEventListener('load', initJitsi);
+       } else {
+         const script = document.createElement('script');
+         script.id = 'jitsi-script';
+         script.src = 'https://meet.jit.si/external_api.js';
+         script.async = true;
+         script.onload = initJitsi;
+         document.head.appendChild(script);
+       }
+     }
 
      return () => {
        if (jitsiRef.current) {
-         jitsiRef.current.dispose();
+         try { jitsiRef.current.dispose(); } catch (_) {}
          jitsiRef.current = null;
        }
-       if (script.parentNode) script.parentNode.removeChild(script);
      };
-   }, [channel.id, user, onEnd]);
+   }, [channel.id]);
 
    return (
      <motion.div
