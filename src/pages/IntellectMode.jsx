@@ -306,41 +306,76 @@ export default function IntellectMode() {
     
     try {
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are an advanced logistics AI researcher performing DEEP RESEARCH ANALYSIS for: "${currentCommand}"
+        prompt: `You are an elite fleet intelligence strategist & operations scientist. Generate COMPELLING, INSIGHTFUL analysis for: "${currentCommand}"
 
 FLEET CONTEXT: ${fleetContext}
 
-CRITICAL REQUIREMENTS - Generate comprehensive research-grade analysis:
-1. TITLE & DESCRIPTION - Professional academic-level analysis title and overview
-2. CHART DATA - Create 14-18 high-quality data points across multiple metrics for rich visualization
-3. VISUALIZATIONS - Multiple chart types (bar/line/area) with several data series
-4. STATISTICAL DEEP DIVE - Trend analysis, seasonal patterns, anomalies, statistical significance tests
-5. PREDICTIVE MODELING - Forecasts with confidence intervals for 30/60/90 days
-6. CORRELATION ANALYSIS - Find relationships between metrics, identify root causes
-7. RISK QUANTIFICATION - Assess risks with severity, likelihood, and financial impact (DKK)
-8. ADVANCED RECOMMENDATIONS - Actionable insights with ROI calculations in DKK, implementation timeframes
-9. KPI DASHBOARD - Key performance indicators with percentage changes and benchmarks
-10. COMPREHENSIVE INSIGHTS - Technical findings with severity levels (critical/high/medium/low)
+ANALYSIS MANDATE - Create engagement-focused, revealing insights that tell a compelling story:
 
-Return ONLY valid JSON matching this exact structure - NO markdown, NO explanation:
+1. NARRATIVE TITLE - Catchy, insightful title that reveals a key finding (e.g., "The Hidden Efficiency Gap" or "Route Paradox: Speed vs Sustainability")
+
+2. STORYLINE SUMMARY - Write like a strategic briefing: start with the surprising finding, build tension, resolve with actionable intelligence. Include:
+   - The unexpected pattern or opportunity you discovered
+   - Why this matters for the business
+   - The competitive advantage of acting now
+
+3. VISUAL STORYTELLING - Create 16-22 compelling data points across:
+   - Primary metric trends with hidden patterns
+   - Comparative analysis (best vs worst performers)
+   - Anomalies and breakpoints in data
+   - Correlation insights that reveal causation
+   - Multiple data series that tell conflicting stories (interesting tension)
+
+4. EDGE CASE DISCOVERIES - Find and highlight:
+   - Counterintuitive patterns (what defies conventional wisdom)
+   - Hidden correlations (what variables secretly drive success)
+   - Inflection points (where things change dramatically)
+   - Outlier opportunities (exceptional performers to learn from)
+
+5. PREDICTIVE THEATER - Make forecasts compelling:
+   - What happens if nothing changes (cautionary projection)
+   - What happens if you implement recommendations (optimistic scenario)
+   - The tipping point where change accelerates
+   - Confidence levels that reflect real uncertainty
+
+6. RISK NARRATIVE - Present risks as strategic challenges:
+   - What's the cascading impact of each risk?
+   - Which risks are interconnected?
+   - What's the compound effect if multiple risks materialize?
+
+7. FINANCIAL STORYTELLING - Make ROI tangible:
+   - Tie savings back to business outcomes
+   - Show implementation roadmap with milestone savings
+   - Highlight quick wins vs strategic plays
+   - Calculate opportunity cost of inaction
+
+8. COMPETITIVE INTELLIGENCE - Frame insights as:
+   - Where you're ahead of industry benchmarks
+   - Where you're vulnerable to competitors
+   - What emerging threats to monitor
+   - Where to gain unfair advantages
+
+Return JSON with rich insights, NOT generic analysis. Make each insight worth the analysis time:
 {
-  "title": "string (research-level professional title)",
-  "description": "string (detailed 2-3 sentence overview)",
+  "title": "string (intriguing, reveals a key finding)",
+  "description": "string (provocative opening that hooks attention)",
   "type": "bar|line|area|pie",
-  "summary": "string (4-5 paragraph executive summary with key findings)",
-  "chart_data": [{label: string, value1: number, value2: number, value3: number, ...}],
+  "summary": "string (5-7 paragraph strategic brief with story arc - surprising finding → business impact → recommended action)",
+  "chart_data": [{label: string, value1: number, value2: number, value3: number, value4: number, ...}],
   "xKey": "label",
   "bars": [{key: string, name: string}],
   "lines": [{key: string, name: string}],
   "areas": [{key: string, name: string}],
-  "insights": [{text: string, severity: "critical|high|medium|low", impact: string}],
-  "recommendations": [{action: string, savings_dkk: number, timeframe: "30d|60d|90d", confidence: 0.0-1.0}],
-  "forecasts": [{name: string, value: number, timeframe: "30d|60d|90d", confidence: 0.0-1.0}],
-  "risks": [{name: string, severity: "critical|high|medium|low", likelihood: 0.0-1.0, impact_dkk: number}],
-  "correlations": [{variables: string, coefficient: number, interpretation: string}],
-  "advanced_metrics": [{label: string, value: number, unit: string, change_percent: number}],
-  "technical_details": {methodology: string, data_sources: string, quality_score: 0.0-1.0},
-  "data_quality": {accuracy: 0.0-1.0, completeness: 0.0-1.0, reliability: 0.0-1.0}
+  "insights": [{text: string (compelling, specific, actionable), severity: "critical|high|medium|low", impact: string (quantified business outcome)}],
+  "recommendations": [{action: string (strategic + tactical), savings_dkk: number, timeframe: "30d|60d|90d", confidence: number, competitive_advantage: string}],
+  "forecasts": [{name: string, value: number, timeframe: "30d|60d|90d", confidence: number, scenario: "baseline|optimistic|risk"}],
+  "risks": [{name: string, severity: "critical|high|medium|low", likelihood: number, impact_dkk: number, cascade_effect: string}],
+  "correlations": [{variables: string, coefficient: number, interpretation: string (reveals causation or hidden dependency)}],
+  "advanced_metrics": [{label: string, value: number, unit: string, change_percent: number, story: string}],
+  "edge_cases": [{discovery: string, implication: string, action: string}],
+  "competitive_position": {strengths: [string], vulnerabilities: [string], opportunities: [string], threats: [string]},
+  "technical_details": {methodology: string, data_sources: string, quality_score: number, hidden_assumptions: [string]},
+  "data_quality": {accuracy: number, completeness: number, reliability: number, caveats: [string]}
 }`,
       add_context_from_internet: true,
       response_json_schema: {
