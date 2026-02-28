@@ -786,6 +786,13 @@ export default function NexusSatelliteChat({ user: propUser, orgId, customers })
         {activeCall && (
           <VideoCallModal channel={activeCall} user={user} onEnd={endCall} />
         )}
+        {incomingCall && !activeCall && (
+          <IncomingCallNotification
+            invite={incomingCall}
+            onAccept={acceptCall}
+            onDecline={declineCall}
+          />
+        )}
       </AnimatePresence>
 
       {showNewChannel && user && (
