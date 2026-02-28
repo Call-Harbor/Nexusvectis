@@ -15,28 +15,28 @@ import {
 
 const AI_PROMPT_SECTIONS = [
   ['Fleet Operations', [
-    ['Vehicle Efficiency Analysis', "Analyser alle køretøjer og identificer dem med laveste effektivitetsscore."],
-    ['Route Optimization', "Optimer alle aktive ruter baseret på aktuel trafik og vejrforhold."],
-    ['Shipment Risk Assessment', "Gennemgå alle forsendelser i transit og identificer risiko for forsinket levering."],
+    ['Vehicle Efficiency Analysis', "Analyze all vehicles and identify those with the lowest efficiency scores."],
+    ['Route Optimization', "Optimize all active routes based on current traffic and weather conditions."],
+    ['Shipment Risk Assessment', "Review all shipments in transit and identify risk of late delivery."],
   ]],
   ['Predictive Analytics', [
-    ['Predictive Maintenance', "Forudsig vedligeholdelsesbehov for alle køretøjer i næste 30 dage."],
-    ['Demand Forecasting', "Lav 90-dages efterspørgselsprognose baseret på historiske data."],
-    ['ETA Accuracy Analysis', "Analyser ETA-nøjagtighed over sidste 60 dage."],
+    ['Predictive Maintenance', "Predict maintenance needs for all vehicles in the next 30 days."],
+    ['Demand Forecasting', "Create a 90-day demand forecast based on historical data."],
+    ['ETA Accuracy Analysis', "Analyze ETA accuracy over the last 60 days."],
   ]],
   ['Risk & Compliance', [
-    ['Risk Assessment', "Udfør omfattende risikovurdering af hele flåden."],
-    ['Safety Analysis', "Analyser alle sikkerheds- og sikkerhedsvarsler fra sidste 90 dage."],
-    ['Compliance Check', "Kontroller compliance med alle gældende transportbestemmelser."],
+    ['Risk Assessment', "Perform comprehensive risk assessment of the entire fleet."],
+    ['Safety Analysis', "Analyze all safety and security alerts from the last 90 days."],
+    ['Compliance Check', "Check compliance with all applicable transport regulations."],
   ]],
   ['Financial & Performance', [
-    ['Cost Analysis', "Analyser transportomkostninger per km, per enhed, per rute."],
-    ['Sustainability Report', "Beregn CO2-emissioner for alle forsendelser."],
-    ['Driver Performance', "Evaluer præstationen for hver chauffør."],
+    ['Cost Analysis', "Analyze transportation costs per km, per unit, per route."],
+    ['Sustainability Report', "Calculate CO2 emissions for all shipments."],
+    ['Driver Performance', "Evaluate performance for each driver."],
   ]],
   ['Strategic Planning', [
-    ['Capacity Planning', "Analyser flådekapacitet mod efterspørgsel."],
-    ['Root Cause Analysis', "Identificer mønstre i forsinkelser, afvisninger og fejl."],
+    ['Capacity Planning', "Analyze fleet capacity against demand."],
+    ['Root Cause Analysis', "Identify patterns in delays, rejections and errors."],
   ]],
 ];
 
