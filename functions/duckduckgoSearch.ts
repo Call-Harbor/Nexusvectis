@@ -9,45 +9,37 @@ Deno.serve(async (req) => {
     const { query } = await req.json();
     if (!query?.trim()) return Response.json({ error: 'No query provided' }, { status: 400 });
 
-    // DuckDuckGo Instant Answer API (free, no key needed)
-    const ddgUrl = `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`;
+    // DuckDuckGo Instant Answer API (free, no key)
+    const ddgUrl = `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1&t=nexusvectis`;
     const ddgRes = await fetch(ddgUrl, {
       headers: { 'User-Agent': 'NexusVectis/1.0' }
     });
     const ddgData = await ddgRes.json();
 
-    // Also fetch HTML results via DuckDuckGo Lite (scrape-friendly)
-    const liteUrl = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`;
-    const liteRes = await fetch(liteUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; NexusVectis)',
-        'Accept': 'text/html'
-      }
-    });
-    const html = await liteRes.text();
+    const relatedTopics = (ddgData.RelatedTopics || [])
+      .filter(t => t.Text && t.FirstURL)
+      .slice(0, 6)
+      .map(t => ({ text: t.Text, url: t.FirstURL }));
 
-    // Parse results from DuckDuckGo HTML
-    const results = [];
-    const resultRegex = /<a class="result__a"[^>]*href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/g;
-    const snippetRegex = /<a class="result__snippet"[^>]*>([\s\S]*?)<\/a>/g;
-
-    const hrefs = [...html.matchAll(/<a class="result__a"[^>]*href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/g)];
-    const snippets = [...html.matchAll(/<a class="result__snippet"[^>]*>([\s\S]*?)<\/a>/g)];
-
-    for (let i = 0; i < Math.min(hrefs.length, 8); i++) {
-      let url = hrefs[i][1];
-      // DDG wraps URLs — decode if needed
-      if (url.startsWith('//duckduckgo.com/l/?uddg=')) {
-        url = decodeURIComponent(url.replace('//duckduckgo.com/l/?uddg=', ''));
-      }
-      const title = hrefs[i][2].replace(/<[^>]+>/g, '').trim();
-      const snippet = snippets[i] ? snippets[i][1].replace(/<[^>]+>/g, '').trim() : '';
-      if (title && url && url.startsWith('http')) {
-        results.push({ title, url, snippet });
-      }
+    // If DDG has no results, supplement with LLM internet search for links
+    let supplementLinks = [];
+    if (!ddgData.AbstractText && relatedTopics.length === 0) {
+      const llmResult = await base44.asServiceRole.integrations.Core.InvokeLLM({
+        prompt: `Find 5 relevant web links for: "${query}". Return only URLs and titles, no commentary.`,
+        add_context_from_internet: true,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            links: {
+              type: "array",
+              items: { type: "object", properties: { title: { type: "string" }, url: { type: "string" }, snippet: { type: "string" } } }
+            }
+          }
+        }
+      });
+      supplementLinks = llmResult?.links || [];
     }
 
-    // Build response combining DDG instant answer + web results
     return Response.json({
       abstract: ddgData.AbstractText || null,
       abstract_source: ddgData.AbstractSource || null,
@@ -55,13 +47,9 @@ Deno.serve(async (req) => {
       answer: ddgData.Answer || null,
       definition: ddgData.Definition || null,
       definition_source: ddgData.DefinitionSource || null,
-      image: ddgData.Image || null,
-      infobox: ddgData.Infobox?.content || null,
-      related_topics: (ddgData.RelatedTopics || []).slice(0, 5).map(t => ({
-        text: t.Text || '',
-        url: t.FirstURL || ''
-      })).filter(t => t.text),
-      results
+      image: ddgData.Image ? `https://duckduckgo.com${ddgData.Image}` : null,
+      related_topics: relatedTopics,
+      supplement_links: supplementLinks
     });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
