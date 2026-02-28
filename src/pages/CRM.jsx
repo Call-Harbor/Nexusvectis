@@ -136,17 +136,11 @@ export default function CRM() {
                   <LayoutGrid className="w-3.5 h-3.5" /> Pipeline
                 </button>
                 <button
-                  onClick={() => setView("insights")}
-                  className={`px-3 py-1.5 text-xs flex items-center gap-1.5 transition-all ${view === 'insights' ? 'bg-violet-600 text-white' : 'text-slate-400 hover:text-white'}`}
-                >
-                  <Sparkles className="w-3.5 h-3.5" /> AI Insights
-                </button>
-                <button
-                  onClick={() => setView("chat")}
-                  className={`px-3 py-1.5 text-xs flex items-center gap-1.5 transition-all ${view === 'chat' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'}`}
-                >
-                  <Satellite className="w-3.5 h-3.5" /> Satellite Chat
-                </button>
+                   onClick={() => setView("insights")}
+                   className={`px-3 py-1.5 text-xs flex items-center gap-1.5 transition-all ${view === 'insights' ? 'bg-violet-600 text-white' : 'text-slate-400 hover:text-white'}`}
+                 >
+                   <Sparkles className="w-3.5 h-3.5" /> AI Insights
+                 </button>
               </div>
               <Button onClick={() => handleAddDeal()} className="bg-gradient-to-r from-cyan-600 to-violet-600 hover:from-cyan-700 hover:to-violet-700" size="sm">
                 <Plus className="w-4 h-4 mr-1.5" /> New Deal
