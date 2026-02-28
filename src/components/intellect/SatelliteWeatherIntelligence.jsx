@@ -132,7 +132,7 @@ export default function SatelliteWeatherIntelligence({ routes, vehicles, onRoute
               <MapPin className="w-4 h-4 text-cyan-400" />
               Available Routes
             </h3>
-            {routes?.map((route) => (
+            {localRoutes?.map((route) => (
               <motion.button
                 key={route.id}
                 onClick={() => setSelectedRoute(route.id)}
