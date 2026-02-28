@@ -186,6 +186,21 @@ function NewChannelModal({ customers, user, orgId, onClose, onCreated }) {
     try {
       const members = [user.email, ...selectedContacts.map(c => c.email).filter(Boolean)];
       const memberNames = [user.full_name, ...selectedContacts.map(c => c.name)];
+
+      // For direct chats: check if a channel already exists with this person
+      if (type === 'direct') {
+        const contactEmail = selectedContacts[0]?.email;
+        const existing = await base44.entities.NexusChannel.filter({ organization_id: orgId, type: 'direct' });
+        const dup = existing.find(ch =>
+          ch.members?.includes(user.email) && ch.members?.includes(contactEmail)
+        );
+        if (dup) {
+          setCreating(false);
+          onCreated(dup);
+          return;
+        }
+      }
+
       const colorIdx = Math.floor(Math.random() * AVATAR_COLORS.length);
       const channel = await base44.entities.NexusChannel.create({
         organization_id: orgId,
