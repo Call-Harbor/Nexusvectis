@@ -14,15 +14,7 @@ export default function VideoCallHologram({ videoUrl, onClose }) {
     if (!url.trim()) return false;
     try {
       new URL(url);
-      const videoPatterns = [
-        /teams\.microsoft\.com/i,
-        /zoom\.us/i,
-        /meet\.google\.com/i,
-        /webex\.com/i,
-        /whereby\.com/i,
-        /jitsi\.org/i,
-      ];
-      return videoPatterns.some(pattern => pattern.test(url));
+      return true;
     } catch {
       return false;
     }
