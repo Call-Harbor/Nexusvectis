@@ -65,7 +65,7 @@ export default function IntellectHeader({ orgId, openWindow, executePrompt, setS
         {/* Actions */}
         <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
           <Button onClick={() => openWindow('global_search', { x: 120, y: 80 }, { orgId })} className="bg-slate-700 hover:bg-slate-600 text-xs sm:text-sm gap-1">
-            <Search className="w-3 h-3 sm:w-4 sm:h-4" /><span className="hidden sm:inline">Søg</span>
+            <Search className="w-3 h-3 sm:w-4 sm:h-4" /><span className="hidden sm:inline">Search</span>
           </Button>
 
           {/* Apps Dropdown */}
