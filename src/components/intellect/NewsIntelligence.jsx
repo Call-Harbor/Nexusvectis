@@ -119,15 +119,59 @@ Return a JSON object with an "articles" array where each article has:
           </div>
         )}
 
-        {!loading && articles.map((article, idx) => (
+        {!loading && selectedArticle && (
+          <div className="h-full flex flex-col">
+            <button onClick={() => setSelectedArticle(null)} className="flex items-center gap-2 text-slate-400 hover:text-white text-sm mb-4 transition-colors">
+              <ArrowLeft className="w-4 h-4" /> Back to articles
+            </button>
+            <div className={`flex-1 p-5 rounded-xl bg-slate-900/80 border ${colors.border} space-y-4`}>
+              <div className="flex items-start justify-between gap-3">
+                <h2 className="text-white font-bold text-base leading-snug flex-1">{selectedArticle.title}</h2>
+                <a href={selectedArticle.url} target="_blank" rel="noopener noreferrer" className="flex-shrink-0 p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-cyan-400 transition-all" title="Open original source">
+                  <ExternalLink className="w-4 h-4" />
+                </a>
+              </div>
+
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="px-2 py-1 rounded-md bg-slate-800 text-slate-300 text-xs font-medium">{selectedArticle.source}</span>
+                <span className="text-slate-600 text-xs">{selectedArticle.date}</span>
+                {selectedArticle.sentiment && (
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border ${sentimentColor(selectedArticle.sentiment)}`}>
+                    {selectedArticle.sentiment === "positive" ? "📈" : selectedArticle.sentiment === "negative" ? "📉" : "➡️"} {selectedArticle.sentiment}
+                  </span>
+                )}
+              </div>
+
+              <div className="border-t border-slate-800/50 pt-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <BookOpen className="w-4 h-4 text-slate-400" />
+                  <span className="text-slate-400 text-xs font-semibold uppercase tracking-wide">Summary</span>
+                </div>
+                <p className="text-slate-200 text-sm leading-relaxed">{selectedArticle.summary}</p>
+              </div>
+
+              {selectedArticle.impact && (
+                <div className="p-4 rounded-xl bg-gradient-to-r from-cyan-500/10 to-violet-500/10 border border-cyan-500/30">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Truck className="w-4 h-4 text-cyan-400" />
+                    <span className="text-cyan-400 text-xs font-semibold uppercase tracking-wide">Fleet Impact</span>
+                  </div>
+                  <p className="text-cyan-100 text-sm leading-relaxed">{selectedArticle.impact}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {!loading && !selectedArticle && articles.map((article, idx) => (
           <div
             key={idx}
             className={`p-4 rounded-xl bg-slate-900/60 border ${colors.border} ${colors.hover} transition-all cursor-pointer group`}
-            onClick={() => article.url && window.open(article.url, "_blank")}
+            onClick={() => setSelectedArticle(article)}
           >
             <div className="flex items-start justify-between gap-2 mb-2">
               <h4 className="text-white font-semibold text-sm leading-snug group-hover:text-cyan-300 transition-colors flex-1">{article.title}</h4>
-              <ExternalLink className="w-3.5 h-3.5 text-slate-600 group-hover:text-cyan-400 flex-shrink-0 mt-0.5 transition-colors" />
+              <BookOpen className="w-3.5 h-3.5 text-slate-600 group-hover:text-cyan-400 flex-shrink-0 mt-0.5 transition-colors" />
             </div>
 
             <p className="text-slate-400 text-xs leading-relaxed mb-3">{article.summary}</p>
