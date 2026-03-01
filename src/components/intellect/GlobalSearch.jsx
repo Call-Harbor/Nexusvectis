@@ -355,7 +355,7 @@ export default function GlobalSearch({ orgId, onOpenWindow, onOpenPageWindow }) 
                           value={filters[entity.key]?.[ff.key] || ""}
                           onChange={e => setFilter(entity.key, ff.key, e.target.value)}
                         >
-                          <option value="">Alle</option>
+                          <option value="">All</option>
                           {ff.options.map(o => (
                             <option key={o} value={o}>{o}</option>
                           ))}
