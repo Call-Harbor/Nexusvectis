@@ -152,7 +152,7 @@ function EntityResult({ entity, item, query, onNavigate, onOpenWindow }) {
           size="icon"
           variant="ghost"
           className="w-7 h-7 text-slate-400 hover:text-white"
-          title="Gå til side"
+          title="Go to page"
           onClick={() => onNavigate(entity.page)}
         >
           <ExternalLink className="w-3.5 h-3.5" />
