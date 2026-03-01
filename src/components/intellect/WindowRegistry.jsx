@@ -40,6 +40,7 @@ export const WINDOW_META = {
   parallel_processor: { title: 'Parallel Task Processor', icon: Zap },
   satellite_weather: { title: '🛰️ Satellite & Weather', icon: Satellite },
   news_intelligence: { title: '📰 News Intelligence', icon: Newspaper },
+  article_iframe: { title: '📄 Article', icon: Newspaper },
 };
 
 export function getWindowMeta(type) {
