@@ -363,7 +363,7 @@ export default function GlobalSearch({ orgId, onOpenWindow, onOpenPageWindow }) 
                       </div>
                     ))}
                     <div className="flex items-center gap-1">
-                      <span className="text-[11px] text-slate-500">Sorter:</span>
+                      <span className="text-[11px] text-slate-500">Sort:</span>
                       <select
                         className="text-[11px] bg-slate-800 border border-slate-700 text-white rounded px-1.5 py-0.5 outline-none focus:border-cyan-500/50"
                         value={sortBy[entity.key] || ""}
