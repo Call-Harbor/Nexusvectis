@@ -1,7 +1,7 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
-import { Send, Mic, Zap, Paperclip, FileText, X, Sparkles, Shield, Building2, Satellite } from "lucide-react";
+import { Send, Mic, Zap, Paperclip, FileText, X, Sparkles, Shield, Building2, Satellite, Newspaper } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
@@ -91,6 +91,9 @@ export default function IntellectCommandBar({
           </Button>
           <Button onClick={() => handleQuickAction('openNeuroRisk')} variant="outline" size="sm" className="border-red-500/30 text-red-400 hover:bg-red-500/10">
             <Shield className="w-3.5 h-3.5 mr-1.5" />Neuro Risk Fusion
+          </Button>
+          <Button onClick={() => handleQuickAction('openNewsIntelligence')} variant="outline" size="sm" className="border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10">
+            <Newspaper className="w-3.5 h-3.5 mr-1.5" />News Feed
           </Button>
         </div>
 
