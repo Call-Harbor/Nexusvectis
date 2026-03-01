@@ -64,7 +64,7 @@ const ENTITY_CONFIG = [
     page: "Alerts"
   },
   {
-    key: "Maintenance", label: "Vedligehold", icon: Wrench, color: "yellow",
+    key: "Maintenance", label: "Maintenance", icon: Wrench, color: "yellow",
     fields: ["component", "description", "type", "priority", "status"],
     filterFields: [
       { key: "status", label: "Status", options: ["pending", "in_progress", "completed", "cancelled"] },
