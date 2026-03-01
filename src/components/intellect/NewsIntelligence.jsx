@@ -180,9 +180,9 @@ Return a JSON object with an "articles" array where each article has:
             <div className={`flex-1 p-5 rounded-xl bg-slate-900/80 border ${colors.border} space-y-4`}>
               <div className="flex items-start justify-between gap-3">
                 <h2 className="text-white font-bold text-base leading-snug flex-1">{selectedArticle.title}</h2>
-                <a href={selectedArticle.url} target="_blank" rel="noopener noreferrer" className="flex-shrink-0 p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-cyan-400 transition-all" title="Open original source">
+                <button onClick={() => openArticleUrl(selectedArticle.url)} className="flex-shrink-0 p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-cyan-400 transition-all" title="Open in hologram">
                   <ExternalLink className="w-4 h-4" />
-                </a>
+                </button>
               </div>
 
               <div className="flex items-center gap-2 flex-wrap">
