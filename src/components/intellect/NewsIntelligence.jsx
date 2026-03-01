@@ -30,8 +30,12 @@ export default function NewsIntelligence({ openWindow }) {
 
   const openArticleUrl = (url) => {
     if (!url) return;
-    setIframeError(false);
-    setIframeUrl(url);
+    if (openWindow) {
+      openWindow('article_iframe', { x: 160, y: 120 }, { url });
+    } else {
+      setIframeError(false);
+      setIframeUrl(url);
+    }
   };
 
   const fetchNews = async (category) => {
