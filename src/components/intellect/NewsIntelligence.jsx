@@ -24,6 +24,7 @@ export default function NewsIntelligence() {
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(null);
+  const [selectedArticle, setSelectedArticle] = useState(null);
 
   const fetchNews = async (category) => {
     setLoading(true);
