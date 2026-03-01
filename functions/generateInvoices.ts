@@ -36,7 +36,7 @@ Deno.serve(async (req) => {
       bank_account: invoiceSettings[0].bank_account,
       bank_swift: invoiceSettings[0].bank_swift
     } : {
-      name: 'NexusVectis ApS',
+      name: 'Nexus Vectis',
       vat_number: 'DK12345678',
       address: 'Vesterbrogade 123, 1620 København V, Denmark',
       country: 'Denmark'
