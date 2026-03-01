@@ -40,7 +40,7 @@ Deno.serve(async (req) => {
       body: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <div style="background: linear-gradient(135deg, #06b6d4 0%, #8b5cf6 100%); padding: 30px; text-align: center;">
-            <h1 style="color: white; margin: 0;">NexusVectis</h1>
+            <h1 style="color: white; margin: 0;">Nexus Vectis</h1>
             <p style="color: rgba(255,255,255,0.8); margin: 5px 0 0 0;">Credit Note</p>
           </div>
           
@@ -129,7 +129,7 @@ Deno.serve(async (req) => {
             
             <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
               <p style="color: #94a3b8; font-size: 12px; margin: 0;">
-                NexusVectis ApS | Denmark<br>
+                Nexus Vectis | Denmark<br>
                 VAT: DK12345678<br>
                 Email: billing@nexusvectis.com
               </p>
