@@ -26,7 +26,7 @@ const ENTITY_CONFIG = [
     filterFields: [
       { key: "status", label: "Status", options: ["planned", "active", "completed", "delayed"] },
       { key: "transport_type", label: "Transport", options: ["truck", "ship", "drone", "train", "aircraft"] },
-      { key: "priority", label: "Prioritet", options: ["low", "normal", "high", "critical"] },
+      { key: "priority", label: "Priority", options: ["low", "normal", "high", "critical"] },
     ],
     sortFields: ["name", "distance_km", "estimated_duration_hours", "status"],
     page: "Routes"
