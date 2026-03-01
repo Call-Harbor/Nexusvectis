@@ -299,7 +299,7 @@ export default function GlobalSearch({ orgId, onOpenWindow, onOpenPageWindow }) 
             onClick={() => setShowFilters(!showFilters)}
           >
             <Filter className="w-3.5 h-3.5" />
-            Filtre
+            Filters
             {activeFilterCount > 0 && (
               <Badge className="bg-cyan-500 text-white text-[10px] px-1 py-0 h-4 min-w-4">{activeFilterCount}</Badge>
             )}
