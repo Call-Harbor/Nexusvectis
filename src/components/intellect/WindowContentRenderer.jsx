@@ -322,7 +322,8 @@ function ArticleIframeViewer({ url, onClose }) {
     <iframe
       ref={iframeRef}
       src={url}
-      className="w-full h-full border-0"
+      className="w-full h-full border-0 bg-white"
+      style={{ background: 'white' }}
       title="Article Viewer"
     />
   );
