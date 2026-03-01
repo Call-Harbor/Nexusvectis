@@ -43,7 +43,7 @@ const ENTITY_CONFIG = [
     page: "Shipments"
   },
   {
-    key: "Customer", label: "Kunder", icon: Users, color: "blue",
+    key: "Customer", label: "Customers", icon: Users, color: "blue",
     fields: ["name", "email", "company", "city", "country"],
     filterFields: [
       { key: "status", label: "Status", options: ["active", "inactive"] },
