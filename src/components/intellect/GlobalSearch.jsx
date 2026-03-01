@@ -450,7 +450,7 @@ export default function GlobalSearch({ orgId, onOpenWindow, onOpenPageWindow }) 
                           className="w-full text-xs text-slate-500 hover:text-cyan-400 py-2 px-4 text-left transition-colors"
                           onClick={() => setExpandedEntity(entity.key)}
                         >
-                          + {items.length - 4} flere resultater
+                          + {items.length - 4} more results
                         </button>
                       )}
                     </div>
