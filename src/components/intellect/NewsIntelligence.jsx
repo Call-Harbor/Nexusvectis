@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Newspaper, RefreshCw, ExternalLink, TrendingUp, AlertTriangle, Truck, Globe, Zap } from "lucide-react";
+import { Newspaper, RefreshCw, ExternalLink, TrendingUp, AlertTriangle, Truck, Globe, Zap, ArrowLeft, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const CATEGORIES = [
