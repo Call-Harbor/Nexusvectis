@@ -32,7 +32,7 @@ const ENTITY_CONFIG = [
     page: "Routes"
   },
   {
-    key: "Shipment", label: "Forsendelser", icon: Package, color: "emerald",
+    key: "Shipment", label: "Shipments", icon: Package, color: "emerald",
     fields: ["tracking_number", "origin", "destination", "status", "customer_name"],
     filterFields: [
       { key: "status", label: "Status", options: ["pending", "in_transit", "delayed", "delivered", "cancelled"] },
