@@ -25,6 +25,14 @@ export default function NewsIntelligence() {
   const [loading, setLoading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(null);
   const [selectedArticle, setSelectedArticle] = useState(null);
+  const [iframeUrl, setIframeUrl] = useState(null);
+  const [iframeError, setIframeError] = useState(false);
+
+  const openArticleUrl = (url) => {
+    if (!url) return;
+    setIframeError(false);
+    setIframeUrl(url);
+  };
 
   const fetchNews = async (category) => {
     setLoading(true);
