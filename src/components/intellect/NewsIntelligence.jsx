@@ -31,7 +31,7 @@ export default function NewsIntelligence({ openWindow }) {
   const openArticleUrl = (url) => {
     if (!url) return;
     if (openWindow) {
-      openWindow('article_iframe', { x: 160, y: 120 }, { url });
+      openWindow('article_iframe', { x: 160, y: 120 }, { url, __needsClose: true });
     } else {
       setIframeError(false);
       setIframeUrl(url);
