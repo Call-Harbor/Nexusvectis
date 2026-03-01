@@ -296,6 +296,48 @@ function ChartWindow({ data, config }) {
   );
 }
 
+function ArticleIframeViewer({ url }) {
+  const [error, setError] = React.useState(false);
+
+  if (!url) return null;
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full gap-4 p-6 text-center">
+        <div className="w-14 h-14 rounded-full bg-slate-800 flex items-center justify-center">
+          <Activity className="w-6 h-6 text-slate-500" />
+        </div>
+        <div>
+          <p className="text-white font-semibold mb-1">Cannot display in hologram</p>
+          <p className="text-slate-400 text-sm">This site blocks iframe embedding.</p>
+        </div>
+        <a href={url} target="_blank" rel="noopener noreferrer"
+          className="px-4 py-2 rounded-lg bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 hover:bg-cyan-500/30 text-sm font-medium transition-all flex items-center gap-2">
+          Open in new tab
+        </a>
+      </div>
+    );
+  }
+
+  return (
+    <iframe
+      src={url}
+      className="w-full h-full border-0"
+      onError={() => setError(true)}
+      onLoad={(e) => {
+        try {
+          const doc = e.target.contentDocument || e.target.contentWindow?.document;
+          if (!doc) setError(true);
+        } catch {
+          setError(true);
+        }
+      }}
+      sandbox="allow-scripts allow-same-origin allow-popups"
+      title="Article Viewer"
+    />
+  );
+}
+
 export default function WindowContentRenderer({ type, data, vehicles, routes, shipments, alerts, currentUser, orgId, customers, setInput, openWindow }) {
   if (type === 'document_editor') return <AIDocumentEditor />;
   if (type === 'spreadsheet_editor') return <AISpreadsheetEditor />;
