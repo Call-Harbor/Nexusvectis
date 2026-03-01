@@ -397,8 +397,8 @@ export default function GlobalSearch({ orgId, onOpenWindow, onOpenPageWindow }) 
         {!debouncedQuery && activeFilterCount === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center px-8 py-16">
             <Search className="w-12 h-12 text-slate-700 mb-4" />
-            <p className="text-slate-400 font-medium mb-1">Universel Søgning</p>
-            <p className="text-slate-600 text-sm">Søg på tværs af køretøjer, ruter, forsendelser, kunder og mere</p>
+            <p className="text-slate-400 font-medium mb-1">Universal Search</p>
+            <p className="text-slate-600 text-sm">Search across vehicles, routes, shipments, customers and more</p>
           </div>
         ) : totalCount === 0 && !loading ? (
           <div className="flex flex-col items-center justify-center h-full text-center px-8 py-16">
