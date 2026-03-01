@@ -19,7 +19,7 @@ const colorMap = {
   blue: { badge: "bg-blue-500/20 text-blue-300 border-blue-500/30", dot: "bg-blue-400", border: "border-blue-500/30", hover: "hover:border-blue-500/50" },
 };
 
-export default function NewsIntelligence() {
+export default function NewsIntelligence({ openWindow }) {
   const [activeCategory, setActiveCategory] = useState("logistics");
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(false);
