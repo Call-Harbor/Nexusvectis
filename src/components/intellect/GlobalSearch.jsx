@@ -369,7 +369,7 @@ export default function GlobalSearch({ orgId, onOpenWindow, onOpenPageWindow }) 
                         value={sortBy[entity.key] || ""}
                         onChange={e => setSortBy(prev => ({ ...prev, [entity.key]: e.target.value }))}
                       >
-                        <option value="">Standard</option>
+                        <option value="">Default</option>
                         {entity.sortFields.map(f => (
                           <option key={f} value={f}>{f}</option>
                         ))}
