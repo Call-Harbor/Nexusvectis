@@ -57,8 +57,8 @@ const ENTITY_CONFIG = [
     fields: ["title", "message", "type", "category"],
     filterFields: [
       { key: "type", label: "Type", options: ["info", "warning", "critical", "success"] },
-      { key: "category", label: "Kategori", options: ["maintenance", "delay", "weather", "fuel", "route", "system"] },
-      { key: "is_resolved", label: "Løst", options: ["true", "false"] },
+      { key: "category", label: "Category", options: ["maintenance", "delay", "weather", "fuel", "route", "system"] },
+      { key: "is_resolved", label: "Resolved", options: ["true", "false"] },
     ],
     sortFields: ["title", "type", "category"],
     page: "Alerts"
