@@ -281,7 +281,7 @@ export default function GlobalSearch({ orgId, onOpenWindow, onOpenPageWindow }) 
             <input
               ref={inputRef}
               className="flex-1 bg-transparent text-white text-sm outline-none placeholder:text-slate-500"
-              placeholder="Søg på tværs af alle dataenheder..."
+              placeholder="Search across all data entities..."
               value={query}
               onChange={e => setQuery(e.target.value)}
             />
