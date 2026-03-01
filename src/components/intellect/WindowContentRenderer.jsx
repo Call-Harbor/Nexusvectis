@@ -314,6 +314,7 @@ export default function WindowContentRenderer({ type, data, vehicles, routes, sh
   if (type === 'profile_search') return <ProfileSearch />;
   if (type === 'satellite_weather') return <SatelliteWeatherIntelligence routes={routes} vehicles={vehicles} onRouteSelect={(routeId) => setInput(`Analyzing route ${routeId}`)} />;
   if (type === 'news_intelligence') return <NewsIntelligence openWindow={openWindow} />;
+  if (type === 'article_iframe') return <ArticleIframeViewer url={data?.url} />;
   if (PAGE_MAP[type]) {
     return <iframe src={`${createPageUrl(PAGE_MAP[type])}?hologram=true`} className="w-full h-full border-0" title={PAGE_MAP[type]} />;
   }
