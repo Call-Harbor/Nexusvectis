@@ -143,7 +143,7 @@ function EntityResult({ entity, item, query, onNavigate, onOpenWindow }) {
           size="icon"
           variant="ghost"
           className="w-7 h-7 text-slate-400 hover:text-cyan-400"
-          title="Åbn i hologram vindue"
+          title="Open in hologram window"
           onClick={() => onOpenWindow && onOpenWindow(entity.key.toLowerCase(), item)}
         >
           <Activity className="w-3.5 h-3.5" />
