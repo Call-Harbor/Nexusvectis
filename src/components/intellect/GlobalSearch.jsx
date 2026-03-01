@@ -37,7 +37,7 @@ const ENTITY_CONFIG = [
     filterFields: [
       { key: "status", label: "Status", options: ["pending", "in_transit", "delayed", "delivered", "cancelled"] },
       { key: "cargo_type", label: "Cargo", options: ["general", "cold_chain", "hazardous", "fragile", "bulk"] },
-      { key: "priority", label: "Prioritet", options: ["low", "normal", "high", "urgent"] },
+      { key: "priority", label: "Priority", options: ["low", "normal", "high", "urgent"] },
     ],
     sortFields: ["tracking_number", "status", "weight_kg", "eta"],
     page: "Shipments"
