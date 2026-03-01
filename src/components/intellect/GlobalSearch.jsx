@@ -411,7 +411,7 @@ export default function GlobalSearch({ orgId, onOpenWindow, onOpenPageWindow }) 
             {debouncedQuery && (
               <div className="px-4 py-2 border-b border-slate-800/60">
                 <p className="text-xs text-slate-500">
-                  {loading ? "Søger..." : `${totalCount} resultater for "${debouncedQuery}"`}
+                  {loading ? "Searching..." : `${totalCount} results for "${debouncedQuery}"`}
                 </p>
               </div>
             )}
