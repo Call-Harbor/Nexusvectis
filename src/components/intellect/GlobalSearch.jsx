@@ -85,7 +85,7 @@ const ENTITY_CONFIG = [
     page: "Resources"
   },
   {
-    key: "Contract", label: "Kontrakter", icon: FileText, color: "pink",
+    key: "Contract", label: "Contracts", icon: FileText, color: "pink",
     fields: ["contract_name", "contract_number", "contract_type", "status"],
     filterFields: [
       { key: "status", label: "Status", options: ["draft", "pending_approval", "active", "expired", "terminated"] },
