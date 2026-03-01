@@ -53,7 +53,7 @@ const ENTITY_CONFIG = [
     page: "CustomerManagement"
   },
   {
-    key: "Alert", label: "Alarmer", icon: AlertTriangle, color: "orange",
+    key: "Alert", label: "Alerts", icon: AlertTriangle, color: "orange",
     fields: ["title", "message", "type", "category"],
     filterFields: [
       { key: "type", label: "Type", options: ["info", "warning", "critical", "success"] },
