@@ -16,6 +16,7 @@ const ENTITY_CONFIG = [
     filterFields: [
       { key: "status", label: "Status", options: ["active", "idle", "maintenance", "offline"] },
       { key: "type", label: "Type", options: ["truck", "ship", "drone", "train", "aircraft"] },
+
     ],
     sortFields: ["name", "status", "speed", "fuel_level", "efficiency_score"],
     page: "Fleet"
