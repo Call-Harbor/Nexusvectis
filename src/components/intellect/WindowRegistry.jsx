@@ -1,7 +1,7 @@
 import { 
   Truck, AlertTriangle, Route, Package, LayoutDashboard, Settings, Sparkles, 
   FileText, Warehouse, TrendingUp, Activity, Satellite, Network, Shield, 
-  Globe, MessageSquare, BarChart3, Zap, Users
+  Globe, MessageSquare, BarChart3, Zap, Users, Newspaper
 } from "lucide-react";
 
 export const WINDOW_META = {
@@ -39,6 +39,7 @@ export const WINDOW_META = {
   profile_search: { title: '🔍 People Intelligence', icon: Users },
   parallel_processor: { title: 'Parallel Task Processor', icon: Zap },
   satellite_weather: { title: '🛰️ Satellite & Weather', icon: Satellite },
+  news_intelligence: { title: '📰 News Intelligence', icon: Newspaper },
 };
 
 export function getWindowMeta(type) {

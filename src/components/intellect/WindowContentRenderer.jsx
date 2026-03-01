@@ -15,6 +15,7 @@ import DeepAnalysisEngine from "@/components/intellect/DeepAnalysisEngine";
 import GlobalSearch from "@/components/intellect/GlobalSearch";
 import WebBrowser from "@/components/intellect/WebBrowser";
 import ProfileSearch from "@/components/intellect/ProfileSearch";
+import NewsIntelligence from "@/components/intellect/NewsIntelligence";
 
 const CHART_COLORS = ['#06b6d4', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444'];
 
@@ -312,6 +313,7 @@ export default function WindowContentRenderer({ type, data, vehicles, routes, sh
   if (type === 'web_browser') return <WebBrowser />;
   if (type === 'profile_search') return <ProfileSearch />;
   if (type === 'satellite_weather') return <SatelliteWeatherIntelligence routes={routes} vehicles={vehicles} onRouteSelect={(routeId) => setInput(`Analyzing route ${routeId}`)} />;
+  if (type === 'news_intelligence') return <NewsIntelligence />;
   if (PAGE_MAP[type]) {
     return <iframe src={`${createPageUrl(PAGE_MAP[type])}?hologram=true`} className="w-full h-full border-0" title={PAGE_MAP[type]} />;
   }
