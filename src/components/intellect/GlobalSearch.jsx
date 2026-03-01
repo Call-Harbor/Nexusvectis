@@ -403,8 +403,8 @@ export default function GlobalSearch({ orgId, onOpenWindow, onOpenPageWindow }) 
         ) : totalCount === 0 && !loading ? (
           <div className="flex flex-col items-center justify-center h-full text-center px-8 py-16">
             <Hash className="w-12 h-12 text-slate-700 mb-4" />
-            <p className="text-slate-400 font-medium">Ingen resultater fundet</p>
-            <p className="text-slate-600 text-sm mt-1">Prøv en anden søgning eller juster filtrene</p>
+            <p className="text-slate-400 font-medium">No results found</p>
+            <p className="text-slate-600 text-sm mt-1">Try a different search or adjust the filters</p>
           </div>
         ) : (
           <div>
