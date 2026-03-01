@@ -773,7 +773,7 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
                   title={title} icon={meta.icon} position={window.position}
                   onClose={() => closeWindow(window.id)} onMinimize={() => toggleMinimize(window.id)}
                   isMinimized={minimizedWindows.has(window.id)} isFocused={focusedWindow === window.id} onFocus={setFocusedWindow}>
-                  <WindowContentRenderer type={window.type} data={window.data} vehicles={vehicles} routes={routes} shipments={shipments} alerts={alerts} currentUser={currentUser} orgId={orgId} customers={customers} setInput={setInput} openWindow={openWindow} />
+                  <WindowContentRenderer type={window.type} data={{ ...(window.data || {}), onClose: () => closeWindow(window.id) }} vehicles={vehicles} routes={routes} shipments={shipments} alerts={alerts} currentUser={currentUser} orgId={orgId} customers={customers} setInput={setInput} openWindow={openWindow} />
                 </HologramWindow>
               );
             })}
