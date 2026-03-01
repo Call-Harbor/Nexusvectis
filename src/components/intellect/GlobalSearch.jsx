@@ -21,7 +21,7 @@ const ENTITY_CONFIG = [
     page: "Fleet"
   },
   {
-    key: "Route", label: "Ruter", icon: Route, color: "violet",
+    key: "Route", label: "Routes", icon: Route, color: "violet",
     fields: ["name", "origin", "destination", "status", "transport_type"],
     filterFields: [
       { key: "status", label: "Status", options: ["planned", "active", "completed", "delayed"] },
