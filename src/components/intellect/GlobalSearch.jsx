@@ -68,7 +68,7 @@ const ENTITY_CONFIG = [
     fields: ["component", "description", "type", "priority", "status"],
     filterFields: [
       { key: "status", label: "Status", options: ["pending", "in_progress", "completed", "cancelled"] },
-      { key: "priority", label: "Prioritet", options: ["low", "medium", "high", "critical"] },
+      { key: "priority", label: "Priority", options: ["low", "medium", "high", "critical"] },
       { key: "type", label: "Type", options: ["scheduled", "predictive", "emergency", "completed"] },
     ],
     sortFields: ["component", "priority", "scheduled_date", "cost_estimate"],
