@@ -75,7 +75,7 @@ const ENTITY_CONFIG = [
     page: "MaintenanceManagement"
   },
   {
-    key: "Resource", label: "Ressourcer", icon: Warehouse, color: "teal",
+    key: "Resource", label: "Resources", icon: Warehouse, color: "teal",
     fields: ["name", "type", "location", "status"],
     filterFields: [
       { key: "status", label: "Status", options: ["operational", "limited", "offline"] },
