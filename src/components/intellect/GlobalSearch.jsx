@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 
 const ENTITY_CONFIG = [
   {
-    key: "Vehicle", label: "Køretøjer", icon: Truck, color: "cyan",
+    key: "Vehicle", label: "Vehicles", icon: Truck, color: "cyan",
     fields: ["name", "type", "status", "driver", "destination"],
     filterFields: [
       { key: "status", label: "Status", options: ["active", "idle", "maintenance", "offline"] },
