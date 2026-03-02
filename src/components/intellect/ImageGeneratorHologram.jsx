@@ -18,7 +18,7 @@ const THINKING_STEPS = [
   { id: "finalize", label: "Finalizing output", icon: CheckCircle, color: "text-emerald-400", duration: 300 },
 ];
 
-export default function ImageGeneratorHologram({ onClose }) {
+export default function ImageGeneratorHologram({ onClose, openWindow }) {
   const [prompt, setPrompt] = useState("");
   const [generating, setGenerating] = useState(false);
   const [generatedImage, setGeneratedImage] = useState(null);
