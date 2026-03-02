@@ -301,7 +301,7 @@ export default function NotificationSettings() {
                             )}
                             {rule.trigger_count > 0 && (
                               <span className="text-[10px] text-slate-500">
-                                Udløst {rule.trigger_count} gang{rule.trigger_count !== 1 ? "e" : ""}
+                                Triggered {rule.trigger_count} time{rule.trigger_count !== 1 ? "s" : ""}
                               </span>
                             )}
                           </div>
