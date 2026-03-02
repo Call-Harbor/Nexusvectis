@@ -188,7 +188,7 @@ export default function NotificationSettings() {
               className="bg-gradient-to-r from-cyan-600 to-violet-600 hover:from-cyan-500 hover:to-violet-500 font-semibold"
             >
               <Plus className="w-4 h-4 mr-2" />
-              Ny regel
+              New rule
             </Button>
           </div>
         </div>
