@@ -172,8 +172,22 @@ export default function RouteOptimizer({ onApply, onClose }) {
         )}
 
         <Button onClick={handleOptimize} disabled={loading} className="w-full bg-gradient-to-r from-cyan-500 to-violet-500 hover:from-cyan-600 hover:to-violet-600 font-semibold">
-          {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Analyzing route...</> : <><Sparkles className="w-4 h-4 mr-2" />Optimize Route with AI</>}
+          {loading ? (
+            <div className="flex items-center gap-2">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>Fetching live roadworks, weather & incidents...</span>
+            </div>
+          ) : (
+            <><Sparkles className="w-4 h-4 mr-2" />Optimize with Live Intelligence</>
+          )}
         </Button>
+        {loading && (
+          <div className="flex items-center gap-4 text-[10px] text-slate-500 justify-center">
+            <span className="flex items-center gap-1"><Radio className="w-3 h-3 text-emerald-400 animate-pulse" />OpenStreetMap roadworks</span>
+            <span className="flex items-center gap-1"><Thermometer className="w-3 h-3 text-cyan-400 animate-pulse" />Open-Meteo weather</span>
+            <span className="flex items-center gap-1"><Wifi className="w-3 h-3 text-violet-400 animate-pulse" />Incident intelligence</span>
+          </div>
+        )}
       </div>
 
       {/* Results */}
