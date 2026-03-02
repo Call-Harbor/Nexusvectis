@@ -3,6 +3,17 @@ import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
+
+function FitBounds({ waypoints }) {
+  const map = useMap();
+  useEffect(() => {
+    if (waypoints?.length > 1) {
+      const bounds = waypoints.map(w => [w.lat, w.lng]);
+      map.fitBounds(bounds, { padding: [30, 30] });
+    }
+  }, [waypoints, map]);
+  return null;
+}
 import { 
   Route, Plus, Search, MapPin, Clock, Sparkles, 
   ArrowRight, Truck, Ship, Plane, Train, Leaf, X, Map, Edit, Filter, Download, BarChart3
