@@ -626,10 +626,21 @@ export default function Routes() {
                 Manual Editor
               </Button>
             </div>
+            {planRouteMutation.isPending && (
+              <div className="p-3 rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-sm flex items-center gap-2 text-cyan-400">
+                <div className="w-4 h-4 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin flex-shrink-0" />
+                Planning real road route using OpenStreetMap...
+              </div>
+            )}
+            {planRouteMutation.isError && (
+              <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/30 text-sm text-rose-400">
+                Failed to plan route. Please check origin/destination names.
+              </div>
+            )}
             {formData.waypoints?.length > 0 && (
               <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-sm">
-                <div className="text-emerald-400 font-medium mb-1">Route Planned!</div>
-                <div className="text-slate-300">{formData.waypoints.length} waypoints, {formData.distance_km} km, {formData.estimated_duration_hours}h</div>
+                <div className="text-emerald-400 font-medium mb-1">✓ Route planned on real road network!</div>
+                <div className="text-slate-300">{formData.waypoints.length} waypoints · {formData.distance_km} km · {formData.estimated_duration_hours}h</div>
               </div>
             )}
             <div className="flex items-center justify-between p-3 rounded-lg bg-slate-800/50">
