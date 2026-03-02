@@ -119,7 +119,7 @@ export default function NotificationSettings() {
       queryClient.invalidateQueries({ queryKey: ["notificationRules"] });
       setShowEditor(false);
       setEditingRule(null);
-      toast.success(editingRule?.id ? "Regel opdateret" : "Regel oprettet");
+      toast.success(editingRule?.id ? "Rule updated" : "Rule created");
     },
   });
 
