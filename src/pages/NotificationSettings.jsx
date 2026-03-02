@@ -229,7 +229,7 @@ export default function NotificationSettings() {
           <div className="lg:col-span-2 space-y-4">
             <h2 className="text-lg font-semibold text-white flex items-center gap-2">
               <Activity className="w-5 h-5 text-cyan-400" />
-              Aktive regler
+              Active rules
               <Badge className="bg-slate-800 text-slate-400 border-slate-700">{rules.length}</Badge>
             </h2>
 
