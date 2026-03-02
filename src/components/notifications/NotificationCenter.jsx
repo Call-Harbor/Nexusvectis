@@ -287,7 +287,7 @@ export default function NotificationCenter({ user }) {
                 <Input
                   value={filters.q}
                   onChange={e => setFilter("q", e.target.value)}
-                  placeholder="Søg i titel, besked, detaljer..."
+                  placeholder="Search title, message, details..."
                   className="pl-8 pr-8 h-8 text-xs bg-slate-800/60 border-slate-700/60 text-white placeholder:text-slate-500 focus:border-cyan-500/50 rounded-lg"
                 />
                 <AnimatePresence>
