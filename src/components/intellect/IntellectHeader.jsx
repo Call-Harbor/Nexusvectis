@@ -189,25 +189,14 @@ export default function IntellectHeader({ orgId, openWindow, executePrompt, setS
           </AppSearchDropdown>
 
           {/* AI Prompts Dropdown */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button className="bg-violet-600 hover:bg-violet-700 text-xs sm:text-sm gap-1">
-                <Sparkles className="w-3 h-3 sm:w-4 sm:h-4" /><span className="hidden sm:inline">AI Prompts</span><ChevronDown className="w-3 h-3" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="bg-slate-900 border-slate-800 max-h-96 overflow-y-auto w-80">
-              {AI_PROMPT_SECTIONS.map(([section, items]) => (
-                <React.Fragment key={section}>
-                  <DropdownMenuLabel className="text-violet-400 mt-2">{section}</DropdownMenuLabel>
-                  <DropdownMenuSeparator className="bg-slate-800" />
-                  {items.map(([label, prompt]) => (
-                    <DropdownMenuItem key={label} onClick={() => executePrompt(prompt)} className="text-slate-300 text-xs">{label}</DropdownMenuItem>
-                  ))}
-                </React.Fragment>
-              ))}
-
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <PromptSearchDropdown
+            sections={AI_PROMPT_SECTIONS}
+            onSelect={executePrompt}
+          >
+            <Button className="bg-violet-600 hover:bg-violet-700 text-xs sm:text-sm gap-1">
+              <Sparkles className="w-3 h-3 sm:w-4 sm:h-4" /><span className="hidden sm:inline">AI Prompts</span><ChevronDown className="w-3 h-3" />
+            </Button>
+          </PromptSearchDropdown>
 
           <Button onClick={() => navigate(createPageUrl("Dashboard"))} className="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs sm:text-sm">
             <LayoutDashboard className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
