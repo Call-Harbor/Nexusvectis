@@ -377,20 +377,22 @@ export default function MobileIntellect() {
       </motion.div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-20">
+      <div className="flex-1 overflow-y-auto p-4 space-y-3 pb-4 relative z-10">
         {messages.map((msg, idx) => (
           <motion.div 
             key={idx}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
             className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
           >
-            <div className={`max-w-xs px-4 py-3 rounded-lg text-sm ${
+            <div className={`max-w-xs px-4 py-3 rounded-xl text-sm font-medium backdrop-blur-sm border ${
               msg.role === 'user' 
-                ? 'bg-cyan-600 text-white' 
-                : 'bg-slate-800 text-slate-100'
+                ? 'bg-gradient-to-r from-cyan-600 to-cyan-700 text-white border-cyan-500/50 shadow-lg shadow-cyan-500/20' 
+                : msg.role === 'system'
+                ? 'bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-100 border-amber-500/30'
+                : 'bg-gradient-to-r from-violet-950/40 to-slate-900/40 text-slate-100 border-violet-500/30'
             }`}>
-              <ReactMarkdown className="text-xs">
+              <ReactMarkdown className="text-xs leading-relaxed">
                 {msg.content}
               </ReactMarkdown>
               {msg.files && msg.files.length > 0 && (
