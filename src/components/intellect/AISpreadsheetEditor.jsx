@@ -780,9 +780,12 @@ export default function AISpreadsheetEditor({ initialGrid, initialTitle }) {
     return makeGrid(INITIAL_ROWS, INITIAL_COLS);
   });
   const [selected, setSelected] = useState({ r: 0, c: 0 });
-  const [selection, setSelection] = useState(null); // {r1,c1,r2,c2}
+  const [selection, setSelection] = useState(null); // {r1,c1,r2,c2} — multi-cell drag selection
+  const [dragging, setDragging] = useState(false); // true while mouse is held
+  const [dragStart, setDragStart] = useState(null); // {r,c} where drag started
   const [editingCell, setEditingCell] = useState(null);
   const [formulaBarValue, setFormulaBarValue] = useState('');
+  const formulaBarRef = useRef(null);
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState(null);
   const [showAI, setShowAI] = useState(false);
