@@ -440,6 +440,16 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
     if (!input.trim()) return;
     const currentCommand = input;
 
+    // Image generation detection
+    const imageMatch = currentCommand.match(/(?:generer(?:er)?\s+(?:et\s+)?billede(?:\s+af)?[:\s]*|generate\s+(?:an?\s+)?image(?:\s+of)?[:\s]*|lav\s+(?:et\s+)?billede(?:\s+af)?[:\s]*|create\s+(?:an?\s+)?image(?:\s+of)?[:\s]*)(.+)/i);
+    if (imageMatch || currentCommand.toLowerCase().match(/^(?:billede|image|generer billede|generate image)$/)) {
+      setMessages(prev => [...prev, { role: "user", content: currentCommand }]);
+      setInput("");
+      openWindow('image_generator', { x: 100, y: 80 });
+      setMessages(prev => [...prev, { role: "system", content: `🎨 AI Image Generator opened — enter your prompt to generate an image` }]);
+      return;
+    }
+
     // Company analysis detection
     const companyMatch = currentCommand.match(/(?:analyser(?:er)?\s+virksomheden?\s+|company analysis[:\s]+|analyze company[:\s]+)(.+)/i);
     if (companyMatch) {
