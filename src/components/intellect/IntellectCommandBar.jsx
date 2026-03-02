@@ -83,7 +83,7 @@ export default function IntellectCommandBar({
           <Button onClick={() => openWindow('company_analytics', { x: 0, y: 0 })} variant="outline" size="sm" className="border-fuchsia-500/30 text-fuchsia-400 hover:bg-fuchsia-500/10">
             <Building2 className="w-3.5 h-3.5 mr-1.5" />Company Analytics
           </Button>
-          <Button onClick={() => setShowProfileSearch(true)} variant="outline" size="sm" className="border-blue-500/30 text-blue-400 hover:bg-blue-500/10">
+          <Button onClick={() => openWindow('profile_search', { x: 0, y: 0 })} variant="outline" size="sm" className="border-blue-500/30 text-blue-400 hover:bg-blue-500/10">
             <Building2 className="w-3.5 h-3.5 mr-1.5" />People Search
           </Button>
           <Button onClick={() => handleQuickAction('openSatelliteWeather')} variant="outline" size="sm" className="border-violet-500/30 text-violet-400 hover:bg-violet-500/10">
