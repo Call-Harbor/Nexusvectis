@@ -800,11 +800,43 @@ export default function AISpreadsheetEditor({ initialGrid, initialTitle }) {
   const numCols = grid[0]?.length || INITIAL_COLS;
   const numRows = grid.length;
 
-  // Formula bar sync
+  // Formula bar sync — only update from grid when NOT typing in formula bar
   useEffect(() => {
+    if (document.activeElement === formulaBarRef.current) return;
     const cell = grid[selected.r]?.[selected.c];
     setFormulaBarValue(cell?.value || '');
   }, [selected, grid]);
+
+  // Insert a range reference into the formula bar at cursor position
+  const insertRefIntoFormula = useCallback((ref) => {
+    const input = formulaBarRef.current;
+    if (!input) return;
+    const start = input.selectionStart ?? formulaBarValue.length;
+    const end = input.selectionEnd ?? formulaBarValue.length;
+    const newVal = formulaBarValue.slice(0, start) + ref + formulaBarValue.slice(end);
+    setFormulaBarValue(newVal);
+    setGrid(prev => prev.map((row, ri) =>
+      ri === selected.r ? row.map((cell, ci) => ci === selected.c ? { ...cell, value: newVal } : cell) : row
+    ));
+    // Restore focus + cursor after ref
+    setTimeout(() => {
+      input.focus();
+      input.setSelectionRange(start + ref.length, start + ref.length);
+    }, 0);
+  }, [formulaBarValue, selected]);
+
+  // Whether the formula bar is active (editing a formula) — determines click-to-insert mode
+  const formulaBarActive = formulaBarValue.startsWith('=');
+
+  // Build the range string from a selection
+  const selectionToRef = useCallback((sel) => {
+    if (!sel) return '';
+    const r1 = Math.min(sel.r1, sel.r2), r2 = Math.max(sel.r1, sel.r2);
+    const c1 = Math.min(sel.c1, sel.c2), c2 = Math.max(sel.c1, sel.c2);
+    const startRef = cellRef(r1, c1);
+    const endRef = cellRef(r2, c2);
+    return startRef === endRef ? startRef : `${startRef}:${endRef}`;
+  }, []);
 
   const getDisplayValue = useCallback((r, c) => {
     const cell = grid[r]?.[c];
