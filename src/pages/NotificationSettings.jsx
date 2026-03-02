@@ -354,7 +354,7 @@ export default function NotificationSettings() {
               {notifications.length === 0 ? (
                 <div className="py-10 text-center">
                   <CheckCircle2 className="w-8 h-8 text-emerald-500/40 mx-auto mb-2" />
-                  <p className="text-slate-500 text-sm">Ingen notifikationer endnu</p>
+                  <p className="text-slate-500 text-sm">No notifications yet</p>
                 </div>
               ) : (
                 <div className="divide-y divide-slate-800/60 max-h-[600px] overflow-y-auto">
