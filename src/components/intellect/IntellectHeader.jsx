@@ -174,12 +174,20 @@ export default function IntellectHeader({ orgId, openWindow, executePrompt, setS
               ['invoices', FileText, 'Invoices'],
               ['aioptimization', Sparkles, 'AI Optimization'], 
               ['gpsintegration', Satellite, 'GPS Integration'],
+              ['advanced_intelligence', Brain, 'Advanced Intelligence Panel'],
+              ['deep_analysis', Activity, 'Anomaly Detection + What-If'],
+              ['course_ai', GraduationCap, 'Adaptive Fleet AI Courses'],
+              ['parallel_processor', Zap, 'Parallel Task Processor'],
               ['image_generator', Image, 'AI Image Generator'],
               ['image_editor', Image, 'AI Image Editor']
             ]}
             onSelect={(type) => {
               if (type === 'image_generator') openWindow('image_generator', { x: 120, y: 80 });
               else if (type === 'image_editor') openWindow('image_editor', { x: 140, y: 100 });
+              else if (type === 'advanced_intelligence') setShowAdvancedPanel(true);
+              else if (type === 'deep_analysis') openWindow('deep_analysis', { x: 100, y: 80 });
+              else if (type === 'course_ai') openWindow('course_ai', { x: 120, y: 60 });
+              else if (type === 'parallel_processor') setShowParallelProcessor(true);
               else openWindow(type);
             }}
           >
