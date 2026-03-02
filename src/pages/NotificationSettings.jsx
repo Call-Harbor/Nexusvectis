@@ -33,10 +33,10 @@ const severityColors = {
 };
 
 const eventTypeLabels = {
-  create: "Ny post oprettet",
-  update: "Post opdateret",
-  status_change: "Statusændring",
-  threshold: "Grænseværdi",
+  create: "New record created",
+  update: "Record updated",
+  status_change: "Status change",
+  threshold: "Threshold",
 };
 
 const PRESETS = [
