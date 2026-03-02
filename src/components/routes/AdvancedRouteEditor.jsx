@@ -137,6 +137,64 @@ function EditablePolyline({ waypoints, onAddWaypoint }) {
   );
 }
 
+function WaypointSearch({ onSelect, placeholder, className }) {
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [open, setOpen] = useState(false);
+  const debounce = useRef(null);
+
+  const handleChange = (e) => {
+    const val = e.target.value;
+    setQuery(val);
+    clearTimeout(debounce.current);
+    if (val.length < 2) { setResults([]); setOpen(false); return; }
+    debounce.current = setTimeout(async () => {
+      setLoading(true);
+      const r = await geocodeAddress(val);
+      setResults(r);
+      setOpen(true);
+      setLoading(false);
+    }, 400);
+  };
+
+  return (
+    <div className={cn("relative", className)}>
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+        {loading && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cyan-400 animate-spin" />}
+        <Input
+          value={query}
+          onChange={handleChange}
+          placeholder={placeholder || "Search location..."}
+          className="pl-9 pr-9 bg-slate-800 border-slate-700 text-white text-sm"
+          onFocus={() => results.length > 0 && setOpen(true)}
+          onBlur={() => setTimeout(() => setOpen(false), 200)}
+        />
+      </div>
+      {open && results.length > 0 && (
+        <div className="absolute z-50 top-full mt-1 left-0 right-0 bg-slate-800 border border-slate-700 rounded-lg shadow-xl overflow-hidden max-h-48 overflow-y-auto">
+          {results.map((r, i) => (
+            <button
+              key={i}
+              className="w-full text-left px-3 py-2 text-sm hover:bg-slate-700 transition-colors border-b border-slate-700/50 last:border-0"
+              onClick={() => {
+                onSelect(r);
+                setQuery(r.name);
+                setOpen(false);
+                setResults([]);
+              }}
+            >
+              <div className="text-white font-medium">{r.name}</div>
+              <div className="text-slate-400 text-xs truncate">{r.fullName}</div>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function AdvancedRouteEditor({ initialWaypoints = [], onSave, onCancel }) {
   const [waypoints, setWaypoints] = useState(
     initialWaypoints.length > 0 ? initialWaypoints : []
