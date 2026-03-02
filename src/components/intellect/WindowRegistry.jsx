@@ -41,6 +41,7 @@ export const WINDOW_META = {
   satellite_weather: { title: '🛰️ Satellite & Weather', icon: Satellite },
   news_intelligence: { title: '📰 News Intelligence', icon: Newspaper },
   article_iframe: { title: '📄 Article', icon: Newspaper },
+  company_analytics: { title: '🏢 Company Analytics', icon: Building2 },
 };
 
 export function getWindowMeta(type) {
