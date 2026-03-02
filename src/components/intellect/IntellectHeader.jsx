@@ -41,6 +41,93 @@ const AI_PROMPT_SECTIONS = [
   ]],
 ];
 
+function AppSearchDropdown({ items, onSelect, children }) {
+  const [search, setSearch] = useState("");
+  const filtered = useMemo(() => items.filter(([type, Icon, label]) => label.toLowerCase().includes(search.toLowerCase())), [items, search]);
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="bg-slate-900 border-slate-800 w-96 p-0">
+        <div className="sticky top-0 p-3 border-b border-slate-800 bg-slate-900/95 backdrop-blur">
+          <Input
+            placeholder="Search..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="h-8 text-xs bg-slate-800 border-slate-700 text-white"
+          />
+        </div>
+        <div className="max-h-96 overflow-y-auto p-3 grid grid-cols-2 gap-2">
+          {filtered.length > 0 ? (
+            filtered.map(([type, Icon, label]) => (
+              <button
+                key={type}
+                onClick={() => onSelect(type)}
+                className="flex flex-col items-start gap-2 p-3 rounded-lg hover:bg-slate-800/60 transition-all text-left group"
+              >
+                <Icon className="w-5 h-5 text-cyan-400 group-hover:text-cyan-300" />
+                <span className="text-[11px] font-medium text-slate-300 group-hover:text-white">{label}</span>
+              </button>
+            ))
+          ) : (
+            <div className="col-span-2 text-center py-6 text-slate-500 text-xs">No results found</div>
+          )}
+        </div>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+function PromptSearchDropdown({ sections, onSelect, children }) {
+  const [search, setSearch] = useState("");
+  const filtered = useMemo(() => {
+    const results = [];
+    sections.forEach(([section, items]) => {
+      const sectionItems = items.filter(([label]) => label.toLowerCase().includes(search.toLowerCase()));
+      if (sectionItems.length > 0) results.push([section, sectionItems]);
+    });
+    return results;
+  }, [sections, search]);
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="bg-slate-900 border-slate-800 w-96 p-0">
+        <div className="sticky top-0 p-3 border-b border-slate-800 bg-slate-900/95 backdrop-blur">
+          <Input
+            placeholder="Search prompts..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="h-8 text-xs bg-slate-800 border-slate-700 text-white"
+          />
+        </div>
+        <div className="max-h-96 overflow-y-auto p-3 space-y-4">
+          {filtered.length > 0 ? (
+            filtered.map(([section, items]) => (
+              <div key={section}>
+                <p className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider mb-2">{section}</p>
+                <div className="space-y-1">
+                  {items.map(([label, prompt]) => (
+                    <button
+                      key={label}
+                      onClick={() => onSelect(prompt)}
+                      className="w-full text-left px-2.5 py-2 rounded-lg text-xs text-slate-300 hover:bg-slate-800 hover:text-white transition-all"
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="text-center py-6 text-slate-500 text-xs">No prompts found</div>
+          )}
+        </div>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 export default function IntellectHeader({ orgId, openWindow, executePrompt, setShowAdvancedPanel, setShowParallelProcessor }) {
   const navigate = useNavigate();
 
