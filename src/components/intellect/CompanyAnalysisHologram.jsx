@@ -1228,7 +1228,6 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
                         onChange={e => setOwnerSearch(e.target.value)}
                         onKeyDown={e => e.key === 'Enter' && searchOwners()}
                         placeholder={`Search owners for ${companyName || 'company'}...`}
-
                         className="w-full pl-10 pr-4 py-3 bg-slate-900/60 border-2 border-amber-500/30 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-amber-400"
                       />
                     </div>
