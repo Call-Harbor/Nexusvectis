@@ -126,27 +126,40 @@ export default function ImageEditorHologram({ imageUrl: initialImage, onClose })
     addLog("✨ Building AI edit prompt...", "system");
 
     try {
-      // Enhance the edit prompt via LLM
+      // First, describe the source image using vision LLM
+      addLog("👁️ Analyzing image content with vision AI...", "system");
+      const imageUrls = imageUrl.startsWith("data:") ? [] : [imageUrl];
+      
+      const imageDescription = await base44.integrations.Core.InvokeLLM({
+        prompt: `Describe this image in very precise detail: the subject, composition, colors, lighting, style, background, and all visual elements. Be comprehensive so the description can be used to recreate the exact same image with modifications. Return ONLY the description, no preamble.`,
+        file_urls: imageUrls.length > 0 ? imageUrls : undefined,
+      });
+
+      const description = typeof imageDescription === "string" ? imageDescription : (imageDescription?.text || "");
+      addLog(`📷 Image analyzed: ${description.substring(0, 60)}...`, "detail");
+
+      // Now build a precise edit prompt that keeps original + applies change
       const enhancedEdit = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are an expert image editing AI. The user wants to edit an image with this instruction: "${prompt}". 
-Create a detailed AI image generation prompt that incorporates the original image's content AND applies the requested edit. 
-Make it highly descriptive for best quality results. Return ONLY the final prompt text, nothing else. Max 250 chars.`,
+        prompt: `You are an expert image editing AI. 
+        
+Original image description: "${description}"
+
+User's edit instruction: "${prompt}"
+
+Create a detailed image generation prompt that describes the SAME image as above but with the requested edit applied. Keep all original elements intact except what needs to change. The result should look like the original image was edited, not a new image created. Return ONLY the final prompt text, max 400 chars.`,
       });
 
       const finalPrompt = typeof enhancedEdit === "string"
         ? enhancedEdit
         : (enhancedEdit?.text || prompt);
 
-      addLog(`📐 Final AI prompt ready (${finalPrompt.length} chars)`, "success");
+      addLog(`📐 Edit prompt ready (${finalPrompt.length} chars)`, "success");
       await sleep(300);
-      addLog("🎨 Sending to image generation engine with reference...", "system");
-      addLog("  › Model: FLUX.1-dev [edit mode]", "detail");
-      addLog("  › Edit strength: 0.75", "detail");
-      addLog("  › Steps: 50", "detail");
+      addLog("🎨 Sending to image generation engine...", "system");
 
       const result = await base44.integrations.Core.GenerateImage({
         prompt: finalPrompt,
-        existing_image_urls: [imageUrl.startsWith("data:") ? undefined : imageUrl].filter(Boolean),
+        existing_image_urls: imageUrls.length > 0 ? imageUrls : undefined,
       });
 
       const url = result?.url || result?.data?.url;
