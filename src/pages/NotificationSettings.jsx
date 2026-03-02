@@ -323,7 +323,7 @@ export default function NotificationSettings() {
                           <Button
                             size="icon" variant="ghost"
                             className="w-8 h-8 text-slate-400 hover:text-rose-400"
-                            onClick={() => { if (confirm("Slet denne regel?")) deleteMutation.mutate(rule.id); }}
+                            onClick={() => { if (confirm("Delete this rule?")) deleteMutation.mutate(rule.id); }}
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </Button>
