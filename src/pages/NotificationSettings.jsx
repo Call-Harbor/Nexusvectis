@@ -274,7 +274,7 @@ export default function NotificationSettings() {
                             <h3 className="font-semibold text-white">{rule.name}</h3>
                             <Badge variant="outline" className={colorClass}>{rule.entity_type}</Badge>
                             <Badge variant="outline" className={severityColors[rule.severity]}>{rule.severity}</Badge>
-                            {!rule.is_active && <Badge className="bg-slate-700 text-slate-400">Inaktiv</Badge>}
+                            {!rule.is_active && <Badge className="bg-slate-700 text-slate-400">Inactive</Badge>}
                           </div>
                           <p className="text-xs text-slate-400">{eventTypeLabels[rule.event_type]}</p>
 
