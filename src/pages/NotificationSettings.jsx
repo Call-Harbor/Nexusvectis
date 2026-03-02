@@ -170,9 +170,9 @@ export default function NotificationSettings() {
           <div>
             <h1 className="text-3xl font-bold text-white flex items-center gap-3">
               <Bell className="w-8 h-8 text-cyan-400" />
-              Notifikationsindstillinger
+              Notification Settings
             </h1>
-            <p className="text-slate-400 mt-1">Konfigurer regler for automatiske notifikationer baseret på flåde-hændelser</p>
+            <p className="text-slate-400 mt-1">Configure rules for automatic notifications based on fleet events</p>
           </div>
           <div className="flex gap-2">
             <Button
