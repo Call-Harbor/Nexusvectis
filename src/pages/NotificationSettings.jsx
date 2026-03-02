@@ -240,13 +240,13 @@ export default function NotificationSettings() {
             ) : rules.length === 0 ? (
               <div className="text-center py-16 bg-slate-800/20 rounded-2xl border border-slate-700/30">
                 <Bell className="w-12 h-12 text-slate-700 mx-auto mb-3" />
-                <p className="text-slate-400 font-medium">Ingen regler endnu</p>
-                <p className="text-slate-600 text-sm mt-1 mb-4">Opret din første notifikationsregel for at komme i gang</p>
+                <p className="text-slate-400 font-medium">No rules yet</p>
+                <p className="text-slate-600 text-sm mt-1 mb-4">Create your first notification rule to get started</p>
                 <Button
                   onClick={() => { setEditingRule(null); setShowEditor(true); }}
                   className="bg-gradient-to-r from-cyan-600 to-violet-600 hover:from-cyan-500 hover:to-violet-500"
                 >
-                  <Plus className="w-4 h-4 mr-2" /> Opret første regel
+                  <Plus className="w-4 h-4 mr-2" /> Create first rule
                 </Button>
               </div>
             ) : (
