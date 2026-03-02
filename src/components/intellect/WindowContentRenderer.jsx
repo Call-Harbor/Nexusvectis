@@ -19,6 +19,7 @@ import NewsIntelligence from "@/components/intellect/NewsIntelligence";
 import CompanyAnalysisHologram from "@/components/intellect/CompanyAnalysisHologram";
 import PeopleIntelligenceHologram from "@/components/intellect/PeopleIntelligenceHologram";
 import ImageGeneratorHologram from "@/components/intellect/ImageGeneratorHologram";
+import ImageEditorHologram from "@/components/intellect/ImageEditorHologram";
 
 const CHART_COLORS = ['#06b6d4', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444'];
 
