@@ -547,9 +547,9 @@ export default function NotificationCenter({ user }) {
                                 <button
                                   onClick={() => markAsRead(notif.id)}
                                   className="flex-shrink-0 text-[10px] text-slate-500 hover:text-cyan-400 transition-colors mt-0.5 whitespace-nowrap"
-                                  title="Marker som læst"
-                                >
-                                  Marker læst
+                                  title="Mark as read"
+                                  >
+                                  Mark read
                                 </button>
                               )}
                             </div>
