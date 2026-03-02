@@ -235,7 +235,7 @@ export default function NotificationCenter({ user }) {
                       className="w-7 h-7 text-slate-400 hover:text-cyan-400 relative"
                       onClick={markAllRead}
                       disabled={markingAll}
-                      title="Marker alle som læst"
+                      title="Mark all as read"
                     >
                       {markingAll ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCheck className="w-4 h-4" />}
                     </Button>
