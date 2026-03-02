@@ -702,7 +702,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
               onClick={() => setSearchType('se')}
               className={`px-2 py-0.5 rounded-md transition-colors text-xs ${searchType === 'se' ? 'bg-cyan-500/40 text-cyan-300' : 'hover:bg-slate-800 text-slate-400'}`}
             >
-              Org.nr (SE)
+              Org. No. (SE)
             </button>
             <button 
               onClick={() => setSearchType('de')}
