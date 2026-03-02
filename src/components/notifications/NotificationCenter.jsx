@@ -461,7 +461,7 @@ export default function NotificationCenter({ user }) {
                       </AnimatePresence>
 
                       {savedSearches.length === 0 ? (
-                        <p className="text-[10px] text-slate-600 italic">Ingen gemte søgninger endnu</p>
+                        <p className="text-[10px] text-slate-600 italic">No saved searches yet</p>
                       ) : (
                         <div className="flex flex-wrap gap-1.5">
                           {savedSearches.map(s => {
