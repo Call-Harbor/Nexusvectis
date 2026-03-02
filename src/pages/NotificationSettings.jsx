@@ -132,7 +132,7 @@ export default function NotificationSettings() {
     mutationFn: (id) => base44.entities.NotificationRule.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notificationRules"] });
-      toast.success("Regel slettet");
+      toast.success("Rule deleted");
     },
   });
 
