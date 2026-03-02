@@ -266,7 +266,7 @@ export default function NotificationCenter({ user }) {
                   <span className="text-white font-medium">{filtered.length}</span>
                   {filtered.length !== notifications.length && (
                     <span className="text-slate-600"> / {notifications.length}</span>
-                  )} notifikationer
+                  )} notifications
                 </span>
                 {unreadCount > 0 && (
                   <div className="flex items-center gap-2 ml-auto">
@@ -276,7 +276,7 @@ export default function NotificationCenter({ user }) {
                         <span className={severityConfig[sev].color}>{count}</span>
                       </span>
                     ))}
-                    <span className="text-[10px] text-slate-500">{unreadCount} ulæste</span>
+                    <span className="text-[10px] text-slate-500">{unreadCount} unread</span>
                   </div>
                 )}
               </div>
