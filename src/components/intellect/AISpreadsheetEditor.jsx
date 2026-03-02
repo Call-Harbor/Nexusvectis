@@ -954,6 +954,14 @@ export default function AISpreadsheetEditor({ initialGrid, initialTitle }) {
   const currentCell = grid[selected.r]?.[selected.c];
   const currentFmt = { ...DEFAULT_CELL_FMT, ...currentCell?.fmt };
 
+  const [showFormulaPicker, setShowFormulaPicker] = useState(false);
+  const formulaPickerRef = useRef(null);
+  useEffect(() => {
+    const h = (e) => { if (formulaPickerRef.current && !formulaPickerRef.current.contains(e.target)) setShowFormulaPicker(false); };
+    document.addEventListener('mousedown', h);
+    return () => document.removeEventListener('mousedown', h);
+  }, []);
+
   const FORMULA_EXAMPLES = [
     { label: '=SUM(A1:A5)', desc: 'Sum a range' },
     { label: '=AVERAGE(B1:B10)', desc: 'Average values' },
