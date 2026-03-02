@@ -384,7 +384,7 @@ export default function NotificationCenter({ user }) {
 
                     {/* Event type */}
                     {uniqueEventTypes.length > 0 && (
-                      <FilterRow label="Hændelse">
+                      <FilterRow label="Event">
                         {uniqueEventTypes.map(et => (
                           <FilterPill
                             key={et} active={filters.event_type === et}
