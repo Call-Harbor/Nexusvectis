@@ -461,62 +461,122 @@ export default function MobileIntellect() {
         )}
       </AnimatePresence>
 
-      {/* Input Area */}
-      <div className="border-t border-slate-700 bg-slate-900/50 backdrop-blur p-3 space-y-2">
-        {/* Quick Actions */}
-        {!input && messages.length < 3 && (
-          <div className="grid grid-cols-4 gap-2">
-            {quickActions.map((action, i) => (
-              <button
-                key={i}
-                onClick={() => setInput(action.label)}
-                className="p-2 bg-slate-800/50 hover:bg-slate-700 rounded text-xs text-center transition"
-              >
-                <div className="text-lg mb-0.5">{action.icon}</div>
-                <div className="truncate">{action.label}</div>
-              </button>
-            ))}
-          </div>
+      {/* Voice Waveform Visualizer */}
+      <AnimatePresence>
+        {voiceActive && (
+          <motion.div 
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="border-t border-cyan-500/30 bg-gradient-to-r from-cyan-950/30 to-violet-950/30 px-4 py-4 backdrop-blur"
+          >
+            <div className="flex items-center justify-center gap-1 h-12">
+              {[...Array(16)].map((_, i) => (
+                <motion.div
+                  key={i}
+                  className="w-1 bg-gradient-to-t from-cyan-400 to-violet-400 rounded-full"
+                  animate={{ 
+                    height: [8, 24 + Math.random() * 20, 8]
+                  }}
+                  transition={{
+                    duration: 0.3,
+                    repeat: Infinity,
+                    delay: i * 0.05
+                  }}
+                />
+              ))}
+            </div>
+            <div className="text-center text-xs text-cyan-300 mt-2">
+              {isProcessing ? 'Processing...' : 'Listening...'}
+            </div>
+          </motion.div>
         )}
+      </AnimatePresence>
 
-        {/* Input Bar */}
+      {/* Command Input Area */}
+      <motion.div 
+        className="relative z-10 border-t border-cyan-500/30 bg-gradient-to-t from-slate-950/90 via-slate-900/80 to-transparent backdrop-blur-xl p-4 space-y-3"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
+        {/* Quick Actions Grid */}
+        <AnimatePresence>
+          {!input && !voiceActive && messages.length < 3 && (
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="grid grid-cols-4 gap-2"
+            >
+              {quickActions.map((action, i) => (
+                <motion.button
+                  key={i}
+                  onClick={() => setInput(action.label)}
+                  className="p-3 rounded-lg bg-gradient-to-br from-cyan-500/20 to-violet-500/10 border border-cyan-500/30 hover:border-cyan-500/60 text-xs text-center transition-all hover:bg-gradient-to-br hover:from-cyan-500/30 hover:to-violet-500/20"
+                  whileHover={{ scale: 1.05, y: -2 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <div className="text-lg mb-1">{action.icon}</div>
+                  <div className="truncate text-[10px] font-medium">{action.label}</div>
+                </motion.button>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Main Input Bar */}
         <div className="flex gap-2">
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && processCommand()}
-            placeholder="Command FLEET AI..."
-            className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500"
+            placeholder="Speak or type command..."
+            className="flex-1 bg-slate-900/60 border border-cyan-500/30 rounded-lg px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500/60 focus:bg-slate-900/80 transition backdrop-blur"
           />
-          <button
+          
+          {/* Voice Button */}
+          <motion.button
             onClick={handleVoiceInput}
-            disabled={isListening}
-            className={`p-2 rounded-lg transition ${isListening ? 'bg-red-600' : 'bg-slate-800 hover:bg-slate-700'}`}
+            className={`relative p-3 rounded-lg transition-all ${
+              voiceActive 
+                ? 'bg-gradient-to-r from-red-600 to-red-700 border border-red-500/50' 
+                : 'bg-gradient-to-r from-cyan-600 to-cyan-700 border border-cyan-500/50 hover:from-cyan-500 hover:to-cyan-600'
+            }`}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
-            <Mic className={`w-5 h-5 ${isListening ? 'text-white animate-pulse' : 'text-slate-400'}`} />
-          </button>
-          <label className="p-2 hover:bg-slate-700 rounded-lg cursor-pointer transition">
-            <Paperclip className="w-5 h-5 text-slate-400" />
-            <input 
-              ref={fileInputRef}
-              type="file" 
-              multiple
-              onChange={handleFileUpload}
-              disabled={isUploading}
-              className="hidden"
-              accept="*/*"
-            />
-          </label>
-          <button
+            {voiceActive ? (
+              <>
+                <motion.div 
+                  className="absolute inset-0 rounded-lg border-2 border-red-400"
+                  animate={{ opacity: [0.5, 1, 0.5] }}
+                  transition={{ duration: 1, repeat: Infinity }}
+                />
+                <VolumeX className="w-5 h-5 text-white relative z-10" />
+              </>
+            ) : (
+              <Mic className="w-5 h-5 text-white" />
+            )}
+          </motion.button>
+
+          {/* Send Button */}
+          <motion.button
             onClick={processCommand}
             disabled={!input.trim() || isProcessing}
-            className="bg-cyan-600 hover:bg-cyan-700 disabled:opacity-50 rounded-lg px-4 py-2 transition"
+            className="bg-gradient-to-r from-violet-600 to-violet-700 hover:from-violet-500 hover:to-violet-600 disabled:opacity-30 rounded-lg px-4 py-3 transition border border-violet-500/50"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
-            <Send className="w-5 h-5" />
-          </button>
+            <motion.div
+              animate={isProcessing ? { rotate: 360 } : {}}
+              transition={{ duration: 1, repeat: isProcessing ? Infinity : 0 }}
+            >
+              {isProcessing ? <Zap className="w-5 h-5" /> : <Send className="w-5 h-5" />}
+            </motion.div>
+          </motion.button>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
