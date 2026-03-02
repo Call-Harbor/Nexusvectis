@@ -871,7 +871,9 @@ export default function AISpreadsheetEditor({ initialGrid, initialTitle }) {
 
   const handleFormulaBarChange = (val) => {
     setFormulaBarValue(val);
-    setCell(selected.r, selected.c, val);
+    setGrid(prev => prev.map((row, ri) =>
+      ri === selected.r ? row.map((cell, ci) => ci === selected.c ? { ...cell, value: val } : cell) : row
+    ));
   };
 
   const addRow = () => setGrid(prev => [...prev, Array(numCols).fill(null).map(() => makeCell())]);
