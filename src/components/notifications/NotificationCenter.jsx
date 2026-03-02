@@ -453,7 +453,7 @@ export default function NotificationCenter({ user }) {
                                 autoFocus
                               />
                               <Button size="sm" onClick={saveSearch} className="h-7 text-[11px] bg-cyan-600 hover:bg-cyan-500 px-3 flex-shrink-0">
-                                Gem
+                                Save
                               </Button>
                             </div>
                           </motion.div>
