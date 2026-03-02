@@ -1057,10 +1057,18 @@ export default function AISpreadsheetEditor({ initialGrid, initialTitle }) {
         </div>
         <FunctionSquare className="w-3.5 h-3.5 text-slate-500 flex-shrink-0" />
         <input
+          ref={formulaBarRef}
           value={formulaBarValue}
           onChange={e => handleFormulaBarChange(e.target.value)}
-          onKeyDown={e => { if (e.key === 'Enter') { setCell(selected.r, selected.c, formulaBarValue); setSelected(s => ({ ...s, r: Math.min(numRows - 1, s.r + 1) })); } }}
-          placeholder="Value or =FORMULA()"
+          onKeyDown={e => {
+            if (e.key === 'Enter') {
+              setCell(selected.r, selected.c, formulaBarValue);
+              setSelection(null);
+              setSelected(s => ({ ...s, r: Math.min(numRows - 1, s.r + 1) }));
+            }
+            if (e.key === 'Escape') { setSelection(null); }
+          }}
+          placeholder="Value or =FORMULA() — click cells/drag to insert refs"
           className="flex-1 h-6 text-xs font-mono text-white bg-transparent outline-none border-0 px-1 placeholder:text-slate-600"
         />
         {formulaBarValue.startsWith('=') && (
