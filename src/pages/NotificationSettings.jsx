@@ -181,7 +181,7 @@ export default function NotificationSettings() {
               className="bg-slate-800/50 border-slate-700/50 text-white hover:bg-slate-700/50"
             >
               <Zap className="w-4 h-4 mr-2 text-amber-400" />
-              Hurtige skabeloner
+              Quick templates
             </Button>
             <Button
               onClick={() => { setEditingRule(null); setShowEditor(true); }}
