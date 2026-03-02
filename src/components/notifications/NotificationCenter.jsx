@@ -348,7 +348,7 @@ export default function NotificationCenter({ user }) {
                 >
                   <div className="px-4 py-3 space-y-3">
                     {/* Severity */}
-                    <FilterRow label="Alvorlighed">
+                    <FilterRow label="Severity">
                       {Object.entries(severityConfig).map(([k, v]) => (
                         <FilterPill
                           key={k} active={filters.severity === k}
