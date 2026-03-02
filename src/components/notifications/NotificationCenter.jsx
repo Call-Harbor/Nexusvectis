@@ -433,7 +433,7 @@ export default function NotificationCenter({ user }) {
                           onClick={() => setShowSaveInput(v => !v)}
                           className={`text-[10px] transition-colors flex items-center gap-1 ${showSaveInput ? "text-cyan-300" : "text-cyan-500 hover:text-cyan-300"}`}
                         >
-                          + Gem nuværende
+                          + Save current
                         </button>
                       </div>
 
