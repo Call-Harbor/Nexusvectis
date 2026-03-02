@@ -43,6 +43,7 @@ export const WINDOW_META = {
   article_iframe: { title: '📄 Article', icon: Newspaper },
   company_analytics: { title: '🏢 Company Analytics', icon: Building2 },
   image_generator: { title: '🎨 AI Image Generator', icon: Image },
+  image_editor: { title: '✏️ AI Image Editor', icon: Image },
 };
 
 export function getWindowMeta(type) {
