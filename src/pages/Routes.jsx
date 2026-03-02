@@ -693,7 +693,9 @@ export default function Routes() {
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                   />
-                  {selectedRoute.waypoints.map((waypoint, idx) => (
+                  <FitBounds waypoints={selectedRoute.waypoints} />
+                  {/* Only show start/end markers to keep map clean */}
+                  {[selectedRoute.waypoints[0], selectedRoute.waypoints[selectedRoute.waypoints.length - 1]].map((waypoint, idx) => (
                     <Marker key={idx} position={[waypoint.lat, waypoint.lng]}>
                       <Popup>{waypoint.name}</Popup>
                     </Marker>
@@ -701,7 +703,8 @@ export default function Routes() {
                   <Polyline
                     positions={selectedRoute.waypoints.map(w => [w.lat, w.lng])}
                     color="#06b6d4"
-                    weight={3}
+                    weight={4}
+                    opacity={0.9}
                   />
                 </MapContainer>
               </div>
