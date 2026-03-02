@@ -590,14 +590,16 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
   ];
 
   return (
-    <div className={`${embedded ? 'relative w-full h-full' : 'fixed inset-0 z-50'} flex flex-col overflow-auto`} style={{ backgroundColor: '#020817' }}>
-      {/* Animated background */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-br from-cyan-950/30 via-slate-950 to-violet-950/30" />
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.05)_1px,transparent_1px)] bg-[size:50px_50px]" />
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-violet-500/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1.5s' }} />
-      </div>
+    <div className={`${embedded ? 'w-full h-full' : 'fixed inset-0 z-50'} flex flex-col overflow-auto bg-slate-950`}>
+      {/* Animated background - only when not embedded */}
+      {!embedded && (
+        <div className="fixed inset-0 pointer-events-none">
+          <div className="absolute inset-0 bg-gradient-to-br from-cyan-950/30 via-slate-950 to-violet-950/30" />
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.05)_1px,transparent_1px)] bg-[size:50px_50px]" />
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl animate-pulse" />
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-violet-500/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1.5s' }} />
+        </div>
+      )}
 
       {/* Header */}
       <div className="relative z-10 flex items-center justify-between p-4 sm:p-5 border-b border-cyan-500/20 bg-slate-950/80 backdrop-blur flex-shrink-0">
