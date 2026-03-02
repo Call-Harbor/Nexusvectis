@@ -253,7 +253,7 @@ export default function NotificationCenter({ user }) {
                     )}
                   </button>
                   <Link to={createPageUrl("NotificationSettings")}>
-                    <Button size="icon" variant="ghost" className="w-7 h-7 text-slate-400 hover:text-white" title="Indstillinger">
+                    <Button size="icon" variant="ghost" className="w-7 h-7 text-slate-400 hover:text-white" title="Settings">
                       <Settings className="w-4 h-4" />
                     </Button>
                   </Link>
