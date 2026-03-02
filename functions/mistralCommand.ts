@@ -509,12 +509,22 @@ Context data: ${JSON.stringify(context)}`;
 
       if (!response.ok) {
         const error = await response.text();
-        console.error('Mistral API error:', error);
+        console.error('Mistral API error:', { status: response.status, error });
+        
+        // More informative error message based on status
+        let message = 'AI temporarily unavailable. Please try again in a moment.';
+        if (response.status === 429) {
+          message = 'API rate limit exceeded. Please wait a moment.';
+        } else if (response.status === 401 || response.status === 403) {
+          message = 'API authentication failed. Check MISTRAL_API_KEY configuration.';
+        } else if (response.status === 500) {
+          message = 'AI service error. Please try again shortly.';
+        }
         
         return Response.json({
           action: 'ANSWER',
           parameters: {},
-          message: 'AI temporarily unavailable. Please try again in a moment.',
+          message,
           open_window: null
         });
       }
