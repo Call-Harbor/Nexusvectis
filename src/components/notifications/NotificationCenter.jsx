@@ -21,12 +21,12 @@ const severityConfig = {
   critical: { icon: AlertCircle,   color: "text-rose-400",  bg: "bg-rose-500/10 border-rose-500/30",   dot: "bg-rose-400",   label: "Critical" },
 };
 
-const entityLabels = { Vehicle: "Køretøj", Shipment: "Forsendelse", Route: "Rute", Maintenance: "Vedligeholdelse", Alert: "Alert", Exception: "Undtagelse" };
-const eventLabels  = { fuel_low: "Lav brændstof", status_change: "Statusændring", delayed: "Forsinkelse", maintenance_due: "Vedligeholdelse", temperature_breach: "Temperaturbrud", route_blocked: "Blokeret rute", created: "Oprettet", updated: "Opdateret" };
+const entityLabels = { Vehicle: "Vehicle", Shipment: "Shipment", Route: "Route", Maintenance: "Maintenance", Alert: "Alert", Exception: "Exception" };
+const eventLabels  = { fuel_low: "Low fuel", status_change: "Status change", delayed: "Delayed", maintenance_due: "Maintenance due", temperature_breach: "Temperature breach", route_blocked: "Route blocked", created: "Created", updated: "Updated" };
 
-const filterLabels = { severity: "Alvorlighed", entity_type: "Entitet", event_type: "Hændelse", is_read: "Status", channels: "Kanal", q: "Søgning" };
+const filterLabels = { severity: "Severity", entity_type: "Entity", event_type: "Event", is_read: "Status", channels: "Channel", q: "Search" };
 const filterValueLabels = {
-  unread: "Ulæste", read: "Læste", email: "E-mail", in_app: "App",
+  unread: "Unread", read: "Read", email: "E-mail", in_app: "App",
   ...Object.fromEntries(Object.entries(entityLabels)),
   ...Object.fromEntries(Object.entries(eventLabels)),
   ...Object.fromEntries(Object.entries(severityConfig).map(([k, v]) => [k, v.label])),
