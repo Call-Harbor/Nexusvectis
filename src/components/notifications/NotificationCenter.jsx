@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { createPageUrl } from "../../utils";
 import { Link } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
-import { da } from "date-fns/locale";
+import { enUS } from "date-fns/locale";
 
 const severityConfig = {
   info:     { icon: Info,          color: "text-blue-400",  bg: "bg-blue-500/10 border-blue-500/30",   dot: "bg-blue-400",   label: "Info"     },
