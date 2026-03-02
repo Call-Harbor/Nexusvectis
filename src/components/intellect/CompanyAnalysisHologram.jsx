@@ -777,7 +777,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
           </div>
           <div className="text-center">
             <p className="text-white font-semibold">Deep-analyzing "{companyName}"</p>
-            <p className="text-slate-400 text-sm mt-1">Fetching financial data, ESG ratings, leadership profiles, SWOT...</p>
+            <p className="text-slate-400 text-sm mt-1">Fetching financial data, ESG ratings, leadership profiles, SWOT analysis...</p>
           </div>
           <div className="flex gap-2 text-xs text-slate-500 flex-wrap justify-center">
             {['Orbis', 'Bloomberg', 'LinkedIn', 'Annual Reports', 'ESG Ratings', 'SEC Filings'].map(s => (
