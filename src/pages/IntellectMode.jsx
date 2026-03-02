@@ -857,6 +857,7 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
           setShowCompanyAnalysis={setShowCompanyAnalysis}
           setShowProfileSearch={setShowProfileSearch}
           handleQuickAction={handleQuickAction}
+          openWindow={openWindow}
         />
       </div>
 
