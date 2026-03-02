@@ -378,7 +378,7 @@ export default function NotificationSettings() {
                             )}
                             <div className="flex items-center justify-between mt-1">
                               <span className="text-[9px] text-slate-600">
-                                {notif.created_date && format(new Date(notif.created_date), "d. MMM HH:mm", { locale: da })}
+                                {notif.created_date && format(new Date(notif.created_date), "d MMM HH:mm", { locale: enUS })}
                               </span>
                               <div className="flex gap-0.5">
                                 {notif.channels_sent?.map(ch => (
