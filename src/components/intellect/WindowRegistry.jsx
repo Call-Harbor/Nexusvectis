@@ -1,7 +1,7 @@
 import { 
   Truck, AlertTriangle, Route, Package, LayoutDashboard, Settings, Sparkles, 
   FileText, Warehouse, TrendingUp, Activity, Satellite, Network, Shield, 
-  Globe, MessageSquare, BarChart3, Zap, Users, Newspaper
+  Globe, MessageSquare, BarChart3, Zap, Users, Newspaper, Building2
 } from "lucide-react";
 
 export const WINDOW_META = {
