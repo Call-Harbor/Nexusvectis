@@ -424,7 +424,7 @@ export default function NotificationCenter({ user }) {
                     <div className="pt-2 border-t border-slate-800/60">
                       <div className="flex items-center justify-between mb-2">
                         <p className="text-[10px] text-slate-500 uppercase font-semibold tracking-wide flex items-center gap-1">
-                          <Bookmark className="w-3 h-3" /> Gemte søgninger
+                          <Bookmark className="w-3 h-3" /> Saved searches
                           {savedSearches.length > 0 && (
                             <span className="bg-slate-700 text-slate-400 rounded px-1">{savedSearches.length}</span>
                           )}
