@@ -285,10 +285,15 @@ Return ONLY the enhanced prompt text, nothing else.`,
                 </div>
 
                 {/* Actions */}
-                <div className="flex gap-2 flex-shrink-0">
+                <div className="flex gap-2 flex-shrink-0 flex-wrap">
                   <Button size="sm" onClick={download} className="bg-emerald-600 hover:bg-emerald-500 text-xs h-7 px-3">
                     <Download className="w-3 h-3 mr-1.5" />Download
                   </Button>
+                  {openWindow && (
+                    <Button size="sm" onClick={() => openWindow('image_editor', { x: 120, y: 80, imageUrl: generatedImage })} className="bg-violet-600 hover:bg-violet-500 text-xs h-7 px-3 border-0">
+                      <Pencil className="w-3 h-3 mr-1.5" />Edit Image
+                    </Button>
+                  )}
                   <Button size="sm" variant="outline" onClick={() => { setGeneratedImage(null); setActiveSteps([]); setLogs([]); }} className="border-slate-700 text-slate-300 hover:text-white text-xs h-7 px-3">
                     <RefreshCw className="w-3 h-3 mr-1.5" />New
                   </Button>
