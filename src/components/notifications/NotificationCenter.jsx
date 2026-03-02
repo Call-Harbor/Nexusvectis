@@ -328,7 +328,7 @@ export default function NotificationCenter({ user }) {
                         onClick={resetFilters}
                         className="inline-flex items-center gap-1 text-[10px] text-slate-500 hover:text-rose-400 transition-colors ml-auto"
                       >
-                        <RotateCcw className="w-2.5 h-2.5" /> Nulstil alle
+                        <RotateCcw className="w-2.5 h-2.5" /> Reset all
                       </button>
                     </div>
                   </motion.div>
