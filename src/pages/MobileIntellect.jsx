@@ -266,21 +266,74 @@ export default function MobileIntellect() {
     addThinkingLog('complete', 'Processing complete');
   };
 
-  const handleVoiceInput = () => {
+  const handleVoiceInput = useCallback(() => {
     if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-      toast.error('Speech recognition not supported');
+      toast.error('Voice not supported on this device');
       return;
     }
+
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    
+    if (voiceActive) {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+        setVoiceActive(false);
+        setVoiceWaveform([]);
+      }
+      return;
+    }
+
     const recognition = new SpeechRecognition();
-    recognition.onstart = () => setIsListening(true);
-    recognition.onend = () => setIsListening(false);
-    recognition.onresult = (e) => {
-      const text = Array.from(e.results).map(r => r[0].transcript).join('');
-      setInput(text);
+    recognitionRef.current = recognition;
+    
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = 'en-US';
+
+    recognition.onstart = () => {
+      setVoiceActive(true);
+      setIsListening(true);
     };
+
+    recognition.onend = () => {
+      setVoiceActive(false);
+      setIsListening(false);
+      setVoiceWaveform([]);
+    };
+
+    recognition.onresult = (event) => {
+      let interimTranscript = '';
+      let finalTranscript = '';
+
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript;
+        if (event.results[i].isFinal) {
+          finalTranscript += transcript + ' ';
+        } else {
+          interimTranscript += transcript;
+        }
+      }
+
+      if (finalTranscript) {
+        setInput(prev => prev + finalTranscript);
+      } else if (interimTranscript) {
+        setInput(interimTranscript);
+      }
+
+      // Animate waveform
+      setVoiceWaveform(prev => {
+        const next = [...prev, Math.random() * 100];
+        return next.slice(-8);
+      });
+    };
+
+    recognition.onerror = (event) => {
+      toast.error(`Voice error: ${event.error}`);
+      setVoiceActive(false);
+    };
+
     recognition.start();
-  };
+  }, [voiceActive]);
 
   const quickActions = [
     { label: "Fleet Status", icon: "📍" },
