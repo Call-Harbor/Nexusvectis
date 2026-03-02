@@ -225,7 +225,7 @@ export default function NotificationCenter({ user }) {
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <Bell className="w-4 h-4 text-cyan-400" />
-                  <span className="font-semibold text-white text-sm">Notifikationer</span>
+                  <span className="font-semibold text-white text-sm">Notifications</span>
                   {loading && <Loader2 className="w-3 h-3 text-slate-500 animate-spin" />}
                 </div>
                 <div className="flex items-center gap-1">
