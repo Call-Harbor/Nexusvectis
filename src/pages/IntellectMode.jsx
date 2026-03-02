@@ -673,6 +673,20 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
             setMessages(prev => [...prev, { role: "assistant", content: message }]);
             if (parameters.visualization_type) setShow3DVisualization({ type: parameters.type, vehicles, routes });
             break;
+          case "CREATE_DOCUMENT":
+            openWindow('document_editor', { x: 80, y: 60 }, {
+              initialContent: parameters.content_html,
+              initialTitle: parameters.title
+            });
+            setMessages(prev => [...prev, { role: "assistant", content: `📄 **${parameters.title}** — ${parameters.description || 'Document created and ready to edit.'}` }]);
+            break;
+          case "CREATE_SPREADSHEET":
+            openWindow('spreadsheet_editor', { x: 80, y: 60 }, {
+              initialGrid: parameters.grid,
+              initialTitle: parameters.title
+            });
+            setMessages(prev => [...prev, { role: "assistant", content: `📊 **${parameters.title}** — ${parameters.description || 'Spreadsheet created and ready to edit.'}` }]);
+            break;
           default:
             setMessages(prev => [...prev, { role: "assistant", content: message || "Command executed." }]);
             if (open_window) openWindow(open_window);
