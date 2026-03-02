@@ -174,6 +174,8 @@ export default function IntellectHeader({ orgId, openWindow, executePrompt, setS
               ['invoices', FileText, 'Invoices'],
               ['aioptimization', Sparkles, 'AI Optimization'], 
               ['gpsintegration', Satellite, 'GPS Integration'],
+              ['predictive_maintenance', Wrench, 'Predictive Maintenance'],
+              ['route_optimization', Route, 'Route Optimization'],
               ['advanced_intelligence', Brain, 'Advanced Intelligence Panel'],
               ['deep_analysis', Activity, 'Anomaly Detection + What-If'],
               ['course_ai', GraduationCap, 'Adaptive Fleet AI Courses'],
