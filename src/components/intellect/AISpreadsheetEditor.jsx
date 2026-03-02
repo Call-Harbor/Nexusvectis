@@ -271,9 +271,19 @@ const DEFAULT_CELL_FMT = { bold: false, italic: false, align: 'left', bg: '', co
 
 function cellRef(r, c) { return `${getColName(c)}${r + 1}`; }
 
-export default function AISpreadsheetEditor() {
-  const [sheetName, setSheetName] = useState("Untitled Spreadsheet");
-  const [grid, setGrid] = useState(() => makeGrid(INITIAL_ROWS, INITIAL_COLS));
+export default function AISpreadsheetEditor({ initialGrid, initialTitle }) {
+  const [sheetName, setSheetName] = useState(initialTitle || "Untitled Spreadsheet");
+  const [grid, setGrid] = useState(() => {
+    if (initialGrid) {
+      // initialGrid is array of arrays of strings
+      const rows = initialGrid.map(row => row.map(val => makeCell(String(val ?? ''))));
+      // Pad to at least INITIAL_ROWS/COLS
+      while (rows.length < INITIAL_ROWS) rows.push(Array(Math.max(INITIAL_COLS, rows[0]?.length || INITIAL_COLS)).fill(null).map(() => makeCell()));
+      rows.forEach(row => { while (row.length < INITIAL_COLS) row.push(makeCell()); });
+      return rows;
+    }
+    return makeGrid(INITIAL_ROWS, INITIAL_COLS);
+  });
   const [selected, setSelected] = useState({ r: 0, c: 0 });
   const [selection, setSelection] = useState(null); // {r1,c1,r2,c2}
   const [editingCell, setEditingCell] = useState(null);
