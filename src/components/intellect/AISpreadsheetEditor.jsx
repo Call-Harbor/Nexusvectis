@@ -1137,16 +1137,65 @@ export default function AISpreadsheetEditor({ initialGrid, initialTitle }) {
                     const isFormula = cell.value.startsWith('=');
                     const isError = displayVal.startsWith('#');
 
+                    // Highlight cells within the drag selection
+                    const inSelection = selection &&
+                      ri >= Math.min(selection.r1, selection.r2) && ri <= Math.max(selection.r1, selection.r2) &&
+                      ci >= Math.min(selection.c1, selection.c2) && ci <= Math.max(selection.c1, selection.c2);
+
                     return (
                       <td key={ci}
-                        onClick={() => { setSelected({ r: ri, c: ci }); setEditingCell(null); }}
-                        onDoubleClick={() => setEditingCell({ r: ri, c: ci })}
+                        onMouseDown={e => {
+                          if (e.button !== 0) return;
+                          if (formulaBarActive && document.activeElement === formulaBarRef.current) {
+                            // Formula-insert mode: start drag to pick range
+                            e.preventDefault();
+                            setDragStart({ r: ri, c: ci });
+                            setDragging(true);
+                            const newSel = { r1: ri, c1: ci, r2: ri, c2: ci };
+                            setSelection(newSel);
+                            insertRefIntoFormula(selectionToRef(newSel));
+                          } else {
+                            setSelected({ r: ri, c: ci });
+                            setEditingCell(null);
+                            setDragStart({ r: ri, c: ci });
+                            setDragging(true);
+                            setSelection(null);
+                          }
+                        }}
+                        onMouseEnter={() => {
+                          if (!dragging) return;
+                          if (formulaBarActive && document.activeElement === formulaBarRef.current) {
+                            // Extend formula selection
+                            const newSel = { r1: dragStart.r, c1: dragStart.c, r2: ri, c2: ci };
+                            setSelection(newSel);
+                            // Replace the last ref in formula bar with the new range
+                            const ref = selectionToRef(newSel);
+                            // Find and replace the partial ref already inserted
+                            const baseRef = selectionToRef({ r1: dragStart.r, c1: dragStart.c, r2: dragStart.r, c2: dragStart.c });
+                            setFormulaBarValue(prev => {
+                              const idx = prev.lastIndexOf(baseRef.split(':')[0]);
+                              if (idx < 0) return prev;
+                              return prev.slice(0, idx) + ref;
+                            });
+                          } else {
+                            // Normal multi-select
+                            setSelection({ r1: dragStart.r, c1: dragStart.c, r2: ri, c2: ci });
+                          }
+                        }}
+                        onMouseUp={() => {
+                          setDragging(false);
+                          if (formulaBarActive) return; // keep selection visible for formula
+                          setSelection(null);
+                        }}
+                        onDoubleClick={() => { if (!formulaBarActive) setEditingCell({ r: ri, c: ci }); }}
                         onKeyDown={e => handleKeyDown(e, ri, ci)}
                         tabIndex={0}
-                        className={`border-b border-r border-slate-800/40 relative outline-none cursor-cell
-                          ${isSelected ? 'ring-2 ring-inset ring-emerald-500/70 bg-emerald-500/5 z-10' : 'hover:bg-slate-800/30'}
+                        className={`border-b border-r border-slate-800/40 relative outline-none
+                          ${formulaBarActive ? 'cursor-crosshair' : 'cursor-cell'}
+                          ${isSelected && !inSelection ? 'ring-2 ring-inset ring-emerald-500/70 bg-emerald-500/5 z-10' : ''}
+                          ${inSelection ? 'bg-blue-500/15 ring-1 ring-inset ring-blue-400/40' : (!isSelected ? 'hover:bg-slate-800/30' : '')}
                           ${isError ? 'text-red-400' : ''}`}
-                        style={{ width: colWidths[ci], height: ROW_HEIGHT, backgroundColor: !isSelected && fmt.bg ? fmt.bg : undefined }}
+                        style={{ width: colWidths[ci], height: ROW_HEIGHT, backgroundColor: !isSelected && !inSelection && fmt.bg ? fmt.bg : undefined }}
                       >
                         {isEditing ? (
                           <input
