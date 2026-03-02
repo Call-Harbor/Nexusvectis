@@ -649,7 +649,7 @@ export default function Routes() {
             {planRouteMutation.isPending && (
               <div className="p-3 rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-sm flex items-center gap-2 text-cyan-400">
                 <div className="w-4 h-4 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin flex-shrink-0" />
-                Planning real road route using OpenStreetMap...
+                Planning route · Running Swarm Intelligence + Immunity scan...
               </div>
             )}
             {planRouteMutation.isError && (
@@ -661,6 +661,86 @@ export default function Routes() {
               <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-sm">
                 <div className="text-emerald-400 font-medium mb-1">✓ Route planned on real road network!</div>
                 <div className="text-slate-300">{formData.waypoints.length} waypoints · {formData.distance_km} km · {formData.estimated_duration_hours}h</div>
+              </div>
+            )}
+            {planRouteIntelligence && (
+              <div className="space-y-2">
+                {/* Swarm Intelligence Report */}
+                {planRouteIntelligence.swarm && (
+                  <div className="p-3 rounded-lg bg-emerald-500/8 border border-emerald-500/25 text-xs">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                      <span className="text-emerald-400 font-bold uppercase tracking-wide">Swarm Intelligence</span>
+                      <span className={`ml-auto font-mono text-[10px] px-2 py-0.5 rounded-full border ${
+                        planRouteIntelligence.swarm.status === 'OPTIMAL' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' :
+                        planRouteIntelligence.swarm.status === 'ADEQUATE' ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' :
+                        'bg-slate-500/20 text-slate-300 border-slate-500/30'
+                      }`}>{planRouteIntelligence.swarm.status}</span>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 mb-2">
+                      <div className="text-center">
+                        <div className="text-emerald-400 font-bold">{planRouteIntelligence.swarm.pheromone_strength}</div>
+                        <div className="text-slate-500">Pheromone</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-cyan-400 font-bold">{planRouteIntelligence.swarm.pso_efficiency_score}</div>
+                        <div className="text-slate-500">PSO Score</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-violet-400 font-bold">{planRouteIntelligence.swarm.swarm_confidence}</div>
+                        <div className="text-slate-500">Confidence</div>
+                      </div>
+                    </div>
+                    {planRouteIntelligence.swarm.bottleneck_risk && (
+                      <div className="text-amber-400 text-[10px] mb-1">⚠ ACO Bottleneck risk in corridor</div>
+                    )}
+                    {planRouteIntelligence.swarm.scout_coverage && (
+                      <div className="text-emerald-400 text-[10px] mb-1">✓ Scout agent coverage active</div>
+                    )}
+                    {planRouteIntelligence.swarm.ai_analysis && (
+                      <div className="text-slate-300 text-[10px] italic border-t border-emerald-500/15 pt-1 mt-1">{planRouteIntelligence.swarm.ai_analysis}</div>
+                    )}
+                  </div>
+                )}
+                {/* Immunity Engine Report */}
+                {planRouteIntelligence.immunity && (
+                  <div className={`p-3 rounded-lg text-xs border ${
+                    planRouteIntelligence.immunity.threat_level === 'CRITICAL' ? 'bg-red-500/8 border-red-500/30' :
+                    planRouteIntelligence.immunity.threat_level === 'ELEVATED' ? 'bg-orange-500/8 border-orange-500/30' :
+                    planRouteIntelligence.immunity.threat_level === 'MODERATE' ? 'bg-amber-500/8 border-amber-500/25' :
+                    'bg-violet-500/8 border-violet-500/20'
+                  }`}>
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className={`w-2 h-2 rounded-full ${
+                        planRouteIntelligence.immunity.threat_level === 'CRITICAL' ? 'bg-red-400' :
+                        planRouteIntelligence.immunity.threat_level === 'ELEVATED' ? 'bg-orange-400' :
+                        planRouteIntelligence.immunity.threat_level === 'MODERATE' ? 'bg-amber-400' :
+                        'bg-violet-400'
+                      } animate-pulse`} />
+                      <span className={`font-bold uppercase tracking-wide ${
+                        planRouteIntelligence.immunity.threat_level === 'CRITICAL' ? 'text-red-400' :
+                        planRouteIntelligence.immunity.threat_level === 'ELEVATED' ? 'text-orange-400' :
+                        planRouteIntelligence.immunity.threat_level === 'MODERATE' ? 'text-amber-400' :
+                        'text-violet-400'
+                      }`}>Immunity Engine</span>
+                      <span className="ml-auto font-bold text-[10px]">{planRouteIntelligence.immunity.threat_level} · {planRouteIntelligence.immunity.threat_score}/100</span>
+                    </div>
+                    {planRouteIntelligence.immunity.immune_clearance ? (
+                      <div className="text-emerald-400 text-[10px] mb-1">✓ Route cleared for dispatch</div>
+                    ) : (
+                      <div className="text-red-400 text-[10px] mb-1">⚠ Manual review required before dispatch</div>
+                    )}
+                    {planRouteIntelligence.immunity.quarantined_in_corridor?.length > 0 && (
+                      <div className="text-orange-400 text-[10px] mb-1">🔒 Quarantined vehicles in corridor: {planRouteIntelligence.immunity.quarantined_in_corridor.map(v => v.name).join(', ')}</div>
+                    )}
+                    {planRouteIntelligence.immunity.swarm_threat_posture !== 'NOMINAL' && (
+                      <div className="text-red-300 text-[10px] mb-1">🛡 Swarm posture: {planRouteIntelligence.immunity.swarm_threat_posture}</div>
+                    )}
+                    {planRouteIntelligence.immunity.ai_assessment && (
+                      <div className="text-slate-300 text-[10px] italic border-t border-slate-700/40 pt-1 mt-1">{planRouteIntelligence.immunity.ai_assessment}</div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
             <div className="flex items-center justify-between p-3 rounded-lg bg-slate-800/50">
