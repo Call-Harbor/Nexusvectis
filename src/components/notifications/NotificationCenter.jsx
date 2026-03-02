@@ -17,8 +17,8 @@ import { da } from "date-fns/locale";
 
 const severityConfig = {
   info:     { icon: Info,          color: "text-blue-400",  bg: "bg-blue-500/10 border-blue-500/30",   dot: "bg-blue-400",   label: "Info"     },
-  warning:  { icon: AlertTriangle, color: "text-amber-400", bg: "bg-amber-500/10 border-amber-500/30", dot: "bg-amber-400",  label: "Advarsel" },
-  critical: { icon: AlertCircle,   color: "text-rose-400",  bg: "bg-rose-500/10 border-rose-500/30",   dot: "bg-rose-400",   label: "Kritisk"  },
+  warning:  { icon: AlertTriangle, color: "text-amber-400", bg: "bg-amber-500/10 border-amber-500/30", dot: "bg-amber-400",  label: "Warning"  },
+  critical: { icon: AlertCircle,   color: "text-rose-400",  bg: "bg-rose-500/10 border-rose-500/30",   dot: "bg-rose-400",   label: "Critical" },
 };
 
 const entityLabels = { Vehicle: "Køretøj", Shipment: "Forsendelse", Route: "Rute", Maintenance: "Vedligeholdelse", Alert: "Alert", Exception: "Undtagelse" };
