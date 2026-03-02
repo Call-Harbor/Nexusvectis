@@ -341,7 +341,7 @@ export default function NotificationSettings() {
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-white flex items-center gap-2">
                 <Bell className="w-5 h-5 text-cyan-400" />
-                Seneste notifikationer
+                Recent notifications
               </h2>
               {unreadCount > 0 && (
                 <Button size="sm" variant="ghost" className="text-xs text-slate-400 hover:text-cyan-400" onClick={markAllRead}>
