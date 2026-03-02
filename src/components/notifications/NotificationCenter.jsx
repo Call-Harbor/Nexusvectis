@@ -497,7 +497,7 @@ export default function NotificationCenter({ user }) {
               {loading && notifications.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12">
                   <Loader2 className="w-8 h-8 text-slate-600 animate-spin mb-3" />
-                  <p className="text-slate-500 text-sm">Indlæser notifikationer...</p>
+                   <p className="text-slate-500 text-sm">Loading notifications...</p>
                 </div>
               ) : paginated.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 text-center px-4">
