@@ -136,16 +136,15 @@ export default function MobileIntellect() {
         let fileUrls = currentFiles.map(f => f.url);
 
         const payload = {
-          message: currentCommand,
-          conversation_history: conversationHistory,
+          command: currentCommand,
           context: { 
-            current_datetime: userLocalTime, 
-            user_timezone: userTimezone, 
-            vehicles_count: vehicles.length, 
-            alerts_count: alerts.length, 
-            routes_count: routes.length, 
-            shipments_count: shipments.length 
+            user_timezone: userTimezone,
+            fleet_vehicles: vehicles.length,
+            active_alerts: alerts.length,
+            active_routes: routes.length,
+            shipments_in_transit: shipments.length
           },
+          history: conversationHistory,
           ...(fileUrls.length > 0 && { file_urls: fileUrls })
         };
 
