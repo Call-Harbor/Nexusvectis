@@ -86,9 +86,12 @@ function DropSelect({ value, options, onChange, width = 'w-28' }) {
   );
 }
 
-export default function AIDocumentEditor() {
-  const [content, setContent] = useState(`<h1>Document Title</h1><p>Start typing your document here...</p>`);
-  const [documentTitle, setDocumentTitle] = useState("Untitled Document");
+export default function AIDocumentEditor({ initialContent, initialTitle, onReady }) {
+  const [content, setContent] = useState(initialContent || `<h1>Document Title</h1><p>Start typing your document here...</p>`);
+  const [documentTitle, setDocumentTitle] = useState(initialTitle || "Untitled Document");
+
+  // Notify parent when content loaded
+  useEffect(() => { onReady?.(); }, []);
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState(null);
   const [showAISuggestions, setShowAISuggestions] = useState(false);
