@@ -137,6 +137,8 @@ export default function Routes() {
   const [editingRoute, setEditingRoute] = useState(null);
   const [showRouteOptimizer, setShowRouteOptimizer] = useState(false);
 
+  const [planRouteIntelligence, setPlanRouteIntelligence] = useState(null);
+
   const planRouteMutation = useMutation({
     mutationFn: async ({ origin, destination, transport_type }) => {
       const response = await base44.functions.invoke('planRoute', { 
@@ -155,6 +157,13 @@ export default function Routes() {
           estimated_duration_hours: data.route_data.estimated_duration_hours,
           co2_estimate: data.route_data.co2_estimate
         }));
+      }
+      // Store swarm + immunity intelligence reports
+      if (data.swarm_intelligence || data.immunity) {
+        setPlanRouteIntelligence({
+          swarm: data.swarm_intelligence,
+          immunity: data.immunity,
+        });
       }
     }
   });
