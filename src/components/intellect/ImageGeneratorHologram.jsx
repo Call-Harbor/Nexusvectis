@@ -290,7 +290,7 @@ Return ONLY the enhanced prompt text, nothing else.`,
                     <Download className="w-3 h-3 mr-1.5" />Download
                   </Button>
                   {openWindow && (
-                    <Button size="sm" onClick={() => openWindow('image_editor', { x: 120, y: 80, imageUrl: generatedImage })} className="bg-violet-600 hover:bg-violet-500 text-xs h-7 px-3 border-0">
+                    <Button size="sm" onClick={() => openWindow('image_editor', { x: 120, y: 80 }, { imageUrl: generatedImage })} className="bg-violet-600 hover:bg-violet-500 text-xs h-7 px-3 border-0">
                       <Pencil className="w-3 h-3 mr-1.5" />Edit Image
                     </Button>
                   )}
