@@ -400,7 +400,7 @@ export default function NotificationCenter({ user }) {
                     {/* Read + Channel */}
                     <div className="flex gap-6">
                       <FilterRow label="Status" className="flex-1">
-                        {[["unread", "Ulæste", `(${unreadCount})`], ["read", "Læste", ""]].map(([v, label, count]) => (
+                        {[["unread", "Unread", `(${unreadCount})`], ["read", "Read", ""]].map(([v, label, count]) => (
                           <FilterPill key={v} active={filters.is_read === v}
                             activeClass="bg-emerald-500/15 text-emerald-400 border-emerald-500/40"
                             onClick={() => setFilter("is_read", v)}>
