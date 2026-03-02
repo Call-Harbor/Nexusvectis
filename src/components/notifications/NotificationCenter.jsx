@@ -366,7 +366,7 @@ export default function NotificationCenter({ user }) {
 
                     {/* Entity type */}
                     {uniqueEntityTypes.length > 0 && (
-                      <FilterRow label="Entitet">
+                      <FilterRow label="Entity">
                         {uniqueEntityTypes.map(et => (
                           <FilterPill
                             key={et} active={filters.entity_type === et}
