@@ -23,73 +23,239 @@ function evaluateFormula(formula, rows) {
   if (!formula.startsWith('=')) return formula;
   const expr = formula.slice(1).trim().toUpperCase();
 
-  // Helper: parse cell ref like A1 → value
-  const cellVal = (ref) => {
-    const col = ref.charCodeAt(0) - 65;
-    const row = parseInt(ref.slice(1)) - 1;
+  // Helper: get raw string value of cell (preserving strings)
+  const cellRaw = (ref) => {
+    const match = ref.match(/^([A-Z]+)(\d+)$/);
+    if (!match) return '';
+    const col = match[1].length === 1 ? match[1].charCodeAt(0) - 65 : (match[1].charCodeAt(0) - 64) * 26 + match[1].charCodeAt(1) - 65;
+    const row = parseInt(match[2]) - 1;
     const raw = rows[row]?.[col]?.value ?? '';
-    if (raw.startsWith('=')) return parseFloat(evaluateFormula(raw, rows)) || 0;
+    if (raw.startsWith('=')) return evaluateFormula(raw, rows);
+    return raw;
+  };
+
+  // Helper: parse cell ref → number
+  const cellVal = (ref) => {
+    const raw = cellRaw(ref.trim());
     return parseFloat(raw) || 0;
   };
 
-  // Helper: parse range A1:A5
-  const rangeVals = (rangeStr) => {
+  // Helper: parse range A1:B5 → flat array of raw values
+  const rangeRaws = (rangeStr) => {
     const [start, end] = rangeStr.split(':');
-    const c1 = start.charCodeAt(0) - 65, r1 = parseInt(start.slice(1)) - 1;
-    const c2 = end.charCodeAt(0) - 65, r2 = parseInt(end.slice(1)) - 1;
+    const parseRef = (r) => { const m = r.match(/^([A-Z]+)(\d+)$/); return { c: m[1].length === 1 ? m[1].charCodeAt(0) - 65 : (m[1].charCodeAt(0)-64)*26+m[1].charCodeAt(1)-65, r: parseInt(m[2]) - 1 }; };
+    const s = parseRef(start.trim()), e = parseRef(end.trim());
     const vals = [];
-    for (let r = r1; r <= r2; r++) for (let c = c1; c <= c2; c++) {
+    for (let r = s.r; r <= e.r; r++) for (let c = s.c; c <= e.c; c++) {
       const raw = rows[r]?.[c]?.value ?? '';
-      vals.push(parseFloat(raw) || 0);
+      vals.push(raw.startsWith('=') ? evaluateFormula(raw, rows) : raw);
     }
     return vals;
   };
 
+  const rangeVals = (rangeStr) => rangeRaws(rangeStr).map(v => parseFloat(v) || 0);
+
+  // Helper: split top-level args (respects nested parens)
+  const splitArgs = (str) => {
+    const args = []; let depth = 0, cur = '';
+    for (const ch of str) {
+      if (ch === '(' ) depth++;
+      else if (ch === ')') depth--;
+      else if (ch === ',' && depth === 0) { args.push(cur.trim()); cur = ''; continue; }
+      cur += ch;
+    }
+    if (cur.trim()) args.push(cur.trim());
+    return args;
+  };
+
+  // Helper: get vals from arg (range or list)
+  const getVals = (arg) => arg.includes(':') ? rangeVals(arg) : splitArgs(arg).map(a => /^[A-Z]+\d+$/.test(a) ? cellVal(a) : parseFloat(a) || 0);
+  const getRaws = (arg) => arg.includes(':') ? rangeRaws(arg) : splitArgs(arg).map(a => /^[A-Z]+\d+$/.test(a) ? cellRaw(a) : a.replace(/^"|"$/g, ''));
+
+  // Eval condition (used by IF, IFS, COUNTIF etc.)
+  const evalCond = (cStr) => {
+    const m = cStr.trim().match(/^([A-Z]+\d+|[\d.]+|"[^"]*")\s*([><=!]{1,2})\s*([A-Z]+\d+|[\d.]+|"[^"]*")$/);
+    if (!m) return !!cStr;
+    const lv = /^[A-Z]+\d+$/.test(m[1]) ? cellRaw(m[1]) : m[1].replace(/^"|"$/g, '');
+    const rv = /^[A-Z]+\d+$/.test(m[3]) ? cellRaw(m[3]) : m[3].replace(/^"|"$/g, '');
+    const l = parseFloat(lv) || lv, r = parseFloat(rv) || rv;
+    switch (m[2]) { case '>': return l > r; case '<': return l < r; case '>=': return l >= r; case '<=': return l <= r; case '<>': return l !== r; default: return l == r; }
+  };
+
+  // Match for single-arg functions
+  const m1 = (name) => { const r = new RegExp(`^${name}\\((.+)\\)$`); const m = expr.match(r); return m ? m[1] : null; };
+
   try {
-    // SUM(A1:A5)
-    if (/^SUM\((.+)\)$/.test(expr)) {
-      const arg = expr.match(/^SUM\((.+)\)$/)[1];
-      const vals = arg.includes(':') ? rangeVals(arg) : arg.split(',').map(cellVal);
-      return vals.reduce((a, b) => a + b, 0).toString();
+    // ── MATH & STATS ──────────────────────────────────────────
+    if (m1('SUM')) { const a = m1('SUM'); return getVals(a).reduce((x,y)=>x+y,0).toString(); }
+    if (m1('AVERAGE') || m1('AVG')) { const a = m1('AVERAGE') || m1('AVG'); const v = getVals(a); return (v.reduce((x,y)=>x+y,0)/v.length).toFixed(4).replace(/\.?0+$/,''); }
+    if (m1('AVERAGEIF')) { /* skip advanced */ }
+    if (m1('MAX')) { return Math.max(...getVals(m1('MAX'))).toString(); }
+    if (m1('MIN')) { return Math.min(...getVals(m1('MIN'))).toString(); }
+    if (m1('MEDIAN')) { const v = [...getVals(m1('MEDIAN'))].sort((a,b)=>a-b); const mid = Math.floor(v.length/2); return v.length%2 ? v[mid].toString() : ((v[mid-1]+v[mid])/2).toString(); }
+    if (m1('MODE')) { const v = getVals(m1('MODE')); const freq = {}; v.forEach(x=>{freq[x]=(freq[x]||0)+1;}); return Object.entries(freq).sort((a,b)=>b[1]-a[1])[0]?.[0] ?? ''; }
+    if (m1('STDEV') || m1('STDEVP')) { const v = getVals(m1('STDEV') || m1('STDEVP')); const mean = v.reduce((a,b)=>a+b,0)/v.length; return Math.sqrt(v.reduce((s,x)=>s+(x-mean)**2,0)/v.length).toFixed(4).replace(/\.?0+$/,''); }
+    if (m1('VAR')) { const v = getVals(m1('VAR')); const mean = v.reduce((a,b)=>a+b,0)/v.length; return (v.reduce((s,x)=>s+(x-mean)**2,0)/v.length).toFixed(4).replace(/\.?0+$/,''); }
+    if (m1('COUNT')) { return getVals(m1('COUNT')).filter(v=>!isNaN(v)&&v!==0).length.toString(); }
+    if (m1('COUNTA')) { return getRaws(m1('COUNTA')).filter(v=>v!=='').length.toString(); }
+    if (m1('COUNTBLANK')) { return getRaws(m1('COUNTBLANK')).filter(v=>v==='').length.toString(); }
+    if (m1('PRODUCT')) { return getVals(m1('PRODUCT')).reduce((a,b)=>a*b,1).toString(); }
+    if (m1('SUMPRODUCT')) { const args = splitArgs(m1('SUMPRODUCT')); const arrays = args.map(a=>getVals(a)); const len = Math.min(...arrays.map(a=>a.length)); let sum=0; for(let i=0;i<len;i++) sum+=arrays.reduce((p,a)=>p*a[i],1); return sum.toString(); }
+    if (m1('LARGE')) { const [rng, k] = splitArgs(m1('LARGE')); const v = [...getVals(rng)].sort((a,b)=>b-a); return (v[parseInt(k)-1]||0).toString(); }
+    if (m1('SMALL')) { const [rng, k] = splitArgs(m1('SMALL')); const v = [...getVals(rng)].sort((a,b)=>a-b); return (v[parseInt(k)-1]||0).toString(); }
+    if (m1('RANK')) { const [ref, rng] = splitArgs(m1('RANK')); const val = /^[A-Z]+\d+$/.test(ref) ? cellVal(ref) : parseFloat(ref); const v = [...getVals(rng)].sort((a,b)=>b-a); return (v.indexOf(val)+1).toString(); }
+    if (m1('ROUND')) { const [v, d] = splitArgs(m1('ROUND')); const num = /^[A-Z]+\d+$/.test(v) ? cellVal(v) : parseFloat(v); const dec = parseFloat(d)||0; return num.toFixed(dec); }
+    if (m1('ROUNDUP')) { const [v, d] = splitArgs(m1('ROUNDUP')); const num = /^[A-Z]+\d+$/.test(v) ? cellVal(v) : parseFloat(v); const dec = parseFloat(d)||0; return (Math.ceil(num*10**dec)/10**dec).toFixed(dec); }
+    if (m1('ROUNDDOWN')) { const [v, d] = splitArgs(m1('ROUNDDOWN')); const num = /^[A-Z]+\d+$/.test(v) ? cellVal(v) : parseFloat(v); const dec = parseFloat(d)||0; return (Math.floor(num*10**dec)/10**dec).toFixed(dec); }
+    if (m1('FLOOR')) { const [v, sig] = splitArgs(m1('FLOOR')); const num = /^[A-Z]+\d+$/.test(v) ? cellVal(v) : parseFloat(v); const s = parseFloat(sig)||1; return (Math.floor(num/s)*s).toString(); }
+    if (m1('CEILING')) { const [v, sig] = splitArgs(m1('CEILING')); const num = /^[A-Z]+\d+$/.test(v) ? cellVal(v) : parseFloat(v); const s = parseFloat(sig)||1; return (Math.ceil(num/s)*s).toString(); }
+    if (m1('INT')) { const v = m1('INT'); return Math.floor(/^[A-Z]+\d+$/.test(v) ? cellVal(v) : parseFloat(v)).toString(); }
+    if (m1('ABS')) { const v = m1('ABS'); return Math.abs(/^[A-Z]+\d+$/.test(v) ? cellVal(v) : parseFloat(v)).toString(); }
+    if (m1('SQRT')) { const v = m1('SQRT'); return Math.sqrt(/^[A-Z]+\d+$/.test(v) ? cellVal(v) : parseFloat(v)).toFixed(6).replace(/\.?0+$/,''); }
+    if (m1('POWER') || m1('POW')) { const [b,e] = splitArgs(m1('POWER')||m1('POW')); return Math.pow(/^[A-Z]+\d+$/.test(b)?cellVal(b):parseFloat(b), parseFloat(e)).toString(); }
+    if (m1('MOD')) { const [a,b] = splitArgs(m1('MOD')); return (/^[A-Z]+\d+$/.test(a)?cellVal(a):parseFloat(a)) % (/^[A-Z]+\d+$/.test(b)?cellVal(b):parseFloat(b)).toString(); }
+    if (m1('LOG')) { const [v, base] = splitArgs(m1('LOG')); const n = /^[A-Z]+\d+$/.test(v)?cellVal(v):parseFloat(v); return (Math.log(n)/Math.log(parseFloat(base)||10)).toFixed(6).replace(/\.?0+$/,''); }
+    if (m1('LOG10')) { const v = m1('LOG10'); return Math.log10(/^[A-Z]+\d+$/.test(v)?cellVal(v):parseFloat(v)).toFixed(6).replace(/\.?0+$/,''); }
+    if (m1('LN')) { const v = m1('LN'); return Math.log(/^[A-Z]+\d+$/.test(v)?cellVal(v):parseFloat(v)).toFixed(6).replace(/\.?0+$/,''); }
+    if (m1('EXP')) { const v = m1('EXP'); return Math.exp(/^[A-Z]+\d+$/.test(v)?cellVal(v):parseFloat(v)).toFixed(6).replace(/\.?0+$/,''); }
+    if (m1('PI')) { return Math.PI.toString(); }
+    if (m1('RAND') || expr === 'RAND()') { return Math.random().toFixed(6); }
+    if (m1('RANDBETWEEN')) { const [lo,hi] = splitArgs(m1('RANDBETWEEN')); return (Math.floor(Math.random()*(parseFloat(hi)-parseFloat(lo)+1))+parseFloat(lo)).toString(); }
+    if (m1('TRUNC')) { const [v] = splitArgs(m1('TRUNC')); return Math.trunc(/^[A-Z]+\d+$/.test(v)?cellVal(v):parseFloat(v)).toString(); }
+    if (m1('SIGN')) { const v = m1('SIGN'); const n=/^[A-Z]+\d+$/.test(v)?cellVal(v):parseFloat(v); return (n>0?1:n<0?-1:0).toString(); }
+
+    // ── TEXT ─────────────────────────────────────────────────
+    if (m1('CONCATENATE') || m1('CONCAT')) { const a = m1('CONCATENATE')||m1('CONCAT'); return getRaws(a).join(''); }
+    if (expr.includes('&')) { return expr.split('&').map(p=>{ p=p.trim(); if(/^[A-Z]+\d+$/.test(p)) return cellRaw(p); if(/^".*"$/.test(p)) return p.slice(1,-1); return p; }).join(''); }
+    if (m1('LEFT')) { const [v, n] = splitArgs(m1('LEFT')); const s = /^[A-Z]+\d+$/.test(v)?cellRaw(v):v.replace(/^"|"$/g,''); return s.slice(0, parseInt(n)||1); }
+    if (m1('RIGHT')) { const [v, n] = splitArgs(m1('RIGHT')); const s = /^[A-Z]+\d+$/.test(v)?cellRaw(v):v.replace(/^"|"$/g,''); return s.slice(-(parseInt(n)||1)); }
+    if (m1('MID')) { const [v, st, n] = splitArgs(m1('MID')); const s = /^[A-Z]+\d+$/.test(v)?cellRaw(v):v.replace(/^"|"$/g,''); return s.slice(parseInt(st)-1, parseInt(st)-1+parseInt(n)); }
+    if (m1('LEN')) { const v = m1('LEN'); const s = /^[A-Z]+\d+$/.test(v)?cellRaw(v):v.replace(/^"|"$/g,''); return s.length.toString(); }
+    if (m1('UPPER')) { const v = m1('UPPER'); const s = /^[A-Z]+\d+$/.test(v)?cellRaw(v):v.replace(/^"|"$/g,''); return s.toUpperCase(); }
+    if (m1('LOWER')) { const v = m1('LOWER'); const s = /^[A-Z]+\d+$/.test(v)?cellRaw(v):v.replace(/^"|"$/g,''); return s.toLowerCase(); }
+    if (m1('PROPER')) { const v = m1('PROPER'); const s = /^[A-Z]+\d+$/.test(v)?cellRaw(v):v.replace(/^"|"$/g,''); return s.toLowerCase().replace(/(^|\s)\S/g,c=>c.toUpperCase()); }
+    if (m1('TRIM')) { const v = m1('TRIM'); const s = /^[A-Z]+\d+$/.test(v)?cellRaw(v):v.replace(/^"|"$/g,''); return s.trim(); }
+    if (m1('SUBSTITUTE')) { const [v, old, nw] = splitArgs(m1('SUBSTITUTE')); const s = /^[A-Z]+\d+$/.test(v)?cellRaw(v):v.replace(/^"|"$/g,''); return s.replaceAll(old.replace(/^"|"$/g,''), nw.replace(/^"|"$/g,'')); }
+    if (m1('REPLACE')) { const [v, st, n, nw] = splitArgs(m1('REPLACE')); const s = /^[A-Z]+\d+$/.test(v)?cellRaw(v):v.replace(/^"|"$/g,''); return s.slice(0,parseInt(st)-1)+nw.replace(/^"|"$/g,'')+s.slice(parseInt(st)-1+parseInt(n)); }
+    if (m1('FIND')) { const [find, src] = splitArgs(m1('FIND')); const f = find.replace(/^"|"$/g,''); const s = /^[A-Z]+\d+$/.test(src)?cellRaw(src):src.replace(/^"|"$/g,''); return (s.indexOf(f)+1).toString(); }
+    if (m1('SEARCH')) { const [find, src] = splitArgs(m1('SEARCH')); const f = find.replace(/^"|"$/g,'').toLowerCase(); const s = (/^[A-Z]+\d+$/.test(src)?cellRaw(src):src.replace(/^"|"$/g,'')).toLowerCase(); return (s.indexOf(f)+1).toString(); }
+    if (m1('TEXT')) { const [v, fmt2] = splitArgs(m1('TEXT')); const n = /^[A-Z]+\d+$/.test(v)?cellVal(v):parseFloat(v); const f = fmt2.replace(/^"|"$/g,''); if(f.includes('%')) return (n*100).toFixed(0)+'%'; if(f.includes('.00')) return n.toFixed(2); return n.toString(); }
+    if (m1('VALUE')) { const v = m1('VALUE'); return parseFloat(/^[A-Z]+\d+$/.test(v)?cellRaw(v):v.replace(/^"|"$/g,'')).toString(); }
+    if (m1('REPT')) { const [v, n] = splitArgs(m1('REPT')); const s = /^[A-Z]+\d+$/.test(v)?cellRaw(v):v.replace(/^"|"$/g,''); return s.repeat(parseInt(n)||0); }
+    if (m1('CHAR')) { return String.fromCharCode(parseInt(m1('CHAR'))||0); }
+    if (m1('CODE')) { const v = m1('CODE'); const s = /^[A-Z]+\d+$/.test(v)?cellRaw(v):v.replace(/^"|"$/g,''); return (s.charCodeAt(0)||0).toString(); }
+    if (m1('EXACT')) { const [a,b] = splitArgs(m1('EXACT')); const sa=/^[A-Z]+\d+$/.test(a)?cellRaw(a):a.replace(/^"|"$/g,''); const sb=/^[A-Z]+\d+$/.test(b)?cellRaw(b):b.replace(/^"|"$/g,''); return (sa===sb)?'TRUE':'FALSE'; }
+    if (m1('TEXTJOIN')) { const [delim, , ...rest] = splitArgs(m1('TEXTJOIN')); const d = delim.replace(/^"|"$/g,''); return rest.flatMap(a=>getRaws(a)).filter(v=>v!=='').join(d); }
+
+    // ── LOGICAL ──────────────────────────────────────────────
+    if (m1('IF')) {
+      const args = splitArgs(m1('IF'));
+      const [cond, tv, fv] = args;
+      return evalCond(cond) ? (tv||'').replace(/^"|"$/g,'') : (fv||'').replace(/^"|"$/g,'');
     }
-    // AVERAGE(A1:A5)
-    if (/^AVERAGE\((.+)\)$/.test(expr)) {
-      const arg = expr.match(/^AVERAGE\((.+)\)$/)[1];
-      const vals = arg.includes(':') ? rangeVals(arg) : arg.split(',').map(cellVal);
-      return (vals.reduce((a, b) => a + b, 0) / vals.length).toFixed(2);
+    if (m1('IFS')) {
+      const args = splitArgs(m1('IFS'));
+      for (let i = 0; i < args.length - 1; i += 2) if (evalCond(args[i])) return args[i+1].replace(/^"|"$/g,'');
+      return '#N/A';
     }
-    // COUNT
-    if (/^COUNT\((.+)\)$/.test(expr)) {
-      const arg = expr.match(/^COUNT\((.+)\)$/)[1];
-      const vals = arg.includes(':') ? rangeVals(arg) : arg.split(',').map(cellVal);
-      return vals.filter(v => !isNaN(v) && v !== 0).length.toString();
+    if (m1('AND')) { return splitArgs(m1('AND')).every(a=>evalCond(a)) ? 'TRUE' : 'FALSE'; }
+    if (m1('OR')) { return splitArgs(m1('OR')).some(a=>evalCond(a)) ? 'TRUE' : 'FALSE'; }
+    if (m1('NOT')) { return !evalCond(m1('NOT')) ? 'TRUE' : 'FALSE'; }
+    if (m1('IFERROR')) { const [v, fallback] = splitArgs(m1('IFERROR')); try { const res = v.startsWith('=') ? evaluateFormula(v, rows) : (/^[A-Z]+\d+$/.test(v)?cellRaw(v):v); return res === '#ERR' ? fallback.replace(/^"|"$/g,'') : res; } catch { return fallback.replace(/^"|"$/g,''); } }
+    if (m1('IFNA')) { const [v, fallback] = splitArgs(m1('IFNA')); const res = /^[A-Z]+\d+$/.test(v)?cellRaw(v):v; return res === '#N/A' ? fallback.replace(/^"|"$/g,'') : res; }
+    if (m1('SWITCH')) { const args = splitArgs(m1('SWITCH')); const val = /^[A-Z]+\d+$/.test(args[0])?cellRaw(args[0]):args[0]; for(let i=1;i<args.length-1;i+=2) if(val===args[i].replace(/^"|"$/g,'')) return args[i+1].replace(/^"|"$/g,''); return args[args.length-1].replace(/^"|"$/g,''); }
+    if (m1('ISBLANK')) { const v = m1('ISBLANK'); return (/^[A-Z]+\d+$/.test(v)?cellRaw(v):v)==='' ? 'TRUE' : 'FALSE'; }
+    if (m1('ISNUMBER')) { const v = m1('ISNUMBER'); const raw = /^[A-Z]+\d+$/.test(v)?cellRaw(v):v; return !isNaN(parseFloat(raw)) ? 'TRUE' : 'FALSE'; }
+    if (m1('ISTEXT')) { const v = m1('ISTEXT'); const raw = /^[A-Z]+\d+$/.test(v)?cellRaw(v):v; return isNaN(parseFloat(raw)) && raw !== '' ? 'TRUE' : 'FALSE'; }
+    if (m1('ISERROR')) { const v = m1('ISERROR'); const raw = /^[A-Z]+\d+$/.test(v)?cellRaw(v):v; return raw === '#ERR' || raw === '#N/A' ? 'TRUE' : 'FALSE'; }
+    if (expr === 'TRUE()' || expr === 'TRUE') return 'TRUE';
+    if (expr === 'FALSE()' || expr === 'FALSE') return 'FALSE';
+
+    // ── LOOKUP ───────────────────────────────────────────────
+    if (m1('VLOOKUP')) {
+      const [lookup, range, colIdx] = splitArgs(m1('VLOOKUP'));
+      const lv = /^[A-Z]+\d+$/.test(lookup)?cellRaw(lookup):lookup.replace(/^"|"$/g,'');
+      const parseRef2 = (r) => { const m = r.trim().match(/^([A-Z]+)(\d+)$/); return { c: m[1].length===1?m[1].charCodeAt(0)-65:(m[1].charCodeAt(0)-64)*26+m[1].charCodeAt(1)-65, r: parseInt(m[2])-1 }; };
+      if (range.includes(':')) {
+        const [s, e] = range.split(':'); const sr = parseRef2(s), er = parseRef2(e);
+        const ci = parseInt(colIdx) - 1;
+        for (let r = sr.r; r <= er.r; r++) {
+          const first = rows[r]?.[sr.c]?.value ?? '';
+          if (first === lv || parseFloat(first) === parseFloat(lv)) { return rows[r]?.[sr.c + ci]?.value ?? '#N/A'; }
+        }
+      }
+      return '#N/A';
     }
-    // MAX / MIN
-    if (/^MAX\((.+)\)$/.test(expr)) {
-      const arg = expr.match(/^MAX\((.+)\)$/)[1];
-      const vals = arg.includes(':') ? rangeVals(arg) : arg.split(',').map(cellVal);
-      return Math.max(...vals).toString();
+    if (m1('HLOOKUP')) {
+      const [lookup, range, rowIdx] = splitArgs(m1('HLOOKUP'));
+      const lv = /^[A-Z]+\d+$/.test(lookup)?cellRaw(lookup):lookup.replace(/^"|"$/g,'');
+      const parseRef2 = (r) => { const m = r.trim().match(/^([A-Z]+)(\d+)$/); return { c: m[1].length===1?m[1].charCodeAt(0)-65:(m[1].charCodeAt(0)-64)*26+m[1].charCodeAt(1)-65, r: parseInt(m[2])-1 }; };
+      if (range.includes(':')) {
+        const [s, e] = range.split(':'); const sr = parseRef2(s), er = parseRef2(e);
+        const ri = parseInt(rowIdx) - 1;
+        for (let c = sr.c; c <= er.c; c++) {
+          const first = rows[sr.r]?.[c]?.value ?? '';
+          if (first === lv || parseFloat(first) === parseFloat(lv)) { return rows[sr.r + ri]?.[c]?.value ?? '#N/A'; }
+        }
+      }
+      return '#N/A';
     }
-    if (/^MIN\((.+)\)$/.test(expr)) {
-      const arg = expr.match(/^MIN\((.+)\)$/)[1];
-      const vals = arg.includes(':') ? rangeVals(arg) : arg.split(',').map(cellVal);
-      return Math.min(...vals).toString();
+    if (m1('INDEX')) {
+      const [range, rowNum, colNum] = splitArgs(m1('INDEX'));
+      const parseRef2 = (r) => { const m = r.trim().match(/^([A-Z]+)(\d+)$/); return { c: m[1].length===1?m[1].charCodeAt(0)-65:(m[1].charCodeAt(0)-64)*26+m[1].charCodeAt(1)-65, r: parseInt(m[2])-1 }; };
+      if (range.includes(':')) { const [s] = range.split(':'); const sr = parseRef2(s); const r = sr.r + (parseInt(rowNum)||1) - 1; const c = sr.c + (parseInt(colNum||1)||1) - 1; return rows[r]?.[c]?.value ?? ''; }
+      return '';
     }
-    // IF(condition, true_val, false_val)
-    if (/^IF\((.+),(.+),(.+)\)$/.test(expr)) {
-      const [, cond, tv, fv] = expr.match(/^IF\((.+),(.+),(.+)\)$/);
-      // Simple comparisons: A1>B1
-      const evalCond = (c) => {
-        const m = c.trim().match(/^([A-Z]\d+|[\d.]+)\s*([><=!]+)\s*([A-Z]\d+|[\d.]+)$/);
-        if (!m) return false;
-        const l = /^[A-Z]\d+$/.test(m[1]) ? cellVal(m[1]) : parseFloat(m[1]);
-        const r = /^[A-Z]\d+$/.test(m[3]) ? cellVal(m[3]) : parseFloat(m[3]);
-        return m[2] === '>' ? l > r : m[2] === '<' ? l < r : m[2] === '>=' ? l >= r : m[2] === '<=' ? l <= r : m[2] === '=' || m[2] === '==' ? l === r : l !== r;
-      };
-      return evalCond(cond) ? tv.trim() : fv.trim();
+    if (m1('MATCH')) {
+      const [lookup, range] = splitArgs(m1('MATCH'));
+      const lv = /^[A-Z]+\d+$/.test(lookup)?cellRaw(lookup):lookup.replace(/^"|"$/g,'');
+      const raws = getRaws(range);
+      const idx = raws.findIndex(v => v === lv || parseFloat(v) === parseFloat(lv));
+      return idx >= 0 ? (idx + 1).toString() : '#N/A';
     }
-    // Simple arithmetic with cell refs: =A1+B1*2
-    const resolved = expr.replace(/([A-Z]\d+)/g, (_, ref) => cellVal(ref));
+    if (m1('CHOOSE')) { const [idx, ...opts] = splitArgs(m1('CHOOSE')); const i = parseInt(/^[A-Z]+\d+$/.test(idx)?cellVal(idx):idx); return (opts[i-1]||'').replace(/^"|"$/g,''); }
+
+    // ── CONDITIONAL AGGREGATES ──────────────────────────────
+    if (m1('COUNTIF')) {
+      const [range, criterion] = splitArgs(m1('COUNTIF'));
+      const raws = getRaws(range);
+      const crit = /^[A-Z]+\d+$/.test(criterion)?cellRaw(criterion):criterion.replace(/^"|"$/g,'');
+      const op = crit.match(/^([><=!]{1,2})(.+)$/);
+      if (op) { const num = parseFloat(op[2]); return raws.filter(v=>{ const n=parseFloat(v); switch(op[1]){case '>':return n>num;case '<':return n<num;case '>=':return n>=num;case '<=':return n<=num;case '<>':return n!==num;default:return n===num;} }).length.toString(); }
+      return raws.filter(v=>v===crit).length.toString();
+    }
+    if (m1('SUMIF')) {
+      const [range, criterion, sumRange] = splitArgs(m1('SUMIF'));
+      const raws = getRaws(range); const sumVals = getVals(sumRange||range);
+      const crit = /^[A-Z]+\d+$/.test(criterion)?cellRaw(criterion):criterion.replace(/^"|"$/g,'');
+      return raws.reduce((sum,v,i)=>v===crit?sum+(sumVals[i]||0):sum,0).toString();
+    }
+
+    // ── DATE & TIME ──────────────────────────────────────────
+    if (expr === 'TODAY()' || expr === 'TODAY') { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+    if (expr === 'NOW()' || expr === 'NOW') { return new Date().toLocaleString(); }
+    if (m1('YEAR')) { const v = m1('YEAR'); const d=new Date(/^[A-Z]+\d+$/.test(v)?cellRaw(v):v.replace(/^"|"$/g,'')); return isNaN(d)?'#ERR':d.getFullYear().toString(); }
+    if (m1('MONTH')) { const v = m1('MONTH'); const d=new Date(/^[A-Z]+\d+$/.test(v)?cellRaw(v):v.replace(/^"|"$/g,'')); return isNaN(d)?'#ERR':(d.getMonth()+1).toString(); }
+    if (m1('DAY')) { const v = m1('DAY'); const d=new Date(/^[A-Z]+\d+$/.test(v)?cellRaw(v):v.replace(/^"|"$/g,'')); return isNaN(d)?'#ERR':d.getDate().toString(); }
+    if (m1('WEEKDAY')) { const v = splitArgs(m1('WEEKDAY'))[0]; const d=new Date(/^[A-Z]+\d+$/.test(v)?cellRaw(v):v.replace(/^"|"$/g,'')); return isNaN(d)?'#ERR':(d.getDay()+1).toString(); }
+    if (m1('DATE')) { const [y,mo,d]=splitArgs(m1('DATE')).map(Number); const dt=new Date(y,mo-1,d); return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`; }
+    if (m1('DATEDIF') || m1('DAYS')) { const args=splitArgs(m1('DATEDIF')||m1('DAYS')); const d1=new Date(args[0].replace(/^"|"$/g,'')), d2=new Date(args[1].replace(/^"|"$/g,'')); return Math.round((d2-d1)/86400000).toString(); }
+    if (m1('EDATE')) { const [d,n]=splitArgs(m1('EDATE')); const dt=new Date(/^[A-Z]+\d+$/.test(d)?cellRaw(d):d.replace(/^"|"$/g,'')); dt.setMonth(dt.getMonth()+parseInt(n)); return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`; }
+
+    // ── FINANCIAL ───────────────────────────────────────────
+    if (m1('PMT')) { const [rate,nper,pv]=splitArgs(m1('PMT')).map(a=>/^[A-Z]+\d+$/.test(a)?cellVal(a):parseFloat(a)); const r=rate; return r===0?(-pv/nper).toFixed(2):(-(pv*r*Math.pow(1+r,nper))/(Math.pow(1+r,nper)-1)).toFixed(2); }
+    if (m1('FV')) { const [rate,nper,pmt,pv]=splitArgs(m1('FV')).map(a=>/^[A-Z]+\d+$/.test(a)?cellVal(a):parseFloat(a||0)); return (Math.pow(1+rate,nper)*(pv||0)+pmt*((Math.pow(1+rate,nper)-1)/rate)).toFixed(2); }
+    if (m1('PV')) { const [rate,nper,pmt]=splitArgs(m1('PV')).map(a=>/^[A-Z]+\d+$/.test(a)?cellVal(a):parseFloat(a)); return (pmt*((1-Math.pow(1+rate,-nper))/rate)).toFixed(2); }
+    if (m1('NPV')) { const args=splitArgs(m1('NPV')); const rate=/^[A-Z]+\d+$/.test(args[0])?cellVal(args[0]):parseFloat(args[0]); const cashflows=getVals(args.slice(1).join(',')); return cashflows.reduce((sum,cf,i)=>sum+cf/Math.pow(1+rate,i+1),0).toFixed(2); }
+    if (m1('RATE')) { return '#N/A (use PMT)'; }
+    if (m1('NPER')) { const [rate,pmt,pv]=splitArgs(m1('NPER')).map(a=>parseFloat(a)); return (Math.log(-pmt/(-pmt+rate*pv))/Math.log(1+rate)).toFixed(2); }
+    if (m1('SLN')) { const [cost,salvage,life]=splitArgs(m1('SLN')).map(a=>parseFloat(a)); return ((cost-salvage)/life).toFixed(2); }
+    if (m1('YIELD') || m1('IRR')) { return '#CALC (complex)'; }
+    if (m1('PERCENTILE')) { const [rng,k]=splitArgs(m1('PERCENTILE')); const v=[...getVals(rng)].sort((a,b)=>a-b); const pct=parseFloat(k); const idx=pct*(v.length-1); const lo=Math.floor(idx); return (v[lo]+(v[lo+1]||v[lo]-v[lo])*(idx-lo)).toFixed(4).replace(/\.?0+$/,''); }
+    if (m1('QUARTILE')) { const [rng,q]=splitArgs(m1('QUARTILE')); const v=[...getVals(rng)].sort((a,b)=>a-b); const pct=[0,0.25,0.5,0.75,1][parseInt(q)]; const idx=pct*(v.length-1); const lo=Math.floor(idx); return (v[lo]+(v[lo+1]||v[lo]-v[lo])*(idx-lo)).toFixed(4).replace(/\.?0+$/,''); }
+
+    // ── SIMPLE ARITHMETIC with cell refs ────────────────────
+    const resolved = expr.replace(/([A-Z]+\d+)/g, (_, ref) => cellVal(ref));
     // eslint-disable-next-line no-new-func
     const result = Function(`"use strict"; return (${resolved})`)();
     return isNaN(result) ? '#ERR' : result.toString();
