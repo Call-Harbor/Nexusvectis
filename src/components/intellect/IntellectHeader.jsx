@@ -96,6 +96,12 @@ export default function IntellectHeader({ orgId, openWindow, executePrompt, setS
               {[['aioptimization', Sparkles, 'AI Optimization'], ['gpsintegration', Satellite, 'GPS Integration']].map(([type, Icon, label]) => (
                 <DropdownMenuItem key={type} onClick={() => openWindow(type)} className="text-slate-300 gap-2"><Icon className="w-4 h-4" />{label}</DropdownMenuItem>
               ))}
+              <DropdownMenuLabel className="text-cyan-400 mt-2">AI Tools</DropdownMenuLabel>
+              <DropdownMenuSeparator className="bg-slate-800" />
+              <DropdownMenuItem onClick={() => setShowAdvancedPanel(true)} className="text-slate-300 gap-2"><Brain className="w-4 h-4" />Advanced Intelligence Panel</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => openWindow('deep_analysis', { x: 100, y: 80 })} className="text-slate-300 gap-2"><Activity className="w-4 h-4 text-cyan-400" />Anomaly Detection + What-If</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => openWindow('course_ai', { x: 120, y: 60 })} className="text-slate-300 gap-2"><GraduationCap className="w-4 h-4 text-amber-400" />Adaptive Fleet AI Courses</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setShowParallelProcessor(true)} className="text-slate-300 gap-2"><Zap className="w-4 h-4 text-amber-400" />Parallel Task Processor</DropdownMenuItem>
               <DropdownMenuLabel className="text-cyan-400 mt-2">AI Creative</DropdownMenuLabel>
               <DropdownMenuSeparator className="bg-slate-800" />
               <DropdownMenuItem onClick={() => openWindow('image_generator', { x: 120, y: 80 })} className="text-slate-300 gap-2"><Image className="w-4 h-4" />AI Image Generator</DropdownMenuItem>
