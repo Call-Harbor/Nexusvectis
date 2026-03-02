@@ -49,15 +49,13 @@ const HologramWindow = React.memo(({ id, title, icon: Icon, children, position, 
     }
   }, [isDragging, handlePointerMove, handlePointerUp, isMobile]);
 
-  if (isMinimized) return null;
-
   return (
     <motion.div
       initial={{ scale: 0.9, opacity: 0, y: 20 }}
       animate={{ scale: 1, opacity: 1, y: 0 }}
       exit={{ scale: 0.9, opacity: 0, y: 20 }}
       transition={{ type: "spring", damping: 25, stiffness: 300 }}
-      style={isMobile ? {} : { left: pos.x, top: pos.y, width: size.width, height: size.height, zIndex: isFocused ? 9999 : 50 }}
+      style={isMobile ? { display: isMinimized ? 'none' : undefined } : { left: pos.x, top: pos.y, width: size.width, height: size.height, zIndex: isFocused ? 9999 : 50, display: isMinimized ? 'none' : undefined }}
       className={isMobile ? "fixed inset-4" : "fixed resize overflow-auto"}
       onPointerDown={handlePointerDown}
     >
