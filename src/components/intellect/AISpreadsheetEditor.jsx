@@ -1367,18 +1367,14 @@ export default function AISpreadsheetEditor({ initialGrid, initialTitle }) {
         </AnimatePresence>
       </div>
 
-      {/* ── Formula quick-insert bar ── */}
-      <div className="flex-shrink-0 border-t border-slate-800/50 bg-slate-900/60 px-3 py-1 flex items-center gap-1.5 flex-wrap overflow-hidden max-h-10">
-        <span className="text-[10px] text-slate-600 font-semibold uppercase tracking-wider flex-shrink-0">fx</span>
-        {FORMULA_EXAMPLES.slice(0, 20).map((f, i) => (
-          <button key={i} title={f.desc}
-            onClick={() => { setCell(selected.r, selected.c, f.label); setFormulaBarValue(f.label); }}
-            className="px-1.5 py-0.5 rounded border border-slate-700/50 bg-slate-800/40 text-[10px] font-mono text-slate-500 hover:border-emerald-500/40 hover:text-emerald-400 hover:bg-emerald-500/5 transition-all flex-shrink-0"
-          >
-            {f.label}
-          </button>
-        ))}
-        <span className="text-[10px] text-slate-600 ml-auto flex-shrink-0 font-mono">{numRows}×{numCols}</span>
+      {/* ── Status bar ── */}
+      <div className="flex-shrink-0 border-t border-slate-800/50 bg-slate-900/60 px-3 py-1 flex items-center gap-2">
+        <span className="text-[10px] text-slate-600 font-mono">{numRows}×{numCols}</span>
+        {selection && (
+          <span className="text-[10px] text-emerald-400 font-mono ml-2">
+            {selectionToRef(selection)}
+          </span>
+        )}
       </div>
 
       <style>{`
