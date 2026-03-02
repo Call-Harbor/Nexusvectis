@@ -140,7 +140,7 @@ export default function NotificationSettings() {
     const unread = notifications.filter(n => !n.is_read);
     await Promise.all(unread.map(n => base44.entities.Notification.update(n.id, { is_read: true })));
     queryClient.invalidateQueries({ queryKey: ["notifications"] });
-    toast.success("Alle notifikationer markeret som læst");
+    toast.success("All notifications marked as read");
   };
 
   const handlePreset = async (preset) => {
