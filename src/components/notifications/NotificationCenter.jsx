@@ -216,8 +216,8 @@ export default function NotificationCenter({ user }) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
             transition={{ duration: 0.15, ease: "easeOut" }}
-            className="absolute right-0 top-full mt-2 w-[440px] bg-slate-900 border border-slate-700/60 rounded-2xl shadow-2xl z-50 overflow-hidden flex flex-col"
-            style={{ maxHeight: "calc(100vh - 100px)" }}
+            className="absolute left-0 bottom-full mb-2 w-[380px] bg-slate-900 border border-slate-700/60 rounded-2xl shadow-2xl z-50 overflow-hidden flex flex-col"
+            style={{ maxHeight: "calc(100vh - 120px)" }}
           >
             {/* ── HEADER ─────────────────────────────────────────── */}
             <div className="flex-shrink-0 px-4 pt-3 pb-2 border-b border-slate-800 bg-slate-900/80">
