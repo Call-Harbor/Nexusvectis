@@ -21,243 +21,718 @@ const ROW_HEIGHT = 26;
 /* ─── Formula evaluator ─── */
 function evaluateFormula(formula, rows) {
   if (!formula.startsWith('=')) return formula;
-  const expr = formula.slice(1).trim().toUpperCase();
 
-  // Helper: get raw string value of cell (preserving strings)
+  // Normalise: support semicolons as argument separators (European locale like Excel/Sheets)
+  // Replace semicolons outside quotes with commas
+  let src = formula.slice(1).trim();
+  let normExpr = '';
+  let inStr = false;
+  for (let i = 0; i < src.length; i++) {
+    const ch = src[i];
+    if (ch === '"') inStr = !inStr;
+    normExpr += (!inStr && ch === ';') ? ',' : ch;
+  }
+  const expr = normExpr.toUpperCase();
+  // Keep original-case version for string operations
+  const exprOrig = normExpr;
+
+  /* ── helpers ── */
+
+  const parseColIdx = (col) => col.length === 1 ? col.charCodeAt(0) - 65 : (col.charCodeAt(0) - 64) * 26 + col.charCodeAt(1) - 65;
+
+  // Get raw cell value (string), resolving formulas recursively
   const cellRaw = (ref) => {
-    const match = ref.match(/^([A-Z]+)(\d+)$/);
-    if (!match) return '';
-    const col = match[1].length === 1 ? match[1].charCodeAt(0) - 65 : (match[1].charCodeAt(0) - 64) * 26 + match[1].charCodeAt(1) - 65;
-    const row = parseInt(match[2]) - 1;
+    const m = ref.trim().toUpperCase().match(/^\$?([A-Z]+)\$?(\d+)$/);
+    if (!m) return '';
+    const col = parseColIdx(m[1]);
+    const row = parseInt(m[2]) - 1;
     const raw = rows[row]?.[col]?.value ?? '';
     if (raw.startsWith('=')) return evaluateFormula(raw, rows);
     return raw;
   };
 
-  // Helper: parse cell ref → number
-  const cellVal = (ref) => {
-    const raw = cellRaw(ref.trim());
-    return parseFloat(raw) || 0;
+  // Get numeric cell value
+  const cellVal = (ref) => { const raw = cellRaw(ref); const n = parseFloat(raw); return isNaN(n) ? 0 : n; };
+
+  // Resolve arg to string (strip quotes or get cell value)
+  const argStr = (a) => {
+    a = a.trim();
+    if (/^\$?[A-Z]+\$?\d+$/i.test(a)) return cellRaw(a);
+    if (/^".*"$/.test(a)) return a.slice(1, -1);
+    return a;
   };
 
-  // Helper: parse range A1:B5 → flat array of raw values
+  // Resolve arg to number
+  const argNum = (a) => {
+    a = a.trim();
+    if (/^\$?[A-Z]+\$?\d+$/i.test(a)) return cellVal(a);
+    return parseFloat(a) || 0;
+  };
+
+  // Parse cell ref to {r, c}
+  const parseRef = (r) => {
+    const m = r.trim().toUpperCase().match(/^\$?([A-Z]+)\$?(\d+)$/);
+    if (!m) throw new Error('bad ref');
+    return { c: parseColIdx(m[1]), r: parseInt(m[2]) - 1 };
+  };
+
+  // All raw values from a range string "A1:B5"
   const rangeRaws = (rangeStr) => {
-    const [start, end] = rangeStr.split(':');
-    const parseRef = (r) => { const m = r.match(/^([A-Z]+)(\d+)$/); return { c: m[1].length === 1 ? m[1].charCodeAt(0) - 65 : (m[1].charCodeAt(0)-64)*26+m[1].charCodeAt(1)-65, r: parseInt(m[2]) - 1 }; };
-    const s = parseRef(start.trim()), e = parseRef(end.trim());
+    const parts = rangeStr.split(':');
+    const s = parseRef(parts[0]), e = parseRef(parts[1]);
     const vals = [];
-    for (let r = s.r; r <= e.r; r++) for (let c = s.c; c <= e.c; c++) {
-      const raw = rows[r]?.[c]?.value ?? '';
-      vals.push(raw.startsWith('=') ? evaluateFormula(raw, rows) : raw);
-    }
+    for (let r = s.r; r <= e.r; r++)
+      for (let c = s.c; c <= e.c; c++) {
+        const raw = rows[r]?.[c]?.value ?? '';
+        vals.push(raw.startsWith('=') ? evaluateFormula(raw, rows) : raw);
+      }
     return vals;
   };
 
-  const rangeVals = (rangeStr) => rangeRaws(rangeStr).map(v => parseFloat(v) || 0);
+  const rangeVals = (rangeStr) => rangeRaws(rangeStr).map(v => { const n = parseFloat(v); return isNaN(n) ? 0 : n; });
 
-  // Helper: split top-level args (respects nested parens)
+  // Split top-level args (respects nested parens and quoted strings)
   const splitArgs = (str) => {
-    const args = []; let depth = 0, cur = '';
+    const args = []; let depth = 0, cur = '', inQ = false;
     for (const ch of str) {
-      if (ch === '(' ) depth++;
-      else if (ch === ')') depth--;
-      else if (ch === ',' && depth === 0) { args.push(cur.trim()); cur = ''; continue; }
+      if (ch === '"') inQ = !inQ;
+      if (!inQ) {
+        if (ch === '(') depth++;
+        else if (ch === ')') depth--;
+        else if (ch === ',' && depth === 0) { args.push(cur.trim()); cur = ''; continue; }
+      }
       cur += ch;
     }
     if (cur.trim()) args.push(cur.trim());
     return args;
   };
 
-  // Helper: get vals from arg (range or list)
-  const getVals = (arg) => arg.includes(':') ? rangeVals(arg) : splitArgs(arg).map(a => /^[A-Z]+\d+$/.test(a) ? cellVal(a) : parseFloat(a) || 0);
-  const getRaws = (arg) => arg.includes(':') ? rangeRaws(arg) : splitArgs(arg).map(a => /^[A-Z]+\d+$/.test(a) ? cellRaw(a) : a.replace(/^"|"$/g, ''));
-
-  // Eval condition (used by IF, IFS, COUNTIF etc.)
-  const evalCond = (cStr) => {
-    const m = cStr.trim().match(/^([A-Z]+\d+|[\d.]+|"[^"]*")\s*([><=!]{1,2})\s*([A-Z]+\d+|[\d.]+|"[^"]*")$/);
-    if (!m) return !!cStr;
-    const lv = /^[A-Z]+\d+$/.test(m[1]) ? cellRaw(m[1]) : m[1].replace(/^"|"$/g, '');
-    const rv = /^[A-Z]+\d+$/.test(m[3]) ? cellRaw(m[3]) : m[3].replace(/^"|"$/g, '');
-    const l = parseFloat(lv) || lv, r = parseFloat(rv) || rv;
-    switch (m[2]) { case '>': return l > r; case '<': return l < r; case '>=': return l >= r; case '<=': return l <= r; case '<>': return l !== r; default: return l == r; }
+  // Get all numeric values from an arg that may be a range, list, or single ref
+  const getVals = (arg) => {
+    if (!arg) return [];
+    if (arg.includes(':')) return rangeVals(arg);
+    return splitArgs(arg).flatMap(a => {
+      a = a.trim();
+      if (a.includes(':')) return rangeVals(a);
+      if (/^\$?[A-Z]+\$?\d+$/i.test(a)) return [cellVal(a)];
+      const n = parseFloat(a);
+      return [isNaN(n) ? 0 : n];
+    });
   };
 
-  // Match for single-arg functions
-  const m1 = (name) => { const r = new RegExp(`^${name}\\((.+)\\)$`); const m = expr.match(r); return m ? m[1] : null; };
+  // Get all raw string values from an arg (range or list)
+  const getRaws = (arg) => {
+    if (!arg) return [];
+    if (arg.includes(':')) return rangeRaws(arg);
+    return splitArgs(arg).flatMap(a => {
+      a = a.trim();
+      if (a.includes(':')) return rangeRaws(a);
+      return [argStr(a)];
+    });
+  };
+
+  // Evaluate a condition string like "A1>5" or "A1<>B2"
+  const evalCond = (cStr) => {
+    cStr = cStr.trim();
+    // Handle nested formula as a boolean
+    if (cStr.startsWith('=')) {
+      const v = evaluateFormula(cStr, rows);
+      return v === 'TRUE' || parseFloat(v) !== 0;
+    }
+    const m = cStr.match(/^(\$?[A-Z]+\$?\d+|[\d.-]+|"[^"]*"|TRUE|FALSE)\s*([><=!<>]{1,2})\s*(\$?[A-Z]+\$?\d+|[\d.-]+|"[^"]*"|TRUE|FALSE)$/i);
+    if (!m) {
+      // bare cell ref or value treated as truthy if non-empty/non-zero
+      if (/^\$?[A-Z]+\$?\d+$/i.test(cStr)) { const r = cellRaw(cStr); return r !== '' && r !== '0' && r !== 'FALSE'; }
+      return !!cStr;
+    }
+    const lRaw = /^\$?[A-Z]+\$?\d+$/i.test(m[1]) ? cellRaw(m[1]) : m[1].replace(/^"|"$/g, '');
+    const rRaw = /^\$?[A-Z]+\$?\d+$/i.test(m[3]) ? cellRaw(m[3]) : m[3].replace(/^"|"$/g, '');
+    const lN = parseFloat(lRaw), rN = parseFloat(rRaw);
+    const l = isNaN(lN) ? lRaw : lN;
+    const r = isNaN(rN) ? rRaw : rN;
+    switch (m[2]) {
+      case '>': return l > r;
+      case '<': return l < r;
+      case '>=': return l >= r;
+      case '<=': return l <= r;
+      case '<>': case '!=': return l != r;
+      default: return l == r;
+    }
+  };
+
+  // Extract inner args string of a function call (handles nested parens)
+  const fnArgs = (name) => {
+    const upper = expr;
+    const prefix = name + '(';
+    if (!upper.startsWith(prefix)) return null;
+    // Find matching close paren
+    let depth = 0, start = name.length;
+    for (let i = start; i < upper.length; i++) {
+      if (upper[i] === '(') depth++;
+      else if (upper[i] === ')') { depth--; if (depth === 0) { return upper.slice(start + 1, i); } }
+    }
+    return null;
+  };
+
+  // Resolve a formula-branch value (may be "=X" or a direct value/ref)
+  const resolveVal = (v) => {
+    v = v.trim();
+    if (v.startsWith('=')) return evaluateFormula(v, rows);
+    if (/^\$?[A-Z]+\$?\d+$/i.test(v)) return cellRaw(v);
+    return v.replace(/^"|"$/g, '');
+  };
 
   try {
     // ── MATH & STATS ──────────────────────────────────────────
-    if (m1('SUM')) { const a = m1('SUM'); return getVals(a).reduce((x,y)=>x+y,0).toString(); }
-    if (m1('AVERAGE') || m1('AVG')) { const a = m1('AVERAGE') || m1('AVG'); const v = getVals(a); return (v.reduce((x,y)=>x+y,0)/v.length).toFixed(4).replace(/\.?0+$/,''); }
-    if (m1('AVERAGEIF')) { /* skip advanced */ }
-    if (m1('MAX')) { return Math.max(...getVals(m1('MAX'))).toString(); }
-    if (m1('MIN')) { return Math.min(...getVals(m1('MIN'))).toString(); }
-    if (m1('MEDIAN')) { const v = [...getVals(m1('MEDIAN'))].sort((a,b)=>a-b); const mid = Math.floor(v.length/2); return v.length%2 ? v[mid].toString() : ((v[mid-1]+v[mid])/2).toString(); }
-    if (m1('MODE')) { const v = getVals(m1('MODE')); const freq = {}; v.forEach(x=>{freq[x]=(freq[x]||0)+1;}); return Object.entries(freq).sort((a,b)=>b[1]-a[1])[0]?.[0] ?? ''; }
-    if (m1('STDEV') || m1('STDEVP')) { const v = getVals(m1('STDEV') || m1('STDEVP')); const mean = v.reduce((a,b)=>a+b,0)/v.length; return Math.sqrt(v.reduce((s,x)=>s+(x-mean)**2,0)/v.length).toFixed(4).replace(/\.?0+$/,''); }
-    if (m1('VAR')) { const v = getVals(m1('VAR')); const mean = v.reduce((a,b)=>a+b,0)/v.length; return (v.reduce((s,x)=>s+(x-mean)**2,0)/v.length).toFixed(4).replace(/\.?0+$/,''); }
-    if (m1('COUNT')) { return getVals(m1('COUNT')).filter(v=>!isNaN(v)&&v!==0).length.toString(); }
-    if (m1('COUNTA')) { return getRaws(m1('COUNTA')).filter(v=>v!=='').length.toString(); }
-    if (m1('COUNTBLANK')) { return getRaws(m1('COUNTBLANK')).filter(v=>v==='').length.toString(); }
-    if (m1('PRODUCT')) { return getVals(m1('PRODUCT')).reduce((a,b)=>a*b,1).toString(); }
-    if (m1('SUMPRODUCT')) { const args = splitArgs(m1('SUMPRODUCT')); const arrays = args.map(a=>getVals(a)); const len = Math.min(...arrays.map(a=>a.length)); let sum=0; for(let i=0;i<len;i++) sum+=arrays.reduce((p,a)=>p*a[i],1); return sum.toString(); }
-    if (m1('LARGE')) { const [rng, k] = splitArgs(m1('LARGE')); const v = [...getVals(rng)].sort((a,b)=>b-a); return (v[parseInt(k)-1]||0).toString(); }
-    if (m1('SMALL')) { const [rng, k] = splitArgs(m1('SMALL')); const v = [...getVals(rng)].sort((a,b)=>a-b); return (v[parseInt(k)-1]||0).toString(); }
-    if (m1('RANK')) { const [ref, rng] = splitArgs(m1('RANK')); const val = /^[A-Z]+\d+$/.test(ref) ? cellVal(ref) : parseFloat(ref); const v = [...getVals(rng)].sort((a,b)=>b-a); return (v.indexOf(val)+1).toString(); }
-    if (m1('ROUND')) { const [v, d] = splitArgs(m1('ROUND')); const num = /^[A-Z]+\d+$/.test(v) ? cellVal(v) : parseFloat(v); const dec = parseFloat(d)||0; return num.toFixed(dec); }
-    if (m1('ROUNDUP')) { const [v, d] = splitArgs(m1('ROUNDUP')); const num = /^[A-Z]+\d+$/.test(v) ? cellVal(v) : parseFloat(v); const dec = parseFloat(d)||0; return (Math.ceil(num*10**dec)/10**dec).toFixed(dec); }
-    if (m1('ROUNDDOWN')) { const [v, d] = splitArgs(m1('ROUNDDOWN')); const num = /^[A-Z]+\d+$/.test(v) ? cellVal(v) : parseFloat(v); const dec = parseFloat(d)||0; return (Math.floor(num*10**dec)/10**dec).toFixed(dec); }
-    if (m1('FLOOR')) { const [v, sig] = splitArgs(m1('FLOOR')); const num = /^[A-Z]+\d+$/.test(v) ? cellVal(v) : parseFloat(v); const s = parseFloat(sig)||1; return (Math.floor(num/s)*s).toString(); }
-    if (m1('CEILING')) { const [v, sig] = splitArgs(m1('CEILING')); const num = /^[A-Z]+\d+$/.test(v) ? cellVal(v) : parseFloat(v); const s = parseFloat(sig)||1; return (Math.ceil(num/s)*s).toString(); }
-    if (m1('INT')) { const v = m1('INT'); return Math.floor(/^[A-Z]+\d+$/.test(v) ? cellVal(v) : parseFloat(v)).toString(); }
-    if (m1('ABS')) { const v = m1('ABS'); return Math.abs(/^[A-Z]+\d+$/.test(v) ? cellVal(v) : parseFloat(v)).toString(); }
-    if (m1('SQRT')) { const v = m1('SQRT'); return Math.sqrt(/^[A-Z]+\d+$/.test(v) ? cellVal(v) : parseFloat(v)).toFixed(6).replace(/\.?0+$/,''); }
-    if (m1('POWER') || m1('POW')) { const [b,e] = splitArgs(m1('POWER')||m1('POW')); return Math.pow(/^[A-Z]+\d+$/.test(b)?cellVal(b):parseFloat(b), parseFloat(e)).toString(); }
-    if (m1('MOD')) { const [a,b] = splitArgs(m1('MOD')); return (/^[A-Z]+\d+$/.test(a)?cellVal(a):parseFloat(a)) % (/^[A-Z]+\d+$/.test(b)?cellVal(b):parseFloat(b)).toString(); }
-    if (m1('LOG')) { const [v, base] = splitArgs(m1('LOG')); const n = /^[A-Z]+\d+$/.test(v)?cellVal(v):parseFloat(v); return (Math.log(n)/Math.log(parseFloat(base)||10)).toFixed(6).replace(/\.?0+$/,''); }
-    if (m1('LOG10')) { const v = m1('LOG10'); return Math.log10(/^[A-Z]+\d+$/.test(v)?cellVal(v):parseFloat(v)).toFixed(6).replace(/\.?0+$/,''); }
-    if (m1('LN')) { const v = m1('LN'); return Math.log(/^[A-Z]+\d+$/.test(v)?cellVal(v):parseFloat(v)).toFixed(6).replace(/\.?0+$/,''); }
-    if (m1('EXP')) { const v = m1('EXP'); return Math.exp(/^[A-Z]+\d+$/.test(v)?cellVal(v):parseFloat(v)).toFixed(6).replace(/\.?0+$/,''); }
-    if (m1('PI')) { return Math.PI.toString(); }
-    if (m1('RAND') || expr === 'RAND()') { return Math.random().toFixed(6); }
-    if (m1('RANDBETWEEN')) { const [lo,hi] = splitArgs(m1('RANDBETWEEN')); return (Math.floor(Math.random()*(parseFloat(hi)-parseFloat(lo)+1))+parseFloat(lo)).toString(); }
-    if (m1('TRUNC')) { const [v] = splitArgs(m1('TRUNC')); return Math.trunc(/^[A-Z]+\d+$/.test(v)?cellVal(v):parseFloat(v)).toString(); }
-    if (m1('SIGN')) { const v = m1('SIGN'); const n=/^[A-Z]+\d+$/.test(v)?cellVal(v):parseFloat(v); return (n>0?1:n<0?-1:0).toString(); }
+    {
+      const a = fnArgs('SUM'); if (a !== null) { return getVals(a).reduce((x, y) => x + y, 0).toString(); }
+    }
+    {
+      const a = fnArgs('AVERAGE') ?? fnArgs('AVG');
+      if (a !== null) { const v = getVals(a); if (!v.length) return '#DIV/0!'; return (v.reduce((x, y) => x + y, 0) / v.length).toString(); }
+    }
+    {
+      const a = fnArgs('MAX'); if (a !== null) { const v = getVals(a); return v.length ? Math.max(...v).toString() : '0'; }
+    }
+    {
+      const a = fnArgs('MIN'); if (a !== null) { const v = getVals(a); return v.length ? Math.min(...v).toString() : '0'; }
+    }
+    {
+      const a = fnArgs('MEDIAN');
+      if (a !== null) { const v = [...getVals(a)].sort((x, y) => x - y); const mid = Math.floor(v.length / 2); return v.length % 2 ? v[mid].toString() : ((v[mid - 1] + v[mid]) / 2).toString(); }
+    }
+    {
+      const a = fnArgs('MODE');
+      if (a !== null) { const v = getVals(a); const freq = {}; v.forEach(x => { freq[x] = (freq[x] || 0) + 1; }); return Object.entries(freq).sort((a, b) => b[1] - a[1])[0]?.[0] ?? '#N/A'; }
+    }
+    {
+      const a = fnArgs('STDEV') ?? fnArgs('STDEVS');
+      if (a !== null) { const v = getVals(a); if (v.length < 2) return '#DIV/0!'; const mean = v.reduce((a, b) => a + b, 0) / v.length; return Math.sqrt(v.reduce((s, x) => s + (x - mean) ** 2, 0) / (v.length - 1)).toString(); }
+    }
+    {
+      const a = fnArgs('STDEVP');
+      if (a !== null) { const v = getVals(a); if (!v.length) return '#DIV/0!'; const mean = v.reduce((a, b) => a + b, 0) / v.length; return Math.sqrt(v.reduce((s, x) => s + (x - mean) ** 2, 0) / v.length).toString(); }
+    }
+    {
+      const a = fnArgs('VAR') ?? fnArgs('VARS');
+      if (a !== null) { const v = getVals(a); if (v.length < 2) return '#DIV/0!'; const mean = v.reduce((a, b) => a + b, 0) / v.length; return (v.reduce((s, x) => s + (x - mean) ** 2, 0) / (v.length - 1)).toString(); }
+    }
+    {
+      const a = fnArgs('COUNT');
+      if (a !== null) { return getRaws(a).filter(v => v !== '' && !isNaN(parseFloat(v))).length.toString(); }
+    }
+    {
+      const a = fnArgs('COUNTA'); if (a !== null) { return getRaws(a).filter(v => v !== '').length.toString(); }
+    }
+    {
+      const a = fnArgs('COUNTBLANK'); if (a !== null) { return getRaws(a).filter(v => v === '').length.toString(); }
+    }
+    {
+      const a = fnArgs('PRODUCT'); if (a !== null) { return getVals(a).reduce((x, y) => x * y, 1).toString(); }
+    }
+    {
+      const a = fnArgs('SUMPRODUCT');
+      if (a !== null) { const args = splitArgs(a); const arrays = args.map(x => getVals(x)); const len = Math.min(...arrays.map(x => x.length)); let sum = 0; for (let i = 0; i < len; i++) sum += arrays.reduce((p, arr) => p * arr[i], 1); return sum.toString(); }
+    }
+    {
+      const a = fnArgs('LARGE');
+      if (a !== null) { const [rng, k] = splitArgs(a); const v = [...getVals(rng)].sort((x, y) => y - x); return (v[argNum(k) - 1] ?? '#NUM!').toString(); }
+    }
+    {
+      const a = fnArgs('SMALL');
+      if (a !== null) { const [rng, k] = splitArgs(a); const v = [...getVals(rng)].sort((x, y) => x - y); return (v[argNum(k) - 1] ?? '#NUM!').toString(); }
+    }
+    {
+      const a = fnArgs('RANK');
+      if (a !== null) { const [ref, rng, ord] = splitArgs(a); const val = argNum(ref); const v = [...getVals(rng)].sort((x, y) => argNum(ord || '0') ? x - y : y - x); const idx = v.indexOf(val); return idx >= 0 ? (idx + 1).toString() : '#N/A'; }
+    }
+    {
+      const a = fnArgs('ROUND');
+      if (a !== null) { const [v, d] = splitArgs(a); const num = argNum(v); const dec = argNum(d); const f = 10 ** dec; return (Math.round(num * f) / f).toString(); }
+    }
+    {
+      const a = fnArgs('ROUNDUP');
+      if (a !== null) { const [v, d] = splitArgs(a); const num = argNum(v); const dec = argNum(d); const f = 10 ** dec; return (Math.ceil(num * f) / f).toString(); }
+    }
+    {
+      const a = fnArgs('ROUNDDOWN');
+      if (a !== null) { const [v, d] = splitArgs(a); const num = argNum(v); const dec = argNum(d); const f = 10 ** dec; return (Math.floor(num * f) / f).toString(); }
+    }
+    {
+      const a = fnArgs('MROUND');
+      if (a !== null) { const [v, mult] = splitArgs(a); return (Math.round(argNum(v) / argNum(mult)) * argNum(mult)).toString(); }
+    }
+    {
+      const a = fnArgs('FLOOR');
+      if (a !== null) { const [v, sig] = splitArgs(a); const s = argNum(sig) || 1; return (Math.floor(argNum(v) / s) * s).toString(); }
+    }
+    {
+      const a = fnArgs('CEILING');
+      if (a !== null) { const [v, sig] = splitArgs(a); const s = argNum(sig) || 1; return (Math.ceil(argNum(v) / s) * s).toString(); }
+    }
+    {
+      const a = fnArgs('INT'); if (a !== null) { return Math.floor(argNum(a)).toString(); }
+    }
+    {
+      const a = fnArgs('ABS'); if (a !== null) { return Math.abs(argNum(a)).toString(); }
+    }
+    {
+      const a = fnArgs('SQRT'); if (a !== null) { const n = argNum(a); return n < 0 ? '#NUM!' : Math.sqrt(n).toString(); }
+    }
+    {
+      const a = fnArgs('POWER') ?? fnArgs('POW');
+      if (a !== null) { const [b, e] = splitArgs(a); return Math.pow(argNum(b), argNum(e)).toString(); }
+    }
+    {
+      const a = fnArgs('MOD');
+      if (a !== null) { const [n, d] = splitArgs(a); const dn = argNum(d); if (dn === 0) return '#DIV/0!'; return (argNum(n) % dn).toString(); }
+    }
+    {
+      const a = fnArgs('LOG');
+      if (a !== null) { const [v, base] = splitArgs(a); return (Math.log(argNum(v)) / Math.log(base !== undefined ? argNum(base) : 10)).toString(); }
+    }
+    {
+      const a = fnArgs('LOG10'); if (a !== null) { return Math.log10(argNum(a)).toString(); }
+    }
+    {
+      const a = fnArgs('LN'); if (a !== null) { return Math.log(argNum(a)).toString(); }
+    }
+    {
+      const a = fnArgs('EXP'); if (a !== null) { return Math.exp(argNum(a)).toString(); }
+    }
+    if (expr === 'PI()') return Math.PI.toString();
+    if (expr === 'RAND()') return Math.random().toString();
+    {
+      const a = fnArgs('RANDBETWEEN');
+      if (a !== null) { const [lo, hi] = splitArgs(a); return (Math.floor(Math.random() * (argNum(hi) - argNum(lo) + 1)) + argNum(lo)).toString(); }
+    }
+    {
+      const a = fnArgs('TRUNC');
+      if (a !== null) { const [v, d] = splitArgs(a); const dec = d !== undefined ? argNum(d) : 0; const f = 10 ** dec; return (Math.trunc(argNum(v) * f) / f).toString(); }
+    }
+    {
+      const a = fnArgs('SIGN'); if (a !== null) { const n = argNum(a); return (n > 0 ? 1 : n < 0 ? -1 : 0).toString(); }
+    }
+    {
+      const a = fnArgs('GCD');
+      if (a !== null) { const gcd = (x, y) => y === 0 ? x : gcd(y, x % y); return getVals(a).map(Math.abs).reduce(gcd).toString(); }
+    }
+    {
+      const a = fnArgs('LCM');
+      if (a !== null) { const gcd = (x, y) => y === 0 ? x : gcd(y, x % y); const lcm = (x, y) => (x / gcd(x, y)) * y; return getVals(a).map(Math.abs).reduce(lcm).toString(); }
+    }
+    {
+      const a = fnArgs('FACT');
+      if (a !== null) { let n = argNum(a); let f = 1; while (n > 1) { f *= n--; } return f.toString(); }
+    }
+    {
+      const a = fnArgs('PERCENTILE') ?? fnArgs('PERCENTILE.INC');
+      if (a !== null) { const [rng, k] = splitArgs(a); const v = [...getVals(rng)].sort((x, y) => x - y); const pct = argNum(k); const idx = pct * (v.length - 1); const lo = Math.floor(idx); return (v[lo] + (v[lo + 1] !== undefined ? v[lo + 1] - v[lo] : 0) * (idx - lo)).toString(); }
+    }
+    {
+      const a = fnArgs('QUARTILE') ?? fnArgs('QUARTILE.INC');
+      if (a !== null) { const [rng, q] = splitArgs(a); const v = [...getVals(rng)].sort((x, y) => x - y); const pct = [0, 0.25, 0.5, 0.75, 1][argNum(q)]; const idx = pct * (v.length - 1); const lo = Math.floor(idx); return (v[lo] + (v[lo + 1] !== undefined ? v[lo + 1] - v[lo] : 0) * (idx - lo)).toString(); }
+    }
 
     // ── TEXT ─────────────────────────────────────────────────
-    if (m1('CONCATENATE') || m1('CONCAT')) { const a = m1('CONCATENATE')||m1('CONCAT'); return getRaws(a).join(''); }
-    if (expr.includes('&')) { return expr.split('&').map(p=>{ p=p.trim(); if(/^[A-Z]+\d+$/.test(p)) return cellRaw(p); if(/^".*"$/.test(p)) return p.slice(1,-1); return p; }).join(''); }
-    if (m1('LEFT')) { const [v, n] = splitArgs(m1('LEFT')); const s = /^[A-Z]+\d+$/.test(v)?cellRaw(v):v.replace(/^"|"$/g,''); return s.slice(0, parseInt(n)||1); }
-    if (m1('RIGHT')) { const [v, n] = splitArgs(m1('RIGHT')); const s = /^[A-Z]+\d+$/.test(v)?cellRaw(v):v.replace(/^"|"$/g,''); return s.slice(-(parseInt(n)||1)); }
-    if (m1('MID')) { const [v, st, n] = splitArgs(m1('MID')); const s = /^[A-Z]+\d+$/.test(v)?cellRaw(v):v.replace(/^"|"$/g,''); return s.slice(parseInt(st)-1, parseInt(st)-1+parseInt(n)); }
-    if (m1('LEN')) { const v = m1('LEN'); const s = /^[A-Z]+\d+$/.test(v)?cellRaw(v):v.replace(/^"|"$/g,''); return s.length.toString(); }
-    if (m1('UPPER')) { const v = m1('UPPER'); const s = /^[A-Z]+\d+$/.test(v)?cellRaw(v):v.replace(/^"|"$/g,''); return s.toUpperCase(); }
-    if (m1('LOWER')) { const v = m1('LOWER'); const s = /^[A-Z]+\d+$/.test(v)?cellRaw(v):v.replace(/^"|"$/g,''); return s.toLowerCase(); }
-    if (m1('PROPER')) { const v = m1('PROPER'); const s = /^[A-Z]+\d+$/.test(v)?cellRaw(v):v.replace(/^"|"$/g,''); return s.toLowerCase().replace(/(^|\s)\S/g,c=>c.toUpperCase()); }
-    if (m1('TRIM')) { const v = m1('TRIM'); const s = /^[A-Z]+\d+$/.test(v)?cellRaw(v):v.replace(/^"|"$/g,''); return s.trim(); }
-    if (m1('SUBSTITUTE')) { const [v, old, nw] = splitArgs(m1('SUBSTITUTE')); const s = /^[A-Z]+\d+$/.test(v)?cellRaw(v):v.replace(/^"|"$/g,''); return s.replaceAll(old.replace(/^"|"$/g,''), nw.replace(/^"|"$/g,'')); }
-    if (m1('REPLACE')) { const [v, st, n, nw] = splitArgs(m1('REPLACE')); const s = /^[A-Z]+\d+$/.test(v)?cellRaw(v):v.replace(/^"|"$/g,''); return s.slice(0,parseInt(st)-1)+nw.replace(/^"|"$/g,'')+s.slice(parseInt(st)-1+parseInt(n)); }
-    if (m1('FIND')) { const [find, src] = splitArgs(m1('FIND')); const f = find.replace(/^"|"$/g,''); const s = /^[A-Z]+\d+$/.test(src)?cellRaw(src):src.replace(/^"|"$/g,''); return (s.indexOf(f)+1).toString(); }
-    if (m1('SEARCH')) { const [find, src] = splitArgs(m1('SEARCH')); const f = find.replace(/^"|"$/g,'').toLowerCase(); const s = (/^[A-Z]+\d+$/.test(src)?cellRaw(src):src.replace(/^"|"$/g,'')).toLowerCase(); return (s.indexOf(f)+1).toString(); }
-    if (m1('TEXT')) { const [v, fmt2] = splitArgs(m1('TEXT')); const n = /^[A-Z]+\d+$/.test(v)?cellVal(v):parseFloat(v); const f = fmt2.replace(/^"|"$/g,''); if(f.includes('%')) return (n*100).toFixed(0)+'%'; if(f.includes('.00')) return n.toFixed(2); return n.toString(); }
-    if (m1('VALUE')) { const v = m1('VALUE'); return parseFloat(/^[A-Z]+\d+$/.test(v)?cellRaw(v):v.replace(/^"|"$/g,'')).toString(); }
-    if (m1('REPT')) { const [v, n] = splitArgs(m1('REPT')); const s = /^[A-Z]+\d+$/.test(v)?cellRaw(v):v.replace(/^"|"$/g,''); return s.repeat(parseInt(n)||0); }
-    if (m1('CHAR')) { return String.fromCharCode(parseInt(m1('CHAR'))||0); }
-    if (m1('CODE')) { const v = m1('CODE'); const s = /^[A-Z]+\d+$/.test(v)?cellRaw(v):v.replace(/^"|"$/g,''); return (s.charCodeAt(0)||0).toString(); }
-    if (m1('EXACT')) { const [a,b] = splitArgs(m1('EXACT')); const sa=/^[A-Z]+\d+$/.test(a)?cellRaw(a):a.replace(/^"|"$/g,''); const sb=/^[A-Z]+\d+$/.test(b)?cellRaw(b):b.replace(/^"|"$/g,''); return (sa===sb)?'TRUE':'FALSE'; }
-    if (m1('TEXTJOIN')) { const [delim, , ...rest] = splitArgs(m1('TEXTJOIN')); const d = delim.replace(/^"|"$/g,''); return rest.flatMap(a=>getRaws(a)).filter(v=>v!=='').join(d); }
+    {
+      const a = fnArgs('CONCATENATE') ?? fnArgs('CONCAT');
+      if (a !== null) { return getRaws(a).join(''); }
+    }
+    {
+      const a = fnArgs('LEFT');
+      if (a !== null) { const [v, n] = splitArgs(a); return argStr(v).slice(0, argNum(n !== undefined ? n : '1')); }
+    }
+    {
+      const a = fnArgs('RIGHT');
+      if (a !== null) { const [v, n] = splitArgs(a); const s = argStr(v); return s.slice(Math.max(0, s.length - argNum(n !== undefined ? n : '1'))); }
+    }
+    {
+      const a = fnArgs('MID');
+      if (a !== null) { const [v, st, n] = splitArgs(a); const s = argStr(v); const start = argNum(st) - 1; return s.slice(start, start + argNum(n)); }
+    }
+    {
+      const a = fnArgs('LEN'); if (a !== null) { return argStr(a).length.toString(); }
+    }
+    {
+      const a = fnArgs('UPPER'); if (a !== null) { return argStr(a).toUpperCase(); }
+    }
+    {
+      const a = fnArgs('LOWER'); if (a !== null) { return argStr(a).toLowerCase(); }
+    }
+    {
+      const a = fnArgs('PROPER');
+      if (a !== null) { return argStr(a).toLowerCase().replace(/(^|\s)\S/g, c => c.toUpperCase()); }
+    }
+    {
+      const a = fnArgs('TRIM'); if (a !== null) { return argStr(a).trim().replace(/\s+/g, ' '); }
+    }
+    {
+      const a = fnArgs('SUBSTITUTE');
+      if (a !== null) { const [v, old, nw, inst] = splitArgs(a); const s = argStr(v); const o = argStr(old); const n = argStr(nw); if (inst !== undefined) { let cnt = 0; return s.replace(new RegExp(o.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), m => { cnt++; return cnt === argNum(inst) ? n : m; }); } return s.replaceAll(o, n); }
+    }
+    {
+      const a = fnArgs('REPLACE');
+      if (a !== null) { const [v, st, n, nw] = splitArgs(a); const s = argStr(v); const start = argNum(st) - 1; return s.slice(0, start) + argStr(nw) + s.slice(start + argNum(n)); }
+    }
+    {
+      const a = fnArgs('FIND');
+      if (a !== null) { const [find, src, start] = splitArgs(a); const f = argStr(find); const s = argStr(src); const idx = s.indexOf(f, start !== undefined ? argNum(start) - 1 : 0); return idx < 0 ? '#VALUE!' : (idx + 1).toString(); }
+    }
+    {
+      const a = fnArgs('SEARCH');
+      if (a !== null) { const [find, src, start] = splitArgs(a); const f = argStr(find).toLowerCase(); const s = argStr(src).toLowerCase(); const idx = s.indexOf(f, start !== undefined ? argNum(start) - 1 : 0); return idx < 0 ? '#VALUE!' : (idx + 1).toString(); }
+    }
+    {
+      const a = fnArgs('TEXT');
+      if (a !== null) {
+        const [v, fmt] = splitArgs(a); const n = argNum(v); const f = argStr(fmt);
+        if (f.includes('%')) return (n * 100).toFixed(f.match(/\.0+/)?.[0].length - 1 || 0) + '%';
+        if (f.includes('.')) { const dec = (f.split('.')[1] || '').replace(/[^0#]/g, '').length; return n.toFixed(dec); }
+        if (f.toUpperCase().includes('YYYY')) { const d = new Date(n); return isNaN(d) ? '#VALUE!' : `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+        return n.toFixed(0);
+      }
+    }
+    {
+      const a = fnArgs('VALUE'); if (a !== null) { const n = parseFloat(argStr(a).replace(/[,$]/g, '')); return isNaN(n) ? '#VALUE!' : n.toString(); }
+    }
+    {
+      const a = fnArgs('REPT');
+      if (a !== null) { const [v, n] = splitArgs(a); return argStr(v).repeat(Math.max(0, argNum(n))); }
+    }
+    {
+      const a = fnArgs('CHAR'); if (a !== null) { return String.fromCharCode(argNum(a)); }
+    }
+    {
+      const a = fnArgs('CODE'); if (a !== null) { const s = argStr(a); return s.length ? s.charCodeAt(0).toString() : '#VALUE!'; }
+    }
+    {
+      const a = fnArgs('EXACT');
+      if (a !== null) { const [x, y] = splitArgs(a); return argStr(x) === argStr(y) ? 'TRUE' : 'FALSE'; }
+    }
+    {
+      const a = fnArgs('TEXTJOIN');
+      if (a !== null) { const args = splitArgs(a); const delim = argStr(args[0]); const ignoreEmpty = args[1]?.toUpperCase() === 'TRUE' || args[1] === '1'; const vals = args.slice(2).flatMap(x => getRaws(x)); return (ignoreEmpty ? vals.filter(v => v !== '') : vals).join(delim); }
+    }
+    {
+      const a = fnArgs('NUMBERVALUE');
+      if (a !== null) { const [v] = splitArgs(a); const n = parseFloat(argStr(v).replace(',', '.')); return isNaN(n) ? '#VALUE!' : n.toString(); }
+    }
 
     // ── LOGICAL ──────────────────────────────────────────────
-    if (m1('IF')) {
-      const args = splitArgs(m1('IF'));
-      const [cond, tv, fv] = args;
-      return evalCond(cond) ? (tv||'').replace(/^"|"$/g,'') : (fv||'').replace(/^"|"$/g,'');
+    {
+      const a = fnArgs('IF');
+      if (a !== null) {
+        const args = splitArgs(a);
+        const cond = evalCond(args[0]);
+        const branch = cond ? (args[1] ?? '') : (args[2] ?? '');
+        // If branch is itself a formula expression, evaluate it
+        if (branch.startsWith('=')) return evaluateFormula(branch, rows);
+        if (/^\$?[A-Z]+\$?\d+$/i.test(branch.trim())) return cellRaw(branch.trim());
+        return branch.replace(/^"|"$/g, '');
+      }
     }
-    if (m1('IFS')) {
-      const args = splitArgs(m1('IFS'));
-      for (let i = 0; i < args.length - 1; i += 2) if (evalCond(args[i])) return args[i+1].replace(/^"|"$/g,'');
-      return '#N/A';
+    {
+      const a = fnArgs('IFS');
+      if (a !== null) { const args = splitArgs(a); for (let i = 0; i < args.length - 1; i += 2) if (evalCond(args[i])) return resolveVal(args[i + 1]); return '#N/A'; }
     }
-    if (m1('AND')) { return splitArgs(m1('AND')).every(a=>evalCond(a)) ? 'TRUE' : 'FALSE'; }
-    if (m1('OR')) { return splitArgs(m1('OR')).some(a=>evalCond(a)) ? 'TRUE' : 'FALSE'; }
-    if (m1('NOT')) { return !evalCond(m1('NOT')) ? 'TRUE' : 'FALSE'; }
-    if (m1('IFERROR')) { const [v, fallback] = splitArgs(m1('IFERROR')); try { const res = v.startsWith('=') ? evaluateFormula(v, rows) : (/^[A-Z]+\d+$/.test(v)?cellRaw(v):v); return res === '#ERR' ? fallback.replace(/^"|"$/g,'') : res; } catch { return fallback.replace(/^"|"$/g,''); } }
-    if (m1('IFNA')) { const [v, fallback] = splitArgs(m1('IFNA')); const res = /^[A-Z]+\d+$/.test(v)?cellRaw(v):v; return res === '#N/A' ? fallback.replace(/^"|"$/g,'') : res; }
-    if (m1('SWITCH')) { const args = splitArgs(m1('SWITCH')); const val = /^[A-Z]+\d+$/.test(args[0])?cellRaw(args[0]):args[0]; for(let i=1;i<args.length-1;i+=2) if(val===args[i].replace(/^"|"$/g,'')) return args[i+1].replace(/^"|"$/g,''); return args[args.length-1].replace(/^"|"$/g,''); }
-    if (m1('ISBLANK')) { const v = m1('ISBLANK'); return (/^[A-Z]+\d+$/.test(v)?cellRaw(v):v)==='' ? 'TRUE' : 'FALSE'; }
-    if (m1('ISNUMBER')) { const v = m1('ISNUMBER'); const raw = /^[A-Z]+\d+$/.test(v)?cellRaw(v):v; return !isNaN(parseFloat(raw)) ? 'TRUE' : 'FALSE'; }
-    if (m1('ISTEXT')) { const v = m1('ISTEXT'); const raw = /^[A-Z]+\d+$/.test(v)?cellRaw(v):v; return isNaN(parseFloat(raw)) && raw !== '' ? 'TRUE' : 'FALSE'; }
-    if (m1('ISERROR')) { const v = m1('ISERROR'); const raw = /^[A-Z]+\d+$/.test(v)?cellRaw(v):v; return raw === '#ERR' || raw === '#N/A' ? 'TRUE' : 'FALSE'; }
+    {
+      const a = fnArgs('AND');
+      if (a !== null) { return splitArgs(a).every(x => evalCond(x)) ? 'TRUE' : 'FALSE'; }
+    }
+    {
+      const a = fnArgs('OR');
+      if (a !== null) { return splitArgs(a).some(x => evalCond(x)) ? 'TRUE' : 'FALSE'; }
+    }
+    {
+      const a = fnArgs('NOT'); if (a !== null) { return !evalCond(a) ? 'TRUE' : 'FALSE'; }
+    }
+    {
+      const a = fnArgs('XOR');
+      if (a !== null) { const t = splitArgs(a).filter(x => evalCond(x)).length; return t % 2 === 1 ? 'TRUE' : 'FALSE'; }
+    }
+    {
+      const a = fnArgs('IFERROR');
+      if (a !== null) {
+        const [v, fb] = splitArgs(a);
+        try {
+          let res;
+          if (v.trim().startsWith('=')) res = evaluateFormula(v.trim(), rows);
+          else res = resolveVal(v);
+          return (res === '#ERR' || res === '#N/A' || res === '#DIV/0!' || res === '#VALUE!' || res === '#NUM!' || res === '#REF!') ? resolveVal(fb) : res;
+        } catch { return resolveVal(fb); }
+      }
+    }
+    {
+      const a = fnArgs('IFNA');
+      if (a !== null) { const [v, fb] = splitArgs(a); const res = resolveVal(v); return res === '#N/A' ? resolveVal(fb) : res; }
+    }
+    {
+      const a = fnArgs('SWITCH');
+      if (a !== null) { const args = splitArgs(a); const val = resolveVal(args[0]); for (let i = 1; i < args.length - 1; i += 2) if (val === resolveVal(args[i])) return resolveVal(args[i + 1]); return args.length % 2 === 0 ? resolveVal(args[args.length - 1]) : '#N/A'; }
+    }
+    {
+      const a = fnArgs('ISBLANK'); if (a !== null) { return resolveVal(a) === '' ? 'TRUE' : 'FALSE'; }
+    }
+    {
+      const a = fnArgs('ISNUMBER'); if (a !== null) { const v = resolveVal(a); return (!isNaN(parseFloat(v)) && v !== '') ? 'TRUE' : 'FALSE'; }
+    }
+    {
+      const a = fnArgs('ISTEXT'); if (a !== null) { const v = resolveVal(a); return (isNaN(parseFloat(v)) && v !== '') ? 'TRUE' : 'FALSE'; }
+    }
+    {
+      const a = fnArgs('ISERROR'); if (a !== null) { const v = resolveVal(a); return v.startsWith('#') ? 'TRUE' : 'FALSE'; }
+    }
+    {
+      const a = fnArgs('ISNA'); if (a !== null) { return resolveVal(a) === '#N/A' ? 'TRUE' : 'FALSE'; }
+    }
     if (expr === 'TRUE()' || expr === 'TRUE') return 'TRUE';
     if (expr === 'FALSE()' || expr === 'FALSE') return 'FALSE';
 
-    // ── LOOKUP ───────────────────────────────────────────────
-    if (m1('VLOOKUP')) {
-      const [lookup, range, colIdx] = splitArgs(m1('VLOOKUP'));
-      const lv = /^[A-Z]+\d+$/.test(lookup)?cellRaw(lookup):lookup.replace(/^"|"$/g,'');
-      const parseRef2 = (r) => { const m = r.trim().match(/^([A-Z]+)(\d+)$/); return { c: m[1].length===1?m[1].charCodeAt(0)-65:(m[1].charCodeAt(0)-64)*26+m[1].charCodeAt(1)-65, r: parseInt(m[2])-1 }; };
-      if (range.includes(':')) {
-        const [s, e] = range.split(':'); const sr = parseRef2(s), er = parseRef2(e);
-        const ci = parseInt(colIdx) - 1;
-        for (let r = sr.r; r <= er.r; r++) {
-          const first = rows[r]?.[sr.c]?.value ?? '';
-          if (first === lv || parseFloat(first) === parseFloat(lv)) { return rows[r]?.[sr.c + ci]?.value ?? '#N/A'; }
+    // ── LOOKUP & REFERENCE ───────────────────────────────────
+    {
+      const a = fnArgs('VLOOKUP');
+      if (a !== null) {
+        const args = splitArgs(a); const lv = resolveVal(args[0]); const rangeStr = args[1]; const colIdx = argNum(args[2]);
+        if (rangeStr.includes(':')) {
+          const s = parseRef(rangeStr.split(':')[0]), e = parseRef(rangeStr.split(':')[1]);
+          for (let r = s.r; r <= e.r; r++) {
+            const first = cellRaw(`${String.fromCharCode(65 + s.c)}${r + 1}`);
+            if (first === lv || (!isNaN(parseFloat(first)) && parseFloat(first) === parseFloat(lv))) {
+              return cellRaw(`${String.fromCharCode(65 + s.c + colIdx - 1)}${r + 1}`);
+            }
+          }
         }
+        return '#N/A';
       }
-      return '#N/A';
     }
-    if (m1('HLOOKUP')) {
-      const [lookup, range, rowIdx] = splitArgs(m1('HLOOKUP'));
-      const lv = /^[A-Z]+\d+$/.test(lookup)?cellRaw(lookup):lookup.replace(/^"|"$/g,'');
-      const parseRef2 = (r) => { const m = r.trim().match(/^([A-Z]+)(\d+)$/); return { c: m[1].length===1?m[1].charCodeAt(0)-65:(m[1].charCodeAt(0)-64)*26+m[1].charCodeAt(1)-65, r: parseInt(m[2])-1 }; };
-      if (range.includes(':')) {
-        const [s, e] = range.split(':'); const sr = parseRef2(s), er = parseRef2(e);
-        const ri = parseInt(rowIdx) - 1;
-        for (let c = sr.c; c <= er.c; c++) {
-          const first = rows[sr.r]?.[c]?.value ?? '';
-          if (first === lv || parseFloat(first) === parseFloat(lv)) { return rows[sr.r + ri]?.[c]?.value ?? '#N/A'; }
+    {
+      const a = fnArgs('HLOOKUP');
+      if (a !== null) {
+        const args = splitArgs(a); const lv = resolveVal(args[0]); const rangeStr = args[1]; const rowIdx = argNum(args[2]);
+        if (rangeStr.includes(':')) {
+          const s = parseRef(rangeStr.split(':')[0]), e = parseRef(rangeStr.split(':')[1]);
+          for (let c = s.c; c <= e.c; c++) {
+            const first = cellRaw(`${String.fromCharCode(65 + c)}${s.r + 1}`);
+            if (first === lv || (!isNaN(parseFloat(first)) && parseFloat(first) === parseFloat(lv))) {
+              return cellRaw(`${String.fromCharCode(65 + c)}${s.r + rowIdx}`);
+            }
+          }
         }
+        return '#N/A';
       }
-      return '#N/A';
     }
-    if (m1('INDEX')) {
-      const [range, rowNum, colNum] = splitArgs(m1('INDEX'));
-      const parseRef2 = (r) => { const m = r.trim().match(/^([A-Z]+)(\d+)$/); return { c: m[1].length===1?m[1].charCodeAt(0)-65:(m[1].charCodeAt(0)-64)*26+m[1].charCodeAt(1)-65, r: parseInt(m[2])-1 }; };
-      if (range.includes(':')) { const [s] = range.split(':'); const sr = parseRef2(s); const r = sr.r + (parseInt(rowNum)||1) - 1; const c = sr.c + (parseInt(colNum||1)||1) - 1; return rows[r]?.[c]?.value ?? ''; }
-      return '';
+    {
+      const a = fnArgs('INDEX');
+      if (a !== null) {
+        const [rangeStr, rowNum, colNum] = splitArgs(a);
+        if (rangeStr.includes(':')) {
+          const s = parseRef(rangeStr.split(':')[0]);
+          const r = s.r + argNum(rowNum) - 1;
+          const c = s.c + (colNum !== undefined ? argNum(colNum) - 1 : 0);
+          return cellRaw(`${String.fromCharCode(65 + c)}${r + 1}`);
+        }
+        return '';
+      }
     }
-    if (m1('MATCH')) {
-      const [lookup, range] = splitArgs(m1('MATCH'));
-      const lv = /^[A-Z]+\d+$/.test(lookup)?cellRaw(lookup):lookup.replace(/^"|"$/g,'');
-      const raws = getRaws(range);
-      const idx = raws.findIndex(v => v === lv || parseFloat(v) === parseFloat(lv));
-      return idx >= 0 ? (idx + 1).toString() : '#N/A';
+    {
+      const a = fnArgs('MATCH');
+      if (a !== null) {
+        const [lookup, range] = splitArgs(a); const lv = resolveVal(lookup); const raws = getRaws(range);
+        const idx = raws.findIndex(v => v === lv || (!isNaN(parseFloat(v)) && parseFloat(v) === parseFloat(lv)));
+        return idx >= 0 ? (idx + 1).toString() : '#N/A';
+      }
     }
-    if (m1('CHOOSE')) { const [idx, ...opts] = splitArgs(m1('CHOOSE')); const i = parseInt(/^[A-Z]+\d+$/.test(idx)?cellVal(idx):idx); return (opts[i-1]||'').replace(/^"|"$/g,''); }
+    {
+      const a = fnArgs('CHOOSE');
+      if (a !== null) { const args = splitArgs(a); const i = argNum(args[0]); return resolveVal(args[i] ?? ''); }
+    }
+    {
+      const a = fnArgs('OFFSET');
+      if (a !== null) {
+        const [ref, rows2, cols2] = splitArgs(a); const base = parseRef(ref.trim());
+        const r = base.r + argNum(rows2); const c = base.c + argNum(cols2);
+        return cellRaw(`${String.fromCharCode(65 + c)}${r + 1}`);
+      }
+    }
+    {
+      const a = fnArgs('ROW');
+      if (a !== null && a.trim()) { try { return (parseRef(a.trim()).r + 1).toString(); } catch { return '#REF!'; } }
+      if (a !== null) return '1'; // ROW() with no arg returns row of current cell (simplified)
+    }
+    {
+      const a = fnArgs('COLUMN');
+      if (a !== null && a.trim()) { try { return (parseRef(a.trim()).c + 1).toString(); } catch { return '#REF!'; } }
+      if (a !== null) return '1';
+    }
 
     // ── CONDITIONAL AGGREGATES ──────────────────────────────
-    if (m1('COUNTIF')) {
-      const [range, criterion] = splitArgs(m1('COUNTIF'));
-      const raws = getRaws(range);
-      const crit = /^[A-Z]+\d+$/.test(criterion)?cellRaw(criterion):criterion.replace(/^"|"$/g,'');
-      const op = crit.match(/^([><=!]{1,2})(.+)$/);
-      if (op) { const num = parseFloat(op[2]); return raws.filter(v=>{ const n=parseFloat(v); switch(op[1]){case '>':return n>num;case '<':return n<num;case '>=':return n>=num;case '<=':return n<=num;case '<>':return n!==num;default:return n===num;} }).length.toString(); }
-      return raws.filter(v=>v===crit).length.toString();
+    {
+      const a = fnArgs('COUNTIF');
+      if (a !== null) {
+        const [range, criterion] = splitArgs(a);
+        const raws = getRaws(range);
+        const crit = resolveVal(criterion);
+        const op = crit.match(/^([><=!<>]{1,2})(.+)$/);
+        if (op) { const num = parseFloat(op[2]); return raws.filter(v => { const n = parseFloat(v); switch (op[1]) { case '>': return n > num; case '<': return n < num; case '>=': return n >= num; case '<=': return n <= num; case '<>': case '!=': return v !== op[2]; default: return n === num || v === op[2]; } }).length.toString(); }
+        return raws.filter(v => v === crit || (!isNaN(parseFloat(v)) && parseFloat(v) === parseFloat(crit))).length.toString();
+      }
     }
-    if (m1('SUMIF')) {
-      const [range, criterion, sumRange] = splitArgs(m1('SUMIF'));
-      const raws = getRaws(range); const sumVals = getVals(sumRange||range);
-      const crit = /^[A-Z]+\d+$/.test(criterion)?cellRaw(criterion):criterion.replace(/^"|"$/g,'');
-      return raws.reduce((sum,v,i)=>v===crit?sum+(sumVals[i]||0):sum,0).toString();
+    {
+      const a = fnArgs('SUMIF');
+      if (a !== null) {
+        const args = splitArgs(a); const raws = getRaws(args[0]); const crit = resolveVal(args[1]); const sumVals = getVals(args[2] ?? args[0]);
+        return raws.reduce((sum, v, i) => (v === crit || (!isNaN(parseFloat(v)) && parseFloat(v) === parseFloat(crit))) ? sum + (sumVals[i] || 0) : sum, 0).toString();
+      }
+    }
+    {
+      const a = fnArgs('AVERAGEIF');
+      if (a !== null) {
+        const args = splitArgs(a); const raws = getRaws(args[0]); const crit = resolveVal(args[1]); const avgVals = getVals(args[2] ?? args[0]);
+        const matched = raws.map((v, i) => (v === crit || (!isNaN(parseFloat(v)) && parseFloat(v) === parseFloat(crit))) ? avgVals[i] : null).filter(v => v !== null);
+        return matched.length ? (matched.reduce((a, b) => a + b, 0) / matched.length).toString() : '#DIV/0!';
+      }
+    }
+    {
+      const a = fnArgs('COUNTIFS');
+      if (a !== null) {
+        const args = splitArgs(a); let count = -1;
+        const criteria = [];
+        for (let i = 0; i < args.length; i += 2) criteria.push({ raws: getRaws(args[i]), crit: resolveVal(args[i + 1]) });
+        const len = Math.min(...criteria.map(c => c.raws.length));
+        let total = 0;
+        for (let i = 0; i < len; i++) if (criteria.every(c => { const v = c.raws[i]; return v === c.crit || (!isNaN(parseFloat(v)) && parseFloat(v) === parseFloat(c.crit)); })) total++;
+        return total.toString();
+      }
+    }
+    {
+      const a = fnArgs('SUMIFS');
+      if (a !== null) {
+        const args = splitArgs(a); const sumVals = getVals(args[0]);
+        const criteria = [];
+        for (let i = 1; i < args.length; i += 2) criteria.push({ raws: getRaws(args[i]), crit: resolveVal(args[i + 1]) });
+        const len = Math.min(sumVals.length, ...criteria.map(c => c.raws.length));
+        let total = 0;
+        for (let i = 0; i < len; i++) if (criteria.every(c => { const v = c.raws[i]; return v === c.crit || (!isNaN(parseFloat(v)) && parseFloat(v) === parseFloat(c.crit)); })) total += sumVals[i] || 0;
+        return total.toString();
+      }
     }
 
     // ── DATE & TIME ──────────────────────────────────────────
-    if (expr === 'TODAY()' || expr === 'TODAY') { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
-    if (expr === 'NOW()' || expr === 'NOW') { return new Date().toLocaleString(); }
-    if (m1('YEAR')) { const v = m1('YEAR'); const d=new Date(/^[A-Z]+\d+$/.test(v)?cellRaw(v):v.replace(/^"|"$/g,'')); return isNaN(d)?'#ERR':d.getFullYear().toString(); }
-    if (m1('MONTH')) { const v = m1('MONTH'); const d=new Date(/^[A-Z]+\d+$/.test(v)?cellRaw(v):v.replace(/^"|"$/g,'')); return isNaN(d)?'#ERR':(d.getMonth()+1).toString(); }
-    if (m1('DAY')) { const v = m1('DAY'); const d=new Date(/^[A-Z]+\d+$/.test(v)?cellRaw(v):v.replace(/^"|"$/g,'')); return isNaN(d)?'#ERR':d.getDate().toString(); }
-    if (m1('WEEKDAY')) { const v = splitArgs(m1('WEEKDAY'))[0]; const d=new Date(/^[A-Z]+\d+$/.test(v)?cellRaw(v):v.replace(/^"|"$/g,'')); return isNaN(d)?'#ERR':(d.getDay()+1).toString(); }
-    if (m1('DATE')) { const [y,mo,d]=splitArgs(m1('DATE')).map(Number); const dt=new Date(y,mo-1,d); return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`; }
-    if (m1('DATEDIF') || m1('DAYS')) { const args=splitArgs(m1('DATEDIF')||m1('DAYS')); const d1=new Date(args[0].replace(/^"|"$/g,'')), d2=new Date(args[1].replace(/^"|"$/g,'')); return Math.round((d2-d1)/86400000).toString(); }
-    if (m1('EDATE')) { const [d,n]=splitArgs(m1('EDATE')); const dt=new Date(/^[A-Z]+\d+$/.test(d)?cellRaw(d):d.replace(/^"|"$/g,'')); dt.setMonth(dt.getMonth()+parseInt(n)); return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`; }
+    if (expr === 'TODAY()') { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
+    if (expr === 'NOW()') { return new Date().toLocaleString(); }
+    {
+      const a = fnArgs('YEAR'); if (a !== null) { const d = new Date(argStr(a)); return isNaN(d) ? '#VALUE!' : d.getFullYear().toString(); }
+    }
+    {
+      const a = fnArgs('MONTH'); if (a !== null) { const d = new Date(argStr(a)); return isNaN(d) ? '#VALUE!' : (d.getMonth() + 1).toString(); }
+    }
+    {
+      const a = fnArgs('DAY'); if (a !== null) { const d = new Date(argStr(a)); return isNaN(d) ? '#VALUE!' : d.getDate().toString(); }
+    }
+    {
+      const a = fnArgs('HOUR'); if (a !== null) { const d = new Date(argStr(a)); return isNaN(d) ? '#VALUE!' : d.getHours().toString(); }
+    }
+    {
+      const a = fnArgs('MINUTE'); if (a !== null) { const d = new Date(argStr(a)); return isNaN(d) ? '#VALUE!' : d.getMinutes().toString(); }
+    }
+    {
+      const a = fnArgs('SECOND'); if (a !== null) { const d = new Date(argStr(a)); return isNaN(d) ? '#VALUE!' : d.getSeconds().toString(); }
+    }
+    {
+      const a = fnArgs('WEEKDAY');
+      if (a !== null) { const [v, type] = splitArgs(a); const d = new Date(argStr(v)); if (isNaN(d)) return '#VALUE!'; const dow = d.getDay(); const t = argNum(type || '1'); return (t === 2 ? (dow === 0 ? 7 : dow) : t === 3 ? (dow === 0 ? 6 : dow - 1) : dow + 1).toString(); }
+    }
+    {
+      const a = fnArgs('DATE');
+      if (a !== null) { const [y, mo, d] = splitArgs(a).map(argNum); const dt = new Date(y, mo - 1, d); return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`; }
+    }
+    {
+      const a = fnArgs('DAYS');
+      if (a !== null) { const [end, start] = splitArgs(a); return Math.round((new Date(argStr(end)) - new Date(argStr(start))) / 86400000).toString(); }
+    }
+    {
+      const a = fnArgs('DATEDIF');
+      if (a !== null) { const [s, e, unit] = splitArgs(a); const d1 = new Date(argStr(s)), d2 = new Date(argStr(e)); const u = argStr(unit).toUpperCase(); if (u === 'D') return Math.round((d2 - d1) / 86400000).toString(); if (u === 'M') return ((d2.getFullYear() - d1.getFullYear()) * 12 + d2.getMonth() - d1.getMonth()).toString(); if (u === 'Y') return (d2.getFullYear() - d1.getFullYear()).toString(); return '#VALUE!'; }
+    }
+    {
+      const a = fnArgs('EDATE');
+      if (a !== null) { const [d, n] = splitArgs(a); const dt = new Date(argStr(d)); dt.setMonth(dt.getMonth() + argNum(n)); return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`; }
+    }
+    {
+      const a = fnArgs('NETWORKDAYS');
+      if (a !== null) { const [s, e] = splitArgs(a); let d1 = new Date(argStr(s)), d2 = new Date(argStr(e)); let count = 0; while (d1 <= d2) { const dow = d1.getDay(); if (dow !== 0 && dow !== 6) count++; d1.setDate(d1.getDate() + 1); } return count.toString(); }
+    }
+    {
+      const a = fnArgs('WORKDAY');
+      if (a !== null) { const [s, n] = splitArgs(a); const dt = new Date(argStr(s)); let days = argNum(n); const dir = days > 0 ? 1 : -1; while (days !== 0) { dt.setDate(dt.getDate() + dir); if (dt.getDay() !== 0 && dt.getDay() !== 6) days -= dir; } return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`; }
+    }
+    {
+      const a = fnArgs('EOMONTH');
+      if (a !== null) { const [s, n] = splitArgs(a); const dt = new Date(argStr(s)); dt.setMonth(dt.getMonth() + argNum(n) + 1, 0); return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`; }
+    }
 
-    // ── FINANCIAL ───────────────────────────────────────────
-    if (m1('PMT')) { const [rate,nper,pv]=splitArgs(m1('PMT')).map(a=>/^[A-Z]+\d+$/.test(a)?cellVal(a):parseFloat(a)); const r=rate; return r===0?(-pv/nper).toFixed(2):(-(pv*r*Math.pow(1+r,nper))/(Math.pow(1+r,nper)-1)).toFixed(2); }
-    if (m1('FV')) { const [rate,nper,pmt,pv]=splitArgs(m1('FV')).map(a=>/^[A-Z]+\d+$/.test(a)?cellVal(a):parseFloat(a||0)); return (Math.pow(1+rate,nper)*(pv||0)+pmt*((Math.pow(1+rate,nper)-1)/rate)).toFixed(2); }
-    if (m1('PV')) { const [rate,nper,pmt]=splitArgs(m1('PV')).map(a=>/^[A-Z]+\d+$/.test(a)?cellVal(a):parseFloat(a)); return (pmt*((1-Math.pow(1+rate,-nper))/rate)).toFixed(2); }
-    if (m1('NPV')) { const args=splitArgs(m1('NPV')); const rate=/^[A-Z]+\d+$/.test(args[0])?cellVal(args[0]):parseFloat(args[0]); const cashflows=getVals(args.slice(1).join(',')); return cashflows.reduce((sum,cf,i)=>sum+cf/Math.pow(1+rate,i+1),0).toFixed(2); }
-    if (m1('RATE')) { return '#N/A (use PMT)'; }
-    if (m1('NPER')) { const [rate,pmt,pv]=splitArgs(m1('NPER')).map(a=>parseFloat(a)); return (Math.log(-pmt/(-pmt+rate*pv))/Math.log(1+rate)).toFixed(2); }
-    if (m1('SLN')) { const [cost,salvage,life]=splitArgs(m1('SLN')).map(a=>parseFloat(a)); return ((cost-salvage)/life).toFixed(2); }
-    if (m1('YIELD') || m1('IRR')) { return '#CALC (complex)'; }
-    if (m1('PERCENTILE')) { const [rng,k]=splitArgs(m1('PERCENTILE')); const v=[...getVals(rng)].sort((a,b)=>a-b); const pct=parseFloat(k); const idx=pct*(v.length-1); const lo=Math.floor(idx); return (v[lo]+(v[lo+1]||v[lo]-v[lo])*(idx-lo)).toFixed(4).replace(/\.?0+$/,''); }
-    if (m1('QUARTILE')) { const [rng,q]=splitArgs(m1('QUARTILE')); const v=[...getVals(rng)].sort((a,b)=>a-b); const pct=[0,0.25,0.5,0.75,1][parseInt(q)]; const idx=pct*(v.length-1); const lo=Math.floor(idx); return (v[lo]+(v[lo+1]||v[lo]-v[lo])*(idx-lo)).toFixed(4).replace(/\.?0+$/,''); }
+    // ── FINANCIAL ────────────────────────────────────────────
+    {
+      const a = fnArgs('PMT');
+      if (a !== null) { const [rate, nper, pv, fv, type] = splitArgs(a).map(argNum); if (rate === 0) return (-pv / nper).toString(); const pvAdj = pv * Math.pow(1 + rate, nper); const pvFv = (fv || 0); return (-(pvAdj + pvFv) / ((Math.pow(1 + rate, nper) - 1) / rate * (1 + (type || 0) * rate))).toString(); }
+    }
+    {
+      const a = fnArgs('FV');
+      if (a !== null) { const [rate, nper, pmt, pv, type] = splitArgs(a).map(argNum); return (-(pmt * (1 + rate * (type || 0)) * ((Math.pow(1 + rate, nper) - 1) / rate) + (pv || 0) * Math.pow(1 + rate, nper))).toString(); }
+    }
+    {
+      const a = fnArgs('PV');
+      if (a !== null) { const [rate, nper, pmt, fv, type] = splitArgs(a).map(argNum); return (-(pmt * (1 + rate * (type || 0)) * ((1 - Math.pow(1 + rate, -nper)) / rate) + (fv || 0) * Math.pow(1 + rate, -nper))).toString(); }
+    }
+    {
+      const a = fnArgs('NPV');
+      if (a !== null) { const args = splitArgs(a); const rate = argNum(args[0]); const cfs = getVals(args.slice(1).join(',')); return cfs.reduce((sum, cf, i) => sum + cf / Math.pow(1 + rate, i + 1), 0).toString(); }
+    }
+    {
+      const a = fnArgs('NPER');
+      if (a !== null) { const [rate, pmt, pv] = splitArgs(a).map(argNum); return (Math.log(-pmt / (-pmt + rate * pv)) / Math.log(1 + rate)).toString(); }
+    }
+    {
+      const a = fnArgs('SLN');
+      if (a !== null) { const [cost, salvage, life] = splitArgs(a).map(argNum); return ((cost - salvage) / life).toString(); }
+    }
 
-    // ── SIMPLE ARITHMETIC with cell refs ────────────────────
-    const resolved = expr.replace(/([A-Z]+\d+)/g, (_, ref) => cellVal(ref));
+    // ── & CONCATENATION ──────────────────────────────────────
+    // Handle A1&B1 or "text"&A1 style concatenation
+    if (exprOrig.includes('&')) {
+      // Tokenize respecting quoted strings and parens
+      const parts = []; let cur2 = '', depth2 = 0, inQ2 = false;
+      for (let i = 0; i < exprOrig.length; i++) {
+        const ch = exprOrig[i];
+        if (ch === '"') inQ2 = !inQ2;
+        if (!inQ2) { if (ch === '(') depth2++; else if (ch === ')') depth2--; }
+        if (!inQ2 && depth2 === 0 && ch === '&') { parts.push(cur2.trim()); cur2 = ''; }
+        else cur2 += ch;
+      }
+      if (cur2.trim()) parts.push(cur2.trim());
+      if (parts.length > 1) return parts.map(p => {
+        p = p.trim();
+        if (/^\$?[A-Za-z]+\$?\d+$/.test(p)) return cellRaw(p);
+        if (/^".*"$/.test(p)) return p.slice(1, -1);
+        if (p.startsWith('=')) return evaluateFormula(p, rows);
+        // Sub-expression (e.g. function call)
+        return evaluateFormula('=' + p, rows);
+      }).join('');
+    }
+
+    // ── ARITHMETIC with cell refs ────────────────────────────
+    // Replace cell refs with their numeric values, then eval
+    const resolved = expr.replace(/\$?([A-Z]+)\$?(\d+)/g, (_, col, row) => {
+      const c = parseColIdx(col); const r = parseInt(row) - 1;
+      const raw = rows[r]?.[c]?.value ?? '0';
+      const val = raw.startsWith('=') ? evaluateFormula(raw, rows) : raw;
+      const n = parseFloat(val);
+      return isNaN(n) ? '0' : n.toString();
+    });
     // eslint-disable-next-line no-new-func
-    const result = Function(`"use strict"; return (${resolved})`)();
+    const result = Function('"use strict"; return (' + resolved + ')')();
+    if (typeof result === 'boolean') return result ? 'TRUE' : 'FALSE';
     return isNaN(result) ? '#ERR' : result.toString();
   } catch {
     return '#ERR';
