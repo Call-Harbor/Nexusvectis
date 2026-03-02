@@ -2,9 +2,9 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import {
-  Download, Plus, Trash2, Sparkles, Loader2, X, Check,
-  Share2, BarChart3, Bold, Italic, AlignLeft, AlignCenter, AlignRight,
-  Code2, Sigma, FunctionSquare, ChevronDown, Undo2, Redo2, Copy, Clipboard
+  Download, Plus, Sparkles, Loader2, X,
+  BarChart3, Bold, Italic, AlignLeft, AlignCenter, AlignRight,
+  Code2, Sigma, FunctionSquare, Undo2, Cloud
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
