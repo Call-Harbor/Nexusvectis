@@ -204,7 +204,7 @@ export default function NotificationSettings() {
             >
               <div className="p-4 rounded-2xl bg-amber-500/5 border border-amber-500/20">
                 <p className="text-amber-400 text-sm font-semibold mb-3 flex items-center gap-2">
-                  <Zap className="w-4 h-4" /> Hurtigstart-skabeloner
+                  <Zap className="w-4 h-4" /> Quick-start templates
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                   {PRESETS.map((preset, i) => (
