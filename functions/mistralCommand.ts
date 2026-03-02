@@ -222,6 +222,8 @@ AVAILABLE ACTIONS:
 15. SHOW_ANALYSIS - Advanced analytics with hologram visualization
 16. SHOW_3D - Display 3D visualization of fleet, routes, warehouses, or cargo
 17. OPEN_NEXUS_CHAT - Open Nexus Satellite Chat (encrypted E2E team communication)
+18. CREATE_DOCUMENT - Generate a complete document and open it in the Document Editor for the user to edit. Use when user asks to write/create/generate a document, report, letter, contract, plan, brief, etc. Parameters: {title: string, content_html: string (full rich HTML document using h1/h2/h3/p/ul/ol/li tags), description: string}
+19. CREATE_SPREADSHEET - Generate a complete spreadsheet and open it in the Spreadsheet Editor for the user to edit. Use when user asks to create/make a spreadsheet, table, data sheet, budget, tracker, list, etc. Parameters: {title: string, grid: array of arrays of strings (first row = headers, remaining rows = data), description: string}
 
 3D VISUALIZATION CAPABILITIES (action: SHOW_3D):
 When user asks to "visualize", "show in 3D", "3D view", "vis i 3D", "3D visualisering":
