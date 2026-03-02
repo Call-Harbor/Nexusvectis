@@ -505,18 +505,18 @@ export default function NotificationCenter({ user }) {
                     <Bell className="w-5 h-5 text-slate-600" />
                   </div>
                   <p className="text-slate-400 text-sm font-medium">
-                    {activeFilterCount > 0 ? "Ingen resultater" : "Ingen notifikationer"}
-                  </p>
-                  <p className="text-slate-600 text-xs mt-1">
-                    {activeFilterCount > 0
-                      ? "Prøv at justere dine filtre"
-                      : "Konfigurer regler for at modtage notifikationer"}
-                  </p>
-                  {activeFilterCount > 0 && (
-                    <button onClick={resetFilters} className="mt-3 text-xs text-cyan-500 hover:text-cyan-300 transition-colors border border-cyan-500/30 px-3 py-1 rounded-full">
-                      Nulstil filtre
-                    </button>
-                  )}
+                     {activeFilterCount > 0 ? "No results" : "No notifications"}
+                   </p>
+                   <p className="text-slate-600 text-xs mt-1">
+                     {activeFilterCount > 0
+                       ? "Try adjusting your filters"
+                       : "Configure rules to receive notifications"}
+                   </p>
+                   {activeFilterCount > 0 && (
+                     <button onClick={resetFilters} className="mt-3 text-xs text-cyan-500 hover:text-cyan-300 transition-colors border border-cyan-500/30 px-3 py-1 rounded-full">
+                       Reset filters
+                     </button>
+                   )}
                 </div>
               ) : (
                 <>
