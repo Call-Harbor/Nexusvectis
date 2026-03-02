@@ -146,7 +146,7 @@ export default function NotificationSettings() {
   const handlePreset = async (preset) => {
     await base44.entities.NotificationRule.create({ ...preset, organization_id: orgId, user_email: email, is_active: true });
     queryClient.invalidateQueries({ queryKey: ["notificationRules"] });
-    toast.success(`Regel "${preset.name}" oprettet`);
+    toast.success(`Rule "${preset.name}" created`);
   };
 
   const unreadCount = notifications.filter(n => !n.is_read).length;
