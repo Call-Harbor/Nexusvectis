@@ -5,7 +5,7 @@ import { MapContainer, TileLayer, Marker, Polyline, Popup } from 'react-leaflet'
 import {
   Sparkles, Zap, Leaf, DollarSign, Clock, AlertTriangle, CheckCircle,
   ChevronRight, Loader2, Cloud, BarChart3, Info,
-  Truck, Gauge, Coffee, MapPin
+  Truck, Gauge, Coffee, MapPin, Construction, Radio, Wifi, ShieldAlert, Thermometer
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
