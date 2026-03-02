@@ -311,28 +311,41 @@ export default function AdvancedRouteEditor({ initialWaypoints = [], onSave, onC
       </div>
 
       {/* Controls */}
-      <div className="flex gap-2">
-        <Button
-          onClick={() => setIsAddMode(!isAddMode)}
-          className={cn(
-            "flex-1",
-            isAddMode 
-              ? "bg-cyan-500 hover:bg-cyan-600" 
-              : "bg-slate-700 hover:bg-slate-600"
-          )}
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          {isAddMode ? 'Click Map to Add' : 'Add Waypoint'}
-        </Button>
-        <Button
-          onClick={() => setWaypoints([])}
-          variant="outline"
-          className="border-red-500/30 text-red-400 hover:bg-red-500/20"
-          disabled={waypoints.length === 0}
-        >
-          <Trash2 className="w-4 h-4 mr-2" />
-          Clear All
-        </Button>
+      <div className="flex flex-col gap-2">
+        <div className="flex gap-2">
+          <WaypointSearch
+            className="flex-1"
+            placeholder="Search & add location..."
+            onSelect={(loc) => {
+              setWaypoints(prev => [...prev, { lat: loc.lat, lng: loc.lng, name: loc.name }]);
+            }}
+          />
+          <Button
+            onClick={() => setIsAddMode(!isAddMode)}
+            className={cn(
+              isAddMode 
+                ? "bg-cyan-500 hover:bg-cyan-600" 
+                : "bg-slate-700 hover:bg-slate-600"
+            )}
+            title="Click on map to add waypoint"
+          >
+            <Plus className="w-4 h-4" />
+          </Button>
+          <Button
+            onClick={() => setWaypoints([])}
+            variant="outline"
+            className="border-red-500/30 text-red-400 hover:bg-red-500/20"
+            disabled={waypoints.length === 0}
+            title="Clear all waypoints"
+          >
+            <Trash2 className="w-4 h-4" />
+          </Button>
+        </div>
+        {isAddMode && (
+          <div className="text-xs text-cyan-400 text-center py-1 bg-cyan-500/10 rounded-lg border border-cyan-500/30">
+            Click on the map to place a waypoint
+          </div>
+        )}
       </div>
 
       {/* Waypoints List */}
