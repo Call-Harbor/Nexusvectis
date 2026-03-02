@@ -409,7 +409,7 @@ export default function NotificationCenter({ user }) {
                           </FilterPill>
                         ))}
                       </FilterRow>
-                      <FilterRow label="Kanal" className="flex-1">
+                      <FilterRow label="Channel" className="flex-1">
                         {[["email", <Mail key="m" className="w-2.5 h-2.5" />, "E-mail"], ["in_app", <Bell key="b" className="w-2.5 h-2.5" />, "App"]].map(([v, icon, label]) => (
                           <FilterPill key={v} active={filters.channels === v}
                             activeClass="bg-indigo-500/15 text-indigo-400 border-indigo-500/40"
