@@ -746,6 +746,26 @@ const DEFAULT_CELL_FMT = { bold: false, italic: false, align: 'left', bg: '', co
 
 function cellRef(r, c) { return `${getColName(c)}${r + 1}`; }
 
+function SBtn({ onClick, active, children, title, className = '' }) {
+  return (
+    <button
+      onClick={onClick}
+      title={title}
+      className={`h-6 px-1.5 rounded text-xs flex items-center justify-center transition-all
+        ${active
+          ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+          : 'text-slate-400 hover:bg-slate-700/60 hover:text-white border border-transparent'}
+        ${className}`}
+    >
+      {children}
+    </button>
+  );
+}
+
+function SDivider() {
+  return <div className="w-px h-4 bg-slate-700/50 mx-0.5 flex-shrink-0" />;
+}
+
 export default function AISpreadsheetEditor({ initialGrid, initialTitle }) {
   const [sheetName, setSheetName] = useState(initialTitle || "Untitled Spreadsheet");
   const [grid, setGrid] = useState(() => {
