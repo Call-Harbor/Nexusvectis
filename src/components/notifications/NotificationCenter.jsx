@@ -243,7 +243,7 @@ export default function NotificationCenter({ user }) {
                   <button
                     onClick={() => setShowFilters(v => !v)}
                     className={`relative w-7 h-7 flex items-center justify-center rounded-md transition-all ${showFilters ? "bg-cyan-500/20 text-cyan-400" : "text-slate-400 hover:text-white hover:bg-slate-800/60"}`}
-                    title="Filtre og søgninger"
+                    title="Filters and searches"
                   >
                     <SlidersHorizontal className="w-4 h-4" />
                     {activeFilterCount > 0 && (
