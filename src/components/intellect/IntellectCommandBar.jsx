@@ -80,7 +80,7 @@ export default function IntellectCommandBar({
 
         {/* Quick Buttons */}
         <div className="flex gap-2 flex-wrap mb-3">
-          <Button onClick={() => setShowCompanyAnalysis(true)} variant="outline" size="sm" className="border-fuchsia-500/30 text-fuchsia-400 hover:bg-fuchsia-500/10">
+          <Button onClick={() => openWindow('company_analytics', { x: 0, y: 0 })} variant="outline" size="sm" className="border-fuchsia-500/30 text-fuchsia-400 hover:bg-fuchsia-500/10">
             <Building2 className="w-3.5 h-3.5 mr-1.5" />Company Analytics
           </Button>
           <Button onClick={() => setShowProfileSearch(true)} variant="outline" size="sm" className="border-blue-500/30 text-blue-400 hover:bg-blue-500/10">
