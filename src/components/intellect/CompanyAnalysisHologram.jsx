@@ -661,9 +661,11 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
               )}
             </div>
           )}
-          <Button onClick={onClose} variant="ghost" className="text-red-400 hover:text-red-300 hover:bg-red-500/20">
-            <X className="w-5 h-5" />
-          </Button>
+          {!embedded && onClose && (
+            <Button onClick={onClose} variant="ghost" className="text-red-400 hover:text-red-300 hover:bg-red-500/20">
+              <X className="w-5 h-5" />
+            </Button>
+          )}
         </div>
       </div>
 
