@@ -2,21 +2,13 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { useNavigate } from "react-router-dom";
-import { createPageUrl } from "../utils";
 import ReactMarkdown from "react-markdown";
 import { 
-  Sparkles, Send, Mic, Brain, Zap, X, Paperclip, Menu,
-  ChevronDown, Search, MessageCircle, Settings
+  Sparkles, Send, Mic, Brain, Zap, X, Paperclip, 
+  Volume2, VolumeX, Radio, Heart
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import WindowContentRenderer from "@/components/intellect/WindowContentRenderer";
-import { getWindowMeta } from "@/components/intellect/WindowRegistry";
-import ThinkingTerminalVisual from "@/components/intellect/ThinkingTerminalVisual";
-import MistralStreamingEngine from "@/components/intellect/MistralStreamingEngine";
-import { AdvancedIntelligenceEngine } from "@/components/intellect/AdvancedIntelligenceEngine";
-import IntelligentCommandAgent from "@/components/intellect/IntelligentCommandAgent";
 
 const INITIAL_MESSAGES = [
   { role: "system", content: "⚡ FLEET AI Mobile ready. Command me." }
