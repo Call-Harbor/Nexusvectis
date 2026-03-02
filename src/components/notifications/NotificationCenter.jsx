@@ -628,15 +628,15 @@ export default function NotificationCenter({ user }) {
             {/* ── FOOTER ──────────────────────────────────────────── */}
             <div className="flex-shrink-0 px-4 py-2 border-t border-slate-800 bg-slate-900/70 flex items-center justify-between">
               <span className="text-[10px] text-slate-600">
-                {activeFilterCount > 0
-                  ? `${filtered.length} af ${notifications.length} notifikationer`
-                  : `${notifications.length} notifikationer i alt`}
-              </span>
-              <Link to={createPageUrl("NotificationSettings")} onClick={() => setOpen(false)}>
-                <span className="text-[11px] text-cyan-500 hover:text-cyan-300 transition-colors">
-                  Administrer regler →
-                </span>
-              </Link>
+                 {activeFilterCount > 0
+                   ? `${filtered.length} of ${notifications.length} notifications`
+                   : `${notifications.length} notifications total`}
+               </span>
+               <Link to={createPageUrl("NotificationSettings")} onClick={() => setOpen(false)}>
+                 <span className="text-[11px] text-cyan-500 hover:text-cyan-300 transition-colors">
+                   Manage rules →
+                 </span>
+               </Link>
             </div>
           </motion.div>
         )}
