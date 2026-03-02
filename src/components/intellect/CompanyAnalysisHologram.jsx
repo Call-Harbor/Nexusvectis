@@ -746,7 +746,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
               value={companyInput}
               onChange={e => setCompanyInput(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleSearch()}
-              placeholder="Søg virksomhed efter navn eller registreringsnummer..."
+              placeholder="Search company by name or registration number..."
               className="flex-1 px-4 py-2.5 bg-slate-900/60 border-2 border-cyan-500/30 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-400 text-sm"
             />
             <Button
