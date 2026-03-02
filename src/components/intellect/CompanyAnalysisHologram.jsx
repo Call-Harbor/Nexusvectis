@@ -673,7 +673,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
       <div className="relative z-10 p-4 border-b border-slate-800/50 flex-shrink-0">
         <div className="max-w-3xl mx-auto space-y-2">
           <div className="flex gap-1.5 items-center text-xs text-slate-400 mb-2 flex-wrap">
-            <span>Registreringstype:</span>
+            <span>Registry type:</span>
             <button 
               onClick={() => setSearchType('auto')}
               className={`px-2 py-0.5 rounded-md transition-colors text-xs ${searchType === 'auto' ? 'bg-cyan-500/40 text-cyan-300' : 'hover:bg-slate-800 text-slate-400'}`}
@@ -684,7 +684,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
               onClick={() => setSearchType('name')}
               className={`px-2 py-0.5 rounded-md transition-colors text-xs ${searchType === 'name' ? 'bg-cyan-500/40 text-cyan-300' : 'hover:bg-slate-800 text-slate-400'}`}
             >
-              Navn
+              Name
             </button>
             <button 
               onClick={() => setSearchType('cvr')}
