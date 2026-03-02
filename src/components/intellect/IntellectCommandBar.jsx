@@ -95,6 +95,9 @@ export default function IntellectCommandBar({
           <Button onClick={() => handleQuickAction('openNewsIntelligence')} variant="outline" size="sm" className="border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10">
             <Newspaper className="w-3.5 h-3.5 mr-1.5" />News Feed
           </Button>
+          <Button onClick={() => handleQuickAction('openImageGenerator')} variant="outline" size="sm" className="border-violet-500/30 text-violet-400 hover:bg-violet-500/10">
+            <Image className="w-3.5 h-3.5 mr-1.5" />AI Images
+          </Button>
         </div>
 
         {/* Input Area */}
