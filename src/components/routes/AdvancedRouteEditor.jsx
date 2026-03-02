@@ -3,9 +3,21 @@ import { MapContainer, TileLayer, Marker, Polyline, useMapEvents, useMap } from 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Trash2, GripVertical, Save, X } from "lucide-react";
+import { Plus, Trash2, Save, X, Search, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import L from 'leaflet';
+
+async function geocodeAddress(query) {
+  const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=5&addressdetails=1`;
+  const res = await fetch(url, { headers: { 'User-Agent': 'NexusVectis-TMS/1.0' } });
+  const data = await res.json();
+  return data.map(item => ({
+    name: item.display_name.split(',').slice(0, 2).join(',').trim(),
+    fullName: item.display_name,
+    lat: parseFloat(item.lat),
+    lng: parseFloat(item.lon),
+  }));
+}
 
 // Draggable Marker Component
 function DraggableMarker({ position, index, onDragEnd, onDelete, isFirst, isLast }) {
