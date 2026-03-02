@@ -1563,7 +1563,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
                         value={personSearch}
                         onChange={e => setPersonSearch(e.target.value)}
                         onKeyDown={e => e.key === 'Enter' && searchPerson()}
-                        placeholder={`Search person${companyName ? ` at ${companyName}` : ''} (name, CEO, CFO...)...`}
+                        placeholder={`Search person${companyName ? ` at ${companyName}` : ''} (name, CEO, CFO, etc.)...`}
                         className="w-full pl-10 pr-4 py-3 bg-slate-900/60 border-2 border-cyan-500/30 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-400"
                       />
                     </div>
