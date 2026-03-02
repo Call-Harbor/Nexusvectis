@@ -1,13 +1,14 @@
-import React from "react";
+import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "../../utils";
 import {
   Brain, Sparkles, Zap, Activity, LayoutDashboard, Search,
   MessageSquare, FileText, BarChart3, Truck, AlertTriangle, Route,
-  Package, Warehouse, Users, Satellite, ChevronDown, GraduationCap, FileCode, Globe, Image
+  Package, Warehouse, Users, Satellite, ChevronDown, GraduationCap, FileCode, Globe, Image, X
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
