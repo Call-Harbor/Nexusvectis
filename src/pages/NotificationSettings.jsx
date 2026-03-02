@@ -345,7 +345,7 @@ export default function NotificationSettings() {
               </h2>
               {unreadCount > 0 && (
                 <Button size="sm" variant="ghost" className="text-xs text-slate-400 hover:text-cyan-400" onClick={markAllRead}>
-                  <Check className="w-3 h-3 mr-1" /> Marker alle læst
+                   <Check className="w-3 h-3 mr-1" /> Mark all read
                 </Button>
               )}
             </div>
