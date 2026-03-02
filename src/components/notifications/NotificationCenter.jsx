@@ -617,7 +617,7 @@ export default function NotificationCenter({ user }) {
                         className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-cyan-400 transition-colors bg-slate-800/50 hover:bg-slate-800 px-4 py-1.5 rounded-full border border-slate-700/40 hover:border-cyan-500/30"
                       >
                         <ChevronDown className="w-3.5 h-3.5" />
-                        Vis {Math.min(PAGE_SIZE, filtered.length - page * PAGE_SIZE)} flere · {filtered.length - page * PAGE_SIZE} tilbage
+                        Show {Math.min(PAGE_SIZE, filtered.length - page * PAGE_SIZE)} more · {filtered.length - page * PAGE_SIZE} left
                       </button>
                     </motion.div>
                   )}
