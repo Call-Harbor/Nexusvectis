@@ -593,7 +593,7 @@ export default function NotificationCenter({ user }) {
 
                             <div className="flex items-center justify-between mt-2">
                               <span className="text-[10px] text-slate-600">
-                                {notif.created_date && formatDistanceToNow(new Date(notif.created_date), { addSuffix: true, locale: da })}
+                                {notif.created_date && formatDistanceToNow(new Date(notif.created_date), { addSuffix: true, locale: enUS })}
                               </span>
                               {notif.action_url && (
                                 <Link to={notif.action_url} onClick={() => { markAsRead(notif.id); setOpen(false); }}>
