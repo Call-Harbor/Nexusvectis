@@ -1244,6 +1244,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
                     <div className="text-center py-12">
                       <Loader2 className="w-8 h-8 animate-spin text-amber-400 mx-auto mb-2" />
                       <p className="text-slate-400">Searching ownership data...</p>
+
                     </div>
                   )}
 
