@@ -17,6 +17,7 @@ import WebBrowser from "@/components/intellect/WebBrowser";
 import ProfileSearch from "@/components/intellect/ProfileSearch";
 import NewsIntelligence from "@/components/intellect/NewsIntelligence";
 import CompanyAnalysisHologram from "@/components/intellect/CompanyAnalysisHologram";
+import PeopleIntelligenceHologram from "@/components/intellect/PeopleIntelligenceHologram";
 
 const CHART_COLORS = ['#06b6d4', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444'];
 
