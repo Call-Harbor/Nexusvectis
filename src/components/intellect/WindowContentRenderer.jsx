@@ -20,6 +20,8 @@ import CompanyAnalysisHologram from "@/components/intellect/CompanyAnalysisHolog
 import PeopleIntelligenceHologram from "@/components/intellect/PeopleIntelligenceHologram";
 import ImageGeneratorHologram from "@/components/intellect/ImageGeneratorHologram";
 import ImageEditorHologram from "@/components/intellect/ImageEditorHologram";
+import PredictiveMaintenancePanel from "@/components/intellect/PredictiveMaintenancePanel";
+import RealTimeRouteOptimizationPanel from "@/components/intellect/RealTimeRouteOptimizationPanel";
 
 const CHART_COLORS = ['#06b6d4', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444'];
 
