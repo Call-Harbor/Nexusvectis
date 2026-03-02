@@ -404,6 +404,118 @@ export default function RouteOptimizer({ onApply, onClose }) {
                 </div>
               )}
 
+              {/* LIVE INTEL TAB */}
+              {activeTab === 'live intel' && (
+                <div className="space-y-4">
+                  {/* Live data sources badge */}
+                  {result?.raw_live_data && (
+                    <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-3">
+                      <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse flex-shrink-0" />
+                      <div className="text-xs">
+                        <span className="text-emerald-400 font-bold">Live data fetched at optimization time</span>
+                        <div className="flex flex-wrap gap-3 mt-1 text-slate-400">
+                          <span>🗺 {result.raw_live_data.roadworks_count} roadworks (OSM)</span>
+                          <span>🌤 Real-time weather (Open-Meteo)</span>
+                          <span>📰 {result.raw_live_data.incident_news_count} incident reports</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Live incidents from AI */}
+                  {rd.live_incidents?.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-xs font-bold text-white uppercase tracking-wide flex items-center gap-2">
+                        <ShieldAlert className="w-4 h-4 text-amber-400" />Live Incidents & Roadworks
+                      </p>
+                      {rd.live_incidents.map((inc, i) => {
+                        const typeColors = {
+                          roadworks: 'border-amber-500/30 bg-amber-500/8',
+                          accident: 'border-red-500/30 bg-red-500/8',
+                          weather: 'border-cyan-500/30 bg-cyan-500/8',
+                          closure: 'border-orange-500/30 bg-orange-500/8',
+                        };
+                        const typeIcons = { roadworks: '🚧', accident: '🚨', weather: '⛈', closure: '🚫' };
+                        return (
+                          <div key={i} className={`p-3 rounded-xl border ${typeColors[inc.type] || typeColors.roadworks}`}>
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="text-xs font-semibold text-white flex items-center gap-1.5">
+                                {typeIcons[inc.type] || '⚠'} {inc.type?.replace(/_/g, ' ').toUpperCase()}
+                              </span>
+                              <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${inc.avoided ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'}`}>
+                                {inc.avoided ? '✓ AVOIDED' : '⚠ ACTIVE'}
+                              </span>
+                            </div>
+                            <p className="text-xs text-slate-300">{inc.description}</p>
+                            {inc.impact && <p className="text-[10px] text-slate-500 mt-1">Impact: {inc.impact}</p>}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {/* Live weather */}
+                  {result?.raw_live_data && (result.raw_live_data.weather_origin || result.raw_live_data.weather_destination) && (
+                    <div className="space-y-2">
+                      <p className="text-xs font-bold text-white uppercase tracking-wide flex items-center gap-2">
+                        <Cloud className="w-4 h-4 text-cyan-400" />Real-Time Weather Conditions
+                      </p>
+                      {[
+                        { label: 'Origin', data: result.raw_live_data.weather_origin },
+                        { label: 'Destination', data: result.raw_live_data.weather_destination },
+                      ].filter(w => w.data).map((w, i) => (
+                        <div key={i} className={`p-3 rounded-xl border ${w.data.severe ? 'border-red-500/30 bg-red-500/8' : 'border-slate-700/40 bg-slate-800/40'}`}>
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-semibold text-white">{w.label}</span>
+                            {w.data.severe && <span className="text-[10px] bg-red-500/20 text-red-400 px-2 py-0.5 rounded-full font-bold">SEVERE</span>}
+                          </div>
+                          <p className="text-xs text-slate-300 mt-1">{w.data.description} · {w.data.temp}°C · Wind {w.data.wind_kmh} km/h · Precip {w.data.precipitation_mm}mm</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Live data summary */}
+                  {result?.live_data_summary && (
+                    <div className="p-3 rounded-xl bg-slate-800/40 border border-slate-700/30">
+                      <p className="text-xs font-bold text-slate-400 uppercase mb-2">Live Intelligence Summary</p>
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div><span className="text-slate-500">Roadworks detected:</span> <span className="text-white font-mono">{result.live_data_summary.roadworks_found}</span></div>
+                        <div><span className="text-slate-500">Weather severity:</span> <span className="text-white font-mono">{result.live_data_summary.weather_severity}</span></div>
+                        <div><span className="text-slate-500">Incidents:</span> <span className="text-white font-mono">{result.live_data_summary.incidents_detected}</span></div>
+                        <div><span className="text-slate-500">Data freshness:</span> <span className="text-emerald-400 font-mono">{result.live_data_summary.data_freshness}</span></div>
+                      </div>
+                      <div className="mt-2 flex flex-wrap gap-1">
+                        {result.live_data_summary.sources?.map((s, i) => (
+                          <span key={i} className="text-[10px] bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 px-2 py-0.5 rounded-full">{s}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Live delay estimate */}
+                  {rd.live_data_delay_minutes > 0 && (
+                    <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center gap-3">
+                      <Clock className="w-5 h-5 text-amber-400 flex-shrink-0" />
+                      <div>
+                        <p className="text-amber-400 font-bold text-sm">+{rd.live_data_delay_minutes} min delay from live incidents</p>
+                        <p className="text-xs text-slate-400">Added to duration estimate based on detected roadworks/events</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {!rd.live_incidents?.length && !result?.raw_live_data?.roadworks_count && (
+                    <div className="flex items-center gap-2 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                      <CheckCircle className="w-5 h-5 text-emerald-400 flex-shrink-0" />
+                      <div>
+                        <p className="text-sm text-emerald-400 font-semibold">Route corridor clear</p>
+                        <p className="text-xs text-slate-400">No active roadworks or major incidents detected via live data sources</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* RISKS TAB */}
               {activeTab === 'risks' && (
                 <div className="space-y-3">
