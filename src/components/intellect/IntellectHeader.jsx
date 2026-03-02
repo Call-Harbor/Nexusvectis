@@ -126,11 +126,7 @@ export default function IntellectHeader({ orgId, openWindow, executePrompt, setS
                   ))}
                 </React.Fragment>
               ))}
-              <DropdownMenuSeparator className="bg-slate-800" />
-              <DropdownMenuItem onClick={() => setShowAdvancedPanel(true)} className="text-slate-300 text-xs"><Brain className="w-4 h-4 mr-2" />Advanced Intelligence Panel</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => openWindow('deep_analysis', { x: 100, y: 80 })} className="text-slate-300 text-xs"><Activity className="w-4 h-4 mr-2 text-cyan-400" />Anomaly Detection + What-If</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => openWindow('course_ai', { x: 120, y: 60 })} className="text-slate-300 text-xs"><GraduationCap className="w-4 h-4 mr-2 text-amber-400" />Adaptive Fleet AI Courses</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setShowParallelProcessor(true)} className="text-slate-300 text-xs"><Zap className="w-4 h-4 mr-2 text-amber-400" />Parallel Task Processor</DropdownMenuItem>
+
             </DropdownMenuContent>
           </DropdownMenu>
 
