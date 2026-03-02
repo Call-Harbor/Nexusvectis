@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { 
   Image, Sparkles, Loader2, Download, RefreshCw, 
-  ChevronRight, Zap, Brain, Palette, Wand2, CheckCircle, X
+  ChevronRight, Zap, Brain, Palette, Wand2, CheckCircle, X, Pencil
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
