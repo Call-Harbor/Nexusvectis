@@ -73,7 +73,7 @@ export default function RouteOptimizer({ onApply, onClose }) {
     iconSize: [28, 28], iconAnchor: [14, 14],
   });
 
-  const tabs = ['overview', 'map', 'alternatives', 'risks'];
+  const tabs = ['overview', 'live intel', 'map', 'alternatives', 'risks'];
 
   return (
     <div className="flex flex-col h-full">
