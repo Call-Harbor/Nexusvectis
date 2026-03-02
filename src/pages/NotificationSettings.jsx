@@ -13,7 +13,7 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import NotificationRuleEditor from "../components/notifications/NotificationRuleEditor";
 import { format } from "date-fns";
-import { da } from "date-fns/locale";
+import { enUS } from "date-fns/locale";
 
 const entityColors = {
   Vehicle: "text-cyan-400 bg-cyan-500/10 border-cyan-500/30",
