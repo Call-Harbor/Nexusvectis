@@ -825,6 +825,13 @@ export default function AISpreadsheetEditor({ initialGrid, initialTitle }) {
     }, 0);
   }, [formulaBarValue, selected]);
 
+  // Stop dragging on global mouseup
+  useEffect(() => {
+    const stop = () => setDragging(false);
+    window.addEventListener('mouseup', stop);
+    return () => window.removeEventListener('mouseup', stop);
+  }, []);
+
   // Whether the formula bar is active (editing a formula) — determines click-to-insert mode
   const formulaBarActive = formulaBarValue.startsWith('=');
 
