@@ -35,6 +35,16 @@ export default function MobileIntellect() {
   const messagesEndRef = useRef(null);
   const queryClient = useQueryClient();
   const fileInputRef = useRef(null);
+  const recognitionRef = useRef(null);
+  const [voiceActive, setVoiceActive] = useState(false);
+  const [voiceWaveform, setVoiceWaveform] = useState([]);
+  const [systemPulse, setSystemPulse] = useState(false);
+
+  // Animate system pulse
+  useEffect(() => {
+    const interval = setInterval(() => setSystemPulse(p => !p), 2000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Data Fetching
   const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
