@@ -447,7 +447,7 @@ export default function NotificationCenter({ user }) {
                               <Input
                                 value={saveName}
                                 onChange={e => setSaveName(e.target.value)}
-                                placeholder="Navn på søgning..."
+                                placeholder="Search name..."
                                 className="h-7 text-[11px] bg-slate-800/60 border-slate-700/60 text-white"
                                 onKeyDown={e => e.key === "Enter" && saveSearch()}
                                 autoFocus
