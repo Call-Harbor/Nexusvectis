@@ -598,7 +598,7 @@ export default function NotificationCenter({ user }) {
                               {notif.action_url && (
                                 <Link to={notif.action_url} onClick={() => { markAsRead(notif.id); setOpen(false); }}>
                                   <span className="text-[10px] text-cyan-500 hover:text-cyan-300 flex items-center gap-0.5 transition-colors">
-                                    Gå til <ExternalLink className="w-2.5 h-2.5" />
+                                    Go to <ExternalLink className="w-2.5 h-2.5" />
                                   </span>
                                 </Link>
                               )}
