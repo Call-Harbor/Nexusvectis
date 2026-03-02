@@ -590,7 +590,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col overflow-auto" style={{ backgroundColor: '#020817' }}>
+    <div className={`${embedded ? 'relative w-full h-full' : 'fixed inset-0 z-50'} flex flex-col overflow-auto`} style={{ backgroundColor: '#020817' }}>
       {/* Animated background */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute inset-0 bg-gradient-to-br from-cyan-950/30 via-slate-950 to-violet-950/30" />
