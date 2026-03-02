@@ -738,7 +738,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
               onClick={() => setSearchType('no')}
               className={`px-2 py-0.5 rounded-md transition-colors text-xs ${searchType === 'no' ? 'bg-cyan-500/40 text-cyan-300' : 'hover:bg-slate-800 text-slate-400'}`}
             >
-              Org.nr (NO)
+              Org. No. (NO)
             </button>
           </div>
           <div className="flex gap-2">
