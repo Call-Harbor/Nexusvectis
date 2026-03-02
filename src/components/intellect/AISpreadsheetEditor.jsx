@@ -1033,6 +1033,50 @@ export default function AISpreadsheetEditor({ initialGrid, initialTitle }) {
           <button onClick={() => setShowChart(v => !v)} className={`h-6 px-2.5 rounded-lg text-[11px] font-medium border transition-all flex items-center gap-1.5 ${showChart ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' : 'text-slate-400 hover:text-white hover:bg-slate-700/60 border-transparent hover:border-slate-600/40'}`}>
             <BarChart3 className="w-3 h-3" />Chart
           </button>
+
+          {/* Formula picker dropdown */}
+          <div className="relative" ref={formulaPickerRef}>
+            <button
+              onClick={() => setShowFormulaPicker(v => !v)}
+              className={`h-6 px-2.5 rounded-lg text-[11px] font-medium border transition-all flex items-center gap-1.5
+                ${showFormulaPicker ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' : 'text-slate-400 hover:text-white hover:bg-slate-700/60 border-transparent hover:border-slate-600/40'}`}
+            >
+              <FunctionSquare className="w-3 h-3" />Formulas
+            </button>
+            <AnimatePresence>
+              {showFormulaPicker && (
+                <motion.div
+                  initial={{ opacity: 0, y: -4, scale: 0.97 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -4, scale: 0.97 }}
+                  className="absolute right-0 top-8 z-50 w-72 bg-slate-900 border border-slate-700/60 rounded-xl shadow-2xl shadow-black/60 overflow-hidden"
+                >
+                  <div className="px-3 py-2 border-b border-slate-800/60 flex items-center gap-2">
+                    <FunctionSquare className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
+                    <span className="text-[11px] font-semibold text-white">Formula Quick-Insert</span>
+                    <span className="ml-auto text-[10px] text-slate-500">click to insert</span>
+                  </div>
+                  <div className="overflow-y-auto max-h-72 p-2 grid grid-cols-1 gap-0.5">
+                    {FORMULA_EXAMPLES.map((f, i) => (
+                      <button key={i}
+                        onClick={() => {
+                          setCell(selected.r, selected.c, f.label);
+                          setFormulaBarValue(f.label);
+                          setShowFormulaPicker(false);
+                        }}
+                        className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-left hover:bg-emerald-500/10 transition-all group"
+                      >
+                        <Code2 className="w-3 h-3 text-emerald-600 flex-shrink-0 group-hover:text-emerald-400" />
+                        <span className="text-[11px] font-mono text-emerald-300 flex-shrink-0 w-40 truncate">{f.label}</span>
+                        <span className="text-[10px] text-slate-500 truncate">{f.desc}</span>
+                      </button>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
           <button onClick={generateAI} disabled={aiLoading}
             className="h-6 px-3 rounded-lg text-[11px] font-semibold bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 text-white transition-all flex items-center gap-1.5 disabled:opacity-50">
             {aiLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
