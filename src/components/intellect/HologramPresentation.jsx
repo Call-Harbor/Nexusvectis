@@ -623,9 +623,17 @@ export default function HologramPresentation({ orgId }) {
   };
 
   const openPresenterWindow = () => {
-    setIsPresenting(true);
-    setElapsed(0);
-    setTimerRunning(true);
+    sessionStorage.setItem("fleetslide_data", JSON.stringify({
+      slides,
+      theme,
+      fontSize,
+      transition
+    }));
+    window.open(
+      `${window.location.origin}/#/FleetSlidePresenter`,
+      "fleetslide_presenter",
+      "width=1920,height=1080,menubar=no,toolbar=no,location=no"
+    );
   };
 
   const generateWithAI = async (customPrompt) => {
