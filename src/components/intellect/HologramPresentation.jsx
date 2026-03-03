@@ -496,13 +496,41 @@ export default function HologramPresentation({ orgId }) {
   const [transition, setTransition] = useState("fade");
   const [isPresenting, setIsPresenting] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [loadingData, setLoadingData] = useState(false);
   const [aiPrompt, setAiPrompt] = useState("");
   const [enhancing, setEnhancing] = useState(false);
   const [rightTab, setRightTab] = useState("edit");
   const [showTemplates, setShowTemplates] = useState(false);
+  const [orgData, setOrgData] = useState(null);
+  const presenterWindowRef = useRef(null);
 
   const currentSlide = slides[current];
   const slidesWithIndex = slides.map((s, i) => ({ ...s, index: i }));
+
+  // Load real org data on mount
+  useEffect(() => {
+    if (!orgId) return;
+    const loadOrgData = async () => {
+      setLoadingData(true);
+      try {
+        const [vehicles, routes, shipments, alerts, maintenance, resources] = await Promise.all([
+          base44.entities.Vehicle.filter({ organization_id: orgId }, '-updated_date', 50),
+          base44.entities.Route.filter({ organization_id: orgId }, '-updated_date', 20),
+          base44.entities.Shipment.filter({ organization_id: orgId }, '-updated_date', 30),
+          base44.entities.Alert.filter({ organization_id: orgId }, '-created_date', 20),
+          base44.entities.Maintenance.filter({ organization_id: orgId }, '-updated_date', 20),
+          base44.entities.Resource.filter({ organization_id: orgId }, '-updated_date', 20),
+        ]);
+        const data = { vehicles, routes, shipments, alerts, maintenance, resources };
+        setOrgData(data);
+        toast.success(`✅ Loaded live data: ${vehicles.length} vehicles, ${shipments.length} shipments`);
+      } catch (e) {
+        console.error("Could not load org data", e);
+      }
+      setLoadingData(false);
+    };
+    loadOrgData();
+  }, [orgId]);
 
   const addSlide = (templateId) => {
     const defaults = {
