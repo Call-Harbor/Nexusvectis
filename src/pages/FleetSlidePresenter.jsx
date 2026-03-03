@@ -285,12 +285,16 @@ export default function FleetSlidePresenter() {
   const timerRef = useRef(null);
   const autoRef = useRef(null);
 
+  const syncKeyRef = useRef(null);
+
   useEffect(() => {
-    // Key is in the hash query: #/FleetSlidePresenter?presenter=KEY
-    const hash = window.location.hash; // "#/FleetSlidePresenter?presenter=xxx"
+    const hash = window.location.hash;
     const hashQuery = hash.includes("?") ? hash.split("?")[1] : "";
     const hashParams = new URLSearchParams(hashQuery);
     const key = hashParams.get("presenter") || hashParams.get("fleetslide");
+    const syncKey = hashParams.get("sync");
+    if (syncKey) syncKeyRef.current = syncKey;
+
     if (key) {
       const data = localStorage.getItem(key);
       if (data) {
@@ -302,6 +306,7 @@ export default function FleetSlidePresenter() {
         localStorage.removeItem(key);
       }
     }
+
     // Auto request fullscreen
     const tryFullscreen = () => {
       if (document.documentElement.requestFullscreen) {
@@ -313,6 +318,18 @@ export default function FleetSlidePresenter() {
     document.addEventListener("fullscreenchange", () => {
       setIsFullscreen(!!document.fullscreenElement);
     });
+
+    // Poll for slide sync from presenter view
+    const syncInterval = setInterval(() => {
+      if (!syncKeyRef.current) return;
+      const raw = localStorage.getItem(syncKeyRef.current);
+      if (raw) {
+        const { current: c } = JSON.parse(raw);
+        setCurrent(c);
+      }
+    }, 300);
+
+    return () => clearInterval(syncInterval);
   }, []);
 
   useEffect(() => {
