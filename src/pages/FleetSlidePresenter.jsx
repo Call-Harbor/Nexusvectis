@@ -361,6 +361,13 @@ export default function FleetSlidePresenter() {
   const fmt = (s) => `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
   const t = HOLOGRAM_THEMES.find(th => th.id === theme) || HOLOGRAM_THEMES[0];
   const slidesWithIndex = slides.map((s, i) => ({ ...s, index: i }));
+
+  // Send slide changes to parent window
+  useEffect(() => {
+    const channel = new BroadcastChannel("fleetslide-sync");
+    channel.postMessage({ type: "slide-change", slide: current });
+    return () => channel.close();
+  }, [current]);
   const currentSlide = slidesWithIndex[current];
 
   if (!slides.length) {
