@@ -487,7 +487,14 @@ function PresenterMode({ slides, current, setCurrent, theme, fontSize, onExit })
   );
 }
 
-export default function HologramPresentation({ orgId }) {
+export default function HologramPresentation({ orgId, useAdvancedBuilder = true }) {
+  const [useNewBuilder, setUseNewBuilder] = useState(useAdvancedBuilder);
+  
+  // If using advanced builder, render it
+  if (useNewBuilder) {
+    return <AdvancedFleetSlideBuilder onPresentStart={(data) => {}} />;
+  }
+
   const [slides, setSlides] = useState([
     { id: 1, type: "title", title: "Fleet Intelligence 2026", subtitle: "Strategic Briefing", body: "AI-Powered Operations & Business Intelligence", notes: "Welcome everyone. Today we'll walk through our fleet performance and strategic outlook for 2026." },
   ]);
