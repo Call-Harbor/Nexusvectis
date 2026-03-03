@@ -41,36 +41,86 @@ const AI_PROMPT_SECTIONS = [
   ]],
 ];
 
-function AppSearchDropdown({ items, onSelect, children }) {
+const APP_CATEGORIES = [
+  ['Fleet & Logistics', [
+    ['fleet', Truck, 'Fleet'],
+    ['routes', Route, 'Routes'],
+    ['shipments', Package, 'Shipments'],
+    ['resources', Warehouse, 'Resources'],
+    ['gpsintegration', Satellite, 'GPS Integration'],
+    ['route_optimization', Route, 'Route Optimization'],
+  ]],
+  ['Business', [
+    ['dashboard', LayoutDashboard, 'Dashboard'],
+    ['crm', Users, 'CRM'],
+    ['invoices', FileText, 'Invoices'],
+    ['hr', Users, 'HR Management'],
+    ['alerts', AlertTriangle, 'Alerts'],
+  ]],
+  ['AI & Intelligence', [
+    ['aioptimization', Sparkles, 'AI Optimization'],
+    ['predictive_maintenance', Wrench, 'Predictive Maintenance'],
+    ['advanced_intelligence', Brain, 'Advanced Intelligence'],
+    ['deep_analysis', Activity, 'Anomaly Detection + What-If'],
+    ['course_ai', GraduationCap, 'Fleet AI Courses'],
+    ['parallel_processor', Zap, 'Parallel Processor'],
+  ]],
+  ['Productivity', [
+    ['document_editor', FileText, 'Document Editor'],
+    ['spreadsheet_editor', BarChart3, 'Spreadsheet'],
+    ['project_management', ListTodo, 'PM Dashboard'],
+    ['fleet_drive', HardDrive, 'Fleet Drive'],
+    ['web_browser', Globe, 'Web Browser'],
+    ['profile_search', Search, 'People Intelligence'],
+  ]],
+  ['Creative', [
+    ['image_generator', Image, 'AI Image Generator'],
+    ['image_editor', Image, 'AI Image Editor'],
+  ]],
+];
+
+function AppSearchDropdown({ onSelect, children }) {
   const [search, setSearch] = useState("");
-  const filtered = useMemo(() => items.filter(([type, Icon, label]) => label.toLowerCase().includes(search.toLowerCase())), [items, search]);
+
+  const filtered = useMemo(() => {
+    if (!search) return APP_CATEGORIES;
+    return APP_CATEGORIES.map(([cat, items]) => [
+      cat,
+      items.filter(([, , label]) => label.toLowerCase().includes(search.toLowerCase()))
+    ]).filter(([, items]) => items.length > 0);
+  }, [search]);
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="bg-slate-900 border-slate-800 w-96 p-0">
+      <DropdownMenuContent align="start" className="bg-slate-900 border-slate-800 w-80 p-0">
         <div className="sticky top-0 p-3 border-b border-slate-800 bg-slate-900/95 backdrop-blur">
           <Input
-            placeholder="Search..."
+            placeholder="Search apps..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="h-8 text-xs bg-slate-800 border-slate-700 text-white"
           />
         </div>
-        <div className="max-h-96 overflow-y-auto p-3 grid grid-cols-2 gap-2">
-          {filtered.length > 0 ? (
-            filtered.map(([type, Icon, label]) => (
-              <button
-                key={type}
-                onClick={() => onSelect(type)}
-                className="flex flex-col items-start gap-2 p-3 rounded-lg hover:bg-slate-800/60 transition-all text-left group"
-              >
-                <Icon className="w-5 h-5 text-cyan-400 group-hover:text-cyan-300" />
-                <span className="text-[11px] font-medium text-slate-300 group-hover:text-white">{label}</span>
-              </button>
-            ))
-          ) : (
-            <div className="col-span-2 text-center py-6 text-slate-500 text-xs">No results found</div>
+        <div className="max-h-[480px] overflow-y-auto p-3 space-y-4">
+          {filtered.length > 0 ? filtered.map(([category, items]) => (
+            <div key={category}>
+              <p className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider mb-2">{category}</p>
+              <div className="grid grid-cols-2 gap-1.5">
+                {items.map(([type, Icon, label]) => (
+                  <button
+                    key={type}
+                    onClick={() => onSelect(type)}
+                    className="flex items-center gap-2 px-2.5 py-2 rounded-lg hover:bg-slate-800/60 transition-all text-left group"
+                  >
+                    <Icon className="w-4 h-4 text-cyan-400 group-hover:text-cyan-300 flex-shrink-0" />
+                    <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">{label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )) : (
+            <div className="text-center py-6 text-slate-500 text-xs">No apps found</div>
           )}
         </div>
       </DropdownMenuContent>
