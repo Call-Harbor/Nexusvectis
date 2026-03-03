@@ -367,45 +367,30 @@ export default function FleetSlidePresenter() {
   }
 
   return (
-    <div className="min-h-screen bg-black flex flex-col select-none" style={{ fontFamily: "system-ui, sans-serif" }}>
-      {/* Main slide area */}
-      <div className="flex-1 flex items-center justify-center p-4 md:p-8" style={{ background: "radial-gradient(ellipse at center, #0a0f1a 0%, #000 100%)" }}>
-        <div className="w-full max-w-6xl shadow-2xl shadow-black/80" style={{ aspectRatio: "16/9" }}>
-          <AnimatePresence mode="wait">
-            <motion.div key={current}
-              initial={transition === "zoom" ? { opacity: 0, scale: 0.9 } : transition === "slide" ? { opacity: 0, x: 80 } : transition === "flip" ? { opacity: 0, rotateY: 90 } : { opacity: 0 }}
-              animate={{ opacity: 1, scale: 1, x: 0, rotateY: 0 }}
-              exit={transition === "zoom" ? { opacity: 0, scale: 1.05 } : transition === "slide" ? { opacity: 0, x: -80 } : transition === "flip" ? { opacity: 0, rotateY: -90 } : { opacity: 0 }}
-              transition={{ duration: 0.4 }}
-              className="w-full h-full">
-              <SlideRenderer slide={currentSlide} theme={theme} fontSize={fontSize} />
-            </motion.div>
-          </AnimatePresence>
-        </div>
-      </div>
-
-      {/* Speaker notes overlay */}
-      <AnimatePresence>
-        {showNotes && currentSlide?.notes && (
-          <motion.div initial={{ y: 100, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 100, opacity: 0 }}
-            className="px-8 py-4 border-t border-white/10 bg-slate-950/95 backdrop-blur">
-            <div className="flex items-start gap-3 max-w-5xl mx-auto">
-              <Mic className="w-4 h-4 text-slate-500 mt-0.5 flex-shrink-0" />
-              <p className="text-slate-300 text-sm leading-relaxed">{currentSlide.notes}</p>
-            </div>
-          </motion.div>
-        )}
+    <div className="fixed inset-0 bg-black select-none group" style={{ fontFamily: "system-ui, sans-serif" }}
+      onClick={() => setCurrent(c => Math.min(slides.length - 1, c + 1))}>
+      {/* Slide fills entire screen */}
+      <AnimatePresence mode="wait">
+        <motion.div key={current}
+          initial={transition === "zoom" ? { opacity: 0, scale: 0.95 } : transition === "slide" ? { opacity: 0, x: 80 } : { opacity: 0 }}
+          animate={{ opacity: 1, scale: 1, x: 0 }}
+          exit={transition === "zoom" ? { opacity: 0, scale: 1.03 } : transition === "slide" ? { opacity: 0, x: -80 } : { opacity: 0 }}
+          transition={{ duration: 0.4 }}
+          className="absolute inset-0">
+          <SlideRenderer slide={currentSlide} theme={theme} fontSize={fontSize} />
+        </motion.div>
       </AnimatePresence>
 
-      {/* Controls bar */}
-      <div className="flex items-center justify-between px-6 py-3 bg-black/95 border-t border-white/10 flex-shrink-0">
-        {/* Left: nav */}
-        <div className="flex items-center gap-2">
+      {/* Hover controls — bottom bar, hidden until hover */}
+      <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between px-6 py-3 bg-black/80 backdrop-blur-sm
+        opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10"
+        onClick={e => e.stopPropagation()}>
+        <div className="flex items-center gap-3">
           <button onClick={() => setCurrent(c => Math.max(0, c - 1))} disabled={current === 0}
             className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm text-white/70 hover:text-white hover:bg-white/10 transition-all disabled:opacity-30">
             <ChevronLeft className="w-4 h-4" />Prev
           </button>
-          <div className="flex gap-1 px-2">
+          <div className="flex gap-1">
             {slides.map((_, i) => (
               <button key={i} onClick={() => setCurrent(i)}
                 className="rounded-full transition-all h-1.5"
@@ -416,40 +401,18 @@ export default function FleetSlidePresenter() {
             className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm text-white/70 hover:text-white hover:bg-white/10 transition-all disabled:opacity-30">
             Next<ChevronRight className="w-4 h-4" />
           </button>
-          <span className="text-white/30 text-xs ml-1">{current + 1} / {slides.length}</span>
+          <span className="text-white/40 text-xs">{current + 1} / {slides.length}</span>
         </div>
 
-        {/* Center: timer + controls */}
-        <div className="flex items-center gap-3">
-          <button onClick={() => setTimerRunning(r => !r)} className="flex items-center gap-1 text-xs text-white/50 hover:text-white transition-all font-mono">
-            {timerRunning ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
-            <span style={{ color: t.primary }}>{fmt(elapsed)}</span>
-          </button>
-          <button onClick={() => setShowNotes(s => !s)}
-            className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-all ${showNotes ? "text-cyan-400 bg-cyan-500/10" : "text-white/40 hover:text-white/70"}`}>
-            <Mic className="w-3 h-3" />Notes
-          </button>
-          <button onClick={() => setAutoPlay(a => !a)}
-            className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-all ${autoPlay ? "text-emerald-400 bg-emerald-500/10" : "text-white/40 hover:text-white/70"}`}>
-            <Play className="w-3 h-3" />{autoPlay ? `Auto ${autoPlaySec}s` : "Auto"}
-          </button>
-        </div>
-
-        {/* Right: fullscreen + shortcuts */}
         <div className="flex items-center gap-2">
-          <span className="text-white/20 text-[10px] hidden md:flex gap-3">
-            <span>← → navigate</span>
-            <span>N notes</span>
-            <span>F fullscreen</span>
-          </span>
           <button onClick={toggleFullscreen}
             className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm text-white/60 hover:text-white hover:bg-white/10 transition-all">
             {isFullscreen ? <Minimize className="w-4 h-4" /> : <Maximize className="w-4 h-4" />}
-            {isFullscreen ? "Exit" : "Fullscreen"} (F)
+            {isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
           </button>
           <button onClick={() => window.close()}
             className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm text-red-400/70 hover:text-red-400 hover:bg-red-500/10 transition-all">
-            <X className="w-4 h-4" />Close
+            <X className="w-4 h-4" />Luk
           </button>
         </div>
       </div>
