@@ -1,7 +1,7 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
-import { Send, Mic, Zap, Paperclip, FileText, X, Sparkles, Shield, Building2, Satellite, Newspaper, LayoutDashboard } from "lucide-react";
+import { Send, Mic, Zap, Paperclip, FileText, X, Sparkles, Shield, Building2, Satellite, Newspaper, LayoutDashboard, HardDrive } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -98,6 +98,9 @@ export default function IntellectCommandBar({
           </Button>
           <Button onClick={() => handleQuickAction('openProjectManagement')} variant="outline" size="sm" className="h-7 px-2.5 text-xs border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10">
             <LayoutDashboard className="w-3 h-3 mr-1" />PM Dashboard
+          </Button>
+          <Button onClick={() => openWindow('fleet_drive', { x: 120, y: 80 })} variant="outline" size="sm" className="h-7 px-2.5 text-xs border-slate-500/30 text-slate-300 hover:bg-slate-500/10">
+            <HardDrive className="w-3 h-3 mr-1" />Fleet Drive
           </Button>
         </div>
 
