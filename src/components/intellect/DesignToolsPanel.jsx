@@ -38,30 +38,242 @@ export default function DesignToolsPanel({ slide, onUpdate, onAddAnimation, onRe
   const [selectedEffect, setSelectedEffect] = useState(null);
 
   return (
-    <div className="space-y-4">
-      {/* Basic Editing */}
-      <div>
-        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">Title</label>
-        <Input
-          value={slide?.title || ""}
-          onChange={(e) => onUpdate({ title: e.target.value })}
-          className="h-8 text-xs bg-slate-800/60 border-slate-700"
-          placeholder="Slide title"
-        />
-      </div>
+    <div className="h-full overflow-y-auto">
+      <Tabs defaultValue="content" className="w-full">
+        <TabsList className="grid w-full grid-cols-3 rounded-none border-b border-slate-800 bg-transparent h-8">
+          <TabsTrigger value="content" className="text-xs data-[state=active]:bg-slate-800/50">Content</TabsTrigger>
+          <TabsTrigger value="style" className="text-xs data-[state=active]:bg-slate-800/50">Style</TabsTrigger>
+          <TabsTrigger value="effects" className="text-xs data-[state=active]:bg-slate-800/50">Effects</TabsTrigger>
+        </TabsList>
 
-      <div>
-        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">Description</label>
-        <Textarea
-          value={slide?.body || ""}
-          onChange={(e) => onUpdate({ body: e.target.value })}
-          className="text-xs bg-slate-800/60 border-slate-700 resize-none min-h-[60px]"
-          placeholder="Slide content"
-        />
-      </div>
+        {/* CONTENT TAB */}
+        <TabsContent value="content" className="space-y-3 p-3">
+          <div>
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 block">Title</label>
+            <Input
+              value={slide?.title || ""}
+              onChange={(e) => onUpdate({ title: e.target.value })}
+              className="h-8 text-xs bg-slate-800/60 border-slate-700"
+              placeholder="Slide title"
+            />
+          </div>
 
-      {/* Animations */}
-      <div className="pt-2 border-t border-slate-800">
+          {slide?.type === "title" && (
+            <>
+              <div>
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 block">Subtitle Badge</label>
+                <Input
+                  value={slide?.subtitle || ""}
+                  onChange={(e) => onUpdate({ subtitle: e.target.value })}
+                  className="h-8 text-xs bg-slate-800/60 border-slate-700"
+                  placeholder="e.g., Strategic Briefing"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 block">Author</label>
+                <Input
+                  value={slide?.author || ""}
+                  onChange={(e) => onUpdate({ author: e.target.value })}
+                  className="h-8 text-xs bg-slate-800/60 border-slate-700"
+                  placeholder="Your name"
+                />
+              </div>
+            </>
+          )}
+
+          {slide?.type === "impact" && (
+            <div>
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 block">Big Metric</label>
+              <Input
+                value={slide?.metric || ""}
+                onChange={(e) => onUpdate({ metric: e.target.value })}
+                className="h-8 text-xs bg-slate-800/60 border-slate-700"
+                placeholder="e.g., 94%"
+              />
+            </div>
+          )}
+
+          <div>
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 block">Body Text</label>
+            <Textarea
+              value={slide?.body || ""}
+              onChange={(e) => onUpdate({ body: e.target.value })}
+              className="text-xs bg-slate-800/60 border-slate-700 resize-none min-h-[70px]"
+              placeholder="Main content"
+            />
+          </div>
+
+          {(slide?.type === "content" || slide?.type === "split") && (
+            <div>
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 block">Bullets (one per line)</label>
+              <Textarea
+                value={(slide?.bullets || []).join("\n")}
+                onChange={(e) => onUpdate({ bullets: e.target.value.split("\n").filter(b => b.trim()) })}
+                className="text-xs bg-slate-800/60 border-slate-700 resize-none min-h-[80px]"
+                placeholder="• First point&#10;• Second point&#10;• Third point"
+              />
+            </div>
+          )}
+
+          {slide?.type === "chart" && (
+            <>
+              <div>
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 block">Chart Type</label>
+                <div className="grid grid-cols-3 gap-1">
+                  {["bar", "line", "area"].map((ct) => (
+                    <Button
+                      key={ct}
+                      onClick={() => onUpdate({ chartType: ct })}
+                      size="sm"
+                      variant={slide?.chartType === ct ? "default" : "outline"}
+                      className="h-6 text-xs capitalize"
+                    >
+                      {ct}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 block">Chart Insight</label>
+                <Input
+                  value={slide?.chartInsight || ""}
+                  onChange={(e) => onUpdate({ chartInsight: e.target.value })}
+                  className="h-8 text-xs bg-slate-800/60 border-slate-700"
+                  placeholder="+18% YoY"
+                />
+              </div>
+            </>
+          )}
+
+          <div>
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 block">Slide Type</label>
+            <div className="grid grid-cols-2 gap-1">
+              {[
+                { id: "title", label: "Title" },
+                { id: "content", label: "Bullets" },
+                { id: "chart", label: "Chart" },
+                { id: "split", label: "Split" },
+                { id: "impact", label: "Impact" },
+                { id: "comparison", label: "Compare" },
+                { id: "timeline", label: "Timeline" },
+                { id: "closing", label: "Closing" }
+              ].map((t) => (
+                <Button
+                  key={t.id}
+                  onClick={() => onUpdate({ type: t.id })}
+                  size="sm"
+                  variant={slide?.type === t.id ? "default" : "outline"}
+                  className="h-6 text-[10px]"
+                >
+                  {t.label}
+                </Button>
+              ))}
+            </div>
+          </div>
+        </TabsContent>
+
+        {/* STYLE TAB */}
+        <TabsContent value="style" className="space-y-3 p-3">
+          <div>
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 block">Text Color</label>
+            <div className="grid grid-cols-3 gap-1">
+              {TEXT_COLORS.map((color) => (
+                <button
+                  key={color}
+                  onClick={() => onUpdate({ textColor: color })}
+                  className={`h-7 rounded border-2 transition-all text-white text-xs font-bold ${
+                    slide?.textColor === color
+                      ? "border-cyan-400 bg-slate-800"
+                      : "border-slate-700 hover:border-slate-600"
+                  } bg-${color}`}
+                >
+                  Aa
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 block">Background</label>
+            <div className="grid grid-cols-2 gap-1">
+              {BACKGROUND_COLORS.map((bg) => (
+                <button
+                  key={bg}
+                  onClick={() => onUpdate({ bgColor: bg })}
+                  className={`h-8 rounded border-2 transition-all ${
+                    slide?.bgColor === bg
+                      ? "border-cyan-400"
+                      : "border-slate-700 hover:border-slate-600"
+                  } bg-${bg}`}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 block">Alignment</label>
+            <div className="grid grid-cols-3 gap-1">
+              {["left", "center", "right"].map((align) => (
+                <Button
+                  key={align}
+                  onClick={() => onUpdate({ align })}
+                  size="sm"
+                  variant={slide?.align === align ? "default" : "outline"}
+                  className="h-6 text-xs capitalize"
+                >
+                  {align}
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 block">Transition Effect</label>
+            <div className="space-y-1">
+              {TRANSITIONS.map((t) => (
+                <Button
+                  key={t.id}
+                  onClick={() => onUpdate({ transition: t.id })}
+                  size="sm"
+                  variant={slide?.transition === t.id ? "default" : "outline"}
+                  className="w-full h-6 text-xs justify-start"
+                >
+                  {t.label}
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Opacity</label>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={slide?.opacity || 100}
+              onChange={(e) => onUpdate({ opacity: Number(e.target.value) })}
+              className="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer"
+            />
+            <span className="text-[10px] text-slate-500">{slide?.opacity || 100}%</span>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Scale</label>
+            <input
+              type="range"
+              min="50"
+              max="150"
+              value={slide?.scale || 100}
+              onChange={(e) => onUpdate({ scale: Number(e.target.value) })}
+              className="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer"
+            />
+            <span className="text-[10px] text-slate-500">{slide?.scale || 100}%</span>
+          </div>
+        </TabsContent>
+
+        {/* EFFECTS TAB */}
+        <TabsContent value="effects" className="space-y-3 p-3">
         <div className="flex items-center justify-between mb-2">
           <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Animations</label>
           <Sparkles className="w-3 h-3 text-violet-400" />
