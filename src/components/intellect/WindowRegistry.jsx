@@ -1,7 +1,7 @@
 import { 
   Truck, AlertTriangle, Route, Package, LayoutDashboard, Settings, Sparkles, 
   FileText, Warehouse, TrendingUp, Activity, Satellite, Network, Shield, 
-  Globe, MessageSquare, BarChart3, Zap, Users, Newspaper, Building2, Image, ListTodo, HardDrive, Presentation
+  Globe, MessageSquare, BarChart3, Zap, Users, Newspaper, Building2, Image, ListTodo, HardDrive, MonitorPlay
 } from "lucide-react";
 
 export const WINDOW_META = {
@@ -46,7 +46,7 @@ export const WINDOW_META = {
   image_editor: { title: '✏️ AI Image Editor', icon: Image },
   project_management: { title: '📋 Project Management AI', icon: ListTodo },
   fleet_drive: { title: '💾 Fleet Drive', icon: HardDrive },
-  hologram_presentation: { title: '🎯 Hologram PowerPoint', icon: Presentation },
+  hologram_presentation: { title: '🎯 Hologram PowerPoint', icon: MonitorPlay },
 };
 
 export function getWindowMeta(type) {

@@ -2,7 +2,7 @@ import React, { useState, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Presentation, Sparkles, Plus, Trash2, ChevronLeft, ChevronRight,
+  MonitorPlay, Sparkles, Plus, Trash2, ChevronLeft, ChevronRight,
   Play, Pause, Download, Zap, BarChart3, Brain, Wand2, Image,
   AlignLeft, AlignCenter, Maximize2, Eye, Edit3, Layers, Move,
   TrendingUp, Globe, Shield, Target, CheckCircle, Loader2, X
@@ -298,7 +298,7 @@ Return JSON:
       {/* Top Bar */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-cyan-500/20 flex-shrink-0 bg-slate-900/60">
         <div className="flex items-center gap-2">
-          <Presentation className="w-4 h-4 text-cyan-400" />
+          <MonitorPlay className="w-4 h-4 text-cyan-400" />
           <span className="font-bold text-sm text-white">Hologram PowerPoint</span>
           <Badge className="bg-violet-500/20 text-violet-400 border-violet-500/40 text-[10px]">AI-Powered</Badge>
         </div>
