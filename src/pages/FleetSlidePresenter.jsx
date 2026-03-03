@@ -286,11 +286,9 @@ export default function FleetSlidePresenter() {
   const autoRef = useRef(null);
 
   useEffect(() => {
-    // Hash routing: key is inside the hash e.g. #/FleetSlidePresenter?fleetslide=KEY
-    const hash = window.location.hash; // e.g. "#/FleetSlidePresenter?fleetslide=xxx"
-    const hashQueryStr = hash.includes("?") ? hash.split("?")[1] : "";
-    const hashParams = new URLSearchParams(hashQueryStr);
-    const key = hashParams.get("fleetslide") || hashParams.get("key");
+    // Key is in the real query string: ?presenter=KEY
+    const searchParams = new URLSearchParams(window.location.search);
+    const key = searchParams.get("presenter") || searchParams.get("fleetslide") || searchParams.get("key");
     if (key) {
       const data = localStorage.getItem(key);
       if (data) {
