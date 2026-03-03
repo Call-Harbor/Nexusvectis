@@ -495,6 +495,10 @@ export default function HologramPresentation({ orgId }) {
   const [fontSize, setFontSize] = useState("medium");
   const [transition, setTransition] = useState("fade");
   const [isPresenting, setIsPresenting] = useState(false);
+  const [syncKey, setSyncKey] = useState(null);
+  const [elapsed, setElapsed] = useState(0);
+  const [timerRunning, setTimerRunning] = useState(false);
+  const timerRef = useRef(null);
   const [generating, setGenerating] = useState(false);
   const [loadingData, setLoadingData] = useState(false);
   const [aiPrompt, setAiPrompt] = useState("");
