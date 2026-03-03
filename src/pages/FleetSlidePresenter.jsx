@@ -286,11 +286,9 @@ export default function FleetSlidePresenter() {
   const autoRef = useRef(null);
 
   useEffect(() => {
-    // Load from localStorage key - check both hash params and search params
-    const hashPart = window.location.hash.split("?")[1] || "";
-    const hashParams = new URLSearchParams(hashPart);
+    // Load from localStorage - key is in ?fleetslide= query param
     const searchParams = new URLSearchParams(window.location.search);
-    const key = hashParams.get("key") || hashParams.get("fleetslide") || searchParams.get("fleetslide") || searchParams.get("key");
+    const key = searchParams.get("fleetslide") || searchParams.get("key");
     if (key) {
       const data = localStorage.getItem(key);
       if (data) {
