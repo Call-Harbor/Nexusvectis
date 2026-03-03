@@ -769,9 +769,9 @@ Return JSON: { "notes": "...speaker notes text..." }`,
                 style={{ background: t.primary }} />
             ))}
           </div>
-          <Button onClick={() => setIsPresenting(true)} size="sm"
+          <Button onClick={openPresenterWindow} size="sm"
             className="bg-gradient-to-r from-cyan-500 to-violet-500 hover:opacity-90 border-0 text-xs h-7 gap-1">
-            <Play className="w-3 h-3" />Present
+            <Maximize className="w-3 h-3" />Present
           </Button>
         </div>
       </div>
