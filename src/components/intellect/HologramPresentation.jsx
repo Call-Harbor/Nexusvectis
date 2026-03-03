@@ -628,19 +628,27 @@ export default function HologramPresentation({ orgId }) {
   };
 
   const openPresenterWindow = () => {
-    // Store data for the presenter window
-    const key = `fleetslide_${Date.now()}`;
-    const syncKey = `fleetslide_sync_${key}`;
-    localStorage.setItem(key, JSON.stringify({ slides, theme, fontSize, transition }));
-    localStorage.setItem(syncKey, JSON.stringify({ current: 0 }));
-    // Store keys in a well-known location so FleetSlidePresenter can find them
-    localStorage.setItem("fleetslide_launch", JSON.stringify({ key, syncKey, ts: Date.now() }));
+    const channel = new BroadcastChannel("fleetslide");
+
+    // Open window first
     presenterWindowRef.current = window.open(
       `${window.location.origin}/#/FleetSlidePresenter`,
       "_blank",
       "width=1280,height=720,menubar=no,toolbar=no,location=no,status=no"
     );
-    setSyncKey(syncKey);
+
+    // When presenter window signals it's ready, send the data
+    channel.onmessage = (e) => {
+      if (e.data?.type === "READY") {
+        channel.postMessage({ type: "INIT", slides, theme, fontSize, transition });
+      }
+    };
+
+    // Keep channel open for slide sync
+    presenterWindowRef.current._channel = channel;
+    window._fleetSlideChannel = channel;
+
+    setSyncKey("broadcast");
     setIsPresenting(true);
   };
 
