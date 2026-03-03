@@ -782,8 +782,107 @@ Return JSON: { "notes": "...speaker notes text..." }`,
     setEnhancing(false);
   };
 
+  const fmt = (s) => `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
+  const tTheme = HOLOGRAM_THEMES.find(th => th.id === theme) || HOLOGRAM_THEMES[0];
+  const slidesWithIndex = slides.map((s, i) => ({ ...s, index: i }));
+
   if (isPresenting) {
-    return <PresenterMode slides={slides} current={current} setCurrent={setCurrent} theme={theme} fontSize={fontSize} onExit={() => setIsPresenting(false)} />;
+    const currentSlide = slidesWithIndex[current];
+    const nextSlide = slidesWithIndex[current + 1];
+    return (
+      <div className="flex flex-col h-full bg-slate-950 text-white overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center justify-between px-4 py-2 border-b border-cyan-500/20 bg-slate-900/60 flex-shrink-0">
+          <div className="flex items-center gap-2">
+            <Mic className="w-4 h-4 text-cyan-400" />
+            <span className="font-bold text-sm">Presenter View</span>
+            <span className="text-slate-500 text-xs">{current + 1} / {slides.length}</span>
+          </div>
+          <div className="flex items-center gap-3">
+            {/* Timer */}
+            <div className="flex items-center gap-2 px-3 py-1 rounded-lg bg-slate-800 border border-slate-700">
+              <span className="text-xl font-mono font-bold" style={{ color: tTheme.primary }}>{fmt(elapsed)}</span>
+              <button onClick={() => setTimerRunning(r => !r)} className="text-slate-400 hover:text-white">
+                {timerRunning ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+              </button>
+              <button onClick={() => { setElapsed(0); setTimerRunning(true); }} className="text-slate-600 hover:text-slate-400 text-[10px]">↺</button>
+            </div>
+            <Button onClick={() => { setIsPresenting(false); setSyncKey(null); setElapsed(0); setTimerRunning(false); if (presenterWindowRef.current) presenterWindowRef.current.close(); }}
+              size="sm" variant="ghost" className="text-red-400 hover:bg-red-500/10 text-xs h-7">
+              <X className="w-3.5 h-3.5 mr-1" />Afslut
+            </Button>
+          </div>
+        </div>
+
+        <div className="flex flex-1 overflow-hidden min-h-0 gap-4 p-4">
+          {/* Current slide preview */}
+          <div className="flex flex-col flex-1 min-w-0 gap-3">
+            <p className="text-[10px] text-slate-500 uppercase tracking-wider">Nuværende slide</p>
+            <div className="rounded-xl overflow-hidden border border-cyan-500/30 flex-1" style={{ aspectRatio: "16/9", maxHeight: "60%" }}>
+              <AnimatePresence mode="wait">
+                <motion.div key={current} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} className="w-full h-full">
+                  <SlideRenderer slide={currentSlide} theme={theme} fontSize={fontSize} />
+                </motion.div>
+              </AnimatePresence>
+            </div>
+
+            {/* Navigation */}
+            <div className="flex items-center justify-between">
+              <Button onClick={() => setCurrent(c => Math.max(0, c - 1))} disabled={current === 0} size="sm" variant="ghost" className="text-slate-400 hover:text-white">
+                <ChevronLeft className="w-4 h-4 mr-1" />Forrige
+              </Button>
+              <div className="flex gap-1">
+                {slides.map((_, i) => (
+                  <button key={i} onClick={() => setCurrent(i)}
+                    className="h-1.5 rounded-full transition-all"
+                    style={{ width: i === current ? 20 : 6, background: i === current ? tTheme.primary : "#334155" }} />
+                ))}
+              </div>
+              <Button onClick={() => setCurrent(c => Math.min(slides.length - 1, c + 1))} disabled={current === slides.length - 1} size="sm" variant="ghost" className="text-slate-400 hover:text-white">
+                Næste<ChevronRight className="w-4 h-4 ml-1" />
+              </Button>
+            </div>
+
+            {/* Speaker notes */}
+            <div className="rounded-xl border border-slate-700 bg-slate-900/60 p-3 flex-1 overflow-y-auto">
+              <div className="flex items-center gap-2 mb-2">
+                <Mic className="w-3.5 h-3.5 text-slate-500" />
+                <span className="text-[10px] text-slate-500 font-medium uppercase tracking-wider">Speaker Notes</span>
+              </div>
+              {currentSlide?.notes
+                ? <p className="text-slate-200 text-sm leading-relaxed">{currentSlide.notes}</p>
+                : <p className="text-slate-600 text-xs italic">Ingen noter for denne slide</p>}
+            </div>
+          </div>
+
+          {/* Next slide */}
+          <div className="w-56 flex-shrink-0 flex flex-col gap-3">
+            <p className="text-[10px] text-slate-500 uppercase tracking-wider">Næste slide</p>
+            {nextSlide ? (
+              <div className="rounded-xl overflow-hidden border border-slate-700 cursor-pointer hover:border-slate-500 transition-all"
+                style={{ aspectRatio: "16/9" }} onClick={() => setCurrent(c => c + 1)}>
+                <SlideRenderer slide={nextSlide} theme={theme} fontSize="small" />
+              </div>
+            ) : (
+              <div className="rounded-xl border border-slate-800 bg-slate-900/40 flex items-center justify-center text-slate-600 text-xs" style={{ aspectRatio: "16/9" }}>
+                Sidste slide
+              </div>
+            )}
+
+            {/* Slide list */}
+            <div className="flex-1 overflow-y-auto space-y-1.5">
+              {slidesWithIndex.map((s, i) => (
+                <div key={s.id} onClick={() => setCurrent(i)}
+                  className={`flex items-center gap-2 px-2 py-1.5 rounded-lg cursor-pointer transition-all text-xs ${i === current ? "bg-cyan-500/20 border border-cyan-500/40 text-white" : "text-slate-400 hover:bg-slate-800"}`}>
+                  <span className="font-mono text-[9px] opacity-60">{String(i + 1).padStart(2, "0")}</span>
+                  <span className="truncate">{s.title || s.type}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
