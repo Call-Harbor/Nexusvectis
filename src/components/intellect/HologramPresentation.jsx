@@ -609,8 +609,8 @@ export default function HologramPresentation({ orgId }) {
   const openPresenterWindow = () => {
     const key = `fleetslide_${Date.now()}`;
     localStorage.setItem(key, JSON.stringify({ slides, theme, fontSize, transition }));
-    // Hash routing: put key inside the hash as a query param: #/FleetSlidePresenter?fleetslide=KEY
-    const presenterUrl = `${window.location.origin}${window.location.pathname}#/FleetSlidePresenter?fleetslide=${key}`;
+    // Use a real query param (before the hash) so React Router sees the correct route
+    const presenterUrl = `${window.location.origin}${window.location.pathname}?presenter=${key}#/FleetSlidePresenter`;
     const win = window.open(presenterUrl, "_blank", "width=1280,height=720,menubar=no,toolbar=no,location=no,status=no");
     if (win) {
       presenterWindowRef.current = win;
