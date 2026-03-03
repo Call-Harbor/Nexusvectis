@@ -511,6 +511,23 @@ export default function HologramPresentation({ orgId }) {
   const currentSlide = slides[current];
   const slidesWithIndex = slides.map((s, i) => ({ ...s, index: i }));
 
+  // Timer for presenter mode
+  useEffect(() => {
+    if (isPresenting && timerRunning) {
+      timerRef.current = setInterval(() => setElapsed(e => e + 1), 1000);
+    } else {
+      clearInterval(timerRef.current);
+    }
+    return () => clearInterval(timerRef.current);
+  }, [isPresenting, timerRunning]);
+
+  // Sync current slide to presenter window via localStorage
+  useEffect(() => {
+    if (syncKey && isPresenting) {
+      localStorage.setItem(syncKey, JSON.stringify({ current }));
+    }
+  }, [current, syncKey, isPresenting]);
+
   // Load real org data on mount
   useEffect(() => {
     if (!orgId) return;
