@@ -613,16 +613,14 @@ export default function HologramPresentation({ orgId }) {
     const url = `${window.location.origin}${window.location.pathname}#/FleetSlidePresenter`;
     const win = window.open(url, "_blank", "width=1280,height=720,menubar=no,toolbar=no,location=no,status=no");
     if (win) {
-      // Try F11 fullscreen after opening
-      win.addEventListener("load", () => {
-        try {
-          if (win.document.documentElement.requestFullscreen) {
-            win.document.documentElement.requestFullscreen();
-          }
-        } catch (e) {}
-      });
       presenterWindowRef.current = win;
-      toast.success("🎬 Presentation opened in new window — press F11 for fullscreen");
+      // Send data via postMessage after window loads
+      const onLoad = () => {
+        win.postMessage({ type: "FLEETSLIDE_DATA", key }, window.location.origin);
+      };
+      win.addEventListener("load", onLoad);
+      // Fallback: also store in localStorage so FleetSlidePresenter can read it
+      toast.success("🎬 Præsentation åbnet i nyt vindue — tryk F for fullscreen");
     }
   };
 
