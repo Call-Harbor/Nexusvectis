@@ -610,7 +610,7 @@ export default function HologramPresentation({ orgId }) {
     // Serialize slide data + settings into URL params via localStorage
     const key = `fleetslide_${Date.now()}`;
     localStorage.setItem(key, JSON.stringify({ slides, theme, fontSize, transition }));
-    const url = `${window.location.origin}${window.location.pathname}?hologram=true&fleetslide=${key}`;
+    const url = `${window.location.origin}/FleetSlidePresenter?fleetslide=${key}`;
     const win = window.open(url, "_blank", "width=1280,height=720,menubar=no,toolbar=no,location=no,status=no");
     if (win) {
       // Try F11 fullscreen after opening
