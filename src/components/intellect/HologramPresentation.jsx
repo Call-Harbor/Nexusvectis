@@ -607,6 +607,17 @@ export default function HologramPresentation({ orgId }) {
   };
 
   const openPresenterWindow = () => {
+    // Store data for the presenter window
+    const key = `fleetslide_${Date.now()}`;
+    const syncKey = `fleetslide_sync_${key}`;
+    localStorage.setItem(key, JSON.stringify({ slides, theme, fontSize, transition }));
+    localStorage.setItem(syncKey, JSON.stringify({ current: 0 }));
+    presenterWindowRef.current = window.open(
+      `${window.location.origin}/#/FleetSlidePresenter?presenter=${key}&sync=${syncKey}`,
+      "_blank",
+      "width=1280,height=720,menubar=no,toolbar=no,location=no,status=no"
+    );
+    setSyncKey(syncKey);
     setIsPresenting(true);
   };
 
