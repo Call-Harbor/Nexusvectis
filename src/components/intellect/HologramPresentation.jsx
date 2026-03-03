@@ -1059,15 +1059,26 @@ Return JSON: { "notes": "...speaker notes text..." }`,
         </div>
 
         {/* Right panel */}
-        <div className="w-60 flex-shrink-0 border-l border-slate-800/50 flex flex-col overflow-hidden bg-slate-900/20">
+        <div className="w-80 flex-shrink-0 border-l border-slate-800/50 flex flex-col overflow-hidden bg-slate-900/20">
           <Tabs value={rightTab} onValueChange={setRightTab} className="flex flex-col h-full">
-            <TabsList className="rounded-none border-b border-slate-800 bg-slate-900/60 flex-shrink-0 h-8 px-1">
-              <TabsTrigger value="edit" className="text-[10px] h-6 data-[state=active]:bg-slate-800">Edit</TabsTrigger>
-              <TabsTrigger value="notes" className="text-[10px] h-6 data-[state=active]:bg-slate-800">Notes</TabsTrigger>
+            <TabsList className="rounded-none border-b border-slate-800 bg-slate-900/60 flex-shrink-0 h-8 px-1 grid w-full grid-cols-3">
               <TabsTrigger value="design" className="text-[10px] h-6 data-[state=active]:bg-slate-800">Design</TabsTrigger>
+              <TabsTrigger value="notes" className="text-[10px] h-6 data-[state=active]:bg-slate-800">Notes</TabsTrigger>
+              <TabsTrigger value="advanced" className="text-[10px] h-6 data-[state=active]:bg-slate-800">Advanced</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="edit" className="flex-1 overflow-y-auto p-3 space-y-3 m-0">
+            <TabsContent value="design" className="flex-1 overflow-hidden p-0 m-0">
+              <DesignToolsPanel
+                slide={slidesWithIndex[current]}
+                onUpdate={updateCurrentSlide}
+                onAddAnimation={(anim) => updateCurrentSlide({ animations: [...(currentSlide.animations || []), anim] })}
+                onRemoveAnimation={(idx) => updateCurrentSlide({ animations: currentSlide.animations?.filter((_, i) => i !== idx) })}
+                theme={theme}
+                onThemeChange={setTheme}
+              />
+            </TabsContent>
+
+            <TabsContent value="notes" className="flex-1 overflow-y-auto p-3 space-y-3 m-0">
               {/* AI Actions */}
               <div className="flex gap-1.5">
                 <Button onClick={enhanceSlide} disabled={enhancing} size="sm" className="flex-1 bg-violet-600/80 hover:bg-violet-600 border-0 text-[10px] h-7 gap-1">
