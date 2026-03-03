@@ -96,9 +96,6 @@ export default function IntellectCommandBar({
           <Button onClick={() => handleQuickAction('openNewsIntelligence')} variant="outline" size="sm" className="h-7 px-2.5 text-xs border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10">
             <Newspaper className="w-3 h-3 mr-1" />News Feed
           </Button>
-          <Button onClick={() => handleQuickAction('openProjectManagement')} variant="outline" size="sm" className="h-7 px-2.5 text-xs border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10">
-            <LayoutDashboard className="w-3 h-3 mr-1" />PM Dashboard
-          </Button>
         </div>
 
         {/* Input Area */}
