@@ -609,8 +609,8 @@ export default function HologramPresentation({ orgId }) {
   const openPresenterWindow = () => {
     const key = `fleetslide_${Date.now()}`;
     localStorage.setItem(key, JSON.stringify({ slides, theme, fontSize, transition }));
-    // Use ?fleetslide= as a real query param so new window can read it via window.location.search
-    const presenterUrl = `${window.location.origin}${window.location.pathname}?fleetslide=${key}#/FleetSlidePresenter`;
+    // Hash routing: put key inside the hash as a query param: #/FleetSlidePresenter?fleetslide=KEY
+    const presenterUrl = `${window.location.origin}${window.location.pathname}#/FleetSlidePresenter?fleetslide=${key}`;
     const win = window.open(presenterUrl, "_blank", "width=1280,height=720,menubar=no,toolbar=no,location=no,status=no");
     if (win) {
       presenterWindowRef.current = win;
