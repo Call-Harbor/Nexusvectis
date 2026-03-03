@@ -286,17 +286,19 @@ export default function FleetSlidePresenter() {
   const autoRef = useRef(null);
 
   useEffect(() => {
-    // Load data from sessionStorage
-    const data = sessionStorage.getItem("fleetslide_data");
+    // Load data from URL parameter
+    const params = new URLSearchParams(window.location.search);
+    const data = params.get("data");
+    
     if (data) {
       try {
-        const parsed = JSON.parse(data);
-        setSlides(parsed.slides || []);
-        setTheme(parsed.theme || "nexus");
-        setFontSize(parsed.fontSize || "medium");
-        setTransition(parsed.transition || "fade");
+        const decoded = JSON.parse(atob(data));
+        setSlides(decoded.slides || []);
+        setTheme(decoded.theme || "nexus");
+        setFontSize(decoded.fontSize || "medium");
+        setTransition(decoded.transition || "fade");
       } catch (e) {
-        console.error("Failed to load presentation data", e);
+        console.error("Failed to decode presentation data", e);
       }
     }
 
