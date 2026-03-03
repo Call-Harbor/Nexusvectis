@@ -22,6 +22,7 @@ import ImageGeneratorHologram from "@/components/intellect/ImageGeneratorHologra
 import ImageEditorHologram from "@/components/intellect/ImageEditorHologram";
 import PredictiveMaintenancePanel from "@/components/intellect/PredictiveMaintenancePanel";
 import RealTimeRouteOptimizationPanel from "@/components/intellect/RealTimeRouteOptimizationPanel";
+import ProjectManagementPanel from "@/components/intellect/ProjectManagementPanel";
 
 const CHART_COLORS = ['#06b6d4', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444'];
 
