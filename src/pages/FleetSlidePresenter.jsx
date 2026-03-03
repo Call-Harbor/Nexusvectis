@@ -425,7 +425,12 @@ export default function FleetSlidePresenter() {
             {isFullscreen ? <Minimize className="w-4 h-4" /> : <Maximize className="w-4 h-4" />}
             {isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
           </button>
-          <button onClick={() => window.close()}
+          <button onClick={() => {
+            const channel = new BroadcastChannel("fleetslide-sync");
+            channel.postMessage({ type: "close" });
+            channel.close();
+            window.close();
+          }}
             className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm text-red-400/70 hover:text-red-400 hover:bg-red-500/10 transition-all">
             <X className="w-4 h-4" />Luk
           </button>
