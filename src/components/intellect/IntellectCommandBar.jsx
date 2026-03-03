@@ -134,7 +134,7 @@ export default function IntellectCommandBar({
           <div className="flex gap-2 sm:gap-3">
             <input type="text" value={input} onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); processCommand(); } }}
-              placeholder="Command FLEET AI... (e.g. 'predict maintenance', 'forecast demand', 'analyze CO2')"
+              placeholder="Command FLEET AI... (e.g. 'generate tasks for fleet expansion project', 'weekly project summary', 'identify risks for route optimization project')"
               className="flex-1 px-3 py-2.5 sm:px-4 sm:py-3 lg:px-6 lg:py-4 bg-slate-900/60 border-2 border-cyan-500/40 rounded-xl sm:rounded-2xl text-sm sm:text-base text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-400 focus:shadow-lg focus:shadow-cyan-500/20 backdrop-blur-xl transition-all"
             />
             <input ref={fileInputRef} type="file" multiple onChange={handleFileUpload} className="hidden" accept="*/*" />
