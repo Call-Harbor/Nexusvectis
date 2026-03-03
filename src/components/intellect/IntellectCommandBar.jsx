@@ -105,6 +105,9 @@ export default function IntellectCommandBar({
           <Button onClick={() => setInput("Identify risks and mitigation strategies for project: ")} variant="outline" size="sm" className="border-red-500/30 text-red-400 hover:bg-red-500/10">
             <Shield className="w-3.5 h-3.5 mr-1.5" />Risk Analysis
           </Button>
+          <Button onClick={() => handleQuickAction('openProjectManagement')} variant="outline" size="sm" className="border-violet-500/30 text-violet-400 hover:bg-violet-500/10">
+            <Sparkles className="w-3.5 h-3.5 mr-1.5" />PM Dashboard
+          </Button>
 
         </div>
 
