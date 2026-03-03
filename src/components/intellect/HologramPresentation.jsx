@@ -521,12 +521,12 @@ export default function HologramPresentation({ orgId }) {
     return () => clearInterval(timerRef.current);
   }, [isPresenting, timerRunning]);
 
-  // Sync current slide to presenter window via localStorage
+  // Sync current slide to presenter window via BroadcastChannel
   useEffect(() => {
-    if (syncKey && isPresenting) {
-      localStorage.setItem(syncKey, JSON.stringify({ current }));
+    if (isPresenting && window._fleetSlideChannel) {
+      window._fleetSlideChannel.postMessage({ type: "SLIDE", current });
     }
-  }, [current, syncKey, isPresenting]);
+  }, [current, isPresenting]);
 
   // Load real org data on mount
   useEffect(() => {
