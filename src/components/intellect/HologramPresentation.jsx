@@ -633,8 +633,10 @@ export default function HologramPresentation({ orgId }) {
     const syncKey = `fleetslide_sync_${key}`;
     localStorage.setItem(key, JSON.stringify({ slides, theme, fontSize, transition }));
     localStorage.setItem(syncKey, JSON.stringify({ current: 0 }));
+    // Store keys in a well-known location so FleetSlidePresenter can find them
+    localStorage.setItem("fleetslide_launch", JSON.stringify({ key, syncKey, ts: Date.now() }));
     presenterWindowRef.current = window.open(
-      `${window.location.origin}/#/FleetSlidePresenter?presenter=${key}&sync=${syncKey}`,
+      `${window.location.origin}/#/FleetSlidePresenter`,
       "_blank",
       "width=1280,height=720,menubar=no,toolbar=no,location=no,status=no"
     );
