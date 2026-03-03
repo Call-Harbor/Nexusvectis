@@ -286,22 +286,19 @@ export default function FleetSlidePresenter() {
   const autoRef = useRef(null);
 
   useEffect(() => {
-    const channel = new BroadcastChannel("fleetslide");
-
-    // Tell the parent we are ready
-    channel.postMessage({ type: "READY" });
-
-    channel.onmessage = (e) => {
-      if (e.data?.type === "INIT") {
-        setSlides(e.data.slides || []);
-        setTheme(e.data.theme || "nexus");
-        setFontSize(e.data.fontSize || "medium");
-        setTransition(e.data.transition || "fade");
+    // Load data from sessionStorage
+    const data = sessionStorage.getItem("fleetslide_data");
+    if (data) {
+      try {
+        const parsed = JSON.parse(data);
+        setSlides(parsed.slides || []);
+        setTheme(parsed.theme || "nexus");
+        setFontSize(parsed.fontSize || "medium");
+        setTransition(parsed.transition || "fade");
+      } catch (e) {
+        console.error("Failed to load presentation data", e);
       }
-      if (e.data?.type === "SLIDE") {
-        setCurrent(e.data.current);
-      }
-    };
+    }
 
     // Fullscreen
     document.addEventListener("fullscreenchange", () => {
@@ -310,8 +307,6 @@ export default function FleetSlidePresenter() {
     setTimeout(() => {
       document.documentElement.requestFullscreen?.().then(() => setIsFullscreen(true)).catch(() => {});
     }, 500);
-
-    return () => channel.close();
   }, []);
 
   useEffect(() => {
