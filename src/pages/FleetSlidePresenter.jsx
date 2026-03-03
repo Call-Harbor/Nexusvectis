@@ -285,98 +285,33 @@ export default function FleetSlidePresenter() {
   const timerRef = useRef(null);
   const autoRef = useRef(null);
 
-  const syncKeyRef = useRef(null);
-
   useEffect(() => {
-    // Try hash params first, then fall back to fleetslide_launch
-    const hash = window.location.hash;
-    const hashQuery = hash.includes("?") ? hash.split("?")[1] : "";
-    const hashParams = new URLSearchParams(hashQuery);
-    let key = hashParams.get("presenter") || hashParams.get("fleetslide");
-    let syncKey = hashParams.get("sync");
+    const channel = new BroadcastChannel("fleetslide");
 
-    // Fallback: read from localStorage launch record (handles hash-router URL issues)
-    if (!key) {
-      const launchRaw = localStorage.getItem("fleetslide_launch");
-      if (launchRaw) {
-        try {
-          const launch = JSON.parse(launchRaw);
-          // Accept if launched within the last 60 seconds
-          if (Date.now() - launch.ts < 60000) {
-            key = launch.key;
-            syncKey = launch.syncKey;
-          }
-        } catch (e) {}
-        localStorage.removeItem("fleetslide_launch");
+    // Tell the parent we are ready
+    channel.postMessage({ type: "READY" });
+
+    channel.onmessage = (e) => {
+      if (e.data?.type === "INIT") {
+        setSlides(e.data.slides || []);
+        setTheme(e.data.theme || "nexus");
+        setFontSize(e.data.fontSize || "medium");
+        setTransition(e.data.transition || "fade");
       }
-    }
-    
-    // If still no key, poll for up to 5 seconds (page may still be loading)
-    if (!key) {
-      let attempts = 0;
-      const pollForLaunch = setInterval(() => {
-        attempts++;
-        const launchRaw = localStorage.getItem("fleetslide_launch");
-        if (launchRaw) {
-          clearInterval(pollForLaunch);
-          try {
-            const launch = JSON.parse(launchRaw);
-            if (Date.now() - launch.ts < 60000) {
-              localStorage.removeItem("fleetslide_launch");
-              const data = localStorage.getItem(launch.key);
-              if (data) {
-                const parsed = JSON.parse(data);
-                setSlides(parsed.slides || []);
-                setTheme(parsed.theme || "nexus");
-                setFontSize(parsed.fontSize || "medium");
-                setTransition(parsed.transition || "fade");
-                localStorage.removeItem(launch.key);
-                syncKeyRef.current = launch.syncKey;
-              }
-            }
-          } catch (e) {}
-        }
-        if (attempts > 20) clearInterval(pollForLaunch);
-      }, 250);
-    }
-
-    if (syncKey) syncKeyRef.current = syncKey;
-
-    if (key) {
-      const data = localStorage.getItem(key);
-      if (data) {
-        const parsed = JSON.parse(data);
-        setSlides(parsed.slides || []);
-        setTheme(parsed.theme || "nexus");
-        setFontSize(parsed.fontSize || "medium");
-        setTransition(parsed.transition || "fade");
-        localStorage.removeItem(key);
-      }
-    }
-
-    // Auto request fullscreen
-    const tryFullscreen = () => {
-      if (document.documentElement.requestFullscreen) {
-        document.documentElement.requestFullscreen().then(() => setIsFullscreen(true)).catch(() => {});
+      if (e.data?.type === "SLIDE") {
+        setCurrent(e.data.current);
       }
     };
-    setTimeout(tryFullscreen, 500);
 
+    // Fullscreen
     document.addEventListener("fullscreenchange", () => {
       setIsFullscreen(!!document.fullscreenElement);
     });
+    setTimeout(() => {
+      document.documentElement.requestFullscreen?.().then(() => setIsFullscreen(true)).catch(() => {});
+    }, 500);
 
-    // Poll for slide sync from presenter view
-    const syncInterval = setInterval(() => {
-      if (!syncKeyRef.current) return;
-      const raw = localStorage.getItem(syncKeyRef.current);
-      if (raw) {
-        const { current: c } = JSON.parse(raw);
-        setCurrent(c);
-      }
-    }, 300);
-
-    return () => clearInterval(syncInterval);
+    return () => channel.close();
   }, []);
 
   useEffect(() => {
