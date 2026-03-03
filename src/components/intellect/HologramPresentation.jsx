@@ -624,12 +624,34 @@ export default function HologramPresentation({ orgId }) {
 
   const openPresenterWindow = () => {
     const data = btoa(JSON.stringify({ slides, theme, fontSize, transition }));
-    window.open(
+    presenterWindowRef.current = window.open(
       `${window.location.origin}/FleetSlidePresenter?data=${data}`,
       "fleetslide_presenter",
       "width=1920,height=1080,menubar=no,toolbar=no,location=no,status=no"
     );
   };
+
+  // Sync slides between windows
+  useEffect(() => {
+    if (!isPresenting) return;
+    
+    const channel = new BroadcastChannel("fleetslide-sync");
+    
+    // Listen for events from presenter window
+    channel.onmessage = (event) => {
+      if (event.data.type === "slide-change") {
+        setCurrent(event.data.slide);
+      } else if (event.data.type === "close") {
+        setIsPresenting(false);
+        if (presenterWindowRef.current) presenterWindowRef.current.close();
+      }
+    };
+    
+    // Send slide changes to presenter window
+    channel.postMessage({ type: "slide-change", slide: current });
+    
+    return () => channel.close();
+  }, [isPresenting, current]);
 
   const generateWithAI = async (customPrompt) => {
     const prompt = customPrompt || aiPrompt;
