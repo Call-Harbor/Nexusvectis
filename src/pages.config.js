@@ -72,6 +72,7 @@ import DocumentManagement from './pages/DocumentManagement';
 import DriverManagement from './pages/DriverManagement';
 import Fleet from './pages/Fleet';
 import FleetAIPage from './pages/FleetAIPage';
+import FleetSlidePresenter from './pages/FleetSlidePresenter';
 import GPSIntegration from './pages/GPSIntegration';
 import GreenTMS from './pages/GreenTMS';
 import HRManagement from './pages/HRManagement';
@@ -98,7 +99,6 @@ import Shipments from './pages/Shipments';
 import TermsOfService from './pages/TermsOfService';
 import UserManagement from './pages/UserManagement';
 import WarehouseAutomation from './pages/WarehouseAutomation';
-import FleetSlidePresenter from './pages/FleetSlidePresenter';
 import __Layout from './Layout.jsx';
 
 
@@ -128,6 +128,7 @@ export const PAGES = {
     "DriverManagement": DriverManagement,
     "Fleet": Fleet,
     "FleetAIPage": FleetAIPage,
+    "FleetSlidePresenter": FleetSlidePresenter,
     "GPSIntegration": GPSIntegration,
     "GreenTMS": GreenTMS,
     "HRManagement": HRManagement,
@@ -154,7 +155,6 @@ export const PAGES = {
     "TermsOfService": TermsOfService,
     "UserManagement": UserManagement,
     "WarehouseAutomation": WarehouseAutomation,
-    "FleetSlidePresenter": FleetSlidePresenter,
 }
 
 export const pagesConfig = {

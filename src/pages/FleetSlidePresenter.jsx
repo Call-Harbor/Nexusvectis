@@ -288,11 +288,27 @@ export default function FleetSlidePresenter() {
   const syncKeyRef = useRef(null);
 
   useEffect(() => {
+    // Try hash params first, then fall back to fleetslide_launch
     const hash = window.location.hash;
     const hashQuery = hash.includes("?") ? hash.split("?")[1] : "";
     const hashParams = new URLSearchParams(hashQuery);
-    const key = hashParams.get("presenter") || hashParams.get("fleetslide");
-    const syncKey = hashParams.get("sync");
+    let key = hashParams.get("presenter") || hashParams.get("fleetslide");
+    let syncKey = hashParams.get("sync");
+
+    // Fallback: read from localStorage launch record (handles hash-router URL issues)
+    if (!key) {
+      const launchRaw = localStorage.getItem("fleetslide_launch");
+      if (launchRaw) {
+        const launch = JSON.parse(launchRaw);
+        // Only accept if launched within the last 30 seconds
+        if (Date.now() - launch.ts < 30000) {
+          key = launch.key;
+          syncKey = launch.syncKey;
+        }
+        localStorage.removeItem("fleetslide_launch");
+      }
+    }
+
     if (syncKey) syncKeyRef.current = syncKey;
 
     if (key) {
