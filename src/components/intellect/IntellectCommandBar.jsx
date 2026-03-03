@@ -80,35 +80,25 @@ export default function IntellectCommandBar({
         </div>
 
         {/* Quick Buttons */}
-        <div className="flex gap-2 flex-wrap mb-3">
-          <Button onClick={() => openWindow('company_analytics', { x: 0, y: 0 })} variant="outline" size="sm" className="border-fuchsia-500/30 text-fuchsia-400 hover:bg-fuchsia-500/10">
-            <Building2 className="w-3.5 h-3.5 mr-1.5" />Company Analytics
+        <div className="flex gap-1.5 flex-wrap mb-3">
+          <Button onClick={() => openWindow('company_analytics', { x: 0, y: 0 })} variant="outline" size="sm" className="h-7 px-2.5 text-xs border-fuchsia-500/30 text-fuchsia-400 hover:bg-fuchsia-500/10">
+            <Building2 className="w-3 h-3 mr-1" />Company Analytics
           </Button>
-          <Button onClick={() => openWindow('profile_search', { x: 0, y: 0 })} variant="outline" size="sm" className="border-blue-500/30 text-blue-400 hover:bg-blue-500/10">
-            <Building2 className="w-3.5 h-3.5 mr-1.5" />People Search
+          <Button onClick={() => openWindow('profile_search', { x: 0, y: 0 })} variant="outline" size="sm" className="h-7 px-2.5 text-xs border-blue-500/30 text-blue-400 hover:bg-blue-500/10">
+            <Building2 className="w-3 h-3 mr-1" />People Search
           </Button>
-          <Button onClick={() => handleQuickAction('openSatelliteWeather')} variant="outline" size="sm" className="border-violet-500/30 text-violet-400 hover:bg-violet-500/10">
-            <Satellite className="w-3.5 h-3.5 mr-1.5" />Satellite & Weather
+          <Button onClick={() => handleQuickAction('openSatelliteWeather')} variant="outline" size="sm" className="h-7 px-2.5 text-xs border-violet-500/30 text-violet-400 hover:bg-violet-500/10">
+            <Satellite className="w-3 h-3 mr-1" />Satellite & Weather
           </Button>
-          <Button onClick={() => handleQuickAction('openNeuroRisk')} variant="outline" size="sm" className="border-red-500/30 text-red-400 hover:bg-red-500/10">
-            <Shield className="w-3.5 h-3.5 mr-1.5" />Neuro Risk Fusion
+          <Button onClick={() => handleQuickAction('openNeuroRisk')} variant="outline" size="sm" className="h-7 px-2.5 text-xs border-red-500/30 text-red-400 hover:bg-red-500/10">
+            <Shield className="w-3 h-3 mr-1" />Neuro Risk
           </Button>
-          <Button onClick={() => handleQuickAction('openNewsIntelligence')} variant="outline" size="sm" className="border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10">
-            <Newspaper className="w-3.5 h-3.5 mr-1.5" />News Feed
+          <Button onClick={() => handleQuickAction('openNewsIntelligence')} variant="outline" size="sm" className="h-7 px-2.5 text-xs border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10">
+            <Newspaper className="w-3 h-3 mr-1" />News Feed
           </Button>
-          <Button onClick={() => setInput("Generate a project task list for: ")} variant="outline" size="sm" className="border-amber-500/30 text-amber-400 hover:bg-amber-500/10">
-            <Sparkles className="w-3.5 h-3.5 mr-1.5" />Project Tasks
+          <Button onClick={() => handleQuickAction('openProjectManagement')} variant="outline" size="sm" className="h-7 px-2.5 text-xs border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10">
+            <LayoutDashboard className="w-3 h-3 mr-1" />PM Dashboard
           </Button>
-          <Button onClick={() => setInput("Give me a weekly project summary for: ")} variant="outline" size="sm" className="border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10">
-            <Sparkles className="w-3.5 h-3.5 mr-1.5" />Project Summary
-          </Button>
-          <Button onClick={() => setInput("Identify risks and mitigation strategies for project: ")} variant="outline" size="sm" className="border-red-500/30 text-red-400 hover:bg-red-500/10">
-            <Shield className="w-3.5 h-3.5 mr-1.5" />Risk Analysis
-          </Button>
-          <Button onClick={() => handleQuickAction('openProjectManagement')} variant="outline" size="sm" className="border-violet-500/30 text-violet-400 hover:bg-violet-500/10">
-            <Sparkles className="w-3.5 h-3.5 mr-1.5" />PM Dashboard
-          </Button>
-
         </div>
 
         {/* Input Area */}
