@@ -610,16 +610,10 @@ export default function HologramPresentation({ orgId }) {
     // Serialize slide data + settings into URL params via localStorage
     const key = `fleetslide_${Date.now()}`;
     localStorage.setItem(key, JSON.stringify({ slides, theme, fontSize, transition }));
-    const url = `${window.location.origin}${window.location.pathname}#/FleetSlidePresenter`;
-    const win = window.open(url, "_blank", "width=1280,height=720,menubar=no,toolbar=no,location=no,status=no");
+    const presenterUrl = `${window.location.origin}${window.location.pathname}#/FleetSlidePresenter?key=${key}`;
+    const win = window.open(presenterUrl, "_blank", "width=1280,height=720,menubar=no,toolbar=no,location=no,status=no");
     if (win) {
       presenterWindowRef.current = win;
-      // Send data via postMessage after window loads
-      const onLoad = () => {
-        win.postMessage({ type: "FLEETSLIDE_DATA", key }, window.location.origin);
-      };
-      win.addEventListener("load", onLoad);
-      // Fallback: also store in localStorage so FleetSlidePresenter can read it
       toast.success("🎬 Præsentation åbnet i nyt vindue — tryk F for fullscreen");
     }
   };
