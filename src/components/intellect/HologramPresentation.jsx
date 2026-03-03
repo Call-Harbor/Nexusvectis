@@ -623,16 +623,11 @@ export default function HologramPresentation({ orgId }) {
   };
 
   const openPresenterWindow = () => {
-    sessionStorage.setItem("fleetslide_data", JSON.stringify({
-      slides,
-      theme,
-      fontSize,
-      transition
-    }));
+    const data = btoa(JSON.stringify({ slides, theme, fontSize, transition }));
     window.open(
-      `${window.location.origin}/#/FleetSlidePresenter`,
+      `${window.location.origin}/#/FleetSlidePresenter?data=${data}`,
       "fleetslide_presenter",
-      "width=1920,height=1080,menubar=no,toolbar=no,location=no"
+      "width=1920,height=1080,menubar=no,toolbar=no,location=no,status=no"
     );
   };
 
