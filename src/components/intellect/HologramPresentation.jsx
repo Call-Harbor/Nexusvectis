@@ -628,28 +628,9 @@ export default function HologramPresentation({ orgId }) {
   };
 
   const openPresenterWindow = () => {
-    const channel = new BroadcastChannel("fleetslide");
-
-    // Open window first
-    presenterWindowRef.current = window.open(
-      `${window.location.origin}/#/FleetSlidePresenter`,
-      "_blank",
-      "width=1280,height=720,menubar=no,toolbar=no,location=no,status=no"
-    );
-
-    // When presenter window signals it's ready, send the data
-    channel.onmessage = (e) => {
-      if (e.data?.type === "READY") {
-        channel.postMessage({ type: "INIT", slides, theme, fontSize, transition });
-      }
-    };
-
-    // Keep channel open for slide sync
-    presenterWindowRef.current._channel = channel;
-    window._fleetSlideChannel = channel;
-
-    setSyncKey("broadcast");
     setIsPresenting(true);
+    setElapsed(0);
+    setTimerRunning(true);
   };
 
   const generateWithAI = async (customPrompt) => {
