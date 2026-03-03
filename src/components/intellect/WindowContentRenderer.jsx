@@ -24,6 +24,7 @@ import PredictiveMaintenancePanel from "@/components/intellect/PredictiveMainten
 import RealTimeRouteOptimizationPanel from "@/components/intellect/RealTimeRouteOptimizationPanel";
 import ProjectManagementPanel from "@/components/intellect/ProjectManagementPanel";
 import FleetDrivePanel from "@/components/intellect/FleetDrivePanel";
+import HologramPresentation from "@/components/intellect/HologramPresentation";
 
 const CHART_COLORS = ['#06b6d4', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444'];
 
@@ -364,6 +365,7 @@ export default function WindowContentRenderer({ type, data, vehicles, routes, sh
   if (type === 'route_optimization') return <RealTimeRouteOptimizationPanel orgId={orgId} optimizeFor={data?.optimizeFor || 'time'} />;
   if (type === 'project_management') return <ProjectManagementPanel orgId={orgId} />;
   if (type === 'fleet_drive') return <FleetDrivePanel orgId={orgId} />;
+  if (type === 'hologram_presentation') return <HologramPresentation orgId={orgId} />;
   if (PAGE_MAP[type]) {
     return <iframe src={`${createPageUrl(PAGE_MAP[type])}?hologram=true`} className="w-full h-full border-0" title={PAGE_MAP[type]} />;
   }
