@@ -817,7 +817,12 @@ Return JSON: { "notes": "...speaker notes text..." }`,
               </button>
               <button onClick={() => { setElapsed(0); setTimerRunning(true); }} className="text-slate-600 hover:text-slate-400 text-[10px]">↺</button>
             </div>
-            <Button onClick={() => { setIsPresenting(false); setSyncKey(null); setElapsed(0); setTimerRunning(false); if (presenterWindowRef.current) presenterWindowRef.current.close(); }}
+            <Button onClick={() => {
+              const channel = new BroadcastChannel("fleetslide-sync");
+              channel.postMessage({ type: "close" });
+              channel.close();
+              setIsPresenting(false); setSyncKey(null); setElapsed(0); setTimerRunning(false); if (presenterWindowRef.current) presenterWindowRef.current.close();
+            }}
               size="sm" variant="ghost" className="text-red-400 hover:bg-red-500/10 text-xs h-7">
               <X className="w-3.5 h-3.5 mr-1" />Afslut
             </Button>
