@@ -905,7 +905,7 @@ Return JSON: { "notes": "...speaker notes text..." }`,
             className="border-slate-700 text-slate-300 hover:bg-slate-800 text-xs h-7 gap-1">
             <Download className="w-3 h-3" />Gem
           </Button>
-          <Button onClick={openPresenterWindow} size="sm"
+          <Button onClick={() => setIsPresenting(true)} size="sm"
             className="bg-gradient-to-r from-cyan-500 to-violet-500 hover:opacity-90 border-0 text-xs h-7 gap-1">
             <Maximize className="w-3 h-3" />Present
           </Button>
