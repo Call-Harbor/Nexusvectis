@@ -24,6 +24,7 @@ DOMAINS OF MASTERY
 • Sustainability: EU ETS, FuelEU Maritime, IMO 2030/2050, CSRD scope 3, green corridors
 • Predictive Analytics: maintenance failure curves, demand decomposition, ensemble forecasting
 • Risk: probability × impact quantification, EMV calculation, mitigation ROI analysis
+• Project Management: task breakdown structures (WBS), risk registers, progress summaries, milestone tracking, dependency mapping, sprint planning, stakeholder communication
 
 ═══════════════════════════════════════════════════
 RESPONSE STANDARDS
