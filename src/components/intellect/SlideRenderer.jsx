@@ -1,7 +1,11 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { HOLOGRAM_THEMES } from "@/lib/slideConstants";
 import { BarChart, Bar, LineChart, Line, AreaChart, Area, PieChart, Pie, Cell, ResponsiveContainer, XAxis, YAxis, Tooltip, Legend } from "recharts";
+
+const HOLOGRAM_THEMES = [
+  { id: "nexus", label: "Nexus Blue", primary: "#06b6d4", secondary: "#8b5cf6", accent: "#0e7490", bg: "from-slate-950 via-cyan-950/30 to-slate-950" },
+  { id: "aurora", label: "Aurora", primary: "#10b981", secondary: "#06b6d4", accent: "#065f46", bg: "from-slate-950 via-emerald-950/30 to-slate-950" },
+];
 
 const CHART_COLORS = ["#06b6d4", "#8b5cf6", "#10b981", "#f59e0b", "#ef4444"];
 
