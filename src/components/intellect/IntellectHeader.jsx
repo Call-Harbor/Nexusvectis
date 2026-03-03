@@ -208,33 +208,6 @@ export default function IntellectHeader({ orgId, openWindow, executePrompt, setS
 
           {/* Apps Dropdown */}
           <AppSearchDropdown
-            items={[
-              ['document_editor', FileText, 'Document Editor'], 
-              ['spreadsheet_editor', BarChart3, 'Spreadsheet'], 
-              ['web_browser', Globe, 'Web Browser'], 
-              ['profile_search', Search, 'People Intelligence'],
-              ['fleet', Truck, 'Fleet'], 
-              ['alerts', AlertTriangle, 'Alerts'], 
-              ['routes', Route, 'Routes'], 
-              ['shipments', Package, 'Shipments'], 
-              ['resources', Warehouse, 'Resources'],
-              ['dashboard', LayoutDashboard, 'Dashboard'], 
-              ['crm', Users, 'CRM'], 
-              ['hr', Users, 'HR Management'], 
-              ['invoices', FileText, 'Invoices'],
-              ['aioptimization', Sparkles, 'AI Optimization'], 
-              ['gpsintegration', Satellite, 'GPS Integration'],
-              ['predictive_maintenance', Wrench, 'Predictive Maintenance'],
-              ['route_optimization', Route, 'Route Optimization'],
-              ['advanced_intelligence', Brain, 'Advanced Intelligence Panel'],
-              ['deep_analysis', Activity, 'Anomaly Detection + What-If'],
-              ['course_ai', GraduationCap, 'Adaptive Fleet AI Courses'],
-              ['parallel_processor', Zap, 'Parallel Task Processor'],
-              ['image_generator', Image, 'AI Image Generator'],
-              ['image_editor', Image, 'AI Image Editor'],
-              ['fleet_drive', HardDrive, 'Fleet Drive'],
-              ['project_management', ListTodo, 'PM Dashboard'],
-            ]}
             onSelect={(type) => {
               if (type === 'image_generator') openWindow('image_generator', { x: 120, y: 80 });
               else if (type === 'image_editor') openWindow('image_editor', { x: 140, y: 100 });
