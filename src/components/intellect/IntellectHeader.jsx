@@ -68,6 +68,7 @@ const APP_CATEGORIES = [
   ['Productivity', [
     ['document_editor', FileText, 'Document Editor'],
     ['spreadsheet_editor', BarChart3, 'Spreadsheet'],
+    ['hologram_presentation', MonitorPlay, 'Hologram PowerPoint'],
     ['project_management', ListTodo, 'PM Dashboard'],
     ['fleet_drive', HardDrive, 'Fleet Drive'],
     ['web_browser', Globe, 'Web Browser'],
