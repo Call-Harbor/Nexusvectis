@@ -4,7 +4,7 @@ import { createPageUrl } from "../../utils";
 import {
   Brain, Sparkles, Zap, Activity, LayoutDashboard, Search,
   MessageSquare, FileText, BarChart3, Truck, AlertTriangle, Route,
-  Package, Warehouse, Users, Satellite, ChevronDown, GraduationCap, FileCode, Globe, Image, X, Wrench
+  Package, Warehouse, Users, Satellite, ChevronDown, GraduationCap, FileCode, Globe, Image, X, Wrench, HardDrive, ListTodo
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -181,7 +181,9 @@ export default function IntellectHeader({ orgId, openWindow, executePrompt, setS
               ['course_ai', GraduationCap, 'Adaptive Fleet AI Courses'],
               ['parallel_processor', Zap, 'Parallel Task Processor'],
               ['image_generator', Image, 'AI Image Generator'],
-              ['image_editor', Image, 'AI Image Editor']
+              ['image_editor', Image, 'AI Image Editor'],
+              ['fleet_drive', HardDrive, 'Fleet Drive'],
+              ['project_management', ListTodo, 'PM Dashboard'],
             ]}
             onSelect={(type) => {
               if (type === 'image_generator') openWindow('image_generator', { x: 120, y: 80 });
