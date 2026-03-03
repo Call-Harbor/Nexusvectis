@@ -44,6 +44,7 @@ export const WINDOW_META = {
   company_analytics: { title: '🏢 Company Analytics', icon: Building2 },
   image_generator: { title: '🎨 AI Image Generator', icon: Image },
   image_editor: { title: '✏️ AI Image Editor', icon: Image },
+  project_management: { title: '📋 Project Management AI', icon: ListTodo },
 };
 
 export function getWindowMeta(type) {
