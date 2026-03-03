@@ -1,7 +1,7 @@
 import { 
   Truck, AlertTriangle, Route, Package, LayoutDashboard, Settings, Sparkles, 
   FileText, Warehouse, TrendingUp, Activity, Satellite, Network, Shield, 
-  Globe, MessageSquare, BarChart3, Zap, Users, Newspaper, Building2, Image, ListTodo
+  Globe, MessageSquare, BarChart3, Zap, Users, Newspaper, Building2, Image, ListTodo, HardDrive
 } from "lucide-react";
 
 export const WINDOW_META = {
@@ -45,6 +45,7 @@ export const WINDOW_META = {
   image_generator: { title: '🎨 AI Image Generator', icon: Image },
   image_editor: { title: '✏️ AI Image Editor', icon: Image },
   project_management: { title: '📋 Project Management AI', icon: ListTodo },
+  fleet_drive: { title: '💾 Fleet Drive', icon: HardDrive },
 };
 
 export function getWindowMeta(type) {
