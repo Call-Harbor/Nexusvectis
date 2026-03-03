@@ -95,6 +95,15 @@ export default function IntellectCommandBar({
           <Button onClick={() => handleQuickAction('openNewsIntelligence')} variant="outline" size="sm" className="border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10">
             <Newspaper className="w-3.5 h-3.5 mr-1.5" />News Feed
           </Button>
+          <Button onClick={() => setInput("Generate a project task list for: ")} variant="outline" size="sm" className="border-amber-500/30 text-amber-400 hover:bg-amber-500/10">
+            <Sparkles className="w-3.5 h-3.5 mr-1.5" />Project Tasks
+          </Button>
+          <Button onClick={() => setInput("Give me a weekly project summary for: ")} variant="outline" size="sm" className="border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10">
+            <Sparkles className="w-3.5 h-3.5 mr-1.5" />Project Summary
+          </Button>
+          <Button onClick={() => setInput("Identify risks and mitigation strategies for project: ")} variant="outline" size="sm" className="border-red-500/30 text-red-400 hover:bg-red-500/10">
+            <Shield className="w-3.5 h-3.5 mr-1.5" />Risk Analysis
+          </Button>
 
         </div>
 
