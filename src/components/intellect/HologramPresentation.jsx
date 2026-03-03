@@ -577,16 +577,71 @@ export default function HologramPresentation({ orgId }) {
     setSlides(prev => prev.map((s, i) => i === current ? { ...s, ...updates } : s));
   };
 
+  const openPresenterWindow = () => {
+    // Serialize slide data + settings into URL params via localStorage
+    const key = `fleetslide_${Date.now()}`;
+    localStorage.setItem(key, JSON.stringify({ slides, theme, fontSize, transition }));
+    const url = `${window.location.origin}${window.location.pathname}?hologram=true&fleetslide=${key}`;
+    const win = window.open(url, "_blank", "width=1280,height=720,menubar=no,toolbar=no,location=no,status=no");
+    if (win) {
+      // Try F11 fullscreen after opening
+      win.addEventListener("load", () => {
+        try {
+          if (win.document.documentElement.requestFullscreen) {
+            win.document.documentElement.requestFullscreen();
+          }
+        } catch (e) {}
+      });
+      presenterWindowRef.current = win;
+      toast.success("🎬 Presentation opened in new window — press F11 for fullscreen");
+    }
+  };
+
   const generateWithAI = async (customPrompt) => {
     const prompt = customPrompt || aiPrompt;
     if (!prompt.trim()) return;
     setGenerating(true);
-    toast.info("🧠 AI generating presentation...");
+    toast.info("🧠 AI generating presentation with live data...");
+
+    // Build a rich data context from real org data
+    let dataContext = "";
+    if (orgData) {
+      const { vehicles, routes, shipments, alerts, maintenance, resources } = orgData;
+      const activeV = vehicles.filter(v => v.status === "active").length;
+      const idleV = vehicles.filter(v => v.status === "idle").length;
+      const maintV = vehicles.filter(v => v.status === "maintenance").length;
+      const inTransit = shipments.filter(s => s.status === "in_transit").length;
+      const delayed = shipments.filter(s => s.status === "delayed").length;
+      const delivered = shipments.filter(s => s.status === "delivered").length;
+      const critAlerts = alerts.filter(a => a.type === "critical" && !a.is_resolved).length;
+      const pendingMaint = maintenance.filter(m => m.status === "pending").length;
+      const avgEfficiency = vehicles.filter(v => v.efficiency_score).length > 0
+        ? Math.round(vehicles.reduce((a, v) => a + (v.efficiency_score || 0), 0) / vehicles.filter(v => v.efficiency_score).length)
+        : null;
+      const vehicleTypes = [...new Set(vehicles.map(v => v.type))];
+      const topRoutes = routes.slice(0, 5).map(r => r.name).join(", ");
+
+      dataContext = `
+LIVE ORGANIZATION DATA (use these REAL numbers in the presentation):
+- Total vehicles: ${vehicles.length} (Active: ${activeV}, Idle: ${idleV}, In Maintenance: ${maintV})
+- Vehicle types: ${vehicleTypes.join(", ")}
+- Shipments: ${shipments.length} total (In transit: ${inTransit}, Delayed: ${delayed}, Delivered: ${delivered})
+- Critical unresolved alerts: ${critAlerts}
+- Pending maintenance tasks: ${pendingMaint}
+- Average fleet efficiency score: ${avgEfficiency !== null ? avgEfficiency + "%" : "N/A"}
+- Active routes: ${routes.length} (Top routes: ${topRoutes || "N/A"})
+- Resources/depots: ${resources.length}
+- Recent vehicle samples: ${vehicles.slice(0, 5).map(v => `${v.name} (${v.type}, ${v.status}${v.fuel_level ? ", fuel: " + v.fuel_level + "%" : ""})`).join("; ")}
+
+USE THESE EXACT NUMBERS in charts, stats, and metrics. Do not invent data when real data is provided.`;
+    }
+
     try {
       const result = await base44.integrations.Core.InvokeLLM({
         prompt: `You are a world-class presentation designer. Create a compelling holographic business presentation about: "${prompt}"
+${dataContext}
 
-Generate 7-10 slides. Use specific, realistic data and metrics. Make it professional and impactful.
+Generate 7-10 slides. Use the REAL organization data above (when available) for all numbers, stats, and charts. Make it professional and impactful.
 
 Available types: title, content, chart, split, impact, comparison, timeline, closing
 
