@@ -609,8 +609,9 @@ export default function HologramPresentation({ orgId }) {
   const openPresenterWindow = () => {
     const key = `fleetslide_${Date.now()}`;
     localStorage.setItem(key, JSON.stringify({ slides, theme, fontSize, transition }));
-    // Open with hash routing that the app's router understands
-    const presenterUrl = `${window.location.origin}/#/FleetSlidePresenter?presenter=${key}`;
+    // Build URL: base origin + hash route, key passed inside hash querystring
+    const base = window.location.href.split('#')[0]; // everything before the hash
+    const presenterUrl = `${base}#/FleetSlidePresenter?presenter=${key}`;
     const win = window.open(presenterUrl, "_blank", "width=1280,height=720,menubar=no,toolbar=no,location=no,status=no");
     if (win) {
       presenterWindowRef.current = win;
