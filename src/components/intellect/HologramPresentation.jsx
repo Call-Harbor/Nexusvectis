@@ -607,15 +607,7 @@ export default function HologramPresentation({ orgId }) {
   };
 
   const openPresenterWindow = () => {
-    const key = `fleetslide_${Date.now()}`;
-    localStorage.setItem(key, JSON.stringify({ slides, theme, fontSize, transition }));
-    // Build URL using just the origin so we don't inherit /IntellectMode or other paths
-    const presenterUrl = `${window.location.origin}/#/FleetSlidePresenter?presenter=${key}`;
-    const win = window.open(presenterUrl, "_blank", "width=1280,height=720,menubar=no,toolbar=no,location=no,status=no");
-    if (win) {
-      presenterWindowRef.current = win;
-      toast.success("🎬 Præsentation åbnet i nyt vindue — tryk F for fullscreen");
-    }
+    setIsPresenting(true);
   };
 
   const generateWithAI = async (customPrompt) => {
