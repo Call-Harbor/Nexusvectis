@@ -784,7 +784,6 @@ Return JSON: { "notes": "...speaker notes text..." }`,
 
   const fmt = (s) => `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
   const tTheme = HOLOGRAM_THEMES.find(th => th.id === theme) || HOLOGRAM_THEMES[0];
-  const slidesWithIndex = slides.map((s, i) => ({ ...s, index: i }));
 
   if (isPresenting) {
     const currentSlide = slidesWithIndex[current];
