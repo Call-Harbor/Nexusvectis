@@ -302,6 +302,16 @@ export default function FleetSlidePresenter() {
       }
     }
 
+    // BroadcastChannel sync
+    const channel = new BroadcastChannel("fleetslide-sync");
+    channel.onmessage = (event) => {
+      if (event.data.type === "slide-change") {
+        setCurrent(event.data.slide);
+      } else if (event.data.type === "close") {
+        window.close();
+      }
+    };
+
     // Fullscreen
     document.addEventListener("fullscreenchange", () => {
       setIsFullscreen(!!document.fullscreenElement);
@@ -309,6 +319,8 @@ export default function FleetSlidePresenter() {
     setTimeout(() => {
       document.documentElement.requestFullscreen?.().then(() => setIsFullscreen(true)).catch(() => {});
     }, 500);
+
+    return () => channel.close();
   }, []);
 
   useEffect(() => {
