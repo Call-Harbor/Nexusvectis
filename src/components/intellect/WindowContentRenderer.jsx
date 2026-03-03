@@ -361,6 +361,7 @@ export default function WindowContentRenderer({ type, data, vehicles, routes, sh
   if (type === 'image_editor') return <ImageEditorHologram imageUrl={data?.imageUrl} onClose={data?.onClose} />;
   if (type === 'predictive_maintenance') return <PredictiveMaintenancePanel orgId={orgId} />;
   if (type === 'route_optimization') return <RealTimeRouteOptimizationPanel orgId={orgId} optimizeFor={data?.optimizeFor || 'time'} />;
+  if (type === 'project_management') return <ProjectManagementPanel orgId={orgId} />;
   if (PAGE_MAP[type]) {
     return <iframe src={`${createPageUrl(PAGE_MAP[type])}?hologram=true`} className="w-full h-full border-0" title={PAGE_MAP[type]} />;
   }
