@@ -286,9 +286,11 @@ export default function FleetSlidePresenter() {
   const autoRef = useRef(null);
 
   useEffect(() => {
-    // Key is in the real query string: ?presenter=KEY
-    const searchParams = new URLSearchParams(window.location.search);
-    const key = searchParams.get("presenter") || searchParams.get("fleetslide") || searchParams.get("key");
+    // Key is in the hash query: #/FleetSlidePresenter?presenter=KEY
+    const hash = window.location.hash; // "#/FleetSlidePresenter?presenter=xxx"
+    const hashQuery = hash.includes("?") ? hash.split("?")[1] : "";
+    const hashParams = new URLSearchParams(hashQuery);
+    const key = hashParams.get("presenter") || hashParams.get("fleetslide");
     if (key) {
       const data = localStorage.getItem(key);
       if (data) {
