@@ -299,14 +299,45 @@ export default function FleetSlidePresenter() {
     if (!key) {
       const launchRaw = localStorage.getItem("fleetslide_launch");
       if (launchRaw) {
-        const launch = JSON.parse(launchRaw);
-        // Only accept if launched within the last 30 seconds
-        if (Date.now() - launch.ts < 30000) {
-          key = launch.key;
-          syncKey = launch.syncKey;
-        }
+        try {
+          const launch = JSON.parse(launchRaw);
+          // Accept if launched within the last 60 seconds
+          if (Date.now() - launch.ts < 60000) {
+            key = launch.key;
+            syncKey = launch.syncKey;
+          }
+        } catch (e) {}
         localStorage.removeItem("fleetslide_launch");
       }
+    }
+    
+    // If still no key, poll for up to 5 seconds (page may still be loading)
+    if (!key) {
+      let attempts = 0;
+      const pollForLaunch = setInterval(() => {
+        attempts++;
+        const launchRaw = localStorage.getItem("fleetslide_launch");
+        if (launchRaw) {
+          clearInterval(pollForLaunch);
+          try {
+            const launch = JSON.parse(launchRaw);
+            if (Date.now() - launch.ts < 60000) {
+              localStorage.removeItem("fleetslide_launch");
+              const data = localStorage.getItem(launch.key);
+              if (data) {
+                const parsed = JSON.parse(data);
+                setSlides(parsed.slides || []);
+                setTheme(parsed.theme || "nexus");
+                setFontSize(parsed.fontSize || "medium");
+                setTransition(parsed.transition || "fade");
+                localStorage.removeItem(launch.key);
+                syncKeyRef.current = launch.syncKey;
+              }
+            }
+          } catch (e) {}
+        }
+        if (attempts > 20) clearInterval(pollForLaunch);
+      }, 250);
     }
 
     if (syncKey) syncKeyRef.current = syncKey;
