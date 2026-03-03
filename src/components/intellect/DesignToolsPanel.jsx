@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import { Sparkles, Zap, Settings, Trash2, Plus } from "lucide-react";
+import { Sparkles, Zap, Settings, Trash2, Plus, Type, Layout, Palette, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { motion } from "framer-motion";
 
 const ANIMATIONS = [
@@ -19,8 +20,19 @@ const EFFECTS = [
   { id: "glow", label: "Glow", class: "shadow-lg shadow-cyan-500/30" },
   { id: "blur", label: "Blur", class: "backdrop-blur-sm" },
   { id: "shine", label: "Shine", class: "animate-pulse" },
-  { id: "scale", label: "Scale", class: "scale-110" },
+  { id: "shadow", label: "Shadow", class: "drop-shadow-2xl" },
 ];
+
+const TRANSITIONS = [
+  { id: "fade", label: "Fade" },
+  { id: "slide", label: "Slide Left" },
+  { id: "zoom", label: "Zoom Out" },
+  { id: "flip", label: "Flip" },
+  { id: "rotate", label: "Rotate" },
+];
+
+const TEXT_COLORS = ["white", "cyan-300", "violet-300", "emerald-300", "amber-300", "red-300"];
+const BACKGROUND_COLORS = ["slate-900", "cyan-900/20", "violet-900/20", "emerald-900/20", "slate-800"];
 
 export default function DesignToolsPanel({ slide, onUpdate, onAddAnimation, onRemoveAnimation, theme, onThemeChange }) {
   const [selectedEffect, setSelectedEffect] = useState(null);
