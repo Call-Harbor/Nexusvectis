@@ -577,6 +577,35 @@ export default function HologramPresentation({ orgId }) {
     setSlides(prev => prev.map((s, i) => i === current ? { ...s, ...updates } : s));
   };
 
+  const saveToFleetDrive = async () => {
+    if (!orgId) { toast.error("Ingen organisation fundet"); return; }
+    toast.info("💾 Gemmer præsentation...");
+    try {
+      // Serialize presentation as JSON file
+      const data = JSON.stringify({ slides, theme, fontSize, transition, savedAt: new Date().toISOString() }, null, 2);
+      const blob = new Blob([data], { type: "application/json" });
+      const file = new File([blob], `FleetSlide - ${slides[0]?.title || "Præsentation"} - ${new Date().toLocaleDateString("da-DK")}.fleetslide`, { type: "application/json" });
+      const res = await base44.integrations.Core.UploadFile({ file });
+      const fileUrl = res?.data?.file_url || res?.file_url;
+      if (!fileUrl) throw new Error("Upload fejlede");
+      await base44.entities.FleetDriveFile.create({
+        organization_id: orgId,
+        name: file.name,
+        file_url: fileUrl,
+        file_type: "other",
+        file_size_bytes: blob.size,
+        mime_type: "application/json",
+        folder: "Presentations",
+        source: "uploaded",
+        description: `FleetSlide præsentation med ${slides.length} slides`,
+        tags: ["presentation", "fleetslide"],
+      });
+      toast.success(`✅ Gemt til Fleet Drive → Presentations`);
+    } catch (e) {
+      toast.error("Gem fejlede: " + e.message);
+    }
+  };
+
   const openPresenterWindow = () => {
     // Serialize slide data + settings into URL params via localStorage
     const key = `fleetslide_${Date.now()}`;
