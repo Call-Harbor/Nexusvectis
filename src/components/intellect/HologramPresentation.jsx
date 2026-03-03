@@ -299,7 +299,7 @@ Return JSON:
       <div className="flex items-center justify-between px-4 py-3 border-b border-cyan-500/20 flex-shrink-0 bg-slate-900/60">
         <div className="flex items-center gap-2">
           <MonitorPlay className="w-4 h-4 text-cyan-400" />
-          <span className="font-bold text-sm text-white">Hologram PowerPoint</span>
+          <span className="font-bold text-sm text-white">FleetSlide</span>
           <Badge className="bg-violet-500/20 text-violet-400 border-violet-500/40 text-[10px]">AI-Powered</Badge>
         </div>
         <div className="flex items-center gap-2">

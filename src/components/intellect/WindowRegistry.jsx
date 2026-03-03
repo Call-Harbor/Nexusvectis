@@ -46,7 +46,7 @@ export const WINDOW_META = {
   image_editor: { title: '✏️ AI Image Editor', icon: Image },
   project_management: { title: '📋 Project Management AI', icon: ListTodo },
   fleet_drive: { title: '💾 Fleet Drive', icon: HardDrive },
-  hologram_presentation: { title: '🎯 Hologram PowerPoint', icon: MonitorPlay },
+  hologram_presentation: { title: '🎯 FleetSlide', icon: MonitorPlay },
 };
 
 export function getWindowMeta(type) {
