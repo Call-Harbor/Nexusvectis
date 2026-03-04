@@ -504,7 +504,7 @@ export default function HologramPresentation({ orgId }) {
   const [loadingData, setLoadingData] = useState(false);
   const [aiPrompt, setAiPrompt] = useState("");
   const [enhancing, setEnhancing] = useState(false);
-  const [rightTab, setRightTab] = useState("edit");
+  const [rightTab, setRightTab] = useState("design");
   const [showTemplates, setShowTemplates] = useState(false);
   const [orgData, setOrgData] = useState(null);
   const presenterWindowRef = useRef(null);
@@ -984,28 +984,43 @@ Return JSON: { "notes": "...speaker notes text..." }`,
         {/* Slide panel */}
         <div className="w-36 flex-shrink-0 border-r border-slate-800/50 flex flex-col overflow-y-auto bg-slate-900/20 p-2 gap-1.5">
           {slides.map((slide, idx) => (
-            <div key={slide.id} onClick={() => setCurrent(idx)}
-              className={`relative group rounded-lg overflow-hidden border cursor-pointer transition-all flex-shrink-0 ${idx === current ? "border-cyan-500/70 ring-1 ring-cyan-500/30 shadow-lg shadow-cyan-500/10" : "border-slate-700/40 hover:border-slate-600/60"}`}
-              style={{ aspectRatio: "16/9" }}>
-              <div className="w-full h-full pointer-events-none" style={{ transform: "scale(0.148)", transformOrigin: "top left", width: "676%", height: "676%" }}>
-                <SlideRenderer slide={{ ...slide, index: idx }} theme={theme} />
-              </div>
-              <div className="absolute inset-0 flex flex-col justify-end opacity-0 group-hover:opacity-100 transition-opacity bg-black/40">
-                <div className="flex items-center justify-center gap-0.5 py-1">
-                  <button onClick={e => { e.stopPropagation(); moveSlide(idx, -1); }} disabled={idx === 0}
-                    className="p-0.5 text-white/70 hover:text-white disabled:opacity-30"><ArrowUp className="w-2.5 h-2.5" /></button>
-                  <button onClick={e => { e.stopPropagation(); duplicateSlide(idx); }}
-                    className="p-0.5 text-white/70 hover:text-white"><Copy className="w-2.5 h-2.5" /></button>
-                  <button onClick={e => { e.stopPropagation(); moveSlide(idx, 1); }} disabled={idx === slides.length - 1}
-                    className="p-0.5 text-white/70 hover:text-white disabled:opacity-30"><ArrowDown className="w-2.5 h-2.5" /></button>
-                  {slides.length > 1 && (
-                    <button onClick={e => { e.stopPropagation(); removeSlide(idx); }}
-                      className="p-0.5 text-red-400 hover:text-red-300"><X className="w-2.5 h-2.5" /></button>
-                  )}
+            <div key={slide.id} className="flex-shrink-0">
+              <div onClick={() => setCurrent(idx)}
+                className={`relative rounded-lg overflow-hidden border cursor-pointer transition-all ${idx === current ? "border-cyan-500/70 ring-1 ring-cyan-500/30 shadow-lg shadow-cyan-500/10" : "border-slate-700/40 hover:border-slate-600/60"}`}
+                style={{ aspectRatio: "16/9" }}>
+                <div className="w-full h-full pointer-events-none" style={{ transform: "scale(0.148)", transformOrigin: "top left", width: "676%", height: "676%" }}>
+                  <SlideRenderer slide={{ ...slide, index: idx }} theme={theme} />
+                </div>
+                <div className="absolute bottom-0 left-0 right-0 bg-black/50 px-1 py-0.5">
+                  <span className="text-[8px] text-slate-400">{idx + 1} · {slide.type}</span>
                 </div>
               </div>
-              <div className="absolute bottom-0 left-0 right-0 bg-black/50 px-1 py-0.5">
-                <span className="text-[8px] text-slate-400">{idx + 1} · {slide.type}</span>
+              {/* Always-visible action buttons below thumbnail */}
+              <div className="flex items-center justify-between mt-0.5 px-0.5">
+                <div className="flex items-center gap-0.5">
+                  <button onClick={() => moveSlide(idx, -1)} disabled={idx === 0}
+                    title="Flyt op"
+                    className="p-1 rounded text-slate-500 hover:text-white hover:bg-slate-700 disabled:opacity-20 transition-all">
+                    <ArrowUp className="w-3 h-3" />
+                  </button>
+                  <button onClick={() => moveSlide(idx, 1)} disabled={idx === slides.length - 1}
+                    title="Flyt ned"
+                    className="p-1 rounded text-slate-500 hover:text-white hover:bg-slate-700 disabled:opacity-20 transition-all">
+                    <ArrowDown className="w-3 h-3" />
+                  </button>
+                  <button onClick={() => duplicateSlide(idx)}
+                    title="Kopier"
+                    className="p-1 rounded text-slate-500 hover:text-white hover:bg-slate-700 transition-all">
+                    <Copy className="w-3 h-3" />
+                  </button>
+                </div>
+                {slides.length > 1 && (
+                  <button onClick={() => removeSlide(idx)}
+                    title="Slet"
+                    className="p-1 rounded text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all">
+                    <X className="w-3 h-3" />
+                  </button>
+                )}
               </div>
             </div>
           ))}
