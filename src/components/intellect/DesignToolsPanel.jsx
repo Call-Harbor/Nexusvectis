@@ -387,14 +387,11 @@ export default function DesignToolsPanel({ slide, onUpdate, onAddAnimation, onRe
                 />
               </div>
               <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Chart Data</label>
-                  <button
-                    onClick={addChartPoint}
-                    className="h-5 text-[9px] px-1.5 rounded bg-cyan-600/70 hover:bg-cyan-600 text-white flex items-center gap-0.5"
-                  >
-                    <Plus className="w-2.5 h-2.5" />Tilføj
-                  </button>
+                 <div className="flex items-center justify-between mb-1.5">
+                   <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Chart Data</label>
+                   <button onClick={addChartPoint} className="h-5 text-[9px] px-1.5 rounded bg-cyan-600/70 hover:bg-cyan-600 text-white flex items-center gap-0.5">
+                     <Plus className="w-2.5 h-2.5" />Tilføj
+                   </button>
                 </div>
                 <div className="space-y-1 max-h-48 overflow-y-auto">
                   {localChartData.map((point, i) => (
