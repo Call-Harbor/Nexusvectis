@@ -600,18 +600,17 @@ export default function DesignToolsPanel({ slide, onUpdate, onAddAnimation, onRe
             <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">Visual Effects</label>
             <div className="grid grid-cols-2 gap-1">
               {EFFECTS.map((effect) => (
-                <Button
+                <button
                   key={effect.id}
                   onClick={() => onUpdate({ effect: slide?.effect === effect.id ? null : effect.id })}
-                  size="sm"
-                  className={`h-6 text-[10px] border ${
+                  className={`h-6 text-[10px] rounded border transition-all ${
                     slide?.effect === effect.id
                       ? "bg-cyan-500/20 border-cyan-500/50 text-cyan-300"
-                      : "bg-slate-800/60 border-slate-700 text-slate-400 hover:bg-slate-800"
+                      : "bg-slate-800/60 border-slate-700 text-slate-400 hover:bg-slate-800 hover:text-white"
                   }`}
                 >
                   {effect.label}
-                </Button>
+                </button>
               ))}
             </div>
           </div>
