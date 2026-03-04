@@ -363,15 +363,17 @@ export default function DesignToolsPanel({ slide, onUpdate, onAddAnimation, onRe
                 <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 block">Chart Type</label>
                 <div className="grid grid-cols-3 gap-1">
                   {["bar", "line", "area", "pie", "radar"].map((ct) => (
-                    <Button
+                    <button
                       key={ct}
                       onClick={() => onUpdate({ chartType: ct })}
-                      size="sm"
-                      variant={slide?.chartType === ct ? "default" : "outline"}
-                      className="h-6 text-xs capitalize"
+                      className={`h-6 rounded text-xs capitalize transition-all border px-1 ${
+                        slide?.chartType === ct
+                          ? "bg-cyan-500/20 border-cyan-500/60 text-cyan-300"
+                          : "bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700 hover:text-white"
+                      }`}
                     >
                       {ct}
-                    </Button>
+                    </button>
                   ))}
                 </div>
               </div>
