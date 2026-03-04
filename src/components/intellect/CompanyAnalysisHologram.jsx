@@ -273,12 +273,12 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
       ]);
 
       const merged = {
-        ...r1,
-        ...r4,
-        ...r5,
-        ...r6,
+        ...(r1 || {}),
+        ...(r4 || {}),
+        ...(r5 || {}),
+        ...(r6 || {}),
         financial: {
-          ...r2,
+          ...(r2 || {}),
           revenue_chart: r3?.revenue_chart || [
             { year: '2020', revenue: 45, profit: 5, ebitda: 12 },
             { year: '2021', revenue: 52, profit: 8, ebitda: 15 },
