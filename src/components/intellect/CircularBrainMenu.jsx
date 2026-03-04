@@ -27,8 +27,8 @@ export default function CircularBrainMenu({ onAction, size = "md", isLogo = fals
   const config = sizeConfig[size];
 
   return (
-    <div className="relative inline-flex items-center justify-center">
-      <div className={`relative ${config.container}`}>
+    <div className="flex items-center justify-center">
+      <div className={`relative ${config.container} flex items-center justify-center`}>
         {/* Center Brain Button */}
         <button
           onClick={() => setShowMenu(!showMenu)}
