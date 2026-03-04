@@ -982,11 +982,11 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
 
                 {/* Title and description */}
                 <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: activeWindows.length === 0 && !isCircularMenuOpen ? 1 : 0, y: activeWindows.length === 0 && !isCircularMenuOpen ? 0 : 20 }}
-                  transition={{ duration: 0.3 }}
-                  className="text-center max-w-xl px-4 space-y-4"
-                >
+                   initial={{ opacity: 0, y: 20 }}
+                   animate={{ opacity: activeWindows.length === 0 ? 1 : 0, y: activeWindows.length === 0 ? 0 : 20 }}
+                   transition={{ duration: 0.3 }}
+                   className="text-center max-w-xl px-4 space-y-4"
+                 >
                   <div className="relative inline-block">
                     <div className="absolute inset-0 blur-2xl opacity-50" style={{ background: "linear-gradient(135deg, #06b6d4, #8b5cf6)" }} />
                     <h1 className="relative text-6xl font-black font-mono tracking-widest uppercase bg-clip-text text-transparent"
