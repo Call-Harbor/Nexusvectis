@@ -896,6 +896,7 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
                     onAction={(action) => {
                       if (action === 'advanced_intelligence') setShowAdvancedPanel(true);
                       else if (action === 'deep_analysis') openWindow('deep_analysis', { x: 100, y: 80 });
+                      else if (action === 'company_analysis') setShowCompanyAnalysis(true);
                       else openWindow(action, { x: 100 + Math.random() * 100, y: 80 + Math.random() * 100 });
                     }}
                     onMenuToggle={setIsCircularMenuOpen}
