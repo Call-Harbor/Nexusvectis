@@ -236,7 +236,7 @@ export default function FleetDrivePanel({ orgId, openWindow }) {
   );
 }
 
-function FileRow({ file, onDelete, onPin }) {
+function FileRow({ file, onDelete, onPin, openWindow }) {
   const Icon = FILE_ICONS[file.file_type] || File;
   const colorClass = FILE_COLORS[file.file_type] || "text-slate-400";
 
