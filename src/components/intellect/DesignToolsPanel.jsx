@@ -233,11 +233,11 @@ export default function DesignToolsPanel({ slide, onUpdate, onAddAnimation, onRe
                 <button
                   key={color}
                   onClick={() => onUpdate({ textColor: color })}
-                  className={`h-7 rounded border-2 transition-all text-white text-xs font-bold ${
+                  className={`h-7 rounded border-2 transition-all text-xs font-bold ${
                     slide?.textColor === color
-                      ? "border-cyan-400 bg-slate-800"
+                      ? "border-cyan-400"
                       : "border-slate-700 hover:border-slate-600"
-                  } bg-${color}`}
+                  } bg-${color} ${color === "white" ? "text-slate-900" : "text-white"}`}
                 >
                   Aa
                 </button>
