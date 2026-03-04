@@ -173,45 +173,31 @@ export default function DesignToolsPanel({ slide, onUpdate, onAddAnimation, onRe
                   <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Chart Data</label>
                   <Button
                     size="sm"
-                    onClick={() => {
-                      const newData = [...(slide?.chartData || []), { label: `Item ${(slide?.chartData?.length || 0) + 1}`, value: 50 }];
-                      onUpdate({ chartData: newData });
-                    }}
+                    onClick={addChartPoint}
                     className="h-5 text-[9px] bg-cyan-600/70 hover:bg-cyan-600 border-0 gap-0.5 px-1.5"
                   >
-                    <Plus className="w-2.5 h-2.5" />Add
+                    <Plus className="w-2.5 h-2.5" />Tilføj
                   </Button>
                 </div>
                 <div className="space-y-1 max-h-48 overflow-y-auto">
-                  {(slide?.chartData || []).map((point, i) => (
+                  {localChartData.map((point, i) => (
                     <div key={i} className="flex items-center gap-1">
-                      <Input
+                      <input
                         value={point.label}
-                        onChange={(e) => {
-                          const newData = [...(slide.chartData || [])];
-                          newData[i] = { ...newData[i], label: e.target.value };
-                          onUpdate({ chartData: newData });
-                        }}
-                        className="h-6 text-[10px] bg-slate-800/60 border-slate-700 px-1.5 flex-1"
+                        onChange={(e) => updateChartPoint(i, "label", e.target.value)}
+                        className="h-7 text-xs bg-slate-800 border border-slate-700 rounded px-2 flex-1 text-white outline-none focus:border-cyan-500"
                         placeholder="Label"
                       />
-                      <Input
+                      <input
                         type="number"
                         value={point.value}
-                        onChange={(e) => {
-                          const newData = [...(slide.chartData || [])];
-                          newData[i] = { ...newData[i], value: Number(e.target.value) };
-                          onUpdate({ chartData: newData });
-                        }}
-                        className="h-6 text-[10px] bg-slate-800/60 border-slate-700 px-1.5 w-16"
-                        placeholder="Val"
+                        onChange={(e) => updateChartPoint(i, "value", e.target.value)}
+                        className="h-7 text-xs bg-slate-800 border border-slate-700 rounded px-2 w-16 text-white outline-none focus:border-cyan-500"
+                        placeholder="Værdi"
                       />
                       <button
-                        onClick={() => {
-                          const newData = (slide.chartData || []).filter((_, idx) => idx !== i);
-                          onUpdate({ chartData: newData });
-                        }}
-                        className="text-slate-600 hover:text-red-400 flex-shrink-0"
+                        onClick={() => removeChartPoint(i)}
+                        className="text-slate-600 hover:text-red-400 flex-shrink-0 p-1"
                       >
                         <X className="w-3 h-3" />
                       </button>
