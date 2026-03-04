@@ -888,20 +888,55 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
           {activeWindows.length === 0 && (
             <div className="absolute inset-0 flex flex-col items-center justify-center overflow-hidden">
               {/* Enhanced background effects */}
-              <div className="absolute inset-0 pointer-events-none">
-                <motion.div
-                  animate={{ scale: [1, 1.2, 1], rotate: [0, 360] }}
-                  transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full opacity-20"
-                  style={{ background: "radial-gradient(circle, #06b6d4 0%, transparent 70%)" }}
-                />
-                <motion.div
-                  animate={{ scale: [1.2, 1, 1.2], rotate: [360, 0] }}
-                  transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full opacity-15"
-                  style={{ background: "radial-gradient(circle, #8b5cf6 0%, transparent 70%)" }}
-                />
-              </div>
+               <div className="absolute inset-0 pointer-events-none">
+                 {/* Ambient glow orbs */}
+                 <motion.div
+                   animate={{ scale: [1, 1.2, 1], rotate: [0, 360] }}
+                   transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                   className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full opacity-20"
+                   style={{ background: "radial-gradient(circle, #06b6d4 0%, transparent 70%)" }}
+                 />
+                 <motion.div
+                   animate={{ scale: [1.2, 1, 1.2], rotate: [360, 0] }}
+                   transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+                   className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full opacity-15"
+                   style={{ background: "radial-gradient(circle, #8b5cf6 0%, transparent 70%)" }}
+                 />
+
+                 {/* Floating stars */}
+                 {[...Array(8)].map((_, i) => (
+                   <motion.div
+                     key={`star-${i}`}
+                     className="absolute w-1 h-1 rounded-full"
+                     animate={{
+                       y: [0, -100, 0],
+                       x: [0, Math.cos((i / 8) * Math.PI * 2) * 50, 0],
+                       opacity: [0.3, 1, 0.3],
+                     }}
+                     transition={{
+                       duration: 6 + i,
+                       repeat: Infinity,
+                       ease: "easeInOut",
+                     }}
+                     style={{
+                       background: i % 2 === 0 ? "#06b6d4" : "#8b5cf6",
+                       boxShadow: i % 2 === 0 ? "0 0 10px #06b6d4" : "0 0 10px #8b5cf6",
+                       left: `${20 + i * 10}%`,
+                       top: `${30 + Math.random() * 40}%`,
+                     }}
+                   />
+                 ))}
+
+                 {/* Gradient light beams */}
+                 <motion.div
+                   animate={{ rotate: [0, 360] }}
+                   transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+                   className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full"
+                   style={{
+                     background: "conic-gradient(from 0deg, rgba(6,182,212,0.1) 0deg, transparent 90deg, rgba(139,92,246,0.1) 180deg, transparent 270deg)",
+                   }}
+                 />
+               </div>
 
               {/* Main content */}
               <div className="relative z-10 flex flex-col items-center">
