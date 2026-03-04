@@ -901,7 +901,7 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
                   />
                </div>
               </div>
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={`text-center transition-all ${isCircularMenuOpen ? 'translate-y-32' : 'translate-y-0'}`}>
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={`text-center transition-all ${isCircularMenuOpen ? 'translate-y-32' : '-translate-y-24'}`}>
                 <h2 className="text-2xl font-bold mb-2 font-mono tracking-widest uppercase" style={{ color: "#06b6d4", textShadow: "0 0 20px rgba(6,182,212,0.4)" }}>
                   FLEET AI
                 </h2>
