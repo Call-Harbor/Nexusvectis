@@ -219,6 +219,8 @@ export default function IntellectHeader({ orgId, openWindow, executePrompt, setS
   const handleAppSelect = (type) => {
     if (type === 'company_analysis') {
       setShowCompanyAnalysis?.(true);
+    } else if (type === 'fleetai_trainer') {
+      openWindow('fleet_ai_trainer');
     } else {
       openWindow(type);
     }
