@@ -136,7 +136,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
     
     try {
       // 6 small focused parallel calls — each with a tiny simple schema
-      const [r1, r2, r3, r4, r5, r6] = await Promise.all([
+      const results = await Promise.allSettled([
         // Basic info
         base44.integrations.Core.InvokeLLM({
           prompt: `Give me basic info about the company identified by "${name}".${searchHint} Real data only from official business registries and public sources.`,
