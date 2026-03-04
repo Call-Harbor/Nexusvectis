@@ -59,17 +59,13 @@ const HologramWindow = React.memo(({ id, title, icon: Icon, children, position, 
       className={isMobile ? "fixed inset-4" : "fixed resize overflow-auto"}
       onPointerDown={handlePointerDown}
     >
-      <div className="bg-slate-900/60 backdrop-blur-2xl rounded-2xl border-2 border-cyan-500/50 shadow-2xl shadow-cyan-500/40 overflow-hidden h-full flex flex-col relative group">
-        <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-cyan-500/20 via-transparent to-violet-500/20 pointer-events-none" />
-        <div className="absolute inset-0 rounded-2xl animate-pulse bg-gradient-to-r from-transparent via-cyan-500/20 to-transparent pointer-events-none" style={{ animationDuration: '3s' }} />
-        <div className="absolute inset-0 rounded-2xl bg-[radial-gradient(circle_at_50%_0%,rgba(6,182,212,0.2),transparent_50%)] pointer-events-none" />
-        <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-          <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 to-violet-500/10 animate-pulse" style={{ animationDuration: '0.1s' }} />
-        </div>
-        <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-cyan-400/50 rounded-tl-2xl" />
-        <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-cyan-400/50 rounded-tr-2xl" />
-        <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-violet-400/50 rounded-bl-2xl" />
-        <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-violet-400/50 rounded-br-2xl" />
+      <div className="rounded-lg border border-cyan-500/30 overflow-hidden h-full flex flex-col relative group" style={{ background: "rgba(0,10,25,0.93)", boxShadow: "0 0 20px rgba(6,182,212,0.15), inset 0 0 20px rgba(6,182,212,0.05)" }}>
+        <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, #06b6d4, #8b5cf6, transparent)" }} />
+        <div className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" style={{ boxShadow: "inset 0 0 20px rgba(6,182,212,0.08)" }} />
+        <div className="absolute top-2 left-3 w-3 h-3 border-t border-l border-cyan-500/30" />
+        <div className="absolute top-2 right-3 w-3 h-3 border-t border-r border-cyan-500/30" />
+        <div className="absolute bottom-2 left-3 w-3 h-3 border-b border-l border-violet-500/30" />
+        <div className="absolute bottom-2 right-3 w-3 h-3 border-b border-r border-violet-500/30" />
 
         <div className="relative flex flex-col h-full">
           <div ref={headerRef} className="flex items-center justify-between p-3 sm:p-4 border-b border-cyan-500/30 cursor-move touch-none bg-slate-900/40">
