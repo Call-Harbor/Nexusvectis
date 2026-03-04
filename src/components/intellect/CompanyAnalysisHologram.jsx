@@ -595,7 +595,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
   ];
 
   return (
-    <div className={`${embedded ? 'w-full h-full' : 'fixed inset-0 z-50'} flex flex-col overflow-auto bg-slate-950`}>
+    <div className={`${embedded ? 'w-full h-full' : 'fixed inset-0 z-50'} flex flex-col bg-slate-950`}>
       {/* Animated background - only when not embedded */}
       {!embedded && (
         <div className="fixed inset-0 pointer-events-none">
