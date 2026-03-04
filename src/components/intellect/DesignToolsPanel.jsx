@@ -615,10 +615,10 @@ export default function DesignToolsPanel({ slide, onUpdate, onAddAnimation, onRe
             </div>
           </div>
 
-          <Button className="w-full h-8 bg-cyan-600/80 hover:bg-cyan-600 border-0 text-xs gap-2">
+          <button className="w-full h-8 rounded bg-cyan-600/80 hover:bg-cyan-600 text-white text-xs flex items-center justify-center gap-2 transition-all">
             <Settings className="w-3 h-3" />
             Advanced Settings
-          </Button>
+          </button>
         </TabsContent>
       </Tabs>
     </div>
