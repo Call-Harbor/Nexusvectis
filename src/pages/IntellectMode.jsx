@@ -878,6 +878,16 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
             </HologramWindow>
           )}
 
+          {/* Fleet AI Trainer */}
+          {showFleetAITrainer && (
+            <HologramWindow id="fleet-ai-trainer" title="Fleet AI Trainer" icon={Zap} position={{ x: 100, y: 80 }}
+              onClose={() => setShowFleetAITrainer(false)} onMinimize={() => toggleMinimize('fleet-ai-trainer')}
+              isMinimized={minimizedWindows.has('fleet-ai-trainer')} windowType="fleet_ai_trainer"
+              isFocused={focusedWindow === 'fleet-ai-trainer'} onFocus={setFocusedWindow}>
+              <FleetAITrainer onClose={() => setShowFleetAITrainer(false)} />
+            </HologramWindow>
+          )}
+
           {/* 3D Fleet Globe */}
           {show3DVisualization && (
             <FleetGlobe3D vehicles={show3DVisualization.vehicles || vehicles} routes={show3DVisualization.routes || routes}
