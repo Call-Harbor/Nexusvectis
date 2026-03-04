@@ -442,7 +442,23 @@ EXAMPLES:
     if (file_urls && file_urls.length > 0) {
       console.log('🖼️ Processing with files, using InvokeLLM');
       
-      const enhancedPrompt = `CRITICAL INSTRUCTION: ${file_urls.length} FILE(S) ARE ATTACHED TO THIS REQUEST VIA file_urls PARAMETER. THE FILES EXIST AND ARE AVAILABLE TO YOU RIGHT NOW.
+      // Pre-process fleetslide files: fetch JSON and inline as text context
+      const processedFileUrls = [];
+      let inlineFleetContext = '';
+      for (const url of file_urls) {
+        if (url.toLowerCase().includes('.fleetslide') || url.toLowerCase().includes('fleetslide')) {
+          try {
+            const r = await fetch(url);
+            const json = await r.text();
+            inlineFleetContext += `\n\nFLEETSLIDE PRESENTATION FILE:\n${json.substring(0, 20000)}`;
+          } catch {}
+          // Don't add to processedFileUrls since LLM can't open JSON as image
+        } else {
+          processedFileUrls.push(url);
+        }
+      }
+
+      const enhancedPrompt = `CRITICAL INSTRUCTION: ${file_urls.length} FILE(S) ARE ATTACHED TO THIS REQUEST VIA file_urls PARAMETER. THE FILES EXIST AND ARE AVAILABLE TO YOU RIGHT NOW.${inlineFleetContext}
 
 ${systemPrompt}
 
