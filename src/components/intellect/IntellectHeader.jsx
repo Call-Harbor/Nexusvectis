@@ -212,51 +212,17 @@ export default function IntellectHeader({ orgId, openWindow, executePrompt, setS
           </div>
 
           {/* Actions */}
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <button onClick={() => openWindow('global_search', { x: 120, y: 80 }, { orgId })}
-              className="px-2.5 py-1 text-[9px] font-bold tracking-widest uppercase font-mono transition-all"
-              style={{ color: "#06b6d4", border: "1px solid rgba(6,182,212,0.3)", background: "rgba(6,182,212,0.05)" }}>
-              <Search className="w-3 h-3 inline mr-1" />SEARCH
-            </button>
-
-            {/* Apps Dropdown */}
-            <AppSearchDropdown
-              onSelect={(type) => {
-                if (type === 'image_generator') openWindow('image_generator', { x: 120, y: 80 });
-                else if (type === 'image_editor') openWindow('image_editor', { x: 140, y: 100 });
-                else if (type === 'advanced_intelligence') setShowAdvancedPanel(true);
-                else if (type === 'deep_analysis') openWindow('deep_analysis', { x: 100, y: 80 });
-                else if (type === 'course_ai') openWindow('course_ai', { x: 120, y: 60 });
-                else if (type === 'parallel_processor') setShowParallelProcessor(true);
-                else if (type === 'company_analysis') openWindow('company_analysis', { x: 120, y: 100 });
-                else if (type === 'satellite_weather') openWindow('satellite_weather', { x: 100, y: 80 });
-                else if (type === 'neuro_risk') openWindow('neuro_risk', { x: 140, y: 100 });
-                else if (type === 'news_intelligence') openWindow('news_intelligence', { x: 120, y: 80 });
-                else openWindow(type);
-              }}
-            >
-              <button className="px-2.5 py-1 text-[9px] font-bold tracking-widest uppercase font-mono transition-all"
-                style={{ color: "#06b6d4", border: "1px solid rgba(6,182,212,0.3)", background: "rgba(6,182,212,0.05)" }}>
-                <FileCode className="w-3 h-3 inline mr-1" />APPS<ChevronDown className="w-3 h-3 inline ml-1" />
-              </button>
-            </AppSearchDropdown>
-
+          <div className="flex items-center gap-3 w-full sm:w-auto">
             {/* AI Prompts Dropdown */}
             <PromptSearchDropdown
               sections={AI_PROMPT_SECTIONS}
               onSelect={executePrompt}
             >
-              <button className="px-3 py-1 text-[9px] font-bold tracking-widest uppercase font-mono transition-all"
-                style={{ color: "#8b5cf6", border: "1px solid rgba(139,92,246,0.3)", background: "rgba(139,92,246,0.05)" }}>
-                <Sparkles className="w-3 h-3 inline mr-1" />AI PROMPTS<ChevronDown className="w-3 h-3 inline ml-1" />
+              <button className="px-4 py-2 text-[10px] font-bold tracking-widest uppercase font-mono transition-all"
+                style={{ color: "#8b5cf6", border: "1px solid rgba(139,92,246,0.4)", background: "rgba(139,92,246,0.08)", boxShadow: "0 0 12px rgba(139,92,246,0.15)" }}>
+                <Sparkles className="w-3.5 h-3.5 inline mr-2" />COMMAND<ChevronDown className="w-3.5 h-3.5 inline ml-2" />
               </button>
             </PromptSearchDropdown>
-
-            <button onClick={() => navigate(createPageUrl("Dashboard"))}
-              className="px-3 py-1 text-[9px] font-bold tracking-widest uppercase font-mono transition-all hidden sm:inline-block"
-              style={{ color: "rgba(148,163,184,0.6)", border: "1px solid rgba(148,163,184,0.15)", background: "transparent" }}>
-              <LayoutDashboard className="w-3 h-3 inline mr-1" />EXIT
-            </button>
 
             <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 text-[8px] font-mono tracking-widest uppercase"
               style={{ color: "#10b981", border: "1px solid rgba(16,185,129,0.3)", background: "rgba(16,185,129,0.05)" }}>
