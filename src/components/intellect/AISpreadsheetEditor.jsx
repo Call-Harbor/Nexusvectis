@@ -904,10 +904,27 @@ export default function AISpreadsheetEditor({ initialGrid, initialTitle, orgId }
     if (isSaving) return;
     setIsSaving(true);
     try {
-      const csv = grid.map(row => row.map(cell => `"${getDisplayValue(grid.indexOf(row), row.indexOf(cell))}"`).join(',')).join('\n');
+      const csv = grid.map((row, ri) => row.map((_, ci) => `"${getDisplayValue(ri, ci)}"`).join(',')).join('\n');
+      const fileName = `${sheetName.replace(/[^a-z0-9\s]/gi, "").trim() || "Untitled"}.csv`;
       const blob = new Blob([csv], { type: 'text/csv' });
-      const file = new File([blob], `${sheetName}.csv`, { type: 'text/csv' });
-      await base44.integrations.Core.UploadFile({ file });
+      const file = new File([blob], fileName, { type: 'text/csv' });
+      const res = await base44.integrations.Core.UploadFile({ file });
+      const fileUrl = res?.data?.file_url || res?.file_url;
+      if (fileUrl && orgId) {
+        await base44.entities.FleetDriveFile.create({
+          organization_id: orgId,
+          name: fileName,
+          file_url: fileUrl,
+          file_type: "spreadsheet",
+          file_size_bytes: blob.size,
+          mime_type: "text/csv",
+          folder: "Spreadsheets",
+          source: "uploaded",
+          description: `FleetSheet spreadsheet`,
+          tags: ["fleetsheet", "spreadsheet"],
+        });
+        toast.success("Saved to Fleet Drive → Spreadsheets");
+      }
       setLastSaved(new Date());
     } catch { toast.error('Save failed'); }
     finally { setIsSaving(false); }

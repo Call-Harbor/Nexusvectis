@@ -133,9 +133,27 @@ export default function AIDocumentEditor({ initialContent, initialTitle, orgId }
     if (isSaving) return;
     setIsSaving(true);
     try {
-      const blob = new Blob([`<!DOCTYPE html><html><head><title>${documentTitle}</title></head><body>${content}</body></html>`], { type: "text/html" });
-      const file = new File([blob], `${documentTitle.replace(/[^a-z0-9]/gi, "_")}.html`, { type: "text/html" });
-      await base44.integrations.Core.UploadFile({ file });
+      const htmlContent = `<!DOCTYPE html><html><head><title>${documentTitle}</title></head><body>${content}</body></html>`;
+      const blob = new Blob([htmlContent], { type: "text/html" });
+      const fileName = `${documentTitle.replace(/[^a-z0-9\s]/gi, "").trim() || "Untitled"}.html`;
+      const file = new File([blob], fileName, { type: "text/html" });
+      const res = await base44.integrations.Core.UploadFile({ file });
+      const fileUrl = res?.data?.file_url || res?.file_url;
+      if (fileUrl && orgId) {
+        await base44.entities.FleetDriveFile.create({
+          organization_id: orgId,
+          name: fileName,
+          file_url: fileUrl,
+          file_type: "document",
+          file_size_bytes: blob.size,
+          mime_type: "text/html",
+          folder: "Documents",
+          source: "uploaded",
+          description: `FleetDocs document`,
+          tags: ["fleetdocs", "document"],
+        });
+        toast.success("Saved to Fleet Drive → Documents");
+      }
       setLastSaved(new Date());
     } catch {
       toast.error("Save failed");
