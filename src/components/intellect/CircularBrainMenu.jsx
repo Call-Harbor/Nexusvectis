@@ -85,9 +85,8 @@ export default function CircularBrainMenu({ onAction, size = "md", isLogo = fals
                   );
                 })}
               </div>
-            )}
-          </AnimatePresence>
-        )}
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
