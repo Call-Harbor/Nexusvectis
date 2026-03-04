@@ -26,6 +26,7 @@ import RealTimeRouteOptimizationPanel from "@/components/intellect/RealTimeRoute
 import ProjectManagementPanel from "@/components/intellect/ProjectManagementPanel";
 import FleetDrivePanel from "@/components/intellect/FleetDrivePanel";
 import HologramPresentation from "@/components/intellect/HologramPresentation";
+import FleetAITrainer from "@/components/intellect/FleetAITrainer";
 
 const CHART_COLORS = ['#06b6d4', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444'];
 
