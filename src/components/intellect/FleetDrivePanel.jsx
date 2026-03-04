@@ -5,13 +5,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   HardDrive, Upload, File, FileText, FileImage, Video, Archive, 
   Folder, Search, Trash2, Download, Pin, PinOff, MoreVertical, 
-  Plus, CloudUpload, CheckCircle, X, Star
+  Plus, CloudUpload, CheckCircle, X, Star, ExternalLink
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { createPageUrl } from "@/utils";
 
 const FILE_ICONS = {
   document: FileText,
