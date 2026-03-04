@@ -1,5 +1,6 @@
 import React from "react";
 import { createPageUrl } from "../../utils";
+import { useQueryClient } from '@tanstack/react-query';
 import { 
   Sparkles, AlertTriangle, TrendingUp, Zap, Activity, Brain
 } from "lucide-react";
