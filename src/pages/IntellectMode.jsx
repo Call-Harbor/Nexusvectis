@@ -773,11 +773,14 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
           {/* Advanced Intelligence Panel */}
           {showAdvancedPanel && (
             <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
-              className="fixed top-24 left-4 w-96 max-w-[calc(100vw-32px)] bg-slate-900/95 backdrop-blur-xl border-2 border-amber-500/50 rounded-2xl z-40 shadow-2xl flex flex-col"
-              style={{ maxHeight: 'calc(100vh - 120px)' }}>
-              <div className="flex items-center justify-between p-4 border-b border-amber-500/20 flex-shrink-0">
-                <h3 className="text-white font-bold flex items-center gap-2"><Brain className="w-4 h-4 text-amber-400" />Advanced Intelligence</h3>
-                <Button size="icon" variant="ghost" onClick={() => setShowAdvancedPanel(false)} className="h-7 w-7"><X className="w-4 h-4 text-slate-400" /></Button>
+              className="fixed top-24 left-4 w-96 max-w-[calc(100vw-32px)] backdrop-blur-xl rounded-lg z-40 flex flex-col"
+              style={{ background: "rgba(15,23,42,0.95)", border: "1px solid rgba(6,182,212,0.3)", maxHeight: 'calc(100vh - 120px)' }}>
+              <div className="flex items-center justify-between p-3 flex-shrink-0" style={{ borderBottom: "1px solid rgba(6,182,212,0.2)" }}>
+                <h3 className="text-white font-bold text-sm flex items-center gap-2 font-mono tracking-wider">
+                  <Brain className="w-3.5 h-3.5" style={{ color: "#06b6d4" }} />
+                  <span style={{ color: "#06b6d4", textShadow: "0 0 8px rgba(6,182,212,0.3)" }}>ADVANCED</span>
+                </h3>
+                <button onClick={() => setShowAdvancedPanel(false)} className="text-slate-400 hover:text-white transition-colors"><X className="w-4 h-4" /></button>
               </div>
               <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
                 {advancedError && <div className="p-2 rounded bg-red-500/20 border border-red-500/50 text-red-300 text-xs">{advancedError}</div>}
