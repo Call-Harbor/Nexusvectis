@@ -972,30 +972,39 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
                   </p>
 
                   {/* Pulse indicators */}
-                  <div className="flex items-center justify-center gap-2 pt-6">
-                    {[0, 0.2, 0.4].map((delay) => (
-                      <motion.div
-                        key={delay}
-                        className="w-1 h-1 rounded-full"
-                        animate={{ scale: [1, 2, 1], opacity: [1, 0.3, 1] }}
-                        transition={{ duration: 1.5, repeat: Infinity, delay }}
-                        style={{ background: "#06b6d4", boxShadow: "0 0 8px rgba(6,182,212,0.4)" }}
-                      />
-                    ))}
-                  </div>
-                </motion.div>
+                   <div className="flex items-center justify-center gap-2 pt-6">
+                     {[0, 0.2, 0.4].map((delay) => (
+                       <motion.div
+                         key={delay}
+                         className="w-1 h-1 rounded-full"
+                         animate={{ scale: [1, 2, 1], opacity: [1, 0.3, 1] }}
+                         transition={{ duration: 1.5, repeat: Infinity, delay }}
+                         style={{ background: "#06b6d4", boxShadow: "0 0 8px rgba(6,182,212,0.4)" }}
+                       />
+                     ))}
+                   </div>
 
-                {/* Command hint */}
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 0.6 }}
-                  transition={{ delay: 1.5 }}
-                  className="absolute bottom-16 text-center"
-                >
-                  <p className="text-xs font-mono tracking-widest uppercase text-slate-500">
-                    Click menu or enter command
-                  </p>
-                </motion.div>
+                   {/* Floating particles effect */}
+                   <div className="pt-8 flex gap-1 justify-center items-center h-8">
+                     {[...Array(5)].map((_, i) => (
+                       <motion.div
+                         key={i}
+                         className="w-0.5 h-0.5 rounded-full"
+                         animate={{
+                           y: [0, -20, 0],
+                           opacity: [0, 1, 0],
+                           x: Math.cos((i / 5) * Math.PI * 2) * 15,
+                         }}
+                         transition={{
+                           duration: 2.5,
+                           repeat: Infinity,
+                           delay: i * 0.3,
+                         }}
+                         style={{ background: "#8b5cf6", boxShadow: "0 0 6px rgba(139,92,246,0.6)" }}
+                       />
+                     ))}
+                   </div>
+                  </motion.div>
               </div>
             </div>
           )}
