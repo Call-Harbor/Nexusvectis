@@ -954,14 +954,16 @@ Return JSON: { "notes": "...speaker notes text..." }`,
                 style={{ background: t.primary }} />
             ))}
           </div>
-          <Button onClick={saveToFleetDrive} size="sm" variant="outline"
-            className="border-slate-700 text-slate-300 hover:bg-slate-800 text-xs h-7 gap-1">
-            <Download className="w-3 h-3" />Save
-          </Button>
-          <Button onClick={() => { setIsPresenting(true); openPresenterWindow(); }} size="sm"
-            className="bg-gradient-to-r from-cyan-500 to-violet-500 hover:opacity-90 border-0 text-xs h-7 gap-1">
-            <Maximize className="w-3 h-3" />Present
-          </Button>
+          <button onClick={saveToFleetDrive}
+            className="px-2.5 py-1 text-[9px] font-bold tracking-widest uppercase font-mono transition-all"
+            style={{ color: "#06b6d4", border: "1px solid rgba(6,182,212,0.3)", background: "rgba(6,182,212,0.05)" }}>
+            <Download className="w-3 h-3 inline mr-1" />SAVE
+          </button>
+          <button onClick={() => { setIsPresenting(true); openPresenterWindow(); }}
+            className="px-3 py-1 text-[9px] font-bold tracking-widest uppercase font-mono transition-all"
+            style={{ color: "#fff", border: "1px solid rgba(6,182,212,0.5)", background: "linear-gradient(90deg, rgba(6,182,212,0.15), rgba(139,92,246,0.15))", boxShadow: "0 0 12px rgba(6,182,212,0.15)" }}>
+            <Maximize className="w-3 h-3 inline mr-1" />PRESENT
+          </button>
         </div>
       </div>
 
