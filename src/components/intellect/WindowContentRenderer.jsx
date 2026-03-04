@@ -344,7 +344,6 @@ export default function WindowContentRenderer({ type, data, vehicles, routes, sh
   const onSaved = () => queryClient.invalidateQueries({ queryKey: ['fleet-drive', orgId] });
   if (type === 'document_editor') return <AIDocumentEditor initialContent={data?.initialContent} initialTitle={data?.initialTitle} initialFileUrl={data?.initialFileUrl} orgId={orgId} onSaved={onSaved} />;
   if (type === 'spreadsheet_editor') return <AISpreadsheetEditor initialGrid={data?.initialGrid} initialTitle={data?.initialTitle} initialFileUrl={data?.initialFileUrl} orgId={orgId} onSaved={onSaved} />;
-...
 
   if (type.startsWith('chart_')) {
     return <ChartWindow data={data?.chartData} config={data?.chartConfig} />;
