@@ -93,6 +93,7 @@ export default function IntellectMode() {
   const [focusedWindow, setFocusedWindow] = useState(null);
   const [parallelProcessorTasks, setParallelProcessorTasks] = useState([]);
   const [isCircularMenuOpen, setIsCircularMenuOpen] = useState(false);
+  const [showFleetAITrainer, setShowFleetAITrainer] = useState(false);
 
   const messagesEndRef = useRef(null);
   const queryClient = useQueryClient();
