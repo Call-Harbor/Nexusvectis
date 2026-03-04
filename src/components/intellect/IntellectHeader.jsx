@@ -253,6 +253,7 @@ export default function IntellectHeader({ orgId, openWindow, executePrompt, setS
               OPERATIONAL
             </div>
           </div>
+        </div>
       </div>
     </div>
   );
