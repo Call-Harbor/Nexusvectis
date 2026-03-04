@@ -946,7 +946,8 @@ export default function AISpreadsheetEditor({ initialGrid, initialTitle, initial
           description: `FleetSheet spreadsheet`,
           tags: ["fleetsheet", "spreadsheet"],
         });
-        toast.success("Saved to Fleet Drive → Spreadsheets");
+        toast.success("✅ Saved to Fleet Drive → Spreadsheets");
+        onSaved?.();
       }
       setLastSaved(new Date());
     } catch { toast.error('Save failed'); }

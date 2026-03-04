@@ -160,7 +160,8 @@ export default function AIDocumentEditor({ initialContent, initialTitle, initial
           description: `FleetDocs document`,
           tags: ["fleetdocs", "document"],
         });
-        toast.success("Saved to Fleet Drive → Documents");
+        toast.success("✅ Saved to Fleet Drive → Documents");
+        onSaved?.();
       }
       setLastSaved(new Date());
     } catch {
