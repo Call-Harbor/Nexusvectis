@@ -885,30 +885,32 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
 
           {/* Standby */}
           {activeWindows.length === 0 && (
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={`absolute ${isCircularMenuOpen ? 'top-1/2' : 'top-1/4'} left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center transition-all`}>
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
               <div className="relative">
                 <div className="absolute inset-0 blur-3xl opacity-30 animate-pulse" style={{ background: "#06b6d4" }} />
                 <div className="mb-2 relative z-10 flex items-center justify-center">
-                   <CircularBrainMenu 
-                     size="lg" 
-                     showMenuByDefault={true}
-                     onAction={(action) => {
-                       if (action === 'advanced_intelligence') setShowAdvancedPanel(true);
-                       else if (action === 'deep_analysis') openWindow('deep_analysis', { x: 100, y: 80 });
-                       else openWindow(action, { x: 100 + Math.random() * 100, y: 80 + Math.random() * 100 });
-                     }}
-                     onMenuToggle={setIsCircularMenuOpen}
-                   />
-                </div>
-                </div>
-                <h2 className="text-2xl font-bold mb-2 font-mono tracking-widest uppercase" style={{ color: "#06b6d4", textShadow: "0 0 20px rgba(6,182,212,0.4)" }}>
-                FLEET AI
-              </h2>
-              <p className="text-slate-400 text-sm">Advanced analytics ready: predictive maintenance, demand forecasting, CO2 reports, risk assessment, and full fleet control</p>
-              <div className="mt-4 flex items-center justify-center gap-2">
-                {[0, 0.2, 0.4].map((delay) => <div key={delay} className="w-2 h-2 rounded-full animate-pulse" style={{ background: "#06b6d4", animationDelay: `${delay}s` }} />)}
+                  <CircularBrainMenu 
+                    size="lg" 
+                    showMenuByDefault={true}
+                    onAction={(action) => {
+                      if (action === 'advanced_intelligence') setShowAdvancedPanel(true);
+                      else if (action === 'deep_analysis') openWindow('deep_analysis', { x: 100, y: 80 });
+                      else openWindow(action, { x: 100 + Math.random() * 100, y: 80 + Math.random() * 100 });
+                    }}
+                    onMenuToggle={setIsCircularMenuOpen}
+                  />
+               </div>
               </div>
-            </motion.div>
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={`text-center transition-all ${isCircularMenuOpen ? 'translate-y-32' : 'translate-y-0'}`}>
+                <h2 className="text-2xl font-bold mb-2 font-mono tracking-widest uppercase" style={{ color: "#06b6d4", textShadow: "0 0 20px rgba(6,182,212,0.4)" }}>
+                  FLEET AI
+                </h2>
+                <p className="text-slate-400 text-sm">Advanced analytics ready: predictive maintenance, demand forecasting, CO2 reports, risk assessment, and full fleet control</p>
+                <div className="mt-4 flex items-center justify-center gap-2">
+                  {[0, 0.2, 0.4].map((delay) => <div key={delay} className="w-2 h-2 rounded-full animate-pulse" style={{ background: "#06b6d4", animationDelay: `${delay}s` }} />)}
+                </div>
+              </motion.div>
+            </div>
           )}
         </div>
 
