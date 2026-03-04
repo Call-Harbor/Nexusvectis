@@ -112,18 +112,20 @@ export default function IntellectCommandBar({
               style={{ borderColor: "rgba(6,182,212,0.5)" }}
             />
             <input ref={fileInputRef} type="file" multiple onChange={handleFileUpload} className="hidden" accept="*/*" />
-            <Button onClick={() => fileInputRef.current?.click()} disabled={isUploading} size="sm"
-              className={`px-3 sm:px-4 lg:px-6 border-2 rounded-xl sm:rounded-2xl transition-all shadow-lg ${isUploading ? 'bg-gradient-to-r from-cyan-500/40 to-violet-500/40 border-cyan-500/60 animate-pulse' : 'bg-gradient-to-r from-cyan-500/20 to-violet-500/20 hover:from-cyan-500/30 hover:to-violet-500/30 border-cyan-500/40'}`}>
-              {isUploading ? <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 animate-spin text-cyan-300" /> : <Paperclip className="w-4 h-4 sm:w-5 sm:h-5 text-cyan-300" />}
-            </Button>
-            <Button onClick={handleVoice} size="sm" className={`px-3 sm:px-4 lg:px-6 ${isListening ? 'bg-red-500 hover:bg-red-600' : 'bg-slate-800 hover:bg-slate-700'} rounded-xl sm:rounded-2xl hidden sm:flex`}>
-              <Mic className="w-4 h-4 sm:w-5 sm:h-5" />
-            </Button>
-            <Button onClick={processCommand} disabled={!input.trim()} size="sm"
-              className="px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-cyan-500 via-violet-500 to-cyan-500 bg-[length:200%_auto] hover:bg-right rounded-xl sm:rounded-2xl shadow-lg shadow-cyan-500/30 disabled:opacity-50 relative overflow-hidden group">
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-              <Send className="w-4 h-4 sm:w-5 sm:h-5 relative z-10" />
-            </Button>
+            <button onClick={() => fileInputRef.current?.click()} disabled={isUploading} 
+              className={`px-3 py-3 sm:px-4 rounded-lg transition-all ${isUploading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-slate-800'}`}
+              style={{ color: "#06b6d4", border: "1px solid rgba(6,182,212,0.3)" }}>
+              {isUploading ? <Sparkles className="w-4 h-4 animate-spin" /> : <Paperclip className="w-4 h-4" />}
+            </button>
+            <button onClick={handleVoice} className={`px-3 py-3 sm:px-4 rounded-lg transition-all hidden sm:flex ${isListening ? 'bg-red-500/20 border-red-500/50' : 'border-slate-700 hover:bg-slate-800'}`}
+              style={!isListening ? { color: "#06b6d4", border: "1px solid rgba(6,182,212,0.3)" } : {}}>
+              <Mic className="w-4 h-4" />
+            </button>
+            <button onClick={processCommand} disabled={!input.trim()} 
+              className="px-4 py-3 sm:px-5 rounded-lg font-mono tracking-widest uppercase text-sm font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ color: "#06b6d4", border: "1px solid rgba(6,182,212,0.5)", background: "rgba(6,182,212,0.08)", boxShadow: "0 0 12px rgba(6,182,212,0.15)" }}>
+              SEND
+            </button>
           </div>
         </div>
 
