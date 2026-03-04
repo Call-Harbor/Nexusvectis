@@ -886,32 +886,134 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
 
           {/* Standby */}
           {activeWindows.length === 0 && (
-            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full flex flex-col items-center">
-              <div className="relative mb-12">
-                <div className="absolute inset-0 blur-3xl opacity-40 animate-pulse rounded-full" style={{ background: "#06b6d4", width: "320px", height: "320px", left: "-80px", top: "-80px" }} />
-                <div className="relative z-10">
-                  <CircularBrainMenu 
-                    size="lg" 
-                    showMenuByDefault={true}
-                    onAction={(action) => {
-                      if (action === 'advanced_intelligence') setShowAdvancedPanel(true);
-                      else if (action === 'deep_analysis') openWindow('deep_analysis', { x: 100, y: 80 });
-                      else if (action === 'company_analysis') setShowCompanyAnalysis(true);
-                      else openWindow(action, { x: 100 + Math.random() * 100, y: 80 + Math.random() * 100 });
-                    }}
-                    onMenuToggle={setIsCircularMenuOpen}
-                  />
-               </div>
+            <div className="absolute inset-0 flex flex-col items-center justify-center overflow-hidden">
+              {/* Enhanced background effects */}
+              <div className="absolute inset-0 pointer-events-none">
+                <motion.div
+                  animate={{ scale: [1, 1.2, 1], rotate: [0, 360] }}
+                  transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full opacity-20"
+                  style={{ background: "radial-gradient(circle, #06b6d4 0%, transparent 70%)" }}
+                />
+                <motion.div
+                  animate={{ scale: [1.2, 1, 1.2], rotate: [360, 0] }}
+                  transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full opacity-15"
+                  style={{ background: "radial-gradient(circle, #8b5cf6 0%, transparent 70%)" }}
+                />
               </div>
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: isCircularMenuOpen ? 0 : 1, y: isCircularMenuOpen ? 20 : 0 }} transition={{ duration: 0.3 }} className="text-center max-w-lg px-4">
-                <h2 className="text-4xl font-bold mb-4 font-mono tracking-widest uppercase" style={{ color: "#06b6d4", textShadow: "0 0 30px rgba(6,182,212,0.5), 0 0 60px rgba(6,182,212,0.2)" }}>
-                  FLEET AI
-                </h2>
-                <p className="text-slate-300 text-sm leading-relaxed font-light">Advanced logistics intelligence system ready for command</p>
-                <div className="mt-6 flex items-center justify-center gap-3">
-                  {[0, 0.15, 0.3].map((delay) => <motion.div key={delay} className="w-1.5 h-1.5 rounded-full" animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 1.5, repeat: Infinity, delay }} style={{ background: "#06b6d4" }} />)}
-                </div>
-              </motion.div>
+
+              {/* Main content */}
+              <div className="relative z-10 flex flex-col items-center">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.5 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.8, delay: 0.2 }}
+                  className="relative mb-16"
+                >
+                  {/* Orbiting rings */}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    {[1, 2, 3].map((ring) => (
+                      <motion.div
+                        key={ring}
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 10 + ring * 5, repeat: Infinity, ease: "linear" }}
+                        className="absolute rounded-full border"
+                        style={{
+                          width: 120 + ring * 60,
+                          height: 120 + ring * 60,
+                          borderColor: `rgba(6,182,212,${0.2 - ring * 0.05})`,
+                          borderWidth: 1,
+                        }}
+                      />
+                    ))}
+                  </div>
+
+                  {/* Brain menu */}
+                  <div className="relative z-20">
+                    <CircularBrainMenu 
+                      size="lg" 
+                      showMenuByDefault={true}
+                      onAction={(action) => {
+                        if (action === 'advanced_intelligence') setShowAdvancedPanel(true);
+                        else if (action === 'deep_analysis') openWindow('deep_analysis', { x: 100, y: 80 });
+                        else if (action === 'company_analysis') setShowCompanyAnalysis(true);
+                        else openWindow(action, { x: 100 + Math.random() * 100, y: 80 + Math.random() * 100 });
+                      }}
+                      onMenuToggle={setIsCircularMenuOpen}
+                    />
+                  </div>
+                </motion.div>
+
+                {/* Title and description */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: isCircularMenuOpen ? 0 : 1, y: isCircularMenuOpen ? 20 : 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="text-center max-w-xl px-4 space-y-4"
+                >
+                  <div className="relative inline-block">
+                    <div className="absolute inset-0 blur-2xl opacity-50" style={{ background: "linear-gradient(135deg, #06b6d4, #8b5cf6)" }} />
+                    <h1 className="relative text-6xl font-black font-mono tracking-widest uppercase bg-clip-text text-transparent"
+                      style={{
+                        backgroundImage: "linear-gradient(135deg, #06b6d4 0%, #8b5cf6 100%)",
+                        textShadow: "0 0 30px rgba(6,182,212,0.3), 0 0 60px rgba(139,92,246,0.2)",
+                      }}>
+                      FLEET AI
+                    </h1>
+                  </div>
+
+                  <p className="text-lg text-slate-300 font-light tracking-wide">
+                    Neural Logistics Intelligence Platform
+                  </p>
+
+                  <p className="text-sm text-slate-400 leading-relaxed">
+                    Multi-dimensional analysis • Real-time optimization • Predictive reasoning
+                  </p>
+
+                  {/* Status indicator */}
+                  <motion.div
+                    animate={{ scale: [1, 1.05, 1] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                    className="flex items-center justify-center gap-3 pt-2"
+                  >
+                    <motion.div
+                      animate={{ scale: [1, 1.3, 1], opacity: [0.5, 1, 0.5] }}
+                      transition={{ duration: 1.5, repeat: Infinity }}
+                      className="w-2.5 h-2.5 rounded-full"
+                      style={{ background: "#10b981", boxShadow: "0 0 12px rgba(16,185,129,0.6)" }}
+                    />
+                    <span className="text-xs font-mono tracking-widest uppercase" style={{ color: "#10b981" }}>
+                      System Operational
+                    </span>
+                  </motion.div>
+
+                  {/* Pulse indicators */}
+                  <div className="flex items-center justify-center gap-2 pt-6">
+                    {[0, 0.2, 0.4].map((delay) => (
+                      <motion.div
+                        key={delay}
+                        className="w-1 h-1 rounded-full"
+                        animate={{ scale: [1, 2, 1], opacity: [1, 0.3, 1] }}
+                        transition={{ duration: 1.5, repeat: Infinity, delay }}
+                        style={{ background: "#06b6d4", boxShadow: "0 0 8px rgba(6,182,212,0.4)" }}
+                      />
+                    ))}
+                  </div>
+                </motion.div>
+
+                {/* Command hint */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 0.6 }}
+                  transition={{ delay: 1.5 }}
+                  className="absolute bottom-16 text-center"
+                >
+                  <p className="text-xs font-mono tracking-widest uppercase text-slate-500">
+                    Click menu or enter command
+                  </p>
+                </motion.div>
+              </div>
             </div>
           )}
         </div>
