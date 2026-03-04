@@ -221,15 +221,17 @@ export default function DesignToolsPanel({ slide, onUpdate, onAddAnimation, onRe
                 { id: "timeline", label: "Timeline" },
                 { id: "closing", label: "Closing" }
               ].map((t) => (
-                <Button
+                <button
                   key={t.id}
                   onClick={() => onUpdate({ type: t.id })}
-                  size="sm"
-                  variant={slide?.type === t.id ? "default" : "outline"}
-                  className="h-6 text-[10px]"
+                  className={`h-7 rounded text-[10px] font-medium transition-all border ${
+                    slide?.type === t.id
+                      ? "bg-cyan-500/20 border-cyan-500/60 text-cyan-300"
+                      : "bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700 hover:text-white"
+                  }`}
                 >
                   {t.label}
-                </Button>
+                </button>
               ))}
             </div>
           </div>
