@@ -187,25 +187,26 @@ export default function IntellectMode() {
 
   // ── Quick Actions ──────────────────────────────────────────────────────────
   const handleQuickAction = useCallback((action) => {
-    const actionMap = {
-      predictiveAnalysis: () => openWindow('predictive_maintenance', { x: 100, y: 100 }),
-      demandAnalysis: () => openWindow('demand_forecast', { x: 150, y: 150 }),
-      riskAssessment: () => openWindow('risk_assessment', { x: 200, y: 200 }),
-      performanceAnalytics: () => openWindow('performance_analytics', { x: 250, y: 250 }),
-      show3DFleet: () => setShow3DVisualization({ vehicles, routes }),
-      openCompanyAnalysis: () => setShowCompanyAnalysis(true),
-      openSwarmIntelligence: () => { openWindow('swarm_intelligence', { x: 120, y: 80 }); setMessages(prev => [...prev, { role: "system", content: "🐜 Swarm Intelligence activated" }]); },
-      openNeuroRisk: () => { openWindow('neuro_risk', { x: 140, y: 100 }); setMessages(prev => [...prev, { role: "system", content: "🧠 Neuro-Symbolic Risk Fusion activated" }]); },
-      openDigitalTwin: () => { openWindow('digital_twin', { x: 160, y: 120 }); setMessages(prev => [...prev, { role: "system", content: "🌐 Digital Twin Federation activated" }]); },
-      openNexusChat: () => { openWindow('nexus_chat', { x: 120, y: 80 }); setMessages(prev => [...prev, { role: "system", content: "🛰️ Nexus Satellite Chat opened" }]); },
-      openDocEditor: () => { openWindow('document_editor', { x: 120, y: 80 }); setMessages(prev => [...prev, { role: "system", content: "📄 Document Editor opened" }]); },
-      openSpreadsheet: () => { openWindow('spreadsheet_editor', { x: 140, y: 100 }); setMessages(prev => [...prev, { role: "system", content: "📊 Spreadsheet Editor opened" }]); },
-      openSatelliteWeather: () => { openWindow('satellite_weather', { x: 100, y: 80 }); setMessages(prev => [...prev, { role: "system", content: "🛰️ Satellite & Weather Intelligence activated" }]); },
-      openNewsIntelligence: () => { openWindow('news_intelligence', { x: 120, y: 80 }); setMessages(prev => [...prev, { role: "system", content: "📰 News Intelligence activated — fetching live logistics news" }]); },
-      openImageGenerator: () => { openWindow('image_generator', { x: 120, y: 80 }); setMessages(prev => [...prev, { role: "system", content: "🎨 AI Image Generator opened" }]); },
-      openProjectManagement: () => { openWindow('project_management', { x: 120, y: 80 }); setMessages(prev => [...prev, { role: "system", content: "📋 Project Management AI opened — generate tasks, summaries and risk registers" }]); },
-    };
-    actionMap[action]?.();
+   const actionMap = {
+     predictiveAnalysis: () => openWindow('predictive_maintenance', { x: 100, y: 100 }),
+     demandAnalysis: () => openWindow('demand_forecast', { x: 150, y: 150 }),
+     riskAssessment: () => openWindow('risk_assessment', { x: 200, y: 200 }),
+     performanceAnalytics: () => openWindow('performance_analytics', { x: 250, y: 250 }),
+     show3DFleet: () => setShow3DVisualization({ vehicles, routes }),
+     openCompanyAnalysis: () => setShowCompanyAnalysis(true),
+     openSwarmIntelligence: () => { openWindow('swarm_intelligence', { x: 120, y: 80 }); setMessages(prev => [...prev, { role: "system", content: "🐜 Swarm Intelligence activated" }]); },
+     openNeuroRisk: () => { openWindow('neuro_risk', { x: 140, y: 100 }); setMessages(prev => [...prev, { role: "system", content: "🧠 Neuro-Symbolic Risk Fusion activated" }]); },
+     openDigitalTwin: () => { openWindow('digital_twin', { x: 160, y: 120 }); setMessages(prev => [...prev, { role: "system", content: "🌐 Digital Twin Federation activated" }]); },
+     openNexusChat: () => { openWindow('nexus_chat', { x: 120, y: 80 }); setMessages(prev => [...prev, { role: "system", content: "🛰️ Nexus Satellite Chat opened" }]); },
+     openDocEditor: () => { openWindow('document_editor', { x: 120, y: 80 }); setMessages(prev => [...prev, { role: "system", content: "📄 Document Editor opened" }]); },
+     openSpreadsheet: () => { openWindow('spreadsheet_editor', { x: 140, y: 100 }); setMessages(prev => [...prev, { role: "system", content: "📊 Spreadsheet Editor opened" }]); },
+     openSatelliteWeather: () => { openWindow('satellite_weather', { x: 100, y: 80 }); setMessages(prev => [...prev, { role: "system", content: "🛰️ Satellite & Weather Intelligence activated" }]); },
+     openNewsIntelligence: () => { openWindow('news_intelligence', { x: 120, y: 80 }); setMessages(prev => [...prev, { role: "system", content: "📰 News Intelligence activated — fetching live logistics news" }]); },
+     openImageGenerator: () => { openWindow('image_generator', { x: 120, y: 80 }); setMessages(prev => [...prev, { role: "system", content: "🎨 AI Image Generator opened" }]); },
+     openProjectManagement: () => { openWindow('project_management', { x: 120, y: 80 }); setMessages(prev => [...prev, { role: "system", content: "📋 Project Management AI opened — generate tasks, summaries and risk registers" }]); },
+     openFleetAITrainer: () => { setShowFleetAITrainer(true); setMessages(prev => [...prev, { role: "system", content: "⚡ Fleet AI Trainer activated — Train your own AI models and deploy via API" }]); },
+   };
+   actionMap[action]?.();
   }, [openWindow, vehicles, routes, setMessages]);
 
   const executePrompt = useCallback((prompt) => {
