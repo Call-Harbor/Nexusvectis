@@ -272,18 +272,46 @@ export default function FleetAITrainer({ onClose }) {
               </div>
             </div>
 
-            {/* Performance Metrics */}
-            <div className="bg-slate-800/30 border border-slate-700/50 rounded-lg p-3">
-              <p className="text-xs font-semibold text-white mb-3">Current Model Performance</p>
-              <ResponsiveContainer width="100%" height={180}>
-                <BarChart data={performanceData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(71,85,105,0.2)" />
-                  <XAxis dataKey="metric" stroke="rgba(148,163,184,0.5)" tick={{ fontSize: 11 }} />
-                  <YAxis stroke="rgba(148,163,184,0.5)" tick={{ fontSize: 12 }} />
-                  <Tooltip contentStyle={{ background: '#1e293b', border: '1px solid #475569' }} />
-                  <Bar dataKey="value" fill="#06b6d4" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+            {/* Performance Metrics - 3D Style */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-gradient-to-br from-cyan-500/10 to-slate-800/30 border border-cyan-500/30 rounded-lg p-3">
+                <p className="text-xs font-semibold text-white mb-3 flex items-center gap-2">
+                  <Gauge className="w-4 h-4 text-cyan-400" /> Performance
+                </p>
+                <ResponsiveContainer width="100%" height={140}>
+                  <BarChart data={performanceData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(71,85,105,0.2)" />
+                    <XAxis dataKey="metric" stroke="rgba(148,163,184,0.5)" tick={{ fontSize: 9 }} />
+                    <YAxis stroke="rgba(148,163,184,0.5)" tick={{ fontSize: 10 }} />
+                    <Tooltip contentStyle={{ background: '#1e293b', border: '1px solid #06b6d4' }} />
+                    <Bar dataKey="value" fill="#06b6d4" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+
+              <div className="bg-gradient-to-br from-violet-500/10 to-slate-800/30 border border-violet-500/30 rounded-lg p-3">
+                <p className="text-xs font-semibold text-white mb-3 flex items-center gap-2">
+                  <Cpu className="w-4 h-4 text-violet-400" /> Efficiency
+                </p>
+                <div className="space-y-2">
+                  {[
+                    { label: 'GPU Usage', value: '72%' },
+                    { label: 'Memory', value: '4.2GB / 8GB' },
+                    { label: 'Throughput', value: '12.5K req/s' },
+                  ].map((metric, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.1 }}
+                      className="flex justify-between text-xs"
+                    >
+                      <span className="text-slate-400">{metric.label}</span>
+                      <span className="text-violet-300 font-semibold">{metric.value}</span>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
             </div>
             </TabsContent>
 
