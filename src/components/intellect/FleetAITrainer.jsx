@@ -144,8 +144,9 @@ export default function FleetAITrainer({ onClose }) {
       {/* Content */}
       <div className="flex-1 overflow-hidden">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
-          <TabsList className="grid w-full grid-cols-4 bg-slate-800/50 border-b border-slate-700/50">
+          <TabsList className="grid w-full grid-cols-5 bg-slate-800/50 border-b border-slate-700/50">
             <TabsTrigger value="training" className="data-[state=active]:bg-cyan-500/20">Training</TabsTrigger>
+            <TabsTrigger value="data" className="data-[state=active]:bg-cyan-500/20">Data</TabsTrigger>
             <TabsTrigger value="models" className="data-[state=active]:bg-cyan-500/20">Models</TabsTrigger>
             <TabsTrigger value="api" className="data-[state=active]:bg-cyan-500/20">API Keys</TabsTrigger>
             <TabsTrigger value="settings" className="data-[state=active]:bg-cyan-500/20">Settings</TabsTrigger>
