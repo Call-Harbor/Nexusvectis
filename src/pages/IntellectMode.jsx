@@ -210,6 +210,14 @@ export default function IntellectMode() {
   }, []);
 
   // ── File Upload ────────────────────────────────────────────────────────────
+  const detectFleetFileType = (name) => {
+    const ext = name?.split('.').pop()?.toLowerCase();
+    if (ext === 'fleetslide') return 'hologram_presentation';
+    if (['doc','docx','txt','rtf','odt','html'].includes(ext)) return 'document_editor';
+    if (['xls','xlsx','csv','ods'].includes(ext)) return 'spreadsheet_editor';
+    return null;
+  };
+
   const handleFileUpload = async (e) => {
     const files = Array.from(e.target.files);
     if (!files.length) return;
@@ -222,6 +230,17 @@ export default function IntellectMode() {
     }));
     setUploadedFiles(prev => [...prev, ...newFiles]);
     toast.success(`✅ Uploaded ${files.length} file(s)`);
+
+    // Auto-open Fleet-native files directly
+    newFiles.forEach(f => {
+      const windowType = detectFleetFileType(f.name);
+      if (windowType) {
+        openWindow(windowType, { x: 100 + Math.random() * 150, y: 80 }, { initialFileUrl: f.url, initialTitle: f.name });
+        setMessages(prev => [...prev, { role: "system", content: `📂 Opened **${f.name}** in ${windowType === 'hologram_presentation' ? 'FleetSlide' : windowType === 'document_editor' ? 'FleetDocs' : 'FleetSheet'}` }]);
+        setUploadedFiles(prev => prev.filter(uf => uf.url !== f.url));
+      }
+    });
+
     setIsUploading(false);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
