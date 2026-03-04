@@ -100,9 +100,17 @@ function HeadingDrop({ value, onChange }) {
   );
 }
 
-export default function AIDocumentEditor({ initialContent, initialTitle, orgId }) {
+export default function AIDocumentEditor({ initialContent, initialTitle, initialFileUrl, orgId }) {
   const [content, setContent] = useState(initialContent || `<h1>Document Title</h1><p>Start typing your document here...</p>`);
-  const [documentTitle, setDocumentTitle] = useState(initialTitle || "Untitled Document");
+  const [documentTitle, setDocumentTitle] = useState(initialTitle?.replace(/\.[^.]+$/, '') || "Untitled Document");
+
+  // Load from URL if provided
+  useEffect(() => {
+    if (!initialFileUrl) return;
+    fetch(initialFileUrl).then(r => r.text()).then(text => {
+      setContent(text);
+    }).catch(() => {});
+  }, [initialFileUrl]);
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState(null);
   const [showAI, setShowAI] = useState(false);

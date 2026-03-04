@@ -766,8 +766,8 @@ function SDivider() {
   return <div className="w-px h-4 bg-slate-700/50 mx-0.5 flex-shrink-0" />;
 }
 
-export default function AISpreadsheetEditor({ initialGrid, initialTitle, orgId }) {
-  const [sheetName, setSheetName] = useState(initialTitle || "Untitled Spreadsheet");
+export default function AISpreadsheetEditor({ initialGrid, initialTitle, initialFileUrl, orgId }) {
+  const [sheetName, setSheetName] = useState(initialTitle?.replace(/\.[^.]+$/, '') || "Untitled Spreadsheet");
   const [grid, setGrid] = useState(() => {
     if (initialGrid) {
       // initialGrid is array of arrays of strings
