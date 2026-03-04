@@ -100,7 +100,7 @@ function HeadingDrop({ value, onChange }) {
   );
 }
 
-export default function AIDocumentEditor({ initialContent, initialTitle }) {
+export default function AIDocumentEditor({ initialContent, initialTitle, orgId }) {
   const [content, setContent] = useState(initialContent || `<h1>Document Title</h1><p>Start typing your document here...</p>`);
   const [documentTitle, setDocumentTitle] = useState(initialTitle || "Untitled Document");
   const [isSaving, setIsSaving] = useState(false);
