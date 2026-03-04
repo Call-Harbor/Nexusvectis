@@ -496,15 +496,17 @@ export default function DesignToolsPanel({ slide, onUpdate, onAddAnimation, onRe
             <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 block">Alignment</label>
             <div className="grid grid-cols-3 gap-1">
               {["left", "center", "right"].map((align) => (
-                <Button
+                <button
                   key={align}
                   onClick={() => onUpdate({ align })}
-                  size="sm"
-                  variant={slide?.align === align ? "default" : "outline"}
-                  className="h-6 text-xs capitalize"
+                  className={`h-6 rounded text-xs capitalize transition-all border ${
+                    slide?.align === align
+                      ? "bg-cyan-500/20 border-cyan-500/60 text-cyan-300"
+                      : "bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700 hover:text-white"
+                  }`}
                 >
                   {align}
-                </Button>
+                </button>
               ))}
             </div>
           </div>
@@ -513,15 +515,17 @@ export default function DesignToolsPanel({ slide, onUpdate, onAddAnimation, onRe
             <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 block">Transition Effect</label>
             <div className="space-y-1">
               {TRANSITIONS.map((t) => (
-                <Button
+                <button
                   key={t.id}
                   onClick={() => onUpdate({ transition: t.id })}
-                  size="sm"
-                  variant={slide?.transition === t.id ? "default" : "outline"}
-                  className="w-full h-6 text-xs justify-start"
+                  className={`w-full h-6 rounded text-xs text-left px-2 transition-all border ${
+                    slide?.transition === t.id
+                      ? "bg-cyan-500/20 border-cyan-500/60 text-cyan-300"
+                      : "bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700 hover:text-white"
+                  }`}
                 >
                   {t.label}
-                </Button>
+                </button>
               ))}
             </div>
           </div>
