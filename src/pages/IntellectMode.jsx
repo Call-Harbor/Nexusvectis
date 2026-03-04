@@ -887,19 +887,19 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="absolute top-1/3 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
               <div className="relative">
                 <div className="absolute inset-0 blur-3xl opacity-30 animate-pulse" style={{ background: "#06b6d4" }} />
-                <div className="mb-6 relative z-10 flex items-center justify-center">
-                  <CircularBrainMenu 
-                    size="lg" 
-                    showMenuByDefault={true}
-                    onAction={(action) => {
-                      if (action === 'advanced_intelligence') setShowAdvancedPanel(true);
-                      else if (action === 'deep_analysis') openWindow('deep_analysis', { x: 100, y: 80 });
-                      else openWindow(action, { x: 100 + Math.random() * 100, y: 80 + Math.random() * 100 });
-                    }}
-                  />
+                <div className="mb-2 relative z-10 flex items-center justify-center">
+                   <CircularBrainMenu 
+                     size="lg" 
+                     showMenuByDefault={true}
+                     onAction={(action) => {
+                       if (action === 'advanced_intelligence') setShowAdvancedPanel(true);
+                       else if (action === 'deep_analysis') openWindow('deep_analysis', { x: 100, y: 80 });
+                       else openWindow(action, { x: 100 + Math.random() * 100, y: 80 + Math.random() * 100 });
+                     }}
+                   />
                 </div>
-              </div>
-              <h2 className="text-2xl font-bold mb-4 font-mono tracking-widest uppercase" style={{ color: "#06b6d4", textShadow: "0 0 20px rgba(6,182,212,0.4)" }}>
+                </div>
+                <h2 className="text-2xl font-bold mb-2 font-mono tracking-widest uppercase" style={{ color: "#06b6d4", textShadow: "0 0 20px rgba(6,182,212,0.4)" }}>
                 FLEET AI
               </h2>
               <p className="text-slate-400 text-sm">Advanced analytics ready: predictive maintenance, demand forecasting, CO2 reports, risk assessment, and full fleet control</p>
