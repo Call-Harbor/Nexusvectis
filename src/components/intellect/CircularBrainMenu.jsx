@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Brain, Building2, Newspaper, Shield, Satellite } from "lucide-react";
+import { Brain, Building2, Newspaper, Shield, Satellite, Zap, Package, Route, Activity, Sparkles } from "lucide-react";
 
 export default function CircularBrainMenu({ onAction, size = "md", isLogo = false }) {
   const [showMenu, setShowMenu] = useState(false);
