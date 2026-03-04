@@ -1,10 +1,11 @@
 import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "../../utils";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Brain, Sparkles, Zap, Activity, LayoutDashboard, Search,
   MessageSquare, FileText, BarChart3, Truck, AlertTriangle, Route,
-  Package, Warehouse, Users, Satellite, ChevronDown, GraduationCap, FileCode, Globe, Image, X, Wrench, HardDrive, ListTodo, MonitorPlay
+  Package, Warehouse, Users, Satellite, ChevronDown, GraduationCap, FileCode, Globe, Image, X, Wrench, HardDrive, ListTodo, MonitorPlay, Building2, Newspaper, Shield
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
