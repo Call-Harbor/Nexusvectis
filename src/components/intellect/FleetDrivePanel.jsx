@@ -259,10 +259,6 @@ function FileRow({ file, onDelete, onPin }) {
         </div>
       </div>
       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-        <Button size="icon" variant="ghost" className="h-6 w-6"
-          onClick={() => window.open(file.file_url, "_blank")}>
-          <Download className="w-3 h-3 text-slate-400 hover:text-cyan-400" />
-        </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button size="icon" variant="ghost" className="h-6 w-6">
@@ -270,14 +266,19 @@ function FileRow({ file, onDelete, onPin }) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="bg-slate-900 border-slate-700 text-white text-xs" align="end">
-            <DropdownMenuItem onClick={() => onPin({ id: file.id, pinned: !file.is_pinned })}
+            <DropdownMenuItem
+              onClick={() => window.open(createPageUrl(`IntellectMode?open_file=${file.id}`), "_blank")}
               className="flex items-center gap-2 cursor-pointer hover:bg-slate-800">
-              {file.is_pinned ? <PinOff className="w-3.5 h-3.5 text-amber-400" /> : <Pin className="w-3.5 h-3.5 text-amber-400" />}
-              {file.is_pinned ? "Unpin" : "Pin"}
+              <ExternalLink className="w-3.5 h-3.5 text-violet-400" />Open in Fleet AI
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => window.open(file.file_url, "_blank")}
               className="flex items-center gap-2 cursor-pointer hover:bg-slate-800">
               <Download className="w-3.5 h-3.5 text-cyan-400" />Download
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onPin({ id: file.id, pinned: !file.is_pinned })}
+              className="flex items-center gap-2 cursor-pointer hover:bg-slate-800">
+              {file.is_pinned ? <PinOff className="w-3.5 h-3.5 text-amber-400" /> : <Pin className="w-3.5 h-3.5 text-amber-400" />}
+              {file.is_pinned ? "Unpin" : "Pin"}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => onDelete(file.id)}
               className="flex items-center gap-2 cursor-pointer text-red-400 hover:bg-red-500/10">
