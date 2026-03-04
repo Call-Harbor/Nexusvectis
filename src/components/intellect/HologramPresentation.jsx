@@ -488,10 +488,24 @@ function PresenterMode({ slides, current, setCurrent, theme, fontSize, onExit })
   );
 }
 
-export default function HologramPresentation({ orgId }) {
+export default function HologramPresentation({ orgId, initialFileUrl }) {
   const [slides, setSlides] = useState([
     { id: 1, type: "title", title: "Fleet Intelligence 2026", subtitle: "Strategic Briefing", body: "AI-Powered Operations & Business Intelligence", notes: "Welcome everyone. Today we'll walk through our fleet performance and strategic outlook for 2026." },
   ]);
+
+  // Load from .fleetslide file URL if provided
+  useEffect(() => {
+    if (!initialFileUrl) return;
+    fetch(initialFileUrl).then(r => r.json()).then(parsed => {
+      if (parsed.slides?.length > 0) {
+        setSlides(parsed.slides.map((s, i) => ({ ...s, id: s.id || Date.now() + i })));
+        if (parsed.theme) setTheme(parsed.theme);
+        if (parsed.fontSize) setFontSize(parsed.fontSize);
+        if (parsed.transition) setTransition(parsed.transition);
+        toast.success(`✅ Loaded ${parsed.slides.length} slides`);
+      }
+    }).catch(() => toast.error("Could not load presentation file"));
+  }, [initialFileUrl]);
   const [current, setCurrent] = useState(0);
   const [theme, setTheme] = useState("nexus");
   const [fontSize, setFontSize] = useState("medium");
