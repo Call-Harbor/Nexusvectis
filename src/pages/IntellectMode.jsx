@@ -763,12 +763,13 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
       <div className="relative z-10 h-screen flex flex-col">
         {/* Header */}
         <IntellectHeader
-          orgId={orgId}
-          openWindow={openWindow}
-          executePrompt={executePrompt}
-          setShowAdvancedPanel={setShowAdvancedPanel}
-          setShowParallelProcessor={setShowParallelProcessor}
-        />
+           orgId={orgId}
+           openWindow={openWindow}
+           executePrompt={executePrompt}
+           setShowAdvancedPanel={setShowAdvancedPanel}
+           setShowParallelProcessor={setShowParallelProcessor}
+           setShowCompanyAnalysis={setShowCompanyAnalysis}
+         />
 
         {/* Main Canvas */}
         <div className="flex-1 overflow-hidden relative">
