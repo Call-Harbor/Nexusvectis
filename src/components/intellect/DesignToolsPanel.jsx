@@ -394,7 +394,7 @@ export default function DesignToolsPanel({ slide, onUpdate, onAddAnimation, onRe
                     className="h-5 text-[9px] px-1.5 rounded bg-cyan-600/70 hover:bg-cyan-600 text-white flex items-center gap-0.5"
                   >
                     <Plus className="w-2.5 h-2.5" />Tilføj
-                  </Button>
+                  </button>
                 </div>
                 <div className="space-y-1 max-h-48 overflow-y-auto">
                   {localChartData.map((point, i) => (
