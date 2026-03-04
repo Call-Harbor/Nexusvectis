@@ -231,15 +231,18 @@ export default function IntellectMode() {
     setUploadedFiles(prev => [...prev, ...newFiles]);
     toast.success(`✅ Uploaded ${files.length} file(s)`);
 
-    // Auto-open Fleet-native files directly
+    // Auto-open Fleet-native files directly (and exclude them from AI file_urls)
     newFiles.forEach(f => {
       const windowType = detectFleetFileType(f.name);
       if (windowType) {
         openWindow(windowType, { x: 100 + Math.random() * 150, y: 80 }, { initialFileUrl: f.url, initialTitle: f.name });
         setMessages(prev => [...prev, { role: "system", content: `📂 Opened **${f.name}** in ${windowType === 'hologram_presentation' ? 'FleetSlide' : windowType === 'document_editor' ? 'FleetDocs' : 'FleetSheet'}` }]);
+        // Remove from uploadedFiles so it is NOT sent to AI as a file attachment
         setUploadedFiles(prev => prev.filter(uf => uf.url !== f.url));
       }
     });
+    // Filter out any Fleet-native files that were already in the queue
+    setUploadedFiles(prev => prev.filter(f => !detectFleetFileType(f.name)));
 
     setIsUploading(false);
     if (fileInputRef.current) fileInputRef.current.value = '';
