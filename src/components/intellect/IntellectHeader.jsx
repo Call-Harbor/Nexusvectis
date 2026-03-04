@@ -239,6 +239,22 @@ export default function IntellectHeader({ orgId, openWindow, executePrompt, setS
 
           {/* Actions */}
           <div className="flex items-center gap-3 w-full sm:w-auto">
+            {/* Apps Dropdown */}
+            <AppSearchDropdown onSelect={openWindow}>
+              <button className="px-3 py-2 text-[10px] font-bold tracking-widest uppercase font-mono transition-all"
+                style={{ color: "#06b6d4", border: "1px solid rgba(6,182,212,0.3)", background: "rgba(6,182,212,0.08)", boxShadow: "0 0 12px rgba(6,182,212,0.1)" }}>
+                <Globe className="w-3.5 h-3.5 inline mr-2" />APPS<ChevronDown className="w-3.5 h-3.5 inline ml-2" />
+              </button>
+            </AppSearchDropdown>
+
+            {/* Global Search */}
+            <AppSearchDropdown onSelect={openWindow}>
+              <button className="px-3 py-2 text-[10px] font-bold tracking-widest uppercase font-mono transition-all"
+                style={{ color: "#06b6d4", border: "1px solid rgba(6,182,212,0.3)", background: "rgba(6,182,212,0.08)", boxShadow: "0 0 12px rgba(6,182,212,0.1)" }}>
+                <Search className="w-3.5 h-3.5 inline mr-2" />SEARCH<ChevronDown className="w-3.5 h-3.5 inline ml-2" />
+              </button>
+            </AppSearchDropdown>
+
             {/* AI Prompts Dropdown */}
             <PromptSearchDropdown
               sections={AI_PROMPT_SECTIONS}
