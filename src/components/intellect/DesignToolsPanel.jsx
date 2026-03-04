@@ -36,6 +36,31 @@ const BACKGROUND_COLORS = ["slate-900", "cyan-900/20", "violet-900/20", "emerald
 
 export default function DesignToolsPanel({ slide, onUpdate, onAddAnimation, onRemoveAnimation, theme, onThemeChange }) {
   const [selectedEffect, setSelectedEffect] = useState(null);
+  const [localChartData, setLocalChartData] = useState(slide?.chartData || []);
+
+  useEffect(() => {
+    setLocalChartData(slide?.chartData || []);
+  }, [slide?.id]);
+
+  const updateChartPoint = (i, field, value) => {
+    const newData = localChartData.map((pt, idx) =>
+      idx === i ? { ...pt, [field]: field === "value" ? Number(value) : value } : pt
+    );
+    setLocalChartData(newData);
+    onUpdate({ chartData: newData });
+  };
+
+  const addChartPoint = () => {
+    const newData = [...localChartData, { label: `Item ${localChartData.length + 1}`, value: 50 }];
+    setLocalChartData(newData);
+    onUpdate({ chartData: newData });
+  };
+
+  const removeChartPoint = (i) => {
+    const newData = localChartData.filter((_, idx) => idx !== i);
+    setLocalChartData(newData);
+    onUpdate({ chartData: newData });
+  };
 
   return (
     <div className="h-full overflow-y-auto">
