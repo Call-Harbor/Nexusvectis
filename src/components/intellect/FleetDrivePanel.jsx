@@ -214,11 +214,11 @@ export default function FleetDrivePanel({ orgId, openWindow }) {
             <p className="text-[10px] text-amber-400/70 font-semibold uppercase tracking-wider mb-1 flex items-center gap-1">
               <Star className="w-3 h-3" />Pinned
             </p>
-            {pinned.map(f => <FileRow key={f.id} file={f} onDelete={deleteMutation.mutate} onPin={pinMutation.mutate} />)}
+            {pinned.map(f => <FileRow key={f.id} file={f} onDelete={deleteMutation.mutate} onPin={pinMutation.mutate} openWindow={openWindow} />)}
           </div>
         )}
 
-        {unpinned.map(f => <FileRow key={f.id} file={f} onDelete={deleteMutation.mutate} onPin={pinMutation.mutate} />)}
+        {unpinned.map(f => <FileRow key={f.id} file={f} onDelete={deleteMutation.mutate} onPin={pinMutation.mutate} openWindow={openWindow} />)}
       </div>
 
       {/* Footer stats */}
