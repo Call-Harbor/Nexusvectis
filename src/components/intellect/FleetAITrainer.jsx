@@ -257,10 +257,15 @@ export default function FleetAITrainer({ onClose }) {
                 </BarChart>
               </ResponsiveContainer>
             </div>
-          </TabsContent>
+            </TabsContent>
 
-          {/* Data Tab */}
-          <TabsContent value="data" className="flex-1 overflow-auto p-4 space-y-3">
+            {/* Advanced Monitoring Tab */}
+            <TabsContent value="monitoring" className="flex-1 overflow-auto p-4">
+            <AdvancedModelMonitoring />
+            </TabsContent>
+
+            {/* Data Tab */}
+            <TabsContent value="data" className="flex-1 overflow-auto p-4 space-y-3">
             <Button
               onClick={() => setShowAddData(true)}
               className="w-full bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300"
