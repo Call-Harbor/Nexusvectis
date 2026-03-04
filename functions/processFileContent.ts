@@ -25,7 +25,12 @@ Deno.serve(async (req) => {
         let fileType = 'unknown';
 
         // Handle different file types
-        if (contentType.includes('text') || fileUrl.endsWith('.txt') || fileUrl.endsWith('.csv') || fileUrl.endsWith('.json') || fileUrl.endsWith('.js') || fileUrl.endsWith('.ts') || fileUrl.endsWith('.html') || fileUrl.endsWith('.css') || fileUrl.endsWith('.xml') || fileUrl.endsWith('.md')) {
+        if (fileUrl.toLowerCase().includes('.fleetslide') || name?.toLowerCase().endsWith('.fleetslide')) {
+          // FleetSlide presentation files are JSON - read and summarize
+          const text = await fileResponse.text();
+          content = text;
+          fileType = 'fleetslide';
+        } else if (contentType.includes('text') || fileUrl.endsWith('.txt') || fileUrl.endsWith('.csv') || fileUrl.endsWith('.json') || fileUrl.endsWith('.js') || fileUrl.endsWith('.ts') || fileUrl.endsWith('.html') || fileUrl.endsWith('.css') || fileUrl.endsWith('.xml') || fileUrl.endsWith('.md')) {
           content = await fileResponse.text();
           fileType = 'text';
         } else if (contentType.includes('pdf') || fileUrl.endsWith('.pdf')) {
