@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Brain, Sparkles, Zap, Activity, LayoutDashboard, Search,
   MessageSquare, FileText, BarChart3, Truck, AlertTriangle, Route,
-  Package, Warehouse, Users, Satellite, ChevronDown, GraduationCap, FileCode, Globe, Image, X, Wrench, HardDrive, ListTodo, MonitorPlay, Building2, Newspaper, Shield
+  Package, Warehouse, Users, Satellite, ChevronDown, GraduationCap, FileCode, Globe, Image, X, Wrench, HardDrive, ListTodo, MonitorPlay, Building2, Newspaper, Shield, Cpu
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
