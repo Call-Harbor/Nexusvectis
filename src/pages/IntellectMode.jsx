@@ -803,10 +803,12 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
                 const Icon = meta.icon;
                 return (
                   <motion.div key={window.id} initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0, opacity: 0 }}>
-                    <Button onClick={() => toggleMinimize(window.id)} className="bg-gradient-to-r from-cyan-500/30 to-violet-500/30 border-2 border-cyan-500/50 backdrop-blur-xl hover:from-cyan-500/40 hover:to-violet-500/40 shadow-lg shadow-cyan-500/20 text-xs sm:text-sm">
-                      <Icon className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-cyan-400" />
-                      <span className="text-white font-medium">{title}</span>
-                    </Button>
+                    <button onClick={() => toggleMinimize(window.id)}
+                      className="px-3 py-1.5 text-[9px] font-bold tracking-widest uppercase font-mono transition-all flex items-center gap-1.5 rounded-lg"
+                      style={{ color: "#06b6d4", border: "1px solid rgba(6,182,212,0.4)", background: "rgba(6,182,212,0.08)" }}>
+                      <Icon className="w-3 h-3" />
+                      <span>{title}</span>
+                    </button>
                   </motion.div>
                 );
               })}
