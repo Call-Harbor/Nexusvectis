@@ -878,7 +878,7 @@ Return JSON: { "notes": "...speaker notes text..." }`,
             {nextSlide ? (
               <div className="rounded-xl overflow-hidden border border-slate-700 cursor-pointer hover:border-slate-500 transition-all"
                 style={{ aspectRatio: "16/9" }} onClick={() => setCurrent(c => c + 1)}>
-                <SlideRenderer slide={nextSlide} theme={theme} fontSize="small" />
+                <SlideCanvas slide={nextSlide} theme={theme} fontSize="small" editable={false} />
               </div>
             ) : (
               <div className="rounded-xl border border-slate-800 bg-slate-900/40 flex items-center justify-center text-slate-600 text-xs" style={{ aspectRatio: "16/9" }}>
