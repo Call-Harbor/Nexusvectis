@@ -461,7 +461,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
     setPersonLoading(true);
     setPersonData(null);
     try {
-      const [r1, r2, r3, r4, r5, r6] = await Promise.all([
+      const results = await Promise.allSettled([
         // Basic info
         base44.integrations.Core.InvokeLLM({
           prompt: `Find basic profile info about "${personSearch}"${companyName ? ` at ${companyName}` : ''}: name, current title, company, location. Only use verified data from credible sources like LinkedIn, news, or official bios. DO NOT fabricate any information. If unsure, leave fields empty.`,
