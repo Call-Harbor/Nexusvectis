@@ -481,7 +481,7 @@ Context data: ${JSON.stringify(context)}`;
       // Use service role for admin access to all data
       const llmResponse = await base44.asServiceRole.integrations.Core.InvokeLLM({
         prompt: enhancedPrompt,
-        file_urls: file_urls,
+        file_urls: processedFileUrls.length > 0 ? processedFileUrls : undefined,
         add_context_from_internet: true,
         response_json_schema: {
           type: 'object',
