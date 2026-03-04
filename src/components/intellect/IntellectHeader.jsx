@@ -183,23 +183,26 @@ export default function IntellectHeader({ orgId, openWindow, executePrompt, setS
   const navigate = useNavigate();
 
   return (
-    <div className="p-3 sm:p-4 lg:p-6">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 max-w-7xl mx-auto">
-        {/* Logo & Title */}
-        <div className="flex items-center gap-2 sm:gap-3 lg:gap-4">
-          <div className="p-2 sm:p-2.5 lg:p-3 rounded-xl lg:rounded-2xl bg-gradient-to-br from-cyan-500/30 to-violet-500/30 border-2 border-cyan-500/50 shadow-lg shadow-cyan-500/30 relative overflow-hidden group">
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-            <Brain className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 text-cyan-400 relative z-10 animate-pulse" />
+    <div className="relative" style={{ background: "rgba(0,10,25,0.97)", borderBottom: "1px solid rgba(6,182,212,0.15)" }}>
+      <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, #06b6d4, #8b5cf6, transparent)" }} />
+      <div className="p-3 sm:p-4 lg:p-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 max-w-7xl mx-auto">
+          {/* Logo & Title */}
+          <div className="flex items-center gap-3">
+            <div className="relative flex items-center justify-center flex-shrink-0" style={{ width: 32, height: 32 }}>
+              <svg width="32" height="32" viewBox="0 0 32 32" className="absolute">
+                <polygon points="16,2 28,8 28,24 16,30 4,24 4,8" fill="rgba(6,182,212,0.1)" stroke="#06b6d4" strokeWidth="1.2" opacity="0.8" />
+              </svg>
+              <Brain style={{ width: 13, height: 13, color: "#06b6d4", position: "relative", zIndex: 1 }} />
+            </div>
+            <div>
+              <h1 className="text-sm sm:text-base font-bold text-white flex items-center gap-2 tracking-[0.2em] uppercase font-mono" style={{ color: "#06b6d4", textShadow: "0 0 10px rgba(6,182,212,0.5)" }}>
+                FLEET AI
+                <Badge className="text-[8px] px-1 py-0 tracking-widest font-mono uppercase" style={{ color: "#f59e0b", border: "1px solid rgba(245,158,11,0.3)", background: "rgba(245,158,11,0.06)" }}>BETA</Badge>
+              </h1>
+              <p className="text-[9px] font-mono tracking-widest uppercase" style={{ color: "rgba(6,182,212,0.4)" }}>AI-POWERED FLEET OPERATIONS</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-white flex items-center gap-1.5 sm:gap-2 tracking-wider">
-              <span className="bg-gradient-to-r from-cyan-400 via-white to-violet-400 bg-clip-text text-transparent">FLEET AI</span>
-              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-cyan-400 animate-spin" style={{ animationDuration: '3s' }} />
-              <Badge className="bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-400 border-amber-500/50 text-[10px] sm:text-xs font-bold animate-pulse">BETA</Badge>
-            </h1>
-            <p className="text-cyan-400 text-xs sm:text-sm">AI-Powered Fleet Operations</p>
-          </div>
-        </div>
 
         {/* Actions */}
         <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
