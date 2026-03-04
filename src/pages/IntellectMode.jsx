@@ -884,163 +884,139 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
           {/* AI Thinking Terminal */}
           <ThinkingTerminalVisual isActive={showThinkingTerminal && isProcessing} logs={thinkingLogs} onClose={() => setShowThinkingTerminal(false)} />
 
-          {/* Standby */}
+          {/* Standby - Background Effects */}
           {activeWindows.length === 0 && (
             <div className="absolute inset-0 flex flex-col items-center justify-center overflow-hidden">
               {/* Enhanced background effects */}
-               <div className="absolute inset-0 pointer-events-none">
-                 {/* Ambient glow orbs */}
-                 <motion.div
-                   animate={{ scale: [1, 1.2, 1], rotate: [0, 360] }}
-                   transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                   className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full opacity-20"
-                   style={{ background: "radial-gradient(circle, #06b6d4 0%, transparent 70%)" }}
-                 />
-                 <motion.div
-                   animate={{ scale: [1.2, 1, 1.2], rotate: [360, 0] }}
-                   transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-                   className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full opacity-15"
-                   style={{ background: "radial-gradient(circle, #8b5cf6 0%, transparent 70%)" }}
-                 />
-
-                 {/* Floating stars */}
-                 {[...Array(8)].map((_, i) => (
-                   <motion.div
-                     key={`star-${i}`}
-                     className="absolute w-1 h-1 rounded-full"
-                     animate={{
-                       y: [0, -100, 0],
-                       x: [0, Math.cos((i / 8) * Math.PI * 2) * 50, 0],
-                       opacity: [0.3, 1, 0.3],
-                     }}
-                     transition={{
-                       duration: 6 + i,
-                       repeat: Infinity,
-                       ease: "easeInOut",
-                     }}
-                     style={{
-                       background: i % 2 === 0 ? "#06b6d4" : "#8b5cf6",
-                       boxShadow: i % 2 === 0 ? "0 0 10px #06b6d4" : "0 0 10px #8b5cf6",
-                       left: `${20 + i * 10}%`,
-                       top: `${30 + Math.random() * 40}%`,
-                     }}
-                   />
-                 ))}
-
-                 {/* Gradient light beams */}
-                 <motion.div
-                   animate={{ rotate: [0, 360] }}
-                   transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-                   className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full"
-                   style={{
-                     background: "conic-gradient(from 0deg, rgba(6,182,212,0.1) 0deg, transparent 90deg, rgba(139,92,246,0.1) 180deg, transparent 270deg)",
-                   }}
-                 />
-               </div>
-
-              {/* Main content */}
-              <div className="relative z-10 flex flex-col items-center">
+              <div className="absolute inset-0 pointer-events-none">
+                {/* Ambient glow orbs */}
                 <motion.div
-                  initial={{ opacity: 0, scale: 0.5 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.8, delay: 0.2 }}
-                  className="relative mb-16"
-                >
-                  {/* Orbiting rings */}
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    {[1, 2, 3].map((ring) => (
-                      <motion.div
-                        key={ring}
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 10 + ring * 5, repeat: Infinity, ease: "linear" }}
-                        className="absolute rounded-full border"
-                        style={{
-                          width: 120 + ring * 60,
-                          height: 120 + ring * 60,
-                          borderColor: `rgba(6,182,212,${0.2 - ring * 0.05})`,
-                          borderWidth: 1,
-                        }}
-                      />
-                    ))}
-                  </div>
-
-                  {/* Brain menu */}
-                  <div className="relative z-20">
-                    <CircularBrainMenu 
-                      size="lg" 
-                      showMenuByDefault={true}
-                      onAction={(action) => {
-                        if (action === 'advanced_intelligence') setShowAdvancedPanel(true);
-                        else if (action === 'deep_analysis') openWindow('deep_analysis', { x: 100, y: 80 });
-                        else if (action === 'company_analysis') setShowCompanyAnalysis(true);
-                        else openWindow(action, { x: 100 + Math.random() * 100, y: 80 + Math.random() * 100 });
-                      }}
-                      onMenuToggle={setIsCircularMenuOpen}
-                    />
-                  </div>
-                </motion.div>
-
-                {/* Title and description */}
+                  animate={{ scale: [1, 1.2, 1], rotate: [0, 360] }}
+                  transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full opacity-20"
+                  style={{ background: "radial-gradient(circle, #06b6d4 0%, transparent 70%)" }}
+                />
                 <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: activeWindows.length === 0 && !isCircularMenuOpen ? 1 : 0, y: activeWindows.length === 0 && !isCircularMenuOpen ? 0 : 20 }}
-                  transition={{ duration: 0.3 }}
-                  className="text-center max-w-xl px-4 space-y-4"
-                >
-                  <div className="relative inline-block">
-                    <div className="absolute inset-0 blur-2xl opacity-50" style={{ background: "linear-gradient(135deg, #06b6d4, #8b5cf6)" }} />
-                    <h1 className="relative text-6xl font-black font-mono tracking-widest uppercase bg-clip-text text-transparent"
-                      style={{
-                        backgroundImage: "linear-gradient(135deg, #06b6d4 0%, #8b5cf6 100%)",
-                        textShadow: "0 0 30px rgba(6,182,212,0.3), 0 0 60px rgba(139,92,246,0.2)",
-                      }}>
-                      FLEET AI
-                    </h1>
-                  </div>
+                  animate={{ scale: [1.2, 1, 1.2], rotate: [360, 0] }}
+                  transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full opacity-15"
+                  style={{ background: "radial-gradient(circle, #8b5cf6 0%, transparent 70%)" }}
+                />
 
-                  <p className="text-lg text-slate-300 font-light tracking-wide">
-                    Neural Logistics Intelligence Platform
-                  </p>
+                {/* Floating stars */}
+                {[...Array(8)].map((_, i) => (
+                  <motion.div
+                    key={`star-${i}`}
+                    className="absolute w-1 h-1 rounded-full"
+                    animate={{
+                      y: [0, -100, 0],
+                      x: [0, Math.cos((i / 8) * Math.PI * 2) * 50, 0],
+                      opacity: [0.3, 1, 0.3],
+                    }}
+                    transition={{
+                      duration: 6 + i,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
+                    style={{
+                      background: i % 2 === 0 ? "#06b6d4" : "#8b5cf6",
+                      boxShadow: i % 2 === 0 ? "0 0 10px #06b6d4" : "0 0 10px #8b5cf6",
+                      left: `${20 + i * 10}%`,
+                      top: `${30 + Math.random() * 40}%`,
+                    }}
+                  />
+                ))}
 
-                  <p className="text-sm text-slate-400 leading-relaxed">
-                    Multi-dimensional analysis • Real-time optimization • Predictive reasoning
-                  </p>
-
-                  {/* Pulse indicators */}
-                   <div className="flex items-center justify-center gap-2 pt-6">
-                     {[0, 0.2, 0.4].map((delay) => (
-                       <motion.div
-                         key={delay}
-                         className="w-1 h-1 rounded-full"
-                         animate={{ scale: [1, 2, 1], opacity: [1, 0.3, 1] }}
-                         transition={{ duration: 1.5, repeat: Infinity, delay }}
-                         style={{ background: "#06b6d4", boxShadow: "0 0 8px rgba(6,182,212,0.4)" }}
-                       />
-                     ))}
-                   </div>
-
-                   {/* Floating particles effect */}
-                   <div className="pt-8 flex gap-1 justify-center items-center h-8">
-                     {[...Array(5)].map((_, i) => (
-                       <motion.div
-                         key={i}
-                         className="w-0.5 h-0.5 rounded-full"
-                         animate={{
-                           y: [0, -20, 0],
-                           opacity: [0, 1, 0],
-                           x: Math.cos((i / 5) * Math.PI * 2) * 15,
-                         }}
-                         transition={{
-                           duration: 2.5,
-                           repeat: Infinity,
-                           delay: i * 0.3,
-                         }}
-                         style={{ background: "#8b5cf6", boxShadow: "0 0 6px rgba(139,92,246,0.6)" }}
-                       />
-                     ))}
-                   </div>
-                  </motion.div>
+                {/* Gradient light beams */}
+                <motion.div
+                  animate={{ rotate: [0, 360] }}
+                  transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full"
+                  style={{
+                    background: "conic-gradient(from 0deg, rgba(6,182,212,0.1) 0deg, transparent 90deg, rgba(139,92,246,0.1) 180deg, transparent 270deg)",
+                  }}
+                />
               </div>
+
+              {/* Brain Menu Window */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.6 }}
+                className="relative z-30"
+              >
+                <HologramWindow
+                  id="standby-brain"
+                  title="NEURAL INTERFACE"
+                  icon={Sparkles}
+                  position={{ x: window.innerWidth / 2 - 180, y: window.innerHeight / 2 - 280 }}
+                  onClose={() => {}}
+                  isMinimized={false}
+                  windowType="interface"
+                  isFocused={true}
+                >
+                  <div className="flex flex-col items-center justify-center py-8 px-12 space-y-8">
+                    {/* Orbiting rings */}
+                    <div className="relative w-40 h-40 flex items-center justify-center">
+                      {[1, 2, 3].map((ring) => (
+                        <motion.div
+                          key={ring}
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 10 + ring * 5, repeat: Infinity, ease: "linear" }}
+                          className="absolute rounded-full border"
+                          style={{
+                            width: 120 + ring * 40,
+                            height: 120 + ring * 40,
+                            borderColor: `rgba(6,182,212,${0.2 - ring * 0.05})`,
+                            borderWidth: 1,
+                          }}
+                        />
+                      ))}
+                      {/* Brain menu in center */}
+                      <CircularBrainMenu 
+                        size="md" 
+                        showMenuByDefault={true}
+                        onAction={(action) => {
+                          if (action === 'advanced_intelligence') setShowAdvancedPanel(true);
+                          else if (action === 'deep_analysis') openWindow('deep_analysis', { x: 100, y: 80 });
+                          else if (action === 'company_analysis') setShowCompanyAnalysis(true);
+                          else openWindow(action, { x: 100 + Math.random() * 100, y: 80 + Math.random() * 100 });
+                        }}
+                        onMenuToggle={setIsCircularMenuOpen}
+                      />
+                    </div>
+
+                    {/* Title and description */}
+                    <div className="text-center space-y-3">
+                      <div className="relative inline-block">
+                        <div className="absolute inset-0 blur-xl opacity-40" style={{ background: "linear-gradient(135deg, #06b6d4, #8b5cf6)" }} />
+                        <h2 className="relative text-2xl font-black font-mono tracking-widest uppercase bg-clip-text text-transparent"
+                          style={{
+                            backgroundImage: "linear-gradient(135deg, #06b6d4 0%, #8b5cf6 100%)",
+                          }}>
+                          FLEET AI
+                        </h2>
+                      </div>
+                      <p className="text-xs text-slate-400 tracking-wide">
+                        Neural Logistics Intelligence
+                      </p>
+                    </div>
+
+                    {/* Status indicators */}
+                    <div className="flex items-center justify-center gap-1.5">
+                      {[0, 0.2, 0.4].map((delay) => (
+                        <motion.div
+                          key={delay}
+                          className="w-1 h-1 rounded-full"
+                          animate={{ scale: [1, 1.8, 1], opacity: [0.8, 1, 0.8] }}
+                          transition={{ duration: 1.5, repeat: Infinity, delay }}
+                          style={{ background: "#06b6d4", boxShadow: "0 0 6px rgba(6,182,212,0.5)" }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </HologramWindow>
+              </motion.div>
             </div>
           )}
         </div>
