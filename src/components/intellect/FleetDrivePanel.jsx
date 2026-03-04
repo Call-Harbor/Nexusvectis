@@ -1,72 +1,35 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  HardDrive, Upload, File, FileText, FileImage, Video, Archive, 
-  Folder, Search, Trash2, Download, Pin, PinOff, MoreVertical, 
-  Plus, CloudUpload, CheckCircle, Star, ExternalLink, Database, Zap
+  File, FileText, FileImage, Video, Archive, Search, Trash2, 
+  Download, Pin, PinOff, Plus, CloudUpload, CheckCircle, Star, ExternalLink
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 const FILE_ICONS = {
-  document: FileText,
-  spreadsheet: FileText,
-  image: FileImage,
-  video: Video,
-  archive: Archive,
-  pdf: FileText,
-  presentation: FileText,
-  other: File,
+  document: FileText, spreadsheet: FileText, image: FileImage,
+  video: Video, archive: Archive, pdf: FileText, presentation: FileText, other: File,
 };
 
-const FILE_GLOW = {
-  document: "shadow-blue-500/30",
-  spreadsheet: "shadow-emerald-500/30",
-  image: "shadow-pink-500/30",
-  video: "shadow-purple-500/30",
-  archive: "shadow-amber-500/30",
-  pdf: "shadow-red-500/30",
-  presentation: "shadow-cyan-500/30",
-  other: "shadow-slate-500/20",
-};
-
-const FILE_COLORS = {
-  document: "text-blue-400",
-  spreadsheet: "text-emerald-400",
-  image: "text-pink-400",
-  video: "text-purple-400",
-  archive: "text-amber-400",
-  pdf: "text-red-400",
-  presentation: "text-cyan-400",
-  other: "text-slate-400",
-};
-
-const FILE_BG = {
-  document: "bg-blue-500/10 border-blue-500/20",
-  spreadsheet: "bg-emerald-500/10 border-emerald-500/20",
-  image: "bg-pink-500/10 border-pink-500/20",
-  video: "bg-purple-500/10 border-purple-500/20",
-  archive: "bg-amber-500/10 border-amber-500/20",
-  pdf: "bg-red-500/10 border-red-500/20",
-  presentation: "bg-cyan-500/10 border-cyan-500/20",
-  other: "bg-slate-800/40 border-slate-700/20",
+const TYPE_COLOR = {
+  document: "#3b82f6", spreadsheet: "#10b981", image: "#ec4899",
+  video: "#a855f7", archive: "#f59e0b", pdf: "#ef4444",
+  presentation: "#06b6d4", other: "#64748b",
 };
 
 function formatBytes(bytes) {
-  if (!bytes) return "—";
+  if (!bytes) return "0 B";
   if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  if (bytes < 1024 * 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
-  return `${(bytes / 1024 / 1024 / 1024).toFixed(2)} GB`;
+  if (bytes < 1048576) return `${(bytes / 1024).toFixed(1)} KB`;
+  if (bytes < 1073741824) return `${(bytes / 1048576).toFixed(1)} MB`;
+  return `${(bytes / 1073741824).toFixed(2)} GB`;
 }
 
 function inferFileType(mimeType, name) {
-  if (!mimeType && !name) return "other";
   const ext = name?.split(".").pop()?.toLowerCase();
   if (ext === "fleetslide") return "presentation";
   if (mimeType?.startsWith("image/") || ["jpg","jpeg","png","gif","webp","svg"].includes(ext)) return "image";
@@ -78,11 +41,76 @@ function inferFileType(mimeType, name) {
   return "other";
 }
 
-// Animated scan line overlay
-function ScanLines() {
+// Rotating arc ring
+function ArcRing({ size = 48, color = "#06b6d4", speed = 3, reverse = false, opacity = 0.4 }) {
   return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-xl opacity-[0.03]"
-      style={{ backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,255,0.15) 2px, rgba(0,255,255,0.15) 4px)" }} />
+    <svg width={size} height={size} className="absolute" style={{ opacity }}>
+      <circle cx={size/2} cy={size/2} r={size/2 - 2} fill="none" stroke={color} strokeWidth="1"
+        strokeDasharray={`${size * 0.4} ${size * 3}`}
+        style={{ transformOrigin: "center", animation: `spin ${speed}s linear infinite ${reverse ? "reverse" : ""}` }} />
+    </svg>
+  );
+}
+
+// Hexagon file icon
+function HexIcon({ type, size = 36 }) {
+  const color = TYPE_COLOR[type] || TYPE_COLOR.other;
+  const Icon = FILE_ICONS[type] || File;
+  return (
+    <div className="relative flex items-center justify-center flex-shrink-0" style={{ width: size, height: size }}>
+      <svg width={size} height={size} viewBox="0 0 36 36" className="absolute">
+        <polygon points="18,2 32,10 32,26 18,34 4,26 4,10"
+          fill={`${color}10`} stroke={color} strokeWidth="1" opacity="0.7" />
+        <polygon points="18,6 28,12 28,24 18,30 8,24 8,12"
+          fill="none" stroke={color} strokeWidth="0.5" opacity="0.3" />
+      </svg>
+      <Icon style={{ color, width: 13, height: 13, position: "relative", zIndex: 1 }} />
+    </div>
+  );
+}
+
+// Corner bracket decoration
+function Corners({ color = "#06b6d4" }) {
+  const s = "absolute w-3 h-3";
+  const b = `2px solid ${color}`;
+  return (
+    <>
+      <span className={`${s} top-0 left-0`} style={{ borderTop: b, borderLeft: b }} />
+      <span className={`${s} top-0 right-0`} style={{ borderTop: b, borderRight: b }} />
+      <span className={`${s} bottom-0 left-0`} style={{ borderBottom: b, borderLeft: b }} />
+      <span className={`${s} bottom-0 right-0`} style={{ borderBottom: b, borderRight: b }} />
+    </>
+  );
+}
+
+// Radial storage ring
+function StorageRing({ percent, totalGB, fileCount }) {
+  const r = 40, cx = 52, cy = 52, circumference = 2 * Math.PI * r;
+  const dash = (percent / 100) * circumference;
+  return (
+    <div className="relative flex items-center justify-center" style={{ width: 104, height: 104 }}>
+      <svg width="104" height="104" className="absolute">
+        <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(6,182,212,0.08)" strokeWidth="6" />
+        <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(6,182,212,0.15)" strokeWidth="1" strokeDasharray="4 4" />
+        <motion.circle cx={cx} cy={cy} r={r} fill="none"
+          stroke="url(#arcGrad)" strokeWidth="6" strokeLinecap="round"
+          strokeDasharray={`${dash} ${circumference}`}
+          strokeDashoffset={circumference * 0.25}
+          initial={{ strokeDasharray: `0 ${circumference}` }}
+          animate={{ strokeDasharray: `${dash} ${circumference}` }}
+          transition={{ duration: 1.5, ease: "easeOut" }} />
+        <defs>
+          <linearGradient id="arcGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#06b6d4" />
+            <stop offset="100%" stopColor="#8b5cf6" />
+          </linearGradient>
+        </defs>
+      </svg>
+      <div className="text-center z-10">
+        <div className="text-[10px] font-mono text-cyan-400 font-bold">{totalGB.toFixed(1)}<span className="text-[8px] text-cyan-600"> GB</span></div>
+        <div className="text-[9px] font-mono text-slate-500">{fileCount} FILES</div>
+      </div>
+    </div>
   );
 }
 
@@ -90,7 +118,8 @@ export default function FleetDrivePanel({ orgId, openWindow }) {
   const [search, setSearch] = useState("");
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState([]);
-  const [activeFolder, setActiveFolder] = useState("root");
+  const [activeFolder, setActiveFolder] = useState("all");
+  const [selectedFile, setSelectedFile] = useState(null);
   const fileInputRef = useRef(null);
   const queryClient = useQueryClient();
 
@@ -122,275 +151,300 @@ export default function FleetDrivePanel({ orgId, openWindow }) {
         const res = await base44.integrations.Core.UploadFile({ file });
         const fileUrl = res?.data?.file_url || res?.file_url;
         if (!fileUrl) throw new Error("Upload failed");
-        const fileType = inferFileType(file.type, file.name);
         await base44.entities.FleetDriveFile.create({
-          organization_id: orgId,
-          name: file.name,
-          file_url: fileUrl,
-          file_type: fileType,
-          file_size_bytes: file.size,
-          mime_type: file.type,
-          folder: activeFolder,
-          source: "uploaded",
+          organization_id: orgId, name: file.name, file_url: fileUrl,
+          file_type: inferFileType(file.type, file.name),
+          file_size_bytes: file.size, mime_type: file.type,
+          folder: activeFolder === "all" ? "root" : activeFolder, source: "uploaded",
         });
         setUploadProgress(prev => prev.map((p, idx) => idx === i ? { ...p, done: true } : p));
-      } catch {
-        toast.error(`Failed to upload ${file.name}`);
-      }
+      } catch { toast.error(`Failed: ${file.name}`); }
     }
     queryClient.invalidateQueries({ queryKey: ["fleet-drive", orgId] });
-    toast.success(`${selected.length} file(s) uploaded to Fleet Drive`);
-    setUploading(false);
-    setUploadProgress([]);
+    toast.success(`${selected.length} file(s) uploaded`);
+    setUploading(false); setUploadProgress([]);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  const totalBytes = files.reduce((sum, f) => sum + (f.file_size_bytes || 0), 0);
-  const totalGB = totalBytes / (1024 * 1024 * 1024);
-  const storageCostEur = Math.max(0, Math.ceil(totalGB / 10));
+  const totalBytes = files.reduce((s, f) => s + (f.file_size_bytes || 0), 0);
+  const totalGB = totalBytes / 1073741824;
   const storagePercent = Math.min(100, (totalGB / 100) * 100);
-
   const folders = [...new Set(files.map(f => f.folder || "root"))];
+
   const filtered = files.filter(f => {
-    const matchSearch = !search || f.name?.toLowerCase().includes(search.toLowerCase());
-    const matchFolder = activeFolder === "all" || (f.folder || "root") === activeFolder;
-    return matchSearch && matchFolder;
+    const matchS = !search || f.name?.toLowerCase().includes(search.toLowerCase());
+    const matchF = activeFolder === "all" || (f.folder || "root") === activeFolder;
+    return matchS && matchF;
   });
+
   const pinned = filtered.filter(f => f.is_pinned);
   const unpinned = filtered.filter(f => !f.is_pinned);
 
+  // Type distribution
+  const typeCounts = files.reduce((acc, f) => { acc[f.file_type || "other"] = (acc[f.file_type || "other"] || 0) + 1; return acc; }, {});
+
   return (
-    <div className="relative flex flex-col h-full overflow-hidden"
-      style={{ background: "linear-gradient(180deg, rgba(0,20,40,0.97) 0%, rgba(0,10,25,0.99) 100%)" }}>
-      <ScanLines />
+    <div className="flex flex-col h-full overflow-hidden select-none"
+      style={{ background: "radial-gradient(ellipse at 50% 0%, rgba(6,182,212,0.04) 0%, rgba(0,5,15,0.98) 60%)", fontFamily: "monospace" }}>
+      
+      <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
 
-      {/* Ambient glow top */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-px bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-60" />
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-8 bg-cyan-500/10 blur-xl rounded-full" />
-
-      {/* Header */}
-      <div className="relative flex items-center justify-between px-4 pt-4 pb-3 flex-shrink-0 border-b border-cyan-500/10">
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500/20 to-violet-500/20 border border-cyan-500/30 flex items-center justify-center">
-              <Database className="w-4 h-4 text-cyan-400" />
+      {/* TOP HEADER — JARVIS style */}
+      <div className="relative flex-shrink-0 px-4 pt-4 pb-3">
+        {/* top line */}
+        <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, #06b6d4, #8b5cf6, transparent)" }} />
+        
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-3">
+            {/* Central ring widget */}
+            <div className="relative flex items-center justify-center" style={{ width: 44, height: 44 }}>
+              <ArcRing size={44} color="#06b6d4" speed={6} opacity={0.5} />
+              <ArcRing size={32} color="#8b5cf6" speed={4} reverse opacity={0.4} />
+              <div className="w-4 h-4 rounded-full" style={{ background: "radial-gradient(circle, #06b6d4, #0891b2)", boxShadow: "0 0 12px #06b6d4" }} />
             </div>
-            <div className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-          </div>
-          <div>
-            <div className="flex items-center gap-1.5">
-              <h2 className="font-bold text-white text-sm tracking-wide">FLEET DRIVE</h2>
-              <Badge className="text-[9px] px-1.5 py-0 h-3.5 bg-cyan-500/10 text-cyan-400 border-cyan-500/30 font-mono">v2</Badge>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-bold tracking-[0.2em] uppercase" style={{ color: "#06b6d4", textShadow: "0 0 10px rgba(6,182,212,0.6)" }}>
+                  FLEET DRIVE
+                </span>
+                <span className="text-[9px] px-1.5 py-0.5 rounded border font-mono"
+                  style={{ color: "#8b5cf6", borderColor: "rgba(139,92,246,0.4)", background: "rgba(139,92,246,0.08)" }}>
+                  NEURAL ARCHIVE
+                </span>
+              </div>
+              <div className="text-[9px] tracking-[0.15em] mt-0.5" style={{ color: "rgba(6,182,212,0.45)" }}>
+                SYS.STORAGE · UNIT-{orgId?.slice(-4)?.toUpperCase() || "0000"}
+              </div>
             </div>
-            <p className="text-[10px] text-cyan-500/60 font-mono tracking-widest uppercase">Nexus Neural Storage</p>
           </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="text-right">
-            <p className="text-[10px] text-slate-500 font-mono">{formatBytes(totalBytes)}</p>
-            <p className="text-[10px] text-cyan-400/70 font-mono">€{storageCostEur}/mo</p>
+          <div className="flex items-center gap-2">
+            <button onClick={() => fileInputRef.current?.click()} disabled={uploading}
+              className="relative px-3 py-1.5 text-[10px] font-bold tracking-widest uppercase transition-all"
+              style={{ color: "#06b6d4", border: "1px solid rgba(6,182,212,0.4)", background: "rgba(6,182,212,0.06)" }}>
+              <Corners color="rgba(6,182,212,0.6)" />
+              {uploading ? "UPLOADING..." : "+ UPLOAD"}
+            </button>
+            <input ref={fileInputRef} type="file" multiple onChange={handleUpload} className="hidden" />
           </div>
-          <Button onClick={() => fileInputRef.current?.click()} disabled={uploading} size="sm"
-            className="relative overflow-hidden bg-transparent border border-cyan-500/40 text-cyan-400 hover:border-cyan-400 hover:bg-cyan-500/10 text-xs h-8 font-mono">
-            <span className="absolute inset-0 bg-gradient-to-r from-cyan-500/5 to-violet-500/5" />
-            <Upload className="w-3.5 h-3.5 mr-1.5" />UPLOAD
-          </Button>
-          <input ref={fileInputRef} type="file" multiple onChange={handleUpload} className="hidden" accept="*/*" />
         </div>
       </div>
 
-      {/* Upload Progress */}
+      {/* STATS ROW */}
+      <div className="flex-shrink-0 flex items-center gap-3 px-4 pb-3">
+        <StorageRing percent={storagePercent} totalGB={totalGB} fileCount={files.length} />
+        <div className="flex-1 space-y-1.5">
+          {Object.entries(typeCounts).slice(0, 4).map(([type, count]) => (
+            <div key={type} className="flex items-center gap-2">
+              <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: TYPE_COLOR[type] || "#64748b", boxShadow: `0 0 4px ${TYPE_COLOR[type] || "#64748b"}` }} />
+              <span className="text-[9px] tracking-widest uppercase flex-1" style={{ color: "rgba(148,163,184,0.6)" }}>{type}</span>
+              <span className="text-[9px] font-bold" style={{ color: TYPE_COLOR[type] || "#64748b" }}>{count}</span>
+              <div className="w-12 h-px" style={{ background: `linear-gradient(90deg, ${TYPE_COLOR[type] || "#64748b"}60, transparent)` }} />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* DIVIDER */}
+      <div className="flex-shrink-0 mx-4 mb-3 relative h-px">
+        <div className="absolute inset-0" style={{ background: "linear-gradient(90deg, transparent, rgba(6,182,212,0.3), transparent)" }} />
+        <div className="absolute left-1/2 -translate-x-1/2 -top-1.5 w-3 h-3 border rotate-45"
+          style={{ borderColor: "rgba(6,182,212,0.4)", background: "rgba(6,182,212,0.06)" }} />
+      </div>
+
+      {/* SEARCH */}
+      <div className="flex-shrink-0 px-4 pb-3">
+        <div className="relative">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3" style={{ color: "rgba(6,182,212,0.4)" }} />
+          <input value={search} onChange={e => setSearch(e.target.value)}
+            placeholder="SEARCH NEURAL ARCHIVE..."
+            className="w-full pl-8 pr-3 py-1.5 text-[10px] tracking-widest outline-none"
+            style={{
+              background: "rgba(6,182,212,0.04)", border: "1px solid rgba(6,182,212,0.15)",
+              color: "#06b6d4", caretColor: "#06b6d4",
+            }} />
+          {search && <div className="absolute right-2.5 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "#06b6d4" }} />}
+        </div>
+        {/* Folder tabs */}
+        {folders.length > 1 && (
+          <div className="flex gap-1 mt-2 flex-wrap">
+            {["all", ...folders].map(folder => (
+              <button key={folder} onClick={() => setActiveFolder(folder)}
+                className="px-2 py-0.5 text-[9px] tracking-widest uppercase transition-all"
+                style={{
+                  border: `1px solid ${activeFolder === folder ? "rgba(6,182,212,0.5)" : "rgba(6,182,212,0.12)"}`,
+                  background: activeFolder === folder ? "rgba(6,182,212,0.1)" : "transparent",
+                  color: activeFolder === folder ? "#06b6d4" : "rgba(148,163,184,0.4)",
+                }}>
+                {folder === "all" ? "ALL" : folder === "root" ? "ROOT" : folder}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Upload progress */}
       <AnimatePresence>
         {uploading && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}
-            className="px-4 py-2 bg-cyan-500/5 border-b border-cyan-500/20 flex-shrink-0 space-y-1">
+            className="flex-shrink-0 mx-4 mb-2 px-3 py-2 space-y-1"
+            style={{ border: "1px solid rgba(6,182,212,0.2)", background: "rgba(6,182,212,0.04)" }}>
             {uploadProgress.map((p, i) => (
-              <div key={i} className="flex items-center gap-2 text-xs font-mono">
-                {p.done
-                  ? <CheckCircle className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
-                  : <CloudUpload className="w-3.5 h-3.5 text-cyan-400 animate-pulse flex-shrink-0" />}
-                <span className={p.done ? "text-emerald-300" : "text-cyan-300 animate-pulse"}>{p.name}</span>
-                {!p.done && <span className="ml-auto text-cyan-500/50 text-[10px]">TRANSMITTING...</span>}
+              <div key={i} className="flex items-center gap-2 text-[10px] tracking-widest">
+                {p.done ? <CheckCircle className="w-3 h-3 text-emerald-400 flex-shrink-0" /> : <CloudUpload className="w-3 h-3 animate-pulse flex-shrink-0" style={{ color: "#06b6d4" }} />}
+                <span className="truncate" style={{ color: p.done ? "#10b981" : "#06b6d4" }}>{p.name}</span>
+                {!p.done && <span className="ml-auto opacity-50 text-[9px]" style={{ color: "#06b6d4" }}>SYNC</span>}
               </div>
             ))}
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Search + Folder Tabs */}
-      <div className="px-3 py-2 border-b border-slate-800/40 flex-shrink-0 space-y-2">
-        <div className="relative">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-cyan-500/40" />
-          <Input value={search} onChange={e => setSearch(e.target.value)}
-            placeholder="Search neural archive..."
-            className="pl-8 h-7 text-xs font-mono bg-slate-950/80 border-cyan-500/20 text-cyan-100 placeholder:text-slate-700 focus:border-cyan-500/50 focus:ring-0" />
-          {search && <div className="absolute right-2.5 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />}
-        </div>
-        <div className="flex gap-1 flex-wrap">
-          {["all", ...folders].map(folder => (
-            <button key={folder} onClick={() => setActiveFolder(folder)}
-              className={`px-2 py-0.5 rounded text-[10px] font-mono font-medium transition-all ${
-                activeFolder === folder
-                  ? "bg-cyan-500/15 text-cyan-300 border border-cyan-500/40 shadow-sm shadow-cyan-500/20"
-                  : "text-slate-600 hover:text-slate-400 border border-transparent"
-              }`}>
-              <Folder className="w-2.5 h-2.5 inline mr-1" />
-              {folder === "all" ? "ALL" : folder === "root" ? "ROOT" : folder.toUpperCase()}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* File List */}
-      <div className="flex-1 overflow-y-auto p-3 space-y-1 min-h-0 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-cyan-500/20">
+      {/* FILE LIST */}
+      <div className="flex-1 overflow-y-auto px-4 min-h-0 space-y-0.5 pb-4">
         {isLoading && (
-          <div className="flex flex-col items-center justify-center h-32 gap-3">
-            <div className="relative w-8 h-8">
-              <div className="absolute inset-0 border-2 border-cyan-500/20 rounded-full" />
-              <div className="absolute inset-0 border-t-2 border-cyan-400 rounded-full animate-spin" />
+          <div className="flex flex-col items-center justify-center h-32 gap-2">
+            <div className="relative w-10 h-10">
+              <ArcRing size={40} color="#06b6d4" speed={2} opacity={0.7} />
+              <ArcRing size={28} color="#8b5cf6" speed={1.5} reverse opacity={0.5} />
             </div>
-            <p className="text-[10px] text-cyan-500/50 font-mono animate-pulse">LOADING NEURAL ARCHIVE...</p>
+            <span className="text-[9px] tracking-widest animate-pulse" style={{ color: "rgba(6,182,212,0.5)" }}>INDEXING NEURAL ARCHIVE...</span>
           </div>
         )}
 
         {!isLoading && filtered.length === 0 && (
-          <div className="flex flex-col items-center justify-center h-48 text-center gap-3">
-            <div className="relative w-16 h-16">
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-cyan-500/5 to-violet-500/5 border border-cyan-500/10" />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <Database className="w-7 h-7 text-slate-700" />
-              </div>
+          <div className="flex flex-col items-center justify-center h-40 gap-3">
+            <div className="relative w-12 h-12 flex items-center justify-center">
+              <Corners color="rgba(6,182,212,0.3)" />
+              <File className="w-5 h-5" style={{ color: "rgba(6,182,212,0.3)" }} />
             </div>
-            <div>
-              <p className="text-slate-500 text-xs font-mono font-medium">NO FILES DETECTED</p>
-              <p className="text-slate-700 text-[10px] mt-0.5 font-mono">Initialize neural archive</p>
+            <div className="text-center">
+              <p className="text-[10px] tracking-widest uppercase" style={{ color: "rgba(6,182,212,0.4)" }}>NO DATA DETECTED</p>
+              <p className="text-[9px] mt-1" style={{ color: "rgba(148,163,184,0.3)" }}>Initialize neural archive</p>
             </div>
-            <Button onClick={() => fileInputRef.current?.click()} size="sm"
-              className="bg-transparent border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 text-xs font-mono">
-              <Zap className="w-3.5 h-3.5 mr-1.5" />UPLOAD FIRST FILE
-            </Button>
+            <button onClick={() => fileInputRef.current?.click()}
+              className="px-3 py-1 text-[9px] tracking-widest uppercase transition-all"
+              style={{ border: "1px solid rgba(6,182,212,0.3)", color: "#06b6d4", background: "rgba(6,182,212,0.05)" }}>
+              + UPLOAD FILE
+            </button>
           </div>
         )}
 
         {pinned.length > 0 && (
-          <div className="mb-3">
-            <div className="flex items-center gap-2 mb-2">
-              <Star className="w-3 h-3 text-amber-400" />
-              <span className="text-[10px] text-amber-400/70 font-mono font-semibold uppercase tracking-widest">Pinned</span>
-              <div className="flex-1 h-px bg-amber-500/10" />
+          <>
+            <div className="flex items-center gap-2 py-1.5">
+              <Star className="w-2.5 h-2.5" style={{ color: "#f59e0b" }} />
+              <span className="text-[9px] tracking-[0.2em] uppercase" style={{ color: "rgba(245,158,11,0.6)" }}>PINNED</span>
+              <div className="flex-1 h-px" style={{ background: "rgba(245,158,11,0.15)" }} />
             </div>
-            {pinned.map(f => <FileRow key={f.id} file={f} onDelete={deleteMutation.mutate} onPin={pinMutation.mutate} openWindow={openWindow} />)}
+            {pinned.map(f => <JarvisFileRow key={f.id} file={f} onDelete={deleteMutation.mutate} onPin={pinMutation.mutate} openWindow={openWindow} selected={selectedFile === f.id} onSelect={setSelectedFile} />)}
+          </>
+        )}
+
+        {(pinned.length > 0 && unpinned.length > 0) && (
+          <div className="flex items-center gap-2 py-1.5">
+            <span className="text-[9px] tracking-[0.2em] uppercase" style={{ color: "rgba(6,182,212,0.3)" }}>FILES</span>
+            <div className="flex-1 h-px" style={{ background: "rgba(6,182,212,0.08)" }} />
           </div>
         )}
 
-        {unpinned.length > 0 && pinned.length > 0 && (
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-[10px] text-slate-600 font-mono uppercase tracking-widest">Files</span>
-            <div className="flex-1 h-px bg-slate-800/60" />
-          </div>
-        )}
-
-        {unpinned.map(f => <FileRow key={f.id} file={f} onDelete={deleteMutation.mutate} onPin={pinMutation.mutate} openWindow={openWindow} />)}
+        {unpinned.map(f => <JarvisFileRow key={f.id} file={f} onDelete={deleteMutation.mutate} onPin={pinMutation.mutate} openWindow={openWindow} selected={selectedFile === f.id} onSelect={setSelectedFile} />)}
       </div>
 
-      {/* Footer */}
-      <div className="relative px-4 py-2.5 border-t border-cyan-500/10 flex-shrink-0">
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-500/20 to-transparent" />
-        <div className="flex items-center justify-between mb-1.5">
-          <p className="text-[10px] text-slate-600 font-mono">{files.length} FILES · {formatBytes(totalBytes)}</p>
-          <span className="text-[10px] text-cyan-500/50 font-mono">{totalGB.toFixed(3)} GB</span>
-        </div>
-        <div className="w-full h-1 bg-slate-900 rounded-full overflow-hidden">
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: `${storagePercent}%` }}
-            transition={{ duration: 1, ease: "easeOut" }}
-            className="h-full rounded-full"
-            style={{ background: "linear-gradient(90deg, #06b6d4, #8b5cf6)" }}
-          />
+      {/* BOTTOM BAR */}
+      <div className="flex-shrink-0 relative px-4 py-2">
+        <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(6,182,212,0.25), transparent)" }} />
+        <div className="flex items-center justify-between">
+          <div className="text-[9px] tracking-widest" style={{ color: "rgba(6,182,212,0.35)" }}>
+            {files.length} OBJ · {formatBytes(totalBytes)}
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-20 h-0.5 relative overflow-hidden" style={{ background: "rgba(6,182,212,0.08)" }}>
+              <motion.div className="absolute left-0 top-0 h-full"
+                initial={{ width: 0 }} animate={{ width: `${storagePercent}%` }} transition={{ duration: 1.5 }}
+                style={{ background: "linear-gradient(90deg, #06b6d4, #8b5cf6)", boxShadow: "0 0 6px #06b6d4" }} />
+            </div>
+            <span className="text-[9px]" style={{ color: "rgba(6,182,212,0.4)" }}>{totalGB.toFixed(2)}GB</span>
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
-function FileRow({ file, onDelete, onPin, openWindow }) {
-  const Icon = FILE_ICONS[file.file_type] || File;
-  const colorClass = FILE_COLORS[file.file_type] || "text-slate-400";
-  const bgClass = FILE_BG[file.file_type] || "bg-slate-800/40 border-slate-700/20";
-  const glowClass = FILE_GLOW[file.file_type] || "shadow-slate-500/20";
+function JarvisFileRow({ file, onDelete, onPin, openWindow, selected, onSelect }) {
+  const color = TYPE_COLOR[file.file_type] || TYPE_COLOR.other;
+  const isSelected = selected === file.id;
+
+  const handleOpen = () => {
+    if (!openWindow) return;
+    const ext = file.name?.split('.').pop()?.toLowerCase();
+    const ft = file.file_type;
+    let windowType;
+    if (ext === 'fleetslide' || ft === 'presentation') windowType = 'hologram_presentation';
+    else if (ft === 'document' || ['doc','docx','txt','rtf','odt','html'].includes(ext)) windowType = 'document_editor';
+    else if (ft === 'spreadsheet' || ['xls','xlsx','csv','ods'].includes(ext)) windowType = 'spreadsheet_editor';
+    else windowType = 'hologram_presentation';
+    openWindow(windowType, { x: 120, y: 80 }, { initialFileUrl: file.file_url, initialTitle: file.name });
+  };
 
   return (
     <motion.div
-      initial={{ opacity: 0, x: -8 }}
+      initial={{ opacity: 0, x: -12 }}
       animate={{ opacity: 1, x: 0 }}
-      whileHover={{ x: 2 }}
-      className={`group flex items-center gap-2.5 px-3 py-2 rounded-lg border cursor-default transition-all duration-200 hover:shadow-md ${bgClass} ${glowClass}`}>
+      onClick={() => onSelect(isSelected ? null : file.id)}
+      className="group relative flex items-center gap-3 px-3 py-2 cursor-pointer transition-all"
+      style={{
+        border: `1px solid ${isSelected ? color + "50" : "rgba(6,182,212,0.07)"}`,
+        background: isSelected ? `${color}08` : "rgba(6,182,212,0.02)",
+        marginBottom: 2,
+      }}>
       
-      {/* Icon */}
-      <div className={`w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0 border ${bgClass}`}>
-        <Icon className={`w-3.5 h-3.5 ${colorClass}`} />
-      </div>
+      {/* Left accent bar */}
+      <div className="absolute left-0 top-0 bottom-0 w-0.5 transition-all"
+        style={{ background: isSelected ? color : "transparent", boxShadow: isSelected ? `0 0 6px ${color}` : "none" }} />
 
-      {/* Info */}
+      {/* Scan line on hover */}
+      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
+        style={{ background: `linear-gradient(90deg, ${color}05, transparent)` }} />
+
+      <HexIcon type={file.file_type || "other"} size={32} />
+
       <div className="flex-1 min-w-0">
-        <p className="text-white text-xs font-medium truncate leading-tight">{file.name}</p>
-        <div className="flex items-center gap-1.5 mt-0.5">
-          <span className="text-[10px] text-slate-600 font-mono">{formatBytes(file.file_size_bytes)}</span>
-          {file.file_type && file.file_type !== "other" && (
-            <span className={`text-[9px] font-mono uppercase ${colorClass} opacity-60`}>{file.file_type}</span>
-          )}
+        <div className="flex items-center gap-2">
+          <p className="text-xs font-bold truncate" style={{ color: isSelected ? color : "#e2e8f0", textShadow: isSelected ? `0 0 8px ${color}60` : "none" }}>
+            {file.name}
+          </p>
+          {file.is_pinned && <Star className="w-2.5 h-2.5 flex-shrink-0" style={{ color: "#f59e0b" }} />}
+        </div>
+        <div className="flex items-center gap-2 mt-0.5">
+          <span className="text-[9px] tracking-widest" style={{ color: "rgba(148,163,184,0.4)" }}>{formatBytes(file.file_size_bytes)}</span>
+          <span className="text-[9px] tracking-widest uppercase" style={{ color: `${color}60` }}>{file.file_type || "FILE"}</span>
           {file.source !== "uploaded" && (
-            <Badge className="text-[9px] px-1 py-0 h-3 bg-violet-500/15 text-violet-400 border-violet-500/20 font-mono">
+            <span className="text-[8px] px-1 py-px border"
+              style={{ color: "#8b5cf6", borderColor: "rgba(139,92,246,0.3)", background: "rgba(139,92,246,0.06)" }}>
               {file.source === "document_editor" ? "DOC" : "SHEET"}
-            </Badge>
+            </span>
           )}
         </div>
       </div>
 
-      {/* Actions */}
-      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button size="icon" variant="ghost" className="h-6 w-6 hover:bg-cyan-500/10">
-              <MoreVertical className="w-3 h-3 text-slate-400" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            className="border text-white text-xs font-mono"
-            style={{ background: "rgba(2,10,20,0.97)", borderColor: "rgba(6,182,212,0.2)" }}
-            align="end">
-            <DropdownMenuItem
-              onClick={() => {
-                if (!openWindow) return;
-                const ext = file.name?.split('.').pop()?.toLowerCase();
-                const ft = file.file_type;
-                let windowType;
-                if (ext === 'fleetslide' || ft === 'presentation') windowType = 'hologram_presentation';
-                else if (ft === 'document' || ['doc','docx','txt','rtf','odt','html'].includes(ext)) windowType = 'document_editor';
-                else if (ft === 'spreadsheet' || ['xls','xlsx','csv','ods'].includes(ext)) windowType = 'spreadsheet_editor';
-                else windowType = 'hologram_presentation';
-                openWindow(windowType, { x: 120, y: 80 }, { initialFileUrl: file.file_url, initialTitle: file.name });
-              }}
-              className="flex items-center gap-2 cursor-pointer hover:bg-cyan-500/10 hover:text-cyan-300">
-              <ExternalLink className="w-3.5 h-3.5 text-violet-400" />OPEN IN FLEET AI
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => window.open(file.file_url, "_blank")}
-              className="flex items-center gap-2 cursor-pointer hover:bg-cyan-500/10 hover:text-cyan-300">
-              <Download className="w-3.5 h-3.5 text-cyan-400" />DOWNLOAD
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onPin({ id: file.id, pinned: !file.is_pinned })}
-              className="flex items-center gap-2 cursor-pointer hover:bg-cyan-500/10 hover:text-cyan-300">
-              {file.is_pinned ? <PinOff className="w-3.5 h-3.5 text-amber-400" /> : <Pin className="w-3.5 h-3.5 text-amber-400" />}
-              {file.is_pinned ? "UNPIN" : "PIN"}
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onDelete(file.id)}
-              className="flex items-center gap-2 cursor-pointer text-red-400 hover:bg-red-500/10">
-              <Trash2 className="w-3.5 h-3.5" />DELETE
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+      {/* Action buttons - show on hover or selected */}
+      <div className={`flex items-center gap-1 transition-all ${isSelected ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}>
+        <ActionBtn icon={ExternalLink} color={color} onClick={(e) => { e.stopPropagation(); handleOpen(); }} title="Open" />
+        <ActionBtn icon={Download} color="#06b6d4" onClick={(e) => { e.stopPropagation(); window.open(file.file_url, "_blank"); }} title="Download" />
+        <ActionBtn icon={file.is_pinned ? PinOff : Pin} color="#f59e0b" onClick={(e) => { e.stopPropagation(); onPin({ id: file.id, pinned: !file.is_pinned }); }} title="Pin" />
+        <ActionBtn icon={Trash2} color="#ef4444" onClick={(e) => { e.stopPropagation(); onDelete(file.id); }} title="Delete" />
       </div>
     </motion.div>
+  );
+}
+
+function ActionBtn({ icon: Icon, color, onClick, title }) {
+  return (
+    <button onClick={onClick} title={title}
+      className="w-6 h-6 flex items-center justify-center transition-all hover:scale-110"
+      style={{ border: `1px solid ${color}30`, background: `${color}08` }}>
+      <Icon className="w-3 h-3" style={{ color }} />
+    </button>
   );
 }
