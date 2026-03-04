@@ -1094,25 +1094,7 @@ Return JSON: { "notes": "...speaker notes text..." }`,
               <p className="text-[9px] text-slate-600">Notes visible in presenter mode</p>
             </TabsContent>
 
-            <TabsContent value="advanced" className="flex-1 overflow-y-auto p-3 space-y-3 m-0">
-
-            <TabsContent value="notes" className="flex-1 overflow-y-auto p-3 m-0 flex flex-col gap-2">
-              <div className="flex items-center justify-between">
-                <label className="text-[10px] text-slate-500 font-medium">Speaker Notes</label>
-                <Button onClick={addAISpeakerNotes} disabled={enhancing} size="sm" className="h-6 text-[9px] bg-violet-600/70 hover:bg-violet-600 border-0 gap-0.5">
-                  {enhancing ? <Loader2 className="w-2.5 h-2.5 animate-spin" /> : <Sparkles className="w-2.5 h-2.5" />}AI
-                </Button>
-              </div>
-              <Textarea
-                value={currentSlide?.notes || ""}
-                onChange={e => updateCurrentSlide({ notes: e.target.value })}
-                placeholder="Add speaker notes for this slide..."
-                className="text-xs bg-slate-800/60 border-slate-700/50 text-white resize-none flex-1 min-h-[200px]"
-              />
-              <p className="text-[9px] text-slate-600">Notes visible in presenter mode</p>
-            </TabsContent>
-
-            <TabsContent value="design" className="flex-1 overflow-y-auto p-3 m-0 space-y-4">
+            <TabsContent value="advanced" className="flex-1 overflow-y-auto p-3 m-0 space-y-4">
               <div>
                 <label className="text-[10px] text-slate-500 mb-2 block font-medium uppercase tracking-wider">Theme</label>
                 <div className="grid grid-cols-2 gap-1.5">
