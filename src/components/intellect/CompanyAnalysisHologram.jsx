@@ -273,6 +273,8 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
         }),
       ]);
 
+      const [r1, r2, r3, r4, r5, r6] = results.map(r => r.status === 'fulfilled' ? r.value : null);
+
       const merged = {
         ...(r1 || {}),
         ...(r4 || {}),
