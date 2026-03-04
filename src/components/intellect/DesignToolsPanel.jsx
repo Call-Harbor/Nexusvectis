@@ -566,14 +566,13 @@ export default function DesignToolsPanel({ slide, onUpdate, onAddAnimation, onRe
             </div>
             <div className="grid grid-cols-2 gap-1">
               {ANIMATIONS.map((anim) => (
-                <Button
+                <button
                   key={anim.type}
                   onClick={() => onAddAnimation({ type: anim.type, duration: anim.duration })}
-                  size="sm"
-                  className="h-6 text-[10px] bg-slate-800/60 hover:bg-violet-500/20 border border-slate-700 text-slate-300 hover:text-violet-300"
+                  className="h-6 text-[10px] bg-slate-800/60 hover:bg-violet-500/20 border border-slate-700 text-slate-300 hover:text-violet-300 rounded transition-all"
                 >
                   {anim.label}
-                </Button>
+                </button>
               ))}
             </div>
 
