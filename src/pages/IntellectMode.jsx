@@ -883,15 +883,19 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
           {activeWindows.length === 0 && (
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
               <div className="relative">
-                <div className="absolute inset-0 blur-3xl bg-cyan-500/20 animate-pulse" />
-                <Brain className="w-24 h-24 text-cyan-400 mx-auto mb-6 relative z-10 animate-float-slow" style={{ filter: 'drop-shadow(0 0 20px rgba(6,182,212,0.5))' }} />
+                <div className="absolute inset-0 blur-3xl opacity-30 animate-pulse" style={{ background: "#06b6d4" }} />
+                <div className="w-24 h-24 mx-auto mb-6 relative z-10 flex items-center justify-center" style={{ borderRadius: "50%", border: "2px solid rgba(6,182,212,0.5)", boxShadow: "0 0 30px rgba(6,182,212,0.3)" }}>
+                  <svg width="60" height="60" viewBox="0 0 60 60" style={{ filter: "drop-shadow(0 0 12px rgba(6,182,212,0.4))" }}>
+                    <polygon points="30,10 45,20 45,40 30,50 15,40 15,20" fill="rgba(6,182,212,0.15)" stroke="#06b6d4" strokeWidth="1.5" opacity="0.8" />
+                  </svg>
+                </div>
               </div>
-              <h2 className="text-2xl font-bold mb-4">
-                <span className="bg-gradient-to-r from-cyan-400 via-white to-violet-400 bg-clip-text text-transparent">FLEET AI Standby</span>
+              <h2 className="text-2xl font-bold mb-4 font-mono tracking-widest uppercase" style={{ color: "#06b6d4", textShadow: "0 0 20px rgba(6,182,212,0.4)" }}>
+                FLEET AI
               </h2>
-              <p className="text-slate-400">Advanced analytics ready: predictive maintenance, demand forecasting, CO2 reports, risk assessment, and full fleet control</p>
+              <p className="text-slate-400 text-sm">Advanced analytics ready: predictive maintenance, demand forecasting, CO2 reports, risk assessment, and full fleet control</p>
               <div className="mt-4 flex items-center justify-center gap-2">
-                {[0, 0.2, 0.4].map((delay) => <div key={delay} className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" style={{ animationDelay: `${delay}s` }} />)}
+                {[0, 0.2, 0.4].map((delay) => <div key={delay} className="w-2 h-2 rounded-full animate-pulse" style={{ background: "#06b6d4", animationDelay: `${delay}s` }} />)}
               </div>
             </motion.div>
           )}
