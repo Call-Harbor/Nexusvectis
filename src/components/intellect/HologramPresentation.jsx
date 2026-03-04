@@ -633,6 +633,7 @@ export default function HologramPresentation({ orgId, initialFileUrl, onSaved })
         tags: ["presentation", "fleetslide"],
       });
       toast.success(`✅ Gemt til Fleet Drive → Presentations`);
+      onSaved?.();
     } catch (e) {
       toast.error("Gem fejlede: " + e.message);
     }
