@@ -887,10 +887,15 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
               <div className="relative">
                 <div className="absolute inset-0 blur-3xl opacity-30 animate-pulse" style={{ background: "#06b6d4" }} />
-                <div className="w-24 h-24 mx-auto mb-6 relative z-10 flex items-center justify-center" style={{ borderRadius: "50%", border: "2px solid rgba(6,182,212,0.5)", boxShadow: "0 0 30px rgba(6,182,212,0.3)" }}>
-                  <svg width="60" height="60" viewBox="0 0 60 60" style={{ filter: "drop-shadow(0 0 12px rgba(6,182,212,0.4))" }}>
-                    <polygon points="30,10 45,20 45,40 30,50 15,40 15,20" fill="rgba(6,182,212,0.15)" stroke="#06b6d4" strokeWidth="1.5" opacity="0.8" />
-                  </svg>
+                <div className="mb-6 relative z-10 flex items-center justify-center">
+                  <CircularBrainMenu 
+                    size="lg" 
+                    onAction={(action) => {
+                      if (action === 'advanced_intelligence') setShowAdvancedPanel(true);
+                      else if (action === 'deep_analysis') openWindow('deep_analysis', { x: 100, y: 80 });
+                      else openWindow(action, { x: 100 + Math.random() * 100, y: 80 + Math.random() * 100 });
+                    }}
+                  />
                 </div>
               </div>
               <h2 className="text-2xl font-bold mb-4 font-mono tracking-widest uppercase" style={{ color: "#06b6d4", textShadow: "0 0 20px rgba(6,182,212,0.4)" }}>
