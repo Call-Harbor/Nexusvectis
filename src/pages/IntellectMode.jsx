@@ -23,6 +23,7 @@ import { toast } from "sonner";
 import HologramWindow from "@/components/intellect/HologramWindow";
 import WindowContentRenderer from "@/components/intellect/WindowContentRenderer";
 import { getWindowMeta } from "@/components/intellect/WindowRegistry";
+import CircularBrainMenu from "@/components/intellect/CircularBrainMenu";
 import IntellectHeader from "@/components/intellect/IntellectHeader";
 import IntellectCommandBar from "@/components/intellect/IntellectCommandBar";
 import FleetGlobe3D from "@/components/intellect/FleetGlobe3D";
