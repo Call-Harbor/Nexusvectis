@@ -121,7 +121,7 @@ export default function DesignToolsPanel({ slide, onUpdate, onAddAnimation, onRe
               <div>
                 <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 block">Chart Type</label>
                 <div className="grid grid-cols-3 gap-1">
-                  {["bar", "line", "area"].map((ct) => (
+                  {["bar", "line", "area", "pie", "radar"].map((ct) => (
                     <Button
                       key={ct}
                       onClick={() => onUpdate({ chartType: ct })}
@@ -142,6 +142,57 @@ export default function DesignToolsPanel({ slide, onUpdate, onAddAnimation, onRe
                   className="h-8 text-xs bg-slate-800/60 border-slate-700"
                   placeholder="+18% YoY"
                 />
+              </div>
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Chart Data</label>
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      const newData = [...(slide?.chartData || []), { label: `Item ${(slide?.chartData?.length || 0) + 1}`, value: 50 }];
+                      onUpdate({ chartData: newData });
+                    }}
+                    className="h-5 text-[9px] bg-cyan-600/70 hover:bg-cyan-600 border-0 gap-0.5 px-1.5"
+                  >
+                    <Plus className="w-2.5 h-2.5" />Add
+                  </Button>
+                </div>
+                <div className="space-y-1 max-h-48 overflow-y-auto">
+                  {(slide?.chartData || []).map((point, i) => (
+                    <div key={i} className="flex items-center gap-1">
+                      <Input
+                        value={point.label}
+                        onChange={(e) => {
+                          const newData = [...(slide.chartData || [])];
+                          newData[i] = { ...newData[i], label: e.target.value };
+                          onUpdate({ chartData: newData });
+                        }}
+                        className="h-6 text-[10px] bg-slate-800/60 border-slate-700 px-1.5 flex-1"
+                        placeholder="Label"
+                      />
+                      <Input
+                        type="number"
+                        value={point.value}
+                        onChange={(e) => {
+                          const newData = [...(slide.chartData || [])];
+                          newData[i] = { ...newData[i], value: Number(e.target.value) };
+                          onUpdate({ chartData: newData });
+                        }}
+                        className="h-6 text-[10px] bg-slate-800/60 border-slate-700 px-1.5 w-16"
+                        placeholder="Val"
+                      />
+                      <button
+                        onClick={() => {
+                          const newData = (slide.chartData || []).filter((_, idx) => idx !== i);
+                          onUpdate({ chartData: newData });
+                        }}
+                        className="text-slate-600 hover:text-red-400 flex-shrink-0"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
             </>
           )}
