@@ -103,7 +103,7 @@ export default function FleetDrivePanel({ orgId }) {
         });
         setUploadProgress(prev => prev.map((p, idx) => idx === i ? { ...p, done: true } : p));
       } catch {
-        toast.error(`Fejl ved upload af ${file.name}`);
+        toast.error(`Failed to upload ${file.name}`);
       }
     }
 
