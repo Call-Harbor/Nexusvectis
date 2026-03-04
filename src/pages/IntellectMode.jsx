@@ -32,6 +32,7 @@ import CompanyAnalysisHologram from "@/components/intellect/CompanyAnalysisHolog
 import ProfileSearch from "@/components/intellect/ProfileSearch";
 import CandidateMatcher from "@/components/intellect/CandidateMatcher";
 import MultiScreenManager from "@/components/intellect/MultiScreenManager";
+import FleetAITrainer from "@/components/intellect/FleetAITrainer";
 import { useAdvancedIntellect, AdvancedCommandPanel, InsightRenderer } from "@/components/intellect/AdvancedIntellectEngine";
 import { 
   PredictiveMaintenanceAnalysis, DemandForecastAnalysis, 
