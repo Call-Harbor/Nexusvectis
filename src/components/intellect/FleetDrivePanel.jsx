@@ -222,7 +222,7 @@ export default function FleetDrivePanel({ orgId }) {
 
       {/* Footer stats */}
       <div className="flex items-center justify-between px-4 py-2 border-t border-slate-800/50 flex-shrink-0">
-        <p className="text-[10px] text-slate-600">{files.length} filer · {formatBytes(totalBytes)}</p>
+        <p className="text-[10px] text-slate-600">{files.length} files · {formatBytes(totalBytes)}</p>
         <div className="flex items-center gap-1.5">
           <div className="w-16 h-1 bg-slate-800 rounded-full overflow-hidden">
             <div className="h-full bg-gradient-to-r from-cyan-500 to-violet-500 rounded-full"
