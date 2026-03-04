@@ -215,6 +215,34 @@ export default function FleetAITrainer({ onClose }) {
               </div>
             </div>
 
+            {/* AI Insights */}
+            {aiInsights.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-gradient-to-r from-violet-500/15 to-cyan-500/15 border border-violet-500/30 rounded-lg p-3 space-y-2"
+              >
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-violet-400" />
+                  <p className="text-xs font-semibold text-white">AI Insights</p>
+                </div>
+                <div className="space-y-1">
+                  {aiInsights.map((insight, i) => (
+                    <p key={i} className="text-xs text-slate-300">• {insight}</p>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
+            <Button
+              onClick={analyzeWithAI}
+              disabled={isAnalyzing}
+              className="w-full bg-gradient-to-r from-violet-500 to-cyan-500 hover:from-violet-600 hover:to-cyan-600"
+            >
+              <Sparkles className="w-4 h-4 mr-2" />
+              {isAnalyzing ? 'Analyzing...' : 'Get AI Insights'}
+            </Button>
+
             {/* Training Charts */}
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-slate-800/30 border border-slate-700/50 rounded-lg p-3">
