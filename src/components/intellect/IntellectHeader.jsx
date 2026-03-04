@@ -228,6 +228,10 @@ export default function IntellectHeader({ orgId, openWindow, executePrompt, setS
                 else if (type === 'deep_analysis') openWindow('deep_analysis', { x: 100, y: 80 });
                 else if (type === 'course_ai') openWindow('course_ai', { x: 120, y: 60 });
                 else if (type === 'parallel_processor') setShowParallelProcessor(true);
+                else if (type === 'company_analysis') openWindow('company_analysis', { x: 120, y: 100 });
+                else if (type === 'satellite_weather') openWindow('satellite_weather', { x: 100, y: 80 });
+                else if (type === 'neuro_risk') openWindow('neuro_risk', { x: 140, y: 100 });
+                else if (type === 'news_intelligence') openWindow('news_intelligence', { x: 120, y: 80 });
                 else openWindow(type);
               }}
             >
