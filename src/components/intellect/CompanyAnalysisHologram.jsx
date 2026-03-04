@@ -765,10 +765,11 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
 
       {/* Empty / Loading state */}
       {!companyName && !loading && (
-        <div className="relative z-10 flex flex-col items-center justify-center flex-1 text-center">
-          <Building2 className="w-16 h-16 text-slate-600 mb-4" />
-          <p className="text-slate-400 text-lg">Search a company to begin deep analysis</p>
-          <p className="text-slate-600 text-sm mt-2">Financial data · SWOT · ESG · Leadership · AI Verdict</p>
+        <div className="relative z-10 flex flex-col items-center justify-center flex-1 text-center p-6">
+          <Brain className="w-16 h-16 text-cyan-400/40 mb-4 animate-pulse" />
+          <p className="text-slate-300 text-lg font-semibold">Company Intelligence</p>
+          <p className="text-slate-400 text-sm mt-2">Search a company to begin deep analysis</p>
+          <p className="text-slate-600 text-xs mt-3">Financial data · SWOT · ESG · Leadership · AI Verdict</p>
         </div>
       )}
 
