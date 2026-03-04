@@ -836,7 +836,7 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
 
           {/* Company Analysis */}
           {showCompanyAnalysis && (
-            <CompanyAnalysisHologram companyName={companyAnalysisTarget}
+            <CompanyAnalysisHologram initialName={companyAnalysisTarget}
               onClose={() => { setShowCompanyAnalysis(false); setCompanyAnalysisTarget(null); }}
               onSendToScreen={{ screens: openDesktopWindows, send: sendWindowToScreen }} />
           )}
