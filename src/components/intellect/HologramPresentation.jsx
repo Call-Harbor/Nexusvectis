@@ -1050,7 +1050,13 @@ Return JSON: { "notes": "...speaker notes text..." }`,
                   exit={transition === "zoom" ? { opacity: 0, scale: 1.05 } : transition === "flip" ? { opacity: 0, rotateY: -90 } : transition === "slide" ? { opacity: 0, x: -60 } : { opacity: 0 }}
                   transition={{ duration: 0.35 }}
                   className="w-full h-full">
-                  <SlideRenderer slide={slidesWithIndex[current]} theme={theme} fontSize={fontSize} />
+                  <SlideCanvas
+                    slide={slidesWithIndex[current]}
+                    theme={theme}
+                    fontSize={fontSize}
+                    onUpdate={updateCurrentSlide}
+                    editable={true}
+                  />
                 </motion.div>
               </AnimatePresence>
             </div>
