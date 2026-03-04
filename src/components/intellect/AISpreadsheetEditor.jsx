@@ -1082,14 +1082,20 @@ export default function AISpreadsheetEditor({ initialGrid, initialTitle, initial
         </div>
 
         <div className="flex items-center gap-1 ml-auto">
-          <button onClick={saveSpreadsheet} className="h-6 px-2.5 rounded-lg text-[11px] font-medium text-slate-400 hover:text-white hover:bg-slate-700/60 border border-transparent hover:border-slate-600/40 transition-all flex items-center gap-1.5">
-            <Cloud className="w-3 h-3" />Save
+          <button onClick={saveSpreadsheet}
+            className="px-2.5 py-1 text-[9px] font-bold tracking-widest uppercase font-mono transition-all"
+            style={{ color: "#10b981", border: "1px solid rgba(16,185,129,0.3)", background: "rgba(16,185,129,0.05)" }}>
+            <Cloud className="w-3 h-3 inline mr-1" />SAVE
           </button>
-          <button onClick={downloadCSV} className="h-6 px-2.5 rounded-lg text-[11px] font-medium text-slate-400 hover:text-white hover:bg-slate-700/60 border border-transparent hover:border-slate-600/40 transition-all flex items-center gap-1.5">
-            <Download className="w-3 h-3" />CSV
+          <button onClick={downloadCSV}
+            className="px-2.5 py-1 text-[9px] font-bold tracking-widest uppercase font-mono transition-all"
+            style={{ color: "rgba(148,163,184,0.5)", border: "1px solid rgba(148,163,184,0.15)", background: "transparent" }}>
+            <Download className="w-3 h-3 inline mr-1" />CSV
           </button>
-          <button onClick={() => setShowChart(v => !v)} className={`h-6 px-2.5 rounded-lg text-[11px] font-medium border transition-all flex items-center gap-1.5 ${showChart ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' : 'text-slate-400 hover:text-white hover:bg-slate-700/60 border-transparent hover:border-slate-600/40'}`}>
-            <BarChart3 className="w-3 h-3" />Chart
+          <button onClick={() => setShowChart(v => !v)}
+            className="px-2.5 py-1 text-[9px] font-bold tracking-widest uppercase font-mono transition-all"
+            style={{ color: showChart ? "#10b981" : "rgba(148,163,184,0.5)", border: `1px solid ${showChart ? "rgba(16,185,129,0.4)" : "rgba(148,163,184,0.15)"}`, background: showChart ? "rgba(16,185,129,0.08)" : "transparent" }}>
+            <BarChart3 className="w-3 h-3 inline mr-1" />CHART
           </button>
 
           {/* Formula picker dropdown */}
