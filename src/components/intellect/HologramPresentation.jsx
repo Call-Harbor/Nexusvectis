@@ -932,7 +932,7 @@ Return JSON: { "notes": "...speaker notes text..." }`,
           </div>
           <Button onClick={saveToFleetDrive} size="sm" variant="outline"
             className="border-slate-700 text-slate-300 hover:bg-slate-800 text-xs h-7 gap-1">
-            <Download className="w-3 h-3" />Gem
+            <Download className="w-3 h-3" />Save
           </Button>
           <Button onClick={() => { setIsPresenting(true); openPresenterWindow(); }} size="sm"
             className="bg-gradient-to-r from-cyan-500 to-violet-500 hover:opacity-90 border-0 text-xs h-7 gap-1">
