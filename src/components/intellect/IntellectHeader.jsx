@@ -89,6 +89,7 @@ const APP_CATEGORIES = [
 
 function AppSearchDropdown({ onSelect, children }) {
   const [search, setSearch] = useState("");
+  const [open, setOpen] = useState(false);
 
   const filtered = useMemo(() => {
     if (!search) return APP_CATEGORIES;
@@ -99,7 +100,7 @@ function AppSearchDropdown({ onSelect, children }) {
   }, [search]);
 
   return (
-    <DropdownMenu>
+    <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="bg-slate-900 border-slate-800 w-80 p-0">
         <div className="sticky top-0 p-3 border-b border-slate-800 bg-slate-900/95 backdrop-blur">
@@ -118,7 +119,10 @@ function AppSearchDropdown({ onSelect, children }) {
                 {items.map(([type, Icon, label]) => (
                   <button
                     key={type}
-                    onClick={() => onSelect(type)}
+                    onClick={() => {
+                      onSelect(type);
+                      setOpen(false);
+                    }}
                     className="flex items-center gap-2 px-2.5 py-2 rounded-lg hover:bg-slate-800/60 transition-all text-left group"
                   >
                     <Icon className="w-4 h-4 text-cyan-400 group-hover:text-cyan-300 flex-shrink-0" />
