@@ -183,7 +183,7 @@ export default function IntellectHeader({ orgId, openWindow, executePrompt, setS
   const navigate = useNavigate();
 
   return (
-    <div className="relative" style={{ background: "rgba(0,10,25,0.97)", borderBottom: "1px solid rgba(6,182,212,0.15)" }}>
+    <div className="relative backdrop-blur-sm" style={{ background: "rgba(0,10,25,0.15)", borderBottom: "1px solid rgba(6,182,212,0.15)" }}>
       <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, #06b6d4, #8b5cf6, transparent)" }} />
       <div className="p-3 sm:p-4 lg:p-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 max-w-7xl mx-auto">
