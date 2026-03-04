@@ -123,6 +123,7 @@ export default function CompanyAnalysisHologram({ companyName: initialName, onCl
     setError(null);
     setData(null);
     setCompanyName(name);
+    setPersonSearch('');
     
     let searchHint = '';
     if (searchType === 'cvr') {
