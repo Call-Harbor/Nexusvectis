@@ -280,7 +280,7 @@ function FileRow({ file, onDelete, onPin }) {
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => onDelete(file.id)}
               className="flex items-center gap-2 cursor-pointer text-red-400 hover:bg-red-500/10">
-              <Trash2 className="w-3.5 h-3.5" />Slet
+              <Trash2 className="w-3.5 h-3.5" />Delete
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
