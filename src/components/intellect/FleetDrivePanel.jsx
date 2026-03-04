@@ -144,8 +144,8 @@ export default function FleetDrivePanel({ orgId }) {
         </div>
         <div className="flex items-center gap-2">
           <div className="text-right">
-            <p className="text-[10px] text-slate-500">{formatBytes(totalBytes)} brugt</p>
-            <p className="text-[10px] text-cyan-400 font-semibold">€{storageCostEur}/md — €1 per 10 GB</p>
+            <p className="text-[10px] text-slate-500">{formatBytes(totalBytes)} used</p>
+            <p className="text-[10px] text-cyan-400 font-semibold">€{storageCostEur}/mo — €1 per 10 GB</p>
           </div>
           <Button onClick={() => fileInputRef.current?.click()} disabled={uploading} size="sm"
             className="bg-gradient-to-r from-cyan-500 to-violet-500 hover:opacity-90 border-0 text-xs h-8">
