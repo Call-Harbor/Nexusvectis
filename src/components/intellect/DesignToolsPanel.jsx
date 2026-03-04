@@ -135,9 +135,225 @@ export default function DesignToolsPanel({ slide, onUpdate, onAddAnimation, onRe
               <Textarea
                 value={(slide?.bullets || []).join("\n")}
                 onChange={(e) => onUpdate({ bullets: e.target.value.split("\n").filter(b => b.trim()) })}
-                className="text-xs bg-slate-800/60 border-slate-700 resize-none min-h-[80px]"
+                className="text-xs bg-slate-800/60 border-slate-700 resize-none min-h-[80px] text-white"
                 placeholder="• First point&#10;• Second point&#10;• Third point"
               />
+            </div>
+          )}
+
+          {slide?.type === "split" && (
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Stats/Tabel</label>
+                <button
+                  onClick={() => onUpdate({ stats: [...(slide?.stats || []), { label: "Nyt felt", value: "0", delta: "" }] })}
+                  className="text-[9px] px-1.5 py-0.5 rounded bg-cyan-600/70 hover:bg-cyan-600 text-white flex items-center gap-0.5"
+                >
+                  <Plus className="w-2.5 h-2.5" />Tilføj
+                </button>
+              </div>
+              <div className="space-y-1.5 max-h-48 overflow-y-auto">
+                {(slide?.stats || []).map((stat, i) => (
+                  <div key={i} className="flex items-center gap-1">
+                    <input
+                      value={stat.label}
+                      onChange={(e) => {
+                        const s = [...slide.stats];
+                        s[i] = { ...s[i], label: e.target.value };
+                        onUpdate({ stats: s });
+                      }}
+                      className="h-7 text-xs bg-slate-800 border border-slate-700 rounded px-2 flex-1 text-white outline-none focus:border-cyan-500"
+                      placeholder="Label"
+                    />
+                    <input
+                      value={stat.value}
+                      onChange={(e) => {
+                        const s = [...slide.stats];
+                        s[i] = { ...s[i], value: e.target.value };
+                        onUpdate({ stats: s });
+                      }}
+                      className="h-7 text-xs bg-slate-800 border border-slate-700 rounded px-2 w-16 text-white outline-none focus:border-cyan-500"
+                      placeholder="Værdi"
+                    />
+                    <input
+                      value={stat.delta || ""}
+                      onChange={(e) => {
+                        const s = [...slide.stats];
+                        s[i] = { ...s[i], delta: e.target.value };
+                        onUpdate({ stats: s });
+                      }}
+                      className="h-7 text-xs bg-slate-800 border border-slate-700 rounded px-2 w-14 text-white outline-none focus:border-cyan-500"
+                      placeholder="+5%"
+                    />
+                    <button
+                      onClick={() => onUpdate({ stats: slide.stats.filter((_, idx) => idx !== i) })}
+                      className="text-slate-600 hover:text-red-400 p-1 flex-shrink-0"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {slide?.type === "impact" && (
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Sub-metrics</label>
+                <button
+                  onClick={() => onUpdate({ submetrics: [...(slide?.submetrics || []), { label: "Nyt", value: "0" }] })}
+                  className="text-[9px] px-1.5 py-0.5 rounded bg-cyan-600/70 hover:bg-cyan-600 text-white flex items-center gap-0.5"
+                >
+                  <Plus className="w-2.5 h-2.5" />Tilføj
+                </button>
+              </div>
+              <div className="space-y-1 max-h-32 overflow-y-auto">
+                {(slide?.submetrics || []).map((m, i) => (
+                  <div key={i} className="flex items-center gap-1">
+                    <input
+                      value={m.label}
+                      onChange={(e) => {
+                        const s = [...slide.submetrics];
+                        s[i] = { ...s[i], label: e.target.value };
+                        onUpdate({ submetrics: s });
+                      }}
+                      className="h-7 text-xs bg-slate-800 border border-slate-700 rounded px-2 flex-1 text-white outline-none focus:border-cyan-500"
+                      placeholder="Label"
+                    />
+                    <input
+                      value={m.value}
+                      onChange={(e) => {
+                        const s = [...slide.submetrics];
+                        s[i] = { ...s[i], value: e.target.value };
+                        onUpdate({ submetrics: s });
+                      }}
+                      className="h-7 text-xs bg-slate-800 border border-slate-700 rounded px-2 w-16 text-white outline-none focus:border-cyan-500"
+                      placeholder="Værdi"
+                    />
+                    <button
+                      onClick={() => onUpdate({ submetrics: slide.submetrics.filter((_, idx) => idx !== i) })}
+                      className="text-slate-600 hover:text-red-400 p-1 flex-shrink-0"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {slide?.type === "timeline" && (
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Events</label>
+                <button
+                  onClick={() => onUpdate({ events: [...(slide?.events || []), { period: "Q?", title: "Nyt event", description: "" }] })}
+                  className="text-[9px] px-1.5 py-0.5 rounded bg-cyan-600/70 hover:bg-cyan-600 text-white flex items-center gap-0.5"
+                >
+                  <Plus className="w-2.5 h-2.5" />Tilføj
+                </button>
+              </div>
+              <div className="space-y-2 max-h-48 overflow-y-auto">
+                {(slide?.events || []).map((ev, i) => (
+                  <div key={i} className="rounded-lg bg-slate-800/60 border border-slate-700 p-2 space-y-1">
+                    <div className="flex items-center gap-1">
+                      <input
+                        value={ev.period}
+                        onChange={(e) => {
+                          const s = [...slide.events];
+                          s[i] = { ...s[i], period: e.target.value };
+                          onUpdate({ events: s });
+                        }}
+                        className="h-6 text-xs bg-slate-900 border border-slate-700 rounded px-2 w-14 text-white outline-none focus:border-cyan-500"
+                        placeholder="Q1"
+                      />
+                      <input
+                        value={ev.title}
+                        onChange={(e) => {
+                          const s = [...slide.events];
+                          s[i] = { ...s[i], title: e.target.value };
+                          onUpdate({ events: s });
+                        }}
+                        className="h-6 text-xs bg-slate-900 border border-slate-700 rounded px-2 flex-1 text-white outline-none focus:border-cyan-500"
+                        placeholder="Titel"
+                      />
+                      <button
+                        onClick={() => onUpdate({ events: slide.events.filter((_, idx) => idx !== i) })}
+                        className="text-slate-600 hover:text-red-400 p-0.5 flex-shrink-0"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                    <input
+                      value={ev.description}
+                      onChange={(e) => {
+                        const s = [...slide.events];
+                        s[i] = { ...s[i], description: e.target.value };
+                        onUpdate({ events: s });
+                      }}
+                      className="h-6 text-xs bg-slate-900 border border-slate-700 rounded px-2 w-full text-white outline-none focus:border-cyan-500"
+                      placeholder="Beskrivelse..."
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {slide?.type === "comparison" && (
+            <div>
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 block">Kolonner</label>
+              {(slide?.columns || []).map((col, ci) => (
+                <div key={ci} className="mb-3 rounded-lg bg-slate-800/60 border border-slate-700 p-2">
+                  <input
+                    value={col.label}
+                    onChange={(e) => {
+                      const cols = [...slide.columns];
+                      cols[ci] = { ...cols[ci], label: e.target.value };
+                      onUpdate({ columns: cols });
+                    }}
+                    className="h-7 text-xs bg-slate-900 border border-slate-700 rounded px-2 w-full text-white outline-none focus:border-cyan-500 mb-1.5"
+                    placeholder="Kolonne navn"
+                  />
+                  <div className="space-y-1">
+                    {(col.items || []).map((item, ii) => (
+                      <div key={ii} className="flex gap-1">
+                        <input
+                          value={item}
+                          onChange={(e) => {
+                            const cols = [...slide.columns];
+                            cols[ci] = { ...cols[ci], items: col.items.map((it, idx) => idx === ii ? e.target.value : it) };
+                            onUpdate({ columns: cols });
+                          }}
+                          className="h-6 text-xs bg-slate-900 border border-slate-700 rounded px-2 flex-1 text-white outline-none focus:border-cyan-500"
+                          placeholder="Punkt..."
+                        />
+                        <button
+                          onClick={() => {
+                            const cols = [...slide.columns];
+                            cols[ci] = { ...cols[ci], items: col.items.filter((_, idx) => idx !== ii) };
+                            onUpdate({ columns: cols });
+                          }}
+                          className="text-slate-600 hover:text-red-400 p-0.5"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                    <button
+                      onClick={() => {
+                        const cols = [...slide.columns];
+                        cols[ci] = { ...cols[ci], items: [...(col.items || []), "Nyt punkt"] };
+                        onUpdate({ columns: cols });
+                      }}
+                      className="text-[9px] text-cyan-400 hover:text-cyan-300 flex items-center gap-0.5 mt-1"
+                    >
+                      <Plus className="w-2.5 h-2.5" />Tilføj punkt
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
 
