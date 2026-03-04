@@ -1,0 +1,90 @@
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Brain, Building2, Newspaper, Shield, Satellite } from "lucide-react";
+
+export default function CircularBrainMenu({ onAction, size = "md", isLogo = false }) {
+  const [showMenu, setShowMenu] = useState(false);
+
+  const quickActions = [
+    { icon: Building2, action: 'company' },
+    { icon: Building2, action: 'people' },
+    { icon: Satellite, action: 'weather' },
+    { icon: Shield, action: 'risk' },
+    { icon: Newspaper, action: 'news' },
+  ];
+
+  const sizeConfig = {
+    sm: { container: "w-20 h-20", brain: "w-5 h-5", button: "w-6 h-6", icon: "w-3 h-3", radius: 45 },
+    md: { container: "w-28 h-28", brain: "w-8 h-8", button: "w-8 h-8", icon: "w-4 h-4", radius: 55 },
+    lg: { container: "w-40 h-40", brain: "w-10 h-10", button: "w-10 h-10", icon: "w-5 h-5", radius: 70 },
+  };
+
+  const config = sizeConfig[size];
+
+  return (
+    <div className="relative inline-flex items-center justify-center">
+      <div className={`relative ${config.container}`}>
+        {/* Center Brain Button */}
+        <button
+          onClick={() => {
+            setShowMenu(!showMenu);
+            if (!isLogo) onAction?.('brain');
+          }}
+          className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-full flex items-center justify-center transition-all z-20`}
+          style={{
+            border: "2px solid rgba(6,182,212,0.5)",
+            background: "rgba(6,182,212,0.08)",
+            boxShadow: showMenu ? "0 0 30px rgba(6,182,212,0.4)" : "0 0 15px rgba(6,182,212,0.2)",
+            width: isLogo ? "100%" : "auto",
+            height: isLogo ? "100%" : "auto",
+          }}
+        >
+          <Brain className={config.brain} style={{ color: "#06b6d4" }} />
+        </button>
+
+        {/* Circular Menu Items */}
+        {!isLogo && (
+          <AnimatePresence>
+            {showMenu && (
+              <div className="absolute inset-0">
+                {quickActions.map((action, idx) => {
+                  const angle = (idx / quickActions.length) * Math.PI * 2;
+                  const Icon = action.icon;
+                  const x = Math.cos(angle) * config.radius;
+                  const y = Math.sin(angle) * config.radius;
+
+                  return (
+                    <motion.div
+                      key={idx}
+                      initial={{ opacity: 0, scale: 0 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0 }}
+                      transition={{ delay: idx * 0.05, duration: 0.3 }}
+                      className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
+                      style={{ x, y }}
+                    >
+                      <button
+                        onClick={() => {
+                          onAction?.(action.action);
+                          setShowMenu(false);
+                        }}
+                        className={`${config.button} rounded-full flex items-center justify-center border transition-all hover:scale-110`}
+                        style={{
+                          border: "1.5px solid rgba(139,92,246,0.4)",
+                          background: "rgba(139,92,246,0.08)",
+                          boxShadow: "0 0 12px rgba(139,92,246,0.2)",
+                        }}
+                      >
+                        <Icon className={config.icon} style={{ color: "#8b5cf6" }} />
+                      </button>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            )}
+          </AnimatePresence>
+        )}
+      </div>
+    </div>
+  );
+}
