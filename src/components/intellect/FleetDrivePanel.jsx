@@ -175,7 +175,7 @@ export default function FleetDrivePanel({ orgId }) {
         <div className="relative">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
           <Input value={search} onChange={e => setSearch(e.target.value)}
-            placeholder="Søg filer..." className="pl-8 h-7 text-xs bg-slate-900/60 border-slate-700/50 text-white placeholder:text-slate-600" />
+            placeholder="Search files..." className="pl-8 h-7 text-xs bg-slate-900/60 border-slate-700/50 text-white placeholder:text-slate-600" />
         </div>
         <div className="flex gap-1 flex-wrap">
           {["all", ...folders].map(folder => (
