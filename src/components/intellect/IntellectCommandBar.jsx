@@ -104,11 +104,12 @@ export default function IntellectCommandBar({
             )}
           </AnimatePresence>
 
-          <div className="flex gap-2 sm:gap-3">
+          <div className="flex gap-3 sm:gap-4">
             <input type="text" value={input} onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); processCommand(); } }}
-              placeholder="Command FLEET AI... (e.g. 'generate tasks for fleet expansion project', 'weekly project summary', 'identify risks for route optimization project')"
-              className="flex-1 px-3 py-2.5 sm:px-4 sm:py-3 lg:px-6 lg:py-4 bg-slate-900/60 border-2 border-cyan-500/40 rounded-xl sm:rounded-2xl text-sm sm:text-base text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-400 focus:shadow-lg focus:shadow-cyan-500/20 backdrop-blur-xl transition-all"
+              placeholder="COMMAND FLEET AI..."
+              className="flex-1 px-4 py-3 sm:px-5 sm:py-3.5 bg-slate-950 border-2 rounded-lg sm:rounded-xl text-sm sm:text-base text-cyan-400 placeholder:text-slate-600 focus:outline-none focus:border-cyan-500 focus:shadow-lg focus:shadow-cyan-500/30 font-mono tracking-wide backdrop-blur transition-all"
+              style={{ borderColor: "rgba(6,182,212,0.5)" }}
             />
             <input ref={fileInputRef} type="file" multiple onChange={handleFileUpload} className="hidden" accept="*/*" />
             <Button onClick={() => fileInputRef.current?.click()} disabled={isUploading} size="sm"
