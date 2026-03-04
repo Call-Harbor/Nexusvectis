@@ -45,10 +45,11 @@ function formatBytes(bytes) {
 function inferFileType(mimeType, name) {
   if (!mimeType && !name) return "other";
   const ext = name?.split(".").pop()?.toLowerCase();
+  if (ext === "fleetslide") return "presentation";
   if (mimeType?.startsWith("image/") || ["jpg","jpeg","png","gif","webp","svg"].includes(ext)) return "image";
   if (mimeType?.startsWith("video/") || ["mp4","mov","avi","mkv"].includes(ext)) return "video";
   if (mimeType === "application/pdf" || ext === "pdf") return "pdf";
-  if (["doc","docx","txt","rtf","odt"].includes(ext)) return "document";
+  if (["doc","docx","txt","rtf","odt","html"].includes(ext)) return "document";
   if (["xls","xlsx","csv","ods"].includes(ext)) return "spreadsheet";
   if (["zip","rar","tar","gz","7z"].includes(ext)) return "archive";
   return "other";
@@ -270,10 +271,11 @@ function FileRow({ file, onDelete, onPin, openWindow }) {
               onClick={() => {
                 if (!openWindow) return;
                 const ext = file.name?.split('.').pop()?.toLowerCase();
-                let windowType = 'fleet_drive';
-                if (ext === 'fleetslide') windowType = 'hologram_presentation';
-                else if (['doc','docx','txt','rtf','odt'].includes(ext)) windowType = 'document_editor';
-                else if (['xls','xlsx','csv','ods'].includes(ext)) windowType = 'spreadsheet_editor';
+                const ft = file.file_type;
+                let windowType;
+                if (ext === 'fleetslide' || ft === 'presentation') windowType = 'hologram_presentation';
+                else if (ft === 'document' || ['doc','docx','txt','rtf','odt','html'].includes(ext)) windowType = 'document_editor';
+                else if (ft === 'spreadsheet' || ['xls','xlsx','csv','ods'].includes(ext)) windowType = 'spreadsheet_editor';
                 else windowType = 'hologram_presentation';
                 openWindow(windowType, { x: 120, y: 80 }, { initialFileUrl: file.file_url, initialTitle: file.name });
               }}
