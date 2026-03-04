@@ -29,7 +29,7 @@ export default function FleetAITrainer({ onClose }) {
   const [newDataLabel, setNewDataLabel] = useState('');
   const [showAddData, setShowAddData] = useState(false);
 
-  const trainingData = [
+  const chartData = [
     { epoch: 1, loss: 0.85, accuracy: 78 },
     { epoch: 2, loss: 0.72, accuracy: 82 },
     { epoch: 3, loss: 0.61, accuracy: 86 },
