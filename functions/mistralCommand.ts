@@ -442,17 +442,25 @@ EXAMPLES:
     if (file_urls && file_urls.length > 0) {
       console.log('🖼️ Processing with files, using InvokeLLM', { file_urls });
       
-      // Pre-process fleetslide files: fetch JSON and inline as text context
+      // Pre-process Fleet-native text files: fetch content and inline as text context
+      // instead of passing them as image file_urls (which the vision model can't read as binary/text)
       const processedFileUrls = [];
       let inlineFleetContext = '';
+      const TEXT_EXTENSIONS = ['.fleetslide', '.html', '.htm', '.csv', '.txt', '.json', '.md', '.xml', '.js', '.ts'];
       for (const url of file_urls) {
-        if (url.toLowerCase().includes('.fleetslide') || url.toLowerCase().includes('fleetslide')) {
+        const urlLower = url.toLowerCase().split('?')[0]; // strip query params for ext check
+        const isTextFile = TEXT_EXTENSIONS.some(ext => urlLower.endsWith(ext));
+        if (isTextFile) {
           try {
             const r = await fetch(url);
-            const json = await r.text();
-            inlineFleetContext += `\n\nFLEETSLIDE PRESENTATION FILE:\n${json.substring(0, 20000)}`;
+            const text = await r.text();
+            const label = urlLower.endsWith('.fleetslide') ? 'FLEETSLIDE PRESENTATION'
+              : urlLower.endsWith('.html') || urlLower.endsWith('.htm') ? 'HTML DOCUMENT'
+              : urlLower.endsWith('.csv') ? 'CSV SPREADSHEET'
+              : 'TEXT FILE';
+            inlineFleetContext += `\n\n${label} CONTENT:\n${text.substring(0, 25000)}`;
           } catch {}
-          // Don't add to processedFileUrls since LLM can't open JSON as image
+          // Don't add to processedFileUrls — LLM can't read these as image attachments
         } else {
           processedFileUrls.push(url);
         }
