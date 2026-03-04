@@ -1142,9 +1142,10 @@ export default function AISpreadsheetEditor({ initialGrid, initialTitle, initial
           </div>
 
           <button onClick={generateAI} disabled={aiLoading}
-            className="h-6 px-3 rounded-lg text-[11px] font-semibold bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 text-white transition-all flex items-center gap-1.5 disabled:opacity-50">
-            {aiLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
-            AI Analyze
+            className="px-3 py-1 text-[9px] font-bold tracking-widest uppercase font-mono transition-all disabled:opacity-40"
+            style={{ color: "#8b5cf6", border: "1px solid rgba(139,92,246,0.4)", background: "rgba(139,92,246,0.08)" }}>
+            {aiLoading ? <Loader2 className="w-3 h-3 inline mr-1 animate-spin" /> : <Sparkles className="w-3 h-3 inline mr-1" />}
+            AI ANALYZE
           </button>
         </div>
       </div>
