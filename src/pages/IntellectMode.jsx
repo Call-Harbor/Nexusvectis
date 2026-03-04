@@ -213,8 +213,8 @@ export default function IntellectMode() {
   const detectFleetFileType = (name) => {
     const ext = name?.split('.').pop()?.toLowerCase();
     if (ext === 'fleetslide') return 'hologram_presentation';
-    if (['doc','docx','txt','rtf','odt','html'].includes(ext)) return 'document_editor';
-    if (['xls','xlsx','csv','ods'].includes(ext)) return 'spreadsheet_editor';
+    if (ext === 'fleetdoc') return 'document_editor';
+    if (ext === 'fleetsheet') return 'spreadsheet_editor';
     return null;
   };
 
