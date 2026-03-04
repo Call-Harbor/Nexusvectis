@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
-import { Send, Mic, Zap, Paperclip, FileText, X, Sparkles, Shield, Building2, Satellite, Newspaper, Brain } from "lucide-react";
+import { Send, Mic, Zap, Paperclip, FileText, X, Sparkles, Shield, Building2, Satellite, Newspaper, LayoutDashboard } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -12,17 +12,7 @@ export default function IntellectCommandBar({
   isListening, setIsListening, fileInputRef,
   processCommand, setShowCompanyAnalysis, setShowProfileSearch, handleQuickAction, openWindow,
 }) {
-  const [showQuickMenu, setShowQuickMenu] = useState(false);
-  
   const removeFile = (index) => setUploadedFiles(prev => prev.filter((_, i) => i !== index));
-  
-  const quickActions = [
-    { label: 'Company', icon: Building2, color: 'fuchsia', action: () => openWindow('company_analytics', { x: 0, y: 0 }) },
-    { label: 'People', icon: Building2, color: 'blue', action: () => openWindow('profile_search', { x: 0, y: 0 }) },
-    { label: 'Weather', icon: Satellite, color: 'violet', action: () => handleQuickAction('openSatelliteWeather') },
-    { label: 'Risk', icon: Shield, color: 'red', action: () => handleQuickAction('openNeuroRisk') },
-    { label: 'News', icon: Newspaper, color: 'emerald', action: () => handleQuickAction('openNewsIntelligence') },
-  ];
 
   const handleFileUpload = async (e) => {
     const { base44 } = await import("@/api/base44Client");
