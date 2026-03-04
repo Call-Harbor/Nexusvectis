@@ -230,6 +230,7 @@ export default function AIDocumentEditor({ initialContent, initialTitle, orgId }
         <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-cyan-500 to-violet-600 flex items-center justify-center flex-shrink-0 shadow-lg shadow-cyan-500/20">
           <FileText className="w-3.5 h-3.5 text-white" />
         </div>
+        <span className="text-[10px] font-bold text-cyan-400 tracking-widest uppercase mr-1">FleetDocs</span>
         <input
           type="text"
           value={documentTitle}

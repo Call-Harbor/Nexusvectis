@@ -1033,6 +1033,7 @@ export default function AISpreadsheetEditor({ initialGrid, initialTitle, orgId }
         <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-emerald-500 to-cyan-600 flex items-center justify-center flex-shrink-0 shadow-lg shadow-emerald-500/20">
           <BarChart3 className="w-3.5 h-3.5 text-white" />
         </div>
+        <span className="text-[10px] font-bold text-emerald-400 tracking-widest uppercase mr-1">FleetSheet</span>
         <input value={sheetName} onChange={e => setSheetName(e.target.value)}
           className="bg-transparent border-0 text-white text-sm font-semibold outline-none placeholder:text-slate-600 w-44 hover:bg-slate-800/40 focus:bg-slate-800/40 rounded px-1.5 py-0.5 transition-all"
           placeholder="Untitled spreadsheet" />
