@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import DesignToolsPanel from "./DesignToolsPanel";
+import SlideCanvas from "./SlideCanvas";
 import {
   BarChart, Bar, LineChart, Line, AreaChart, Area, PieChart, Pie,
   Cell, ResponsiveContainer, XAxis, YAxis, Tooltip, RadarChart,
