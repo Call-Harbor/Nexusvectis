@@ -66,8 +66,8 @@ const APP_CATEGORIES = [
     ['parallel_processor', Zap, 'Parallel Processor'],
   ]],
   ['Productivity', [
-    ['document_editor', FileText, 'Document Editor'],
-    ['spreadsheet_editor', BarChart3, 'Spreadsheet'],
+    ['document_editor', FileText, 'FleetDocs'],
+    ['spreadsheet_editor', BarChart3, 'FleetSheet'],
     ['hologram_presentation', MonitorPlay, 'FleetSlide'],
     ['project_management', ListTodo, 'PM Dashboard'],
     ['fleet_drive', HardDrive, 'Fleet Drive'],
