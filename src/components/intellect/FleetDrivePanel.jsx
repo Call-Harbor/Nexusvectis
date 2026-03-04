@@ -182,7 +182,7 @@ export default function FleetDrivePanel({ orgId }) {
             <button key={folder} onClick={() => setActiveFolder(folder)}
               className={`px-2 py-0.5 rounded text-[10px] font-medium transition-all ${activeFolder === folder ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/40" : "text-slate-500 hover:text-slate-300"}`}>
               <Folder className="w-2.5 h-2.5 inline mr-1" />
-              {folder === "all" ? "Alle" : folder === "root" ? "Hjem" : folder}
+              {folder === "all" ? "All" : folder === "root" ? "Home" : folder}
             </button>
           ))}
         </div>
