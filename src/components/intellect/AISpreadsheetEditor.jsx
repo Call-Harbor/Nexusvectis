@@ -779,6 +779,29 @@ export default function AISpreadsheetEditor({ initialGrid, initialTitle, initial
     }
     return makeGrid(INITIAL_ROWS, INITIAL_COLS);
   });
+  // Load from URL if provided
+  useEffect(() => {
+    if (!initialFileUrl) return;
+    fetch(initialFileUrl).then(r => r.text()).then(text => {
+      const rows = text.split('\n').filter(r => r.trim()).map(row => {
+        const cells = [];
+        let cur = '', inQ = false;
+        for (const ch of row) {
+          if (ch === '"') { inQ = !inQ; continue; }
+          if (ch === ',' && !inQ) { cells.push(makeCell(cur.trim())); cur = ''; continue; }
+          cur += ch;
+        }
+        cells.push(makeCell(cur.trim()));
+        return cells;
+      });
+      if (rows.length > 0) {
+        while (rows.length < INITIAL_ROWS) rows.push(Array(rows[0].length || INITIAL_COLS).fill(null).map(() => makeCell()));
+        rows.forEach(row => { while (row.length < (rows[0].length || INITIAL_COLS)) row.push(makeCell()); });
+        setGrid(rows);
+      }
+    }).catch(() => {});
+  }, [initialFileUrl]);
+
   const [selected, setSelected] = useState({ r: 0, c: 0 });
   const [selection, setSelection] = useState(null); // {r1,c1,r2,c2} — multi-cell drag selection
   const [dragging, setDragging] = useState(false); // true while mouse is held
