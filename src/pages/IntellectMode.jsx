@@ -768,7 +768,6 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
            executePrompt={executePrompt}
            setShowAdvancedPanel={setShowAdvancedPanel}
            setShowParallelProcessor={setShowParallelProcessor}
-           setShowCompanyAnalysis={setShowCompanyAnalysis}
          />
 
         {/* Main Canvas */}
