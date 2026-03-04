@@ -211,7 +211,7 @@ export default function FleetDrivePanel({ orgId }) {
         {pinned.length > 0 && (
           <div className="mb-3">
             <p className="text-[10px] text-amber-400/70 font-semibold uppercase tracking-wider mb-1 flex items-center gap-1">
-              <Star className="w-3 h-3" />Fastgjorte
+              <Star className="w-3 h-3" />Pinned
             </p>
             {pinned.map(f => <FileRow key={f.id} file={f} onDelete={deleteMutation.mutate} onPin={pinMutation.mutate} />)}
           </div>
