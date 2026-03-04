@@ -142,6 +142,8 @@ function AppSearchDropdown({ onSelect, children }) {
 
 function PromptSearchDropdown({ sections, onSelect, children }) {
   const [search, setSearch] = useState("");
+  const [open, setOpen] = useState(false);
+  
   const filtered = useMemo(() => {
     const results = [];
     sections.forEach(([section, items]) => {
@@ -152,7 +154,7 @@ function PromptSearchDropdown({ sections, onSelect, children }) {
   }, [sections, search]);
 
   return (
-    <DropdownMenu>
+    <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
       <DropdownMenuContent align="center" className="w-96 p-0" style={{ background: "rgba(0,10,25,0.8)", border: "1px solid rgba(139,92,246,0.2)", backdropFilter: "blur(10px)" }}>
         <div className="sticky top-0 p-4 border-b" style={{ borderColor: "rgba(139,92,246,0.2)", background: "rgba(0,10,25,0.6)" }}>
@@ -172,7 +174,10 @@ function PromptSearchDropdown({ sections, onSelect, children }) {
                   {items.map(([label, prompt]) => (
                     <button
                       key={label}
-                      onClick={() => onSelect(prompt)}
+                      onClick={() => {
+                        onSelect(prompt);
+                        setOpen(false);
+                      }}
                       className="w-full text-left px-3 py-2 rounded-lg text-[10px] font-mono tracking-wide transition-all"
                       style={{
                         color: "rgba(148,163,184,0.8)",
