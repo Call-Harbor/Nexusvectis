@@ -7,7 +7,6 @@ import {
   MessageSquare, FileText, BarChart3, Truck, AlertTriangle, Route,
   Package, Warehouse, Users, Satellite, ChevronDown, GraduationCap, FileCode, Globe, Image, X, Wrench, HardDrive, ListTodo, MonitorPlay, Building2, Newspaper, Shield
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
