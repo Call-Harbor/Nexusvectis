@@ -20,6 +20,14 @@ export default function FleetAITrainer({ onClose }) {
   ]);
   const [showNewModel, setShowNewModel] = useState(false);
   const [newModelName, setNewModelName] = useState('');
+  const [trainingData, setTrainingData] = useState([
+    { id: 1, type: 'link', content: 'https://example.com/docs', label: 'Documentation' },
+    { id: 2, type: 'faq', content: 'Q: How to optimize routes?\nA: Use the Route Optimizer feature...', label: 'FAQ' },
+  ]);
+  const [newDataType, setNewDataType] = useState('link');
+  const [newDataContent, setNewDataContent] = useState('');
+  const [newDataLabel, setNewDataLabel] = useState('');
+  const [showAddData, setShowAddData] = useState(false);
 
   const trainingData = [
     { epoch: 1, loss: 0.85, accuracy: 78 },
