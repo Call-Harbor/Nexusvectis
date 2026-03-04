@@ -6,11 +6,16 @@ export default function CircularBrainMenu({ onAction, size = "md", isLogo = fals
   const [showMenu, setShowMenu] = useState(false);
 
   const quickActions = [
-    { icon: Building2, action: 'company' },
-    { icon: Building2, action: 'people' },
-    { icon: Satellite, action: 'weather' },
-    { icon: Shield, action: 'risk' },
-    { icon: Newspaper, action: 'news' },
+    { icon: Brain, action: 'advanced_intelligence', label: 'Intelligence' },
+    { icon: Zap, action: 'predictive_maintenance', label: 'Maintenance' },
+    { icon: Building2, action: 'company_analysis', label: 'Company' },
+    { icon: Package, action: 'shipments', label: 'Shipments' },
+    { icon: Satellite, action: 'satellite_weather', label: 'Weather' },
+    { icon: Shield, action: 'neuro_risk', label: 'Risk' },
+    { icon: Newspaper, action: 'news_intelligence', label: 'News' },
+    { icon: Route, action: 'routes', label: 'Routes' },
+    { icon: Activity, action: 'deep_analysis', label: 'Analysis' },
+    { icon: Sparkles, action: 'image_generator', label: 'Image' },
   ];
 
   const sizeConfig = {
