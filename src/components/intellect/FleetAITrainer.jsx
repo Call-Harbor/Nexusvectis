@@ -86,6 +86,43 @@ export default function FleetAITrainer({ onClose }) {
     }
   };
 
+  const addTrainingData = () => {
+    if (newDataContent.trim() && newDataLabel.trim()) {
+      const newData = {
+        id: trainingData.length + 1,
+        type: newDataType,
+        content: newDataContent,
+        label: newDataLabel,
+      };
+      setTrainingData([...trainingData, newData]);
+      setNewDataContent('');
+      setNewDataLabel('');
+      setShowAddData(false);
+    }
+  };
+
+  const removeTrainingData = (id) => {
+    setTrainingData(trainingData.filter(data => data.id !== id));
+  };
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      try {
+        const { file_url } = await base44.integrations.Core.UploadFile({ file });
+        const newData = {
+          id: trainingData.length + 1,
+          type: 'file',
+          content: file_url,
+          label: file.name,
+        };
+        setTrainingData([...trainingData, newData]);
+      } catch (error) {
+        console.error('Upload error:', error);
+      }
+    }
+  };
+
   return (
     <div className="w-full h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-xl border border-slate-700/50 overflow-hidden flex flex-col">
       {/* Header */}
