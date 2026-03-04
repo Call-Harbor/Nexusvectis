@@ -971,23 +971,6 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
                     Multi-dimensional analysis • Real-time optimization • Predictive reasoning
                   </p>
 
-                  {/* Status indicator */}
-                  <motion.div
-                    animate={{ scale: [1, 1.05, 1] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                    className="flex items-center justify-center gap-3 pt-2"
-                  >
-                    <motion.div
-                      animate={{ scale: [1, 1.3, 1], opacity: [0.5, 1, 0.5] }}
-                      transition={{ duration: 1.5, repeat: Infinity }}
-                      className="w-2.5 h-2.5 rounded-full"
-                      style={{ background: "#10b981", boxShadow: "0 0 12px rgba(16,185,129,0.6)" }}
-                    />
-                    <span className="text-xs font-mono tracking-widest uppercase" style={{ color: "#10b981" }}>
-                      System Operational
-                    </span>
-                  </motion.div>
-
                   {/* Pulse indicators */}
                   <div className="flex items-center justify-center gap-2 pt-6">
                     {[0, 0.2, 0.4].map((delay) => (
