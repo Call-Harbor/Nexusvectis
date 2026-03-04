@@ -885,7 +885,7 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
           <ThinkingTerminalVisual isActive={showThinkingTerminal && isProcessing} logs={thinkingLogs} onClose={() => setShowThinkingTerminal(false)} />
 
           {/* Standby */}
-          {activeWindows.length === 0 && (
+          {activeWindows.length === 0 && !isCircularMenuOpen && (
             <div className="absolute inset-0 flex flex-col items-center justify-center overflow-hidden">
               {/* Enhanced background effects */}
                <div className="absolute inset-0 pointer-events-none">
