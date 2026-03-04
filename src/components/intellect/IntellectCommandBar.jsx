@@ -79,46 +79,23 @@ export default function IntellectCommandBar({
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Circular Quick Menu */}
-        <div className="mb-4 flex justify-center">
-          <div className="relative w-40 h-40">
-            {/* Brain Icon Button */}
-            <button onClick={() => setShowQuickMenu(!showQuickMenu)}
-              className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-full flex items-center justify-center transition-all z-20"
-              style={{ border: "2px solid rgba(6,182,212,0.5)", background: "rgba(6,182,212,0.08)", boxShadow: showQuickMenu ? "0 0 30px rgba(6,182,212,0.4)" : "0 0 15px rgba(6,182,212,0.2)" }}>
-              <Brain className="w-8 h-8" style={{ color: "#06b6d4" }} />
-            </button>
-
-            {/* Circular Menu Items */}
-            <AnimatePresence>
-              {showQuickMenu && (
-                <div className="absolute inset-0">
-                  {quickActions.map((action, idx) => {
-                    const angle = (idx / quickActions.length) * Math.PI * 2;
-                    const radius = 70;
-                    const x = Math.cos(angle) * radius;
-                    const y = Math.sin(angle) * radius;
-                    const Icon = action.icon;
-                    return (
-                      <motion.div key={idx}
-                        initial={{ opacity: 0, scale: 0 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0 }}
-                        transition={{ delay: idx * 0.05, duration: 0.3 }}
-                        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
-                        style={{ x, y }}>
-                        <button onClick={() => { action.action(); setShowQuickMenu(false); }}
-                          className="w-10 h-10 rounded-full flex items-center justify-center border transition-all hover:scale-110"
-                          style={{ border: `1.5px solid rgba(139,92,246,0.4)`, background: "rgba(139,92,246,0.08)", boxShadow: "0 0 12px rgba(139,92,246,0.2)" }}>
-                          <Icon className="w-5 h-5" style={{ color: "#8b5cf6" }} />
-                        </button>
-                      </motion.div>
-                    );
-                  })}
-                </div>
-              )}
-            </AnimatePresence>
-          </div>
+        {/* Quick Buttons */}
+        <div className="flex gap-1.5 flex-wrap mb-3">
+          <Button onClick={() => openWindow('company_analytics', { x: 0, y: 0 })} variant="outline" size="sm" className="h-7 px-2.5 text-xs border-fuchsia-500/30 text-fuchsia-400 hover:bg-fuchsia-500/10">
+            <Building2 className="w-3 h-3 mr-1" />Company Analytics
+          </Button>
+          <Button onClick={() => openWindow('profile_search', { x: 0, y: 0 })} variant="outline" size="sm" className="h-7 px-2.5 text-xs border-blue-500/30 text-blue-400 hover:bg-blue-500/10">
+            <Building2 className="w-3 h-3 mr-1" />People Search
+          </Button>
+          <Button onClick={() => handleQuickAction('openSatelliteWeather')} variant="outline" size="sm" className="h-7 px-2.5 text-xs border-violet-500/30 text-violet-400 hover:bg-violet-500/10">
+            <Satellite className="w-3 h-3 mr-1" />Satellite & Weather
+          </Button>
+          <Button onClick={() => handleQuickAction('openNeuroRisk')} variant="outline" size="sm" className="h-7 px-2.5 text-xs border-red-500/30 text-red-400 hover:bg-red-500/10">
+            <Shield className="w-3 h-3 mr-1" />Neuro Risk
+          </Button>
+          <Button onClick={() => handleQuickAction('openNewsIntelligence')} variant="outline" size="sm" className="h-7 px-2.5 text-xs border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10">
+            <Newspaper className="w-3 h-3 mr-1" />News Feed
+          </Button>
         </div>
 
         {/* Input Area */}
