@@ -897,6 +897,7 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
                        else if (action === 'deep_analysis') openWindow('deep_analysis', { x: 100, y: 80 });
                        else openWindow(action, { x: 100 + Math.random() * 100, y: 80 + Math.random() * 100 });
                      }}
+                     onMenuToggle={setIsCircularMenuOpen}
                    />
                 </div>
                 </div>
