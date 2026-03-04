@@ -885,10 +885,10 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
 
           {/* Standby */}
           {activeWindows.length === 0 && (
-            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-              <div className="relative">
-                <div className="absolute inset-0 blur-3xl opacity-30 animate-pulse" style={{ background: "#06b6d4" }} />
-                <div className="mb-2 relative z-10 flex items-center justify-center">
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full flex flex-col items-center">
+              <div className="relative mb-12">
+                <div className="absolute inset-0 blur-3xl opacity-40 animate-pulse rounded-full" style={{ background: "#06b6d4", width: "320px", height: "320px", left: "-80px", top: "-80px" }} />
+                <div className="relative z-10">
                   <CircularBrainMenu 
                     size="lg" 
                     showMenuByDefault={true}
@@ -901,13 +901,13 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
                   />
                </div>
               </div>
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: isCircularMenuOpen ? 160 : 0 }}  className="text-center">
-                <h2 className="text-2xl font-bold mb-2 font-mono tracking-widest uppercase" style={{ color: "#06b6d4", textShadow: "0 0 20px rgba(6,182,212,0.4)" }}>
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: isCircularMenuOpen ? 0 : 1, y: isCircularMenuOpen ? 20 : 0 }} transition={{ duration: 0.3 }} className="text-center max-w-lg px-4">
+                <h2 className="text-4xl font-bold mb-4 font-mono tracking-widest uppercase" style={{ color: "#06b6d4", textShadow: "0 0 30px rgba(6,182,212,0.5), 0 0 60px rgba(6,182,212,0.2)" }}>
                   FLEET AI
                 </h2>
-                <p className="text-slate-400 text-sm">Advanced analytics ready: predictive maintenance, demand forecasting, CO2 reports, risk assessment, and full fleet control</p>
-                <div className="mt-4 flex items-center justify-center gap-2">
-                  {[0, 0.2, 0.4].map((delay) => <div key={delay} className="w-2 h-2 rounded-full animate-pulse" style={{ background: "#06b6d4", animationDelay: `${delay}s` }} />)}
+                <p className="text-slate-300 text-sm leading-relaxed font-light">Advanced logistics intelligence system ready for command</p>
+                <div className="mt-6 flex items-center justify-center gap-3">
+                  {[0, 0.15, 0.3].map((delay) => <motion.div key={delay} className="w-1.5 h-1.5 rounded-full" animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 1.5, repeat: Infinity, delay }} style={{ background: "#06b6d4" }} />)}
                 </div>
               </motion.div>
             </div>
