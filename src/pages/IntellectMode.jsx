@@ -890,6 +890,7 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
                 <div className="mb-6 relative z-10 flex items-center justify-center">
                   <CircularBrainMenu 
                     size="lg" 
+                    showMenuByDefault={true}
                     onAction={(action) => {
                       if (action === 'advanced_intelligence') setShowAdvancedPanel(true);
                       else if (action === 'deep_analysis') openWindow('deep_analysis', { x: 100, y: 80 });
