@@ -339,8 +339,8 @@ function ArticleIframeViewer({ url, onClose }) {
 }
 
 export default function WindowContentRenderer({ type, data, vehicles, routes, shipments, alerts, currentUser, orgId, customers, setInput, openWindow }) {
-  if (type === 'document_editor') return <AIDocumentEditor initialContent={data?.initialContent} initialTitle={data?.initialTitle} orgId={orgId} />;
-  if (type === 'spreadsheet_editor') return <AISpreadsheetEditor initialGrid={data?.initialGrid} initialTitle={data?.initialTitle} orgId={orgId} />;
+  if (type === 'document_editor') return <AIDocumentEditor initialContent={data?.initialContent} initialTitle={data?.initialTitle} initialFileUrl={data?.initialFileUrl} orgId={orgId} />;
+  if (type === 'spreadsheet_editor') return <AISpreadsheetEditor initialGrid={data?.initialGrid} initialTitle={data?.initialTitle} initialFileUrl={data?.initialFileUrl} orgId={orgId} />;
 
   if (type.startsWith('chart_')) {
     return <ChartWindow data={data?.chartData} config={data?.chartConfig} />;
