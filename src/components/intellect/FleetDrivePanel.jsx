@@ -70,7 +70,7 @@ export default function FleetDrivePanel({ orgId }) {
 
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.FleetDriveFile.delete(id),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["fleet-drive", orgId] }); toast.success("Fil slettet"); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["fleet-drive", orgId] }); toast.success("File deleted"); },
   });
 
   const pinMutation = useMutation({
