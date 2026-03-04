@@ -838,7 +838,7 @@ Return JSON: { "notes": "...speaker notes text..." }`,
             <div className="rounded-xl overflow-hidden border border-cyan-500/30 flex-1" style={{ aspectRatio: "16/9", maxHeight: "60%" }}>
               <AnimatePresence mode="wait">
                 <motion.div key={current} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} className="w-full h-full">
-                  <SlideRenderer slide={currentSlide} theme={theme} fontSize={fontSize} />
+                  <SlideCanvas slide={currentSlide} theme={theme} fontSize={fontSize} editable={false} />
                 </motion.div>
               </AnimatePresence>
             </div>
