@@ -150,26 +150,43 @@ function PromptSearchDropdown({ sections, onSelect, children }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="bg-slate-900 border-slate-800 w-96 p-0">
-        <div className="sticky top-0 p-3 border-b border-slate-800 bg-slate-900/95 backdrop-blur">
+      <DropdownMenuContent align="center" className="w-96 p-0" style={{ background: "rgba(0,10,25,0.8)", border: "1px solid rgba(139,92,246,0.2)", backdropFilter: "blur(10px)" }}>
+        <div className="sticky top-0 p-4 border-b" style={{ borderColor: "rgba(139,92,246,0.2)", background: "rgba(0,10,25,0.6)" }}>
           <Input
-            placeholder="Search prompts..."
+            placeholder="SEARCH COMMAND..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="h-8 text-xs bg-slate-800 border-slate-700 text-white"
+            className="h-8 text-[10px] font-mono tracking-wider uppercase bg-slate-950 border-slate-800 text-cyan-400 placeholder-slate-600"
           />
         </div>
-        <div className="max-h-96 overflow-y-auto p-3 space-y-4">
+        <div className="max-h-96 overflow-y-auto p-4 space-y-4">
           {filtered.length > 0 ? (
             filtered.map(([section, items]) => (
               <div key={section}>
-                <p className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider mb-2">{section}</p>
-                <div className="space-y-1">
+                <p className="text-[9px] font-bold uppercase tracking-widest mb-2" style={{ color: "#8b5cf6", textShadow: "0 0 8px rgba(139,92,246,0.3)" }}>{section}</p>
+                <div className="space-y-1.5">
                   {items.map(([label, prompt]) => (
                     <button
                       key={label}
                       onClick={() => onSelect(prompt)}
-                      className="w-full text-left px-2.5 py-2 rounded-lg text-xs text-slate-300 hover:bg-slate-800 hover:text-white transition-all"
+                      className="w-full text-left px-3 py-2 rounded-lg text-[10px] font-mono tracking-wide transition-all"
+                      style={{
+                        color: "rgba(148,163,184,0.8)",
+                        border: "1px solid rgba(139,92,246,0.1)",
+                        background: "rgba(139,92,246,0.03)",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.color = "#8b5cf6";
+                        e.target.style.background = "rgba(139,92,246,0.1)";
+                        e.target.style.borderColor = "rgba(139,92,246,0.3)";
+                        e.target.style.boxShadow = "0 0 12px rgba(139,92,246,0.15)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.color = "rgba(148,163,184,0.8)";
+                        e.target.style.background = "rgba(139,92,246,0.03)";
+                        e.target.style.borderColor = "rgba(139,92,246,0.1)";
+                        e.target.style.boxShadow = "none";
+                      }}
                     >
                       {label}
                     </button>
@@ -178,7 +195,7 @@ function PromptSearchDropdown({ sections, onSelect, children }) {
               </div>
             ))
           ) : (
-            <div className="text-center py-6 text-slate-500 text-xs">No prompts found</div>
+            <div className="text-center py-8 text-slate-500 text-[10px] font-mono">NO PROMPTS FOUND</div>
           )}
         </div>
       </DropdownMenuContent>
