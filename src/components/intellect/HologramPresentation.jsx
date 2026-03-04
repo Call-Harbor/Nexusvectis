@@ -624,11 +624,11 @@ export default function HologramPresentation({ orgId, initialFileUrl }) {
         organization_id: orgId,
         name: file.name,
         file_url: fileUrl,
-        file_type: "other",
+        file_type: "presentation",
         file_size_bytes: blob.size,
         mime_type: "application/json",
         folder: "Presentations",
-        source: "uploaded",
+        source: "fleetslide",
         description: `FleetSlide præsentation med ${slides.length} slides`,
         tags: ["presentation", "fleetslide"],
       });
