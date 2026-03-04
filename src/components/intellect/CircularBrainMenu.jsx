@@ -12,7 +12,7 @@ export default function CircularBrainMenu({ onAction, size = "md", isLogo = fals
 
   const quickActions = [
     { icon: Brain, action: 'advanced_intelligence', label: 'Intelligence' },
-    { icon: Zap, action: 'predictive_maintenance', label: 'Maintenance' },
+    { icon: Zap, action: 'fleetai_trainer', label: 'AI Trainer' },
     { icon: Building2, action: 'company_analysis', label: 'Company' },
     { icon: Package, action: 'shipments', label: 'Shipments' },
     { icon: Satellite, action: 'satellite_weather', label: 'Weather' },
