@@ -267,7 +267,16 @@ function FileRow({ file, onDelete, onPin, openWindow }) {
           </DropdownMenuTrigger>
           <DropdownMenuContent className="bg-slate-900 border-slate-700 text-white text-xs" align="end">
             <DropdownMenuItem
-              onClick={() => window.open(createPageUrl(`IntellectMode?open_file=${file.id}`), "_blank")}
+              onClick={() => {
+                if (!openWindow) return;
+                const ext = file.name?.split('.').pop()?.toLowerCase();
+                let windowType = 'fleet_drive';
+                if (ext === 'fleetslide') windowType = 'hologram_presentation';
+                else if (['doc','docx','txt','rtf','odt'].includes(ext)) windowType = 'document_editor';
+                else if (['xls','xlsx','csv','ods'].includes(ext)) windowType = 'spreadsheet_editor';
+                else windowType = 'hologram_presentation';
+                openWindow(windowType, { x: 120, y: 80 }, { initialFileUrl: file.file_url, initialTitle: file.name });
+              }}
               className="flex items-center gap-2 cursor-pointer hover:bg-slate-800">
               <ExternalLink className="w-3.5 h-3.5 text-violet-400" />Open in Fleet AI
             </DropdownMenuItem>
