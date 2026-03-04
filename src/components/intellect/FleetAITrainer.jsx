@@ -126,6 +126,26 @@ export default function FleetAITrainer({ onClose }) {
     }
   };
 
+  const analyzeWithAI = async () => {
+    setIsAnalyzing(true);
+    try {
+      const response = await base44.integrations.Core.InvokeLLM({
+        prompt: `Du er en avanceret AI-analytiker. Analysér denne model: ${selectedModel.name} med accuracy ${selectedModel.accuracy}%. Giv 3 konkrete forslag til forbedring og 2 mulige risici. Format som JSON med felt "suggestions" og "risks".`,
+        response_json_schema: {
+          type: 'object',
+          properties: {
+            suggestions: { type: 'array', items: { type: 'string' } },
+            risks: { type: 'array', items: { type: 'string' } },
+          },
+        },
+      });
+      setAiInsights(response.suggestions || []);
+    } catch (error) {
+      console.error('AI analysis error:', error);
+    }
+    setIsAnalyzing(false);
+  };
+
   return (
     <div className="w-full h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-xl border border-slate-700/50 overflow-hidden flex flex-col">
       {/* Header */}
