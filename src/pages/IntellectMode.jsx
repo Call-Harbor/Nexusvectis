@@ -91,6 +91,7 @@ export default function IntellectMode() {
   const [showParallelProcessor, setShowParallelProcessor] = useState(false);
   const [focusedWindow, setFocusedWindow] = useState(null);
   const [parallelProcessorTasks, setParallelProcessorTasks] = useState([]);
+  const [isCircularMenuOpen, setIsCircularMenuOpen] = useState(false);
 
   const messagesEndRef = useRef(null);
   const queryClient = useQueryClient();
