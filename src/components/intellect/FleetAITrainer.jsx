@@ -196,14 +196,14 @@ export default function FleetAITrainer({ onClose }) {
               <div className="bg-slate-800/30 border border-slate-700/50 rounded-lg p-3">
                 <p className="text-xs font-semibold text-white mb-3">Loss over Epochs</p>
                 <ResponsiveContainer width="100%" height={150}>
-                  <LineChart data={trainingData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(71,85,105,0.2)" />
-                    <XAxis dataKey="epoch" stroke="rgba(148,163,184,0.5)" height={20} tick={{ fontSize: 12 }} />
-                    <YAxis stroke="rgba(148,163,184,0.5)" tick={{ fontSize: 12 }} />
-                    <Tooltip contentStyle={{ background: '#1e293b', border: '1px solid #475569' }} />
-                    <Line type="monotone" dataKey="loss" stroke="#06b6d4" strokeWidth={2} dot={false} />
-                  </LineChart>
-                </ResponsiveContainer>
+                   <LineChart data={chartData}>
+                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(71,85,105,0.2)" />
+                     <XAxis dataKey="epoch" stroke="rgba(148,163,184,0.5)" height={20} tick={{ fontSize: 12 }} />
+                     <YAxis stroke="rgba(148,163,184,0.5)" tick={{ fontSize: 12 }} />
+                     <Tooltip contentStyle={{ background: '#1e293b', border: '1px solid #475569' }} />
+                     <Line type="monotone" dataKey="loss" stroke="#06b6d4" strokeWidth={2} dot={false} />
+                   </LineChart>
+                 </ResponsiveContainer>
               </div>
 
               <div className="bg-slate-800/30 border border-slate-700/50 rounded-lg p-3">
