@@ -209,7 +209,7 @@ export default function FleetAITrainer({ onClose }) {
               <div className="bg-slate-800/30 border border-slate-700/50 rounded-lg p-3">
                 <p className="text-xs font-semibold text-white mb-3">Accuracy over Epochs</p>
                 <ResponsiveContainer width="100%" height={150}>
-                  <LineChart data={trainingData}>
+                  <LineChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(71,85,105,0.2)" />
                     <XAxis dataKey="epoch" stroke="rgba(148,163,184,0.5)" height={20} tick={{ fontSize: 12 }} />
                     <YAxis stroke="rgba(148,163,184,0.5)" tick={{ fontSize: 12 }} />
