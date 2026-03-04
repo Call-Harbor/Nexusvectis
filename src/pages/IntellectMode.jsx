@@ -948,7 +948,7 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
                 {/* Title and description */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: isCircularMenuOpen ? 0 : 1, y: isCircularMenuOpen ? 20 : 0 }}
+                  animate={{ opacity: activeWindows.length === 0 && !isCircularMenuOpen ? 1 : 0, y: activeWindows.length === 0 && !isCircularMenuOpen ? 0 : 20 }}
                   transition={{ duration: 0.3 }}
                   className="text-center max-w-xl px-4 space-y-4"
                 >
