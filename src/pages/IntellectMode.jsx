@@ -228,21 +228,21 @@ export default function IntellectMode() {
       if (!fileUrl) throw new Error('Upload failed - no file URL returned');
       return { name: file.name, url: fileUrl, type: file.type };
     }));
-    setUploadedFiles(prev => [...prev, ...newFiles]);
-    toast.success(`✅ Uploaded ${files.length} file(s)`);
+    // Split: Fleet-native files open directly, others go to AI upload queue
+    const nativeFiles = newFiles.filter(f => detectFleetFileType(f.name));
+    const regularFiles = newFiles.filter(f => !detectFleetFileType(f.name));
 
-    // Auto-open Fleet-native files directly (and exclude them from AI file_urls)
-    newFiles.forEach(f => {
+    nativeFiles.forEach(f => {
       const windowType = detectFleetFileType(f.name);
-      if (windowType) {
-        openWindow(windowType, { x: 100 + Math.random() * 150, y: 80 }, { initialFileUrl: f.url, initialTitle: f.name });
-        setMessages(prev => [...prev, { role: "system", content: `📂 Opened **${f.name}** in ${windowType === 'hologram_presentation' ? 'FleetSlide' : windowType === 'document_editor' ? 'FleetDocs' : 'FleetSheet'}` }]);
-        // Remove from uploadedFiles so it is NOT sent to AI as a file attachment
-        setUploadedFiles(prev => prev.filter(uf => uf.url !== f.url));
-      }
+      openWindow(windowType, { x: 100 + Math.random() * 150, y: 80 }, { initialFileUrl: f.url, initialTitle: f.name });
+      setMessages(prev => [...prev, { role: "system", content: `📂 Opened **${f.name}** in ${windowType === 'hologram_presentation' ? 'FleetSlide' : windowType === 'document_editor' ? 'FleetDocs' : 'FleetSheet'}` }]);
     });
-    // Filter out any Fleet-native files that were already in the queue
-    setUploadedFiles(prev => prev.filter(f => !detectFleetFileType(f.name)));
+
+    if (regularFiles.length > 0) {
+      setUploadedFiles(prev => [...prev, ...regularFiles]);
+    }
+
+    toast.success(`✅ Uploaded ${files.length} file(s)`);
 
     setIsUploading(false);
     if (fileInputRef.current) fileInputRef.current.value = '';
