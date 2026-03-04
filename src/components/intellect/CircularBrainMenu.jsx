@@ -48,9 +48,8 @@ export default function CircularBrainMenu({ onAction, size = "md", isLogo = fals
         </button>
 
         {/* Circular Menu Items */}
-        {!isLogo && (
-          <AnimatePresence>
-            {showMenu && (
+        <AnimatePresence>
+          {showMenu && (
               <div className="absolute inset-0">
                 {quickActions.map((action, idx) => {
                   const angle = (idx / quickActions.length) * Math.PI * 2;
