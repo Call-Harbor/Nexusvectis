@@ -79,24 +79,7 @@ export default function IntellectCommandBar({
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Quick Buttons */}
-        <div className="flex gap-1.5 flex-wrap mb-3">
-          <Button onClick={() => openWindow('company_analytics', { x: 0, y: 0 })} variant="outline" size="sm" className="h-7 px-2.5 text-xs border-fuchsia-500/30 text-fuchsia-400 hover:bg-fuchsia-500/10">
-            <Building2 className="w-3 h-3 mr-1" />Company Analytics
-          </Button>
-          <Button onClick={() => openWindow('profile_search', { x: 0, y: 0 })} variant="outline" size="sm" className="h-7 px-2.5 text-xs border-blue-500/30 text-blue-400 hover:bg-blue-500/10">
-            <Building2 className="w-3 h-3 mr-1" />People Search
-          </Button>
-          <Button onClick={() => handleQuickAction('openSatelliteWeather')} variant="outline" size="sm" className="h-7 px-2.5 text-xs border-violet-500/30 text-violet-400 hover:bg-violet-500/10">
-            <Satellite className="w-3 h-3 mr-1" />Satellite & Weather
-          </Button>
-          <Button onClick={() => handleQuickAction('openNeuroRisk')} variant="outline" size="sm" className="h-7 px-2.5 text-xs border-red-500/30 text-red-400 hover:bg-red-500/10">
-            <Shield className="w-3 h-3 mr-1" />Neuro Risk
-          </Button>
-          <Button onClick={() => handleQuickAction('openNewsIntelligence')} variant="outline" size="sm" className="h-7 px-2.5 text-xs border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10">
-            <Newspaper className="w-3 h-3 mr-1" />News Feed
-          </Button>
-        </div>
+
 
         {/* Input Area */}
         <div className="space-y-3">
