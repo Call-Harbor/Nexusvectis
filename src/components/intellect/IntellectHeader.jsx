@@ -212,16 +212,8 @@ function PromptSearchDropdown({ sections, onSelect, children }) {
   );
 }
 
-export default function IntellectHeader({ orgId, openWindow, executePrompt, setShowAdvancedPanel, setShowParallelProcessor, setShowCompanyAnalysis }) {
+export default function IntellectHeader({ orgId, openWindow, executePrompt, setShowAdvancedPanel, setShowParallelProcessor }) {
   const navigate = useNavigate();
-
-  const handleAppSelect = (type) => {
-    if (type === 'company_analysis') {
-      setShowCompanyAnalysis?.(true);
-    } else {
-      openWindow(type);
-    }
-  };
 
   return (
     <div className="relative backdrop-blur-sm" style={{ background: "rgba(0,10,25,0.15)", borderBottom: "1px solid rgba(6,182,212,0.15)" }}>
