@@ -79,6 +79,12 @@ const APP_CATEGORIES = [
     ['image_generator', Image, 'AI Image Generator'],
     ['image_editor', Image, 'AI Image Editor'],
   ]],
+  ['Intelligence', [
+    ['company_analysis', Building2, 'Company Analytics'],
+    ['satellite_weather', Satellite, 'Satellite & Weather'],
+    ['neuro_risk', Shield, 'Neuro-Symbolic Risk'],
+    ['news_intelligence', Newspaper, 'News Intelligence'],
+  ]],
 ];
 
 function AppSearchDropdown({ onSelect, children }) {
