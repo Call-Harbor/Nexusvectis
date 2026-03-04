@@ -36,7 +36,7 @@ export default function CircularBrainMenu({ onAction, size = "md", isLogo = fals
       <div className={`relative ${config.container} flex items-center justify-center`}>
         {/* Center Brain Button */}
         <button
-          onClick={() => setShowMenu(!showMenu)}
+          onClick={handleMenuToggle}
           className={`rounded-full flex items-center justify-center transition-all z-20 cursor-pointer hover:scale-110`}
           style={{
             border: "2px solid rgba(6,182,212,0.5)",
