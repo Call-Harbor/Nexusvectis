@@ -1078,105 +1078,23 @@ Return JSON: { "notes": "...speaker notes text..." }`,
               />
             </TabsContent>
 
-            <TabsContent value="notes" className="flex-1 overflow-y-auto p-3 space-y-3 m-0">
-              {/* AI Actions */}
-              <div className="flex gap-1.5">
-                <Button onClick={enhanceSlide} disabled={enhancing} size="sm" className="flex-1 bg-violet-600/80 hover:bg-violet-600 border-0 text-[10px] h-7 gap-1">
-                  {enhancing ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
-                  AI Enhance
-                </Button>
-                <Button onClick={addAISpeakerNotes} disabled={enhancing} size="sm" className="flex-1 bg-slate-700 hover:bg-slate-600 border-0 text-[10px] h-7 gap-1">
-                  <Mic className="w-3 h-3" />Notes AI
+            <TabsContent value="notes" className="flex-1 overflow-y-auto p-3 m-0 flex flex-col gap-2">
+              <div className="flex items-center justify-between">
+                <label className="text-[10px] text-slate-500 font-medium">Speaker Notes</label>
+                <Button onClick={addAISpeakerNotes} disabled={enhancing} size="sm" className="h-6 text-[9px] bg-violet-600/70 hover:bg-violet-600 border-0 gap-0.5">
+                  {enhancing ? <Loader2 className="w-2.5 h-2.5 animate-spin" /> : <Sparkles className="w-2.5 h-2.5" />}AI
                 </Button>
               </div>
-
-              {currentSlide && (
-                <div className="space-y-2.5">
-                  <div>
-                    <label className="text-[10px] text-slate-500 mb-1 block">Title</label>
-                    <Input value={currentSlide.title || ""} onChange={e => updateCurrentSlide({ title: e.target.value })}
-                      className="h-7 text-xs bg-slate-800/60 border-slate-700/50 text-white" />
-                  </div>
-
-                  {currentSlide.type === "title" && <>
-                    <div>
-                      <label className="text-[10px] text-slate-500 mb-1 block">Subtitle badge</label>
-                      <Input value={currentSlide.subtitle || ""} onChange={e => updateCurrentSlide({ subtitle: e.target.value })}
-                        className="h-7 text-xs bg-slate-800/60 border-slate-700/50 text-white" />
-                    </div>
-                    <div>
-                      <label className="text-[10px] text-slate-500 mb-1 block">Author</label>
-                      <Input value={currentSlide.author || ""} onChange={e => updateCurrentSlide({ author: e.target.value })}
-                        className="h-7 text-xs bg-slate-800/60 border-slate-700/50 text-white" />
-                    </div>
-                  </>}
-
-                  {currentSlide.type === "impact" && <>
-                    <div>
-                      <label className="text-[10px] text-slate-500 mb-1 block">Big Metric</label>
-                      <Input value={currentSlide.metric || ""} onChange={e => updateCurrentSlide({ metric: e.target.value })}
-                        className="h-7 text-xs bg-slate-800/60 border-slate-700/50 text-white" placeholder="94%" />
-                    </div>
-                  </>}
-
-                  {currentSlide.type === "chart" && <>
-                    <div>
-                      <label className="text-[10px] text-slate-500 mb-1 block">Chart Type</label>
-                      <div className="grid grid-cols-3 gap-1">
-                        {["bar", "line", "area", "pie", "radar"].map(ct => (
-                          <button key={ct} onClick={() => updateCurrentSlide({ chartType: ct })}
-                            className={`py-1 rounded text-[9px] capitalize transition-all ${currentSlide.chartType === ct ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/40" : "bg-slate-800/60 text-slate-500 hover:text-slate-300"}`}>
-                            {ct}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                    <div>
-                      <label className="text-[10px] text-slate-500 mb-1 block">Insight Label</label>
-                      <Input value={currentSlide.chartInsight || ""} onChange={e => updateCurrentSlide({ chartInsight: e.target.value })}
-                        className="h-7 text-xs bg-slate-800/60 border-slate-700/50 text-white" placeholder="+18% YoY" />
-                    </div>
-                  </>}
-
-                  {currentSlide.type === "closing" && (
-                    <div>
-                      <label className="text-[10px] text-slate-500 mb-1 block">Contact</label>
-                      <Input value={currentSlide.contact || ""} onChange={e => updateCurrentSlide({ contact: e.target.value })}
-                        className="h-7 text-xs bg-slate-800/60 border-slate-700/50 text-white" placeholder="email@company.com" />
-                    </div>
-                  )}
-
-                  <div>
-                    <label className="text-[10px] text-slate-500 mb-1 block">Body Text</label>
-                    <Textarea value={currentSlide.body || ""} onChange={e => updateCurrentSlide({ body: e.target.value })}
-                      className="text-xs bg-slate-800/60 border-slate-700/50 text-white min-h-[50px] resize-none" />
-                  </div>
-
-                  {(currentSlide.type === "content" || currentSlide.type === "split") && (
-                    <div>
-                      <label className="text-[10px] text-slate-500 mb-1 block">Bullet Points (one per line)</label>
-                      <Textarea
-                        value={(currentSlide.bullets || []).join("\n")}
-                        onChange={e => updateCurrentSlide({ bullets: e.target.value.split("\n") })}
-                        className="text-xs bg-slate-800/60 border-slate-700/50 text-white min-h-[70px] resize-none" />
-                    </div>
-                  )}
-
-                  {/* Change slide type */}
-                  <div>
-                    <label className="text-[10px] text-slate-500 mb-1 block">Change Type</label>
-                    <div className="grid grid-cols-2 gap-1">
-                      {SLIDE_TEMPLATES.map(tmpl => (
-                        <button key={tmpl.id} onClick={() => updateCurrentSlide({ type: tmpl.id })}
-                          className={`py-1 rounded text-[9px] capitalize transition-all ${currentSlide.type === tmpl.id ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/40" : "bg-slate-800/60 text-slate-500 hover:text-slate-300"}`}>
-                          {tmpl.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
+              <Textarea
+                value={currentSlide?.notes || ""}
+                onChange={e => updateCurrentSlide({ notes: e.target.value })}
+                placeholder="Add speaker notes for this slide..."
+                className="text-xs bg-slate-800/60 border-slate-700/50 text-white resize-none flex-1 min-h-[200px]"
+              />
+              <p className="text-[9px] text-slate-600">Notes visible in presenter mode</p>
             </TabsContent>
+
+            <TabsContent value="advanced" className="flex-1 overflow-y-auto p-3 space-y-3 m-0">
 
             <TabsContent value="notes" className="flex-1 overflow-y-auto p-3 m-0 flex flex-col gap-2">
               <div className="flex items-center justify-between">
