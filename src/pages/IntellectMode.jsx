@@ -884,7 +884,7 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
 
           {/* Standby */}
           {activeWindows.length === 0 && (
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="absolute top-1/3 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
               <div className="relative">
                 <div className="absolute inset-0 blur-3xl opacity-30 animate-pulse" style={{ background: "#06b6d4" }} />
                 <div className="mb-6 relative z-10 flex items-center justify-center">
