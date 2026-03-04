@@ -919,14 +919,23 @@ Return JSON: { "notes": "...speaker notes text..." }`,
 
   return (
     <div className="flex flex-col h-full bg-slate-950 text-white overflow-hidden">
-      {/* Top Bar */}
-      <div className="flex items-center justify-between px-4 py-2.5 border-b border-cyan-500/20 flex-shrink-0 bg-slate-900/60">
-        <div className="flex items-center gap-2">
-          <MonitorPlay className="w-4 h-4 text-cyan-400" />
-          <span className="font-bold text-sm text-white">FleetSlide</span>
-          <Badge className="bg-violet-500/20 text-violet-400 border-violet-500/40 text-[10px]">AI Studio</Badge>
-          <span className="text-slate-600 text-xs">{slides.length} slides</span>
+      {/* Top Bar — JARVIS style */}
+      <div className="relative flex items-center justify-between px-4 py-2.5 flex-shrink-0"
+        style={{ background: "rgba(0,10,25,0.97)", borderBottom: "1px solid rgba(6,182,212,0.15)" }}>
+        <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, #06b6d4, #8b5cf6, transparent)" }} />
+
+        <div className="flex items-center gap-3">
+          <div className="relative flex items-center justify-center flex-shrink-0" style={{ width: 28, height: 28 }}>
+            <svg width="28" height="28" viewBox="0 0 28 28" className="absolute">
+              <polygon points="14,2 24,8 24,20 14,26 4,20 4,8" fill="rgba(6,182,212,0.1)" stroke="#06b6d4" strokeWidth="1" opacity="0.8" />
+            </svg>
+            <MonitorPlay style={{ width: 11, height: 11, color: "#06b6d4", position: "relative", zIndex: 1 }} />
+          </div>
+          <span className="text-[10px] font-bold tracking-[0.2em] uppercase" style={{ color: "#06b6d4", textShadow: "0 0 8px rgba(6,182,212,0.5)", fontFamily: "monospace" }}>FLEETSLIDE</span>
+          <span className="text-[8px] px-1.5 py-0.5 tracking-widest uppercase font-mono" style={{ color: "#8b5cf6", border: "1px solid rgba(139,92,246,0.3)", background: "rgba(139,92,246,0.06)" }}>AI STUDIO</span>
+          <span className="text-[9px] font-mono" style={{ color: "rgba(6,182,212,0.35)" }}>{slides.length} SLIDES</span>
         </div>
+
         <div className="flex items-center gap-2">
           {/* Font size */}
           <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-800/60 border border-slate-700/50">
