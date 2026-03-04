@@ -235,6 +235,102 @@ export default function FleetAITrainer({ onClose }) {
             </div>
           </TabsContent>
 
+          {/* Data Tab */}
+          <TabsContent value="data" className="flex-1 overflow-auto p-4 space-y-3">
+            <Button
+              onClick={() => setShowAddData(true)}
+              className="w-full bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300"
+            >
+              <Plus className="w-4 h-4 mr-2" /> Add Training Data
+            </Button>
+
+            <div className="bg-slate-800/30 border border-slate-700/50 rounded-lg p-3">
+              <label className="flex flex-col gap-2 cursor-pointer">
+                <span className="text-sm font-semibold text-white flex items-center gap-2">
+                  <FileUp className="w-4 h-4" /> Upload File
+                </span>
+                <input
+                  type="file"
+                  onChange={handleFileUpload}
+                  className="text-xs text-slate-400 file:bg-slate-700 file:border file:border-slate-600 file:rounded file:px-3 file:py-1 file:text-slate-300 file:cursor-pointer"
+                  accept=".txt,.pdf,.csv,.json"
+                />
+              </label>
+            </div>
+
+            <AnimatePresence>
+              {showAddData && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="bg-slate-800/30 border border-slate-700/50 rounded-lg p-3 space-y-3">
+                  <select
+                    value={newDataType}
+                    onChange={(e) => setNewDataType(e.target.value)}
+                    className="w-full bg-slate-700/50 border border-slate-600 rounded px-3 py-2 text-white text-sm"
+                  >
+                    <option value="link">Link</option>
+                    <option value="faq">FAQ</option>
+                    <option value="filter">Filtre/Prosedyre</option>
+                    <option value="guide">Vejledning</option>
+                  </select>
+                  <input
+                    type="text"
+                    placeholder="Label (fx. 'Route Optimization Docs')"
+                    value={newDataLabel}
+                    onChange={(e) => setNewDataLabel(e.target.value)}
+                    className="w-full bg-slate-700/50 border border-slate-600 rounded px-3 py-2 text-white text-sm placeholder-slate-500"
+                  />
+                  <textarea
+                    placeholder={newDataType === 'link' ? 'https://example.com' : 'Indhold...'}
+                    value={newDataContent}
+                    onChange={(e) => setNewDataContent(e.target.value)}
+                    className="w-full bg-slate-700/50 border border-slate-600 rounded px-3 py-2 text-white text-sm placeholder-slate-500 h-24 resize-none"
+                  />
+                  <div className="flex gap-2">
+                    <Button onClick={addTrainingData} className="flex-1 bg-emerald-500 hover:bg-emerald-600" size="sm">Add</Button>
+                    <Button onClick={() => setShowAddData(false)} variant="outline" className="flex-1 border-slate-600" size="sm">Cancel</Button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <div className="space-y-2">
+              {trainingData.length === 0 ? (
+                <p className="text-sm text-slate-400 text-center py-4">Ingen data tilføjet endnu</p>
+              ) : (
+                trainingData.map((data) => (
+                  <div key={data.id} className="bg-slate-800/30 border border-slate-700/50 rounded-lg p-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          {data.type === 'link' && <Link2 className="w-4 h-4 text-blue-400 flex-shrink-0" />}
+                          {data.type === 'file' && <FileUp className="w-4 h-4 text-green-400 flex-shrink-0" />}
+                          {(data.type === 'faq' || data.type === 'filter' || data.type === 'guide') && <Zap className="w-4 h-4 text-amber-400 flex-shrink-0" />}
+                          <span className="text-xs font-semibold text-slate-300 uppercase">{data.type}</span>
+                        </div>
+                        <p className="text-sm font-medium text-white break-words">{data.label}</p>
+                        {data.type === 'link' && (
+                          <a href={data.content} target="_blank" rel="noopener noreferrer" className="text-xs text-cyan-400 hover:text-cyan-300 break-all">
+                            {data.content}
+                          </a>
+                        )}
+                        {data.type !== 'link' && data.type !== 'file' && (
+                          <p className="text-xs text-slate-400 mt-1 line-clamp-2">{data.content}</p>
+                        )}
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => removeTrainingData(data.id)}
+                        className="w-6 h-6 text-slate-400 hover:text-red-400 flex-shrink-0"
+                      >
+                        <Trash className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </TabsContent>
+
           {/* Models Tab */}
           <TabsContent value="models" className="flex-1 overflow-auto p-4">
             <div className="space-y-3">
