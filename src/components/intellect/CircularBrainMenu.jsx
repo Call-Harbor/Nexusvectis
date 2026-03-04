@@ -30,22 +30,18 @@ export default function CircularBrainMenu({ onAction, size = "md", isLogo = fals
     <div className="relative inline-flex items-center justify-center">
       <div className={`relative ${config.container}`}>
         {/* Center Brain Button */}
-        <button
-          onClick={() => {
-            setShowMenu(!showMenu);
-            if (!isLogo) onAction?.('brain');
-          }}
+        <div
           className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-full flex items-center justify-center transition-all z-20`}
           style={{
             border: "2px solid rgba(6,182,212,0.5)",
             background: "rgba(6,182,212,0.08)",
             boxShadow: showMenu ? "0 0 30px rgba(6,182,212,0.4)" : "0 0 15px rgba(6,182,212,0.2)",
-            width: isLogo ? "100%" : "auto",
-            height: isLogo ? "100%" : "auto",
+            width: size === "lg" ? "80px" : size === "md" ? "60px" : "40px",
+            height: size === "lg" ? "80px" : size === "md" ? "60px" : "40px",
           }}
         >
           <Brain className={config.brain} style={{ color: "#06b6d4" }} />
-        </button>
+        </div>
 
         {/* Circular Menu Items */}
         <AnimatePresence>
