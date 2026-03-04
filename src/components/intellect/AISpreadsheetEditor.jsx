@@ -942,7 +942,7 @@ export default function AISpreadsheetEditor({ initialGrid, initialTitle, initial
           file_size_bytes: blob.size,
           mime_type: "text/csv",
           folder: "Spreadsheets",
-          source: "uploaded",
+          source: "spreadsheet_editor",
           description: `FleetSheet spreadsheet`,
           tags: ["fleetsheet", "spreadsheet"],
         });

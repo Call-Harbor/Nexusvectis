@@ -156,7 +156,7 @@ export default function AIDocumentEditor({ initialContent, initialTitle, initial
           file_size_bytes: blob.size,
           mime_type: "text/html",
           folder: "Documents",
-          source: "uploaded",
+          source: "document_editor",
           description: `FleetDocs document`,
           tags: ["fleetdocs", "document"],
         });
