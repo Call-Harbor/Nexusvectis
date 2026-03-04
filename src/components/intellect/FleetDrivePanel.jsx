@@ -108,7 +108,7 @@ export default function FleetDrivePanel({ orgId }) {
     }
 
     queryClient.invalidateQueries({ queryKey: ["fleet-drive", orgId] });
-    toast.success(`${selected.length} fil(er) uploadet til Fleet Drive`);
+    toast.success(`${selected.length} file(s) uploaded to Fleet Drive`);
     setUploading(false);
     setUploadProgress([]);
     if (fileInputRef.current) fileInputRef.current.value = "";
