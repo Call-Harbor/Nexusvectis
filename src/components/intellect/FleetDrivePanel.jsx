@@ -54,7 +54,7 @@ function inferFileType(mimeType, name) {
   return "other";
 }
 
-export default function FleetDrivePanel({ orgId }) {
+export default function FleetDrivePanel({ orgId, openWindow }) {
   const [search, setSearch] = useState("");
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState([]);
