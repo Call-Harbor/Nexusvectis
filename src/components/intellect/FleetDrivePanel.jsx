@@ -272,7 +272,7 @@ function FileRow({ file, onDelete, onPin }) {
             <DropdownMenuItem onClick={() => onPin({ id: file.id, pinned: !file.is_pinned })}
               className="flex items-center gap-2 cursor-pointer hover:bg-slate-800">
               {file.is_pinned ? <PinOff className="w-3.5 h-3.5 text-amber-400" /> : <Pin className="w-3.5 h-3.5 text-amber-400" />}
-              {file.is_pinned ? "Fjern fastgøring" : "Fastgør"}
+              {file.is_pinned ? "Unpin" : "Pin"}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => window.open(file.file_url, "_blank")}
               className="flex items-center gap-2 cursor-pointer hover:bg-slate-800">
