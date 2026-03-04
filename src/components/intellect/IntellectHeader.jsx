@@ -191,12 +191,7 @@ export default function IntellectHeader({ orgId, openWindow, executePrompt, setS
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 max-w-7xl mx-auto">
           {/* Logo & Title */}
           <div className="flex items-center gap-3">
-            <div className="relative flex items-center justify-center flex-shrink-0" style={{ width: 32, height: 32 }}>
-              <svg width="32" height="32" viewBox="0 0 32 32" className="absolute">
-                <polygon points="16,2 28,8 28,24 16,30 4,24 4,8" fill="rgba(6,182,212,0.1)" stroke="#06b6d4" strokeWidth="1.2" opacity="0.8" />
-              </svg>
-              <Brain style={{ width: 13, height: 13, color: "#06b6d4", position: "relative", zIndex: 1 }} />
-            </div>
+            <CircularBrainMenu size="sm" isLogo={true} />
             <div>
               <h1 className="text-sm sm:text-base font-bold text-white flex items-center gap-2 tracking-[0.2em] uppercase font-mono" style={{ color: "#06b6d4", textShadow: "0 0 10px rgba(6,182,212,0.5)" }}>
                 FLEET AI
