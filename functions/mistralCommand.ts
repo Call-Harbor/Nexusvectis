@@ -440,7 +440,7 @@ EXAMPLES:
     let result;
     
     if (file_urls && file_urls.length > 0) {
-      console.log('🖼️ Processing with files, using InvokeLLM');
+      console.log('🖼️ Processing with files, using InvokeLLM', { file_urls });
       
       // Pre-process fleetslide files: fetch JSON and inline as text context
       const processedFileUrls = [];
