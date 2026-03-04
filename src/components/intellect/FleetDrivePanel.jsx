@@ -199,11 +199,11 @@ export default function FleetDrivePanel({ orgId }) {
         {!isLoading && filtered.length === 0 && (
           <div className="flex flex-col items-center justify-center h-48 text-center">
             <HardDrive className="w-10 h-10 text-slate-700 mb-3" />
-            <p className="text-slate-500 text-sm font-medium">Fleet Drive er tom</p>
-            <p className="text-slate-600 text-xs mt-1">Upload filer eller gem dokumenter fra Document Editor</p>
+            <p className="text-slate-500 text-sm font-medium">Fleet Drive is empty</p>
+            <p className="text-slate-600 text-xs mt-1">Upload files or save documents from Document Editor</p>
             <Button onClick={() => fileInputRef.current?.click()} size="sm" variant="outline"
               className="mt-4 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 text-xs">
-              <Plus className="w-3.5 h-3.5 mr-1.5" />Upload første fil
+              <Plus className="w-3.5 h-3.5 mr-1.5" />Upload first file
             </Button>
           </div>
         )}
