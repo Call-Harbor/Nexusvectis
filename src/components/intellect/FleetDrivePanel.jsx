@@ -140,7 +140,6 @@ export default function FleetDrivePanel({ orgId }) {
           <div>
             <h2 className="font-bold text-white text-sm">Fleet Drive</h2>
             <p className="text-[10px] text-slate-400">Nexus Cloud Storage</p>
-
           </div>
         </div>
         <div className="flex items-center gap-2">
