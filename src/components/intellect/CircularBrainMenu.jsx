@@ -19,9 +19,9 @@ export default function CircularBrainMenu({ onAction, size = "md", isLogo = fals
   ];
 
   const sizeConfig = {
-    sm: { container: "w-20 h-20", brain: "w-5 h-5", button: "w-6 h-6", icon: "w-3 h-3", radius: 45 },
-    md: { container: "w-28 h-28", brain: "w-8 h-8", button: "w-8 h-8", icon: "w-4 h-4", radius: 55 },
-    lg: { container: "w-40 h-40", brain: "w-10 h-10", button: "w-10 h-10", icon: "w-5 h-5", radius: 70 },
+    sm: { container: "w-32 h-32", brain: "w-5 h-5", button: "w-6 h-6", icon: "w-3 h-3", radius: 50 },
+    md: { container: "w-48 h-48", brain: "w-8 h-8", button: "w-8 h-8", icon: "w-4 h-4", radius: 75 },
+    lg: { container: "w-72 h-72", brain: "w-10 h-10", button: "w-10 h-10", icon: "w-5 h-5", radius: 120 },
   };
 
   const config = sizeConfig[size];
