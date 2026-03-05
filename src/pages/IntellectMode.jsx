@@ -345,8 +345,10 @@ export default function IntellectMode() {
     const fleetContext = `Fleet Statistics: ${vehicles.length} vehicles (${vehicles.filter(v => v.status === 'active').length} active), ${routes.length} routes, ${shipments.length} shipments, ${alerts.length} active alerts. Transport types: ${[...new Set(vehicles.map(v => v.type))].join(', ')}`;
     
     try {
-      const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are an elite fleet intelligence strategist & operations scientist. Generate COMPELLING, INSIGHTFUL analysis for: "${currentCommand}"
+       setMessages(prev => [...prev, { role: "system", content: "🔬 Running deep analysis... this may take a moment..." }]);
+
+       const result = await base44.integrations.Core.InvokeLLM({
+         prompt: `You are an elite fleet intelligence strategist & operations scientist. Generate COMPELLING, INSIGHTFUL analysis for: "${currentCommand}"
 
 FLEET CONTEXT: ${fleetContext}
 
