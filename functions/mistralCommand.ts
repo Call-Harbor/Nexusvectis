@@ -436,97 +436,93 @@ EXAMPLES:
 - "show fleet in 3D" → action: SHOW_3D, parameters: {visualization_type: "fleet_globe", vehicles: [...vehicle data], routes: [...route data]}, message: "Loading 3D fleet visualization", visualization_3d: {type: "fleet_globe", data: {vehicles, routes}}
 - "visualize warehouse" → action: SHOW_3D, parameters: {visualization_type: "warehouse", layout: {...warehouse data}, cargo: [...cargo data]}, message: "Opening 3D warehouse view", visualization_3d: {type: "warehouse", data: {layout, cargo}}`;
 
-    // ── Route through HARBOR Core Engine ──
-    // HARBOR injects training knowledge base + live platform context automatically
-    let result;
+    // ── Call Mistral directly (no HARBOR hop — avoids CPU timeout) ──
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp'];
+    const imageUrls = (file_urls || []).filter(url => imageExtensions.some(ext => url.toLowerCase().split('?')[0].endsWith(ext)));
+    const textFileUrls = (file_urls || []).filter(url => !imageUrls.includes(url));
 
-    if (file_urls && file_urls.length > 0) {
-      console.log('🖼️ Processing with files, using InvokeLLM', { file_urls });
-      
-      // Pre-process Fleet-native text files: fetch content and inline as text context
-      // instead of passing them as image file_urls (which the vision model can't read as binary/text)
-      const processedFileUrls = [];
-      let inlineFleetContext = '';
+    let userMessageContent = command;
+
+    // Inline text files
+    if (textFileUrls.length > 0) {
       const TEXT_EXTENSIONS = ['.fleetslide', '.html', '.htm', '.csv', '.txt', '.json', '.md', '.xml', '.js', '.ts'];
-      for (const url of file_urls) {
-        const urlLower = url.toLowerCase().split('?')[0]; // strip query params for ext check
-        const isTextFile = TEXT_EXTENSIONS.some(ext => urlLower.endsWith(ext));
-        if (isTextFile) {
+      let inlineContext = '';
+      for (const url of textFileUrls) {
+        const urlLower = url.toLowerCase().split('?')[0];
+        const isText = TEXT_EXTENSIONS.some(ext => urlLower.endsWith(ext));
+        if (isText) {
           try {
             const r = await fetch(url);
             const text = await r.text();
-            const label = urlLower.endsWith('.fleetslide') ? 'FLEETSLIDE PRESENTATION'
-              : urlLower.endsWith('.html') || urlLower.endsWith('.htm') ? 'HTML DOCUMENT'
-              : urlLower.endsWith('.csv') ? 'CSV SPREADSHEET'
-              : 'TEXT FILE';
-            inlineFleetContext += `\n\n${label} CONTENT:\n${text.substring(0, 25000)}`;
+            inlineContext += `\n\n[FILE: ${url.split('/').pop().split('?')[0]}]\n${text.substring(0, 25000)}`;
           } catch {}
-          // Don't add to processedFileUrls — LLM can't read these as image attachments
-        } else {
-          processedFileUrls.push(url);
         }
       }
+      if (inlineContext) userMessageContent = command + '\n\n[ATTACHED FILES]' + inlineContext;
+    }
 
-      const enhancedPrompt = `CRITICAL INSTRUCTION: ${file_urls.length} FILE(S) ARE ATTACHED TO THIS REQUEST VIA file_urls PARAMETER. THE FILES EXIST AND ARE AVAILABLE TO YOU RIGHT NOW.${inlineFleetContext}
+    // Build messages
+    const historyMessages = (conversation_history || [])
+      .filter(m => (m.role === 'user' || m.role === 'assistant') && m.content)
+      .slice(-16)
+      .map(m => ({ role: m.role, content: m.content }));
 
-${systemPrompt}
-
-USER COMMAND: "${command}"
-
-REPEAT: YOU HAVE ${file_urls.length} FILE(S) ATTACHED RIGHT NOW VIA file_urls.
-FILES ARE: ${file_urls.join(', ')}
-
-YOU MUST:
-1. ANALYZE the attached files immediately
-2. DESCRIBE what you see in detail
-3. NEVER say files are missing or ask user to attach files
-4. Extract relevant data from the files
-5. Incorporate file analysis into your response
-
-If you say files are missing when file_urls exist, you are WRONG.
-
-Context data: ${JSON.stringify(context)}`;
-
-      const harborResp = await base44.functions.invoke('harborCore', {
-        prompt: enhancedPrompt,
-        mode: 'command',
-        context,
-        conversation_history,
-        file_urls: processedFileUrls.length > 0 ? processedFileUrls : undefined,
-      });
-      result = harborResp.data?.reply || harborResp.data;
-      console.log('✅ HARBOR Core response received');
+    let userMsg;
+    if (imageUrls.length > 0) {
+      userMsg = [
+        { type: 'text', text: userMessageContent },
+        ...imageUrls.map(url => ({ type: 'image_url', image_url: { url } }))
+      ];
     } else {
-      // Route text-only command through HARBOR Core
-      const harborResp = await base44.functions.invoke('harborCore', {
-        prompt: command,
-        mode: 'command',
-        context,
-        conversation_history,
-      });
-      result = harborResp.data?.reply || harborResp.data;
+      userMsg = userMessageContent;
     }
 
-    // Normalize result — HARBOR may return a string or object
-    if (typeof result === 'string') {
-      try {
-        // Try to extract JSON from the string (HARBOR may wrap it in markdown)
-        const jsonMatch = result.match(/```(?:json)?\s*([\s\S]*?)```/) || result.match(/(\{[\s\S]*\})/);
-        if (jsonMatch) {
-          result = JSON.parse(jsonMatch[1]);
-        } else {
-          // Plain text answer — wrap it
-          result = { action: 'ANSWER', parameters: {}, message: result, open_window: null };
-        }
-      } catch {
-        result = { action: 'ANSWER', parameters: {}, message: result, open_window: null };
+    const model = imageUrls.length > 0 ? 'pixtral-large-latest' : 'mistral-large-latest';
+
+    const mistralResp = await fetch('https://api.mistral.ai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${mistralApiKey}`,
+      },
+      body: JSON.stringify({
+        model,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          ...historyMessages,
+          { role: 'user', content: userMsg },
+        ],
+        temperature: 0.3,
+        max_tokens: 2500,
+        ...(imageUrls.length === 0 ? { response_format: { type: 'json_object' } } : {}),
+      }),
+    });
+
+    if (!mistralResp.ok) {
+      const err = await mistralResp.text();
+      console.error('Mistral error:', err);
+      return Response.json({ action: 'ANSWER', parameters: {}, message: 'AI service temporarily unavailable. Please try again.', open_window: null });
+    }
+
+    const aiData = await mistralResp.json();
+    const rawReply = aiData.choices?.[0]?.message?.content || '';
+
+    let result;
+    try {
+      result = JSON.parse(rawReply);
+    } catch {
+      const jsonMatch = rawReply.match(/```(?:json)?\s*([\s\S]*?)```/) || rawReply.match(/(\{[\s\S]*\})/);
+      if (jsonMatch) {
+        try { result = JSON.parse(jsonMatch[1]); } catch { result = null; }
       }
+      if (!result) result = { action: 'ANSWER', parameters: {}, message: rawReply, open_window: null };
     }
 
-    // Validate response structure
-    if (!result || !result.action || !result.message) {
-      result = { action: 'ANSWER', parameters: {}, message: typeof result === 'object' ? JSON.stringify(result) : 'Command processed.', open_window: null };
-    }
+    // Self-heal: ensure required fields
+    if (!result.action) result.action = 'ANSWER';
+    if (!result.message) result.message = 'Done.';
+    if (!result.parameters) result.parameters = {};
+    if (result.open_window === undefined) result.open_window = null;
 
     return Response.json(result);
   } catch (error) {
