@@ -150,11 +150,19 @@ export default function IntellectMode() {
 
   // ── Window Management ──────────────────────────────────────────────────────
   const openWindow = useCallback((type, position = { x: 100 + Math.random() * 200, y: 100 + Math.random() * 200 }, data = null) => {
-    if (!type.startsWith('chart_') && type !== 'document_editor' && type !== 'spreadsheet_editor' && activeWindows.find(w => w.type === type)) {
+    // Allow multiple instances of: charts, documents, spreadsheets, and analysis windows
+    const allowMultiple = type.startsWith('chart_') || type === 'document_editor' || type === 'spreadsheet_editor' || type === 'deep_analysis';
+    if (!allowMultiple && activeWindows.find(w => w.type === type)) {
       toast.info(`${type} window already open`);
       return;
     }
-    setActiveWindows(prev => [...prev, { type, id: Date.now(), position, data }]);
+    // Offset position slightly for each new window of same type to avoid stacking
+    const existingCount = activeWindows.filter(w => w.type === type || w.type.startsWith('chart_')).length;
+    const offsetPosition = {
+      x: position.x + existingCount * 30,
+      y: position.y + existingCount * 30
+    };
+    setActiveWindows(prev => [...prev, { type, id: Date.now(), position: allowMultiple ? offsetPosition : position, data }]);
   }, [activeWindows]);
 
   const closeWindow = useCallback((id) => {
