@@ -157,38 +157,71 @@ export default function FleetAnalysisFormatter({ data }) {
 
       {/* Action Categories */}
       {data.recommendations && Object.keys(data.recommendations).length > 0 && (
-        <div className="space-y-4">
-          <h3 className="text-white font-semibold text-lg flex items-center gap-2">
-            <Zap className="w-5 h-5 text-emerald-400" />
-            Strategic Actions
-          </h3>
-          {Object.entries(data.recommendations).map(([category, actions], catIdx) => (
-            <div key={catIdx} className="p-4 rounded-lg bg-emerald-500/5 border border-emerald-500/30">
-              <h4 className="text-emerald-300 font-bold text-sm mb-3 capitalize">{category.replace(/_/g, ' ')}</h4>
-              <div className="space-y-3">
-                {Array.isArray(actions) && actions.map((action, actIdx) => (
-                  <div key={actIdx} className="p-3 rounded-lg bg-slate-900/50 border border-slate-700/50">
-                    <p className="text-white font-medium text-sm mb-2">{action.action || action.expected_outcome || 'Action'}</p>
-                    
-                    {action.expected_outcome && typeof action.expected_outcome === 'object' ? (
-                      <div className="text-xs space-y-1 text-slate-300 mb-2">
-                        {action.expected_outcome.best_case && <p>✅ Best: {action.expected_outcome.best_case.eta || action.expected_outcome.best_case.duration_reduction}</p>}
-                        {action.expected_outcome.most_likely && <p>📊 Most Likely: {action.expected_outcome.most_likely.eta || action.expected_outcome.most_likely.duration_reduction}</p>}
-                      </div>
-                    ) : (
-                      action.expected_outcome && <p className="text-slate-300 text-xs mb-2">📈 {action.expected_outcome}</p>
-                    )}
+        <div className="space-y-6">
+          <div>
+            <h3 className="text-white font-bold text-2xl flex items-center gap-2">
+              <Zap className="w-6 h-6 text-emerald-400" />
+              Recommended Actions
+            </h3>
+            <p className="text-slate-400 text-base mt-2">Prioritized interventions to improve performance and reduce costs</p>
+          </div>
 
-                    <div className="flex flex-wrap gap-2 text-xs">
-                      {action.cost && <span className="px-2 py-1 rounded bg-emerald-500/20 text-emerald-300">💰 {action.cost}</span>}
-                      {action.roi && <span className="px-2 py-1 rounded bg-cyan-500/20 text-cyan-300">📊 ROI: {action.roi}</span>}
-                      {action.confidence && <span className="px-2 py-1 rounded bg-violet-500/20 text-violet-300">✓ {action.confidence}%</span>}
+          {Object.entries(data.recommendations).map(([category, actions], catIdx) => {
+            const categoryColors = {
+              'tactical_24h': { bg: 'bg-red-500/10', border: 'border-red-500/40', label: 'URGENT (Next 24 Hours)', icon: '🔴' },
+              'operational_1_4_weeks': { bg: 'bg-amber-500/10', border: 'border-amber-500/40', label: 'Important (1-4 Weeks)', icon: '🟠' },
+              'strategic': { bg: 'bg-blue-500/10', border: 'border-blue-500/40', label: 'Strategic (Long-term)', icon: '🔵' }
+            };
+            
+            const style = categoryColors[category] || { bg: 'bg-slate-500/10', border: 'border-slate-500/40', label: category.replace(/_/g, ' ').toUpperCase(), icon: '⚙️' };
+            
+            return (
+              <div key={catIdx} className={`p-6 rounded-lg border ${style.bg} ${style.border}`}>
+                <h4 className="text-white font-bold text-lg mb-4 flex items-center gap-2">
+                  <span className="text-xl">{style.icon}</span>
+                  {style.label}
+                </h4>
+                <div className="space-y-4">
+                  {Array.isArray(actions) && actions.map((action, actIdx) => (
+                    <div key={actIdx} className="bg-white/5 p-4 rounded-lg border border-white/10">
+                      <h5 className="text-white font-bold text-base mb-2">
+                        {actIdx + 1}. {action.action || action.expected_outcome || 'Action'}
+                      </h5>
+                      
+                      <div className="space-y-3">
+                        {action.expected_outcome && (
+                          <div>
+                            <p className="text-slate-400 font-semibold text-sm mb-1">Expected Outcome:</p>
+                            {typeof action.expected_outcome === 'object' ? (
+                              <div className="text-slate-200 text-base space-y-1">
+                                {action.expected_outcome.most_likely && (
+                                  <p>📊 <strong>Most Likely:</strong> {action.expected_outcome.most_likely.eta || action.expected_outcome.most_likely.duration_reduction}</p>
+                                )}
+                                {action.expected_outcome.best_case && (
+                                  <p>✅ <strong>Best Case:</strong> {action.expected_outcome.best_case.eta || action.expected_outcome.best_case.duration_reduction}</p>
+                                )}
+                                {action.expected_outcome.confidence && (
+                                  <p>🎯 <strong>Confidence:</strong> {action.expected_outcome.confidence}%</p>
+                                )}
+                              </div>
+                            ) : (
+                              <p className="text-slate-200 text-base">{action.expected_outcome}</p>
+                            )}
+                          </div>
+                        )}
+                        
+                        <div className="flex flex-wrap gap-4 text-sm">
+                          {action.cost && <span className="text-slate-300">💰 <strong>Cost:</strong> {action.cost}</span>}
+                          {action.roi && <span className="text-slate-300">📊 <strong>ROI:</strong> {action.roi}</span>}
+                          {action.confidence && <span className="text-slate-300">✓ <strong>Confidence:</strong> {action.confidence}%</span>}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
