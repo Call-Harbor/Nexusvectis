@@ -314,13 +314,43 @@ Be concise, actionable, and structured with headers/bullets where appropriate.`;
       return Response.json({ error: 'No response from AI' }, { status: 500 });
     }
 
-    // Parse JSON if needed
+    // Parse and self-heal response based on mode
     let result;
     if (useJsonMode) {
+      // Try direct parse first
       try {
         result = JSON.parse(rawReply);
       } catch {
-        result = { action: 'ANSWER', message: rawReply };
+        // Try extracting JSON from markdown code blocks
+        const codeBlockMatch = rawReply.match(/```(?:json)?\s*([\s\S]*?)```/);
+        if (codeBlockMatch) {
+          try { result = JSON.parse(codeBlockMatch[1].trim()); } catch { result = null; }
+        }
+        // Try extracting bare JSON object
+        if (!result) {
+          const jsonMatch = rawReply.match(/(\{[\s\S]*\})/);
+          if (jsonMatch) {
+            try { result = JSON.parse(jsonMatch[1]); } catch { result = null; }
+          }
+        }
+        // Final fallback — wrap plain text into correct format for the mode
+        if (!result) {
+          if (mode === 'command') {
+            result = { action: 'ANSWER', parameters: {}, message: rawReply, open_window: null };
+          } else if (mode === 'inference') {
+            result = { answer: rawReply };
+          } else {
+            result = rawReply; // chat mode — plain text is fine
+          }
+        }
+      }
+
+      // Self-heal command mode: ensure required fields exist
+      if (mode === 'command' && typeof result === 'object' && result !== null) {
+        if (!result.action) result.action = 'ANSWER';
+        if (!result.message) result.message = typeof result.reply === 'string' ? result.reply : 'Done.';
+        if (result.parameters === undefined) result.parameters = {};
+        if (result.open_window === undefined) result.open_window = null;
       }
     } else {
       result = rawReply;
