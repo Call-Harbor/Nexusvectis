@@ -931,6 +931,13 @@ export default function FleetAITrainer({ onClose }) {
               <Shield className="w-3.5 h-3.5" /> GENERATE SECURE KEY
             </motion.button>
 
+            {apiKeys.length === 0 && (
+              <div className="text-center py-8">
+                <Shield className="w-8 h-8 text-slate-600 mx-auto mb-2" />
+                <p className="text-xs font-mono text-slate-500">Ingen API keys endnu</p>
+                <p className="text-[10px] font-mono text-slate-600 mt-1">Klik GENERATE for at oprette en</p>
+              </div>
+            )}
             <div className="space-y-2">
               {apiKeys.map((apiKey, i) => (
                 <motion.div
@@ -941,16 +948,25 @@ export default function FleetAITrainer({ onClose }) {
                   className="relative rounded-lg border border-violet-500/20 bg-black/40 p-3 space-y-2 overflow-hidden"
                 >
                   <CornerBrackets color="cyan" />
-                  <div className="flex items-center justify-between">
-                    <code className="text-xs text-violet-300 bg-black/60 px-2 py-1 rounded font-mono border border-violet-500/20">{apiKey.key}</code>
-                    <button onClick={() => navigator.clipboard.writeText(apiKey.key)} className="text-slate-500 hover:text-violet-400 transition-colors">
-                      <Copy className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
+                  {apiKey.showFull ? (
+                    <div className="rounded border border-amber-500/30 bg-amber-500/5 p-2">
+                      <p className="text-[9px] font-mono text-amber-400 mb-1">⚠ GEM DENNE KEY NU — vises kun én gang</p>
+                      <div className="flex items-center gap-2">
+                        <code className="text-xs text-amber-300 bg-black/60 px-2 py-1 rounded font-mono border border-amber-500/20 break-all flex-1">{apiKey.key}</code>
+                        <button onClick={() => { navigator.clipboard.writeText(apiKey.key); }} className="text-amber-500 hover:text-amber-300 transition-colors flex-shrink-0">
+                          <Copy className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between">
+                      <code className="text-xs text-violet-300 bg-black/60 px-2 py-1 rounded font-mono border border-violet-500/20">{apiKey.prefix || apiKey.key}••••••••••••••••</code>
+                    </div>
+                  )}
                   <div className="grid grid-cols-3 gap-2 text-[10px] font-mono text-slate-500">
                     <span>CREATED: {apiKey.created}</span>
-                    <span>LAST USE: {apiKey.lastUsed}</span>
-                    <span className="text-violet-400">CALLS: {apiKey.calls.toLocaleString()}</span>
+                    <span>LAST USE: {apiKey.lastUsed || '-'}</span>
+                    <span className="text-violet-400">ID: {String(apiKey.id).slice(0, 8)}</span>
                   </div>
                 </motion.div>
               ))}
