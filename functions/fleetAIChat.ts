@@ -146,82 +146,32 @@ Deno.serve(async (req) => {
       .slice(-20)
       .map(m => ({ role: m.role, content: m.content }));
 
-    // Optionally enrich system prompt with fleet context
-    let systemPrompt = SYSTEM_PROMPT;
-    if (context) {
-      systemPrompt += `\n\nCURRENT FLEET CONTEXT:\n${JSON.stringify(context, null, 2)}`;
-    }
-    if (context?.current_datetime) {
-      systemPrompt += `\n\nCURRENT LOCAL DATE/TIME: ${context.current_datetime} (Timezone: ${context.user_timezone || 'UTC'})`;
-      systemPrompt += `\nUse this as "now" for all temporal reasoning, scheduling, and ETA calculations.`;
-    }
-    if (user) {
-      systemPrompt += `\n\nUSER: ${user.full_name} (${user.email}), role: ${user.role}`;
-    }
-    if (hasImages) {
-      systemPrompt += `\n\nIMAGE ANALYSIS MODE: The user has attached ${imageUrls.length} image(s). Analyze them in detail — identify vehicles, cargo, infrastructure, damage, safety hazards, license plates, container numbers, or any logistics-relevant information. Be specific and actionable.`;
-    }
-
-    // Build user message content — multimodal if images present
-    let userContent;
-    const textContent = filesContent
-      ? `${message}\n\n[ATTACHED FILES CONTENT]\n${filesContent}`
-      : message;
-
-    if (hasImages) {
-      // Build multimodal content array for Pixtral vision model
-      userContent = [
-        { type: "text", text: textContent }
-      ];
-      for (const imgUrl of imageUrls) {
-        userContent.push({
-          type: "image_url",
-          image_url: { url: imgUrl }
-        });
-      }
-    } else {
-      userContent = textContent;
-    }
-
-    // Use Pixtral (vision) model when images are present, otherwise Mistral Large
-    const model = hasImages ? "pixtral-large-latest" : "mistral-large-latest";
-
-    const response = await fetch("https://api.mistral.ai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${mistralApiKey}`
+    // Route through HARBOR Core Engine
+    const harborResponse = await base44.functions.invoke('harborCore', {
+      prompt: filesContent ? `${message}\n\n[ATTACHED FILES CONTENT]\n${filesContent}` : message,
+      mode: 'chat',
+      context: {
+        ...context,
+        current_datetime: context?.current_datetime || new Date().toISOString(),
+        has_images: hasImages,
+        image_count: imageUrls.length,
       },
-      body: JSON.stringify({
-        model,
-        messages: [
-          { role: "system", content: systemPrompt },
-          ...historyMessages,
-          { role: "user", content: userContent }
-        ],
-        temperature: 0.4,
-        max_tokens: 2000
-      })
+      conversation_history: historyMessages,
+      file_urls: hasImages ? imageUrls : undefined,
     });
 
-    if (!response.ok) {
-      const err = await response.text();
-      console.error("Mistral API error:", err);
-      return Response.json({ error: "AI service unavailable. Please try again." }, { status: 502 });
-    }
-
-    const data = await response.json();
-    const reply = data.choices?.[0]?.message?.content;
+    const harborData = harborResponse.data;
+    const reply = typeof harborData.reply === 'string' ? harborData.reply : harborData.reply?.message || JSON.stringify(harborData.reply);
 
     if (!reply) {
-      return Response.json({ error: "No response from AI" }, { status: 500 });
+      return Response.json({ error: "No response from HARBOR" }, { status: 500 });
     }
 
     return Response.json({
       reply,
       role: "assistant",
-      model,
-      usage: data.usage || null
+      model: harborData.model_used || 'HARBOR Core',
+      usage: harborData.usage || null
     });
 
   } catch (error) {
