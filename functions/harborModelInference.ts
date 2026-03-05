@@ -82,11 +82,21 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden — model does not belong to your organization' }, { status: 403 });
     }
 
+    // Build context from stored training data
+    let trainingContext = '';
+    if (model.training_data && model.training_data.length > 0) {
+      trainingContext = '\n\nKNOWLEDGE BASE (training data you were trained on):\n' +
+        model.training_data.map(d => `[${d.type?.toUpperCase()} — ${d.label}]: ${d.content}`).join('\n\n');
+    }
+
     // Run inference via LLM
     const result = await base44.asServiceRole.integrations.Core.InvokeLLM({
-      prompt: `You are the HARBOR AI inference engine running model "${model.name}" (accuracy: ${model.accuracy}%, version: ${model.version}).
-Given this input data: ${JSON.stringify(input || {})}, provide a logistics intelligence response.
-Include: prediction, confidence score (0-100), recommended actions, and any anomalies detected.`,
+      prompt: `You are the HARBOR AI inference engine running model "${model.name}" (accuracy: ${model.accuracy}%, version: ${model.version}).${trainingContext}
+
+Using the above knowledge base as your primary context, answer the following input:
+${JSON.stringify(input || {})}
+
+Provide a logistics intelligence response including: prediction, confidence score (0-100), recommended actions, and any anomalies detected.`,
       response_json_schema: {
         type: 'object',
         properties: {
