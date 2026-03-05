@@ -439,14 +439,18 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
     });
 
       addThinkingLog('visualize', 'Rendering advanced holographic dashboard with multi-dimensional analysis', null, 150, 85, processId);
-      const chartId = `chart_${Date.now()}`;
-      openWindow(chartId, { x: 80, y: 60 }, {
-        chartData: result.chart_data || [],
-        chartConfig: result
-      });
-      
-      setMessages(prev => [...prev, { role: "assistant", content: `**🔬 ${result.title}**\n\n${result.summary || result.description}\n\n📊 **Advanced holographic research dashboard opened** — Explore detailed statistical analysis, predictive models, risk assessment, KPIs, and strategic recommendations with ROI calculations.` }]);
-      addThinkingLog('complete', 'Deep research analysis rendered successfully', null, 100, 100, processId);
+       const chartId = `chart_${Date.now()}`;
+
+       // Open hologram window with analysis data
+       console.log('Opening analysis window:', { chartId, hasChartData: !!result.chart_data, hasRecommendations: !!result.recommendations });
+       openWindow(chartId, { x: 80, y: 60 }, {
+         chartData: result.chart_data || [],
+         chartConfig: result
+       });
+
+       // Add message to chat
+       setMessages(prev => [...prev, { role: "assistant", content: `**🔬 ${result.title}**\n\n${result.summary || result.description}\n\n📊 **Advanced holographic research dashboard opened** — Explore detailed statistical analysis, predictive models, risk assessment, KPIs, and strategic recommendations with ROI calculations.` }]);
+       addThinkingLog('complete', 'Deep research analysis rendered successfully', null, 100, 100, processId);
     } catch (error) {
       addThinkingLog('error', `Deep analysis failed: ${error.message}`, null, 100, null, processId);
       setMessages(prev => [...prev, { role: "system", content: `❌ Deep analysis failed: ${error.message}` }]);
