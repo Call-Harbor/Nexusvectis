@@ -543,7 +543,7 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
 
         addThinkingLog('analyze', 'Multi-perspective analysis across 6 dimensions', null, 180, 28);
 
-        const conversationHistory = messages.filter(m => (m.role === 'user' || m.role === 'assistant') && m.content && !m.streaming).map(m => ({ role: m.role, content: m.content }));
+        const conversationHistory = messages.filter(m => (m.role === 'user' || m.role === 'assistant') && m.content && !m.streaming && m.role !== 'system').map(m => ({ role: m.role, content: m.content }));
         const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
         const userLocalTime = new Date().toLocaleString('en-GB', { timeZone: userTimezone, hour12: false });
 
