@@ -174,11 +174,12 @@ function ChartWindow({ data, config }) {
         <div className="mt-6 p-4 rounded-xl bg-gradient-to-br from-emerald-500/10 to-cyan-500/10 border border-emerald-500/30">
           <div className="flex items-center gap-2 mb-3"><Zap className="w-5 h-5 text-emerald-400" /><h4 className="text-white font-bold">💡 Strategic Actions</h4></div>
           <div className="space-y-3">
-            {config.recommendations.map((rec, idx) => {
+            {config.recommendations.filter(r => r && (typeof r === 'string' || typeof r?.action === 'string')).map((rec, idx) => {
               const recText = typeof rec === 'string' ? rec : rec?.action || rec?.benefit || '';
-              const advantage = rec?.competitive_advantage || '';
-              const savings = rec?.savings_dkk ? (typeof rec.savings_dkk === 'number' ? `${rec.savings_dkk.toLocaleString()} DKK` : rec.savings_dkk) : null;
-              const confidence = rec?.confidence ? Math.round(rec.confidence * 100) : null;
+              const advantage = typeof rec === 'object' ? rec?.competitive_advantage : '';
+              const savings = typeof rec === 'object' && rec?.savings_dkk ? (typeof rec.savings_dkk === 'number' ? `${rec.savings_dkk.toLocaleString()} DKK` : rec.savings_dkk) : null;
+              const confidence = typeof rec === 'object' && rec?.confidence ? Math.round(rec.confidence * 100) : null;
+              const timeframe = typeof rec === 'object' ? rec?.timeframe : null;
               return (
                 <div key={idx} className="p-4 rounded-lg bg-emerald-500/5 border border-emerald-500/25 hover:border-emerald-500/50 transition">
                   <div className="flex gap-3 mb-2">
@@ -192,7 +193,7 @@ function ChartWindow({ data, config }) {
                   </div>
                   <div className="flex flex-wrap gap-2 ml-11 text-xs">
                     {savings && <span className="px-3 py-1.5 rounded-full bg-emerald-500/20 text-emerald-200 font-semibold">💰 {savings}</span>}
-                    {rec?.timeframe && <span className="px-3 py-1.5 rounded-full bg-cyan-500/20 text-cyan-200">⏱️ {rec.timeframe}</span>}
+                    {timeframe && <span className="px-3 py-1.5 rounded-full bg-cyan-500/20 text-cyan-200">⏱️ {timeframe}</span>}
                     {confidence && <span className="px-3 py-1.5 rounded-full bg-violet-500/20 text-violet-200">✓ {confidence}% confidence</span>}
                   </div>
                 </div>
