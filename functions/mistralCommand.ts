@@ -454,6 +454,7 @@ IMPORTANT: You have admin access to all organizations, but ONLY show data from o
 
 CURRENT DATA:
 ${JSON.stringify(context, null, 2)}
+${harborKnowledge}
 
 ${file_urls && file_urls.length > 0 ? `\n\nCRITICAL: ${file_urls.length} FILE(S) ARE ALREADY ATTACHED TO THIS REQUEST. You have direct access to these files. DO NOT ask the user to attach files - they are ALREADY provided. Analyze them NOW and incorporate your findings into your response. Describe what you see, extract data, and provide insights based on the file content.` : ''}
 
