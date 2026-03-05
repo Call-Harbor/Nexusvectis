@@ -372,6 +372,7 @@ export default function WindowContentRenderer({ type, data, vehicles, routes, sh
   if (type === 'fleet_drive') return <FleetDrivePanel orgId={orgId} openWindow={openWindow} />;
   if (type === 'hologram_presentation') return <HologramPresentation orgId={orgId} initialFileUrl={data?.initialFileUrl} onSaved={onSaved} />;
   if (type === 'fleet_ai_trainer') return <FleetAITrainer onClose={data?.onClose} />;
+  if (type === 'parallel_processor') return <ParallelTaskProcessor onClose={data?.onClose} externalTasks={data?.tasks || []} />;
   if (PAGE_MAP[type]) {
     return <iframe src={`${createPageUrl(PAGE_MAP[type])}?hologram=true`} className="w-full h-full border-0" title={PAGE_MAP[type]} />;
   }
