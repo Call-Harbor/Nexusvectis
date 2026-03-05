@@ -436,9 +436,10 @@ EXAMPLES:
 - "show fleet in 3D" → action: SHOW_3D, parameters: {visualization_type: "fleet_globe", vehicles: [...vehicle data], routes: [...route data]}, message: "Loading 3D fleet visualization", visualization_3d: {type: "fleet_globe", data: {vehicles, routes}}
 - "visualize warehouse" → action: SHOW_3D, parameters: {visualization_type: "warehouse", layout: {...warehouse data}, cargo: [...cargo data]}, message: "Opening 3D warehouse view", visualization_3d: {type: "warehouse", data: {layout, cargo}}`;
 
-    // Use InvokeLLM if files are attached (supports vision/files)
+    // ── Route through HARBOR Core Engine ──
+    // HARBOR injects training knowledge base + live platform context automatically
     let result;
-    
+
     if (file_urls && file_urls.length > 0) {
       console.log('🖼️ Processing with files, using InvokeLLM', { file_urls });
       
