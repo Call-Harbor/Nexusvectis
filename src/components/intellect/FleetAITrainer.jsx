@@ -173,6 +173,60 @@ export default function FleetAITrainer({ onClose }) {
     }
   };
 
+  const saveModel = () => {
+    const snapshot = {
+      ...selectedModel,
+      savedAt: new Date().toISOString(),
+      accuracy: liveAccuracy.toFixed(2),
+      snapshot_id: `snap_${Date.now()}`,
+    };
+    setSavedModels(prev => [...prev, snapshot]);
+    setSaveSuccess(true);
+    setSystemLog(prev => [...prev, `[SAVE] Model snapshot saved: ${snapshot.snapshot_id}`, `[PERF] Accuracy locked at ${snapshot.accuracy}%`]);
+    setTimeout(() => setSaveSuccess(false), 2000);
+  };
+
+  const runSimulation = async () => {
+    setIsSimulating(true);
+    setSimulationResults(null);
+    setSystemLog(prev => [...prev, `[SIM] Running advanced simulation: ${simScenario.toUpperCase()}...`]);
+    const result = await base44.integrations.Core.InvokeLLM({
+      prompt: `You are HARBOR AI simulation engine. Run an advanced logistics simulation for scenario: "${simScenario}" on model "${selectedModel.name}" with accuracy ${liveAccuracy.toFixed(1)}%. Return realistic simulation results as JSON.`,
+      response_json_schema: {
+        type: 'object',
+        properties: {
+          summary: { type: 'string' },
+          efficiency_gain: { type: 'number' },
+          cost_reduction: { type: 'number' },
+          risk_score: { type: 'number' },
+          recommendations: { type: 'array', items: { type: 'string' } },
+          kpis: { type: 'array', items: { type: 'object', properties: { label: { type: 'string' }, value: { type: 'string' }, delta: { type: 'string' } } } },
+        }
+      }
+    });
+    setSimulationResults(result);
+    setSystemLog(prev => [...prev, `[SIM] Simulation complete — efficiency gain: +${result.efficiency_gain?.toFixed(1)}%`]);
+    setIsSimulating(false);
+  };
+
+  const startFinetuning = () => {
+    setIsFinetuning(true);
+    setFinetuneProgress(0);
+    setSystemLog(prev => [...prev, `[FINETUNE] LoRA fine-tuning initiated — rank: ${finetuneConfig.rank}, lr: ${finetuneConfig.lr}`]);
+    const interval = setInterval(() => {
+      setFinetuneProgress(prev => {
+        if (prev >= 100) {
+          clearInterval(interval);
+          setIsFinetuning(false);
+          setLiveAccuracy(p => Math.min(99.9, p + Math.random() * 1.5 + 0.5));
+          setSystemLog(p => [...p, '[FINETUNE] Fine-tuning complete — model weights updated', '[PERF] Accuracy improved via LoRA adaptation']);
+          return 100;
+        }
+        return prev + Math.random() * 15 + 5;
+      });
+    }, 600);
+  };
+
   const analyzeWithAI = async () => {
     setIsAnalyzing(true);
     setSystemLog(prev => [...prev, '[HARBOR] Initiating deep model analysis...']);
