@@ -693,6 +693,204 @@ export default function FleetAITrainer({ onClose }) {
             </div>
           </TabsContent>
 
+          {/* Simulate Tab */}
+          <TabsContent value="simulate" className="flex-1 overflow-auto p-4 space-y-3 mt-0">
+            <div className="relative rounded-lg border border-amber-500/20 bg-black/40 p-4 space-y-3 overflow-hidden">
+              <CornerBrackets />
+              <p className="text-[10px] font-mono text-amber-400/70 tracking-widest flex items-center gap-2">
+                <FlaskConical className="w-3.5 h-3.5" /> SIMULATION SCENARIO
+              </p>
+              <select value={simScenario} onChange={e => setSimScenario(e.target.value)} className="w-full bg-black border border-amber-500/30 rounded px-3 py-2 text-amber-300 text-xs font-mono">
+                <option value="peak_demand">PEAK DEMAND SURGE (+300%)</option>
+                <option value="route_failure">MULTI-ROUTE FAILURE CASCADE</option>
+                <option value="weather_disruption">EXTREME WEATHER DISRUPTION</option>
+                <option value="fuel_crisis">FUEL SUPPLY CRISIS</option>
+                <option value="cyber_attack">CYBER ATTACK RESPONSE</option>
+                <option value="port_congestion">PORT CONGESTION SCENARIO</option>
+              </select>
+              <motion.button
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={runSimulation}
+                disabled={isSimulating}
+                className={`w-full py-2.5 rounded border font-mono text-xs tracking-widest flex items-center justify-center gap-2 transition-all ${
+                  isSimulating ? 'border-amber-500/30 text-amber-500/50 cursor-not-allowed' : 'border-amber-500/60 text-amber-300 hover:bg-amber-500/10'
+                }`}
+                style={isSimulating ? {} : { boxShadow: '0 0 15px rgba(245,158,11,0.15)' }}
+              >
+                {isSimulating ? (
+                  <><motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}><RefreshCw className="w-3.5 h-3.5" /></motion.div> SIMULATING...</>
+                ) : (
+                  <><FlaskConical className="w-3.5 h-3.5" /> RUN ADVANCED SIMULATION</>
+                )}
+              </motion.button>
+            </div>
+
+            <AnimatePresence>
+              {simulationResults && (
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-3">
+                  <div className="relative rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-3 overflow-hidden">
+                    <CornerBrackets color="cyan" />
+                    <p className="text-[10px] font-mono text-emerald-400/70 tracking-widest mb-2">SIMULATION RESULTS</p>
+                    <p className="text-xs text-slate-300 mb-3">{simulationResults.summary}</p>
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="text-center">
+                        <p className="text-[9px] font-mono text-slate-500">EFFICIENCY</p>
+                        <p className="text-sm font-bold font-mono text-emerald-400">+{simulationResults.efficiency_gain?.toFixed(1)}%</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-[9px] font-mono text-slate-500">COST REDUCE</p>
+                        <p className="text-sm font-bold font-mono text-cyan-400">-{simulationResults.cost_reduction?.toFixed(1)}%</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-[9px] font-mono text-slate-500">RISK SCORE</p>
+                        <p className="text-sm font-bold font-mono text-amber-400">{simulationResults.risk_score?.toFixed(0)}/100</p>
+                      </div>
+                    </div>
+                  </div>
+                  {simulationResults.kpis?.length > 0 && (
+                    <div className="relative rounded-lg border border-amber-500/20 bg-black/40 p-3 overflow-hidden">
+                      <CornerBrackets />
+                      <p className="text-[10px] font-mono text-amber-400/70 tracking-widest mb-2">KPI IMPACT</p>
+                      <div className="space-y-1.5">
+                        {simulationResults.kpis.map((kpi, i) => (
+                          <div key={i} className="flex items-center justify-between text-xs font-mono">
+                            <span className="text-slate-400">{kpi.label}</span>
+                            <span className="text-amber-300">{kpi.value} <span className="text-emerald-400 text-[10px]">{kpi.delta}</span></span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {simulationResults.recommendations?.length > 0 && (
+                    <div className="relative rounded-lg border border-amber-500/20 bg-black/40 p-3 overflow-hidden">
+                      <CornerBrackets />
+                      <p className="text-[10px] font-mono text-amber-400/70 tracking-widest mb-2">RECOMMENDATIONS</p>
+                      <div className="space-y-1.5">
+                        {simulationResults.recommendations.map((rec, i) => (
+                          <div key={i} className="flex gap-2 text-xs">
+                            <ChevronRight className="w-3 h-3 text-amber-500 flex-shrink-0 mt-0.5" />
+                            <span className="text-slate-300">{rec}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </TabsContent>
+
+          {/* Fine-tune Tab */}
+          <TabsContent value="finetune" className="flex-1 overflow-auto p-4 space-y-3 mt-0">
+            <div className="relative rounded-lg border border-violet-500/20 bg-black/40 p-4 space-y-3 overflow-hidden">
+              <CornerBrackets color="cyan" />
+              <p className="text-[10px] font-mono text-violet-400/70 tracking-widest flex items-center gap-2">
+                <Sliders className="w-3.5 h-3.5" /> FINE-TUNING CONFIG
+              </p>
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { label: 'METHOD', key: 'method', options: ['lora', 'qlora', 'prefix', 'adapter'] },
+                ].map(field => (
+                  <div key={field.key} className="col-span-2">
+                    <p className="text-[9px] font-mono text-slate-500 mb-1">{field.label}</p>
+                    <select value={finetuneConfig[field.key]} onChange={e => setFinetuneConfig(p => ({ ...p, [field.key]: e.target.value }))} className="w-full bg-black border border-violet-500/30 rounded px-3 py-2 text-violet-300 text-xs font-mono">
+                      {field.options.map(o => <option key={o} value={o}>{o.toUpperCase()}</option>)}
+                    </select>
+                  </div>
+                ))}
+                {[
+                  { label: 'LEARNING RATE', key: 'lr' },
+                  { label: 'STEPS', key: 'steps' },
+                  { label: 'LORA RANK', key: 'rank' },
+                ].map(field => (
+                  <div key={field.key}>
+                    <p className="text-[9px] font-mono text-slate-500 mb-1">{field.label}</p>
+                    <input
+                      type="text"
+                      value={finetuneConfig[field.key]}
+                      onChange={e => setFinetuneConfig(p => ({ ...p, [field.key]: e.target.value }))}
+                      className="w-full bg-black border border-violet-500/30 rounded px-2 py-1.5 text-violet-300 text-xs font-mono"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <motion.button
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={startFinetuning}
+              disabled={isFinetuning}
+              className={`w-full py-2.5 rounded border font-mono text-xs tracking-widest flex items-center justify-center gap-2 transition-all ${
+                isFinetuning ? 'border-violet-500/30 text-violet-500/50 cursor-not-allowed' : 'border-violet-500/60 text-violet-300 hover:bg-violet-500/10'
+              }`}
+              style={isFinetuning ? {} : { boxShadow: '0 0 15px rgba(139,92,246,0.15)' }}
+            >
+              {isFinetuning ? (
+                <><motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}><Sliders className="w-3.5 h-3.5" /></motion.div> FINE-TUNING IN PROGRESS...</>
+              ) : (
+                <><Sliders className="w-3.5 h-3.5" /> INITIATE FINE-TUNING</>
+              )}
+            </motion.button>
+
+            {isFinetuning && (
+              <div className="relative rounded-lg border border-violet-500/20 bg-black/40 p-3 overflow-hidden">
+                <CornerBrackets color="cyan" />
+                <div className="flex justify-between text-[10px] font-mono mb-2">
+                  <span className="text-violet-400/60">FINE-TUNE PROGRESS</span>
+                  <span className="text-violet-300">{Math.round(finetuneProgress)}%</span>
+                </div>
+                <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                  <motion.div
+                    className="h-full rounded-full"
+                    style={{ background: 'linear-gradient(90deg, #8b5cf6, #a78bfa, #c4b5fd)' }}
+                    animate={{ width: `${finetuneProgress}%` }}
+                    transition={{ duration: 0.3 }}
+                  />
+                </div>
+                <p className="text-[9px] font-mono text-slate-600 mt-2">Adapting weights via {finetuneConfig.method.toUpperCase()} — step {Math.round(finetuneProgress / 100 * parseInt(finetuneConfig.steps))}/{finetuneConfig.steps}</p>
+              </div>
+            )}
+          </TabsContent>
+
+          {/* Saved Models Tab */}
+          <TabsContent value="saved" className="flex-1 overflow-auto p-4 space-y-3 mt-0">
+            {savedModels.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-32 text-center">
+                <BookMarked className="w-8 h-8 text-slate-600 mb-2" />
+                <p className="text-xs font-mono text-slate-500">No saved snapshots yet</p>
+                <p className="text-[10px] font-mono text-slate-600 mt-1">Use SAVE MODEL to preserve model states</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {savedModels.map((snap, i) => (
+                  <motion.div
+                    key={snap.snapshot_id}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.05 }}
+                    className="relative rounded-lg border border-amber-500/20 bg-black/40 p-3 overflow-hidden"
+                  >
+                    <CornerBrackets />
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs font-mono text-white">{snap.name}</span>
+                      <span className="text-emerald-400 font-mono text-xs">{snap.accuracy}%</span>
+                    </div>
+                    <div className="flex items-center justify-between text-[9px] font-mono text-slate-500">
+                      <span>{snap.snapshot_id}</span>
+                      <span>{new Date(snap.savedAt).toLocaleString('da-DK')}</span>
+                    </div>
+                    <div className="flex gap-2 mt-2">
+                      <button onClick={() => setSelectedModel(snap)} className="flex-1 py-1 rounded border border-amber-500/30 text-amber-400 font-mono text-[10px] tracking-widest hover:bg-amber-500/10 transition-all">RESTORE</button>
+                      <button onClick={() => setSavedModels(p => p.filter(s => s.snapshot_id !== snap.snapshot_id))} className="px-3 py-1 rounded border border-red-500/30 text-red-400 font-mono text-[10px] hover:bg-red-500/10 transition-all">DEL</button>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
           {/* API Keys Tab */}
           <TabsContent value="api" className="flex-1 overflow-auto p-4 space-y-3 mt-0">
             <motion.button
