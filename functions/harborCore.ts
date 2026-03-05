@@ -130,31 +130,25 @@ Deno.serve(async (req) => {
     }
 
     // ─── 1. LOAD HARBOR KNOWLEDGE BASE ───────────────────────────────────────
-    // Fetch the most accurate active model for this org (or global if none)
     let knowledgeBase = '';
     try {
-      let models = await base44.asServiceRole.entities.FleetAIModel.filter({
-        organization_id,
-        status: 'active'
-      });
-      // Fallback: try any active model
-      if (!models || models.length === 0) {
-        models = await base44.asServiceRole.entities.FleetAIModel.filter({ status: 'active' });
-      }
-      // If specific model requested
-      if (model_id) {
-        const specific = models.find(m => m.snapshot_id === model_id);
-        if (specific) models = [specific];
-      } else {
-        // Use highest accuracy model
-        models.sort((a, b) => (b.accuracy || 0) - (a.accuracy || 0));
-        models = models.slice(0, 1);
+      let allModels = await base44.asServiceRole.entities.FleetAIModel.filter({ organization_id, status: 'active' });
+      if (!allModels || allModels.length === 0) {
+        allModels = await base44.asServiceRole.entities.FleetAIModel.filter({ status: 'active' });
       }
 
-      if (models.length > 0 && models[0].training_data?.length > 0) {
-        const m = models[0];
-        knowledgeBase = `\n\n[HARBOR KNOWLEDGE BASE — Model: ${m.name} v${m.version || '1.0'}, Accuracy: ${m.accuracy || 0}%]\n` +
-          m.training_data.map(d => `[${(d.type || 'data').toUpperCase()} — ${d.label}]:\n${d.content}`).join('\n\n---\n');
+      let selectedModel = null;
+      if (model_id && allModels.length > 0) {
+        selectedModel = allModels.find(m => m.snapshot_id === model_id) || null;
+      }
+      if (!selectedModel && allModels.length > 0) {
+        allModels.sort((a, b) => (b.accuracy || 0) - (a.accuracy || 0));
+        selectedModel = allModels[0];
+      }
+
+      if (selectedModel && selectedModel.training_data?.length > 0) {
+        knowledgeBase = `\n\n[HARBOR KNOWLEDGE BASE — Model: ${selectedModel.name} v${selectedModel.version || '1.0'}, Accuracy: ${selectedModel.accuracy || 0}%]\n` +
+          selectedModel.training_data.map(d => `[${(d.type || 'data').toUpperCase()} — ${d.label}]:\n${d.content}`).join('\n\n---\n');
       }
     } catch (_) {
       // No models yet — proceed without knowledge base
