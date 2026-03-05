@@ -296,7 +296,6 @@ ${context ? `\nAdditional context: ${JSON.stringify(context)}` : ''}`;
     return Response.json({
       harbor_version: '1.0',
       mode: mode || 'chat',
-      model_used: models?.[0]?.name || 'HARBOR Base',
       reply: result,
       usage: data.usage || null
     });
