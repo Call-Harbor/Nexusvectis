@@ -9,9 +9,6 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const { organization_id } = body;
 
-    const mistralApiKey = Deno.env.get("MISTRAL_API_KEY");
-    if (!mistralApiKey) return Response.json({ error: 'MISTRAL_API_KEY not configured' }, { status: 500 });
-
     // Fetch real fleet data
     const [vehicles, routes, alerts, maintenance, exceptions, shipments] = await Promise.all([
       base44.asServiceRole.entities.Vehicle.filter({ organization_id }),
