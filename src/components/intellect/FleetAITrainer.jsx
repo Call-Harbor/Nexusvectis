@@ -289,6 +289,18 @@ export default function FleetAITrainer({ onClose }) {
             <span className="text-slate-500">GPU:</span>
             <span className="text-cyan-300">72%</span>
           </div>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={saveModel}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded border font-mono text-[10px] tracking-widest transition-all ${
+              saveSuccess
+                ? 'border-emerald-500/60 text-emerald-400 bg-emerald-500/10'
+                : 'border-amber-500/40 text-amber-400 hover:bg-amber-500/10'
+            }`}
+          >
+            {saveSuccess ? <><CheckCircle className="w-3 h-3" /> SAVED</> : <><Save className="w-3 h-3" /> SAVE MODEL</>}
+          </motion.button>
           <button onClick={onClose} className="text-slate-500 hover:text-amber-400 transition-colors font-mono text-sm">✕</button>
         </div>
       </div>
