@@ -507,9 +507,25 @@ Context data: ${JSON.stringify(context)}`;
       result = harborResp.data?.reply || harborResp.data;
     }
 
+    // Normalize result — HARBOR may return a string or object
+    if (typeof result === 'string') {
+      try {
+        // Try to extract JSON from the string (HARBOR may wrap it in markdown)
+        const jsonMatch = result.match(/```(?:json)?\s*([\s\S]*?)```/) || result.match(/(\{[\s\S]*\})/);
+        if (jsonMatch) {
+          result = JSON.parse(jsonMatch[1]);
+        } else {
+          // Plain text answer — wrap it
+          result = { action: 'ANSWER', parameters: {}, message: result, open_window: null };
+        }
+      } catch {
+        result = { action: 'ANSWER', parameters: {}, message: result, open_window: null };
+      }
+    }
+
     // Validate response structure
-    if (!result.action || !result.message) {
-      throw new Error('Invalid AI response format');
+    if (!result || !result.action || !result.message) {
+      result = { action: 'ANSWER', parameters: {}, message: typeof result === 'object' ? JSON.stringify(result) : 'Command processed.', open_window: null };
     }
 
     return Response.json(result);
