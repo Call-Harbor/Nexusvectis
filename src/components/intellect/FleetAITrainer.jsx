@@ -1,11 +1,47 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Zap, TrendingUp, Code, Play, Save, Plus, Trash2, Eye, Settings, Download, Copy, CheckCircle, Link2, FileUp, Trash, Sparkles, Gauge, Cpu, BarChart3 } from 'lucide-react';
+import { Zap, TrendingUp, Code, Play, Save, Plus, Trash2, Eye, Settings, Download, Copy, CheckCircle, Link2, FileUp, Trash, Sparkles, Gauge, Cpu, BarChart3, Brain, Activity, Shield, AlertTriangle, Radio, Crosshair, Terminal, Database, GitBranch, Layers } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area } from 'recharts';
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area, RadarChart, Radar, PolarGrid, PolarAngleAxis } from 'recharts';
 import { base44 } from '@/api/base44Client';
 import AdvancedModelMonitoring from './AdvancedModelMonitoring';
+
+// JARVIS scanning line animation
+const ScanLine = () => (
+  <motion.div
+    className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-400/60 to-transparent z-10 pointer-events-none"
+    initial={{ top: '0%' }}
+    animate={{ top: ['0%', '100%', '0%'] }}
+    transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
+  />
+);
+
+// Corner brackets decoration
+const CornerBrackets = ({ color = 'amber' }) => {
+  const c = color === 'amber' ? 'border-amber-500/60' : 'border-cyan-500/60';
+  return (
+    <>
+      <div className={`absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 ${c}`} />
+      <div className={`absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 ${c}`} />
+      <div className={`absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 ${c}`} />
+      <div className={`absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 ${c}`} />
+    </>
+  );
+};
+
+// Pulsing stat card
+const StatCard = ({ label, value, icon: Icon, color = 'amber', pulse = false }) => (
+  <div className={`relative overflow-hidden rounded-lg border border-${color}-500/30 bg-black/40 p-3`}>
+    <CornerBrackets color={color} />
+    <div className="flex items-center gap-2 mb-1">
+      <Icon className={`w-3 h-3 text-${color}-400`} />
+      <span className={`text-[10px] font-mono uppercase tracking-widest text-${color}-400/70`}>{label}</span>
+      {pulse && <span className={`ml-auto w-1.5 h-1.5 rounded-full bg-${color}-400 animate-pulse`} />}
+    </div>
+    <div className={`text-lg font-bold font-mono text-${color}-300`}>{value}</div>
+  </div>
+);
 
 export default function FleetAITrainer({ onClose }) {
   const [activeTab, setActiveTab] = useState('training');
@@ -31,6 +67,12 @@ export default function FleetAITrainer({ onClose }) {
   const [showAddData, setShowAddData] = useState(false);
   const [aiInsights, setAiInsights] = useState([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [liveAccuracy, setLiveAccuracy] = useState(selectedModel.accuracy);
+  const [systemLog, setSystemLog] = useState([
+    '[JARVIS] Fleet AI Trainer initialized',
+    '[SYS] Model registry loaded — 2 models active',
+    '[NET] API endpoint nominal',
+  ]);
 
   const chartData = [
     { epoch: 1, loss: 0.85, accuracy: 78 },
@@ -44,17 +86,36 @@ export default function FleetAITrainer({ onClose }) {
     { metric: 'Accuracy', value: selectedModel.accuracy },
     { metric: 'Precision', value: 89.5 },
     { metric: 'Recall', value: 87.3 },
-    { metric: 'F1-Score', value: 88.3 },
+    { metric: 'F1', value: 88.3 },
   ];
+
+  const radarData = [
+    { subject: 'Accuracy', value: 94 },
+    { subject: 'Speed', value: 87 },
+    { subject: 'Stability', value: 91 },
+    { subject: 'Memory', value: 78 },
+    { subject: 'Latency', value: 85 },
+  ];
+
+  useEffect(() => {
+    if (isTraining) {
+      const t = setInterval(() => {
+        setLiveAccuracy(prev => Math.min(99.9, prev + Math.random() * 0.3));
+      }, 800);
+      return () => clearInterval(t);
+    }
+  }, [isTraining]);
 
   const startTraining = () => {
     setIsTraining(true);
     setTrainingProgress(0);
+    setSystemLog(prev => [...prev, '[TRAIN] Initiating neural network training sequence...', '[GPU] CUDA cores engaged — 72% utilization']);
     const interval = setInterval(() => {
       setTrainingProgress(prev => {
         if (prev >= 100) {
           clearInterval(interval);
           setIsTraining(false);
+          setSystemLog(p => [...p, '[TRAIN] Training complete — model updated', `[PERF] Accuracy: ${liveAccuracy.toFixed(1)}%`]);
           return 100;
         }
         return prev + Math.random() * 25;
@@ -71,477 +132,562 @@ export default function FleetAITrainer({ onClose }) {
       calls: 0,
     };
     setApiKeys([...apiKeys, newKey]);
+    setSystemLog(prev => [...prev, `[API] New key generated: ${newKey.key.slice(0,16)}...`]);
   };
 
   const createNewModel = () => {
     if (newModelName.trim()) {
-      const newModel = {
-        id: models.length + 1,
-        name: newModelName,
-        accuracy: 0,
-        trained: false,
-        version: '1.0',
-      };
+      const newModel = { id: models.length + 1, name: newModelName, accuracy: 0, trained: false, version: '1.0' };
       setModels([...models, newModel]);
       setSelectedModel(newModel);
       setNewModelName('');
       setShowNewModel(false);
+      setSystemLog(prev => [...prev, `[MODEL] New model registered: ${newModelName}`]);
     }
   };
 
   const addTrainingData = () => {
     if (newDataContent.trim() && newDataLabel.trim()) {
-      const newData = {
-        id: trainingData.length + 1,
-        type: newDataType,
-        content: newDataContent,
-        label: newDataLabel,
-      };
-      setTrainingData([...trainingData, newData]);
+      setTrainingData([...trainingData, { id: trainingData.length + 1, type: newDataType, content: newDataContent, label: newDataLabel }]);
       setNewDataContent('');
       setNewDataLabel('');
       setShowAddData(false);
     }
   };
 
-  const removeTrainingData = (id) => {
-    setTrainingData(trainingData.filter(data => data.id !== id));
-  };
+  const removeTrainingData = (id) => setTrainingData(trainingData.filter(d => d.id !== id));
 
   const handleFileUpload = async (e) => {
     const file = e.target.files?.[0];
     if (file) {
-      try {
-        const { file_url } = await base44.integrations.Core.UploadFile({ file });
-        const newData = {
-          id: trainingData.length + 1,
-          type: 'file',
-          content: file_url,
-          label: file.name,
-        };
-        setTrainingData([...trainingData, newData]);
-      } catch (error) {
-        console.error('Upload error:', error);
-      }
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      setTrainingData([...trainingData, { id: trainingData.length + 1, type: 'file', content: file_url, label: file.name }]);
     }
   };
 
   const analyzeWithAI = async () => {
     setIsAnalyzing(true);
-    try {
-      const response = await base44.integrations.Core.InvokeLLM({
-        prompt: `Du er en avanceret AI-analytiker. Analysér denne model: ${selectedModel.name} med accuracy ${selectedModel.accuracy}%. Giv 3 konkrete forslag til forbedring og 2 mulige risici. Format som JSON med felt "suggestions" og "risks".`,
-        response_json_schema: {
-          type: 'object',
-          properties: {
-            suggestions: { type: 'array', items: { type: 'string' } },
-            risks: { type: 'array', items: { type: 'string' } },
-          },
-        },
-      });
-      setAiInsights(response.suggestions || []);
-    } catch (error) {
-      console.error('AI analysis error:', error);
-    }
+    setSystemLog(prev => [...prev, '[JARVIS] Initiating deep model analysis...']);
+    const response = await base44.integrations.Core.InvokeLLM({
+      prompt: `You are JARVIS, an advanced AI analyst. Analyse this model: ${selectedModel.name} with accuracy ${selectedModel.accuracy}%. Give 3 concrete improvement suggestions. Format as JSON with field "suggestions".`,
+      response_json_schema: { type: 'object', properties: { suggestions: { type: 'array', items: { type: 'string' } } } },
+    });
+    setAiInsights(response.suggestions || []);
+    setSystemLog(prev => [...prev, '[JARVIS] Analysis complete — 3 recommendations generated']);
     setIsAnalyzing(false);
   };
 
+  const tabStyle = "data-[state=active]:bg-amber-500/20 data-[state=active]:text-amber-300 data-[state=active]:border-b-2 data-[state=active]:border-amber-500 text-slate-400 text-xs font-mono rounded-none";
+
   return (
-    <div className="w-full h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-xl border border-slate-700/50 overflow-hidden flex flex-col">
+    <div className="w-full h-full bg-[#020810] rounded-xl border border-amber-500/30 overflow-hidden flex flex-col relative"
+      style={{ boxShadow: '0 0 40px rgba(245,158,11,0.1), inset 0 0 60px rgba(0,0,0,0.5)' }}>
+
+      {/* Background grid */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(245,158,11,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(245,158,11,0.03)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
+
+      {/* Scanning line */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+        <ScanLine />
+      </div>
+
       {/* Header */}
-      <div className="bg-gradient-to-r from-cyan-500/10 to-violet-500/10 border-b border-slate-700/50 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Zap className="w-6 h-6 text-cyan-400" />
-            <div>
-              <h2 className="text-xl font-bold text-white">Fleet AI Trainer</h2>
-              <p className="text-xs text-slate-400">Train & Deploy Custom Models</p>
+      <div className="relative z-10 border-b border-amber-500/30 bg-black/60 px-5 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
+              className="w-8 h-8 rounded-full border border-amber-500/50 flex items-center justify-center"
+            >
+              <Brain className="w-4 h-4 text-amber-400" />
+            </motion.div>
+            <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-amber-400 font-bold font-mono text-sm tracking-widest">J.A.R.V.I.S</span>
+              <span className="text-[10px] font-mono text-amber-500/60 border border-amber-500/30 px-1 rounded">AI TRAINER v3.0</span>
+            </div>
+            <div className="flex items-center gap-2 mt-0.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="text-[10px] font-mono text-emerald-400/70">SYSTEM NOMINAL</span>
+              <span className="text-[10px] font-mono text-slate-600">|</span>
+              <span className="text-[10px] font-mono text-amber-500/50">MODEL: {selectedModel.name.toUpperCase()}</span>
             </div>
           </div>
-          <Button variant="ghost" size="icon" onClick={onClose} className="text-slate-400 hover:text-white">
-            ✕
-          </Button>
+        </div>
+
+        <div className="flex items-center gap-3">
+          {/* Live stats */}
+          <div className="hidden md:flex items-center gap-2 text-[10px] font-mono">
+            <span className="text-slate-500">ACC:</span>
+            <span className="text-amber-300">{liveAccuracy.toFixed(1)}%</span>
+            <span className="text-slate-600">|</span>
+            <span className="text-slate-500">GPU:</span>
+            <span className="text-cyan-300">72%</span>
+          </div>
+          <button onClick={onClose} className="text-slate-500 hover:text-amber-400 transition-colors font-mono text-sm">✕</button>
         </div>
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-hidden relative z-10">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
-          <TabsList className="grid w-full grid-cols-6 bg-slate-800/50 border-b border-slate-700/50">
-            <TabsTrigger value="training" className="data-[state=active]:bg-cyan-500/20">Training</TabsTrigger>
-            <TabsTrigger value="monitoring" className="data-[state=active]:bg-cyan-500/20">Monitor</TabsTrigger>
-            <TabsTrigger value="data" className="data-[state=active]:bg-cyan-500/20">Data</TabsTrigger>
-            <TabsTrigger value="models" className="data-[state=active]:bg-cyan-500/20">Models</TabsTrigger>
-            <TabsTrigger value="api" className="data-[state=active]:bg-cyan-500/20">API Keys</TabsTrigger>
-            <TabsTrigger value="settings" className="data-[state=active]:bg-cyan-500/20">Settings</TabsTrigger>
+          <TabsList className="flex bg-black/50 border-b border-amber-500/20 rounded-none h-auto p-0 gap-0">
+            {[
+              { v: 'training', label: 'TRAINING', icon: Play },
+              { v: 'monitoring', label: 'MONITOR', icon: Activity },
+              { v: 'data', label: 'DATA', icon: Database },
+              { v: 'models', label: 'MODELS', icon: Layers },
+              { v: 'api', label: 'API KEYS', icon: Shield },
+              { v: 'settings', label: 'CONFIG', icon: Settings },
+            ].map(({ v, label, icon: Icon }) => (
+              <button
+                key={v}
+                onClick={() => setActiveTab(v)}
+                className={`flex items-center gap-1.5 px-3 py-2.5 text-[10px] font-mono tracking-widest transition-all border-b-2 ${
+                  activeTab === v
+                    ? 'text-amber-300 border-amber-500 bg-amber-500/10'
+                    : 'text-slate-500 border-transparent hover:text-amber-400/70 hover:border-amber-500/30'
+                }`}
+              >
+                <Icon className="w-3 h-3" />
+                {label}
+              </button>
+            ))}
           </TabsList>
 
           {/* Training Tab */}
-          <TabsContent value="training" className="flex-1 overflow-auto p-4 space-y-4">
-            <div className="bg-slate-800/30 border border-slate-700/50 rounded-lg p-4">
-              <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
-                <Play className="w-4 h-4 text-cyan-400" />
-                Training Control
-              </h3>
-              <div className="space-y-3">
-                <div className="flex gap-2">
-                  <Button
-                    onClick={startTraining}
-                    disabled={isTraining || !selectedModel.trained}
-                    className="flex-1 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300"
-                  >
-                    {isTraining ? 'Training...' : 'Start Training'}
-                  </Button>
-                  <Button variant="outline" className="border-slate-600 text-slate-300 hover:bg-slate-700">
-                    Load Data
-                  </Button>
-                </div>
-                {isTraining && (
-                  <div>
-                    <div className="flex justify-between text-xs mb-2">
-                      <span className="text-slate-300">Progress</span>
-                      <span className="text-cyan-400">{Math.round(trainingProgress)}%</span>
-                    </div>
-                    <div className="w-full h-2 bg-slate-700 rounded-full overflow-hidden">
-                      <motion.div
-                        className="h-full bg-gradient-to-r from-cyan-500 to-violet-500"
-                        initial={{ width: 0 }}
-                        animate={{ width: `${trainingProgress}%` }}
-                        transition={{ duration: 0.3 }}
-                      />
-                    </div>
-                  </div>
-                )}
+          <TabsContent value="training" className="flex-1 overflow-auto p-4 space-y-4 mt-0">
+            {/* Top stat row */}
+            <div className="grid grid-cols-4 gap-2">
+              <StatCard label="Accuracy" value={`${liveAccuracy.toFixed(1)}%`} icon={Crosshair} pulse={isTraining} />
+              <StatCard label="Epochs" value="50" icon={GitBranch} color="cyan" />
+              <StatCard label="GPU" value="72%" icon={Cpu} color="cyan" pulse />
+              <StatCard label="Throughput" value="12.5K/s" icon={Radio} />
+            </div>
+
+            {/* Training control */}
+            <div className="relative rounded-lg border border-amber-500/30 bg-black/40 p-4 overflow-hidden">
+              <CornerBrackets />
+              <div className="flex items-center gap-2 mb-3">
+                <Terminal className="w-4 h-4 text-amber-400" />
+                <span className="text-xs font-mono text-amber-400 tracking-widest">TRAINING CONTROL</span>
               </div>
+              <div className="flex gap-2 mb-3">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={startTraining}
+                  disabled={isTraining}
+                  className={`flex-1 py-2 rounded border font-mono text-xs tracking-widest transition-all flex items-center justify-center gap-2 ${
+                    isTraining
+                      ? 'border-amber-500/30 text-amber-500/50 cursor-not-allowed'
+                      : 'border-amber-500/60 text-amber-300 hover:bg-amber-500/10 hover:border-amber-400'
+                  }`}
+                  style={isTraining ? {} : { boxShadow: '0 0 10px rgba(245,158,11,0.2)' }}
+                >
+                  {isTraining ? (
+                    <><motion.span animate={{ opacity: [1,0.3,1] }} transition={{ repeat: Infinity, duration: 1 }}>■</motion.span> TRAINING...</>
+                  ) : (
+                    <><Play className="w-3 h-3" /> INITIATE TRAINING</>
+                  )}
+                </motion.button>
+                <button className="px-3 py-2 rounded border border-slate-600/50 text-slate-400 hover:border-slate-500 font-mono text-xs tracking-widest transition-all">
+                  LOAD DATA
+                </button>
+              </div>
+              {isTraining && (
+                <div>
+                  <div className="flex justify-between text-[10px] font-mono mb-1">
+                    <span className="text-amber-500/60">PROGRESS</span>
+                    <span className="text-amber-300">{Math.round(trainingProgress)}%</span>
+                  </div>
+                  <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                    <motion.div
+                      className="h-full rounded-full"
+                      style={{ background: 'linear-gradient(90deg, #f59e0b, #f97316, #ef4444)' }}
+                      animate={{ width: `${trainingProgress}%` }}
+                      transition={{ duration: 0.3 }}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* AI Insights */}
-            {aiInsights.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-gradient-to-r from-violet-500/15 to-cyan-500/15 border border-violet-500/30 rounded-lg p-3 space-y-2"
-              >
-                <div className="flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-violet-400" />
-                  <p className="text-xs font-semibold text-white">AI Insights</p>
-                </div>
-                <div className="space-y-1">
-                  {aiInsights.map((insight, i) => (
-                    <p key={i} className="text-xs text-slate-300">• {insight}</p>
-                  ))}
-                </div>
-              </motion.div>
-            )}
+            <AnimatePresence>
+              {aiInsights.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  className="relative rounded-lg border border-amber-500/40 bg-amber-500/5 p-3 overflow-hidden"
+                >
+                  <CornerBrackets />
+                  <div className="flex items-center gap-2 mb-2">
+                    <motion.div animate={{ rotate: [0, 15, -15, 0] }} transition={{ repeat: Infinity, duration: 2 }}>
+                      <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                    </motion.div>
+                    <span className="text-[10px] font-mono text-amber-400 tracking-widest">JARVIS RECOMMENDATIONS</span>
+                  </div>
+                  <div className="space-y-1.5">
+                    {aiInsights.map((insight, i) => (
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.1 }}
+                        className="flex gap-2 text-xs"
+                      >
+                        <span className="text-amber-500 font-mono">{String(i + 1).padStart(2, '0')}.</span>
+                        <span className="text-slate-300">{insight}</span>
+                      </motion.div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-            <Button
+            <motion.button
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
               onClick={analyzeWithAI}
               disabled={isAnalyzing}
-              className="w-full bg-gradient-to-r from-violet-500 to-cyan-500 hover:from-violet-600 hover:to-cyan-600"
+              className="w-full py-2.5 rounded border border-amber-500/50 text-amber-300 font-mono text-xs tracking-widest flex items-center justify-center gap-2 transition-all hover:bg-amber-500/10"
+              style={{ boxShadow: '0 0 15px rgba(245,158,11,0.15)' }}
             >
-              <Sparkles className="w-4 h-4 mr-2" />
-              {isAnalyzing ? 'Analyzing...' : 'Get AI Insights'}
-            </Button>
+              {isAnalyzing ? (
+                <><motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}><Brain className="w-3.5 h-3.5" /></motion.div> ANALYZING...</>
+              ) : (
+                <><Brain className="w-3.5 h-3.5" /> JARVIS DEEP ANALYSIS</>
+              )}
+            </motion.button>
 
-            {/* Training Charts */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-slate-800/30 border border-slate-700/50 rounded-lg p-3">
-                <p className="text-xs font-semibold text-white mb-3">Loss over Epochs</p>
-                <ResponsiveContainer width="100%" height={150}>
-                   <LineChart data={chartData}>
-                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(71,85,105,0.2)" />
-                     <XAxis dataKey="epoch" stroke="rgba(148,163,184,0.5)" height={20} tick={{ fontSize: 12 }} />
-                     <YAxis stroke="rgba(148,163,184,0.5)" tick={{ fontSize: 12 }} />
-                     <Tooltip contentStyle={{ background: '#1e293b', border: '1px solid #475569' }} />
-                     <Line type="monotone" dataKey="loss" stroke="#06b6d4" strokeWidth={2} dot={false} />
-                   </LineChart>
-                 </ResponsiveContainer>
+            {/* Charts */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="relative rounded-lg border border-amber-500/20 bg-black/40 p-3 overflow-hidden">
+                <CornerBrackets />
+                <p className="text-[10px] font-mono text-amber-400/70 mb-2 tracking-widest">LOSS CURVE</p>
+                <ResponsiveContainer width="100%" height={120}>
+                  <AreaChart data={chartData}>
+                    <defs>
+                      <linearGradient id="lossGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#f59e0b" stopOpacity={0.3} />
+                        <stop offset="100%" stopColor="#f59e0b" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(245,158,11,0.1)" />
+                    <XAxis dataKey="epoch" stroke="rgba(245,158,11,0.3)" tick={{ fontSize: 9, fill: '#f59e0b88' }} />
+                    <YAxis stroke="rgba(245,158,11,0.3)" tick={{ fontSize: 9, fill: '#f59e0b88' }} />
+                    <Tooltip contentStyle={{ background: '#020810', border: '1px solid rgba(245,158,11,0.4)', fontSize: 10, fontFamily: 'monospace' }} />
+                    <Area type="monotone" dataKey="loss" stroke="#f59e0b" strokeWidth={2} fill="url(#lossGrad)" dot={false} />
+                  </AreaChart>
+                </ResponsiveContainer>
               </div>
 
-              <div className="bg-slate-800/30 border border-slate-700/50 rounded-lg p-3">
-                <p className="text-xs font-semibold text-white mb-3">Accuracy over Epochs</p>
-                <ResponsiveContainer width="100%" height={150}>
-                  <LineChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(71,85,105,0.2)" />
-                    <XAxis dataKey="epoch" stroke="rgba(148,163,184,0.5)" height={20} tick={{ fontSize: 12 }} />
-                    <YAxis stroke="rgba(148,163,184,0.5)" tick={{ fontSize: 12 }} />
-                    <Tooltip contentStyle={{ background: '#1e293b', border: '1px solid #475569' }} />
-                    <Line type="monotone" dataKey="accuracy" stroke="#8b5cf6" strokeWidth={2} dot={false} />
-                  </LineChart>
+              <div className="relative rounded-lg border border-cyan-500/20 bg-black/40 p-3 overflow-hidden">
+                <CornerBrackets color="cyan" />
+                <p className="text-[10px] font-mono text-cyan-400/70 mb-2 tracking-widest">ACCURACY CURVE</p>
+                <ResponsiveContainer width="100%" height={120}>
+                  <AreaChart data={chartData}>
+                    <defs>
+                      <linearGradient id="accGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#06b6d4" stopOpacity={0.3} />
+                        <stop offset="100%" stopColor="#06b6d4" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(6,182,212,0.1)" />
+                    <XAxis dataKey="epoch" stroke="rgba(6,182,212,0.3)" tick={{ fontSize: 9, fill: '#06b6d488' }} />
+                    <YAxis stroke="rgba(6,182,212,0.3)" tick={{ fontSize: 9, fill: '#06b6d488' }} />
+                    <Tooltip contentStyle={{ background: '#020810', border: '1px solid rgba(6,182,212,0.4)', fontSize: 10, fontFamily: 'monospace' }} />
+                    <Area type="monotone" dataKey="accuracy" stroke="#06b6d4" strokeWidth={2} fill="url(#accGrad)" dot={false} />
+                  </AreaChart>
                 </ResponsiveContainer>
               </div>
             </div>
 
-            {/* Performance Metrics - 3D Style */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-gradient-to-br from-cyan-500/10 to-slate-800/30 border border-cyan-500/30 rounded-lg p-3">
-                <p className="text-xs font-semibold text-white mb-3 flex items-center gap-2">
-                  <Gauge className="w-4 h-4 text-cyan-400" /> Performance
-                </p>
+            {/* Radar + Metrics */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="relative rounded-lg border border-amber-500/20 bg-black/40 p-3 overflow-hidden">
+                <CornerBrackets />
+                <p className="text-[10px] font-mono text-amber-400/70 mb-1 tracking-widest">MODEL HEALTH RADAR</p>
                 <ResponsiveContainer width="100%" height={140}>
-                  <BarChart data={performanceData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(71,85,105,0.2)" />
-                    <XAxis dataKey="metric" stroke="rgba(148,163,184,0.5)" tick={{ fontSize: 9 }} />
-                    <YAxis stroke="rgba(148,163,184,0.5)" tick={{ fontSize: 10 }} />
-                    <Tooltip contentStyle={{ background: '#1e293b', border: '1px solid #06b6d4' }} />
-                    <Bar dataKey="value" fill="#06b6d4" radius={[4, 4, 0, 0]} />
-                  </BarChart>
+                  <RadarChart data={radarData}>
+                    <PolarGrid stroke="rgba(245,158,11,0.15)" />
+                    <PolarAngleAxis dataKey="subject" tick={{ fontSize: 8, fill: '#f59e0b88' }} />
+                    <Radar name="Model" dataKey="value" stroke="#f59e0b" fill="#f59e0b" fillOpacity={0.15} strokeWidth={1.5} />
+                  </RadarChart>
                 </ResponsiveContainer>
               </div>
 
-              <div className="bg-gradient-to-br from-violet-500/10 to-slate-800/30 border border-violet-500/30 rounded-lg p-3">
-                <p className="text-xs font-semibold text-white mb-3 flex items-center gap-2">
-                  <Cpu className="w-4 h-4 text-violet-400" /> Efficiency
-                </p>
-                <div className="space-y-2">
+              <div className="relative rounded-lg border border-amber-500/20 bg-black/40 p-3 overflow-hidden">
+                <CornerBrackets />
+                <p className="text-[10px] font-mono text-amber-400/70 mb-3 tracking-widest">SYSTEM RESOURCES</p>
+                <div className="space-y-3">
                   {[
-                    { label: 'GPU Usage', value: '72%' },
-                    { label: 'Memory', value: '4.2GB / 8GB' },
-                    { label: 'Throughput', value: '12.5K req/s' },
-                  ].map((metric, i) => (
-                    <motion.div
-                      key={i}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: i * 0.1 }}
-                      className="flex justify-between text-xs"
-                    >
-                      <span className="text-slate-400">{metric.label}</span>
-                      <span className="text-violet-300 font-semibold">{metric.value}</span>
-                    </motion.div>
+                    { label: 'GPU CORES', value: 72, color: '#f59e0b' },
+                    { label: 'VRAM', value: 53, color: '#06b6d4' },
+                    { label: 'THROUGHPUT', value: 85, color: '#8b5cf6' },
+                  ].map((item, i) => (
+                    <div key={i}>
+                      <div className="flex justify-between text-[9px] font-mono mb-1">
+                        <span style={{ color: item.color + '99' }}>{item.label}</span>
+                        <span style={{ color: item.color }}>{item.value}%</span>
+                      </div>
+                      <div className="h-1 bg-slate-800 rounded-full overflow-hidden">
+                        <motion.div
+                          className="h-full rounded-full"
+                          initial={{ width: 0 }}
+                          animate={{ width: `${item.value}%` }}
+                          transition={{ delay: i * 0.2, duration: 1 }}
+                          style={{ background: item.color }}
+                        />
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>
             </div>
-            </TabsContent>
 
-            {/* Advanced Monitoring Tab */}
-            <TabsContent value="monitoring" className="flex-1 overflow-auto p-4">
+            {/* System log */}
+            <div className="relative rounded-lg border border-amber-500/20 bg-black/60 p-3 overflow-hidden">
+              <CornerBrackets />
+              <p className="text-[10px] font-mono text-amber-400/70 mb-2 tracking-widest">SYSTEM LOG</p>
+              <div className="space-y-0.5 max-h-20 overflow-auto">
+                {systemLog.slice(-5).map((log, i) => (
+                  <motion.p
+                    key={i}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="text-[10px] font-mono text-slate-500"
+                  >
+                    <span className="text-amber-500/50">&gt; </span>{log}
+                  </motion.p>
+                ))}
+                <motion.span
+                  animate={{ opacity: [1, 0, 1] }}
+                  transition={{ repeat: Infinity, duration: 1 }}
+                  className="text-[10px] font-mono text-amber-400"
+                >█</motion.span>
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* Monitoring Tab */}
+          <TabsContent value="monitoring" className="flex-1 overflow-auto p-4 mt-0">
             <AdvancedModelMonitoring />
-            </TabsContent>
+          </TabsContent>
 
-            {/* Data Tab */}
-            <TabsContent value="data" className="flex-1 overflow-auto p-4 space-y-3">
-            <Button
+          {/* Data Tab */}
+          <TabsContent value="data" className="flex-1 overflow-auto p-4 space-y-3 mt-0">
+            <motion.button
+              whileHover={{ scale: 1.01 }}
               onClick={() => setShowAddData(true)}
-              className="w-full bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300"
+              className="w-full py-2.5 rounded border border-emerald-500/50 text-emerald-300 font-mono text-xs tracking-widest flex items-center justify-center gap-2 hover:bg-emerald-500/10 transition-all"
             >
-              <Plus className="w-4 h-4 mr-2" /> Add Training Data
-            </Button>
+              <Plus className="w-3.5 h-3.5" /> INJECT TRAINING DATA
+            </motion.button>
 
-            <div className="bg-slate-800/30 border border-slate-700/50 rounded-lg p-3">
+            <div className="relative rounded-lg border border-amber-500/20 bg-black/40 p-3">
+              <CornerBrackets />
               <label className="flex flex-col gap-2 cursor-pointer">
-                <span className="text-sm font-semibold text-white flex items-center gap-2">
-                  <FileUp className="w-4 h-4" /> Upload File
+                <span className="text-[10px] font-mono text-amber-400/70 tracking-widest flex items-center gap-2">
+                  <FileUp className="w-3.5 h-3.5" /> UPLOAD CORPUS FILE
                 </span>
-                <input
-                  type="file"
-                  onChange={handleFileUpload}
-                  className="text-xs text-slate-400 file:bg-slate-700 file:border file:border-slate-600 file:rounded file:px-3 file:py-1 file:text-slate-300 file:cursor-pointer"
-                  accept=".txt,.pdf,.csv,.json"
-                />
+                <input type="file" onChange={handleFileUpload} className="text-xs text-slate-500 file:bg-black file:border file:border-amber-500/30 file:rounded file:px-3 file:py-1 file:text-amber-400 file:font-mono file:text-xs file:cursor-pointer" accept=".txt,.pdf,.csv,.json" />
               </label>
             </div>
 
             <AnimatePresence>
               {showAddData && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="bg-slate-800/30 border border-slate-700/50 rounded-lg p-3 space-y-3">
-                  <select
-                    value={newDataType}
-                    onChange={(e) => setNewDataType(e.target.value)}
-                    className="w-full bg-slate-700/50 border border-slate-600 rounded px-3 py-2 text-white text-sm"
-                  >
-                    <option value="link">Link</option>
+                <motion.div initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="relative rounded-lg border border-amber-500/30 bg-black/60 p-3 space-y-2 overflow-hidden">
+                  <CornerBrackets />
+                  <select value={newDataType} onChange={e => setNewDataType(e.target.value)} className="w-full bg-black border border-amber-500/30 rounded px-3 py-2 text-amber-300 text-xs font-mono">
+                    <option value="link">LINK</option>
                     <option value="faq">FAQ</option>
-                    <option value="filter">Filtre/Prosedyre</option>
-                    <option value="guide">Vejledning</option>
+                    <option value="filter">FILTER/PROCEDURE</option>
+                    <option value="guide">GUIDE</option>
                   </select>
-                  <input
-                    type="text"
-                    placeholder="Label (fx. 'Route Optimization Docs')"
-                    value={newDataLabel}
-                    onChange={(e) => setNewDataLabel(e.target.value)}
-                    className="w-full bg-slate-700/50 border border-slate-600 rounded px-3 py-2 text-white text-sm placeholder-slate-500"
-                  />
-                  <textarea
-                    placeholder={newDataType === 'link' ? 'https://example.com' : 'Indhold...'}
-                    value={newDataContent}
-                    onChange={(e) => setNewDataContent(e.target.value)}
-                    className="w-full bg-slate-700/50 border border-slate-600 rounded px-3 py-2 text-white text-sm placeholder-slate-500 h-24 resize-none"
-                  />
+                  <input type="text" placeholder="Label..." value={newDataLabel} onChange={e => setNewDataLabel(e.target.value)} className="w-full bg-black border border-amber-500/30 rounded px-3 py-2 text-amber-300 text-xs font-mono placeholder-amber-800" />
+                  <textarea placeholder={newDataType === 'link' ? 'https://...' : 'Content...'} value={newDataContent} onChange={e => setNewDataContent(e.target.value)} className="w-full bg-black border border-amber-500/30 rounded px-3 py-2 text-amber-300 text-xs font-mono placeholder-amber-800 h-20 resize-none" />
                   <div className="flex gap-2">
-                    <Button onClick={addTrainingData} className="flex-1 bg-emerald-500 hover:bg-emerald-600" size="sm">Add</Button>
-                    <Button onClick={() => setShowAddData(false)} variant="outline" className="flex-1 border-slate-600" size="sm">Cancel</Button>
+                    <button onClick={addTrainingData} className="flex-1 py-1.5 rounded border border-emerald-500/50 text-emerald-400 font-mono text-xs tracking-widest hover:bg-emerald-500/10 transition-all">INJECT</button>
+                    <button onClick={() => setShowAddData(false)} className="flex-1 py-1.5 rounded border border-slate-600/50 text-slate-400 font-mono text-xs tracking-widest hover:bg-slate-800/50 transition-all">CANCEL</button>
                   </div>
                 </motion.div>
               )}
             </AnimatePresence>
 
             <div className="space-y-2">
-              {trainingData.length === 0 ? (
-                <p className="text-sm text-slate-400 text-center py-4">Ingen data tilføjet endnu</p>
-              ) : (
-                trainingData.map((data) => (
-                  <div key={data.id} className="bg-slate-800/30 border border-slate-700/50 rounded-lg p-3">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          {data.type === 'link' && <Link2 className="w-4 h-4 text-blue-400 flex-shrink-0" />}
-                          {data.type === 'file' && <FileUp className="w-4 h-4 text-green-400 flex-shrink-0" />}
-                          {(data.type === 'faq' || data.type === 'filter' || data.type === 'guide') && <Zap className="w-4 h-4 text-amber-400 flex-shrink-0" />}
-                          <span className="text-xs font-semibold text-slate-300 uppercase">{data.type}</span>
-                        </div>
-                        <p className="text-sm font-medium text-white break-words">{data.label}</p>
-                        {data.type === 'link' && (
-                          <a href={data.content} target="_blank" rel="noopener noreferrer" className="text-xs text-cyan-400 hover:text-cyan-300 break-all">
-                            {data.content}
-                          </a>
-                        )}
-                        {data.type !== 'link' && data.type !== 'file' && (
-                          <p className="text-xs text-slate-400 mt-1 line-clamp-2">{data.content}</p>
-                        )}
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => removeTrainingData(data.id)}
-                        className="w-6 h-6 text-slate-400 hover:text-red-400 flex-shrink-0"
-                      >
-                        <Trash className="w-4 h-4" />
-                      </Button>
-                    </div>
+              {trainingData.map((data, i) => (
+                <motion.div
+                  key={data.id}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.05 }}
+                  className="relative rounded-lg border border-amber-500/20 bg-black/40 p-3 flex items-center gap-3 group overflow-hidden"
+                >
+                  <CornerBrackets />
+                  <div className="w-6 h-6 rounded border border-amber-500/30 flex items-center justify-center flex-shrink-0">
+                    {data.type === 'link' && <Link2 className="w-3 h-3 text-cyan-400" />}
+                    {data.type === 'file' && <FileUp className="w-3 h-3 text-emerald-400" />}
+                    {!['link', 'file'].includes(data.type) && <Zap className="w-3 h-3 text-amber-400" />}
                   </div>
-                ))
-              )}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-mono text-amber-500/60 uppercase tracking-wider">{data.type}</span>
+                    </div>
+                    <p className="text-xs font-mono text-slate-300 truncate">{data.label}</p>
+                  </div>
+                  <button onClick={() => removeTrainingData(data.id)} className="text-slate-600 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100">
+                    <Trash className="w-3.5 h-3.5" />
+                  </button>
+                </motion.div>
+              ))}
             </div>
           </TabsContent>
 
           {/* Models Tab */}
-          <TabsContent value="models" className="flex-1 overflow-auto p-4">
-            <div className="space-y-3">
-              <Button
-                onClick={() => setShowNewModel(true)}
-                className="w-full bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300"
-              >
-                <Plus className="w-4 h-4 mr-2" /> New Model
-              </Button>
+          <TabsContent value="models" className="flex-1 overflow-auto p-4 space-y-3 mt-0">
+            <motion.button
+              whileHover={{ scale: 1.01 }}
+              onClick={() => setShowNewModel(true)}
+              className="w-full py-2.5 rounded border border-cyan-500/50 text-cyan-300 font-mono text-xs tracking-widest flex items-center justify-center gap-2 hover:bg-cyan-500/10 transition-all"
+            >
+              <Plus className="w-3.5 h-3.5" /> REGISTER NEW MODEL
+            </motion.button>
 
-              <AnimatePresence>
-                {showNewModel && (
-                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="bg-slate-800/30 border border-slate-700/50 rounded-lg p-3 space-y-2">
-                    <input
-                      type="text"
-                      placeholder="Model name (e.g., Route Optimizer v2.0)"
-                      value={newModelName}
-                      onChange={(e) => setNewModelName(e.target.value)}
-                      className="w-full bg-slate-700/50 border border-slate-600 rounded px-3 py-2 text-white text-sm placeholder-slate-500"
-                    />
-                    <div className="flex gap-2">
-                      <Button onClick={createNewModel} className="flex-1 bg-cyan-500 hover:bg-cyan-600" size="sm">Create</Button>
-                      <Button onClick={() => setShowNewModel(false)} variant="outline" className="flex-1 border-slate-600" size="sm">Cancel</Button>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+            <AnimatePresence>
+              {showNewModel && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="relative rounded-lg border border-cyan-500/30 bg-black/60 p-3 space-y-2 overflow-hidden">
+                  <CornerBrackets color="cyan" />
+                  <input type="text" placeholder="Model designation..." value={newModelName} onChange={e => setNewModelName(e.target.value)} className="w-full bg-black border border-cyan-500/30 rounded px-3 py-2 text-cyan-300 text-xs font-mono placeholder-cyan-800" />
+                  <div className="flex gap-2">
+                    <button onClick={createNewModel} className="flex-1 py-1.5 rounded border border-cyan-500/50 text-cyan-400 font-mono text-xs tracking-widest hover:bg-cyan-500/10 transition-all">CREATE</button>
+                    <button onClick={() => setShowNewModel(false)} className="flex-1 py-1.5 rounded border border-slate-600/50 text-slate-400 font-mono text-xs tracking-widest hover:bg-slate-800/50 transition-all">ABORT</button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-              {models.map((model) => (
-                <div
+            <div className="space-y-2">
+              {models.map((model, i) => (
+                <motion.div
                   key={model.id}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.1 }}
                   onClick={() => setSelectedModel(model)}
-                  className={`p-3 rounded-lg border cursor-pointer transition-all ${
+                  className={`relative rounded-lg border p-4 cursor-pointer transition-all overflow-hidden ${
                     selectedModel.id === model.id
-                      ? 'bg-cyan-500/20 border-cyan-500/50'
-                      : 'bg-slate-800/30 border-slate-700/50 hover:border-slate-600/50'
+                      ? 'border-amber-500/60 bg-amber-500/5'
+                      : 'border-amber-500/20 bg-black/40 hover:border-amber-500/40'
                   }`}
+                  style={selectedModel.id === model.id ? { boxShadow: '0 0 20px rgba(245,158,11,0.1)' } : {}}
                 >
+                  <CornerBrackets />
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
-                      <TrendingUp className="w-4 h-4 text-cyan-400" />
-                      <span className="text-sm font-semibold text-white">{model.name}</span>
+                      <TrendingUp className="w-3.5 h-3.5 text-amber-400" />
+                      <span className="text-xs font-mono text-white font-semibold">{model.name}</span>
                     </div>
-                    {model.trained && <CheckCircle className="w-4 h-4 text-emerald-400" />}
+                    {model.trained && (
+                      <span className="flex items-center gap-1 text-[10px] font-mono text-emerald-400">
+                        <CheckCircle className="w-3 h-3" /> TRAINED
+                      </span>
+                    )}
                   </div>
-                  <div className="flex items-center justify-between text-xs text-slate-400">
-                    <span>Accuracy: {model.accuracy}%</span>
-                    <span>v{model.version}</span>
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1 mr-4">
+                      <div className="flex justify-between text-[9px] font-mono mb-1">
+                        <span className="text-slate-500">ACCURACY</span>
+                        <span className="text-amber-300">{model.accuracy}%</span>
+                      </div>
+                      <div className="h-1 bg-slate-800 rounded-full overflow-hidden">
+                        <div className="h-full bg-gradient-to-r from-amber-500 to-amber-300 rounded-full" style={{ width: `${model.accuracy}%` }} />
+                      </div>
+                    </div>
+                    <span className="text-[10px] font-mono text-slate-600 border border-slate-700 px-1.5 py-0.5 rounded">v{model.version}</span>
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
           </TabsContent>
 
           {/* API Keys Tab */}
-          <TabsContent value="api" className="flex-1 overflow-auto p-4">
-            <div className="space-y-3">
-              <Button
-                onClick={generateAPIKey}
-                className="w-full bg-violet-500/20 hover:bg-violet-500/30 text-violet-300"
-              >
-                <Plus className="w-4 h-4 mr-2" /> Generate API Key
-              </Button>
+          <TabsContent value="api" className="flex-1 overflow-auto p-4 space-y-3 mt-0">
+            <motion.button
+              whileHover={{ scale: 1.01 }}
+              onClick={generateAPIKey}
+              className="w-full py-2.5 rounded border border-violet-500/50 text-violet-300 font-mono text-xs tracking-widest flex items-center justify-center gap-2 hover:bg-violet-500/10 transition-all"
+            >
+              <Shield className="w-3.5 h-3.5" /> GENERATE SECURE KEY
+            </motion.button>
 
-              {apiKeys.map((apiKey) => (
-                <div key={apiKey.id} className="bg-slate-800/30 border border-slate-700/50 rounded-lg p-3 space-y-2">
+            <div className="space-y-2">
+              {apiKeys.map((apiKey, i) => (
+                <motion.div
+                  key={apiKey.id}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: i * 0.1 }}
+                  className="relative rounded-lg border border-violet-500/20 bg-black/40 p-3 space-y-2 overflow-hidden"
+                >
+                  <CornerBrackets color="cyan" />
                   <div className="flex items-center justify-between">
-                    <code className="text-xs text-cyan-300 bg-slate-900/50 px-2 py-1 rounded font-mono">{apiKey.key}</code>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="w-6 h-6 text-slate-400 hover:text-cyan-300"
-                      onClick={() => navigator.clipboard.writeText(apiKey.key)}
-                    >
-                      <Copy className="w-4 h-4" />
-                    </Button>
+                    <code className="text-xs text-violet-300 bg-black/60 px-2 py-1 rounded font-mono border border-violet-500/20">{apiKey.key}</code>
+                    <button onClick={() => navigator.clipboard.writeText(apiKey.key)} className="text-slate-500 hover:text-violet-400 transition-colors">
+                      <Copy className="w-3.5 h-3.5" />
+                    </button>
                   </div>
-                  <div className="grid grid-cols-3 gap-2 text-xs text-slate-400">
-                    <div>Created: {apiKey.created}</div>
-                    <div>Last Used: {apiKey.lastUsed}</div>
-                    <div>Calls: {apiKey.calls}</div>
+                  <div className="grid grid-cols-3 gap-2 text-[10px] font-mono text-slate-500">
+                    <span>CREATED: {apiKey.created}</span>
+                    <span>LAST USE: {apiKey.lastUsed}</span>
+                    <span className="text-violet-400">CALLS: {apiKey.calls.toLocaleString()}</span>
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
           </TabsContent>
 
           {/* Settings Tab */}
-          <TabsContent value="settings" className="flex-1 overflow-auto p-4">
-            <div className="space-y-4">
-              <div className="bg-slate-800/30 border border-slate-700/50 rounded-lg p-4 space-y-3">
-                <h3 className="text-sm font-semibold text-white flex items-center gap-2">
-                  <Settings className="w-4 h-4" /> Training Parameters
-                </h3>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-slate-300">Learning Rate</span>
-                    <input type="text" defaultValue="0.001" className="bg-slate-700/50 border border-slate-600 rounded px-2 py-1 w-24 text-white text-xs" />
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-300">Batch Size</span>
-                    <input type="text" defaultValue="32" className="bg-slate-700/50 border border-slate-600 rounded px-2 py-1 w-24 text-white text-xs" />
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-300">Epochs</span>
-                    <input type="text" defaultValue="50" className="bg-slate-700/50 border border-slate-600 rounded px-2 py-1 w-24 text-white text-xs" />
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-300">Validation Split</span>
-                    <input type="text" defaultValue="0.2" className="bg-slate-700/50 border border-slate-600 rounded px-2 py-1 w-24 text-white text-xs" />
-                  </div>
+          <TabsContent value="settings" className="flex-1 overflow-auto p-4 space-y-3 mt-0">
+            <div className="relative rounded-lg border border-amber-500/20 bg-black/40 p-4 space-y-3 overflow-hidden">
+              <CornerBrackets />
+              <p className="text-[10px] font-mono text-amber-400/70 tracking-widest flex items-center gap-2">
+                <Settings className="w-3.5 h-3.5" /> HYPERPARAMETERS
+              </p>
+              {[
+                { label: 'LEARNING RATE', default: '0.001' },
+                { label: 'BATCH SIZE', default: '32' },
+                { label: 'EPOCHS', default: '50' },
+                { label: 'VALIDATION SPLIT', default: '0.2' },
+              ].map((param, i) => (
+                <div key={i} className="flex items-center justify-between gap-4">
+                  <span className="text-[10px] font-mono text-slate-400 tracking-widest">{param.label}</span>
+                  <input
+                    type="text"
+                    defaultValue={param.default}
+                    className="w-24 bg-black border border-amber-500/30 rounded px-2 py-1 text-amber-300 text-xs font-mono text-right"
+                  />
                 </div>
-              </div>
+              ))}
+            </div>
 
-              <div className="bg-slate-800/30 border border-slate-700/50 rounded-lg p-4 space-y-3">
-                <h3 className="text-sm font-semibold text-white flex items-center gap-2">
-                  <Download className="w-4 h-4" /> Export & Deploy
-                </h3>
-                <div className="flex gap-2">
-                  <Button variant="outline" className="flex-1 border-slate-600 text-slate-300" size="sm">
-                    <Download className="w-4 h-4 mr-2" /> Export Model
-                  </Button>
-                  <Button variant="outline" className="flex-1 border-slate-600 text-slate-300" size="sm">
-                    <Code className="w-4 h-4 mr-2" /> Deploy
-                  </Button>
-                </div>
+            <div className="relative rounded-lg border border-amber-500/20 bg-black/40 p-4 space-y-3 overflow-hidden">
+              <CornerBrackets />
+              <p className="text-[10px] font-mono text-amber-400/70 tracking-widest flex items-center gap-2">
+                <Download className="w-3.5 h-3.5" /> DEPLOYMENT
+              </p>
+              <div className="flex gap-2">
+                <button className="flex-1 py-2 rounded border border-amber-500/40 text-amber-400 font-mono text-xs tracking-widest hover:bg-amber-500/10 transition-all flex items-center justify-center gap-1.5">
+                  <Download className="w-3 h-3" /> EXPORT
+                </button>
+                <button className="flex-1 py-2 rounded border border-cyan-500/40 text-cyan-400 font-mono text-xs tracking-widest hover:bg-cyan-500/10 transition-all flex items-center justify-center gap-1.5">
+                  <Code className="w-3 h-3" /> DEPLOY
+                </button>
               </div>
             </div>
           </TabsContent>
