@@ -46,6 +46,7 @@ import VideoCallHologram from "@/components/intellect/VideoCallHologram";
 import ParallelTaskProcessor from "@/components/intellect/ParallelTaskProcessor";
 import ProcessThinkingTerminal from "@/components/intellect/ProcessThinkingTerminal";
 import AICoach from "@/components/intellect/AICoach";
+import MessageFormatter from "@/components/intellect/MessageFormatter";
 
 const INITIAL_MESSAGES = [
   { role: "system", content: "⚡ FLEET AI online. World's most advanced logistics intelligence system ready. I can: perform predictive maintenance analysis, forecast demand, optimize routes multi-modally, generate CO2 reports, detect anomalies, assess risks, benchmark performance, and execute any fleet operation. Command me." }
@@ -1069,7 +1070,7 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
         {/* Command Bar */}
         <IntellectCommandBar
           input={input} setInput={setInput}
-          messages={messages} streamingMessage={streamingMessage} messagesEndRef={messagesEndRef}
+          messages={messages.map(m => ({ ...m, content: m.role === 'assistant' && m.content ? <MessageFormatter content={m.content} isAssistant={true} /> : m.content }))} streamingMessage={streamingMessage} messagesEndRef={messagesEndRef}
           uploadedFiles={uploadedFiles} setUploadedFiles={setUploadedFiles}
           isUploading={isUploading} setIsUploading={setIsUploading}
           isListening={isListening} setIsListening={setIsListening}
