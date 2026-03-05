@@ -487,13 +487,7 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
       return;
     }
 
-    // Deep analysis detection
-     const deepKeywords = ["Analyser alle", "Optimer alle", "Gennemgå alle", "omfattende", "dybde", "forskel", "sammenligning", "tendenser", "mønstre", "statistik", "rapport", "analyse", "evaluering", "review"];
-     const isDeeAnalysis = deepKeywords.some(kw => currentCommand.toLowerCase().includes(kw.toLowerCase()));
-     if (isDeeAnalysis && currentCommand.length > 20) {
-       await runDeepAnalysis(currentCommand);
-       return;
-     }
+    // Deep analysis detection - removed, handled by mistral AI
 
     setCommandHistory(prev => [...prev, currentCommand]);
     setHistoryIndex(-1);
