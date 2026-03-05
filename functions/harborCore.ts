@@ -154,42 +154,23 @@ Deno.serve(async (req) => {
       // No models yet — proceed without knowledge base
     }
 
-    // ─── 2. LOAD LIVE PLATFORM CONTEXT ────────────────────────────────────────
+    // ─── 2. LOAD LIVE PLATFORM CONTEXT (lightweight — only when context not already provided) ──
     let platformContext = '';
-    try {
-      const [vehicles, routes, alerts, shipments] = await Promise.all([
-        base44.asServiceRole.entities.Vehicle.filter({ organization_id }, '-updated_date', 20),
-        base44.asServiceRole.entities.Route.filter({ organization_id }, '-updated_date', 10),
-        base44.asServiceRole.entities.Alert.filter({ organization_id, is_resolved: false }, '-created_date', 10),
-        base44.asServiceRole.entities.Shipment.filter({ organization_id }, '-updated_date', 10),
-      ]);
-
-      const fleetSummary = {
-        total_vehicles: vehicles.length,
-        active: vehicles.filter(v => v.status === 'active').length,
-        maintenance: vehicles.filter(v => v.status === 'maintenance').length,
-        idle: vehicles.filter(v => v.status === 'idle').length,
-        avg_fuel: vehicles.length ? Math.round(vehicles.reduce((s, v) => s + (v.fuel_level || 0), 0) / vehicles.length) : 0,
-        vehicles: vehicles.slice(0, 10).map(v => ({
-          name: v.name, type: v.type, status: v.status,
-          fuel: v.fuel_level, efficiency: v.efficiency_score,
-          destination: v.destination
-        }))
-      };
-
-      const activeAlerts = alerts.slice(0, 5).map(a => ({
-        title: a.title, type: a.type, category: a.category, message: a.message
-      }));
-
-      platformContext = `\n\n[LIVE PLATFORM CONTEXT — Organization: ${organization_id}]
-Fleet: ${JSON.stringify(fleetSummary)}
-Active Routes: ${routes.length} (${routes.filter(r => r.status === 'active').length} active)
-Open Alerts: ${activeAlerts.length} — ${JSON.stringify(activeAlerts)}
-Shipments in transit: ${shipments.filter(s => s.status === 'in_transit').length}/${shipments.length}
-${context ? `\nAdditional context: ${JSON.stringify(context)}` : ''}`;
-    } catch (_) {
-      if (context) {
-        platformContext = `\n\n[PLATFORM CONTEXT]\n${JSON.stringify(context)}`;
+    if (context) {
+      // Caller already supplied context — use it directly, skip DB queries
+      platformContext = `\n\n[PLATFORM CONTEXT]\n${JSON.stringify(context)}`;
+    } else if (mode !== 'chat') {
+      // For command/inference modes without context, do a minimal fetch
+      try {
+        const [vehicles, alerts] = await Promise.all([
+          base44.asServiceRole.entities.Vehicle.filter({ organization_id }, '-updated_date', 8),
+          base44.asServiceRole.entities.Alert.filter({ organization_id, is_resolved: false }, '-created_date', 5),
+        ]);
+        platformContext = `\n\n[LIVE PLATFORM CONTEXT — Org: ${organization_id}]
+Vehicles: ${vehicles.length} total, ${vehicles.filter(v => v.status === 'active').length} active, ${vehicles.filter(v => v.status === 'maintenance').length} in maintenance
+Open Alerts: ${alerts.length}${alerts.length > 0 ? ' — ' + alerts.slice(0,3).map(a => a.title).join(', ') : ''}`;
+      } catch (_) {
+        // Skip if DB unavailable
       }
     }
 
