@@ -43,18 +43,16 @@ export default function ParallelTaskProcessor({ onClose, externalTasks = [] }) {
 
   const executeTask = async (task, retryCount = 0) => {
     try {
-      const result = await base44.integrations.Core.InvokeLLM({
+      const response = await base44.functions.invoke('harborCore', {
         prompt: task.prompt,
-        add_context_from_internet: false,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            summary: { type: "string" },
-            findings: { type: "array", items: { type: "string" } },
-            recommendations: { type: "array", items: { type: "string" } }
-          }
-        }
+        mode: 'chat',
       });
+
+      const raw = response?.data?.reply;
+      const result = {
+        summary: typeof raw === 'string' ? raw : raw?.message || JSON.stringify(raw),
+        recommendations: []
+      };
 
       // Move to completed
       setRunningTasks(prev => prev.filter(t => t.id !== task.id));
