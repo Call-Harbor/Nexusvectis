@@ -131,10 +131,11 @@ function ChartWindow({ data, config }) {
       {config?.insights?.length > 0 && (
         <div className="mt-6 space-y-3">
           <div className="flex items-center gap-2 mb-3"><Sparkles className="w-5 h-5 text-cyan-400" /><h4 className="text-white font-bold">🎯 Actionable Insights</h4></div>
-          {config.insights.map((insight, idx) => {
-            const text = typeof insight === 'string' ? insight : insight?.text || '';
-            const sev = insight?.severity || 'info';
-            const impact = insight?.impact || '';
+          {config.insights.filter(i => i).map((insight, idx) => {
+            const text = typeof insight === 'string' ? insight : insight?.text || (typeof insight === 'object' ? '' : String(insight));
+            if (!text) return null;
+            const sev = typeof insight === 'object' ? insight?.severity : 'info';
+            const impact = typeof insight === 'object' ? insight?.impact : '';
             const severityMap = {
               critical: { bg: 'bg-red-500/15', border: 'border-red-500/50', icon: 'text-red-400', label: '🚨 CRITICAL' },
               high: { bg: 'bg-orange-500/15', border: 'border-orange-500/50', icon: 'text-orange-400', label: '⚠️ HIGH' },
