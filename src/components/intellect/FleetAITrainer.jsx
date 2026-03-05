@@ -899,8 +899,14 @@ export default function FleetAITrainer({ onClose }) {
                       <span>{snap.snapshot_id}</span>
                       <span>{new Date(snap.savedAt).toLocaleString('da-DK')}</span>
                     </div>
+                    <div className="mt-2 p-2 rounded bg-black/60 border border-amber-500/10">
+                      <p className="text-[9px] font-mono text-amber-500/50 mb-1">API ENDPOINT</p>
+                      <code className="text-[9px] font-mono text-cyan-300 break-all">POST /functions/harborModelInference</code>
+                      <pre className="text-[9px] font-mono text-slate-500 mt-1 whitespace-pre-wrap">{`{ "model_id": "${snap.snapshot_id}" }`}</pre>
+                    </div>
                     <div className="flex gap-2 mt-2">
                       <button onClick={() => setSelectedModel(snap)} className="flex-1 py-1 rounded border border-amber-500/30 text-amber-400 font-mono text-[10px] tracking-widest hover:bg-amber-500/10 transition-all">RESTORE</button>
+                      <button onClick={() => navigator.clipboard.writeText(snap.snapshot_id)} className="px-3 py-1 rounded border border-cyan-500/30 text-cyan-400 font-mono text-[10px] hover:bg-cyan-500/10 transition-all">COPY ID</button>
                       <button onClick={() => setSavedModels(p => p.filter(s => s.snapshot_id !== snap.snapshot_id))} className="px-3 py-1 rounded border border-red-500/30 text-red-400 font-mono text-[10px] hover:bg-red-500/10 transition-all">DEL</button>
                     </div>
                   </motion.div>
