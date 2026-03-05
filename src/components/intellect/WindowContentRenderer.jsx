@@ -368,8 +368,8 @@ export default function WindowContentRenderer({ type, data, vehicles, routes, sh
   if (type === 'spreadsheet_editor') return <AISpreadsheetEditor initialGrid={data?.initialGrid} initialTitle={data?.initialTitle} initialFileUrl={data?.initialFileUrl} orgId={orgId} onSaved={onSaved} />;
 
   if (type.startsWith('chart_')) {
-    // Check if this is a fleet analysis format
-    if (data?.chartConfig?.title?.includes('Fleet') && data?.chartConfig?.insights?.length > 0) {
+    // Use FleetAnalysisFormatter for analysis results with recommendations
+    if (data?.chartConfig?.recommendations && Object.keys(data.chartConfig.recommendations).length > 0) {
       return <FleetAnalysisFormatter data={data?.chartConfig} />;
     }
     return <ChartWindow data={data?.chartData} config={data?.chartConfig} />;
