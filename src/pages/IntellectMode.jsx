@@ -442,24 +442,7 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
       const chartId = `chart_${Date.now()}`;
       openWindow(chartId, { x: 80, y: 60 }, {
         chartData: result.chart_data || [],
-        chartConfig: {
-          title: result.title,
-          description: result.description,
-          type: result.type || 'bar',
-          xKey: result.xKey || 'label',
-          bars: result.bars || [],
-          lines: result.lines || [],
-          areas: result.areas || [],
-          summary: result.summary,
-          insights: result.insights || [],
-          technical_details: result.technical_details || {},
-          recommendations: result.recommendations || [],
-          forecasts: result.forecasts || [],
-          risks: result.risks || [],
-          correlations: result.correlations || [],
-          advanced_metrics: result.advanced_metrics || [],
-          data_quality: result.data_quality || {}
-        }
+        chartConfig: result
       });
       
       setMessages(prev => [...prev, { role: "assistant", content: `**🔬 ${result.title}**\n\n${result.summary || result.description}\n\n📊 **Advanced holographic research dashboard opened** — Explore detailed statistical analysis, predictive models, risk assessment, KPIs, and strategic recommendations with ROI calculations.` }]);
