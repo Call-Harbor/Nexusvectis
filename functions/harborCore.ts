@@ -279,6 +279,7 @@ Be concise, actionable, and structured with headers/bullets where appropriate.`;
 
     const messages = [
       { role: 'system', content: systemPrompt },
+      ...contextMessages,
       ...historyMessages,
       { role: 'user', content: userContent }
     ];
