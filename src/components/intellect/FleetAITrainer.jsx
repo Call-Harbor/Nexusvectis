@@ -7,7 +7,7 @@ import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, L
 import { base44 } from '@/api/base44Client';
 import AdvancedModelMonitoring from './AdvancedModelMonitoring';
 
-// JARVIS scanning line animation
+// EEDA scanning line animation
 const ScanLine = () => (
   <motion.div
     className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-400/60 to-transparent z-10 pointer-events-none"
@@ -69,7 +69,7 @@ export default function FleetAITrainer({ onClose }) {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [liveAccuracy, setLiveAccuracy] = useState(selectedModel.accuracy);
   const [systemLog, setSystemLog] = useState([
-    '[JARVIS] Fleet AI Trainer initialized',
+    '[EEDA] Fleet AI Trainer initialized',
     '[SYS] Model registry loaded — 2 models active',
     '[NET] API endpoint nominal',
   ]);
@@ -167,13 +167,13 @@ export default function FleetAITrainer({ onClose }) {
 
   const analyzeWithAI = async () => {
     setIsAnalyzing(true);
-    setSystemLog(prev => [...prev, '[JARVIS] Initiating deep model analysis...']);
+    setSystemLog(prev => [...prev, '[EEDA] Initiating deep model analysis...']);
     const response = await base44.integrations.Core.InvokeLLM({
-      prompt: `You are JARVIS, an advanced AI analyst. Analyse this model: ${selectedModel.name} with accuracy ${selectedModel.accuracy}%. Give 3 concrete improvement suggestions. Format as JSON with field "suggestions".`,
+      prompt: `You are EEDA, an advanced AI analyst. Analyse this model: ${selectedModel.name} with accuracy ${selectedModel.accuracy}%. Give 3 concrete improvement suggestions. Format as JSON with field "suggestions".`,
       response_json_schema: { type: 'object', properties: { suggestions: { type: 'array', items: { type: 'string' } } } },
     });
     setAiInsights(response.suggestions || []);
-    setSystemLog(prev => [...prev, '[JARVIS] Analysis complete — 3 recommendations generated']);
+    setSystemLog(prev => [...prev, '[EEDA] Analysis complete — 3 recommendations generated']);
     setIsAnalyzing(false);
   };
 
@@ -206,7 +206,7 @@ export default function FleetAITrainer({ onClose }) {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-amber-400 font-bold font-mono text-sm tracking-widest">J.A.R.V.I.S</span>
+              <span className="text-amber-400 font-bold font-mono text-sm tracking-widest">E.E.D.A</span>
               <span className="text-[10px] font-mono text-amber-500/60 border border-amber-500/30 px-1 rounded">AI TRAINER v3.0</span>
             </div>
             <div className="flex items-center gap-2 mt-0.5">
@@ -330,7 +330,7 @@ export default function FleetAITrainer({ onClose }) {
                     <motion.div animate={{ rotate: [0, 15, -15, 0] }} transition={{ repeat: Infinity, duration: 2 }}>
                       <Sparkles className="w-3.5 h-3.5 text-amber-400" />
                     </motion.div>
-                    <span className="text-[10px] font-mono text-amber-400 tracking-widest">JARVIS RECOMMENDATIONS</span>
+                    <span className="text-[10px] font-mono text-amber-400 tracking-widest">EEDA RECOMMENDATIONS</span>
                   </div>
                   <div className="space-y-1.5">
                     {aiInsights.map((insight, i) => (
@@ -361,7 +361,7 @@ export default function FleetAITrainer({ onClose }) {
               {isAnalyzing ? (
                 <><motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}><Brain className="w-3.5 h-3.5" /></motion.div> ANALYZING...</>
               ) : (
-                <><Brain className="w-3.5 h-3.5" /> JARVIS DEEP ANALYSIS</>
+                <><Brain className="w-3.5 h-3.5" /> EEDA DEEP ANALYSIS</>
               )}
             </motion.button>
 
