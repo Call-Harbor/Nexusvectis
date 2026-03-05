@@ -1070,7 +1070,7 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
         {/* Command Bar */}
         <IntellectCommandBar
           input={input} setInput={setInput}
-          messages={messages.map(m => ({ ...m, content: m.role === 'assistant' && m.content ? <MessageFormatter content={m.content} isAssistant={true} /> : m.content }))} streamingMessage={streamingMessage} messagesEndRef={messagesEndRef}
+          messages={messages} streamingMessage={streamingMessage} messagesEndRef={messagesEndRef}
           uploadedFiles={uploadedFiles} setUploadedFiles={setUploadedFiles}
           isUploading={isUploading} setIsUploading={setIsUploading}
           isListening={isListening} setIsListening={setIsListening}

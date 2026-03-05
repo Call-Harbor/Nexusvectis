@@ -5,6 +5,7 @@ import { Send, Mic, Zap, Paperclip, FileText, X, Sparkles, Shield, Building2, Sa
 
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import MessageFormatter from "./MessageFormatter";
 
 export default function IntellectCommandBar({
   input, setInput, messages, streamingMessage, messagesEndRef,
@@ -56,7 +57,7 @@ export default function IntellectCommandBar({
               }`}>
                 <span className="font-semibold mr-1">{msg.role === 'user' ? '>' : msg.role === 'system' ? '⚡' : '🧠'}</span>
                 {msg.streaming ? <span className="animate-pulse">{msg.content || 'Thinking...'}</span>
-                  : msg.role === 'assistant' ? <div className="prose prose-sm prose-invert max-w-none"><ReactMarkdown>{typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content)}</ReactMarkdown></div>
+                  : msg.role === 'assistant' ? <MessageFormatter content={msg.content} isAssistant={true} />
                   : msg.content}
               </div>
               {msg.files?.length > 0 && (
