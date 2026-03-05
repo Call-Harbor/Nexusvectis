@@ -82,6 +82,25 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'MISTRAL_API_KEY not configured' }, { status: 500 });
     }
 
+    // ─── LOAD HARBOR KNOWLEDGE BASE ───────────────────────────────────────────
+    let harborKnowledge = '';
+    try {
+      let allModels = await base44.asServiceRole.entities.FleetAIModel.filter({ organization_id: userOrganizationId, status: 'active' });
+      if (!allModels || allModels.length === 0) {
+        allModels = await base44.asServiceRole.entities.FleetAIModel.filter({ status: 'active' });
+      }
+      if (allModels && allModels.length > 0) {
+        allModels.sort((a, b) => (b.accuracy || 0) - (a.accuracy || 0));
+        const selectedModel = allModels[0];
+        if (selectedModel && selectedModel.training_data?.length > 0) {
+          harborKnowledge = `\n\n[HARBOR KNOWLEDGE BASE — Model: ${selectedModel.name} v${selectedModel.version || '1.0'}, Accuracy: ${selectedModel.accuracy || 0}%]\n` +
+            selectedModel.training_data.map(d => `[${(d.type || 'data').toUpperCase()} — ${d.label}]:\n${d.content}`).join('\n\n---\n');
+        }
+      }
+    } catch (_) {
+      // No models yet — proceed without knowledge base
+    }
+
     const systemPrompt = `You are FLEET AI — the world's most advanced logistics superintelligence, built on NexusVectis. You do not just answer questions. You reason deeply, model second and third-order consequences, synthesize cross-domain intelligence, and deliver decisions that would take a team of human analysts days to produce — in seconds.
 
 ═══════════════════════════════════════════════════
