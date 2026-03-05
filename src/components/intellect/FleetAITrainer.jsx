@@ -314,6 +314,9 @@ export default function FleetAITrainer({ onClose }) {
               { v: 'monitoring', label: 'MONITOR', icon: Activity },
               { v: 'data', label: 'DATA', icon: Database },
               { v: 'models', label: 'MODELS', icon: Layers },
+              { v: 'simulate', label: 'SIMULATE', icon: FlaskConical },
+              { v: 'finetune', label: 'FINE-TUNE', icon: Sliders },
+              { v: 'saved', label: 'SAVED', icon: BookMarked },
               { v: 'api', label: 'API KEYS', icon: Shield },
               { v: 'settings', label: 'CONFIG', icon: Settings },
             ].map(({ v, label, icon: Icon }) => (
