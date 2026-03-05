@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Zap, TrendingUp, Code, Play, Save, Plus, Trash2, Eye, Settings, Download, Copy, CheckCircle, Link2, FileUp, Trash, Sparkles, Gauge, Cpu, BarChart3, Brain, Activity, Shield, AlertTriangle, Radio, Crosshair, Terminal, Database, GitBranch, Layers } from 'lucide-react';
+import { Zap, TrendingUp, Code, Play, Save, Plus, Trash2, Eye, Settings, Download, Copy, CheckCircle, Link2, FileUp, Trash, Sparkles, Gauge, Cpu, BarChart3, Brain, Activity, Shield, AlertTriangle, Radio, Crosshair, Terminal, Database, GitBranch, Layers, FlaskConical, Sliders, BookMarked, RefreshCw, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area, RadarChart, Radar, PolarGrid, PolarAngleAxis } from 'recharts';
