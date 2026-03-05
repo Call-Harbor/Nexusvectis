@@ -201,6 +201,7 @@ export default function FleetAITrainer({ onClose }) {
         version: snapshot.version || '1.0',
         status: 'active',
         training_data_count: trainingData.length,
+        training_data: trainingData.map(d => ({ type: d.type, label: d.label, content: d.content })),
       });
       setSystemLog(prev => [...prev, `[DB] Model persisted — ID: ${snapshot.snapshot_id}`]);
     } catch (e) {
