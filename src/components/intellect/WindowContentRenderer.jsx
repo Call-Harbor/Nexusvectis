@@ -170,35 +170,52 @@ function ChartWindow({ data, config }) {
         </div>
       )}
 
-      {config?.recommendations?.length > 0 && (
+      {(config?.recommendations?.length > 0 || (typeof config?.recommendations === 'object' && Object.keys(config.recommendations).length > 0)) && (
         <div className="mt-6 p-4 rounded-xl bg-gradient-to-br from-emerald-500/10 to-cyan-500/10 border border-emerald-500/30">
           <div className="flex items-center gap-2 mb-3"><Zap className="w-5 h-5 text-emerald-400" /><h4 className="text-white font-bold">💡 Strategic Actions</h4></div>
-          <div className="space-y-3">
-            {config.recommendations.filter(r => r && (typeof r === 'string' || typeof r?.action === 'string')).map((rec, idx) => {
-              const recText = typeof rec === 'string' ? rec : rec?.action || rec?.benefit || '';
-              const advantage = typeof rec === 'object' ? rec?.competitive_advantage : '';
-              const savings = typeof rec === 'object' && rec?.savings_dkk ? (typeof rec.savings_dkk === 'number' ? `${rec.savings_dkk.toLocaleString()} DKK` : rec.savings_dkk) : null;
-              const confidence = typeof rec === 'object' && rec?.confidence ? Math.round(rec.confidence * 100) : null;
-              const timeframe = typeof rec === 'object' ? rec?.timeframe : null;
-              return (
-                <div key={idx} className="p-4 rounded-lg bg-emerald-500/5 border border-emerald-500/25 hover:border-emerald-500/50 transition">
-                  <div className="flex gap-3 mb-2">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-400 flex items-center justify-center flex-shrink-0 font-bold text-slate-950">
-                      {idx + 1}
+          <div className="space-y-4">
+            {Array.isArray(config.recommendations) ? (
+              config.recommendations.filter(r => r && (typeof r === 'string' || typeof r?.action === 'string')).map((rec, idx) => {
+                const recText = typeof rec === 'string' ? rec : rec?.action || rec?.benefit || '';
+                const advantage = typeof rec === 'object' ? rec?.competitive_advantage : '';
+                const savings = typeof rec === 'object' && rec?.savings_dkk ? (typeof rec.savings_dkk === 'number' ? `${rec.savings_dkk.toLocaleString()} DKK` : rec.savings_dkk) : null;
+                const confidence = typeof rec === 'object' && rec?.confidence ? Math.round(rec.confidence * 100) : null;
+                const timeframe = typeof rec === 'object' ? rec?.timeframe : null;
+                return (
+                  <div key={idx} className="p-4 rounded-lg bg-emerald-500/5 border border-emerald-500/25 hover:border-emerald-500/50 transition">
+                    <div className="flex gap-3 mb-2">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-400 flex items-center justify-center flex-shrink-0 font-bold text-slate-950">{idx + 1}</div>
+                      <div className="flex-1">
+                        <p className="text-white font-semibold text-sm mb-1">{recText}</p>
+                        {advantage && <p className="text-emerald-300 text-xs italic mb-2">✨ {advantage}</p>}
+                      </div>
                     </div>
-                    <div className="flex-1">
-                      <p className="text-white font-semibold text-sm mb-1">{recText}</p>
-                      {advantage && <p className="text-emerald-300 text-xs italic mb-2">✨ {advantage}</p>}
+                    <div className="flex flex-wrap gap-2 ml-11 text-xs">
+                      {savings && <span className="px-3 py-1.5 rounded-full bg-emerald-500/20 text-emerald-200 font-semibold">💰 {savings}</span>}
+                      {timeframe && <span className="px-3 py-1.5 rounded-full bg-cyan-500/20 text-cyan-200">⏱️ {timeframe}</span>}
+                      {confidence && <span className="px-3 py-1.5 rounded-full bg-violet-500/20 text-violet-200">✓ {confidence}% confidence</span>}
                     </div>
                   </div>
-                  <div className="flex flex-wrap gap-2 ml-11 text-xs">
-                    {savings && <span className="px-3 py-1.5 rounded-full bg-emerald-500/20 text-emerald-200 font-semibold">💰 {savings}</span>}
-                    {timeframe && <span className="px-3 py-1.5 rounded-full bg-cyan-500/20 text-cyan-200">⏱️ {timeframe}</span>}
-                    {confidence && <span className="px-3 py-1.5 rounded-full bg-violet-500/20 text-violet-200">✓ {confidence}% confidence</span>}
+                );
+              })
+            ) : (
+              Object.entries(config.recommendations).map(([category, items], catIdx) => (
+                <div key={catIdx}>
+                  <h5 className="text-white font-semibold text-sm mb-2 capitalize text-emerald-300">{category} Actions</h5>
+                  <div className="space-y-2 ml-2">
+                    {Array.isArray(items) && items.map((rec, idx) => (
+                      <div key={idx} className="p-3 rounded-lg bg-emerald-500/5 border border-emerald-500/25">
+                        <p className="text-white font-medium text-sm mb-1">{rec?.action || rec?.expected_outcome || 'Action'}</p>
+                        {rec?.expected_outcome && <p className="text-slate-300 text-xs mb-2">📈 {rec.expected_outcome}</p>}
+                        {rec?.cost && <p className="text-emerald-300 text-xs">💰 Cost: {rec.cost}</p>}
+                        {rec?.roi && <p className="text-emerald-300 text-xs">📊 ROI: {rec.roi}</p>}
+                        {rec?.confidence && <p className="text-cyan-300 text-xs">✓ Confidence: {rec.confidence}%</p>}
+                      </div>
+                    ))}
                   </div>
                 </div>
-              );
-            })}
+              ))
+            )}
           </div>
         </div>
       )}
