@@ -381,7 +381,7 @@ export default function WindowContentRenderer({ type, data, vehicles, routes, sh
   if (type === 'neuro_risk') return <NeuroSymbolicRiskPanel vehicles={vehicles} routes={routes} onCommand={setInput} />;
   if (type === 'digital_twin') return <DigitalTwinFederation vehicles={vehicles} routes={routes} onCommand={setInput} />;
   if (type === 'course_ai') return <CourseAIEngine vehicles={vehicles} routes={routes} shipments={shipments} />;
-  if (type === 'deep_analysis') return <DeepAnalysisEngine vehicles={vehicles} routes={routes} shipments={shipments} alerts={alerts} onInsightCommand={setInput} />;
+  if (type === 'deep_analysis') return <DeepAnalysisEngine vehicles={vehicles} routes={routes} shipments={shipments} alerts={alerts} currentUser={currentUser} orgId={orgId} onInsightCommand={setInput} />;
   if (type === 'global_search') return <GlobalSearch orgId={data?.orgId} onOpenWindow={(entityType) => openWindow(entityType, { x: 200, y: 150 })} onOpenPageWindow={(page) => openWindow(page.toLowerCase(), { x: 200, y: 150 })} />;
   if (type === 'web_browser') return <WebBrowser />;
   // profile_search is handled above as PeopleIntelligenceHologram
