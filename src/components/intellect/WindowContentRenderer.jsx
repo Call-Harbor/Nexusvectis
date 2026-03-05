@@ -43,6 +43,8 @@ const PAGE_MAP = {
 };
 
 function ChartWindow({ data, config }) {
+  if (!config) return <div className="w-full h-full flex items-center justify-center text-slate-400">No data to display</div>;
+  
   const chartType = config?.type || 'bar';
   const chartData = data || [];
 
@@ -58,7 +60,7 @@ function ChartWindow({ data, config }) {
   };
 
   return (
-    <div className="w-full h-full p-4 sm:p-6 overflow-auto bg-slate-950/40">
+    <div className="w-full h-full p-4 sm:p-6 overflow-auto bg-slate-950">
       <div className="mb-6 pb-4 border-b border-cyan-500/20">
         <h3 className="text-white font-bold text-xl mb-2 flex items-center gap-2">
           <Sparkles className="w-5 h-5 text-cyan-400" />
