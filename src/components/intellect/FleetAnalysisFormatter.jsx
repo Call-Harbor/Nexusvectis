@@ -100,37 +100,58 @@ export default function FleetAnalysisFormatter({ data }) {
 
       {/* Findings & Analysis */}
       {findingsList.length > 0 && (
-        <div className="space-y-3">
-          <h3 className="text-white font-semibold text-lg flex items-center gap-2">
-            <AlertTriangle className="w-5 h-5 text-amber-400" />
-            Key Findings
-          </h3>
-          {findingsList.map((finding, idx) => (
-            <div key={idx} className={`p-4 rounded-lg border ${severityColors[finding.risk_level] || severityColors.Low}`}>
-              <div className="flex items-start gap-3 mb-2">
-                <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0 font-bold text-xs">
-                  {idx + 1}
-                </div>
-                <div className="flex-1">
-                  <p className="font-semibold mb-1">{finding.finding}</p>
-                  <p className="text-xs opacity-90 mb-2">{finding.root_cause}</p>
-                  {typeof finding.impact === 'object' ? (
-                    <div className="text-xs space-y-1 mt-2 opacity-90">
-                      {finding.impact.financial && <p>💰 <strong>Financial:</strong> {finding.impact.financial}</p>}
-                      {finding.impact.operational && <p>⚙️ <strong>Operational:</strong> {finding.impact.operational}</p>}
-                      {finding.impact.environmental && <p>🌍 <strong>Environmental:</strong> {finding.impact.environmental}</p>}
-                    </div>
-                  ) : (
-                    <p className="text-xs opacity-90">{finding.impact}</p>
-                  )}
-                  <div className="flex items-center gap-4 mt-2 text-[11px]">
-                    <span>🎯 Confidence: <strong>{finding.confidence}%</strong></span>
-                    <span>⏰ Horizon: <strong>{finding.time_horizon || 'Immediate'}</strong></span>
+        <div className="space-y-6">
+          <div>
+            <h3 className="text-white font-bold text-2xl mb-6 flex items-center gap-2">
+              <AlertTriangle className="w-6 h-6 text-amber-400" />
+              Detailed Analysis
+            </h3>
+          </div>
+          {findingsList.map((finding, idx) => {
+            const riskColors = {
+              'Critical': 'border-red-500/40 bg-red-500/5',
+              'High': 'border-orange-500/40 bg-orange-500/5',
+              'Medium': 'border-amber-500/40 bg-amber-500/5',
+              'Low': 'border-blue-500/40 bg-blue-500/5'
+            };
+            
+            return (
+              <div key={idx} className={`p-6 rounded-lg border ${riskColors[finding.risk_level] || riskColors.Low}`}>
+                <div className="mb-4">
+                  <div className="flex items-start justify-between mb-2">
+                    <h4 className="text-white font-bold text-lg leading-relaxed pr-4">
+                      {idx + 1}. {finding.finding}
+                    </h4>
+                    <span className={`px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap flex-shrink-0 ${finding.risk_level === 'Critical' ? 'bg-red-500/30 text-red-300' : finding.risk_level === 'High' ? 'bg-orange-500/30 text-orange-300' : finding.risk_level === 'Medium' ? 'bg-amber-500/30 text-amber-300' : 'bg-blue-500/30 text-blue-300'}`}>
+                      {finding.risk_level}
+                    </span>
                   </div>
+                  <p className="text-slate-200 text-base leading-relaxed mb-3">
+                    <strong>Root Cause:</strong> {finding.root_cause}
+                  </p>
+                </div>
+                
+                {typeof finding.impact === 'object' ? (
+                  <div className="bg-white/5 p-4 rounded-lg mb-4 space-y-2">
+                    <p className="text-slate-400 font-semibold text-sm mb-3">Impact Assessment:</p>
+                    {finding.impact.financial && <p className="text-slate-200 text-base">💰 <strong>Financial Impact:</strong> {finding.impact.financial}</p>}
+                    {finding.impact.operational && <p className="text-slate-200 text-base">⚙️ <strong>Operational Impact:</strong> {finding.impact.operational}</p>}
+                    {finding.impact.environmental && <p className="text-slate-200 text-base">🌍 <strong>Environmental Impact:</strong> {finding.impact.environmental}</p>}
+                    {finding.impact.compliance && <p className="text-slate-200 text-base">📋 <strong>Compliance Risk:</strong> {finding.impact.compliance}</p>}
+                  </div>
+                ) : (
+                  <div className="bg-white/5 p-4 rounded-lg mb-4">
+                    <p className="text-slate-200 text-base"><strong>Impact:</strong> {finding.impact}</p>
+                  </div>
+                )}
+                
+                <div className="flex flex-wrap gap-4 text-sm">
+                  <span className="text-slate-300">🎯 Confidence: <strong className="text-white">{finding.confidence}%</strong></span>
+                  <span className="text-slate-300">⏰ Priority: <strong className="text-white">{finding.time_horizon || 'Immediate'}</strong></span>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
