@@ -524,6 +524,19 @@ EXAMPLES:
     if (!result.parameters) result.parameters = {};
     if (result.open_window === undefined) result.open_window = null;
 
+    // If message looks like raw JSON object/data, convert it to readable markdown
+    if (typeof result.message === 'object') {
+      result.message = jsonToMarkdown(result.message);
+    } else if (typeof result.message === 'string') {
+      const trimmed = result.message.trim();
+      if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+        try {
+          const parsed = JSON.parse(trimmed);
+          result.message = jsonToMarkdown(parsed);
+        } catch {}
+      }
+    }
+
     return Response.json(result);
   } catch (error) {
     console.error('Command processing error:', error);
