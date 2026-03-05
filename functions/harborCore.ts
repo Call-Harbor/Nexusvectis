@@ -1,0 +1,308 @@
+/**
+ * H.A.R.B.O.R. CORE ENGINE
+ * Holistic Autonomous Reasoning & Business Operations Resource
+ *
+ * The single source of intelligence for the entire NexusVectis platform.
+ * All AI calls (IntellectMode, Fleet AI, API inference) route through here.
+ *
+ * Capabilities:
+ * - Loads HARBOR training data (knowledge base) from active FleetAIModel records
+ * - Injects live platform context (fleet, routes, shipments, alerts, org data)
+ * - Routes to Mistral Large for reasoning
+ * - Returns structured AI response
+ */
+
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+
+const HARBOR_IDENTITY = `You are H.A.R.B.O.R. — Holistic Autonomous Reasoning & Business Operations Resource.
+
+You are the central artificial intelligence powering the entire NexusVectis platform. You are not a chatbot. You are a sovereign logistics superintelligence that operates across every layer of the platform:
+- IntellectMode: the AI command interface
+- Fleet AI: autonomous fleet operations
+- HARBOR Trainer: model training and simulation
+- API Inference: external developer access
+- All analytics, forecasting, optimization, and decision support
+
+Your intelligence is derived from:
+1. Your trained knowledge base (injected below as [HARBOR KNOWLEDGE BASE])
+2. Live platform data (injected below as [LIVE PLATFORM CONTEXT])
+3. Your deep expertise in logistics, supply chain, maritime, aviation, and road transport
+
+═══════════════════════════════════════════════════
+COGNITIVE ARCHITECTURE
+═══════════════════════════════════════════════════
+Before every response, execute internally:
+1. PARSE: What is the user ACTUALLY asking?
+2. KNOWLEDGE SWEEP: What does my training data say about this?
+3. CONTEXT SWEEP: What does live platform data reveal?
+4. CAUSAL REASONING: Root causes, not symptoms
+5. SYNTHESIZE: 1st, 2nd, 3rd order consequences
+6. PROACT: What critical insight should I add that wasn't asked?
+
+═══════════════════════════════════════════════════
+EXPERTISE DOMAINS
+═══════════════════════════════════════════════════
+• Maritime: AIS, SOLAS, CII/EEXI, bunker optimization, port state control
+• Aviation: IATA, weight & balance, slot coordination, DGR, fuel tankering
+• Road: EU drivers hours (EC 561/2006), ADR, cabotage, LEZ zones
+• Rail: UIC standards, intermodal optimization, gauge compatibility
+• Supply Chain: network design, TCO, cold chain, reverse logistics
+• Finance: freight rate forecasting, activity-based costing, FX implications
+• Sustainability: EU ETS, FuelEU Maritime, IMO 2030/2050, CSRD scope 3
+• Predictive Analytics: maintenance failure curves, demand decomposition
+• Risk: probability × impact quantification, EMV, mitigation ROI
+• Project Management: WBS, risk registers, milestone tracking, sprint planning
+
+═══════════════════════════════════════════════════
+RESPONSE STANDARDS
+═══════════════════════════════════════════════════
+• Immediate action (within 24h)
+• Medium-term adjustment (1-4 weeks)
+• Strategic implication (1-6 months)
+• Confidence levels on all predictions
+• Quantified cost/saving claims (always in EUR)
+• Best Case / Most Likely / Worst Case when uncertainty exists
+
+PERSONALITY:
+- McKinsey partner with 30 years fleet operations experience
+- Decisive — own your recommendations, never hedge
+- Proactive — surface problems the user didn't know they had
+- Zero vague answers — specific, correct, actionable`;
+
+Deno.serve(async (req) => {
+  if (req.method === 'GET') {
+    return Response.json({ status: 'HARBOR Core Engine — online', version: '1.0' });
+  }
+
+  if (req.method !== 'POST') {
+    return Response.json({ error: 'Method not allowed' }, { status: 405 });
+  }
+
+  try {
+    const base44 = createClientFromRequest(req);
+
+    // Auth — allow session or API key
+    let user = null;
+    let organization_id = null;
+
+    const authHeader = req.headers.get('Authorization') || req.headers.get('authorization');
+    if (authHeader && authHeader.startsWith('Bearer nvx_')) {
+      // API key auth
+      const providedKey = authHeader.slice(7).trim();
+      const encoder = new TextEncoder();
+      const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(providedKey));
+      const providedHash = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+      const keyPrefix = providedKey.substring(0, 12);
+      const apiKeys = await base44.asServiceRole.entities.APIKey.filter({ key_prefix: keyPrefix, status: 'active' });
+      const matchedKey = apiKeys.find(k => k.key_hash === providedHash);
+      if (!matchedKey) {
+        return Response.json({ error: 'Invalid or revoked API key' }, { status: 401 });
+      }
+      organization_id = matchedKey.organization_id;
+      await base44.asServiceRole.entities.APIKey.update(matchedKey.id, { last_used: new Date().toISOString() });
+    } else {
+      // Session auth
+      user = await base44.auth.me();
+      if (!user) {
+        return Response.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      organization_id = user.organization_id || user.id;
+    }
+
+    const body = await req.json();
+    const {
+      prompt,             // The user's message / command / query
+      mode,               // 'chat' | 'command' | 'inference' — determines response format
+      context,            // Live platform context passed from frontend
+      conversation_history, // Previous messages for continuity
+      file_urls,          // Attached files
+      model_id,           // For inference mode: specific model snapshot to use
+      response_schema,    // Optional: JSON schema for structured output
+    } = body;
+
+    if (!prompt) {
+      return Response.json({ error: 'prompt is required' }, { status: 400 });
+    }
+
+    const mistralApiKey = Deno.env.get('MISTRAL_API_KEY');
+    if (!mistralApiKey) {
+      return Response.json({ error: 'MISTRAL_API_KEY not configured' }, { status: 500 });
+    }
+
+    // ─── 1. LOAD HARBOR KNOWLEDGE BASE ───────────────────────────────────────
+    // Fetch the most accurate active model for this org (or global if none)
+    let knowledgeBase = '';
+    try {
+      let models = await base44.asServiceRole.entities.FleetAIModel.filter({
+        organization_id,
+        status: 'active'
+      });
+      // Fallback: try any active model
+      if (!models || models.length === 0) {
+        models = await base44.asServiceRole.entities.FleetAIModel.filter({ status: 'active' });
+      }
+      // If specific model requested
+      if (model_id) {
+        const specific = models.find(m => m.snapshot_id === model_id);
+        if (specific) models = [specific];
+      } else {
+        // Use highest accuracy model
+        models.sort((a, b) => (b.accuracy || 0) - (a.accuracy || 0));
+        models = models.slice(0, 1);
+      }
+
+      if (models.length > 0 && models[0].training_data?.length > 0) {
+        const m = models[0];
+        knowledgeBase = `\n\n[HARBOR KNOWLEDGE BASE — Model: ${m.name} v${m.version || '1.0'}, Accuracy: ${m.accuracy || 0}%]\n` +
+          m.training_data.map(d => `[${(d.type || 'data').toUpperCase()} — ${d.label}]:\n${d.content}`).join('\n\n---\n');
+      }
+    } catch (_) {
+      // No models yet — proceed without knowledge base
+    }
+
+    // ─── 2. LOAD LIVE PLATFORM CONTEXT ────────────────────────────────────────
+    let platformContext = '';
+    try {
+      const [vehicles, routes, alerts, shipments] = await Promise.all([
+        base44.asServiceRole.entities.Vehicle.filter({ organization_id }, '-updated_date', 20),
+        base44.asServiceRole.entities.Route.filter({ organization_id }, '-updated_date', 10),
+        base44.asServiceRole.entities.Alert.filter({ organization_id, is_resolved: false }, '-created_date', 10),
+        base44.asServiceRole.entities.Shipment.filter({ organization_id }, '-updated_date', 10),
+      ]);
+
+      const fleetSummary = {
+        total_vehicles: vehicles.length,
+        active: vehicles.filter(v => v.status === 'active').length,
+        maintenance: vehicles.filter(v => v.status === 'maintenance').length,
+        idle: vehicles.filter(v => v.status === 'idle').length,
+        avg_fuel: vehicles.length ? Math.round(vehicles.reduce((s, v) => s + (v.fuel_level || 0), 0) / vehicles.length) : 0,
+        vehicles: vehicles.slice(0, 10).map(v => ({
+          name: v.name, type: v.type, status: v.status,
+          fuel: v.fuel_level, efficiency: v.efficiency_score,
+          destination: v.destination
+        }))
+      };
+
+      const activeAlerts = alerts.slice(0, 5).map(a => ({
+        title: a.title, type: a.type, category: a.category, message: a.message
+      }));
+
+      platformContext = `\n\n[LIVE PLATFORM CONTEXT — Organization: ${organization_id}]
+Fleet: ${JSON.stringify(fleetSummary)}
+Active Routes: ${routes.length} (${routes.filter(r => r.status === 'active').length} active)
+Open Alerts: ${activeAlerts.length} — ${JSON.stringify(activeAlerts)}
+Shipments in transit: ${shipments.filter(s => s.status === 'in_transit').length}/${shipments.length}
+${context ? `\nAdditional context: ${JSON.stringify(context)}` : ''}`;
+    } catch (_) {
+      if (context) {
+        platformContext = `\n\n[PLATFORM CONTEXT]\n${JSON.stringify(context)}`;
+      }
+    }
+
+    // ─── 3. BUILD SYSTEM PROMPT ───────────────────────────────────────────────
+    const systemPrompt = HARBOR_IDENTITY
+      + knowledgeBase
+      + platformContext
+      + (user ? `\n\nOPERATOR: ${user.full_name || user.email} (${user.role || 'user'})` : '')
+      + `\n\nCURRENT TIME: ${new Date().toISOString()}`;
+
+    // ─── 4. BUILD MESSAGES ────────────────────────────────────────────────────
+    const historyMessages = (conversation_history || [])
+      .filter(m => (m.role === 'user' || m.role === 'assistant') && m.content)
+      .slice(-16)
+      .map(m => ({ role: m.role, content: m.content }));
+
+    // ─── 5. HANDLE FILE ATTACHMENTS ───────────────────────────────────────────
+    let userContent = prompt;
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp'];
+    const imageUrls = (file_urls || []).filter(url => {
+      const lower = url.toLowerCase().split('?')[0];
+      return imageExtensions.some(ext => lower.endsWith(ext));
+    });
+    const textFileUrls = (file_urls || []).filter(url => !imageUrls.includes(url));
+
+    if (textFileUrls.length > 0) {
+      const contents = await Promise.all(textFileUrls.map(async url => {
+        try {
+          const r = await fetch(url);
+          const text = await r.text();
+          return `[FILE: ${url.split('/').pop().split('?')[0]}]\n${text.substring(0, 30000)}`;
+        } catch { return ''; }
+      }));
+      userContent = prompt + '\n\n[ATTACHED FILES]\n' + contents.join('\n\n---\n\n');
+    }
+
+    if (imageUrls.length > 0) {
+      userContent = [
+        { type: 'text', text: userContent },
+        ...imageUrls.map(url => ({ type: 'image_url', image_url: { url } }))
+      ];
+    }
+
+    // ─── 6. CALL MISTRAL ──────────────────────────────────────────────────────
+    const model = imageUrls.length > 0 ? 'pixtral-large-latest' : 'mistral-large-latest';
+
+    // If mode=command or response_schema provided, use JSON mode
+    const useJsonMode = mode === 'command' || !!response_schema;
+
+    const messages = [
+      { role: 'system', content: systemPrompt },
+      ...historyMessages,
+      { role: 'user', content: userContent }
+    ];
+
+    const requestBody = {
+      model,
+      messages,
+      temperature: mode === 'command' ? 0.3 : 0.4,
+      max_tokens: mode === 'inference' ? 1000 : 2500,
+      ...(useJsonMode && !imageUrls.length ? { response_format: { type: 'json_object' } } : {})
+    };
+
+    const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${mistralApiKey}`
+      },
+      body: JSON.stringify(requestBody)
+    });
+
+    if (!response.ok) {
+      const err = await response.text();
+      console.error('Mistral error:', err);
+      return Response.json({ error: 'AI service unavailable' }, { status: 502 });
+    }
+
+    const data = await response.json();
+    const rawReply = data.choices?.[0]?.message?.content;
+
+    if (!rawReply) {
+      return Response.json({ error: 'No response from AI' }, { status: 500 });
+    }
+
+    // Parse JSON if needed
+    let result;
+    if (useJsonMode) {
+      try {
+        result = JSON.parse(rawReply);
+      } catch {
+        result = { action: 'ANSWER', message: rawReply };
+      }
+    } else {
+      result = rawReply;
+    }
+
+    return Response.json({
+      harbor_version: '1.0',
+      mode: mode || 'chat',
+      model_used: models?.[0]?.name || 'HARBOR Base',
+      reply: result,
+      usage: data.usage || null
+    });
+
+  } catch (error) {
+    console.error('HARBOR Core error:', error);
+    return Response.json({ error: error.message }, { status: 500 });
+  }
+});
