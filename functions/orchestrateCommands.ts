@@ -11,57 +11,22 @@ Deno.serve(async (req) => {
 
     const { prompt } = await req.json();
 
-    // Use Mistral to parse and orchestrate commands
-    const orchestrationResponse = await base44.integrations.Core.InvokeLLM({
-      prompt: `You are a task orchestration AI. Analyze this user request and break it into ordered tasks with dependencies.
+    // Route through HARBOR Core Engine
+    const harborResp = await base44.functions.invoke('harborCore', {
+      prompt: `You are a task orchestration engine. Analyze this user request and break it into ordered tasks with dependencies.
 
 User Request: "${prompt}"
 
-Return a JSON array of tasks in execution order. Each task should have:
-- id: unique identifier
-- type: the command type (e.g., "plan_route", "assign_driver", "send_notification")
+Return a JSON object with a "tasks" array. Each task must have:
+- id: unique string
+- type: one of "plan_route", "assign_driver", "send_notification", "create_shipment", "optimize_route", "schedule_maintenance"
 - description: what this task does
-- params: required parameters
-- dependsOn: array of task IDs that must complete first
-
-Example format:
-[
-  {
-    "id": "task_1",
-    "type": "plan_route",
-    "description": "Plan route from Copenhagen to Aarhus",
-    "params": { "origin": "Copenhagen", "destination": "Aarhus" },
-    "dependsOn": []
-  },
-  {
-    "id": "task_2",
-    "type": "assign_driver",
-    "description": "Assign driver John to the route",
-    "params": { "route_id": "task_1_result", "driver_name": "John" },
-    "dependsOn": ["task_1"]
-  }
-]
-
-IMPORTANT: Return ONLY the JSON array, no other text.`,
-      response_json_schema: {
-        type: 'object',
-        properties: {
-          tasks: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                id: { type: 'string' },
-                type: { type: 'string' },
-                description: { type: 'string' },
-                params: { type: 'object' },
-                dependsOn: { type: 'array', items: { type: 'string' } }
-              }
-            }
-          }
-        }
-      }
+- params: required parameters as object
+- dependsOn: array of task IDs that must complete first (empty array if none)`,
+      mode: 'command',
     });
+
+    const orchestrationResponse = harborResp.data?.reply || { tasks: [] };
 
     // Extract tasks from response
     let tasks = [];

@@ -11,69 +11,44 @@ Deno.serve(async (req) => {
     }
 
     const commandType = command.type;
-    let result = {};
 
-    switch (commandType) {
-      case 'analyze_fleet_health': {
-        const vehicles = await base44.entities.Vehicle.list();
-        const alerts = await base44.entities.Alert.list();
-        const maintenance = await base44.entities.Maintenance.list();
-        
-        result = {
-          analysis: {
-            vehicle_health: `Fleet Status: ${vehicles.length} vehicles tracked. ${alerts.length} active alerts. ${maintenance.length} maintenance tasks scheduled.`,
-            alerts: `Critical alerts: ${alerts.filter(a => a.type === 'critical').length}. Warning alerts: ${alerts.filter(a => a.type === 'warning').length}.`,
-            routes: `Fleet operational efficiency at 87.3%. Average fuel consumption 8.2L/100km.`
-          }
-        };
-        break;
-      }
+    // Fetch live data for context
+    const [vehicles, alerts, maintenance, routes, shipments] = await Promise.all([
+      base44.entities.Vehicle.list(),
+      base44.entities.Alert.list(),
+      base44.entities.Maintenance.list(),
+      base44.entities.Route.list(),
+      base44.entities.Shipment.list(),
+    ]);
 
-      case 'optimize_operations': {
-        const routes = await base44.entities.Route.list();
-        const shipments = await base44.entities.Shipment.list();
-        
-        result = {
-          optimizations: {
-            vehicle_health: 'Route optimization: Can reduce travel time by 12-15% by consolidating 3 routes.',
-            efficiency: 'Identified 8 underutilized vehicles. Recommendation: reallocate 2 vehicles to high-demand zones.',
-            strategic: 'Load balancing optimization can save 340 EUR/month in fuel costs.'
-          }
-        };
-        break;
-      }
+    const prompt = `ORCHESTRATION COMMAND: ${commandType}
 
-      case 'predict_issues': {
-        const maintenance = await base44.entities.Maintenance.list();
-        const vehicles = await base44.entities.Vehicle.list();
-        
-        result = {
-          predictions: {
-            vehicle_health: `${vehicles.filter(v => v.fuel_level < 20).length} vehicles have critical fuel levels requiring immediate attention.`,
-            alerts: `Predictive maintenance: ${maintenance.filter(m => m.type === 'predictive').length} potential failures detected. Engine #5 failure risk: 73%.`,
-            routes: 'Weather prediction: 15% delay risk for coastal routes next 24 hours.'
-          }
-        };
-        break;
-      }
+Live Fleet Data:
+- Vehicles: ${vehicles.length} total, ${vehicles.filter(v => v.status === 'active').length} active
+- Alerts: ${alerts.length} total, ${alerts.filter(a => a.type === 'critical').length} critical
+- Maintenance tasks: ${maintenance.length} (${maintenance.filter(m => m.type === 'predictive').length} predictive)
+- Routes: ${routes.length} total, ${routes.filter(r => r.status === 'active').length} active
+- Shipments: ${shipments.length} total, ${shipments.filter(s => s.status === 'in_transit').length} in transit
 
-      case 'generate_insights': {
-        const shipments = await base44.entities.Shipment.list();
-        const vehicles = await base44.entities.Vehicle.list();
-        
-        result = {
-          insights: {
-            vehicle_health: `Average vehicle utilization: 68%. Peak utilization window: 10AM-2PM weekdays.`,
-            efficiency: `Cost per shipment trending down 3.2% month-over-month. Route efficiency improved by 5.1%.`,
-            strategic: `Market opportunity: Heavy goods routes to North region underserved. Expansion recommended.`
-          }
-        };
-        break;
-      }
+${context ? `Additional context: ${JSON.stringify(context)}` : ''}
 
-      default:
-        return Response.json({ error: `Unknown command: ${commandType}` }, { status: 400 });
-    }
+Analyze the above data and return insights for command type: ${commandType}`;
+
+    const harborResp = await base44.functions.invoke('harborCore', {
+      prompt,
+      mode: 'chat',
+      context: { commandType, vehicleCount: vehicles.length, alertCount: alerts.length },
+    });
+
+    const reply = harborResp.data?.reply || '';
+
+    // Map HARBOR reply to expected structure
+    const result = {
+      analysis: { vehicle_health: reply, alerts: '', routes: '' },
+      optimizations: { vehicle_health: reply, efficiency: '', strategic: '' },
+      predictions: { vehicle_health: reply, alerts: '', routes: '' },
+      insights: { vehicle_health: reply, efficiency: '', strategic: '' },
+    };
 
     return Response.json(result);
   } catch (error) {
