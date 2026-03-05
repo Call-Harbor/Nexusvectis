@@ -487,80 +487,24 @@ If you say files are missing when file_urls exist, you are WRONG.
 
 Context data: ${JSON.stringify(context)}`;
 
-      // Use service role for admin access to all data
-      const llmResponse = await base44.asServiceRole.integrations.Core.InvokeLLM({
+      const harborResp = await base44.functions.invoke('harborCore', {
         prompt: enhancedPrompt,
+        mode: 'command',
+        context,
+        conversation_history,
         file_urls: processedFileUrls.length > 0 ? processedFileUrls : undefined,
-        add_context_from_internet: true,
-        response_json_schema: {
-          type: 'object',
-          properties: {
-            action: { type: 'string' },
-            parameters: { type: 'object' },
-            message: { type: 'string' },
-            open_window: { type: 'string' }
-          },
-          required: ['action', 'message']
-        }
       });
-      
-      console.log('✅ InvokeLLM response received');
-      result = llmResponse;
+      result = harborResp.data?.reply || harborResp.data;
+      console.log('✅ HARBOR Core response received');
     } else {
-      // Build messages with conversation history for context
-      const historyMessages = (conversation_history || [])
-        .filter(m => m.role === 'user' || m.role === 'assistant')
-        .slice(-10) // Keep last 10 messages for context
-        .map(m => ({ role: m.role, content: m.content }));
-
-      // Use direct Mistral API for text-only commands
-      const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${mistralApiKey}`
-        },
-        body: JSON.stringify({
-          model: 'mistral-large-latest',
-          messages: [
-            { role: 'system', content: systemPrompt },
-            ...historyMessages,
-            { role: 'user', content: command + '\n\n[SYSTEM NOTE: Use add_context_from_internet=true equivalent — search for live weather, news, satellite, and market data if the user\'s query relates to world events, weather, ports, freight markets, or geopolitical conditions.]' }
-          ],
-          response_format: { type: 'json_object' },
-          temperature: 0.3
-        })
+      // Route text-only command through HARBOR Core
+      const harborResp = await base44.functions.invoke('harborCore', {
+        prompt: command,
+        mode: 'command',
+        context,
+        conversation_history,
       });
-
-      if (!response.ok) {
-        const error = await response.text();
-        console.error('Mistral API error:', { status: response.status, error });
-        
-        // More informative error message based on status
-        let message = 'AI temporarily unavailable. Please try again in a moment.';
-        if (response.status === 429) {
-          message = 'API rate limit exceeded. Please wait a moment.';
-        } else if (response.status === 401 || response.status === 403) {
-          message = 'API authentication failed. Check MISTRAL_API_KEY configuration.';
-        } else if (response.status === 500) {
-          message = 'AI service error. Please try again shortly.';
-        }
-        
-        return Response.json({
-          action: 'ANSWER',
-          parameters: {},
-          message,
-          open_window: null
-        });
-      }
-
-      const data = await response.json();
-      
-      if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-        throw new Error('Invalid response from Mistral API');
-      }
-      
-      result = JSON.parse(data.choices[0].message.content);
+      result = harborResp.data?.reply || harborResp.data;
     }
 
     // Validate response structure
