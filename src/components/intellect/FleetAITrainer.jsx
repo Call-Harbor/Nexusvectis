@@ -52,9 +52,7 @@ export default function FleetAITrainer({ onClose }) {
   const [selectedModel, setSelectedModel] = useState(models[0]);
   const [isTraining, setIsTraining] = useState(false);
   const [trainingProgress, setTrainingProgress] = useState(0);
-  const [apiKeys, setApiKeys] = useState([
-    { id: 1, key: 'fai_prod_****', created: '2026-02-01', lastUsed: '2026-03-04', calls: 1234 },
-  ]);
+  const [apiKeys, setApiKeys] = useState([]);
   const [showNewModel, setShowNewModel] = useState(false);
   const [newModelName, setNewModelName] = useState('');
   const [trainingData, setTrainingData] = useState([
