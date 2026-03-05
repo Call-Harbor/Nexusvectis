@@ -68,6 +68,14 @@ export default function FleetAITrainer({ onClose }) {
   const [aiInsights, setAiInsights] = useState([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [liveAccuracy, setLiveAccuracy] = useState(selectedModel.accuracy);
+  const [savedModels, setSavedModels] = useState([]);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [isSimulating, setIsSimulating] = useState(false);
+  const [simulationResults, setSimulationResults] = useState(null);
+  const [simScenario, setSimScenario] = useState('peak_demand');
+  const [isFinetuning, setIsFinetuning] = useState(false);
+  const [finetuneProgress, setFinetuneProgress] = useState(0);
+  const [finetuneConfig, setFinetuneConfig] = useState({ lr: '0.0001', steps: '500', rank: '16', method: 'lora' });
   const [systemLog, setSystemLog] = useState([
     '[HARBOR] Fleet AI Trainer initialized',
     '[SYS] Model registry loaded — 2 models active',
