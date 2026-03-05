@@ -213,9 +213,8 @@ Respond in natural language using markdown formatting.
 Be concise, actionable, and structured with headers/bullets where appropriate.`;
     }
 
+    // Keep system prompt lean — identity + format directive only
     const systemPrompt = HARBOR_IDENTITY
-      + knowledgeBase
-      + platformContext
       + formatDirective
       + (user ? `\n\nOPERATOR: ${user.full_name || user.email} (${user.role || 'user'})` : '')
       + `\n\nCURRENT TIME: ${new Date().toISOString()}`;
@@ -223,8 +222,27 @@ Be concise, actionable, and structured with headers/bullets where appropriate.`;
     // ─── 4. BUILD MESSAGES ────────────────────────────────────────────────────
     const historyMessages = (conversation_history || [])
       .filter(m => (m.role === 'user' || m.role === 'assistant') && m.content)
-      .slice(-16)
+      .slice(-10)
       .map(m => ({ role: m.role, content: m.content }));
+
+    // Inject knowledge base + platform context as early assistant "knowledge" messages
+    // This splits the payload across multiple messages instead of one huge system prompt
+    const contextMessages = [];
+    if (knowledgeBase) {
+      // Split knowledge base into chunks of ~6000 chars to avoid token limit issues
+      const KB_CHUNK = 6000;
+      for (let i = 0; i < knowledgeBase.length; i += KB_CHUNK) {
+        contextMessages.push({
+          role: 'user',
+          content: `[HARBOR KNOWLEDGE BASE — part ${Math.floor(i/KB_CHUNK)+1}]\n${knowledgeBase.slice(i, i + KB_CHUNK)}`
+        });
+        contextMessages.push({ role: 'assistant', content: 'Knowledge base chunk received and loaded.' });
+      }
+    }
+    if (platformContext) {
+      contextMessages.push({ role: 'user', content: platformContext });
+      contextMessages.push({ role: 'assistant', content: 'Platform context loaded.' });
+    }
 
     // ─── 5. HANDLE FILE ATTACHMENTS ───────────────────────────────────────────
     let userContent = prompt;
