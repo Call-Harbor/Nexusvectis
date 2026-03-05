@@ -173,7 +173,7 @@ export default function FleetAITrainer({ onClose }) {
     }
   };
 
-  const saveModel = () => {
+  const saveModel = async () => {
     const snapshot = {
       ...selectedModel,
       savedAt: new Date().toISOString(),
@@ -183,6 +183,24 @@ export default function FleetAITrainer({ onClose }) {
     setSavedModels(prev => [...prev, snapshot]);
     setSaveSuccess(true);
     setSystemLog(prev => [...prev, `[SAVE] Model snapshot saved: ${snapshot.snapshot_id}`, `[PERF] Accuracy locked at ${snapshot.accuracy}%`]);
+
+    // Persist to database
+    try {
+      const user = await base44.auth.me();
+      await base44.entities.FleetAIModel.create({
+        organization_id: user?.organization_id || user?.id || 'default',
+        name: snapshot.name,
+        snapshot_id: snapshot.snapshot_id,
+        accuracy: parseFloat(snapshot.accuracy),
+        version: snapshot.version || '1.0',
+        status: 'active',
+        training_data_count: trainingData.length,
+      });
+      setSystemLog(prev => [...prev, `[DB] Model persisted — ID: ${snapshot.snapshot_id}`]);
+    } catch (e) {
+      setSystemLog(prev => [...prev, `[WARN] DB save failed: ${e.message}`]);
+    }
+
     setTimeout(() => setSaveSuccess(false), 2000);
   };
 
