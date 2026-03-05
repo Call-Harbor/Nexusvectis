@@ -131,16 +131,24 @@ export default function FleetAITrainer({ onClose }) {
     }, 1000);
   };
 
-  const generateAPIKey = () => {
-    const newKey = {
-      id: apiKeys.length + 1,
-      key: `fai_prod_${Math.random().toString(36).substring(2, 15)}`,
-      created: new Date().toLocaleDateString('da-DK'),
-      lastUsed: '-',
-      calls: 0,
-    };
-    setApiKeys([...apiKeys, newKey]);
-    setSystemLog(prev => [...prev, `[API] New key generated: ${newKey.key.slice(0,16)}...`]);
+  const generateAPIKey = async () => {
+    try {
+      const response = await base44.functions.invoke('generateAPIKey', { name: `HARBOR Key ${apiKeys.length + 1}` });
+      const data = response.data;
+      const newKey = {
+        id: data.key_id,
+        key: data.api_key, // Full key shown once
+        prefix: data.key_prefix,
+        created: new Date().toLocaleDateString('da-DK'),
+        lastUsed: '-',
+        calls: 0,
+        showFull: true, // Show full key only this once
+      };
+      setApiKeys(prev => [...prev, newKey]);
+      setSystemLog(prev => [...prev, `[API] New key generated: ${data.key_prefix}...`, '[WARN] Save this key now — it will not be shown again']);
+    } catch (e) {
+      setSystemLog(prev => [...prev, `[ERROR] Key generation failed: ${e.message}`]);
+    }
   };
 
   const createNewModel = () => {
