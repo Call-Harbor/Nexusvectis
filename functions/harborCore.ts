@@ -194,9 +194,48 @@ ${context ? `\nAdditional context: ${JSON.stringify(context)}` : ''}`;
     }
 
     // ─── 3. BUILD SYSTEM PROMPT ───────────────────────────────────────────────
+
+    // Determine output format instructions based on mode / response_schema
+    let formatDirective = '';
+    if (response_schema) {
+      formatDirective = `\n\n═══════════════════════════════════════════════════
+OUTPUT FORMAT DIRECTIVE — SCHEMA MODE
+═══════════════════════════════════════════════════
+You MUST return valid JSON that strictly matches this schema:
+${JSON.stringify(response_schema, null, 2)}
+Do NOT include any text, markdown, or explanation outside the JSON object.`;
+    } else if (mode === 'command') {
+      formatDirective = `\n\n═══════════════════════════════════════════════════
+OUTPUT FORMAT DIRECTIVE — COMMAND MODE (IntellectMode)
+═══════════════════════════════════════════════════
+You MUST return a single valid JSON object with this exact structure:
+{
+  "action": "ACTION_NAME",       // One of: ANSWER, OPEN_WINDOW, CREATE_DOCUMENT, CREATE_SPREADSHEET, SHOW_ANALYSIS, SHOW_3D, OPEN_NEXUS_CHAT
+  "parameters": {},              // Action-specific parameters
+  "message": "string",          // User-facing message in the SAME LANGUAGE as the user's command
+  "open_window": "string|null"   // Window type if action=OPEN_WINDOW, otherwise null
+}
+Do NOT include any text, markdown, or explanation outside the JSON object.
+If you are uncertain about the action, use action: "ANSWER" with your response in "message".`;
+    } else if (mode === 'inference') {
+      formatDirective = `\n\n═══════════════════════════════════════════════════
+OUTPUT FORMAT DIRECTIVE — INFERENCE MODE
+═══════════════════════════════════════════════════
+Return a concise, structured JSON object with your analysis results.
+Keys should be descriptive and values should be precise.
+Do NOT include any text outside the JSON object.`;
+    } else if (mode === 'chat') {
+      formatDirective = `\n\n═══════════════════════════════════════════════════
+OUTPUT FORMAT DIRECTIVE — CHAT MODE
+═══════════════════════════════════════════════════
+Respond in natural language using markdown formatting.
+Be concise, actionable, and structured with headers/bullets where appropriate.`;
+    }
+
     const systemPrompt = HARBOR_IDENTITY
       + knowledgeBase
       + platformContext
+      + formatDirective
       + (user ? `\n\nOPERATOR: ${user.full_name || user.email} (${user.role || 'user'})` : '')
       + `\n\nCURRENT TIME: ${new Date().toISOString()}`;
 
