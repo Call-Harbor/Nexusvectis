@@ -5,6 +5,36 @@ const rateLimitMap = new Map();
 const RATE_LIMIT = 30; // max 30 requests per minute
 const RATE_WINDOW = 60000; // 1 minute
 
+// Convert a JSON object into a readable markdown string
+function jsonToMarkdown(obj, depth = 0) {
+  if (typeof obj === 'string') return obj;
+  if (typeof obj !== 'object' || obj === null) return String(obj);
+
+  let md = '';
+  const indent = '  '.repeat(depth);
+
+  if (Array.isArray(obj)) {
+    for (const item of obj) {
+      if (typeof item === 'object' && item !== null) {
+        md += `\n${indent}- ${jsonToMarkdown(item, depth + 1).trim()}`;
+      } else {
+        md += `\n${indent}- ${item}`;
+      }
+    }
+    return md;
+  }
+
+  for (const [key, value] of Object.entries(obj)) {
+    const label = key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    if (typeof value === 'object' && value !== null) {
+      md += `\n${indent}**${label}:**${jsonToMarkdown(value, depth + 1)}`;
+    } else {
+      md += `\n${indent}**${label}:** ${value}`;
+    }
+  }
+  return md.trim();
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
