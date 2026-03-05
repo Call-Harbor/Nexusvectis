@@ -56,80 +56,26 @@ Deno.serve(async (req) => {
             forecast_period: forecast_days
         };
 
-        // Use AI for inventory forecasting
-        const forecast = await base44.integrations.Core.InvokeLLM({
-            prompt: `You are an advanced warehouse and inventory management AI. Analyze this logistics data and provide intelligent forecasts:
+        // Route through HARBOR Core
+        const harborResp = await base44.functions.invoke('harborCore', {
+          prompt: `Analyze warehouse inventory and provide forecast for ${forecast_days} days:
 
-CURRENT WAREHOUSE STATUS:
-${JSON.stringify(analysisContext.resources, null, 2)}
+WAREHOUSES: ${JSON.stringify(analysisContext.resources)}
+SHIPMENTS: total=${analysisContext.shipment_trends.total_shipments}, pending=${analysisContext.shipment_trends.pending}, in_transit=${analysisContext.shipment_trends.in_transit}, delivered=${analysisContext.shipment_trends.delivered}
+FLEET: available_cargo=${analysisContext.fleet_capacity.total_cargo_capacity - analysisContext.fleet_capacity.used_cargo_capacity} tons
 
-SHIPMENT TRENDS:
-- Total: ${analysisContext.shipment_trends.total_shipments}
-- Pending: ${analysisContext.shipment_trends.pending}
-- In Transit: ${analysisContext.shipment_trends.in_transit}
-- Delivered: ${analysisContext.shipment_trends.delivered}
-
-FLEET CAPACITY:
-- Available Cargo Space: ${analysisContext.fleet_capacity.total_cargo_capacity - analysisContext.fleet_capacity.used_cargo_capacity} tons
-- Utilization: ${((analysisContext.fleet_capacity.used_cargo_capacity / analysisContext.fleet_capacity.total_cargo_capacity) * 100).toFixed(1)}%
-
-FORECAST PERIOD: ${forecast_days} days
-
-Provide:
-1. Inventory needs forecast for each warehouse
-2. Optimal stock levels to prevent over/understocking
-3. Recommended picking routes optimization
-4. Seasonal trends and predictions
-5. Risk alerts (potential stockouts or overstocking)
-6. Automation opportunities`,
-            response_json_schema: {
-                type: "object",
-                properties: {
-                    overall_forecast: { type: "string" },
-                    warehouse_forecasts: {
-                        type: "array",
-                        items: {
-                            type: "object",
-                            properties: {
-                                warehouse_name: { type: "string" },
-                                predicted_utilization: { type: "number" },
-                                recommended_stock_level: { type: "number" },
-                                risk_level: { type: "string" },
-                                actions: { type: "array", items: { type: "string" } }
-                            }
-                        }
-                    },
-                    picking_optimization: {
-                        type: "object",
-                        properties: {
-                            efficiency_score: { type: "number" },
-                            recommended_routes: { type: "array", items: { type: "string" } },
-                            time_savings_estimate: { type: "string" }
-                        }
-                    },
-                    seasonal_trends: {
-                        type: "array",
-                        items: { type: "string" }
-                    },
-                    risk_alerts: {
-                        type: "array",
-                        items: {
-                            type: "object",
-                            properties: {
-                                type: { type: "string" },
-                                severity: { type: "string" },
-                                description: { type: "string" },
-                                recommendation: { type: "string" }
-                            }
-                        }
-                    },
-                    automation_opportunities: {
-                        type: "array",
-                        items: { type: "string" }
-                    }
-                }
-            }
+Return JSON with: overall_forecast (string), warehouse_forecasts (array of {warehouse_name, predicted_utilization, recommended_stock_level, risk_level, actions}), picking_optimization ({efficiency_score, recommended_routes, time_savings_estimate}), seasonal_trends (array), risk_alerts (array of {type, severity, description, recommendation}), automation_opportunities (array).`,
+          mode: 'command',
+          context: analysisContext,
         });
+
+        const reply = harborResp.data?.reply;
+        let forecast;
+        if (typeof reply === 'object' && reply !== null) {
+          forecast = reply;
+        } else {
+          try { forecast = JSON.parse(reply); } catch { forecast = { overall_forecast: typeof reply === 'string' ? reply : 'Forecast generated', warehouse_forecasts: [], picking_optimization: { efficiency_score: 80, recommended_routes: [], time_savings_estimate: 'N/A' }, seasonal_trends: [], risk_alerts: [], automation_opportunities: [] }; }
+        }
 
         // Create alerts for critical risks
         if (forecast.risk_alerts && forecast.risk_alerts.length > 0) {

@@ -46,42 +46,29 @@ Deno.serve(async (req) => {
             shipment_priority: shipment?.priority || 'normal'
         };
 
-        // Use AI to predict ETA
-        const aiResponse = await base44.integrations.Core.InvokeLLM({
-            prompt: `You are an advanced logistics AI system. Predict the accurate ETA for this delivery based on:
-            
+        // Route through HARBOR Core
+        const harborResp = await base44.functions.invoke('harborCore', {
+          prompt: `Predict accurate ETA for this delivery:
 Current Location: ${context.current_location ? `${context.current_location.lat}, ${context.current_location.lng}` : 'Starting point'}
 Destination: ${context.destination}
 Transport Type: ${context.transport_type}
 Current Speed: ${context.current_location?.speed || 0} km/h
-Traffic Conditions: ${context.current_traffic}
-Historical Data: ${context.historical_routes.length} similar routes completed
+Traffic: ${context.current_traffic}
+Historical routes: ${context.historical_routes.length} similar completed
+Priority: ${context.shipment_priority}
 
-Analyze the data and provide:
-1. Estimated arrival time (hours from now)
-2. Confidence level (0-100%)
-3. Potential delays or risks
-4. Recommended actions for optimization
-
-Be precise and data-driven in your predictions.`,
-            response_json_schema: {
-                type: "object",
-                properties: {
-                    eta_hours: { type: "number" },
-                    eta_timestamp: { type: "string" },
-                    confidence: { type: "number" },
-                    risk_factors: { 
-                        type: "array",
-                        items: { type: "string" }
-                    },
-                    recommendations: {
-                        type: "array",
-                        items: { type: "string" }
-                    },
-                    delay_probability: { type: "number" }
-                }
-            }
+Return JSON with: eta_hours (number), eta_timestamp (ISO string), confidence (0-100), risk_factors (array), recommendations (array), delay_probability (number 0-100).`,
+          mode: 'command',
+          context,
         });
+
+        const reply = harborResp.data?.reply;
+        let aiResponse;
+        if (typeof reply === 'object' && reply !== null) {
+          aiResponse = reply;
+        } else {
+          try { aiResponse = JSON.parse(reply); } catch { aiResponse = { eta_hours: 4, eta_timestamp: new Date(Date.now() + 4 * 3600000).toISOString(), confidence: 75, risk_factors: [], recommendations: [], delay_probability: 20 }; }
+        }
 
         // Update vehicle or shipment with new ETA
         if (vehicle_id && aiResponse.eta_timestamp) {

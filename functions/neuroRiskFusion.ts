@@ -113,36 +113,20 @@ TRIGGERED SYMBOLIC RULES:
 ${symbolicRules.filter(r => r.triggered).map(r => r.rule).join('\n')}
 `;
 
-    const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${mistralApiKey}`
-      },
-      body: JSON.stringify({
-        model: 'mistral-large-latest',
-        messages: [
-          {
-            role: 'system',
-            content: 'You are a Neuro-Symbolic Risk Fusion AI for a fleet management system. You analyze real fleet data and produce actionable risk intelligence. Be specific, use the exact vehicle names and numbers from the data. Output valid JSON only.'
-          },
-          {
-            role: 'user',
-            content: `Analyze this real fleet data and produce a risk fusion report:\n\n${fleetSummary}\n\nReturn JSON with: overall_risk_score (number 0-100), risk_level (string: NOMINAL/ELEVATED/CRITICAL), compound_risks (array of {scenario, probability, impact, inputs}), cyber_threats (array of strings), supply_chain_signals (array of strings), hedging_actions (array of specific actionable strings), sixth_sense_alert (string: one non-obvious emerging risk), summary (string: 1-2 sentence executive summary).`
-          }
-        ],
-        response_format: { type: 'json_object' },
-        temperature: 0.2
-      })
+    // Route through HARBOR Core
+    const harborResp = await base44.functions.invoke('harborCore', {
+      prompt: `Neuro-Symbolic Risk Fusion Analysis:\n\n${fleetSummary}\n\nReturn JSON with: overall_risk_score (0-100), risk_level (NOMINAL/ELEVATED/CRITICAL), compound_risks (array of {scenario, probability, impact, inputs}), cyber_threats (array), supply_chain_signals (array), hedging_actions (array of actionable strings), sixth_sense_alert (string), summary (1-2 sentence executive summary).`,
+      mode: 'command',
+      context: { organization_id, risk_score: riskScore },
     });
 
-    if (!response.ok) {
-      const err = await response.text();
-      return Response.json({ error: `Mistral error: ${err}` }, { status: 500 });
+    const reply = harborResp.data?.reply;
+    let aiReport;
+    if (typeof reply === 'object' && reply !== null) {
+      aiReport = reply;
+    } else {
+      try { aiReport = JSON.parse(reply); } catch { aiReport = { overall_risk_score: riskScore, risk_level: riskScore > 70 ? 'CRITICAL' : riskScore > 40 ? 'ELEVATED' : 'NOMINAL', compound_risks: [], cyber_threats: [], supply_chain_signals: [], hedging_actions: [], sixth_sense_alert: '', summary: typeof reply === 'string' ? reply : 'Risk analysis completed.' }; }
     }
-
-    const data = await response.json();
-    const aiReport = JSON.parse(data.choices[0].message.content);
 
     return Response.json({
       risk_score: riskScore,

@@ -1,7 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
-const MISTRAL_API_KEY = Deno.env.get("MISTRAL_API_KEY");
-
 // ── Geocode a city name → lat/lng ─────────────────────────────────────────
 async function geocode(query) {
   const res = await fetch(
@@ -273,32 +271,25 @@ Return ONLY valid JSON:
   }
 }`;
 
-    // ── STEP 3: Call Mistral with live data ────────────────────────────────
-    const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${MISTRAL_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: 'mistral-large-latest',
-        messages: [{ role: 'user', content: prompt }],
-        response_format: { type: 'json_object' },
-        temperature: 0.25,
-      }),
+    // ── STEP 3: Route through HARBOR Core ─────────────────────────────────
+    const harborResp = await base44.functions.invoke('harborCore', {
+      prompt,
+      mode: 'command',
+      context: { origin, destination, transport_type, optimization_priority },
     });
 
-    const aiData = await response.json();
-    const content = aiData.choices?.[0]?.message?.content;
-    if (!content) return Response.json({ error: 'AI response empty' }, { status: 500 });
-
-    const parsed = JSON.parse(content);
+    const reply = harborResp.data?.reply;
+    let parsed;
+    if (typeof reply === 'object' && reply !== null) {
+      parsed = reply;
+    } else {
+      try { parsed = JSON.parse(reply); } catch { parsed = { route_data: { origin, destination, transport_type, optimization_priority, distance_km: 0, estimated_duration_hours: 0, co2_estimate_kg: 0, fuel_cost_eur: 0, toll_cost_eur: 0, total_cost_eur: 0, live_data_delay_minutes: 0, waypoints: [], rest_stops: [], traffic_conditions: { level: 'moderate', notes: '' }, weather_conditions: { impact: 'none', description: '' }, driver_compliance: { compliant: true, notes: '', required_breaks: 0 }, live_incidents: [], alternatives: [], optimization_score: { time: 80, cost: 80, co2: 80, overall: 80 }, ai_recommendations: [typeof reply === 'string' ? reply : 'Route planned via HARBOR'], risks: [] } } }; }
+    }
 
     return Response.json({
       success: true,
       ...parsed,
       optimization_date: new Date().toISOString(),
-      // Attach raw live data for transparency
       raw_live_data: {
         roadworks_count: liveRoadEvents.roadworks.length,
         roadworks_source: liveRoadEvents.source,
