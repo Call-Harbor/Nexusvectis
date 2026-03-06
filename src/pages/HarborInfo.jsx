@@ -21,6 +21,13 @@ const ACRONYM = [
   { letter: "R", word: "Regulator", color: "text-rose-400", shadow: "0 0 40px #fb7185" },
 ];
 
+const HERO_STATS = [
+  { value: "49", label: "PARALLEL ANALYSES", sub: "fired per command", color: "text-amber-400" },
+  { value: "128K", label: "TOKEN CONTEXT", sub: "per single query", color: "text-cyan-400" },
+  { value: "15+", label: "ENTITY ACTIONS", sub: "fully autonomous", color: "text-violet-400" },
+  { value: "6", label: "REASONING STEPS", sub: "every response", color: "text-emerald-400" },
+];
+
 const ARCHITECTURE_STEPS = [
   { step: "01", title: "Parse", color: "text-cyan-400", border: "border-cyan-500/30", bg: "bg-cyan-500/5", desc: "Decode the actual request beneath the stated question", detail: "HARBOR's NLP pipeline distinguishes intent layers: explicit request, implicit need, unstated constraint. It identifies whether the user needs an answer, an action, a visualization, or an escalation — before any reasoning begins." },
   { step: "02", title: "Knowledge Sweep", color: "text-violet-400", border: "border-violet-500/30", bg: "bg-violet-500/5", desc: "Query the HARBOR training corpus and domain expertise", detail: "Traverses the full HARBOR knowledge base — organization-specific training data, regulatory libraries, benchmark databases, and embedded domain expertise across maritime, aviation, road, rail, and supply chain verticals." },
