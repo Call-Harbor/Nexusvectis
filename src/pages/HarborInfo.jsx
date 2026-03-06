@@ -190,6 +190,39 @@ export default function HarborInfo() {
     <div className="min-h-screen text-white overflow-auto"
       style={{ background: '#020810' }}>
 
+      {/* Homepage-style Header */}
+      <motion.header
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        className="fixed top-0 left-0 right-0 z-50 bg-black/20 backdrop-blur-2xl border-b border-white/5"
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-5 flex items-center justify-between">
+          <Link to={createPageUrl("Home")}>
+            <motion.img
+              whileHover={{ scale: 1.05 }}
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/697e930c62bf3e3832b34edb/bc9d40ccc_FullLogo_Transparent1.png"
+              alt="NexusVectis Logo"
+              className="h-12 sm:h-20 w-auto"
+            />
+          </Link>
+          <div className="flex items-center gap-2 sm:gap-4">
+            <button
+              onClick={() => base44.auth.redirectToLogin(createPageUrl("Dashboard"))}
+              className="text-white hover:bg-white/10 px-3 sm:px-4 py-2 rounded-lg transition-colors text-sm sm:text-base"
+            >
+              Log In
+            </button>
+            <button
+              onClick={() => base44.auth.redirectToLogin(createPageUrl("Dashboard"))}
+              className="bg-gradient-to-r from-cyan-500 to-violet-500 text-white px-4 sm:px-6 py-2 rounded-lg transition-transform hover:scale-105 flex items-center gap-2 text-sm sm:text-base"
+            >
+              Get Started
+              <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4" />
+            </button>
+          </div>
+        </div>
+      </motion.header>
+
       {/* Background grid — same as FleetAITrainer */}
       <div className="fixed inset-0 bg-[linear-gradient(rgba(245,158,11,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(245,158,11,0.02)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none z-0" />
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
