@@ -1032,7 +1032,7 @@ export default function FleetAITrainer({ onClose }) {
                         ))
                       )}
                     </div>
-                    <p className="text-[9px] font-mono text-slate-600 mt-2">⚠ FAQ entries (Q: / A: format) are converted to training examples. Min 8 examples required.</p>
+                    <p className="text-[9px] font-mono text-slate-600 mt-2">⚠ FAQ entries (Q: / A: format) are converted to training examples. Min 8 required. Each example is auto-prepended with HARBOR's full system prompt so the fine-tuned model inherits HARBOR's identity, reasoning architecture, and response standards.</p>
                   </div>
                 </div>
 
