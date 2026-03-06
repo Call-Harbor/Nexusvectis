@@ -56,10 +56,30 @@ const DOMAIN_DEEP = [
 ];
 
 const USE_CASES = [
-  { title: "Deep Fleet Analysis", query: `"Analyser mine lavest-ydende køretøjer"`, response: "HARBOR triggers runDeepAnalysis(): calls InvokeLLM with 400+ word structured prompt, generates 16-22 data points, opens an AdvancedFleetAnalysisHologram window with 5 tabs (Overview, Performance, Anomalies, Costs, Actions), radar charts, scatter plots, cost breakdowns, risk matrices and EUR-quantified action plans.", icon: BarChart3, color: "text-cyan-400" },
-  { title: "Create Route (AI-Executed)", query: `"Opret en rute fra København til Hamburg"`, response: "HARBOR parses intent → action: CREATE_ROUTE. Calls planRoute backend function for waypoints, distance and CO2 estimate. Creates a Route entity with ai_optimized: true. Invalidates the routes query cache. Optionally opens a route visualization window — all without user touching any form.", icon: Route, color: "text-emerald-400" },
-  { title: "HARBOR Trainer Knowledge Injection", query: `User uploads FAQ file in FleetAITrainer`, response: "File is uploaded via UploadFile integration. Data is stored as training_data on a FleetAIModel entity. On next HARBOR query, harborCore fetches the active FleetAIModel, splits the knowledge base into 6K-char chunks, and injects them as alternating user/assistant messages before the actual query.", icon: FlaskConical, color: "text-amber-400" },
-  { title: "API Inference (External Developer)", query: `POST /functions/harborModelInference { model_id: "snap_xyz", input: {...} }`, response: "harborModelInference validates Bearer key via SHA-256 hash, verifies model belongs to org, routes to harborCore in 'inference' mode, logs response time to APIUsage, and returns { status, model, result: { prediction, confidence, recommended_actions, anomalies } }.", icon: Server, color: "text-violet-400" },
+  { 
+    title: "Deep Fleet Analysis", 
+    query: `"Analyser mine lavest-ydende køretøjer og find den skjulte årsag"`, 
+    response: "HARBOR calls runDeepAnalysis() — a 400+ word structured prompt that generates 22 data points across every vehicle. An AdvancedFleetAnalysisHologram window opens with 5 tabs: Overview (fleet health score), Performance (radar + scatter charts), Anomalies (root cause traces), Costs (EUR breakdown per vehicle), Actions (prioritized interventions with ROI). Every recommendation is quantified. The lowest-performing vehicle gets a full causal chain: not 'Truck-4 is slow' but 'Truck-4 loses 18% efficiency due to suboptimal tire pressure × driver behavior score 64 × depot exit window mismatch — combined EUR impact: €2,340/month.'", 
+    icon: BarChart3, color: "text-cyan-400" 
+  },
+  { 
+    title: "Route Creation — Zero Form-Filling", 
+    query: `"Opret en prioriteret rute fra København til Hamburg til mandag morgen"`, 
+    response: "HARBOR parses intent → action: CREATE_ROUTE, priority: high, departure: Monday. Calls planRoute() to calculate waypoints, distance (306 km), estimated duration (3.8h), CO2 footprint (183 kg). Creates a Route entity with ai_optimized: true, priority: high, status: planned. Invalidates route cache. Opens optional 3D map window showing the route with waypoints rendered. Total time from command to created route: under 4 seconds. The operator touched zero forms.", 
+    icon: Route, color: "text-emerald-400" 
+  },
+  { 
+    title: "Knowledge Injection via HARBOR Trainer", 
+    query: `Operator uploads company SOP and rate table as FAQ in FleetAITrainer`, 
+    response: "Document is uploaded via UploadFile integration and stored as training_data on a FleetAIModel entity with a snapshot ID. From that moment forward, every HARBOR query for that organization automatically receives the injected knowledge as 6K-char context chunks, inserted as alternating user/assistant turns before the actual query. HARBOR now knows your specific rate agreements, your operational procedures, and your naming conventions — permanently, without any re-training cycle.", 
+    icon: FlaskConical, color: "text-amber-400" 
+  },
+  { 
+    title: "External API Inference", 
+    query: `POST /functions/harborModelInference\n{ "model_id": "snap_abc123", "input": { "vehicle_id": "V-042", "context": {...} } }`, 
+    response: "harborModelInference validates the Bearer token via SHA-256 hash comparison, verifies the FleetAIModel snapshot belongs to the requesting organization, routes the inference payload to harborCore in 'inference' mode, logs response time + status to APIUsage, and returns: { status: 'success', model: 'snap_abc123', result: { prediction: '...', confidence: 0.91, recommended_actions: [...], anomalies: [...], risk_score: 74 } }. Every call is metered and billed.", 
+    icon: Server, color: "text-violet-400" 
+  },
 ];
 
 const PERFORMANCE_SPECS = [
