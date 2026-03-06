@@ -946,9 +946,22 @@ export default function FleetAITrainer({ onClose }) {
           <TabsContent value="finetune" className="flex-1 overflow-auto p-4 space-y-3 mt-0">
 
             {/* Header badge */}
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-[10px] font-mono text-violet-400 tracking-widest border border-violet-500/30 px-2 py-0.5 rounded">MISTRAL FINE-TUNING API</span>
-              <span className="text-[10px] font-mono text-slate-500">Real model training via Mistral La Plateforme</span>
+            <div className="relative rounded-lg border border-violet-500/30 bg-violet-500/5 p-3 overflow-hidden">
+              <CornerBrackets color="cyan" />
+              <div className="flex items-center gap-2 mb-1">
+                <Brain className="w-4 h-4 text-violet-400" />
+                <span className="text-xs font-mono text-violet-300 font-bold tracking-widest">H.A.R.B.O.R. FINE-TUNING</span>
+              </div>
+              <p className="text-[10px] font-mono text-slate-400">
+                Fine-tunes Mistral <span className="text-violet-300 font-bold">together with the full HARBOR Core identity</span> — every training example is automatically prepended with HARBOR's system prompt, cognitive architecture, and response standards. The result is a fine-tuned model that IS HARBOR, not just Mistral.
+              </p>
+              <div className="flex items-center gap-3 mt-2 text-[9px] font-mono text-slate-500">
+                <span className="text-amber-400">① HARBOR system prompt injected into all examples</span>
+                <span>→</span>
+                <span className="text-violet-400">② Mistral fine-tunes on HARBOR-flavored JSONL</span>
+                <span>→</span>
+                <span className="text-emerald-400">③ Result: HARBOR-tuned model</span>
+              </div>
             </div>
 
             {/* Error banner */}
