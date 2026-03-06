@@ -422,14 +422,14 @@ export default function HarborInfo() {
             <h3 className="text-white font-bold text-lg mb-4">Response Standards</h3>
             <div className="space-y-3">
               {[
-                "Immediate action — within 24h",
-                "Medium-term — 1–4 weeks",
-                "Strategic implications — 1–6 months",
-                "Confidence % on all predictions",
-                "EUR-quantified cost/saving claims",
-                "Best Case / Most Likely / Worst Case",
-                "Causal reasoning, not correlation",
-                "Proactive: flags unsolicited critical risks",
+                "command mode: JSON with action, parameters, message, open_window",
+                "chat mode: markdown with headers and bullets",
+                "inference mode: structured JSON result object",
+                "Self-healing: extracts JSON from code blocks if parse fails",
+                "Fallback: wraps plain text in correct format per mode",
+                "Max tokens: 2500 (chat/command), 1000 (inference)",
+                "Temperature: 0.3 (command), 0.4 (chat/inference)",
+                "JSON mode enforced when mode=command or response_schema set",
               ].map((s, i) => (
                 <div key={i} className="flex items-center gap-2">
                   <div className="w-4 h-4 rounded-full border border-emerald-500/40 bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
