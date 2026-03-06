@@ -15,13 +15,27 @@ export default function Contact() {
     window.scrollTo(0, 0);
   }, []);
 
+  const getEmailBySubject = (subject) => {
+    const emailMap = {
+      general: "ai@harborvision.dev",
+      enterprise: "enterprise@harborvision.dev",
+      partnership: "sales@harborvision.dev",
+      support: "support@harborvision.dev"
+    };
+    return emailMap[subject] || "ai@harborvision.dev";
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
 
     try {
-      const response = await base44.functions.invoke('sendContactMessage', formData);
+      const dataToSend = {
+        ...formData,
+        recipientEmail: getEmailBySubject(formData.subject)
+      };
+      const response = await base44.functions.invoke('sendContactMessage', dataToSend);
       if (response.data.success) {
         setSubmitted(true);
         setFormData({ name: "", email: "", company: "", message: "", subject: "general" });
