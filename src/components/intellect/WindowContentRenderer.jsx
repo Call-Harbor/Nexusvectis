@@ -371,11 +371,19 @@ export default function WindowContentRenderer({ type, data, vehicles, routes, sh
   if (type === 'spreadsheet_editor') return <AISpreadsheetEditor initialGrid={data?.initialGrid} initialTitle={data?.initialTitle} initialFileUrl={data?.initialFileUrl} orgId={orgId} onSaved={onSaved} />;
 
   if (type.startsWith('chart_')) {
-    // Use AdvancedFleetAnalysisHologram for detailed analysis results with recommendations
-    if (data?.chartConfig?.recommendations && Object.keys(data.chartConfig.recommendations).length > 0) {
-      return <AdvancedFleetAnalysisHologram data={data?.chartConfig} />;
+    // Always use AdvancedFleetAnalysisHologram — it handles all analysis types generically
+    const cfg = data?.chartConfig;
+    const hasRichData = cfg && (
+      cfg.recommendations || cfg.findings || cfg.insights?.length > 0 ||
+      cfg.advanced_metrics?.length > 0 || cfg.forecasts?.length > 0 ||
+      cfg.risks?.length > 0 || cfg.correlations?.length > 0 ||
+      cfg.summary || cfg.technical_details ||
+      (data?.chartData && data.chartData.length > 0)
+    );
+    if (hasRichData) {
+      return <AdvancedFleetAnalysisHologram data={cfg} chartData={data?.chartData} />;
     }
-    return <ChartWindow data={data?.chartData} config={data?.chartConfig} />;
+    return <ChartWindow data={data?.chartData} config={cfg} />;
   }
 
   if (type === 'swarm_intelligence') return <SwarmIntelligencePanel vehicles={vehicles} routes={routes} onCommand={setInput} />;
