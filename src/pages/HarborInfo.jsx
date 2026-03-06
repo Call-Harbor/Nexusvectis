@@ -231,13 +231,25 @@ export default function HarborInfo() {
               ))}
             </motion.div>
 
-            <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }} className="text-center text-slate-300 text-xl max-w-3xl mx-auto mb-4 leading-relaxed">
-              The central artificial intelligence powering every layer of the NexusVectis platform.
-              Not a chatbot — a <strong className="text-white">sovereign logistics superintelligence</strong>.
+            <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }} className="text-center text-slate-200 text-2xl max-w-3xl mx-auto mb-4 leading-relaxed font-light">
+              The central artificial intelligence powering every layer of NexusVectis.<br/>
+              Not a chatbot. Not a copilot. A <strong className="text-white font-black">sovereign logistics superintelligence</strong>.
             </motion.p>
-            <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }} className="text-center text-slate-500 text-base max-w-2xl mx-auto mb-10 leading-relaxed font-mono text-xs tracking-wide">
-              HARBOR is not an add-on. It is the reasoning engine underneath IntellectMode, Fleet AI API, the HARBOR Trainer, all analytics dashboards, autonomous exception handling, and every predictive model in the platform.
+            <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.75 }} className="text-center text-slate-400 text-sm max-w-2xl mx-auto mb-6 leading-relaxed">
+              HARBOR is the reasoning engine underneath every NexusVectis module. It does not assist operators — it <em className="text-amber-400 not-italic font-semibold">thinks alongside them</em>, executes actions autonomously, surfaces consequences before they materialize, and gets smarter with every piece of knowledge your organization injects.
             </motion.p>
+
+            {/* Hero stats row */}
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.82 }} className="flex justify-center gap-6 flex-wrap mb-10">
+              {HERO_STATS.map((s, i) => (
+                <div key={i} className="relative text-center px-5 py-3 rounded border border-amber-500/20 bg-black/40 overflow-hidden min-w-[110px]">
+                  <CornerBrackets color="amber" />
+                  <p className={`text-2xl font-black font-mono ${s.color}`}>{s.value}</p>
+                  <p className="text-white text-[9px] font-mono tracking-widest uppercase mt-0.5">{s.label}</p>
+                  <p className="text-slate-600 text-[9px] font-mono">{s.sub}</p>
+                </div>
+              ))}
+            </motion.div>
 
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.9 }} className="flex justify-center gap-4 flex-wrap">
               <Link to={createPageUrl("IntellectMode")}
