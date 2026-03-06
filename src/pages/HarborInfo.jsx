@@ -301,11 +301,12 @@ export default function HarborInfo() {
         {/* Platform Integrations */}
         <section className="max-w-6xl mx-auto px-6 py-8">
           <div className="mb-10">
-            <div className="flex items-center gap-3 mb-3">
+            <div className="flex items-center gap-3 mb-2">
               <Network className="w-6 h-6 text-cyan-400" />
               <h2 className="text-4xl font-black font-mono tracking-widest uppercase" style={{ color: '#06b6d4', textShadow: '0 0 30px rgba(6,182,212,0.3)' }}>PLATFORM INTEGRATIONS</h2>
             </div>
-            <p className="text-slate-400 text-xs font-mono tracking-wide max-w-2xl">HARBOR is the intelligence backbone connecting all NexusVectis modules. Every system that needs to reason routes through it.</p>
+            <p className="text-slate-300 text-base max-w-3xl mb-1">HARBOR is not a feature — it is the central nervous system of NexusVectis. Six integration surfaces. One reasoning engine behind all of them.</p>
+            <p className="text-slate-500 text-xs font-mono tracking-wide max-w-2xl">Every module that produces intelligence routes through HARBOR. There is no parallel AI — there is only HARBOR.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {INTEGRATIONS.map((item, i) => {
