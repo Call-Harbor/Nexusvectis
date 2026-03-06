@@ -518,7 +518,40 @@ export default function AdvancedFleetAnalysisHologram({ data, chartData: externa
 
           {/* ACTIONS TAB */}
           <TabsContent value="actions" className="p-6 space-y-6">
-            {Object.entries(recommendations).map(([category, actions], catIdx) => {
+            {/* Handle array-style recommendations (from ChartWindow format) */}
+            {Array.isArray(recommendations) && recommendations.length > 0 && (
+              <div className="p-6 rounded-xl border border-emerald-500/30 bg-emerald-500/5">
+                <h3 className="text-white font-bold text-lg mb-4 flex items-center gap-2">
+                  <Zap className="w-5 h-5 text-emerald-400" /> Strategic Actions
+                </h3>
+                <div className="space-y-3">
+                  {recommendations.map((rec, idx) => {
+                    const text = typeof rec === 'string' ? rec : rec?.action || rec?.benefit || '';
+                    const savings = typeof rec === 'object' && rec?.savings_dkk ? rec.savings_dkk : null;
+                    const confidence = typeof rec === 'object' && rec?.confidence ? Math.round(rec.confidence * 100) : null;
+                    const timeframe = typeof rec === 'object' ? rec?.timeframe : null;
+                    return (
+                      <div key={idx} className="p-4 rounded-lg bg-emerald-500/5 border border-emerald-500/25">
+                        <div className="flex gap-3">
+                          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-400 flex items-center justify-center flex-shrink-0 font-bold text-slate-950 text-sm">{idx + 1}</div>
+                          <div>
+                            <p className="text-white font-semibold text-sm mb-1">{text}</p>
+                            <div className="flex flex-wrap gap-2 text-xs">
+                              {savings && <span className="px-2 py-1 rounded-full bg-emerald-500/20 text-emerald-200">💰 {typeof savings === 'number' ? savings.toLocaleString() : savings}</span>}
+                              {timeframe && <span className="px-2 py-1 rounded-full bg-cyan-500/20 text-cyan-200">⏱ {timeframe}</span>}
+                              {confidence && <span className="px-2 py-1 rounded-full bg-violet-500/20 text-violet-200">✓ {confidence}%</span>}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Handle object-style recommendations (tactical/operational/strategic) */}
+            {!Array.isArray(recommendations) && Object.entries(recommendations).map(([category, actions], catIdx) => {
               const categoryConfig = {
                 'tactical_24h': { icon: '🔴', label: 'URGENT - Next 24 Hours', color: 'border-red-500/40 bg-red-500/5' },
                 'operational_1_4_weeks': { icon: '🟠', label: 'Important - 1-4 Weeks', color: 'border-amber-500/40 bg-amber-500/5' },
