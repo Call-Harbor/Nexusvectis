@@ -1,151 +1,243 @@
 import React, { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
   Zap, Route, Database, Cpu, Shield, Globe, Activity, 
   ChevronRight, ArrowRight, Layers, Brain, Satellite,
-  TrendingUp, AlertTriangle, Wrench, BarChart3, Lock, Server
+  TrendingUp, AlertTriangle, Wrench, BarChart3, Lock, Server,
+  Network, Eye, FlaskConical, Workflow, GitBranch, Radar,
+  Package, Users, FileText, MapPin, Wind, DollarSign,
+  ChevronDown, ChevronUp, CheckCircle2, Clock, Target, Gauge
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 
 const ACRONYM = [
-  { letter: "H", word: "Holographic", color: "text-cyan-400" },
-  { letter: "A", word: "Autonomous", color: "text-violet-400" },
-  { letter: "R", word: "Routing", color: "text-emerald-400" },
-  { letter: "B", word: "& Base", color: "text-amber-400" },
-  { letter: "O", word: "Operations", color: "text-orange-400" },
-  { letter: "R", word: "Regulator", color: "text-rose-400" },
-];
-
-const CAPABILITIES = [
-  {
-    icon: Brain,
-    title: "Autonomous Intelligence",
-    description: "HARBOR processes every query through a 6-step cognitive architecture: Parse → Knowledge Sweep → Context Sweep → Causal Reasoning → Synthesis → Proactive Insight. It surfaces problems you didn't know you had.",
-    color: "from-cyan-500/20 to-cyan-500/5",
-    border: "border-cyan-500/30",
-    iconColor: "text-cyan-400",
-  },
-  {
-    icon: Route,
-    title: "Holographic Routing Engine",
-    description: "Real-time multi-modal route optimization across truck, ship, air, and rail. HARBOR calculates 3D route scenarios, factoring in weather, fuel costs, port congestion, customs delays, and EU regulatory windows simultaneously.",
-    color: "from-violet-500/20 to-violet-500/5",
-    border: "border-violet-500/30",
-    iconColor: "text-violet-400",
-  },
-  {
-    icon: Satellite,
-    title: "Base Operations Control",
-    description: "Orchestrates all depot, port, and warehouse operations. Manages resource allocation, vehicle assignments, maintenance scheduling, and driver compliance across your entire base infrastructure — fully autonomously.",
-    color: "from-emerald-500/20 to-emerald-500/5",
-    border: "border-emerald-500/30",
-    iconColor: "text-emerald-400",
-  },
-  {
-    icon: Shield,
-    title: "Regulatory Compliance Engine",
-    description: "Monitors and enforces EU regulations in real time: EC 561/2006 drivers hours, ADR hazmat, cabotage rules, LEZ zones, SOLAS maritime compliance, and IMO 2030/2050 sustainability targets.",
-    color: "from-amber-500/20 to-amber-500/5",
-    border: "border-amber-500/30",
-    iconColor: "text-amber-400",
-  },
-  {
-    icon: TrendingUp,
-    title: "Predictive Analytics",
-    description: "Failure prediction curves, demand decomposition, and 90-day fleet performance forecasting. HARBOR quantifies every insight: Best Case / Most Likely / Worst Case with confidence intervals and EUR-denominated impact.",
-    color: "from-orange-500/20 to-orange-500/5",
-    border: "border-orange-500/30",
-    iconColor: "text-orange-400",
-  },
-  {
-    icon: Layers,
-    title: "Platform Orchestration",
-    description: "HARBOR is the central nervous system of NexusVectis. All AI calls — IntellectMode, Fleet AI API, HARBOR Trainer, analytics engines — route through the same core, ensuring consistent intelligence across every interface.",
-    color: "from-rose-500/20 to-rose-500/5",
-    border: "border-rose-500/30",
-    iconColor: "text-rose-400",
-  },
-];
-
-const EXPERTISE = [
-  { icon: Globe, label: "Maritime", desc: "AIS, SOLAS, CII/EEXI, bunker optimization" },
-  { icon: Zap, label: "Aviation", desc: "IATA, weight & balance, DGR, slot coordination" },
-  { icon: Route, label: "Road", desc: "EU drivers hours, ADR, cabotage, LEZ zones" },
-  { icon: Database, label: "Supply Chain", desc: "Network design, TCO, cold chain, reverse logistics" },
-  { icon: BarChart3, label: "Finance", desc: "Freight rate forecasting, activity-based costing" },
-  { icon: Wrench, label: "Maintenance", desc: "Predictive failure curves, component lifecycle" },
-  { icon: AlertTriangle, label: "Risk", desc: "EMV quantification, probability × impact matrix" },
-  { icon: Lock, label: "Sustainability", desc: "EU ETS, FuelEU Maritime, IMO 2030/2050, CSRD" },
+  { letter: "H", word: "Holographic", color: "text-cyan-400", shadow: "0 0 40px #06b6d4" },
+  { letter: "A", word: "Autonomous", color: "text-violet-400", shadow: "0 0 40px #8b5cf6" },
+  { letter: "R", word: "Routing", color: "text-emerald-400", shadow: "0 0 40px #10b981" },
+  { letter: "B", word: "& Base", color: "text-amber-400", shadow: "0 0 40px #f59e0b" },
+  { letter: "O", word: "Operations", color: "text-orange-400", shadow: "0 0 40px #f97316" },
+  { letter: "R", word: "Regulator", color: "text-rose-400", shadow: "0 0 40px #fb7185" },
 ];
 
 const ARCHITECTURE_STEPS = [
-  { step: "01", title: "Parse", desc: "Decode the actual request beneath the stated question", color: "text-cyan-400" },
-  { step: "02", title: "Knowledge Sweep", desc: "Query the HARBOR training corpus and domain expertise", color: "text-violet-400" },
-  { step: "03", title: "Context Sweep", desc: "Load live fleet, shipment, alert, and route data", color: "text-emerald-400" },
-  { step: "04", title: "Causal Reasoning", desc: "Identify root causes — not symptoms", color: "text-amber-400" },
-  { step: "05", title: "Synthesize", desc: "Model 1st, 2nd, and 3rd order consequences", color: "text-orange-400" },
-  { step: "06", title: "Proact", desc: "Surface critical insights the user didn't ask for", color: "text-rose-400" },
+  { 
+    step: "01", title: "Parse", color: "text-cyan-400", border: "border-cyan-500/30", bg: "bg-cyan-500/5",
+    desc: "Decode the actual request beneath the stated question",
+    detail: "HARBOR's NLP pipeline distinguishes intent layers: explicit request, implicit need, unstated constraint. It identifies whether the user needs an answer, an action, a visualization, or an escalation — before any reasoning begins."
+  },
+  { 
+    step: "02", title: "Knowledge Sweep", color: "text-violet-400", border: "border-violet-500/30", bg: "bg-violet-500/5",
+    desc: "Query the HARBOR training corpus and domain expertise",
+    detail: "Traverses the full HARBOR knowledge base — organization-specific training data, regulatory libraries, benchmark databases, and embedded domain expertise across maritime, aviation, road, rail, and supply chain verticals."
+  },
+  { 
+    step: "03", title: "Context Sweep", color: "text-emerald-400", border: "border-emerald-500/30", bg: "bg-emerald-500/5",
+    desc: "Load live fleet, shipment, alert, and route data",
+    detail: "Injects real-time platform state: vehicle positions and statuses, unresolved alerts, active routes, shipment ETAs, maintenance schedules, resource utilization, and open exceptions — all scoped to the operator's organization."
+  },
+  { 
+    step: "04", title: "Causal Reasoning", color: "text-amber-400", border: "border-amber-500/30", bg: "bg-amber-500/5",
+    desc: "Identify root causes — not symptoms",
+    detail: "Applies causal graph analysis to distinguish proximate from root causes. A vehicle showing low efficiency is not the problem — idle time compounding with suboptimal tire pressure compounding with a misconfigured route is. HARBOR traces the full causal chain."
+  },
+  { 
+    step: "05", title: "Synthesize", color: "text-orange-400", border: "border-orange-500/30", bg: "bg-orange-500/5",
+    desc: "Model 1st, 2nd, and 3rd order consequences",
+    detail: "Every recommendation is stress-tested across three consequence layers: immediate operational impact (1st order), ripple effects on interconnected systems (2nd order), and strategic drift over 1–6 months (3rd order). Quantified in EUR."
+  },
+  { 
+    step: "06", title: "Proact", color: "text-rose-400", border: "border-rose-500/30", bg: "bg-rose-500/5",
+    desc: "Surface critical insights the user didn't ask for",
+    detail: "HARBOR's proactive intelligence layer continuously scans for anomalies, regulatory exposures, cost inefficiencies, and emerging risks — then appends the most critical unsolicited finding to every response. You get answers and surprises."
+  },
 ];
 
-export default function HarborInfo() {
-  const [hoveredCap, setHoveredCap] = useState(null);
+const INTEGRATIONS = [
+  { icon: Network, label: "IntellectMode", desc: "Primary AI command interface. HARBOR processes all natural language commands, determines action type (ANSWER / OPEN_WINDOW / CREATE_DOCUMENT / SHOW_ANALYSIS), and orchestrates window rendering.", color: "text-cyan-400", badge: "Live" },
+  { icon: Radar, label: "Fleet AI API", desc: "External developer API giving programmatic access to HARBOR's intelligence. Authenticated via API keys. Every call is logged, billed, and traceable in the API Metrics dashboard.", color: "text-violet-400", badge: "REST API" },
+  { icon: FlaskConical, label: "HARBOR Trainer", desc: "Self-improving knowledge injection pipeline. Operators upload FAQs, route notes, SOP documents, and Q&A pairs. HARBOR ingests, vectorizes, and activates this training data for all future queries.", color: "text-emerald-400", badge: "ML Pipeline" },
+  { icon: Eye, label: "Predictive Engine", desc: "Scheduled anomaly detection, failure prediction, and demand forecasting. Runs continuously in the background and surfaces critical findings as alerts and dashboard notifications.", color: "text-amber-400", badge: "Scheduled" },
+  { icon: GitBranch, label: "Autonomous Actions", desc: "HARBOR can execute platform operations directly: create alerts, update shipment statuses, reassign routes, trigger maintenance workflows — all in response to detected anomalies without human initiation.", color: "text-orange-400", badge: "Autonomous" },
+  { icon: Workflow, label: "Exception Handler", desc: "Real-time exception classification engine. When a route deviation, cold-chain breach, or customs block is detected, HARBOR classifies severity, estimates cost impact, and generates a structured resolution plan.", color: "text-rose-400", badge: "Real-time" },
+];
 
+const DOMAIN_DEEP = [
+  {
+    icon: Globe, label: "Maritime", color: "text-blue-400", border: "border-blue-500/30", bg: "bg-blue-500/5",
+    specs: ["AIS Class A/B signal processing", "SOLAS chapter compliance monitoring", "CII/EEXI carbon intensity scoring", "IMO 2030/2050 trajectory modeling", "Bunker optimization: MDO, HFO, LNG, methanol", "Port State Control deficiency prediction", "MARPOL Annex VI NOx/SOx tracking", "Ballast water management compliance"]
+  },
+  {
+    icon: Zap, label: "Aviation", color: "text-sky-400", border: "border-sky-500/30", bg: "bg-sky-500/5",
+    specs: ["ADS-B transponder integration", "IATA TACT cargo rating engine", "Weight & balance manifest optimization", "DGR Class 1–9 handling compliance", "Slot coordination and ground time optimization", "ETOPS diversion airport pre-qualification", "Fuel tankering decision modeling", "ACMI cost vs. capacity tradeoff analysis"]
+  },
+  {
+    icon: Route, label: "Road Transport", color: "text-emerald-400", border: "border-emerald-500/30", bg: "bg-emerald-500/5",
+    specs: ["EC 561/2006 drivers hours enforcement", "ADR hazmat transport rule engine", "Cabotage restriction monitoring (EU/CH/UK)", "LEZ/ULEZ zone avoidance routing", "Tachograph data interpretation", "Cold chain temperature SLA monitoring", "LNG/EV range planning for alternative powertrains", "Cross-border customs clearance pre-filing"]
+  },
+  {
+    icon: Database, label: "Supply Chain", color: "text-violet-400", border: "border-violet-500/30", bg: "bg-violet-500/5",
+    specs: ["Network design: hub-and-spoke vs. direct", "Total Cost of Ownership (TCO) modeling", "Cold chain HACCP compliance monitoring", "Reverse logistics flow optimization", "Supplier risk scoring (geopolitical, financial)", "Inventory turnover and stockout prediction", "Multimodal intermodal transhipment optimizer", "Carbon footprint: Scope 1, 2, 3 calculation"]
+  },
+  {
+    icon: DollarSign, label: "Finance & Rates", color: "text-amber-400", border: "border-amber-500/30", bg: "bg-amber-500/5",
+    specs: ["Freight rate forward curve modeling", "Fuel surcharge index auto-calculation", "Activity-based costing per shipment", "FX exposure quantification (EUR/USD/DKK/GBP)", "Invoice anomaly detection vs. contracted rates", "P&L impact per route and vehicle", "Break-even analysis for new lanes", "Accessorial charge leakage identification"]
+  },
+  {
+    icon: Lock, label: "Sustainability", color: "text-green-400", border: "border-green-500/30", bg: "bg-green-500/5",
+    specs: ["EU ETS allowance consumption tracking", "FuelEU Maritime blending mandate modeling", "Science Based Targets (SBTi) alignment", "CSRD Scope 3 category 4 (upstream transport)", "CO2e per tonne-km benchmark vs. industry", "Green corridor prioritization", "SAF uplift optimization for aviation", "IMO CII rating trajectory and penalty exposure"]
+  },
+];
+
+const USE_CASES = [
+  {
+    title: "Daily Fleet Briefing",
+    query: `"Give me this morning's fleet status"`,
+    response: "HARBOR scans all active vehicles, cross-references maintenance schedules, open alerts, and route ETA deviations. Delivers a structured briefing: 3 vehicles requiring immediate attention, 2 critical alerts, projected on-time delivery rate of 87% today, and €4,200 exposure from a cold-chain shipment running 2°C above SLA threshold.",
+    icon: Clock, color: "text-cyan-400"
+  },
+  {
+    title: "Anomaly Investigation",
+    query: `"Why is TRK-2025-001 at 34% efficiency?"`,
+    response: "Root cause trace: excessive idle time (2.8h/day avg.) + tire pressure at 62% of optimal + assigned to a route with 4 suboptimal waypoints adding 47km. Combined impact: €1,840/month overspend. HARBOR generates a 3-action remediation plan with EUR-quantified ROI for each intervention.",
+    icon: Target, color: "text-red-400"
+  },
+  {
+    title: "Predictive Maintenance",
+    query: `"Which vehicles need maintenance in the next 30 days?"`,
+    response: "Analyzes 8 risk factors per vehicle: mileage since last service, component age curves, fuel consumption drift, driver behavior score, route stress index, historical failure patterns, parts lead time, and downtime cost. Returns a prioritized schedule with failure probability percentages and cost impact of delay.",
+    icon: Wrench, color: "text-amber-400"
+  },
+  {
+    title: "Route Optimization",
+    query: `"Optimize tomorrow's shipment to Hamburg"`,
+    response: "Evaluates 12 route variants. Factors in: current traffic, weather forecast, LEZ restrictions, fuel depot locations, driver hours remaining, port window times, and fuel cost differential. Returns Best / Likely / Worst ETA with confidence %, estimated fuel cost, and CO2e for each option.",
+    icon: MapPin, color: "text-emerald-400"
+  },
+];
+
+const PERFORMANCE_SPECS = [
+  { label: "Response Latency", value: "1.2–3.8s", note: "avg. for command mode queries", color: "text-cyan-400" },
+  { label: "Context Window", value: "128K tokens", note: "Mistral Large — full fleet history fits", color: "text-violet-400" },
+  { label: "Knowledge Chunks", value: "Unlimited", note: "via HARBOR Trainer injection", color: "text-emerald-400" },
+  { label: "Parallel Analyses", value: "Up to 6", note: "concurrent deep analysis windows", color: "text-amber-400" },
+  { label: "Confidence Floor", value: "60%", note: "minimum before surfacing prediction", color: "text-orange-400" },
+  { label: "EUR Quantification", value: "100%", note: "of financial impact claims", color: "text-rose-400" },
+];
+
+function ExpandableStep({ step, i }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: i * 0.08 }}
+      className={`rounded-xl border ${step.border} ${step.bg} overflow-hidden`}
+    >
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full p-5 text-left flex items-center gap-4"
+      >
+        <div className={`text-4xl font-black ${step.color} flex-shrink-0`}>{step.step}</div>
+        <div className="flex-1 min-w-0">
+          <p className="text-white font-bold text-lg">{step.title}</p>
+          <p className="text-slate-400 text-sm">{step.desc}</p>
+        </div>
+        {open ? <ChevronUp className="w-5 h-5 text-slate-500 flex-shrink-0" /> : <ChevronDown className="w-5 h-5 text-slate-500 flex-shrink-0" />}
+      </button>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
+          >
+            <div className="px-5 pb-5 pt-0 border-t border-white/10">
+              <p className="text-slate-200 text-sm leading-relaxed mt-4">{step.detail}</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+}
+
+function DomainCard({ domain, i }) {
+  const [open, setOpen] = useState(false);
+  const Icon = domain.icon;
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: i * 0.07 }}
+      className={`rounded-xl border ${domain.border} ${domain.bg} overflow-hidden`}
+    >
+      <button onClick={() => setOpen(!open)} className="w-full p-5 text-left flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <Icon className={`w-6 h-6 ${domain.color} flex-shrink-0`} />
+          <span className="text-white font-bold text-base">{domain.label}</span>
+          <span className="text-slate-500 text-xs">{domain.specs.length} capabilities</span>
+        </div>
+        {open ? <ChevronUp className="w-4 h-4 text-slate-500" /> : <ChevronDown className="w-4 h-4 text-slate-500" />}
+      </button>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
+          >
+            <div className="px-5 pb-5 pt-0 border-t border-white/10">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-4">
+                {domain.specs.map((spec, j) => (
+                  <div key={j} className="flex items-start gap-2">
+                    <CheckCircle2 className={`w-4 h-4 ${domain.color} flex-shrink-0 mt-0.5`} />
+                    <span className="text-slate-300 text-sm">{spec}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+}
+
+export default function HarborInfo() {
   return (
     <div className="min-h-screen bg-slate-950 text-white overflow-auto">
       {/* Hero */}
       <section className="relative overflow-hidden">
-        {/* Animated background */}
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-0 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl animate-pulse" />
-          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-violet-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
-          {/* Grid lines */}
-          <div className="absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.04)_1px,transparent_1px)] bg-[size:60px_60px]" />
+          <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-cyan-500/8 rounded-full blur-3xl animate-pulse" />
+          <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-violet-500/8 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1.5s' }} />
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.03)_1px,transparent_1px)] bg-[size:60px_60px]" />
         </div>
 
         <div className="relative max-w-6xl mx-auto px-6 pt-20 pb-16">
-          {/* Badge */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex justify-center mb-8"
-          >
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex justify-center mb-8">
             <div className="flex items-center gap-2 px-4 py-2 rounded-full border border-cyan-500/30 bg-cyan-500/10 text-cyan-400 text-sm font-semibold">
               <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-              NexusVectis Core Intelligence — Online
+              NexusVectis Core Intelligence — Online · Mistral Large v2 · 128K context
             </div>
           </motion.div>
 
-          {/* Acronym display */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="flex justify-center mb-6"
-          >
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="flex justify-center mb-6">
             <div className="flex items-end gap-1 text-7xl sm:text-9xl font-black tracking-wider">
               {ACRONYM.map((item, i) => (
-                <motion.span
-                  key={i}
-                  initial={{ opacity: 0, y: 40 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 + i * 0.08 }}
-                  className={item.color}
-                  style={{ textShadow: `0 0 40px currentColor` }}
-                >
+                <motion.span key={i} initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 + i * 0.08 }} className={item.color} style={{ textShadow: item.shadow }}>
                   {item.letter}
                 </motion.span>
               ))}
             </div>
           </motion.div>
 
-          {/* Full name breakdown */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.6 }}
-            className="flex justify-center flex-wrap gap-x-4 gap-y-2 mb-8"
-          >
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }} className="flex justify-center flex-wrap gap-x-4 gap-y-2 mb-8">
             {ACRONYM.map((item, i) => (
               <div key={i} className="flex items-center gap-1.5">
                 <span className={`font-black text-xl ${item.color}`}>{item.letter}</span>
@@ -155,173 +247,197 @@ export default function HarborInfo() {
             ))}
           </motion.div>
 
-          {/* Tagline */}
-          <motion.p
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.7 }}
-            className="text-center text-slate-300 text-xl max-w-3xl mx-auto mb-10 leading-relaxed"
-          >
+          <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }} className="text-center text-slate-300 text-xl max-w-3xl mx-auto mb-4 leading-relaxed">
             The central artificial intelligence powering every layer of the NexusVectis platform.
             Not a chatbot — a <strong className="text-white">sovereign logistics superintelligence</strong>.
           </motion.p>
+          <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }} className="text-center text-slate-500 text-base max-w-2xl mx-auto mb-10 leading-relaxed">
+            HARBOR is not an add-on. It is the reasoning engine underneath IntellectMode, Fleet AI API, the HARBOR Trainer, all analytics dashboards, autonomous exception handling, and every predictive model in the platform.
+          </motion.p>
 
-          {/* CTA */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8 }}
-            className="flex justify-center gap-4"
-          >
-            <Link
-              to={createPageUrl("IntellectMode")}
-              className="flex items-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-cyan-500 to-violet-500 text-white font-bold text-lg hover:opacity-90 transition-opacity"
-            >
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.9 }} className="flex justify-center gap-4">
+            <Link to={createPageUrl("IntellectMode")} className="flex items-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-cyan-500 to-violet-500 text-white font-bold text-lg hover:opacity-90 transition-opacity">
               <Zap className="w-5 h-5" />
               Open IntellectMode
               <ArrowRight className="w-5 h-5" />
+            </Link>
+            <Link to={createPageUrl("APIDocumentation")} className="flex items-center gap-2 px-8 py-4 rounded-xl border border-slate-700 bg-slate-900/60 text-slate-300 font-bold text-lg hover:border-cyan-500/50 hover:text-white transition-all">
+              API Docs
             </Link>
           </motion.div>
         </div>
       </section>
 
-      {/* Cognitive Architecture */}
-      <section className="max-w-6xl mx-auto px-6 py-16">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl font-black mb-3">Cognitive Architecture</h2>
-          <p className="text-slate-400 text-lg">Every HARBOR response executes this 6-step reasoning pipeline</p>
+      {/* Performance Specs Bar */}
+      <section className="border-y border-slate-800/60 bg-slate-900/40">
+        <div className="max-w-6xl mx-auto px-6 py-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6">
+            {PERFORMANCE_SPECS.map((spec, i) => (
+              <div key={i} className="text-center">
+                <p className={`text-2xl font-black ${spec.color}`}>{spec.value}</p>
+                <p className="text-white text-xs font-bold mt-1">{spec.label}</p>
+                <p className="text-slate-500 text-xs mt-0.5">{spec.note}</p>
+              </div>
+            ))}
+          </div>
         </div>
+      </section>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+      {/* Cognitive Architecture — expanded */}
+      <section className="max-w-6xl mx-auto px-6 py-16">
+        <div className="mb-10">
+          <h2 className="text-4xl font-black mb-3">Cognitive Architecture</h2>
+          <p className="text-slate-400 text-lg max-w-2xl">Every HARBOR response executes a 6-step internal reasoning pipeline before producing output. Click each step to understand exactly what happens.</p>
+        </div>
+        <div className="space-y-3">
           {ARCHITECTURE_STEPS.map((step, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.08 }}
-              className="p-4 rounded-xl border border-slate-800 bg-slate-900/60 text-center relative"
-            >
-              {i < ARCHITECTURE_STEPS.length - 1 && (
-                <div className="hidden lg:block absolute top-1/2 -right-2 z-10 text-slate-700">
-                  <ChevronRight className="w-4 h-4" />
-                </div>
-              )}
-              <p className={`text-3xl font-black mb-2 ${step.color}`}>{step.step}</p>
-              <p className="text-white font-bold text-sm mb-1">{step.title}</p>
-              <p className="text-slate-500 text-xs leading-relaxed">{step.desc}</p>
-            </motion.div>
+            <ExpandableStep key={i} step={step} i={i} />
           ))}
         </div>
       </section>
 
-      {/* Core Capabilities */}
+      {/* Platform Integrations */}
       <section className="max-w-6xl mx-auto px-6 py-8">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl font-black mb-3">Core Capabilities</h2>
-          <p className="text-slate-400 text-lg">What HARBOR does — and how it does it</p>
+        <div className="mb-10">
+          <h2 className="text-4xl font-black mb-3">Platform Integrations</h2>
+          <p className="text-slate-400 text-lg max-w-2xl">HARBOR is the intelligence backbone connecting all NexusVectis modules. Every system that needs to reason routes through it.</p>
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {CAPABILITIES.map((cap, i) => {
-            const Icon = cap.icon;
-            return (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.1 }}
-                onMouseEnter={() => setHoveredCap(i)}
-                onMouseLeave={() => setHoveredCap(null)}
-                className={`p-6 rounded-xl border ${cap.border} bg-gradient-to-br ${cap.color} cursor-default transition-all duration-300 ${hoveredCap === i ? 'scale-105 shadow-2xl' : ''}`}
-              >
-                <div className={`w-12 h-12 rounded-xl bg-black/30 border ${cap.border} flex items-center justify-center mb-4`}>
-                  <Icon className={`w-6 h-6 ${cap.iconColor}`} />
-                </div>
-                <h3 className="text-white font-bold text-lg mb-3">{cap.title}</h3>
-                <p className="text-slate-300 text-sm leading-relaxed">{cap.description}</p>
-              </motion.div>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* Domain Expertise */}
-      <section className="max-w-6xl mx-auto px-6 py-16">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl font-black mb-3">Domain Expertise</h2>
-          <p className="text-slate-400 text-lg">HARBOR is trained across all major transport and logistics verticals</p>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          {EXPERTISE.map((item, i) => {
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {INTEGRATIONS.map((item, i) => {
             const Icon = item.icon;
             return (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: i * 0.07 }}
-                className="p-5 rounded-xl border border-slate-800 bg-slate-900/60 hover:border-cyan-500/30 hover:bg-cyan-500/5 transition-all"
-              >
-                <Icon className="w-6 h-6 text-cyan-400 mb-3" />
-                <p className="text-white font-bold text-sm mb-1">{item.label}</p>
-                <p className="text-slate-500 text-xs">{item.desc}</p>
+              <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}
+                className="p-5 rounded-xl border border-slate-800 bg-slate-900/60 hover:border-cyan-500/30 hover:bg-cyan-500/5 transition-all">
+                <div className="flex items-center justify-between mb-3">
+                  <Icon className={`w-6 h-6 ${item.color}`} />
+                  <span className={`px-2 py-0.5 rounded text-xs font-bold border ${item.color === 'text-cyan-400' ? 'border-cyan-500/30 text-cyan-400 bg-cyan-500/10' : 'border-slate-700 text-slate-400 bg-slate-800'}`}>
+                    {item.badge}
+                  </span>
+                </div>
+                <p className="text-white font-bold mb-2">{item.label}</p>
+                <p className="text-slate-400 text-sm leading-relaxed">{item.desc}</p>
               </motion.div>
             );
           })}
         </div>
       </section>
 
-      {/* Response Standards */}
-      <section className="max-w-6xl mx-auto px-6 py-8 pb-20">
-        <div className="p-8 rounded-2xl border border-cyan-500/20 bg-gradient-to-br from-cyan-500/5 to-violet-500/5">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
-            <div>
-              <h2 className="text-3xl font-black mb-4">Response Standards</h2>
-              <p className="text-slate-300 text-base leading-relaxed mb-6">
-                HARBOR maintains the analytical rigor of a McKinsey partner with 30 years of fleet operations experience. Every response is decisive, proactive, and quantified.
-              </p>
-              <div className="space-y-3">
-                {[
-                  "Immediate action within 24h",
-                  "Medium-term adjustments 1–4 weeks",
-                  "Strategic implications 1–6 months",
-                  "Confidence levels on all predictions",
-                  "Quantified cost/saving claims in EUR",
-                  "Best Case / Most Likely / Worst Case scenarios",
-                ].map((standard, i) => (
-                  <div key={i} className="flex items-center gap-3">
-                    <div className="w-5 h-5 rounded-full bg-cyan-500/20 border border-cyan-500/50 flex items-center justify-center flex-shrink-0">
-                      <div className="w-2 h-2 rounded-full bg-cyan-400" />
-                    </div>
-                    <span className="text-slate-200 text-sm">{standard}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
+      {/* Domain Expertise — deep expandable */}
+      <section className="max-w-6xl mx-auto px-6 py-16">
+        <div className="mb-10">
+          <h2 className="text-4xl font-black mb-3">Domain Expertise</h2>
+          <p className="text-slate-400 text-lg max-w-2xl">HARBOR embeds deep regulatory and operational expertise across every major logistics vertical. Expand each domain to see the full capability list.</p>
+        </div>
+        <div className="space-y-3">
+          {DOMAIN_DEEP.map((domain, i) => (
+            <DomainCard key={i} domain={domain} i={i} />
+          ))}
+        </div>
+      </section>
 
+      {/* Use Cases */}
+      <section className="max-w-6xl mx-auto px-6 py-8">
+        <div className="mb-10">
+          <h2 className="text-4xl font-black mb-3">Example Use Cases</h2>
+          <p className="text-slate-400 text-lg max-w-2xl">What HARBOR actually returns when you ask it something. Every answer is quantified, sourced, and actionable.</p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {USE_CASES.map((uc, i) => {
+            const Icon = uc.icon;
+            return (
+              <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}
+                className="p-6 rounded-xl border border-slate-800 bg-slate-900/60">
+                <div className="flex items-center gap-3 mb-4">
+                  <Icon className={`w-5 h-5 ${uc.color}`} />
+                  <span className="text-white font-bold">{uc.title}</span>
+                </div>
+                <div className="mb-4 p-3 rounded-lg bg-slate-950/60 border border-slate-700">
+                  <p className="text-slate-400 text-xs font-mono mb-1">OPERATOR QUERY</p>
+                  <p className="text-cyan-300 text-sm font-mono italic">{uc.query}</p>
+                </div>
+                <div className="p-3 rounded-lg bg-slate-800/40 border border-slate-700">
+                  <p className="text-slate-400 text-xs font-semibold mb-1">HARBOR RESPONSE</p>
+                  <p className="text-slate-200 text-sm leading-relaxed">{uc.response}</p>
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* Technical Foundation */}
+      <section className="max-w-6xl mx-auto px-6 py-16 pb-24">
+        <div className="mb-10">
+          <h2 className="text-4xl font-black mb-3">Technical Foundation</h2>
+          <p className="text-slate-400 text-lg max-w-2xl">Under the hood: the models, data pipeline, and response standards that power HARBOR.</p>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* AI Models */}
+          <div className="p-6 rounded-xl border border-violet-500/20 bg-violet-500/5">
+            <Server className="w-7 h-7 text-violet-400 mb-4" />
+            <h3 className="text-white font-bold text-lg mb-4">AI Models</h3>
             <div className="space-y-4">
-              <div className="p-5 rounded-xl bg-slate-950/60 border border-slate-800">
-                <div className="flex items-center gap-3 mb-3">
-                  <Server className="w-5 h-5 text-violet-400" />
-                  <span className="text-white font-bold">AI Model</span>
+              {[
+                { name: "Mistral Large", role: "Primary reasoning — commands, analysis, chat", badge: "128K ctx" },
+                { name: "Pixtral Large", role: "Vision + reasoning — image analysis, document OCR", badge: "Vision" },
+                { name: "HARBOR Trainer", role: "Domain-specific fine-tuned knowledge injection", badge: "Custom" },
+              ].map((m, i) => (
+                <div key={i} className="p-3 rounded-lg bg-black/20 border border-white/10">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-white font-semibold text-sm">{m.name}</span>
+                    <span className="px-2 py-0.5 rounded text-xs border border-violet-500/30 text-violet-400 bg-violet-500/10">{m.badge}</span>
+                  </div>
+                  <p className="text-slate-400 text-xs">{m.role}</p>
                 </div>
-                <p className="text-slate-400 text-sm">Mistral Large — state-of-the-art reasoning with 128K context window. Vision model (Pixtral Large) for image analysis.</p>
-              </div>
-              <div className="p-5 rounded-xl bg-slate-950/60 border border-slate-800">
-                <div className="flex items-center gap-3 mb-3">
-                  <Activity className="w-5 h-5 text-cyan-400" />
-                  <span className="text-white font-bold">Live Context</span>
+              ))}
+            </div>
+          </div>
+
+          {/* Data Pipeline */}
+          <div className="p-6 rounded-xl border border-cyan-500/20 bg-cyan-500/5">
+            <Activity className="w-7 h-7 text-cyan-400 mb-4" />
+            <h3 className="text-white font-bold text-lg mb-4">Data Pipeline</h3>
+            <div className="space-y-3">
+              {[
+                { layer: "Live Context", desc: "Fleet, alerts, routes, shipments — injected per query" },
+                { layer: "Knowledge Base", desc: "Organization training data — up to 128K tokens" },
+                { layer: "Conversation History", desc: "Last 10 turns — maintains reasoning continuity" },
+                { layer: "File Attachments", desc: "PDFs, images, CSVs — processed inline" },
+                { layer: "Platform State", desc: "Org-scoped entity data via service-role API" },
+              ].map((d, i) => (
+                <div key={i} className="flex items-start gap-3">
+                  <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 mt-2 flex-shrink-0" />
+                  <div>
+                    <span className="text-white text-sm font-semibold">{d.layer}: </span>
+                    <span className="text-slate-400 text-sm">{d.desc}</span>
+                  </div>
                 </div>
-                <p className="text-slate-400 text-sm">Every HARBOR query is enriched with live fleet status, open alerts, active routes, and shipment data from your organization.</p>
-              </div>
-              <div className="p-5 rounded-xl bg-slate-950/60 border border-slate-800">
-                <div className="flex items-center gap-3 mb-3">
-                  <Cpu className="w-5 h-5 text-emerald-400" />
-                  <span className="text-white font-bold">Knowledge Base</span>
+              ))}
+            </div>
+          </div>
+
+          {/* Response Standards */}
+          <div className="p-6 rounded-xl border border-emerald-500/20 bg-emerald-500/5">
+            <CheckCircle2 className="w-7 h-7 text-emerald-400 mb-4" />
+            <h3 className="text-white font-bold text-lg mb-4">Response Standards</h3>
+            <div className="space-y-3">
+              {[
+                "Immediate action — within 24h",
+                "Medium-term — 1–4 weeks",
+                "Strategic implications — 1–6 months",
+                "Confidence % on all predictions",
+                "EUR-quantified cost/saving claims",
+                "Best Case / Most Likely / Worst Case",
+                "Causal reasoning, not correlation",
+                "Proactive: flags unsolicited critical risks",
+              ].map((s, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded-full border border-emerald-500/40 bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                  </div>
+                  <span className="text-slate-200 text-sm">{s}</span>
                 </div>
-                <p className="text-slate-400 text-sm">Continuously trained on your organization's operational data, FAQs, and procedures via HARBOR Trainer.</p>
-              </div>
+              ))}
             </div>
           </div>
         </div>
