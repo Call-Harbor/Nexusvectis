@@ -755,13 +755,24 @@ export default function FleetAITrainer({ onClose }) {
 
           {/* Data Tab */}
           <TabsContent value="data" className="flex-1 overflow-auto p-4 space-y-3 mt-0">
-            <motion.button
-              whileHover={{ scale: 1.01 }}
-              onClick={() => setShowAddData(true)}
-              className="w-full py-2.5 rounded border border-emerald-500/50 text-emerald-300 font-mono text-xs tracking-widest flex items-center justify-center gap-2 hover:bg-emerald-500/10 transition-all"
-            >
-              <Plus className="w-3.5 h-3.5" /> INJECT TRAINING DATA
-            </motion.button>
+            <div className="flex gap-2">
+              <motion.button
+                whileHover={{ scale: 1.01 }}
+                onClick={() => setShowAddData(true)}
+                className="flex-1 py-2.5 rounded border border-emerald-500/50 text-emerald-300 font-mono text-xs tracking-widest flex items-center justify-center gap-2 hover:bg-emerald-500/10 transition-all"
+              >
+                <Plus className="w-3.5 h-3.5" /> INJECT TRAINING DATA
+              </motion.button>
+              {trainingData.some(d => d.type === 'link') && (
+                <motion.button
+                  whileHover={{ scale: 1.01 }}
+                  onClick={crawlAllLinks}
+                  className="flex-1 py-2.5 rounded border border-cyan-500/50 text-cyan-300 font-mono text-xs tracking-widest flex items-center justify-center gap-2 hover:bg-cyan-500/10 transition-all"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" /> CRAWL ALL LINKS
+                </motion.button>
+              )}
+            </div>
 
             <div className="relative rounded-lg border border-amber-500/20 bg-black/40 p-3">
               <CornerBrackets />
