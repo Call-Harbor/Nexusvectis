@@ -214,46 +214,75 @@ export default function AdvancedFleetAnalysisHologram({ data, chartData: externa
               </div>
             </div>
 
-            {/* Time Series Chart */}
+            {/* Trend Chart — adapts to chart type */}
             <div className="p-6 rounded-xl border border-cyan-500/20 bg-slate-900/40">
               <h3 className="text-white font-bold text-lg mb-4 flex items-center gap-2">
                 <LineChartIcon className="w-5 h-5 text-cyan-400" />
-                30-Day Performance Trend
+                {data.title ? `${data.title} — Trend` : 'Performance Trend'}
               </h3>
               <ResponsiveContainer width="100%" height={300}>
-                <AreaChart data={performanceTimeSeries}>
-                  <defs>
-                    <linearGradient id="colorEff" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.8}/>
-                      <stop offset="95%" stopColor="#06b6d4" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                  <XAxis dataKey="date" stroke="#64748b" tick={{ fontSize: 12 }} />
-                  <YAxis stroke="#64748b" />
-                  <Tooltip contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '8px' }} />
-                  <Area type="monotone" dataKey="efficiency" stroke="#06b6d4" fill="url(#colorEff)" />
-                </AreaChart>
+                {chartType === 'pie' ? (
+                  <PieChart>
+                    <Pie data={pieData} cx="50%" cy="50%" outerRadius={100} dataKey="value"
+                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+                      {pieData.map((_, idx) => <Cell key={idx} fill={CHART_COLORS[idx % CHART_COLORS.length]} />)}
+                    </Pie>
+                    <Tooltip contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '8px' }} />
+                  </PieChart>
+                ) : chartType === 'bar' ? (
+                  <BarChart data={performanceTimeSeries}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                    <XAxis dataKey="date" stroke="#64748b" tick={{ fontSize: 11 }} angle={-30} textAnchor="end" height={50} />
+                    <YAxis stroke="#64748b" />
+                    <Tooltip contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '8px' }} />
+                    <Legend />
+                    {Object.keys(performanceTimeSeries[0] || {}).filter(k => k !== 'date' && typeof performanceTimeSeries[0][k] === 'number').slice(0, 3).map((k, i) => (
+                      <Bar key={k} dataKey={k} fill={CHART_COLORS[i % CHART_COLORS.length]} name={k} />
+                    ))}
+                  </BarChart>
+                ) : (
+                  <AreaChart data={performanceTimeSeries}>
+                    <defs>
+                      <linearGradient id="colorEff" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.8}/>
+                        <stop offset="95%" stopColor="#06b6d4" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                    <XAxis dataKey="date" stroke="#64748b" tick={{ fontSize: 11 }} />
+                    <YAxis stroke="#64748b" />
+                    <Tooltip contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '8px' }} />
+                    <Legend />
+                    {Object.keys(performanceTimeSeries[0] || {}).filter(k => k !== 'date' && typeof performanceTimeSeries[0][k] === 'number').slice(0, 3).map((k, i) => (
+                      <Area key={k} type="monotone" dataKey={k} stroke={CHART_COLORS[i]} fill={CHART_COLORS[i]} fillOpacity={0.2} name={k} />
+                    ))}
+                  </AreaChart>
+                )}
               </ResponsiveContainer>
             </div>
 
-            {/* Vehicle Radar */}
-            <div className="p-6 rounded-xl border border-violet-500/20 bg-slate-900/40">
-              <h3 className="text-white font-bold text-lg mb-4 flex items-center gap-2">
-                <BarChart3 className="w-5 h-5 text-violet-400" />
-                Top 5 Vehicles - Multi-Dimension Analysis
-              </h3>
-              <ResponsiveContainer width="100%" height={300}>
-                <RadarChart data={vehicleComparison}>
-                  <PolarGrid stroke="#334155" />
-                  <PolarAngleAxis dataKey="id" stroke="#94a3b8" tick={{ fontSize: 11 }} />
-                  <Radar name="Efficiency" dataKey="efficiency" stroke="#06b6d4" fill="#06b6d4" fillOpacity={0.25} />
-                  <Radar name="Driver" dataKey="driver" stroke="#8b5cf6" fill="#8b5cf6" fillOpacity={0.15} />
-                  <Tooltip contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '8px' }} />
-                  <Legend />
-                </RadarChart>
-              </ResponsiveContainer>
-            </div>
+            {/* Insights summary panel — always shown when insights exist */}
+            {(insights.length > 0 || data.summary) && (
+              <div className="p-6 rounded-xl border border-violet-500/20 bg-violet-500/5">
+                <h3 className="text-white font-bold text-lg mb-4 flex items-center gap-2">
+                  <Zap className="w-5 h-5 text-violet-400" />
+                  Key Insights
+                </h3>
+                {data.summary && <p className="text-slate-300 text-sm mb-4 leading-relaxed">{data.summary}</p>}
+                <div className="space-y-2">
+                  {insights.slice(0, 5).map((insight, i) => {
+                    const text = typeof insight === 'string' ? insight : insight?.text || '';
+                    const sev = typeof insight === 'object' ? insight?.severity : 'info';
+                    const color = sev === 'critical' ? 'border-red-500/40 text-red-300' : sev === 'high' ? 'border-amber-500/40 text-amber-300' : 'border-cyan-500/30 text-cyan-300';
+                    return text ? (
+                      <div key={i} className={`p-3 rounded-lg bg-white/5 border ${color}`}>
+                        <p className="text-sm leading-relaxed text-white">{text}</p>
+                      </div>
+                    ) : null;
+                  })}
+                </div>
+              </div>
+            )}
           </TabsContent>
 
           {/* PERFORMANCE TAB */}
