@@ -221,6 +221,8 @@ export default function IntellectHeader({ orgId, openWindow, executePrompt, setS
       setShowCompanyAnalysis?.(true);
     } else if (type === 'fleetai_trainer') {
       openWindow('fleet_ai_trainer');
+    } else if (type === 'advanced_intelligence') {
+      setShowAdvancedPanel?.(true);
     } else {
       openWindow(type);
     }
