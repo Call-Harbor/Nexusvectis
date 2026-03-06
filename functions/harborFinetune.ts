@@ -72,18 +72,29 @@ Deno.serve(async (req) => {
     if (action === 'upload_file') {
       const { training_data } = body;
       // training_data: array of {messages: [{role, content}]} objects (JSONL format)
+      // Each example MUST have the HARBOR system prompt as its first message
+      // so the fine-tuned model IS HARBOR, not just a generic Mistral model.
+
       if (!training_data || training_data.length < 8) {
         return Response.json({
           error: 'Mistral fine-tuning requires at least 8 training examples. Please add more Q&A pairs to your training data.'
         }, { status: 400 });
       }
 
+      // Inject HARBOR system prompt into every training example
+      const harborExamples = training_data.map(item => ({
+        messages: [
+          { role: 'system', content: HARBOR_SYSTEM_PROMPT },
+          ...item.messages,
+        ]
+      }));
+
       // Build JSONL content
-      const jsonl = training_data.map(item => JSON.stringify(item)).join('\n');
+      const jsonl = harborExamples.map(item => JSON.stringify(item)).join('\n');
       const blob = new Blob([jsonl], { type: 'text/plain' });
 
       const formData = new FormData();
-      formData.append('file', blob, 'training.jsonl');
+      formData.append('file', blob, 'harbor_training.jsonl');
       formData.append('purpose', 'fine-tune');
 
       const uploadRes = await fetch(`${MISTRAL_API}/files`, {
@@ -98,7 +109,7 @@ Deno.serve(async (req) => {
       }
 
       const fileData = await uploadRes.json();
-      return Response.json({ file_id: fileData.id, file: fileData });
+      return Response.json({ file_id: fileData.id, file: fileData, harbor_examples_count: harborExamples.length });
     }
 
     // ─── CREATE FINE-TUNING JOB ───────────────────────────────────────────────
