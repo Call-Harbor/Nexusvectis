@@ -29,6 +29,7 @@ import HologramPresentation from "@/components/intellect/HologramPresentation";
 import FleetAITrainer from "@/components/intellect/FleetAITrainer";
 import ParallelTaskProcessor from "@/components/intellect/ParallelTaskProcessor";
 import FleetAnalysisFormatter from "@/components/intellect/FleetAnalysisFormatter";
+import AdvancedFleetAnalysisHologram from "@/components/intellect/AdvancedFleetAnalysisHologram";
 
 const CHART_COLORS = ['#06b6d4', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444'];
 
