@@ -378,9 +378,9 @@ export default function HarborInfo() {
             <h3 className="text-white font-bold text-lg mb-4">AI Models</h3>
             <div className="space-y-4">
               {[
-                { name: "Mistral Large", role: "Primary reasoning — commands, analysis, chat", badge: "128K ctx" },
-                { name: "Pixtral Large", role: "Vision + reasoning — image analysis, document OCR", badge: "Vision" },
-                { name: "HARBOR Trainer", role: "Domain-specific fine-tuned knowledge injection", badge: "Custom" },
+                { name: "mistral-large-latest", role: "Default model — commands, chat, analysis, JSON mode", badge: "128K ctx" },
+                { name: "pixtral-large-latest", role: "Used when image_urls are present in the request", badge: "Vision" },
+                { name: "FleetAIModel (DB)", role: "Org training data injected as context chunks per query", badge: "Knowledge" },
               ].map((m, i) => (
                 <div key={i} className="p-3 rounded-lg bg-black/20 border border-white/10">
                   <div className="flex items-center justify-between mb-1">
