@@ -74,6 +74,19 @@ export default function FleetAITrainer({ onClose }) {
   const [isFinetuning, setIsFinetuning] = useState(false);
   const [finetuneProgress, setFinetuneProgress] = useState(0);
   const [finetuneConfig, setFinetuneConfig] = useState({ lr: '0.0001', steps: '500', rank: '16', method: 'lora' });
+  // Real fine-tuning state
+  const [ftModel, setFtModel] = useState('open-mistral-7b');
+  const [ftSteps, setFtSteps] = useState('100');
+  const [ftLr, setFtLr] = useState('0.0001');
+  const [ftSuffix, setFtSuffix] = useState('harbor-fleet');
+  const [ftFileId, setFtFileId] = useState(null);
+  const [ftJobId, setFtJobId] = useState(null);
+  const [ftJob, setFtJob] = useState(null);
+  const [ftJobs, setFtJobs] = useState([]);
+  const [ftStep, setFtStep] = useState('config'); // 'config' | 'uploading' | 'training' | 'done'
+  const [ftError, setFtError] = useState(null);
+  const [ftFineTunedModels, setFtFineTunedModels] = useState([]);
+  const ftPollRef = useRef(null);
   const [systemLog, setSystemLog] = useState([
     '[HARBOR] Fleet AI Trainer initialized',
     '[SYS] Model registry loaded — 2 models active',
