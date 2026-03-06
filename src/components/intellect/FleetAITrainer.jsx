@@ -822,12 +822,28 @@ export default function FleetAITrainer({ onClose }) {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="text-[10px] font-mono text-amber-500/60 uppercase tracking-wider">{data.type}</span>
+                      {data.type === 'guide' && data.label?.startsWith('[Crawled]') && (
+                        <span className="text-[9px] font-mono text-emerald-400 border border-emerald-500/30 px-1 rounded">CRAWLED</span>
+                      )}
                     </div>
                     <p className="text-xs font-mono text-slate-300 truncate">{data.label}</p>
                   </div>
-                  <button onClick={() => removeTrainingData(data.id)} className="text-slate-600 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100">
-                    <Trash className="w-3.5 h-3.5" />
-                  </button>
+                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    {data.type === 'link' && (
+                      crawlingIds.has(data.id) ? (
+                        <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}>
+                          <Loader2 className="w-3.5 h-3.5 text-cyan-400" />
+                        </motion.div>
+                      ) : (
+                        <button onClick={() => crawlLink(data)} className="text-slate-600 hover:text-cyan-400 transition-colors" title="Crawl URL">
+                          <ExternalLink className="w-3.5 h-3.5" />
+                        </button>
+                      )
+                    )}
+                    <button onClick={() => removeTrainingData(data.id)} className="text-slate-600 hover:text-red-400 transition-colors">
+                      <Trash className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </motion.div>
               ))}
             </div>
