@@ -93,9 +93,9 @@ export default function Contact() {
             {[
               {
                 icon: Mail,
-                title: "Sales & Demo",
-                content: "sales@harborvision.dev",
-                desc: "Get a personalized demo and discuss pricing"
+                title: "General Contact",
+                content: "ai@harborvision.dev",
+                desc: "Reach out for any inquiries about our platform"
               },
               {
                 icon: MessageSquare,
