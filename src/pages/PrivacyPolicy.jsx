@@ -336,7 +336,7 @@ export default function PrivacyPolicy() {
             </p>
             <div className="space-y-2 text-slate-300">
               <p><strong>Email:</strong> privacy@harborvision.dev</p>
-              <p><strong>Address:</strong> NexusVectis, Vesterbrogade 123, 1620 København V, Denmark</p>
+              <p><strong>Address:</strong> H.A.R.B.O.R Vision, Vesterbrogade 123, 1620 København V, Denmark</p>
               <p><strong>VAT Number:</strong> 42662215</p>
             </div>
           </motion.div>

@@ -264,6 +264,7 @@ export default function Contact() {
                     <div>
                       <h3 className="text-white font-semibold mb-1">Address</h3>
                       <p className="text-slate-400">
+                        H.A.R.B.O.R Vision<br />
                         Vesterbrogade 123<br />
                         1620 København V<br />
                         Denmark<br />
