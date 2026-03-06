@@ -234,7 +234,7 @@ export default function HarborInfo() {
       <div className="relative z-10">
         {/* Hero */}
         <section className="relative overflow-hidden">
-          <div className="relative max-w-6xl mx-auto px-6 pt-20 pb-16">
+          <div className="relative max-w-6xl mx-auto px-6 pt-32 pb-16">
             {/* Status badge */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex justify-center mb-8">
               <div className="flex items-center gap-3 px-4 py-2 rounded border border-amber-500/30 bg-amber-500/10 text-amber-400 text-xs font-mono tracking-widest">
