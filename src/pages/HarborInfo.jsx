@@ -332,11 +332,12 @@ export default function HarborInfo() {
         {/* Domain Expertise */}
         <section className="max-w-6xl mx-auto px-6 py-16">
           <div className="mb-10">
-            <div className="flex items-center gap-3 mb-3">
+            <div className="flex items-center gap-3 mb-2">
               <Globe className="w-6 h-6 text-violet-400" />
               <h2 className="text-4xl font-black font-mono tracking-widest uppercase" style={{ color: '#8b5cf6', textShadow: '0 0 30px rgba(139,92,246,0.3)' }}>DOMAIN EXPERTISE</h2>
             </div>
-            <p className="text-slate-400 text-xs font-mono tracking-wide max-w-2xl">HARBOR embeds deep regulatory and operational expertise across every major logistics vertical. Expand each domain to see the full capability list.</p>
+            <p className="text-slate-300 text-base max-w-3xl mb-1">HARBOR carries embedded regulatory intelligence across 6 logistics verticals and 200+ compliance frameworks. It does not need to look this up — it knows it.</p>
+            <p className="text-slate-500 text-xs font-mono tracking-wide max-w-2xl">Expand each domain to review the full capability matrix. Each capability represents a live reasoning rule inside HARBOR — not documentation.</p>
           </div>
           <div className="space-y-3">
             {DOMAIN_DEEP.map((domain, i) => <DomainCard key={i} domain={domain} i={i} />)}
