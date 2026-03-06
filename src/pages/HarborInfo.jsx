@@ -399,11 +399,11 @@ export default function HarborInfo() {
             <h3 className="text-white font-bold text-lg mb-4">Data Pipeline</h3>
             <div className="space-y-3">
               {[
-                { layer: "Live Context", desc: "Fleet, alerts, routes, shipments — injected per query" },
-                { layer: "Knowledge Base", desc: "Organization training data — up to 128K tokens" },
-                { layer: "Conversation History", desc: "Last 10 turns — maintains reasoning continuity" },
-                { layer: "File Attachments", desc: "PDFs, images, CSVs — processed inline" },
-                { layer: "Platform State", desc: "Org-scoped entity data via service-role API" },
+                { layer: "Live Context", desc: "vehicles, alerts, routes, shipments — injected when context not pre-supplied" },
+                { layer: "Knowledge Base", desc: "FleetAIModel.training_data split into 6K-char chunks, injected as user/assistant pairs" },
+                { layer: "Conversation History", desc: "Last 10 non-system turns — filtered by role: user | assistant" },
+                { layer: "File Attachments", desc: "Text files fetched and prepended; images passed as image_url array to Pixtral" },
+                { layer: "Format Directive", desc: "Mode-specific output instructions: command → JSON object, chat → markdown, inference → structured JSON" },
               ].map((d, i) => (
                 <div key={i} className="flex items-start gap-3">
                   <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 mt-2 flex-shrink-0" />
