@@ -1043,7 +1043,7 @@ export default function FleetAITrainer({ onClose }) {
                   className="w-full py-2.5 rounded border border-violet-500/60 text-violet-300 font-mono text-xs tracking-widest flex items-center justify-center gap-2 hover:bg-violet-500/10 transition-all"
                   style={{ boxShadow: '0 0 15px rgba(139,92,246,0.15)' }}
                 >
-                  <Zap className="w-3.5 h-3.5" /> START REAL FINE-TUNING
+                  <Zap className="w-3.5 h-3.5" /> FINE-TUNE MISTRAL + HARBOR CORE
                 </motion.button>
               </div>
             )}
