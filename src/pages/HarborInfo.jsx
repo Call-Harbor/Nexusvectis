@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import { base44 } from "@/api/base44Client";
 
 const ACRONYM = [
   { letter: "H", word: "Holographic", color: "text-cyan-400", shadow: "0 0 40px #06b6d4" },
