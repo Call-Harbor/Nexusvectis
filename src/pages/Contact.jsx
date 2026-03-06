@@ -108,8 +108,14 @@ export default function Contact() {
                 title: "Enterprise",
                 content: "enterprise@harborvision.dev",
                 desc: "Custom solutions for large organizations"
+              },
+              {
+                icon: Mail,
+                title: "Sales",
+                content: "sales@harborvision.dev",
+                desc: "Pricing, demos, and sales inquiries"
               }
-            ].map((contact, idx) => {
+              ].map((contact, idx) => {
               const Icon = contact.icon;
               return (
                 <motion.div
