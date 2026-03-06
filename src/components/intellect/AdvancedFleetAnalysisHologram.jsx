@@ -442,55 +442,78 @@ export default function AdvancedFleetAnalysisHologram({ data, chartData: externa
             )}
           </TabsContent>
 
-          {/* COSTS TAB */}
+          {/* COSTS / DATA TAB */}
           <TabsContent value="costs" className="p-6 space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Cost Pie Chart */}
+              {/* Pie of pieData (real or synthetic) */}
               <div className="p-6 rounded-xl border border-orange-500/20 bg-slate-900/40">
-                <h3 className="text-white font-bold text-lg mb-4">Monthly Cost Breakdown</h3>
+                <h3 className="text-white font-bold text-lg mb-4">
+                  {chartType === 'pie' ? (data.title || 'Distribution') : 'Breakdown Analysis'}
+                </h3>
                 <ResponsiveContainer width="100%" height={280}>
                   <PieChart>
-                    <Pie
-                      data={costBreakdown}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ name, percentage }) => `${name} ${percentage}%`}
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {costBreakdown.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
-                      ))}
+                    <Pie data={pieData} cx="50%" cy="50%" outerRadius={90}
+                      label={({ name, percent }) => `${String(name).slice(0, 14)} ${(percent * 100).toFixed(0)}%`}
+                      labelLine={false} dataKey="value">
+                      {pieData.map((_, index) => <Cell key={index} fill={CHART_COLORS[index % CHART_COLORS.length]} />)}
                     </Pie>
                     <Tooltip contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #334155' }} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
 
-              {/* Cost Details */}
+              {/* Correlations if available, else detail breakdown */}
               <div className="p-6 rounded-xl border border-orange-500/20 bg-slate-900/40">
-                <h3 className="text-white font-bold text-lg mb-4">Cost Summary</h3>
-                <div className="space-y-4">
-                  {costBreakdown.map((item, i) => (
-                    <div key={i} className="flex justify-between items-center p-3 rounded-lg bg-white/5 border border-white/10">
-                      <div>
-                        <p className="text-white font-semibold">{item.name}</p>
-                        <p className="text-slate-400 text-sm">€{item.value.toLocaleString()}</p>
+                <h3 className="text-white font-bold text-lg mb-4">
+                  {correlations.length > 0 ? 'Data Correlations' : 'Detailed Breakdown'}
+                </h3>
+                {correlations.length > 0 ? (
+                  <div className="space-y-3">
+                    {correlations.map((corr, i) => (
+                      <div key={i} className="p-3 rounded-lg bg-slate-800/50 border border-slate-700/50">
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="text-slate-300 text-sm">{corr.variables}</p>
+                          <span className="text-xs font-mono text-cyan-300">{corr.coefficient}</span>
+                        </div>
+                        <div className="w-full h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                          <div className="h-full bg-gradient-to-r from-cyan-400 to-blue-400"
+                            style={{ width: `${Math.abs(parseFloat(corr.coefficient)) * 100}%` }} />
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <p className="text-xl font-bold text-orange-400">{item.percentage}%</p>
-                      </div>
-                    </div>
-                  ))}
-                  <div className="pt-4 border-t border-white/10 flex justify-between items-center">
-                    <p className="text-white font-bold text-lg">Total Monthly Cost</p>
-                    <p className="text-3xl font-black text-orange-400">€100,000</p>
+                    ))}
                   </div>
-                </div>
+                ) : (
+                  <div className="space-y-3">
+                    {pieData.map((item, i) => (
+                      <div key={i} className="flex justify-between items-center p-3 rounded-lg bg-white/5 border border-white/10">
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 rounded-full" style={{ background: CHART_COLORS[i % CHART_COLORS.length] }} />
+                          <p className="text-white font-semibold text-sm">{item.name}</p>
+                        </div>
+                        <p className="text-orange-400 font-bold">{typeof item.value === 'number' ? item.value.toLocaleString() : item.value}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
+
+            {/* Technical details if present */}
+            {data.technical_details && (
+              <div className="p-6 rounded-xl border border-slate-700/50 bg-slate-900/60">
+                <h3 className="text-white font-bold text-lg mb-4 flex items-center gap-2">
+                  <Activity className="w-5 h-5 text-violet-400" /> Technical Analysis
+                </h3>
+                <div className="grid grid-cols-2 gap-3">
+                  {Object.entries(data.technical_details).map(([key, value], idx) => (
+                    <div key={idx} className="p-3 rounded-lg bg-slate-800/50 border border-slate-700/50">
+                      <p className="text-slate-400 text-xs uppercase tracking-wide mb-1">{key.replace(/_/g, ' ')}</p>
+                      <p className="text-white text-sm font-mono">{typeof value === 'object' ? JSON.stringify(value) : String(value)}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </TabsContent>
 
           {/* ACTIONS TAB */}
