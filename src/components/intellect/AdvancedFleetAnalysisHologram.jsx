@@ -364,39 +364,82 @@ export default function AdvancedFleetAnalysisHologram({ data, chartData: externa
 
           {/* ANOMALIES TAB */}
           <TabsContent value="anomalies" className="p-6 space-y-6">
-            <div className="p-6 rounded-xl border border-red-500/20 bg-slate-900/40">
-              <h3 className="text-white font-bold text-lg mb-4 flex items-center gap-2">
-                <AlertCircle className="w-5 h-5 text-red-400" />
-                Anomaly Detection Report
-              </h3>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={anomalyData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                  <XAxis dataKey="anomaly" stroke="#64748b" tick={{ fontSize: 11 }} angle={-45} textAnchor="end" height={100} />
-                  <YAxis stroke="#64748b" />
-                  <Tooltip contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #334155' }} />
-                  <Legend />
-                  <Bar dataKey="severity" fill="#ef4444" name="Severity Score" />
-                  <Bar dataKey="frequency" fill="#f59e0b" name="Frequency" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+            {anomalyData.length > 0 && (
+              <div className="p-6 rounded-xl border border-red-500/20 bg-slate-900/40">
+                <h3 className="text-white font-bold text-lg mb-4 flex items-center gap-2">
+                  <AlertCircle className="w-5 h-5 text-red-400" />
+                  Pattern & Anomaly Detection
+                </h3>
+                <ResponsiveContainer width="100%" height={280}>
+                  <BarChart data={anomalyData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                    <XAxis dataKey="anomaly" stroke="#64748b" tick={{ fontSize: 10 }} angle={-30} textAnchor="end" height={80} />
+                    <YAxis stroke="#64748b" />
+                    <Tooltip contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #334155' }} />
+                    <Legend />
+                    <Bar dataKey="severity" fill="#ef4444" name="Severity Score" />
+                    <Bar dataKey="frequency" fill="#f59e0b" name="Frequency" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            )}
 
-            {/* Anomaly Details */}
-            <div className="grid grid-cols-1 gap-3">
-              {anomalyData.map((anomaly, i) => (
-                <div key={i} className="p-4 rounded-lg border border-red-500/20 bg-red-500/5">
-                  <div className="flex items-start justify-between mb-2">
-                    <h4 className="text-white font-semibold">{anomaly.anomaly}</h4>
-                    <div className="flex gap-2">
-                      <span className="px-2 py-1 rounded text-xs bg-red-500/30 text-red-200">Severity: {anomaly.severity}</span>
-                      <span className="px-2 py-1 rounded text-xs bg-orange-500/30 text-orange-200">Impact: €{anomaly.impact}</span>
+            {/* Risks if available */}
+            {risks.length > 0 && (
+              <div className="space-y-3">
+                <h3 className="text-white font-bold text-lg flex items-center gap-2">
+                  <AlertTriangle className="w-5 h-5 text-amber-400" /> Risk Analysis
+                </h3>
+                {risks.map((risk, i) => (
+                  <div key={i} className="p-4 rounded-lg border border-red-500/20 bg-red-500/5">
+                    <div className="flex items-start justify-between mb-2">
+                      <p className="text-white font-semibold text-sm">{risk.name}</p>
+                      <span className={`px-2 py-0.5 rounded text-xs font-bold ${risk.severity === 'critical' ? 'bg-red-500/30 text-red-300' : risk.severity === 'high' ? 'bg-orange-500/30 text-orange-300' : 'bg-yellow-500/30 text-yellow-300'}`}>{risk.severity}</span>
+                    </div>
+                    <p className="text-slate-300 text-sm mb-1">{risk.description}</p>
+                    <div className="flex gap-4 text-xs text-slate-400">
+                      {risk.likelihood && <span>Likelihood: {risk.likelihood}</span>}
+                      {risk.impact && <span className="text-red-300">Impact: {risk.impact}</span>}
                     </div>
                   </div>
-                  <p className="text-slate-400 text-sm">Detected {anomaly.frequency} times in analysis period</p>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
+
+            {/* Findings if no risks */}
+            {risks.length === 0 && findings.length > 0 && (
+              <div className="space-y-3">
+                <h3 className="text-white font-bold text-lg flex items-center gap-2"><AlertTriangle className="w-5 h-5 text-amber-400" /> Detected Issues</h3>
+                {findings.map((finding, i) => (
+                  <div key={i} className="p-4 rounded-lg border border-amber-500/20 bg-amber-500/5">
+                    <div className="flex items-start justify-between mb-2">
+                      <h4 className="text-white font-semibold text-sm">{i + 1}. {finding.finding}</h4>
+                      {finding.risk_level && <span className="px-2 py-0.5 rounded text-xs bg-amber-500/30 text-amber-200">{finding.risk_level}</span>}
+                    </div>
+                    {finding.root_cause && <p className="text-slate-300 text-xs mb-1"><strong>Root Cause:</strong> {finding.root_cause}</p>}
+                    {finding.impact && <p className="text-slate-400 text-xs"><strong>Impact:</strong> {typeof finding.impact === 'string' ? finding.impact : JSON.stringify(finding.impact)}</p>}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Anomaly detail cards if no structured data */}
+            {risks.length === 0 && findings.length === 0 && anomalyData.length > 0 && (
+              <div className="grid grid-cols-1 gap-3">
+                {anomalyData.map((anomaly, i) => (
+                  <div key={i} className="p-4 rounded-lg border border-red-500/20 bg-red-500/5">
+                    <div className="flex items-start justify-between mb-2">
+                      <h4 className="text-white font-semibold">{anomaly.anomaly}</h4>
+                      <div className="flex gap-2">
+                        <span className="px-2 py-1 rounded text-xs bg-red-500/30 text-red-200">Severity: {anomaly.severity}</span>
+                        <span className="px-2 py-1 rounded text-xs bg-orange-500/30 text-orange-200">Impact: €{anomaly.impact}</span>
+                      </div>
+                    </div>
+                    <p className="text-slate-400 text-sm">Detected {anomaly.frequency} times in analysis period</p>
+                  </div>
+                ))}
+              </div>
+            )}
           </TabsContent>
 
           {/* COSTS TAB */}
