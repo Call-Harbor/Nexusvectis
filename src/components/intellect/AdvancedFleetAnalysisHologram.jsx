@@ -125,12 +125,21 @@ export default function AdvancedFleetAnalysisHologram({ data, chartData: externa
               <p className="text-slate-300 text-lg">{data.summary || data.description}</p>
             </div>
 
-            {/* Key Metrics */}
+            {/* Key Metrics — use real advanced_metrics if available */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <MetricCard label="Fleet Health" value="42%" color="text-red-400" icon={Activity} />
-              <MetricCard label="Avg Efficiency" value="58.2" color="text-amber-400" icon={Gauge} />
-              <MetricCard label="Cost/Month" value="€100k" color="text-orange-400" icon={DollarSign} />
-              <MetricCard label="Issues Active" value="12" color="text-red-400" icon={AlertCircle} />
+              {advancedMetrics.length >= 4
+                ? advancedMetrics.slice(0, 4).map((m, i) => {
+                    const icons = [Activity, Gauge, DollarSign, AlertCircle];
+                    const colors = ['text-cyan-400', 'text-amber-400', 'text-emerald-400', 'text-violet-400'];
+                    return <MetricCard key={i} label={m.label} value={m.value} color={colors[i]} icon={icons[i]} />;
+                  })
+                : <>
+                    <MetricCard label="Data Points" value={rawChartData.length || '—'} color="text-cyan-400" icon={Activity} />
+                    <MetricCard label="Insights" value={insights.length || findings.length || '—'} color="text-amber-400" icon={Gauge} />
+                    <MetricCard label="Findings" value={findings.length || risks.length || '—'} color="text-orange-400" icon={AlertCircle} />
+                    <MetricCard label="Actions" value={Array.isArray(recommendations) ? recommendations.length : Object.keys(recommendations).length || forecasts.length || '—'} color="text-emerald-400" icon={CheckCircle2} />
+                  </>
+              }
             </div>
           </div>
 
