@@ -382,11 +382,12 @@ export default function HarborInfo() {
         {/* Technical Foundation */}
         <section className="max-w-6xl mx-auto px-6 py-16 pb-24">
           <div className="mb-10">
-            <div className="flex items-center gap-3 mb-3">
+            <div className="flex items-center gap-3 mb-2">
               <Cpu className="w-6 h-6 text-rose-400" />
               <h2 className="text-4xl font-black font-mono tracking-widest uppercase" style={{ color: '#fb7185', textShadow: '0 0 30px rgba(251,113,133,0.3)' }}>TECHNICAL FOUNDATION</h2>
             </div>
-            <p className="text-slate-400 text-xs font-mono tracking-wide max-w-2xl">Under the hood: the models, data pipeline, and response standards that power HARBOR.</p>
+            <p className="text-slate-300 text-base max-w-3xl mb-1">The infrastructure stack that makes HARBOR possible. State-of-the-art models, a precisely engineered data pipeline, and zero-tolerance response standards.</p>
+            <p className="text-slate-500 text-xs font-mono tracking-wide max-w-2xl">Everything that goes in, and everything that comes out — specified to the token.</p>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
             {/* AI Models */}
