@@ -76,6 +76,7 @@ import FleetSlidePresenter from './pages/FleetSlidePresenter';
 import GPSIntegration from './pages/GPSIntegration';
 import GreenTMS from './pages/GreenTMS';
 import HRManagement from './pages/HRManagement';
+import HarborInfo from './pages/HarborInfo';
 import HologramDesktop from './pages/HologramDesktop';
 import Home from './pages/Home';
 import IntegrationsPage from './pages/IntegrationsPage';
@@ -99,7 +100,6 @@ import Shipments from './pages/Shipments';
 import TermsOfService from './pages/TermsOfService';
 import UserManagement from './pages/UserManagement';
 import WarehouseAutomation from './pages/WarehouseAutomation';
-import HarborInfo from './pages/HarborInfo';
 import __Layout from './Layout.jsx';
 
 
@@ -133,6 +133,7 @@ export const PAGES = {
     "GPSIntegration": GPSIntegration,
     "GreenTMS": GreenTMS,
     "HRManagement": HRManagement,
+    "HarborInfo": HarborInfo,
     "HologramDesktop": HologramDesktop,
     "Home": Home,
     "IntegrationsPage": IntegrationsPage,
@@ -156,7 +157,6 @@ export const PAGES = {
     "TermsOfService": TermsOfService,
     "UserManagement": UserManagement,
     "WarehouseAutomation": WarehouseAutomation,
-    "HarborInfo": HarborInfo,
 }
 
 export const pagesConfig = {

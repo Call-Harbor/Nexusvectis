@@ -684,9 +684,11 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
             break;
           case "SHOW_ANALYSIS":
           case "VISUALIZE_DATA":
-            setMessages(prev => [...prev, { role: "assistant", content: message }]);
-            if (parameters.chart_data && parameters.chart_config) {
-              openWindow(`chart_${Date.now()}`, { x: 150, y: 100 }, { chartData: parameters.chart_data, chartConfig: parameters.chart_config });
+            setMessages(prev => [...prev, { role: "assistant", content: message || reply || "Analysis complete." }]);
+            {
+              const chartCfg = parameters.chart_config || parameters;
+              const chartDat = parameters.chart_data || chartCfg?.chart_data || [];
+              openWindow(`chart_${Date.now()}`, { x: 80, y: 60 }, { chartData: chartDat, chartConfig: chartCfg });
             }
             break;
           case "SHOW_3D":
