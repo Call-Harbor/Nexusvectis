@@ -70,6 +70,7 @@ const businessMenuItems = [
 
 const aiMenuItems = [
   { name: "Intellect Mode", icon: Sparkles, page: "IntellectMode" },
+  { name: "H.A.R.B.O.R.", icon: Zap, page: "HarborInfo" },
   { name: "AI Optimization", icon: Sparkles, page: "AIOptimization" },
   { name: "Demand Forecasting", icon: Activity, page: "DemandForecasting" },
   { name: "Warehouse Automation", icon: Package, page: "WarehouseAutomation" },
