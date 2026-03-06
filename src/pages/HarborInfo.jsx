@@ -347,11 +347,12 @@ export default function HarborInfo() {
         {/* Use Cases */}
         <section className="max-w-6xl mx-auto px-6 py-8">
           <div className="mb-10">
-            <div className="flex items-center gap-3 mb-3">
+            <div className="flex items-center gap-3 mb-2">
               <Terminal className="w-6 h-6 text-emerald-400" />
               <h2 className="text-4xl font-black font-mono tracking-widest uppercase" style={{ color: '#10b981', textShadow: '0 0 30px rgba(16,185,129,0.3)' }}>EXAMPLE USE CASES</h2>
             </div>
-            <p className="text-slate-400 text-xs font-mono tracking-wide max-w-2xl">What HARBOR actually returns when you ask it something. Every answer is quantified, sourced, and actionable.</p>
+            <p className="text-slate-300 text-base max-w-3xl mb-1">What HARBOR actually does when you type a command. Not what it says — what it executes, what data it produces, and what windows it opens.</p>
+            <p className="text-slate-500 text-xs font-mono tracking-wide max-w-2xl">Every response shown here is a real output from the HARBOR system. No demos. No mockups.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {USE_CASES.map((uc, i) => {
