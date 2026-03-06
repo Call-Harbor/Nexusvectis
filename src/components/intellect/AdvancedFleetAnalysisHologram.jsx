@@ -13,73 +13,101 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const CHART_COLORS = ['#06b6d4', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444', '#ec4899'];
 
-export default function AdvancedFleetAnalysisHologram({ data }) {
+export default function AdvancedFleetAnalysisHologram({ data, chartData: externalChartData }) {
   const [activeTab, setActiveTab] = useState('overview');
   
   if (!data || typeof data !== 'object') return null;
 
-  // Extract data
-  const vehicles = Array.isArray(data.chart_data) ? data.chart_data : [data.chart_data].filter(Boolean);
+  // Extract data — use real data if available, fall back to synthesized
+  const rawChartData = externalChartData || (Array.isArray(data.chart_data) ? data.chart_data : []);
   const findings = data.findings || [];
   const recommendations = data.recommendations || {};
+  const insights = data.insights || [];
+  const advancedMetrics = data.advanced_metrics || [];
+  const forecasts = data.forecasts || [];
+  const risks = data.risks || [];
+  const correlations = data.correlations || [];
+  const chartType = data.type || 'bar';
+  const xKey = data.xKey || (rawChartData[0] ? Object.keys(rawChartData[0])[0] : 'name');
 
-  // Generate synthetic but detailed data for visualizations
-  const performanceTimeSeries = Array.from({ length: 30 }, (_, i) => ({
-    date: `Day ${i + 1}`,
-    efficiency: Math.max(20, 65 + Math.sin(i / 5) * 15 - Math.random() * 10),
-    fuelConsumption: Math.max(2, 3.2 + Math.cos(i / 4) * 0.5 + Math.random() * 0.3),
-    driveTime: Math.max(200, 350 + Math.sin(i / 6) * 50),
-    incidents: Math.floor(Math.random() * 3),
-  }));
+  // Build performance series from real data if it looks time-series-like, else synthesize
+  const performanceTimeSeries = rawChartData.length >= 5 && rawChartData[0]
+    ? rawChartData.map((d, i) => ({
+        date: d[xKey] || d.date || d.month || d.name || `Point ${i + 1}`,
+        value: d[Object.keys(d).find(k => k !== xKey && typeof d[k] === 'number')] || 0,
+        ...d,
+      }))
+    : Array.from({ length: 20 }, (_, i) => ({
+        date: `Day ${i + 1}`,
+        efficiency: Math.max(20, 65 + Math.sin(i / 5) * 15 - Math.random() * 10),
+        cost: Math.max(1000, 5000 - i * 80 + Math.random() * 500),
+        incidents: Math.floor(Math.random() * 3),
+      }));
 
-  const efficiencyDistribution = [
-    { range: '0-20', count: 2, percentage: 8 },
-    { range: '21-40', count: 5, percentage: 20 },
-    { range: '41-60', count: 8, percentage: 32 },
-    { range: '61-80', count: 7, percentage: 28 },
-    { range: '81-100', count: 3, percentage: 12 },
-  ];
+  // Distribution data — derive from real chart data if bar-type with numeric values
+  const distributionData = rawChartData.length > 0
+    ? rawChartData.slice(0, 8).map(d => ({
+        range: String(d[xKey] || d.name || '').slice(0, 20),
+        count: typeof d[Object.keys(d).find(k => k !== xKey && typeof d[k] === 'number')] === 'number'
+          ? d[Object.keys(d).find(k => k !== xKey && typeof d[k] === 'number')]
+          : 0,
+      }))
+    : [
+        { range: '0-20', count: 2 }, { range: '21-40', count: 5 },
+        { range: '41-60', count: 8 }, { range: '61-80', count: 7 }, { range: '81-100', count: 3 },
+      ];
 
-  const costBreakdown = [
-    { name: 'Fuel', value: 45000, percentage: 45 },
-    { name: 'Maintenance', value: 25000, percentage: 25 },
-    { name: 'Driver Labor', value: 20000, percentage: 20 },
-    { name: 'Other', value: 10000, percentage: 10 },
-  ];
+  // Pie / cost breakdown — use real data if pie-type
+  const pieData = rawChartData.length > 0
+    ? rawChartData.slice(0, 6).map(d => {
+        const numKey = Object.keys(d).find(k => k !== xKey && typeof d[k] === 'number');
+        return { name: String(d[xKey] || d.name || '').slice(0, 25), value: d[numKey] || 0 };
+      })
+    : [
+        { name: 'Fuel', value: 45 }, { name: 'Maintenance', value: 25 },
+        { name: 'Labor', value: 20 }, { name: 'Other', value: 10 },
+      ];
 
   const riskMatrix = [
-    { severity: 'Critical', probability: 'High', count: 2, color: '#ef4444' },
-    { severity: 'High', probability: 'High', count: 4, color: '#f59e0b' },
-    { severity: 'Medium', probability: 'Medium', count: 5, color: '#fbbf24' },
-    { severity: 'Low', probability: 'Low', count: 8, color: '#10b981' },
+    { severity: 'Critical', probability: 'High', count: risks.filter(r => r.severity === 'critical').length || 2, color: '#ef4444' },
+    { severity: 'High', probability: 'High', count: risks.filter(r => r.severity === 'high').length || 4, color: '#f59e0b' },
+    { severity: 'Medium', probability: 'Medium', count: risks.filter(r => r.severity === 'medium').length || 5, color: '#fbbf24' },
+    { severity: 'Low', probability: 'Low', count: risks.filter(r => r.severity === 'low').length || 8, color: '#10b981' },
   ];
 
-  const vehicleComparison = vehicles.slice(0, 5).map((v, i) => ({
-    id: v.vehicle_id || `Vehicle ${i + 1}`,
-    efficiency: v.efficiency_score || Math.random() * 100,
-    fuel: v.fuel_efficiency_actual || 2.5 + Math.random() * 2,
-    driver: v.driver_behavior_score || Math.random() * 100,
-    route: v.route_efficiency_score || Math.random() * 100,
-    maintenance: Math.random() * 100,
-  }));
+  // Scorecard — derive from advanced_metrics if available, else synthesize
+  const riskAssessment = advancedMetrics.length > 0
+    ? advancedMetrics.slice(0, 6).map(m => {
+        const val = parseFloat(String(m.value).replace(/[^0-9.]/g, '')) || 60;
+        const change = m.change_percent || m.change || 0;
+        return { area: m.label, score: Math.min(100, val), target: 90, trend: typeof change === 'number' ? change : parseFloat(String(change)) || 0 };
+      })
+    : [
+        { area: 'Operational Health', score: 62, target: 85, trend: -3 },
+        { area: 'Cost Efficiency', score: 58, target: 90, trend: -5 },
+        { area: 'Performance', score: 65, target: 85, trend: 3 },
+        { area: 'Optimization', score: 48, target: 80, trend: -8 },
+        { area: 'Maintenance', score: 72, target: 95, trend: 2 },
+        { area: 'Compliance', score: 81, target: 100, trend: 1 },
+      ];
 
-  const anomalyData = [
-    { anomaly: 'Excessive Idle Time', severity: 85, frequency: 12, impact: 4200 },
-    { anomaly: 'Poor Tire Pressure', severity: 72, frequency: 8, impact: 2100 },
-    { anomaly: 'Harsh Braking', severity: 68, frequency: 15, impact: 1800 },
-    { anomaly: 'Over-revving Engine', severity: 55, frequency: 6, impact: 1200 },
-    { anomaly: 'Inefficient Route', severity: 78, frequency: 10, impact: 3500 },
-  ];
-
-  // Risk assessment matrix
-  const riskAssessment = [
-    { area: 'Fleet Health', score: 42, target: 85, trend: -8 },
-    { area: 'Fuel Efficiency', score: 58, target: 90, trend: -5 },
-    { area: 'Driver Performance', score: 65, target: 85, trend: 3 },
-    { area: 'Route Optimization', score: 38, target: 80, trend: -12 },
-    { area: 'Maintenance Status', score: 72, target: 95, trend: 2 },
-    { area: 'Safety Compliance', score: 81, target: 100, trend: 1 },
-  ];
+  // Anomaly data — build from findings/insights or synthesize
+  const anomalyData = findings.length > 0
+    ? findings.slice(0, 5).map((f, i) => ({
+        anomaly: (f.finding || f.title || `Issue ${i + 1}`).slice(0, 30),
+        severity: f.risk_level === 'critical' ? 90 : f.risk_level === 'high' ? 75 : 55,
+        frequency: Math.floor(Math.random() * 15) + 3,
+        impact: parseInt(String(f.impact || '').replace(/[^0-9]/g, '')) || (3000 - i * 500),
+      }))
+    : insights.slice(0, 5).map((insight, i) => {
+        const text = typeof insight === 'string' ? insight : insight?.text || '';
+        return {
+          anomaly: text.slice(0, 30) || `Pattern ${i + 1}`,
+          severity: insight?.severity === 'critical' ? 90 : 65 - i * 5,
+          frequency: 10 - i,
+          impact: 4000 - i * 600,
+        };
+      }).filter(a => a.anomaly);
 
   return (
     <div className="w-full h-full bg-slate-950 text-white overflow-auto">
