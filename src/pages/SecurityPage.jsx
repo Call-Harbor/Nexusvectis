@@ -541,25 +541,31 @@ export default function SecurityPage() {
               If you discover a security vulnerability in the NexusVectis platform, we encourage responsible disclosure. We take all reports seriously and respond rapidly.
             </p>
             <div className="space-y-4">
-              <div>
-                <h3 className="text-white font-semibold mb-1">How to Report</h3>
-                <p className="text-slate-400 text-sm leading-relaxed">
-                  Email <span className="text-cyan-400">security@harborvision.dev</span> with a description, reproduction steps, potential impact, and any PoC.
-                </p>
-              </div>
-              <div>
-                <h3 className="text-white font-semibold mb-1">What to Expect</h3>
-                <p className="text-slate-400 text-sm leading-relaxed">
-                  Acknowledgement within 24 hours. Critical vulnerabilities targeted for resolution within 7 days.
-                </p>
-              </div>
-              <div>
-                <h3 className="text-white font-semibold mb-1">Scope</h3>
-                <p className="text-slate-400 text-sm leading-relaxed">
-                  In-scope: Web app, API, authentication, data isolation, GPS signal integrity. Out-of-scope: Social engineering, physical attacks, DoS against production.
-                </p>
-              </div>
-            </div>
+               <div>
+                 <h3 className="text-white font-semibold mb-1">How to Report</h3>
+                 <p className="text-slate-400 text-sm leading-relaxed">
+                   Email <span className="text-cyan-400">security@harborvision.dev</span> with a description, reproduction steps, potential impact, and any PoC.
+                 </p>
+               </div>
+               <div>
+                 <h3 className="text-white font-semibold mb-1">What to Expect</h3>
+                 <p className="text-slate-400 text-sm leading-relaxed">
+                   Acknowledgement within 24 hours. Critical vulnerabilities targeted for resolution within 7 days.
+                 </p>
+               </div>
+               <div>
+                 <h3 className="text-white font-semibold mb-1">Scope</h3>
+                 <p className="text-slate-400 text-sm leading-relaxed">
+                   In-scope: Web app, API, authentication, data isolation, GPS signal integrity. Out-of-scope: Social engineering, physical attacks, DoS against production.
+                 </p>
+               </div>
+               <div>
+                 <h3 className="text-white font-semibold mb-1">Company Details</h3>
+                 <p className="text-slate-400 text-sm leading-relaxed">
+                   HarborVision, Vesterbrogade 123, 1620 København V, Denmark. VAT: 42662215
+                 </p>
+               </div>
+             </div>
           </motion.div>
         </div>
       </section>

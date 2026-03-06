@@ -266,7 +266,8 @@ export default function Contact() {
                       <p className="text-slate-400">
                         Vesterbrogade 123<br />
                         1620 København V<br />
-                        Denmark
+                        Denmark<br />
+                        VAT: 42662215
                       </p>
                     </div>
                   </div>
