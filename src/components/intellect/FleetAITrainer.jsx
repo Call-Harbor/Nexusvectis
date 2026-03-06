@@ -185,6 +185,40 @@ export default function FleetAITrainer({ onClose }) {
 
   const removeTrainingData = (id) => setTrainingData(trainingData.filter(d => d.id !== id));
 
+  const crawlLink = async (dataItem) => {
+    if (dataItem.type !== 'link') return;
+    setCrawlingIds(prev => new Set(prev).add(dataItem.id));
+    setSystemLog(prev => [...prev, `[CRAWL] Fetching: ${dataItem.content}`]);
+    try {
+      const res = await base44.functions.invoke('crawlUrl', { urls: [dataItem.content] });
+      const result = res.data?.results?.[0];
+      if (result?.success && result?.content) {
+        // Replace link entry with a guide entry containing the scraped content
+        setTrainingData(prev => prev.map(d =>
+          d.id === dataItem.id
+            ? { ...d, type: 'guide', content: result.content, label: `[Crawled] ${dataItem.label || dataItem.content}` }
+            : d
+        ));
+        setSystemLog(prev => [...prev, `[CRAWL] ✓ Scraped ${result.char_count?.toLocaleString()} chars from ${dataItem.content}`]);
+      } else {
+        setSystemLog(prev => [...prev, `[CRAWL] ✗ Failed: ${result?.error || 'Unknown error'}`]);
+      }
+    } catch (e) {
+      setSystemLog(prev => [...prev, `[CRAWL] ✗ Error: ${e.message}`]);
+    }
+    setCrawlingIds(prev => { const s = new Set(prev); s.delete(dataItem.id); return s; });
+  };
+
+  const crawlAllLinks = async () => {
+    const links = trainingData.filter(d => d.type === 'link');
+    if (links.length === 0) return;
+    setSystemLog(prev => [...prev, `[CRAWL] Batch crawling ${links.length} link(s)...`]);
+    for (const link of links) {
+      await crawlLink(link);
+    }
+    setSystemLog(prev => [...prev, `[CRAWL] Batch complete`]);
+  };
+
   const handleFileUpload = async (e) => {
     const file = e.target.files?.[0];
     if (file) {
