@@ -286,11 +286,12 @@ export default function HarborInfo() {
         {/* Cognitive Architecture */}
         <section className="max-w-6xl mx-auto px-6 py-16">
           <div className="mb-10">
-            <div className="flex items-center gap-3 mb-3">
+            <div className="flex items-center gap-3 mb-2">
               <Brain className="w-6 h-6 text-amber-400" />
               <h2 className="text-4xl font-black font-mono tracking-widest uppercase" style={{ color: '#f59e0b', textShadow: '0 0 30px rgba(245,158,11,0.3)' }}>COGNITIVE ARCHITECTURE</h2>
             </div>
-            <p className="text-slate-400 text-base max-w-2xl font-mono text-xs tracking-wide">Every HARBOR response executes a 6-step internal reasoning pipeline before producing output. Click each step to expand.</p>
+            <p className="text-slate-300 text-base max-w-3xl mb-1">Every HARBOR response is the output of a deterministic 6-step reasoning pipeline. No shortcuts. No hallucinated confidence. Every step is traceable.</p>
+            <p className="text-slate-500 text-xs font-mono tracking-wide max-w-2xl">Click any step to see exactly what happens inside HARBOR's reasoning engine at that stage.</p>
           </div>
           <div className="space-y-3">
             {ARCHITECTURE_STEPS.map((step, i) => <ExpandableStep key={i} step={step} i={i} />)}
