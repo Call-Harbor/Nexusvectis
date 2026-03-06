@@ -365,7 +365,7 @@ export default function TermsOfService() {
               If you have any questions about these Terms of Service, please contact us.
             </p>
             <div className="space-y-2 text-slate-300">
-              <p><strong>Email:</strong> legal@nexusvectis.com</p>
+              <p><strong>Email:</strong> legal@harborvision.dev</p>
               <p><strong>Address:</strong> NexusVectis, Vesterbrogade 123, 1620 København V, Denmark</p>
             </div>
           </motion.div>

@@ -156,7 +156,7 @@ export default function Newsroom() {
             </div>
 
             <p className="text-slate-400 text-sm mt-6">
-              For media inquiries, please contact: <a href="mailto:press@nexusvectis.com" className="text-blue-400 hover:text-blue-300">press@nexusvectis.com</a>
+              For media inquiries, please contact: <a href="mailto:press@harborvision.dev" className="text-blue-400 hover:text-blue-300">press@harborvision.dev</a>
             </p>
           </motion.div>
         </div>

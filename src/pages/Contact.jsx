@@ -94,19 +94,19 @@ export default function Contact() {
               {
                 icon: Mail,
                 title: "Sales & Demo",
-                content: "sales@nexusvectis.com",
+                content: "sales@harborvision.dev",
                 desc: "Get a personalized demo and discuss pricing"
               },
               {
                 icon: MessageSquare,
                 title: "Support",
-                content: "support@nexusvectis.com",
+                content: "support@harborvision.dev",
                 desc: "Technical assistance and platform help"
               },
               {
                 icon: Phone,
                 title: "Enterprise",
-                content: "enterprise@nexusvectis.com",
+                content: "enterprise@harborvision.dev",
                 desc: "Custom solutions for large organizations"
               }
             ].map((contact, idx) => {

@@ -319,7 +319,7 @@ export default function PrivacyPolicy() {
               ))}
             </div>
             <p className="text-slate-300 leading-relaxed mt-6">
-              To exercise any of these rights, please contact us at <a href="mailto:privacy@nexusvectis.com" className="text-emerald-400 hover:text-emerald-300 underline">privacy@nexusvectis.com</a>
+              To exercise any of these rights, please contact us at <a href="mailto:privacy@harborvision.dev" className="text-emerald-400 hover:text-emerald-300 underline">privacy@harborvision.dev</a>
             </p>
           </motion.div>
 
@@ -335,7 +335,7 @@ export default function PrivacyPolicy() {
               If you have any questions or concerns about this Privacy Policy or our data practices, please don't hesitate to contact us.
             </p>
             <div className="space-y-2 text-slate-300">
-              <p><strong>Email:</strong> privacy@nexusvectis.com</p>
+              <p><strong>Email:</strong> privacy@harborvision.dev</p>
               <p><strong>Address:</strong> NexusVectis, Vesterbrogade 123, 1620 København V, Denmark</p>
             </div>
           </motion.div>

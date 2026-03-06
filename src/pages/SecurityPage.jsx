@@ -544,7 +544,7 @@ export default function SecurityPage() {
               <div>
                 <h3 className="text-white font-semibold mb-1">How to Report</h3>
                 <p className="text-slate-400 text-sm leading-relaxed">
-                  Email <span className="text-cyan-400">security@nexusvectis.com</span> with a description, reproduction steps, potential impact, and any PoC.
+                  Email <span className="text-cyan-400">security@harborvision.dev</span> with a description, reproduction steps, potential impact, and any PoC.
                 </p>
               </div>
               <div>
