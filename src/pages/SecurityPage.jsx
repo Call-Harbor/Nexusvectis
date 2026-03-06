@@ -611,6 +611,7 @@ export default function SecurityPage() {
               <h4 className="text-white font-bold mb-4">Platform</h4>
               <ul className="space-y-2 text-slate-400">
                 <li><Link to={createPageUrl("FleetAIPage")} className="hover:text-violet-400 transition-colors">FLEET AI</Link></li>
+                <li><Link to={createPageUrl("HarborInfo")} className="hover:text-amber-400 transition-colors">H.A.R.B.O.R. AI</Link></li>
                 <li><Link to={createPageUrl("LiveTrackingPage")} className="hover:text-violet-400 transition-colors">Live Tracking</Link></li>
                 <li><Link to={createPageUrl("AnalyticsPage")} className="hover:text-violet-400 transition-colors">Analytics</Link></li>
                 <li><Link to={createPageUrl("IntegrationsPage")} className="hover:text-violet-400 transition-colors">Integrations</Link></li>
