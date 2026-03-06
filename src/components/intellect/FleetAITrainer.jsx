@@ -265,6 +265,129 @@ export default function FleetAITrainer({ onClose }) {
     }, 600);
   };
 
+  // ─── REAL FINE-TUNING FUNCTIONS ──────────────────────────────────────────
+  const buildTrainingJsonl = () => {
+    // Convert training data into Mistral fine-tuning JSONL format
+    const examples = [];
+    for (const d of trainingData) {
+      if (d.type === 'faq') {
+        // Try to parse Q/A pairs
+        const lines = d.content.split('\n').filter(l => l.trim());
+        for (let i = 0; i < lines.length - 1; i++) {
+          const q = lines[i].replace(/^Q:\s*/i, '').trim();
+          const a = lines[i + 1].replace(/^A:\s*/i, '').trim();
+          if (q && a && lines[i].match(/^Q:/i) && lines[i + 1].match(/^A:/i)) {
+            examples.push({ messages: [{ role: 'user', content: q }, { role: 'assistant', content: a }] });
+            i++;
+          }
+        }
+      } else if (d.type === 'guide' || d.type === 'filter') {
+        // Chunk into instruction/response pairs
+        const chunks = d.content.match(/.{1,500}/g) || [];
+        for (let i = 0; i < chunks.length; i += 2) {
+          if (chunks[i] && chunks[i + 1]) {
+            examples.push({ messages: [{ role: 'user', content: `Context: ${d.label}. ${chunks[i]}` }, { role: 'assistant', content: chunks[i + 1] }] });
+          }
+        }
+      }
+    }
+    return examples;
+  };
+
+  const realUploadAndStartFt = async () => {
+    setFtError(null);
+    setFtStep('uploading');
+    setSystemLog(prev => [...prev, '[REAL-FT] Building training JSONL from knowledge base...']);
+    const examples = buildTrainingJsonl();
+    if (examples.length < 8) {
+      setFtError(`Only ${examples.length} training examples found. Mistral requires at least 8. Please add more Q&A FAQ entries (format: Q: ..., A: ...) to your training data.`);
+      setFtStep('config');
+      return;
+    }
+    setSystemLog(prev => [...prev, `[REAL-FT] ${examples.length} examples prepared. Uploading to Mistral...`]);
+    try {
+      const uploadRes = await base44.functions.invoke('harborFinetune', {
+        action: 'upload_file',
+        training_data: examples,
+      });
+      const fileId = uploadRes.data.file_id;
+      setFtFileId(fileId);
+      setSystemLog(prev => [...prev, `[REAL-FT] File uploaded: ${fileId}`]);
+      // Create job
+      setFtStep('training');
+      setSystemLog(prev => [...prev, `[REAL-FT] Creating fine-tuning job on ${ftModel}...`]);
+      const jobRes = await base44.functions.invoke('harborFinetune', {
+        action: 'create_job',
+        training_file_id: fileId,
+        model: ftModel,
+        suffix: ftSuffix,
+        hyperparameters: { training_steps: parseInt(ftSteps), learning_rate: parseFloat(ftLr) },
+      });
+      const job = jobRes.data.job;
+      setFtJobId(job.id);
+      setFtJob(job);
+      setSystemLog(prev => [...prev, `[REAL-FT] Job created: ${job.id} — status: ${job.status}`]);
+      // Start polling
+      startFtPolling(job.id);
+    } catch (e) {
+      setFtError(e?.response?.data?.error || e.message);
+      setFtStep('config');
+    }
+  };
+
+  const startFtPolling = (jobId) => {
+    if (ftPollRef.current) clearInterval(ftPollRef.current);
+    ftPollRef.current = setInterval(async () => {
+      try {
+        const res = await base44.functions.invoke('harborFinetune', { action: 'get_job', job_id: jobId });
+        const job = res.data.job;
+        setFtJob(job);
+        setSystemLog(prev => [...prev.slice(-8), `[REAL-FT] Job ${jobId}: ${job.status}${job.trained_tokens ? ` — ${job.trained_tokens} tokens` : ''}`]);
+        if (job.status === 'SUCCESS' || job.status === 'success' || job.fine_tuned_model) {
+          clearInterval(ftPollRef.current);
+          setFtStep('done');
+          setSystemLog(prev => [...prev, `[REAL-FT] ✓ Fine-tuned model ready: ${job.fine_tuned_model}`]);
+          loadFtJobs();
+          loadFtModels();
+        } else if (job.status === 'FAILED' || job.status === 'failed' || job.status === 'CANCELLED') {
+          clearInterval(ftPollRef.current);
+          setFtError(`Job ${job.status}: ${job.error_message || 'Unknown error'}`);
+          setFtStep('config');
+        }
+      } catch (e) { /* continue polling */ }
+    }, 8000);
+  };
+
+  const loadFtJobs = async () => {
+    try {
+      const res = await base44.functions.invoke('harborFinetune', { action: 'list_jobs' });
+      setFtJobs(res.data.jobs || []);
+    } catch (_) {}
+  };
+
+  const loadFtModels = async () => {
+    try {
+      const res = await base44.functions.invoke('harborFinetune', { action: 'list_models' });
+      setFtFineTunedModels(res.data.models || []);
+    } catch (_) {}
+  };
+
+  const cancelFtJob = async (jobId) => {
+    try {
+      await base44.functions.invoke('harborFinetune', { action: 'cancel_job', job_id: jobId });
+      setSystemLog(prev => [...prev, `[REAL-FT] Job ${jobId} cancelled`]);
+      if (ftPollRef.current) clearInterval(ftPollRef.current);
+      setFtStep('config');
+      loadFtJobs();
+    } catch (e) { setFtError(e.message); }
+  };
+
+  useEffect(() => {
+    loadFtJobs();
+    loadFtModels();
+    return () => { if (ftPollRef.current) clearInterval(ftPollRef.current); };
+  }, []);
+
   const analyzeWithAI = async () => {
     setIsAnalyzing(true);
     setSystemLog(prev => [...prev, '[HARBOR] Initiating deep model analysis...']);
