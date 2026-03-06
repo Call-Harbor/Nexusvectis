@@ -91,28 +91,28 @@ const DOMAIN_DEEP = [
 
 const USE_CASES = [
   {
-    title: "Daily Fleet Briefing",
-    query: `"Give me this morning's fleet status"`,
-    response: "HARBOR scans all active vehicles, cross-references maintenance schedules, open alerts, and route ETA deviations. Delivers a structured briefing: 3 vehicles requiring immediate attention, 2 critical alerts, projected on-time delivery rate of 87% today, and €4,200 exposure from a cold-chain shipment running 2°C above SLA threshold.",
-    icon: Clock, color: "text-cyan-400"
+    title: "Deep Fleet Analysis",
+    query: `"Analyser mine lavest-ydende køretøjer"`,
+    response: "HARBOR triggers runDeepAnalysis(): calls InvokeLLM with 400+ word structured prompt, generates 16-22 data points, opens an AdvancedFleetAnalysisHologram window with 5 tabs (Overview, Performance, Anomalies, Costs, Actions), radar charts, scatter plots, cost breakdowns, risk matrices and EUR-quantified action plans.",
+    icon: BarChart3, color: "text-cyan-400"
   },
   {
-    title: "Anomaly Investigation",
-    query: `"Why is TRK-2025-001 at 34% efficiency?"`,
-    response: "Root cause trace: excessive idle time (2.8h/day avg.) + tire pressure at 62% of optimal + assigned to a route with 4 suboptimal waypoints adding 47km. Combined impact: €1,840/month overspend. HARBOR generates a 3-action remediation plan with EUR-quantified ROI for each intervention.",
-    icon: Target, color: "text-red-400"
+    title: "Create Route (AI-Executed)",
+    query: `"Opret en rute fra København til Hamburg"`,
+    response: "HARBOR parses intent → action: CREATE_ROUTE. Calls planRoute backend function for waypoints, distance and CO2 estimate. Creates a Route entity with ai_optimized: true. Invalidates the routes query cache. Optionally opens a route visualization window — all without user touching any form.",
+    icon: Route, color: "text-emerald-400"
   },
   {
-    title: "Predictive Maintenance",
-    query: `"Which vehicles need maintenance in the next 30 days?"`,
-    response: "Analyzes 8 risk factors per vehicle: mileage since last service, component age curves, fuel consumption drift, driver behavior score, route stress index, historical failure patterns, parts lead time, and downtime cost. Returns a prioritized schedule with failure probability percentages and cost impact of delay.",
-    icon: Wrench, color: "text-amber-400"
+    title: "HARBOR Trainer Knowledge Injection",
+    query: `User uploads FAQ file in FleetAITrainer`,
+    response: "File is uploaded via UploadFile integration. Data is stored as training_data on a FleetAIModel entity. On next HARBOR query, harborCore fetches the active FleetAIModel, splits the knowledge base into 6K-char chunks, and injects them as alternating user/assistant messages before the actual query — giving HARBOR org-specific knowledge.",
+    icon: FlaskConical, color: "text-amber-400"
   },
   {
-    title: "Route Optimization",
-    query: `"Optimize tomorrow's shipment to Hamburg"`,
-    response: "Evaluates 12 route variants. Factors in: current traffic, weather forecast, LEZ restrictions, fuel depot locations, driver hours remaining, port window times, and fuel cost differential. Returns Best / Likely / Worst ETA with confidence %, estimated fuel cost, and CO2e for each option.",
-    icon: MapPin, color: "text-emerald-400"
+    title: "API Inference (External Developer)",
+    query: `POST /functions/harborModelInference { model_id: "snap_xyz", input: {...} }`,
+    response: "harborModelInference validates Bearer key via SHA-256 hash, verifies model belongs to org, routes to harborCore in 'inference' mode, logs response time to APIUsage, and returns { status, model, result: { prediction, confidence, recommended_actions, anomalies } }.",
+    icon: Server, color: "text-violet-400"
   },
 ];
 
