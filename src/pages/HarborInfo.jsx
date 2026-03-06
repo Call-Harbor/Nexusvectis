@@ -117,12 +117,12 @@ const USE_CASES = [
 ];
 
 const PERFORMANCE_SPECS = [
-  { label: "Response Latency", value: "1.2–3.8s", note: "avg. for command mode queries", color: "text-cyan-400" },
-  { label: "Context Window", value: "128K tokens", note: "Mistral Large — full fleet history fits", color: "text-violet-400" },
-  { label: "Knowledge Chunks", value: "Unlimited", note: "via HARBOR Trainer injection", color: "text-emerald-400" },
-  { label: "Parallel Analyses", value: "Up to 6", note: "concurrent deep analysis windows", color: "text-amber-400" },
-  { label: "Confidence Floor", value: "60%", note: "minimum before surfacing prediction", color: "text-orange-400" },
-  { label: "EUR Quantification", value: "100%", note: "of financial impact claims", color: "text-rose-400" },
+  { label: "Context Window", value: "128K tokens", note: "Mistral Large — per query", color: "text-cyan-400" },
+  { label: "Primary Model", value: "Mistral Large", note: "reasoning, commands, chat", color: "text-violet-400" },
+  { label: "Vision Model", value: "Pixtral Large", note: "image & document analysis", color: "text-emerald-400" },
+  { label: "Knowledge Base", value: "Trainable", note: "via HARBOR Trainer injection", color: "text-amber-400" },
+  { label: "API Auth", value: "Bearer Key", note: "SHA-256 hashed, scoped per org", color: "text-orange-400" },
+  { label: "Modes", value: "3", note: "chat · command · inference", color: "text-rose-400" },
 ];
 
 function ExpandableStep({ step, i }) {
