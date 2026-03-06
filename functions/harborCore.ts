@@ -147,8 +147,18 @@ Deno.serve(async (req) => {
       }
 
       if (selectedModel && selectedModel.training_data?.length > 0) {
+        // Cap each training data entry and total KB to avoid token overflow
+        const MAX_KB_CHARS = 20000; // ~5k tokens — safe margin under 262k limit
+        let kbParts = [];
+        let totalChars = 0;
+        for (const d of selectedModel.training_data) {
+          const entry = `[${(d.type || 'data').toUpperCase()} — ${d.label}]:\n${(d.content || '').substring(0, 2000)}`;
+          if (totalChars + entry.length > MAX_KB_CHARS) break;
+          kbParts.push(entry);
+          totalChars += entry.length;
+        }
         knowledgeBase = `\n\n[HARBOR KNOWLEDGE BASE — Model: ${selectedModel.name} v${selectedModel.version || '1.0'}, Accuracy: ${selectedModel.accuracy || 0}%]\n` +
-          selectedModel.training_data.map(d => `[${(d.type || 'data').toUpperCase()} — ${d.label}]:\n${d.content}`).join('\n\n---\n');
+          kbParts.join('\n\n---\n');
       }
     } catch (_) {
       // No models yet — proceed without knowledge base
