@@ -63,6 +63,7 @@ export default function FleetAITrainer({ onClose }) {
   const [newDataContent, setNewDataContent] = useState('');
   const [newDataLabel, setNewDataLabel] = useState('');
   const [showAddData, setShowAddData] = useState(false);
+  const [crawlingIds, setCrawlingIds] = useState(new Set());
   const [aiInsights, setAiInsights] = useState([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [liveAccuracy, setLiveAccuracy] = useState(selectedModel.accuracy);
