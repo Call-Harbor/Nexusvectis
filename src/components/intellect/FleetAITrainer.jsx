@@ -942,75 +942,222 @@ export default function FleetAITrainer({ onClose }) {
             </AnimatePresence>
           </TabsContent>
 
-          {/* Fine-tune Tab */}
+          {/* Fine-tune Tab — REAL Mistral Fine-Tuning */}
           <TabsContent value="finetune" className="flex-1 overflow-auto p-4 space-y-3 mt-0">
-            <div className="relative rounded-lg border border-violet-500/20 bg-black/40 p-4 space-y-3 overflow-hidden">
-              <CornerBrackets color="cyan" />
-              <p className="text-[10px] font-mono text-violet-400/70 tracking-widest flex items-center gap-2">
-                <Sliders className="w-3.5 h-3.5" /> FINE-TUNING CONFIG
-              </p>
-              <div className="grid grid-cols-2 gap-3">
-                {[
-                  { label: 'METHOD', key: 'method', options: ['lora', 'qlora', 'prefix', 'adapter'] },
-                ].map(field => (
-                  <div key={field.key} className="col-span-2">
-                    <p className="text-[9px] font-mono text-slate-500 mb-1">{field.label}</p>
-                    <select value={finetuneConfig[field.key]} onChange={e => setFinetuneConfig(p => ({ ...p, [field.key]: e.target.value }))} className="w-full bg-black border border-violet-500/30 rounded px-3 py-2 text-violet-300 text-xs font-mono">
-                      {field.options.map(o => <option key={o} value={o}>{o.toUpperCase()}</option>)}
-                    </select>
-                  </div>
-                ))}
-                {[
-                  { label: 'LEARNING RATE', key: 'lr' },
-                  { label: 'STEPS', key: 'steps' },
-                  { label: 'LORA RANK', key: 'rank' },
-                ].map(field => (
-                  <div key={field.key}>
-                    <p className="text-[9px] font-mono text-slate-500 mb-1">{field.label}</p>
-                    <input
-                      type="text"
-                      value={finetuneConfig[field.key]}
-                      onChange={e => setFinetuneConfig(p => ({ ...p, [field.key]: e.target.value }))}
-                      className="w-full bg-black border border-violet-500/30 rounded px-2 py-1.5 text-violet-300 text-xs font-mono"
-                    />
-                  </div>
-                ))}
-              </div>
+
+            {/* Header badge */}
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-[10px] font-mono text-violet-400 tracking-widest border border-violet-500/30 px-2 py-0.5 rounded">MISTRAL FINE-TUNING API</span>
+              <span className="text-[10px] font-mono text-slate-500">Real model training via Mistral La Plateforme</span>
             </div>
 
-            <motion.button
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={startFinetuning}
-              disabled={isFinetuning}
-              className={`w-full py-2.5 rounded border font-mono text-xs tracking-widest flex items-center justify-center gap-2 transition-all ${
-                isFinetuning ? 'border-violet-500/30 text-violet-500/50 cursor-not-allowed' : 'border-violet-500/60 text-violet-300 hover:bg-violet-500/10'
-              }`}
-              style={isFinetuning ? {} : { boxShadow: '0 0 15px rgba(139,92,246,0.15)' }}
-            >
-              {isFinetuning ? (
-                <><motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}><Sliders className="w-3.5 h-3.5" /></motion.div> FINE-TUNING IN PROGRESS...</>
-              ) : (
-                <><Sliders className="w-3.5 h-3.5" /> INITIATE FINE-TUNING</>
+            {/* Error banner */}
+            <AnimatePresence>
+              {ftError && (
+                <motion.div initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                  className="rounded-lg border border-red-500/40 bg-red-500/10 p-3 flex items-start gap-2">
+                  <AlertCircle className="w-3.5 h-3.5 text-red-400 flex-shrink-0 mt-0.5" />
+                  <p className="text-xs font-mono text-red-300">{ftError}</p>
+                  <button onClick={() => setFtError(null)} className="ml-auto text-red-500 hover:text-red-300"><XCircle className="w-3.5 h-3.5" /></button>
+                </motion.div>
               )}
-            </motion.button>
+            </AnimatePresence>
 
-            {isFinetuning && (
-              <div className="relative rounded-lg border border-violet-500/20 bg-black/40 p-3 overflow-hidden">
+            {/* Step: config */}
+            {ftStep === 'config' && (
+              <div className="space-y-3">
+                <div className="relative rounded-lg border border-violet-500/20 bg-black/40 p-4 space-y-3 overflow-hidden">
+                  <CornerBrackets color="cyan" />
+                  <p className="text-[10px] font-mono text-violet-400/70 tracking-widest flex items-center gap-2">
+                    <Sliders className="w-3.5 h-3.5" /> FINE-TUNE CONFIGURATION
+                  </p>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="col-span-2">
+                      <p className="text-[9px] font-mono text-slate-500 mb-1">BASE MODEL</p>
+                      <select value={ftModel} onChange={e => setFtModel(e.target.value)}
+                        className="w-full bg-black border border-violet-500/30 rounded px-3 py-2 text-violet-300 text-xs font-mono">
+                        <option value="open-mistral-7b">open-mistral-7b (fastest, cheapest)</option>
+                        <option value="open-mixtral-8x7b">open-mixtral-8x7b (balanced)</option>
+                        <option value="mistral-small-latest">mistral-small-latest (high quality)</option>
+                        <option value="codestral-latest">codestral-latest (code tasks)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <p className="text-[9px] font-mono text-slate-500 mb-1">TRAINING STEPS</p>
+                      <input type="number" value={ftSteps} onChange={e => setFtSteps(e.target.value)}
+                        className="w-full bg-black border border-violet-500/30 rounded px-2 py-1.5 text-violet-300 text-xs font-mono" min="10" max="2000" />
+                    </div>
+                    <div>
+                      <p className="text-[9px] font-mono text-slate-500 mb-1">LEARNING RATE</p>
+                      <input type="text" value={ftLr} onChange={e => setFtLr(e.target.value)}
+                        className="w-full bg-black border border-violet-500/30 rounded px-2 py-1.5 text-violet-300 text-xs font-mono" />
+                    </div>
+                    <div className="col-span-2">
+                      <p className="text-[9px] font-mono text-slate-500 mb-1">MODEL SUFFIX (name tag)</p>
+                      <input type="text" value={ftSuffix} onChange={e => setFtSuffix(e.target.value)} placeholder="harbor-fleet"
+                        className="w-full bg-black border border-violet-500/30 rounded px-2 py-1.5 text-violet-300 text-xs font-mono" />
+                    </div>
+                  </div>
+
+                  {/* Training data preview */}
+                  <div className="rounded border border-violet-500/20 bg-black/60 p-2">
+                    <p className="text-[9px] font-mono text-slate-500 mb-1.5">TRAINING DATA SOURCE</p>
+                    <div className="space-y-1">
+                      {trainingData.length === 0 ? (
+                        <p className="text-[10px] font-mono text-slate-600">No training data — go to DATA tab to add Q&amp;A pairs</p>
+                      ) : (
+                        trainingData.map((d, i) => (
+                          <div key={i} className="flex items-center gap-2 text-[10px] font-mono">
+                            <span className={`px-1.5 py-0.5 rounded border text-[9px] ${
+                              d.type === 'faq' ? 'border-emerald-500/30 text-emerald-400' :
+                              d.type === 'file' ? 'border-cyan-500/30 text-cyan-400' :
+                              'border-amber-500/30 text-amber-400'
+                            }`}>{d.type.toUpperCase()}</span>
+                            <span className="text-slate-400 truncate">{d.label}</span>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                    <p className="text-[9px] font-mono text-slate-600 mt-2">⚠ FAQ entries (Q: / A: format) are converted to training examples. Min 8 examples required.</p>
+                  </div>
+                </div>
+
+                <motion.button
+                  whileHover={{ scale: 1.01 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={realUploadAndStartFt}
+                  className="w-full py-2.5 rounded border border-violet-500/60 text-violet-300 font-mono text-xs tracking-widest flex items-center justify-center gap-2 hover:bg-violet-500/10 transition-all"
+                  style={{ boxShadow: '0 0 15px rgba(139,92,246,0.15)' }}
+                >
+                  <Zap className="w-3.5 h-3.5" /> START REAL FINE-TUNING
+                </motion.button>
+              </div>
+            )}
+
+            {/* Step: uploading */}
+            {ftStep === 'uploading' && (
+              <div className="relative rounded-lg border border-violet-500/30 bg-black/40 p-6 flex flex-col items-center gap-3 overflow-hidden">
                 <CornerBrackets color="cyan" />
-                <div className="flex justify-between text-[10px] font-mono mb-2">
-                  <span className="text-violet-400/60">FINE-TUNE PROGRESS</span>
-                  <span className="text-violet-300">{Math.round(finetuneProgress)}%</span>
+                <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1.5, ease: 'linear' }}>
+                  <Loader2 className="w-8 h-8 text-violet-400" />
+                </motion.div>
+                <p className="text-xs font-mono text-violet-300">Uploading training file to Mistral La Plateforme...</p>
+                <p className="text-[10px] font-mono text-slate-500">Building JSONL from {trainingData.length} knowledge entries</p>
+              </div>
+            )}
+
+            {/* Step: training (job running) */}
+            {(ftStep === 'training' || ftStep === 'done') && ftJob && (
+              <div className="space-y-3">
+                <div className="relative rounded-lg border border-violet-500/30 bg-black/40 p-4 space-y-3 overflow-hidden">
+                  <CornerBrackets color="cyan" />
+                  <div className="flex items-center justify-between">
+                    <p className="text-[10px] font-mono text-violet-400/70 tracking-widest flex items-center gap-2">
+                      <Activity className="w-3.5 h-3.5" /> FINE-TUNING JOB
+                    </p>
+                    {ftStep === 'training' && (
+                      <button onClick={() => cancelFtJob(ftJob.id)}
+                        className="text-[10px] font-mono text-red-400 border border-red-500/30 px-2 py-0.5 rounded hover:bg-red-500/10 transition-all">
+                        CANCEL
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-[10px] font-mono">
+                    <div>
+                      <p className="text-slate-500">JOB ID</p>
+                      <p className="text-violet-300 truncate">{ftJob.id}</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-500">STATUS</p>
+                      <p className={`font-bold ${
+                        ftJob.status === 'SUCCESS' || ftJob.status === 'success' ? 'text-emerald-400' :
+                        ftJob.status === 'FAILED' || ftJob.status === 'failed' ? 'text-red-400' :
+                        'text-amber-400'
+                      }`}>{(ftJob.status || '').toUpperCase()}</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-500">MODEL</p>
+                      <p className="text-slate-300 truncate">{ftJob.model || ftModel}</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-500">TRAINED TOKENS</p>
+                      <p className="text-slate-300">{ftJob.trained_tokens?.toLocaleString() || '—'}</p>
+                    </div>
+                  </div>
+
+                  {ftStep === 'training' && (
+                    <div className="flex items-center gap-2">
+                      <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 2, ease: 'linear' }}>
+                        <Loader2 className="w-3.5 h-3.5 text-violet-400" />
+                      </motion.div>
+                      <p className="text-[10px] font-mono text-violet-400/70">Polling every 8s — this may take minutes to hours depending on dataset size</p>
+                    </div>
+                  )}
+
+                  {ftStep === 'done' && ftJob.fine_tuned_model && (
+                    <div className="rounded border border-emerald-500/30 bg-emerald-500/5 p-3 space-y-1">
+                      <p className="text-[10px] font-mono text-emerald-400 flex items-center gap-1"><CheckSquare className="w-3 h-3" /> FINE-TUNED MODEL READY</p>
+                      <code className="text-xs font-mono text-emerald-300 break-all">{ftJob.fine_tuned_model}</code>
+                      <p className="text-[9px] font-mono text-slate-500 mt-1">Use this model ID in harborCore or Mistral API calls</p>
+                    </div>
+                  )}
                 </div>
-                <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                  <motion.div
-                    className="h-full rounded-full"
-                    style={{ background: 'linear-gradient(90deg, #8b5cf6, #a78bfa, #c4b5fd)' }}
-                    animate={{ width: `${finetuneProgress}%` }}
-                    transition={{ duration: 0.3 }}
-                  />
+
+                {ftStep === 'done' && (
+                  <motion.button whileHover={{ scale: 1.01 }} onClick={() => { setFtStep('config'); setFtJob(null); setFtJobId(null); loadFtJobs(); loadFtModels(); }}
+                    className="w-full py-2 rounded border border-violet-500/40 text-violet-300 font-mono text-xs tracking-widest hover:bg-violet-500/10 transition-all">
+                    + START NEW FINE-TUNE JOB
+                  </motion.button>
+                )}
+              </div>
+            )}
+
+            {/* Past jobs */}
+            {ftJobs.length > 0 && (
+              <div className="relative rounded-lg border border-amber-500/20 bg-black/40 p-3 overflow-hidden">
+                <CornerBrackets />
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-[10px] font-mono text-amber-400/70 tracking-widest">PAST JOBS</p>
+                  <button onClick={loadFtJobs} className="text-slate-500 hover:text-amber-400 transition-colors"><RefreshCw className="w-3 h-3" /></button>
                 </div>
-                <p className="text-[9px] font-mono text-slate-600 mt-2">Adapting weights via {finetuneConfig.method.toUpperCase()} — step {Math.round(finetuneProgress / 100 * parseInt(finetuneConfig.steps))}/{finetuneConfig.steps}</p>
+                <div className="space-y-1.5">
+                  {ftJobs.slice(0, 5).map((job, i) => (
+                    <div key={job.id} className="flex items-center justify-between text-[10px] font-mono">
+                      <span className="text-slate-400 truncate max-w-[180px]">{job.id}</span>
+                      <span className={`px-1.5 py-0.5 rounded border text-[9px] ${
+                        job.status === 'SUCCESS' || job.status === 'success' ? 'border-emerald-500/30 text-emerald-400' :
+                        job.status === 'RUNNING' || job.status === 'running' ? 'border-amber-500/30 text-amber-400' :
+                        job.status === 'FAILED' || job.status === 'failed' ? 'border-red-500/30 text-red-400' :
+                        'border-slate-500/30 text-slate-400'
+                      }`}>{(job.status || '').toUpperCase()}</span>
+                      {(job.status === 'RUNNING' || job.status === 'running') && (
+                        <button onClick={() => { setFtJobId(job.id); setFtJob(job); setFtStep('training'); startFtPolling(job.id); }}
+                          className="text-violet-400 hover:text-violet-300 font-mono text-[9px] border border-violet-500/30 px-1.5 py-0.5 rounded hover:bg-violet-500/10 transition-all">
+                          MONITOR
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Fine-tuned models */}
+            {ftFineTunedModels.length > 0 && (
+              <div className="relative rounded-lg border border-emerald-500/20 bg-black/40 p-3 overflow-hidden">
+                <CornerBrackets color="cyan" />
+                <p className="text-[10px] font-mono text-emerald-400/70 tracking-widest mb-2">YOUR FINE-TUNED MODELS</p>
+                <div className="space-y-1.5">
+                  {ftFineTunedModels.map((m, i) => (
+                    <div key={m.id} className="flex items-center justify-between text-[10px] font-mono">
+                      <span className="text-emerald-300 truncate max-w-[220px]">{m.id}</span>
+                      <button onClick={() => navigator.clipboard.writeText(m.id)}
+                        className="text-slate-500 hover:text-cyan-400 transition-colors"><Copy className="w-3 h-3" /></button>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </TabsContent>
