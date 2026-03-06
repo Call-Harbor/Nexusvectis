@@ -265,8 +265,8 @@ export default function Contact() {
                       <h3 className="text-white font-semibold mb-1">Address</h3>
                       <p className="text-slate-400">
                         H.A.R.B.O.R Vision<br />
-                        Vesterbrogade 123<br />
-                        1620 København V<br />
+                        Danas Have 65, 2. 26<br />
+                        4200 Slagelse<br />
                         Denmark<br />
                         VAT: 42662215
                       </p>

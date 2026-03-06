@@ -562,7 +562,7 @@ export default function SecurityPage() {
                <div>
                  <h3 className="text-white font-semibold mb-1">Company Details</h3>
                  <p className="text-slate-400 text-sm leading-relaxed">
-                   H.A.R.B.O.R Vision, Vesterbrogade 123, 1620 København V, Denmark. VAT: 42662215
+                   H.A.R.B.O.R Vision, Danas Have 65, 2. 26, 4200 Slagelse, Denmark. VAT: 42662215
                  </p>
                </div>
              </div>
