@@ -134,6 +134,13 @@ export default function Home() {
             className="h-12 sm:h-20 w-auto"
           />
           <div className="flex items-center gap-2 sm:gap-4">
+            <Link
+              to={createPageUrl("HarborInfo")}
+              className="hidden sm:flex items-center gap-1.5 text-amber-300 hover:text-amber-200 px-3 py-2 rounded-lg transition-colors text-sm font-semibold border border-amber-500/30 hover:border-amber-400/50 hover:bg-amber-500/10"
+            >
+              <Zap className="w-3.5 h-3.5" />
+              H.A.R.B.O.R.
+            </Link>
             <button
               onClick={() => base44.auth.redirectToLogin(createPageUrl("Dashboard"))}
               className="text-white hover:bg-white/10 px-3 sm:px-4 py-2 rounded-lg transition-colors text-sm sm:text-base"
