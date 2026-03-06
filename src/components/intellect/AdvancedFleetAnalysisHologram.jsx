@@ -288,32 +288,54 @@ export default function AdvancedFleetAnalysisHologram({ data, chartData: externa
           {/* PERFORMANCE TAB */}
           <TabsContent value="performance" className="p-6 space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Efficiency Distribution */}
+              {/* Distribution Chart */}
               <div className="p-6 rounded-xl border border-cyan-500/20 bg-slate-900/40">
-                <h3 className="text-white font-bold text-lg mb-4">Efficiency Distribution</h3>
+                <h3 className="text-white font-bold text-lg mb-4">Distribution Analysis</h3>
                 <ResponsiveContainer width="100%" height={250}>
-                  <BarChart data={efficiencyDistribution} layout="vertical">
+                  <BarChart data={distributionData} layout="vertical">
                     <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
                     <XAxis type="number" stroke="#64748b" />
-                    <YAxis dataKey="range" type="category" stroke="#64748b" width={60} tick={{ fontSize: 11 }} />
+                    <YAxis dataKey="range" type="category" stroke="#64748b" width={80} tick={{ fontSize: 10 }} />
                     <Tooltip contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #334155' }} />
                     <Bar dataKey="count" fill="#06b6d4" radius={[0, 8, 8, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
 
-              {/* Vehicle Performance Comparison */}
+              {/* KPI Metrics if available, else scatter */}
               <div className="p-6 rounded-xl border border-emerald-500/20 bg-slate-900/40">
-                <h3 className="text-white font-bold text-lg mb-4">Vehicle Performance Matrix</h3>
-                <ResponsiveContainer width="100%" height={250}>
-                  <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                    <XAxis type="number" dataKey="efficiency" name="Efficiency" stroke="#64748b" />
-                    <YAxis type="number" dataKey="fuel" name="Fuel L/100km" stroke="#64748b" />
-                    <Tooltip cursor={{ strokeDasharray: '3 3' }} contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #334155' }} />
-                    <Scatter name="Vehicles" data={vehicleComparison} fill="#06b6d4" />
-                  </ScatterChart>
-                </ResponsiveContainer>
+                <h3 className="text-white font-bold text-lg mb-4">
+                  {forecasts.length > 0 ? 'Forecast Analysis' : 'Performance Comparison'}
+                </h3>
+                {forecasts.length > 0 ? (
+                  <div className="space-y-3">
+                    {forecasts.slice(0, 4).map((f, i) => (
+                      <div key={i} className="p-3 rounded-lg bg-violet-500/5 border border-violet-500/20">
+                        <div className="flex justify-between mb-1">
+                          <p className="text-white font-medium text-sm">{f.name}</p>
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-violet-500/20 text-violet-300">{f.timeframe}</span>
+                        </div>
+                        <p className="text-slate-300 text-sm mb-2">{f.description}</p>
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1 h-1.5 bg-violet-500/20 rounded-full overflow-hidden">
+                            <div className="h-full bg-gradient-to-r from-violet-400 to-indigo-400" style={{ width: `${f.confidence || 80}%` }} />
+                          </div>
+                          <span className="text-xs text-violet-300">{f.confidence || 80}%</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <ResponsiveContainer width="100%" height={250}>
+                    <BarChart data={distributionData.slice().reverse()}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                      <XAxis dataKey="range" stroke="#64748b" tick={{ fontSize: 10 }} />
+                      <YAxis stroke="#64748b" />
+                      <Tooltip contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #334155' }} />
+                      <Bar dataKey="count" fill="#10b981" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                )}
               </div>
             </div>
 
