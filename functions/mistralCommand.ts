@@ -543,7 +543,7 @@ EXAMPLES:
           { role: 'user', content: userMsg },
         ],
         temperature: 0.3,
-        max_tokens: 2500,
+        max_tokens: 6000,
         ...(imageUrls.length === 0 ? { response_format: { type: 'json_object' } } : {}),
       }),
     });
