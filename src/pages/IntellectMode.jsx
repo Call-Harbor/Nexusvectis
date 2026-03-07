@@ -95,6 +95,7 @@ export default function IntellectMode() {
   const [parallelProcessorTasks, setParallelProcessorTasks] = useState([]);
   const [isCircularMenuOpen, setIsCircularMenuOpen] = useState(false);
   const [showFleetAITrainer, setShowFleetAITrainer] = useState(false);
+  const [installedAppIds, setInstalledAppIds] = useState(new Set());
 
   const messagesEndRef = useRef(null);
   const queryClient = useQueryClient();
