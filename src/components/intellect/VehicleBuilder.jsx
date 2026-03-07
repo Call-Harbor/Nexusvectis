@@ -952,7 +952,7 @@ export default function VehicleBuilder({ onClose }) {
         )}
         {step===2 && (
           <Button onClick={handleRunSim} disabled={!config.attachment} className="gap-2 ml-auto font-bold" style={{ background:`linear-gradient(135deg, ${meta?.color||"#06b6d4"}, #8b5cf6)` }}>
-            <Cpu className="w-4 h-4" /> Simuler nu
+            <Cpu className="w-4 h-4" /> Run simulation
           </Button>
         )}
       </div>
