@@ -1,0 +1,476 @@
+import React, { useState, useRef, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { base44 } from "@/api/base44Client";
+import { 
+  Cpu, Sparkles, Send, Code2, Play, RefreshCw, X, ChevronRight, 
+  Lightbulb, Package, Truck, Route, AlertTriangle, Users, FileText,
+  BarChart3, Zap, CheckCircle2, Loader2, Terminal, Eye, Copy, Settings2,
+  Wrench, Activity, Globe, Database
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
+
+// --- Live App Sandbox ---
+// Takes generated React code and renders it in an isolated sandbox
+function LiveAppSandbox({ code, orgId, vehicles, routes, shipments, alerts, customers, currentUser }) {
+  const iframeRef = useRef(null);
+  const [sandboxError, setSandboxError] = useState(null);
+
+  useEffect(() => {
+    if (!code || !iframeRef.current) return;
+    setSandboxError(null);
+
+    // We inject the generated component code into a self-contained HTML page
+    // The sandbox gets org data passed as window globals
+    const orgDataScript = `
+      window.__ORG_DATA__ = {
+        orgId: ${JSON.stringify(orgId)},
+        vehicles: ${JSON.stringify(vehicles)},
+        routes: ${JSON.stringify(routes)},
+        shipments: ${JSON.stringify(shipments)},
+        alerts: ${JSON.stringify(alerts)},
+        customers: ${JSON.stringify(customers)},
+        currentUser: ${JSON.stringify(currentUser)},
+      };
+    `;
+
+    const html = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.1/lib/index.min.css">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: { extend: {} }
+  }
+</script>
+<style>
+  body { margin: 0; padding: 0; background: #0f172a; color: #e2e8f0; font-family: system-ui, sans-serif; }
+  * { box-sizing: border-box; }
+  ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: #1e293b; } ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>${orgDataScript}</script>
+<script type="text/babel">
+const { useState, useEffect, useRef, useMemo } = React;
+const orgData = window.__ORG_DATA__;
+const { orgId, vehicles, routes, shipments, alerts, customers, currentUser } = orgData;
+
+// Error boundary
+class ErrorBoundary extends React.Component {
+  constructor(props) { super(props); this.state = { hasError: false, error: null }; }
+  static getDerivedStateFromError(error) { return { hasError: true, error }; }
+  render() {
+    if (this.state.hasError) {
+      return React.createElement('div', { className: 'p-6 text-red-400 font-mono text-sm' },
+        React.createElement('p', { className: 'font-bold mb-2' }, '⚠️ App Error:'),
+        React.createElement('pre', { className: 'whitespace-pre-wrap text-xs opacity-80' }, this.state.error?.message)
+      );
+    }
+    return this.props.children;
+  }
+}
+
+${code}
+
+// Mount
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(
+  React.createElement(ErrorBoundary, null,
+    React.createElement(GeneratedApp, { orgId, vehicles, routes, shipments, alerts, customers, currentUser })
+  )
+);
+</script>
+</body>
+</html>`;
+
+    const blob = new Blob([html], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    iframeRef.current.src = url;
+
+    return () => URL.revokeObjectURL(url);
+  }, [code, orgId, vehicles, routes, shipments, alerts, customers, currentUser]);
+
+  return (
+    <div className="relative w-full h-full">
+      {sandboxError && (
+        <div className="absolute inset-0 flex items-center justify-center z-10 bg-slate-950/90">
+          <div className="text-red-400 font-mono text-sm p-4">⚠️ {sandboxError}</div>
+        </div>
+      )}
+      <iframe
+        ref={iframeRef}
+        className="w-full h-full border-0 rounded-b-lg"
+        sandbox="allow-scripts allow-same-origin"
+        title="H.A.R.B.O.R Generated App"
+      />
+    </div>
+  );
+}
+
+// --- Idea Templates ---
+const IDEA_TEMPLATES = [
+  { icon: BarChart3, label: "Fleet Analytics Dashboard", prompt: "Build an analytics dashboard showing vehicle status distribution as a pie chart, top routes by distance as a bar chart, and shipment status breakdown. Use recharts-style visualizations with Tailwind CSS dark theme." },
+  { icon: AlertTriangle, label: "Live Alert Monitor", prompt: "Build a real-time alert monitor that categorizes alerts by type and severity, shows a severity filter, marks alerts as resolved with a button, and displays stats at the top." },
+  { icon: Truck, label: "Vehicle Status Board", prompt: "Build a vehicle status board showing all vehicles in a grid with their type, status (colored badges), fuel level as a progress bar, and last known location. Include filter tabs for status." },
+  { icon: Package, label: "Shipment Tracker", prompt: "Build a shipment tracker with search, filter by status, and a list of shipments with tracking numbers, origin → destination, status badge, and customer name." },
+  { icon: Route, label: "Route Performance Map", prompt: "Build a route performance table showing all routes with their distance, estimated duration, status, transport type, CO2 estimate, and AI-optimized badge. Include sortable columns." },
+  { icon: Users, label: "Customer CRM View", prompt: "Build a CRM customer list with search, filter by customer type and status, and cards showing name, company, email, city/country, and contact info." },
+  { icon: Activity, label: "Operations KPI Board", prompt: "Build a KPI board with large stat cards: total vehicles, active shipments, open alerts, completed routes. Add trend indicators and color coding." },
+  { icon: Globe, label: "Custom App", prompt: "" },
+];
+
+// --- Main Component ---
+export default function HarborAppBuilder({ onClose, vehicles = [], routes = [], shipments = [], alerts = [], customers = [], currentUser, orgId }) {
+  const [step, setStep] = useState("idea"); // idea | building | preview | code
+  const [prompt, setPrompt] = useState("");
+  const [generatedCode, setGeneratedCode] = useState("");
+  const [buildLog, setBuildLog] = useState([]);
+  const [isBuilding, setIsBuilding] = useState(false);
+  const [buildProgress, setBuildProgress] = useState(0);
+  const [appMeta, setAppMeta] = useState(null);
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
+  const [activeView, setActiveView] = useState("preview"); // preview | code
+  const promptRef = useRef(null);
+
+  const addLog = (msg, type = "info") => {
+    setBuildLog(prev => [...prev, { msg, type, ts: Date.now() }]);
+  };
+
+  const handleBuild = async () => {
+    if (!prompt.trim()) return;
+    setIsBuilding(true);
+    setStep("building");
+    setBuildLog([]);
+    setBuildProgress(0);
+    setGeneratedCode("");
+
+    addLog("🚀 H.A.R.B.O.R AI initializing...", "system");
+    setBuildProgress(10);
+    await new Promise(r => setTimeout(r, 300));
+
+    addLog(`📊 Scanning org data: ${vehicles.length} vehicles, ${routes.length} routes, ${shipments.length} shipments, ${alerts.length} alerts, ${customers.length} customers`, "info");
+    setBuildProgress(20);
+    await new Promise(r => setTimeout(r, 400));
+
+    addLog("🧠 Generating component architecture...", "info");
+    setBuildProgress(35);
+
+    const dataContext = `
+Available org data (passed as props to GeneratedApp component):
+- vehicles (array): ${JSON.stringify(vehicles.slice(0, 2))} ...${vehicles.length} total
+- routes (array): ${JSON.stringify(routes.slice(0, 2))} ...${routes.length} total  
+- shipments (array): ${JSON.stringify(shipments.slice(0, 2))} ...${shipments.length} total
+- alerts (array): ${JSON.stringify(alerts.slice(0, 2))} ...${alerts.length} total
+- customers (array): ${JSON.stringify(customers.slice(0, 2))} ...${customers.length} total
+- currentUser: ${JSON.stringify(currentUser)}
+- orgId: "${orgId}"
+`;
+
+    try {
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `You are H.A.R.B.O.R AI — the world's most advanced logistics app builder.
+
+Generate a COMPLETE, WORKING React component for this Intellect Mode app:
+
+USER REQUEST: "${prompt}"
+
+${dataContext}
+
+STRICT REQUIREMENTS:
+1. Export a function named EXACTLY "GeneratedApp" — this is mandatory
+2. It receives these props: { orgId, vehicles, routes, shipments, alerts, customers, currentUser }
+3. Use ONLY: React (useState, useEffect, useRef, useMemo already available), Tailwind CSS classes for styling
+4. NO external imports — no lucide-react, no recharts, no shadcn — use only vanilla React + Tailwind
+5. For charts, use inline SVG or CSS-based visuals (div bars, etc.)
+6. For icons, use emoji or Unicode symbols
+7. Dark theme: bg-slate-900, text-slate-100, borders slate-700, accents cyan-400/violet-400
+8. Must be FULLY FUNCTIONAL with the real data from props
+9. Must handle empty arrays gracefully
+10. Must look beautiful and professional
+11. NO markdown, NO explanation — output ONLY the JavaScript code
+
+The component must start with: function GeneratedApp({ orgId, vehicles, routes, shipments, alerts, customers, currentUser }) {
+
+Return ONLY raw JavaScript code. No \`\`\`js markers. No explanation text.`,
+        response_json_schema: null
+      });
+
+      setBuildProgress(75);
+      addLog("⚡ Compiling React component...", "info");
+      await new Promise(r => setTimeout(r, 300));
+
+      // Extract just the code (strip any markdown if present)
+      let code = typeof result === "string" ? result : JSON.stringify(result);
+      code = code.replace(/^```(?:jsx?|javascript)?\n?/gm, "").replace(/```$/gm, "").trim();
+
+      // Validate it has the required function
+      if (!code.includes("function GeneratedApp") && !code.includes("const GeneratedApp")) {
+        // Attempt to wrap it
+        if (!code.includes("GeneratedApp")) {
+          code = `function GeneratedApp({ orgId, vehicles, routes, shipments, alerts, customers, currentUser }) {\n${code}\n}`;
+        }
+      }
+
+      setGeneratedCode(code);
+      setBuildProgress(90);
+      addLog("🎨 Rendering live preview...", "success");
+      await new Promise(r => setTimeout(r, 400));
+
+      // Generate app meta
+      const metaResult = await base44.integrations.Core.InvokeLLM({
+        prompt: `Given this app description: "${prompt}", generate a short app name (max 4 words) and one-line description (max 12 words). Return JSON: {"name": "string", "description": "string"}`,
+        response_json_schema: { type: "object", properties: { name: { type: "string" }, description: { type: "string" } } }
+      });
+      setAppMeta(metaResult);
+
+      setBuildProgress(100);
+      addLog(`✅ App "${metaResult?.name || 'Custom App'}" built successfully!`, "success");
+      await new Promise(r => setTimeout(r, 500));
+
+      setStep("preview");
+    } catch (err) {
+      addLog(`❌ Build failed: ${err.message}`, "error");
+      setBuildProgress(0);
+      setStep("idea");
+    }
+
+    setIsBuilding(false);
+  };
+
+  const handleRebuild = () => {
+    setStep("idea");
+    setGeneratedCode("");
+    setAppMeta(null);
+  };
+
+  const handleCopyCode = () => {
+    navigator.clipboard.writeText(generatedCode);
+    toast.success("Code copied to clipboard!");
+  };
+
+  return (
+    <div className="flex flex-col h-full w-full bg-slate-950 text-white overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-3 border-b border-cyan-500/20 bg-slate-900/80 flex-shrink-0">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-cyan-500 to-violet-600 flex items-center justify-center">
+            <Cpu className="w-4 h-4 text-white" />
+          </div>
+          <div>
+            <h2 className="text-sm font-bold text-white font-mono tracking-wider">H.A.R.B.O.R APP BUILDER</h2>
+            <p className="text-[10px] text-slate-400">AI-powered Intellect Mode app generator</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          {step === "preview" && (
+            <>
+              <button
+                onClick={() => setActiveView(v => v === "preview" ? "code" : "preview")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono transition-all ${activeView === "code" ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/40" : "text-slate-400 hover:text-white hover:bg-slate-800"}`}
+              >
+                {activeView === "preview" ? <Code2 className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                {activeView === "preview" ? "View Code" : "Preview"}
+              </button>
+              <button
+                onClick={handleRebuild}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono text-slate-400 hover:text-white hover:bg-slate-800 transition-all"
+              >
+                <RefreshCw className="w-3.5 h-3.5" /> Rebuild
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Body */}
+      <div className="flex-1 overflow-hidden">
+        <AnimatePresence mode="wait">
+
+          {/* STEP: IDEA */}
+          {step === "idea" && (
+            <motion.div key="idea" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="h-full flex flex-col p-4 gap-4 overflow-y-auto">
+
+              {/* Data context badge */}
+              <div className="flex flex-wrap gap-2">
+                {[
+                  { icon: "🚛", label: `${vehicles.length} Vehicles` },
+                  { icon: "📦", label: `${shipments.length} Shipments` },
+                  { icon: "🗺️", label: `${routes.length} Routes` },
+                  { icon: "🔔", label: `${alerts.length} Alerts` },
+                  { icon: "👥", label: `${customers.length} Customers` },
+                ].map(d => (
+                  <div key={d.label} className="flex items-center gap-1 px-2 py-1 rounded-md bg-slate-800/60 border border-slate-700/50 text-xs text-slate-300">
+                    <span>{d.icon}</span><span>{d.label}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Templates */}
+              <div>
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                  <Lightbulb className="w-3.5 h-3.5 text-amber-400" /> Quick Start Templates
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  {IDEA_TEMPLATES.map((t) => {
+                    const Icon = t.icon;
+                    const isCustom = t.label === "Custom App";
+                    return (
+                      <button
+                        key={t.label}
+                        onClick={() => {
+                          setSelectedTemplate(t.label);
+                          if (!isCustom) setPrompt(t.prompt);
+                          else { setPrompt(""); promptRef.current?.focus(); }
+                        }}
+                        className={`flex items-center gap-2 p-2.5 rounded-lg border text-left text-xs transition-all ${
+                          selectedTemplate === t.label
+                            ? "border-cyan-500/60 bg-cyan-500/10 text-cyan-300"
+                            : "border-slate-700/50 bg-slate-800/40 text-slate-300 hover:border-slate-600 hover:bg-slate-800/70"
+                        }`}
+                      >
+                        <Icon className="w-4 h-4 flex-shrink-0 opacity-70" />
+                        <span className="font-medium leading-tight">{t.label}</span>
+                        {!isCustom && <ChevronRight className="w-3 h-3 ml-auto opacity-40 flex-shrink-0" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Prompt Input */}
+              <div className="flex flex-col gap-2">
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-violet-400" /> Describe your app
+                </p>
+                <textarea
+                  ref={promptRef}
+                  value={prompt}
+                  onChange={e => setPrompt(e.target.value)}
+                  placeholder="e.g. Build a real-time vehicle efficiency dashboard with fuel level gauges and status indicators for each vehicle in my fleet..."
+                  rows={4}
+                  className="w-full bg-slate-800/60 border border-slate-700/60 rounded-lg px-3 py-2.5 text-sm text-slate-200 placeholder-slate-500 resize-none focus:outline-none focus:border-cyan-500/60 focus:bg-slate-800"
+                  onKeyDown={e => { if (e.key === 'Enter' && e.metaKey) handleBuild(); }}
+                />
+                <p className="text-[10px] text-slate-500">Your app will have full access to your organisation's live data. Press ⌘+Enter to build.</p>
+              </div>
+
+              <Button
+                onClick={handleBuild}
+                disabled={!prompt.trim()}
+                className="w-full bg-gradient-to-r from-cyan-600 to-violet-600 hover:from-cyan-500 hover:to-violet-500 text-white font-mono font-bold tracking-wider border-0 gap-2"
+              >
+                <Zap className="w-4 h-4" />
+                BUILD WITH H.A.R.B.O.R AI
+              </Button>
+            </motion.div>
+          )}
+
+          {/* STEP: BUILDING */}
+          {step === "building" && (
+            <motion.div key="building" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="h-full flex flex-col items-center justify-center p-6 gap-6">
+              
+              {/* Animated brain */}
+              <motion.div
+                animate={{ scale: [1, 1.08, 1], rotate: [0, 5, -5, 0] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                className="w-20 h-20 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-violet-500/20 border border-cyan-500/30 flex items-center justify-center"
+              >
+                <Cpu className="w-10 h-10 text-cyan-400" />
+              </motion.div>
+
+              <div className="text-center">
+                <p className="text-white font-bold font-mono tracking-wider text-lg">BUILDING YOUR APP</p>
+                <p className="text-slate-400 text-sm mt-1">H.A.R.B.O.R AI is generating your component...</p>
+              </div>
+
+              {/* Progress bar */}
+              <div className="w-full max-w-sm">
+                <div className="flex justify-between text-xs text-slate-500 mb-1 font-mono">
+                  <span>Progress</span><span>{buildProgress}%</span>
+                </div>
+                <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
+                  <motion.div
+                    className="h-full bg-gradient-to-r from-cyan-500 to-violet-500 rounded-full"
+                    animate={{ width: `${buildProgress}%` }}
+                    transition={{ duration: 0.5 }}
+                  />
+                </div>
+              </div>
+
+              {/* Build log */}
+              <div className="w-full max-w-sm bg-slate-900/80 border border-slate-700/50 rounded-lg p-3 font-mono text-xs space-y-1 max-h-40 overflow-y-auto">
+                {buildLog.map((log, i) => (
+                  <motion.div key={i} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
+                    className={`${log.type === "error" ? "text-red-400" : log.type === "success" ? "text-emerald-400" : log.type === "system" ? "text-violet-400" : "text-slate-300"}`}>
+                    {log.msg}
+                  </motion.div>
+                ))}
+                {isBuilding && (
+                  <motion.div animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 0.8, repeat: Infinity }}
+                    className="text-cyan-400 flex items-center gap-1">
+                    <Loader2 className="w-3 h-3 animate-spin" /> Processing...
+                  </motion.div>
+                )}
+              </div>
+            </motion.div>
+          )}
+
+          {/* STEP: PREVIEW / CODE */}
+          {step === "preview" && (
+            <motion.div key="preview" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="h-full flex flex-col">
+              {/* App info bar */}
+              <div className="flex items-center gap-3 px-4 py-2 border-b border-slate-800/60 bg-slate-900/60 flex-shrink-0">
+                <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-bold text-white truncate">{appMeta?.name || "Custom App"}</p>
+                  <p className="text-[10px] text-slate-400 truncate">{appMeta?.description || "H.A.R.B.O.R Generated"}</p>
+                </div>
+                <div className="flex items-center gap-1.5 flex-shrink-0">
+                  <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/40 text-[10px]">LIVE</Badge>
+                  {activeView === "code" && (
+                    <button onClick={handleCopyCode}
+                      className="flex items-center gap-1 px-2 py-1 rounded text-[10px] text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
+                      <Copy className="w-3 h-3" /> Copy
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Content */}
+              <div className="flex-1 overflow-hidden">
+                {activeView === "preview" ? (
+                  <LiveAppSandbox
+                    code={generatedCode}
+                    orgId={orgId}
+                    vehicles={vehicles}
+                    routes={routes}
+                    shipments={shipments}
+                    alerts={alerts}
+                    customers={customers}
+                    currentUser={currentUser}
+                  />
+                ) : (
+                  <div className="h-full overflow-auto bg-slate-950 p-4">
+                    <pre className="text-xs text-slate-300 font-mono whitespace-pre-wrap leading-relaxed">{generatedCode}</pre>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+}
