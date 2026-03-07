@@ -272,6 +272,9 @@ export default function HarborAppBuilder({ onClose, vehicles = [], routes = [], 
   const [pages, setPages] = useState([]);
   const [entities, setEntities] = useState([]);
   const [integrations, setIntegrations] = useState([]);
+  const [appTheme, setAppTheme] = useState("jarvis");
+  const [appLayout, setAppLayout] = useState("sidebar");
+  const [appFeatures, setAppFeatures] = useState({ auth: true, search: true, notifications: true, darkmode: true });
   const promptRef = useRef(null);
 
   useEffect(() => {
