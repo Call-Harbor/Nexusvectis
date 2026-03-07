@@ -47,7 +47,7 @@ export const WINDOW_META = {
   project_management: { title: '📋 Project Management AI', icon: ListTodo },
   fleet_drive: { title: '💾 Fleet Drive', icon: HardDrive },
   hologram_presentation: { title: '🎯 FleetSlide', icon: MonitorPlay },
-  fleet_ai_trainer: { title: '⚡ Fleet AI Trainer', icon: Cpu },
+  fleet_ai_trainer: { title: '⚡ H.A.R.B.O.R Trainer', icon: Cpu },
 };
 
 export function getWindowMeta(type) {

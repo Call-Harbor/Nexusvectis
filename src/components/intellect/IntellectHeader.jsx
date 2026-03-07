@@ -63,7 +63,7 @@ const APP_CATEGORIES = [
     ['predictive_maintenance', Wrench, 'Predictive Maintenance'],
     ['advanced_intelligence', Brain, 'Advanced Intelligence'],
     ['deep_analysis', Activity, 'Anomaly Detection + What-If'],
-    ['fleetai_trainer', Cpu, 'Fleet AI Trainer'],
+    ['fleetai_trainer', Cpu, 'H.A.R.B.O.R Trainer'],
     ['course_ai', GraduationCap, 'Fleet AI Courses'],
     ['parallel_processor', Zap, 'Parallel Processor'],
   ]],
