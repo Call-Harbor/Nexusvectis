@@ -327,9 +327,9 @@ export default function Dashboard() {
                       const vehicle = vehicles.find(v => v.id === maintenance.vehicle_id);
                       const isOverdue = maintenance.scheduled_date && moment(maintenance.scheduled_date).isBefore(moment());
                       return (
-                        <div key={maintenance.id} className="flex items-center justify-between p-2.5 rounded-lg bg-slate-800/50 hover:bg-slate-800/70 transition-colors">
+                        <div key={maintenance.id} className="flex items-center justify-between p-2.5 rounded-lg hologram-border transition-colors" style={{ background: 'rgba(6,182,212,0.05)', borderColor: 'rgba(6,182,212,0.25)' }}>
                           <div className="flex-1 min-w-0">
-                            <p className="text-white text-sm font-medium truncate">{vehicle?.name || "Unknown"}</p>
+                            <p className="hologram-text text-sm font-medium truncate uppercase tracking-wider">[{vehicle?.name || "Unknown"}]</p>
                             <p className="text-slate-400 text-xs truncate">{maintenance.component}</p>
                           </div>
                           <div className="flex items-center gap-2">
