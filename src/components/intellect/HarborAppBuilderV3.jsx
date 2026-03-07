@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { 
   Plus, Search, Trash2, Save, Eye, Code2, Copy, Loader2,
-  ChevronRight, Database, LayoutGrid, Zap, Settings
+  ChevronRight, Database, LayoutGrid, Zap, Settings, Sparkles
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
