@@ -189,12 +189,12 @@ export default function Dashboard() {
             {/* Header */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div className="flex items-center gap-3 sm:gap-4">
-                <div className="p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-gradient-to-br from-cyan-500/20 to-violet-500/20 border border-cyan-500/30">
-                  <Globe className="w-6 h-6 sm:w-8 sm:h-8 text-cyan-400" />
+                <div className="p-2 sm:p-3 rounded-lg hologram-border" style={{ background: 'rgba(6,182,212,0.1)', borderColor: 'rgba(6,182,212,0.5)' }}>
+                  <Globe className="w-6 h-6 sm:w-8 sm:h-8 hologram-text" />
                 </div>
                 <div>
-                  <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">NexusVectis</h1>
-                  <p className="text-slate-400 text-xs sm:text-sm mt-0.5 sm:mt-1">Advanced Fleet Intelligence Platform</p>
+                  <h1 className="text-2xl sm:text-3xl font-bold hologram-text tracking-tight">[NEXUS] FLEET OPS</h1>
+                  <p className="text-slate-400 text-xs sm:text-sm mt-0.5 sm:mt-1 uppercase tracking-widest font-mono">Advanced Fleet Intelligence Platform</p>
                 </div>
               </div>
 
