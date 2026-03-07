@@ -736,6 +736,48 @@ Return ONLY raw JavaScript code. No \`\`\`js markers. No explanation text.`,
                 {designTab === "pages" && <MultiPageAppBuilder pages={pages} onPagesChange={setPages} entities={entities} integrations={integrations} />}
                 {designTab === "database" && <DatabaseDesigner entities={entities} onEntitiesChange={setEntities} />}
                 {designTab === "integrations" && <APIIntegrationsPanel integrations={integrations} onIntegrationsChange={setIntegrations} />}
+                {designTab === "styling" && (
+                  <div className="h-full p-4 overflow-y-auto space-y-4 bg-slate-950">
+                    <div>
+                      <label className="text-xs text-slate-400 uppercase tracking-wider block mb-2">App Theme</label>
+                      <div className="grid grid-cols-2 gap-2">
+                        {["jarvis", "matrix", "cyberpunk", "minimal"].map(theme => (
+                          <button key={theme} onClick={() => setAppTheme(theme)}
+                            className={`p-2 rounded-lg border transition-all text-xs font-mono uppercase ${appTheme === theme ? "border-cyan-500 bg-cyan-500/20 text-cyan-400" : "border-slate-700 text-slate-400 hover:border-slate-600"}`}>
+                            {theme}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-xs text-slate-400 uppercase tracking-wider block mb-2">Layout</label>
+                      <div className="grid grid-cols-2 gap-2">
+                        {["sidebar", "topnav", "split", "fullwidth"].map(layout => (
+                          <button key={layout} onClick={() => setAppLayout(layout)}
+                            className={`p-2 rounded-lg border transition-all text-xs font-mono uppercase ${appLayout === layout ? "border-emerald-500 bg-emerald-500/20 text-emerald-400" : "border-slate-700 text-slate-400 hover:border-slate-600"}`}>
+                            {layout}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {designTab === "features" && (
+                  <div className="h-full p-4 overflow-y-auto space-y-3 bg-slate-950">
+                    {[
+                      { key: "auth", label: "Authentication" },
+                      { key: "search", label: "Search & Filter" },
+                      { key: "notifications", label: "Real-time Notifications" },
+                      { key: "darkmode", label: "Dark Mode Toggle" },
+                    ].map(feature => (
+                      <label key={feature.key} className="flex items-center gap-2 p-2 rounded-lg border border-slate-700/50 cursor-pointer hover:bg-slate-900/50">
+                        <input type="checkbox" checked={appFeatures[feature.key]} onChange={e => setAppFeatures({...appFeatures, [feature.key]: e.target.checked})}
+                          className="w-4 h-4 rounded cursor-pointer" />
+                        <span className="text-xs text-slate-300">{feature.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Build button */}
