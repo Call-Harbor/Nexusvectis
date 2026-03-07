@@ -83,6 +83,17 @@ export default function AdminDashboard() {
     queryFn: () => base44.entities.Invoice.list()
   });
 
+  // Fetch contact messages
+  const { data: contactMessages = [], refetch: refetchMessages } = useQuery({
+    queryKey: ['contactMessages'],
+    queryFn: () => base44.entities.ContactMessage.list('-created_date', 50)
+  });
+
+  const markAsRead = async (id) => {
+    await base44.entities.ContactMessage.update(id, { status: 'read' });
+    refetchMessages();
+  };
+
   // Fetch invoice settings
   const { data: invoiceSettingsData } = useQuery({
     queryKey: ['invoiceSettings'],
