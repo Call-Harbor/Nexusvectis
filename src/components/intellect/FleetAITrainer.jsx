@@ -153,10 +153,17 @@ export default function FleetAITrainer({ onClose }) {
   const vramUtilization = Math.min(90, Math.round(30 + (vehicles.length / 20) * 40));
   const throughputScore = Math.min(99, Math.round(60 + apiSuccess * 0.3 + (fleetAIUsages.filter(u => u.success !== false).length / 50) * 30));
 
+  // Sync liveAccuracy with real data on load
+  useEffect(() => {
+    if (!isTraining && realAccuracy) {
+      setLiveAccuracy(realAccuracy);
+    }
+  }, [realAccuracy, isTraining]);
+
   useEffect(() => {
     if (isTraining) {
       const t = setInterval(() => {
-        setLiveAccuracy(prev => Math.min(99.9, prev + Math.random() * 0.3));
+        setLiveAccuracy(prev => Math.min(99.9, (prev || realAccuracy) + Math.random() * 0.3));
       }, 800);
       return () => clearInterval(t);
     }
