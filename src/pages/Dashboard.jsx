@@ -215,9 +215,9 @@ export default function Dashboard() {
                 </Tabs>
 
                 <Button
-                  variant="outline"
                   size="sm"
-                  className="bg-slate-800/50 border-slate-700/50 text-white hover:bg-slate-700/50 hidden lg:flex"
+                  className="hologram-border text-cyan-300 hover:text-cyan-200 hidden lg:flex"
+                  style={{ background: 'rgba(6,182,212,0.1)', borderColor: 'rgba(6,182,212,0.5)' }}
                   onClick={() => setShowDetailPanel(!showDetailPanel)}
                 >
                   {showDetailPanel ? <PanelRightClose className="w-4 h-4" /> : <PanelRightOpen className="w-4 h-4" />}
