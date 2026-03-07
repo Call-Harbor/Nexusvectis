@@ -918,10 +918,10 @@ export default function VehicleBuilder({ onClose }) {
                   {meta && <meta.icon className="w-10 h-10" style={{ color:meta.color }} />}
                 </div>
                 <div className="text-center space-y-1">
-                  <p className="text-white font-bold text-lg">Klar til avanceret simulation</p>
+                  <p className="text-white font-bold text-lg">Ready for advanced simulation</p>
                   <p className="text-slate-400 text-sm">{vehicle?.brand} {vehicle?.model}</p>
                   <div className="flex flex-wrap justify-center gap-2 mt-2">
-                    {[`${(config.payload/1000).toFixed(1)} t last`,`${config.distance.toLocaleString()} km`,`${config.speed||vehicle?.specs?.speedKph} km/t`,`${config.terrain}`,`${config.weather}`,`${config.driverBehavior}`,`${config.season}`].map(tag => (
+                    {[`${(config.payload/1000).toFixed(1)} t payload`,`${config.distance.toLocaleString()} km`,`${config.speed||vehicle?.specs?.speedKph} km/h`,`${config.terrain}`,`${config.weather}`,`${config.driverBehavior}`,`${config.season}`].map(tag => (
                       <span key={tag} className="px-2 py-0.5 rounded-full text-[10px] border border-slate-600 text-slate-400">{tag}</span>
                     ))}
                   </div>
