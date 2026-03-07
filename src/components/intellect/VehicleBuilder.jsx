@@ -733,7 +733,7 @@ function SimulationResults({ result, config }) {
               <div className="p-3 rounded-xl border border-emerald-500/20 bg-emerald-500/5">
                 <p className="text-emerald-400 text-xs font-semibold mb-1">EU ETS Carbon Credits</p>
                 <p className="text-white font-bold">{result.euEtsCost.toLocaleString()} DKK</p>
-                <p className="text-slate-400 text-[10px]">Baseret på {result.co2Total} kg CO₂ × ~65 DKK/ton (ETS pris)</p>
+                <p className="text-slate-400 text-[10px]">Based on {result.co2Total} kg CO₂ × ~65 DKK/ton (ETS price)</p>
               </div>
             </div>
           )}
