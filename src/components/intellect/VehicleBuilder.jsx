@@ -704,11 +704,11 @@ function SimulationResults({ result, config }) {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 {[
-                  { label:"CO₂", value:`${result.co2Total.toLocaleString()} kg`, sub:"Kuldioxid", color:"#ef4444", detail:`${result.co2PerTonKm} g/ton-km` },
-                  { label:"NOₓ", value:`${result.noxKg} kg`, sub:"Kvælstofoxider", color:"#f59e0b", detail:"Bidrag til smog + syreregn" },
-                  { label:"PM 2.5/10", value:`${result.pmKg} kg`, sub:"Partikler", color:"#8b5cf6", detail:"Sundhedsfare" },
-                  { label:"HC", value:`${result.hcKg} kg`, sub:"Kulbrinter", color:"#06b6d4", detail:"VOC — troposf. ozon" },
-                  ...(config.vehicleType === "ship" ? [{ label:"SOₓ", value:`${result.soxKg} kg`, sub:"Svovloxider", color:"#64748b", detail:"Bunker fuel svovl" }] : []),
+                  { label:"CO₂", value:`${result.co2Total.toLocaleString()} kg`, sub:"Carbon dioxide", color:"#ef4444", detail:`${result.co2PerTonKm} g/ton-km` },
+                  { label:"NOₓ", value:`${result.noxKg} kg`, sub:"Nitrogen oxides", color:"#f59e0b", detail:"Contributes to smog + acid rain" },
+                  { label:"PM 2.5/10", value:`${result.pmKg} kg`, sub:"Particulate matter", color:"#8b5cf6", detail:"Health hazard" },
+                  { label:"HC", value:`${result.hcKg} kg`, sub:"Hydrocarbons", color:"#06b6d4", detail:"VOC — tropospheric ozone" },
+                  ...(config.vehicleType === "ship" ? [{ label:"SOₓ", value:`${result.soxKg} kg`, sub:"Sulphur oxides", color:"#64748b", detail:"Bunker fuel sulphur" }] : []),
                 ].map(({ label, value, sub, color, detail }) => (
                   <div key={label} className="p-3 rounded-xl border border-slate-700/40 bg-slate-900/40">
                     <p className="font-mono font-black text-xs mb-1" style={{ color }}>{label}</p>
