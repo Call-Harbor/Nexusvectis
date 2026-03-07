@@ -158,27 +158,44 @@ export default function Dashboard() {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -4 }}
-      className="p-3 sm:p-4 rounded-lg hologram-border transition-all"
-      style={{ background: 'rgba(6,182,212,0.05)', borderColor: 'rgba(6,182,212,0.5)' }}
+      whileHover={{ y: -4, boxShadow: '0 20px 40px rgba(0,0,0,0.3)' }}
+      className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl backdrop-blur-xl border transition-all ${
+        color === 'cyan' 
+          ? 'bg-gradient-to-br from-cyan-500/10 to-cyan-500/5 border-cyan-500/20' 
+          : color === 'violet'
+          ? 'bg-gradient-to-br from-violet-500/10 to-violet-500/5 border-violet-500/20'
+          : color === 'emerald'
+          ? 'bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 border-emerald-500/20'
+          : 'bg-gradient-to-br from-amber-500/10 to-amber-500/5 border-amber-500/20'
+      }`}
     >
       <div className="flex items-start justify-between mb-2 sm:mb-3">
-        <div className="p-2 rounded-lg" style={{ background: 'rgba(6,182,212,0.15)' }}>
-          <Icon className="w-4 h-4 sm:w-5 sm:h-5 hologram-text" />
+        <div className={`p-1.5 sm:p-2.5 rounded-lg sm:rounded-xl ${
+          color === 'cyan' ? 'bg-cyan-500/20' 
+          : color === 'violet' ? 'bg-violet-500/20'
+          : color === 'emerald' ? 'bg-emerald-500/20'
+          : 'bg-amber-500/20'
+        }`}>
+          <Icon className={`w-4 h-4 sm:w-5 sm:h-5 ${
+            color === 'cyan' ? 'text-cyan-400' 
+            : color === 'violet' ? 'text-violet-400'
+            : color === 'emerald' ? 'text-emerald-400'
+            : 'text-amber-400'
+          }`} />
         </div>
-        {trend && <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 text-cyan-400" />}
+        {trend && <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 text-emerald-400" />}
       </div>
-      <p className="text-slate-300 text-xs sm:text-sm font-medium">{label}</p>
-      <p className="text-xl sm:text-2xl font-bold hologram-text mt-0.5 sm:mt-1">{value}</p>
-      {subtitle && <p className="text-xs text-slate-400 mt-1">{subtitle}</p>}
+      <p className="text-slate-400 text-xs sm:text-sm font-medium">{label}</p>
+      <p className="text-xl sm:text-2xl font-bold text-white mt-0.5 sm:mt-1">{value}</p>
+      {subtitle && <p className="text-xs text-slate-500 mt-1">{subtitle}</p>}
     </motion.div>
   );
 
   return (
-    <div className="min-h-screen" style={{ background: 'linear-gradient(135deg, rgba(2,13,30,0.98) 0%, rgba(15,10,40,0.95) 100%)' }}>
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-orange-500/5 rounded-full blur-3xl" />
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-violet-500/10 rounded-full blur-3xl" />
       </div>
 
       <AIAssistantBadge />
@@ -189,24 +206,24 @@ export default function Dashboard() {
             {/* Header */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div className="flex items-center gap-3 sm:gap-4">
-                <div className="p-2 sm:p-3 rounded-lg hologram-border" style={{ background: 'rgba(6,182,212,0.1)', borderColor: 'rgba(6,182,212,0.5)' }}>
-                  <Globe className="w-6 h-6 sm:w-8 sm:h-8 hologram-text" />
+                <div className="p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-gradient-to-br from-cyan-500/20 to-violet-500/20 border border-cyan-500/30">
+                  <Globe className="w-6 h-6 sm:w-8 sm:h-8 text-cyan-400" />
                 </div>
                 <div>
-                  <h1 className="text-2xl sm:text-3xl font-bold hologram-text tracking-tight">[NEXUS] FLEET OPS</h1>
-                  <p className="text-slate-400 text-xs sm:text-sm mt-0.5 sm:mt-1 uppercase tracking-widest font-mono">Advanced Fleet Intelligence Platform</p>
+                  <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">NexusVectis</h1>
+                  <p className="text-slate-400 text-xs sm:text-sm mt-0.5 sm:mt-1">Advanced Fleet Intelligence Platform</p>
                 </div>
               </div>
 
               <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 sm:flex-initial">
-                  <TabsList className="hologram-border w-full" style={{ background: 'rgba(6,182,212,0.05)', borderColor: 'rgba(6,182,212,0.3)' }}>
-                    <TabsTrigger value="tracking" className="text-xs sm:text-sm flex-1 sm:flex-initial data-[state=active]:hologram-border" style={{ borderRadius: '0.375rem' }}>
+                  <TabsList className="bg-slate-800/50 border border-slate-700/50 w-full">
+                    <TabsTrigger value="tracking" className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400 text-xs sm:text-sm flex-1 sm:flex-initial">
                       <Satellite className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
                       <span className="hidden sm:inline">Live Tracking</span>
                       <span className="sm:hidden">Tracking</span>
                     </TabsTrigger>
-                    <TabsTrigger value="analytics" className="text-xs sm:text-sm flex-1 sm:flex-initial data-[state=active]:hologram-border" style={{ borderRadius: '0.375rem' }}>
+                    <TabsTrigger value="analytics" className="data-[state=active]:bg-violet-500/20 data-[state=active]:text-violet-400 text-xs sm:text-sm flex-1 sm:flex-initial">
                       <BarChart3 className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
                       <span className="hidden sm:inline">Analytics</span>
                       <span className="sm:hidden">Stats</span>
@@ -215,9 +232,9 @@ export default function Dashboard() {
                 </Tabs>
 
                 <Button
+                  variant="outline"
                   size="sm"
-                  className="hologram-border text-cyan-300 hover:text-cyan-200 hidden lg:flex"
-                  style={{ background: 'rgba(6,182,212,0.1)', borderColor: 'rgba(6,182,212,0.5)' }}
+                  className="bg-slate-800/50 border-slate-700/50 text-white hover:bg-slate-700/50 hidden lg:flex"
                   onClick={() => setShowDetailPanel(!showDetailPanel)}
                 >
                   {showDetailPanel ? <PanelRightClose className="w-4 h-4" /> : <PanelRightOpen className="w-4 h-4" />}
@@ -236,10 +253,19 @@ export default function Dashboard() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: idx * 0.05 }}
                       whileHover={{ scale: 1.02, y: -2 }}
-                       className="p-3 sm:p-4 rounded-lg hologram-border backdrop-blur-xl transition-all cursor-pointer group"
-                       style={{ background: 'rgba(6,182,212,0.08)', borderColor: 'rgba(6,182,212,0.4)' }}
-                      >
-                       <Icon className="w-5 h-5 mb-2 group-hover:scale-110 transition-transform hologram-text" />
+                      className={`p-3 sm:p-4 rounded-xl backdrop-blur-xl border transition-all cursor-pointer group ${
+                        action.color === 'cyan' ? 'bg-cyan-500/10 border-cyan-500/30 hover:border-cyan-500/50' :
+                        action.color === 'violet' ? 'bg-violet-500/10 border-violet-500/30 hover:border-violet-500/50' :
+                        action.color === 'emerald' ? 'bg-emerald-500/10 border-emerald-500/30 hover:border-emerald-500/50' :
+                        'bg-amber-500/10 border-amber-500/30 hover:border-amber-500/50'
+                      }`}
+                    >
+                      <Icon className={`w-5 h-5 mb-2 group-hover:scale-110 transition-transform ${
+                        action.color === 'cyan' ? 'text-cyan-400' :
+                        action.color === 'violet' ? 'text-violet-400' :
+                        action.color === 'emerald' ? 'text-emerald-400' :
+                        'text-amber-400'
+                      }`} />
                       <p className="text-white text-sm font-medium">{action.label}</p>
                     </motion.div>
                   </Link>
@@ -271,25 +297,25 @@ export default function Dashboard() {
 
             {/* Recent Activity Cards - Mobile & Desktop */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <Card className="hologram-border bg-opacity-5" style={{ background: 'rgba(6,182,212,0.05)', borderColor: 'rgba(6,182,212,0.4)' }}>
+              <Card className="bg-slate-900/50 border-slate-800">
                 <CardContent className="pt-6">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-semibold flex items-center gap-2 hologram-text uppercase tracking-widest text-sm">
-                      <Package className="w-5 h-5" />
-                      SHIPMENTS
+                    <h3 className="text-white font-semibold flex items-center gap-2">
+                      <Package className="w-5 h-5 text-cyan-400" />
+                      Recent Shipments
                     </h3>
                     <Link to={createPageUrl("Shipments")}>
-                      <Button size="sm" className="text-cyan-300 hover:text-cyan-200 text-xs" variant="ghost">
-                        [VIEW ALL]
+                      <Button variant="ghost" size="sm" className="text-cyan-400 hover:text-cyan-300 text-xs">
+                        View All
                         <ArrowRight className="w-3 h-3 ml-1" />
                       </Button>
                     </Link>
                   </div>
                   <div className="space-y-2">
                     {shipments.slice(0, 4).map(shipment => (
-                      <div key={shipment.id} className="flex items-center justify-between p-2.5 rounded-lg hologram-border transition-colors" style={{ background: 'rgba(6,182,212,0.05)', borderColor: 'rgba(6,182,212,0.25)' }}>
+                      <div key={shipment.id} className="flex items-center justify-between p-2.5 rounded-lg bg-slate-800/50 hover:bg-slate-800/70 transition-colors">
                         <div className="flex-1 min-w-0">
-                          <p className="hologram-text text-sm font-medium truncate uppercase tracking-wider">[{shipment.tracking_number}]</p>
+                          <p className="text-white text-sm font-medium truncate">{shipment.tracking_number}</p>
                           <p className="text-slate-400 text-xs truncate">{shipment.origin} → {shipment.destination}</p>
                         </div>
                         <Badge className={
@@ -308,16 +334,16 @@ export default function Dashboard() {
                 </CardContent>
               </Card>
 
-              <Card className="hologram-border bg-opacity-5" style={{ background: 'rgba(6,182,212,0.05)', borderColor: 'rgba(6,182,212,0.4)' }}>
+              <Card className="bg-slate-900/50 border-slate-800">
                 <CardContent className="pt-6">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-semibold flex items-center gap-2 hologram-text-orange uppercase tracking-widest text-sm">
-                      <Wrench className="w-5 h-5" />
-                      MAINTENANCE
+                    <h3 className="text-white font-semibold flex items-center gap-2">
+                      <Wrench className="w-5 h-5 text-violet-400" />
+                      Upcoming Maintenance
                     </h3>
                     <Link to={createPageUrl("MaintenanceManagement")}>
-                      <Button size="sm" className="text-orange-300 hover:text-orange-200 text-xs" variant="ghost">
-                        [VIEW ALL]
+                      <Button variant="ghost" size="sm" className="text-violet-400 hover:text-violet-300 text-xs">
+                        View All
                         <ArrowRight className="w-3 h-3 ml-1" />
                       </Button>
                     </Link>
@@ -327,9 +353,9 @@ export default function Dashboard() {
                       const vehicle = vehicles.find(v => v.id === maintenance.vehicle_id);
                       const isOverdue = maintenance.scheduled_date && moment(maintenance.scheduled_date).isBefore(moment());
                       return (
-                        <div key={maintenance.id} className="flex items-center justify-between p-2.5 rounded-lg hologram-border transition-colors" style={{ background: 'rgba(6,182,212,0.05)', borderColor: 'rgba(6,182,212,0.25)' }}>
+                        <div key={maintenance.id} className="flex items-center justify-between p-2.5 rounded-lg bg-slate-800/50 hover:bg-slate-800/70 transition-colors">
                           <div className="flex-1 min-w-0">
-                            <p className="hologram-text text-sm font-medium truncate uppercase tracking-wider">[{vehicle?.name || "Unknown"}]</p>
+                            <p className="text-white text-sm font-medium truncate">{vehicle?.name || "Unknown"}</p>
                             <p className="text-slate-400 text-xs truncate">{maintenance.component}</p>
                           </div>
                           <div className="flex items-center gap-2">

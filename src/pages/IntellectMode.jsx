@@ -771,47 +771,23 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-slate-950 relative overflow-hidden font-mono">
-      {/* Military Holographic Background */}
+    <div className="min-h-screen bg-black relative overflow-hidden">
+      {/* Animated background */}
       <div className="absolute inset-0">
-        {/* Deep navy gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950" />
-        
-        {/* Animated grid pattern */}
-        <motion.div 
-          className="absolute inset-0 opacity-15"
-          animate={{ backgroundPosition: ['0px 0px', '40px 40px'] }}
-          transition={{ duration: 20, repeat: Infinity, repeatType: 'reverse' }}
-          style={{
-            backgroundImage: `
-              linear-gradient(0deg, rgba(6,182,212,0.3) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(6,182,212,0.3) 1px, transparent 1px)
-            `,
-            backgroundSize: '40px 40px',
-          }}
-        />
-
-        {/* Scan line animation */}
-        <motion.div
-          className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-cyan-500 to-transparent"
-          animate={{ y: ['0%', '100%'] }}
-          transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
-          style={{ opacity: 0.5, filter: 'blur(1px)' }}
-        />
-
-        {/* Corner HUD markers */}
-        <div className="absolute top-8 left-8 w-6 h-6 border-t-2 border-l-2 border-cyan-400/70" />
-        <div className="absolute top-8 right-8 w-6 h-6 border-t-2 border-r-2 border-cyan-400/70" />
-        <div className="absolute bottom-8 left-8 w-6 h-6 border-b-2 border-l-2 border-amber-500/70" />
-        <div className="absolute bottom-8 right-8 w-6 h-6 border-b-2 border-r-2 border-amber-500/70" />
-
-        {/* Ambient glow */}
-        <motion.div
-          className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 rounded-full blur-3xl"
-          animate={{ opacity: [0.1, 0.3, 0.1] }}
-          transition={{ duration: 8, repeat: Infinity }}
-          style={{ background: 'radial-gradient(circle, rgba(6,182,212,0.3), transparent)' }}
-        />
+        <div className="absolute inset-0 bg-gradient-to-br from-cyan-950/30 via-slate-950 to-violet-950/30" />
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.08)_1px,transparent_1px)] bg-[size:50px_50px]" />
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-violet-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+        <div className="absolute inset-0 bg-[linear-gradient(transparent_50%,rgba(6,182,212,0.03)_50%)] bg-[size:100%_4px] pointer-events-none" />
+        <div className="absolute inset-0 overflow-hidden">
+          {[...Array(20)].map((_, i) => {
+            const randomX = Math.random() * 100 - 50;
+            return (
+              <div key={i} className="absolute w-1 h-1 bg-cyan-400/30 rounded-full animate-float-particle"
+                style={{ left: `${Math.random() * 100}%`, top: `${Math.random() * 100}%`, animationDuration: `${5 + Math.random() * 10}s`, animationDelay: `${Math.random() * 5}s`, '--float-x': `${randomX}px` }} />
+            );
+          })}
+        </div>
       </div>
 
       <div className="relative z-10 h-screen flex flex-col">
