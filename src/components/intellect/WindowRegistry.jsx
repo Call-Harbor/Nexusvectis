@@ -48,6 +48,7 @@ export const WINDOW_META = {
   fleet_drive: { title: '💾 Fleet Drive', icon: HardDrive },
   hologram_presentation: { title: '🎯 FleetSlide', icon: MonitorPlay },
   fleet_ai_trainer: { title: '⚡ H.A.R.B.O.R Trainer', icon: Cpu },
+  fleet_3d_viewer: { title: '🚛 Fleet 3D Viewer', icon: Layers },
 };
 
 export function getWindowMeta(type) {
