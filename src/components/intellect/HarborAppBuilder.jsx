@@ -523,17 +523,6 @@ Return ONLY raw JavaScript code. No \`\`\`js markers. No explanation text.`,
       <div className="flex-1 overflow-hidden">
         <AnimatePresence mode="wait">
 
-          {/* FLEET STORE TAB */}
-          {activeTab === "store" && (
-            <motion.div key="store" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="h-full">
-              <FleetStore
-                orgId={orgId}
-                installedIds={savedApps.map(a => a.id)}
-                onInstall={loadSavedApps}
-              />
-            </motion.div>
-          )}
-
           {/* MY APPS TAB */}
           {activeTab === "myapps" && (
             <motion.div key="myapps" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="h-full overflow-y-auto p-3">
