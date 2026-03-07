@@ -308,12 +308,12 @@ export default function Dashboard() {
                 </CardContent>
               </Card>
 
-              <Card className="bg-slate-900/50 border-slate-800">
+              <Card className="hologram-border bg-opacity-5" style={{ background: 'rgba(6,182,212,0.05)', borderColor: 'rgba(6,182,212,0.4)' }}>
                 <CardContent className="pt-6">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-white font-semibold flex items-center gap-2">
-                      <Wrench className="w-5 h-5 text-violet-400" />
-                      Upcoming Maintenance
+                    <h3 className="font-semibold flex items-center gap-2 hologram-text-orange uppercase tracking-widest text-sm">
+                      <Wrench className="w-5 h-5" />
+                      MAINTENANCE
                     </h3>
                     <Link to={createPageUrl("MaintenanceManagement")}>
                       <Button variant="ghost" size="sm" className="text-violet-400 hover:text-violet-300 text-xs">
