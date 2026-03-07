@@ -158,36 +158,19 @@ export default function Dashboard() {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -4, boxShadow: '0 20px 40px rgba(0,0,0,0.3)' }}
-      className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl backdrop-blur-xl border transition-all ${
-        color === 'cyan' 
-          ? 'bg-gradient-to-br from-cyan-500/10 to-cyan-500/5 border-cyan-500/20' 
-          : color === 'violet'
-          ? 'bg-gradient-to-br from-violet-500/10 to-violet-500/5 border-violet-500/20'
-          : color === 'emerald'
-          ? 'bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 border-emerald-500/20'
-          : 'bg-gradient-to-br from-amber-500/10 to-amber-500/5 border-amber-500/20'
-      }`}
+      whileHover={{ y: -4 }}
+      className="p-3 sm:p-4 rounded-lg hologram-border transition-all"
+      style={{ background: 'rgba(6,182,212,0.05)', borderColor: 'rgba(6,182,212,0.5)' }}
     >
       <div className="flex items-start justify-between mb-2 sm:mb-3">
-        <div className={`p-1.5 sm:p-2.5 rounded-lg sm:rounded-xl ${
-          color === 'cyan' ? 'bg-cyan-500/20' 
-          : color === 'violet' ? 'bg-violet-500/20'
-          : color === 'emerald' ? 'bg-emerald-500/20'
-          : 'bg-amber-500/20'
-        }`}>
-          <Icon className={`w-4 h-4 sm:w-5 sm:h-5 ${
-            color === 'cyan' ? 'text-cyan-400' 
-            : color === 'violet' ? 'text-violet-400'
-            : color === 'emerald' ? 'text-emerald-400'
-            : 'text-amber-400'
-          }`} />
+        <div className="p-2 rounded-lg" style={{ background: 'rgba(6,182,212,0.15)' }}>
+          <Icon className="w-4 h-4 sm:w-5 sm:h-5 hologram-text" />
         </div>
-        {trend && <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 text-emerald-400" />}
+        {trend && <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 text-cyan-400" />}
       </div>
-      <p className="text-slate-400 text-xs sm:text-sm font-medium">{label}</p>
-      <p className="text-xl sm:text-2xl font-bold text-white mt-0.5 sm:mt-1">{value}</p>
-      {subtitle && <p className="text-xs text-slate-500 mt-1">{subtitle}</p>}
+      <p className="text-slate-300 text-xs sm:text-sm font-medium">{label}</p>
+      <p className="text-xl sm:text-2xl font-bold hologram-text mt-0.5 sm:mt-1">{value}</p>
+      {subtitle && <p className="text-xs text-slate-400 mt-1">{subtitle}</p>}
     </motion.div>
   );
 
