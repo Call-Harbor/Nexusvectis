@@ -129,11 +129,24 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'MISTRAL_API_KEY not configured' }, { status: 500 });
     }
 
-    // ─── 1. LOAD HARBOR KNOWLEDGE BASE ───────────────────────────────────────
+    // ─── 1. LOAD HARBOR KNOWLEDGE BASE (org model + auto-learn model) ──────────
     let knowledgeBase = '';
     try {
-      let allModels = await base44.asServiceRole.entities.FleetAIModel.filter({ organization_id, status: 'active' });
-      if (!allModels || allModels.length === 0) {
+      // Load org-specific model + the auto-learning model in parallel
+      const [orgModels, autoLearnModels] = await Promise.all([
+        base44.asServiceRole.entities.FleetAIModel.filter({ organization_id, status: 'active' }),
+        base44.asServiceRole.entities.FleetAIModel.filter({ snapshot_id: 'harbor-autolearn-v1' }),
+      ]);
+
+      let allModels = [...(orgModels || [])];
+      // Add auto-learn model if not already in list
+      const autoLearn = autoLearnModels?.[0];
+      if (autoLearn && !allModels.find(m => m.snapshot_id === 'harbor-autolearn-v1')) {
+        allModels.push(autoLearn);
+      }
+
+      if (allModels.length === 0) {
+        // Fallback: any active model
         allModels = await base44.asServiceRole.entities.FleetAIModel.filter({ status: 'active' });
       }
 
@@ -146,18 +159,28 @@ Deno.serve(async (req) => {
         selectedModel = allModels[0];
       }
 
+      // Merge training data from org model + auto-learn model
+      const allTrainingData = [];
       if (selectedModel && selectedModel.training_data?.length > 0) {
-        // Cap each training data entry and total KB to avoid token overflow
-        const MAX_KB_CHARS = 20000; // ~5k tokens — safe margin under 262k limit
+        allTrainingData.push(...selectedModel.training_data);
+      }
+      if (autoLearn && autoLearn.id !== selectedModel?.id && autoLearn.training_data?.length > 0) {
+        // Add latest 50 auto-learned entries
+        allTrainingData.push(...autoLearn.training_data.slice(-50));
+      }
+
+      if (allTrainingData.length > 0) {
+        const MAX_KB_CHARS = 24000; // ~6k tokens
         let kbParts = [];
         let totalChars = 0;
-        for (const d of selectedModel.training_data) {
+        for (const d of allTrainingData) {
           const entry = `[${(d.type || 'data').toUpperCase()} — ${d.label}]:\n${(d.content || '').substring(0, 2000)}`;
           if (totalChars + entry.length > MAX_KB_CHARS) break;
           kbParts.push(entry);
           totalChars += entry.length;
         }
-        knowledgeBase = `\n\n[HARBOR KNOWLEDGE BASE — Model: ${selectedModel.name} v${selectedModel.version || '1.0'}, Accuracy: ${selectedModel.accuracy || 0}%]\n` +
+        const modelName = selectedModel?.name || 'H.A.R.B.O.R Auto-Learning';
+        knowledgeBase = `\n\n[HARBOR KNOWLEDGE BASE — ${modelName}, Auto-learned entries: ${autoLearn?.training_data?.length || 0}]\n` +
           kbParts.join('\n\n---\n');
       }
     } catch (_) {
