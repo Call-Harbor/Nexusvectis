@@ -843,7 +843,7 @@ function SimulationResults({ result, config }) {
 }
 
 // ── Main Component ────────────────────────────────────────────────────────────
-const STEPS = ["Køretøj", "Last", "Parametre", "Simuler"];
+const STEPS = ["Vehicle", "Cargo", "Parameters", "Simulate"];
 
 export default function VehicleBuilder({ onClose }) {
   const [step, setStep] = useState(0);
