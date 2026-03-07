@@ -938,7 +938,7 @@ export default function VehicleBuilder({ onClose }) {
 
       <div className="flex items-center justify-between px-5 py-3 border-t border-slate-800/60 flex-shrink-0">
         <Button variant="ghost" onClick={() => setStep(s => Math.max(0, s-1))} disabled={step===0} className="gap-2 text-slate-400 hover:text-white">
-          <ChevronLeft className="w-4 h-4" /> Tilbage
+          <ChevronLeft className="w-4 h-4" /> Back
         </Button>
         {simRan && step===3 && (
           <Button variant="ghost" onClick={() => { setSimRan(false); setStep(2); }} className="text-slate-400 hover:text-amber-400 text-xs gap-1.5">
