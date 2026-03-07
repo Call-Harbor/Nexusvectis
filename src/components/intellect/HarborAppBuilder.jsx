@@ -489,13 +489,17 @@ Return ONLY raw JavaScript code. No \`\`\`js markers. No explanation text.`,
 
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-cyan-500/20 bg-slate-950/40 backdrop-blur-xl flex-shrink-0">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-cyan-500 to-violet-600 flex items-center justify-center">
+        <div className="flex items-center gap-3">
+          <motion.div 
+            animate={{ rotate: 360 }}
+            transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+            className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-violet-600 flex items-center justify-center border border-cyan-400/50"
+          >
             <Cpu className="w-4 h-4 text-white" />
-          </div>
+          </motion.div>
           <div>
-            <h2 className="text-sm font-bold text-white font-mono tracking-wider">H.A.R.B.O.R APP BUILDER</h2>
-            <p className="text-[10px] text-slate-400">AI-powered Intellect Mode app generator</p>
+            <h2 className="text-base font-bold text-white font-mono tracking-widest" style={{ textShadow: '0 0 10px rgba(6,182,212,0.5)' }}>⚡ H.A.R.B.O.R APP BUILDER</h2>
+            <p className="text-[10px] text-cyan-400/60 font-mono">AI-POWERED COMPONENT GENERATOR</p>
           </div>
         </div>
         <div className="flex items-center gap-1.5">
