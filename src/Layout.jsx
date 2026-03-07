@@ -114,7 +114,7 @@ export default function Layout({ children, currentPageName }) {
     <div className="min-h-screen flex" style={{ background: 'linear-gradient(135deg, rgba(2,13,30,0.98) 0%, rgba(15,10,40,0.95) 100%)' }}>
       {/* Sidebar */}
       {!hideNav && (
-      <aside className="fixed left-0 top-0 h-full w-64 bg-slate-900/50 backdrop-blur-xl border-r border-slate-800/50 z-40 hidden lg:block">
+      <aside className="fixed left-0 top-0 h-full w-64 backdrop-blur-xl z-40 hidden lg:block" style={{ background: 'linear-gradient(180deg, rgba(15,23,42,0.9) 0%, rgba(10,10,30,0.92) 100%)', borderRight: '2px solid rgba(6,182,212,0.3)' }}>
         <div className="p-6">
           <Link to={createPageUrl("Dashboard")} className="flex items-center gap-3">
             <img 
