@@ -401,7 +401,7 @@ function StepSelectVehicle({ config, onChange }) {
 function StepSelectAttachment({ config, onChange }) {
   const options = getAttachmentOptions(config.vehicleType);
   const meta = TYPE_META[config.vehicleType];
-  const labelMap = { truck:"Trailer / konfiguration", ship:"Lasttype / containertype", aircraft:"ULD / lastenheder", train:"Vogntype" };
+  const labelMap = { truck:"Trailer / Configuration", ship:"Cargo / Container type", aircraft:"ULD / Cargo units", train:"Wagon type" };
   return (
     <div className="space-y-3">
       <h3 className="text-white font-bold text-lg flex items-center gap-2"><Weight className="w-5 h-5 text-cyan-400" /> {labelMap[config.vehicleType]}</h3>
