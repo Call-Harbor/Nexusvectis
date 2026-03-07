@@ -263,6 +263,21 @@ export default function HarborAppBuilder({ onClose, vehicles = [], routes = [], 
   const [saving, setSaving] = useState(false);
   const [generatedCode, setGeneratedCode] = useState("");
   const [buildLog, setBuildLog] = useState([]);
+  const [isBuilding, setIsBuilding] = useState(false);
+  const [step, setStep] = useState("idea");
+  const [activeView, setActiveView] = useState("preview");
+  const [activeTab, setActiveTab] = useState("builder");
+  const [designTab, setDesignTab] = useState("pages");
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
+  const [pages, setPages] = useState([]);
+  const [entities, setEntities] = useState([]);
+  const [integrations, setIntegrations] = useState([]);
+  const [appTheme, setAppTheme] = useState("jarvis");
+  const [appLayout, setAppLayout] = useState("sidebar");
+  const [appFeatures, setAppFeatures] = useState({ auth: true, search: true, notifications: false, darkmode: true });
+  const [showPublishModal, setShowPublishModal] = useState(false);
+  const [publishing, setPublishing] = useState(false);
+  const [currentSavedId, setCurrentSavedId] = useState(null);
   const promptRef = useRef(null);
 
   useEffect(() => {
