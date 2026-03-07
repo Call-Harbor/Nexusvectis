@@ -382,7 +382,7 @@ function StepSelectVehicle({ config, onChange }) {
               </div>
               {sel && (
                 <div className="mt-2 pt-2 border-t border-slate-700/40 grid grid-cols-3 gap-1">
-                  {[["Motor", v.specs.engine],["Effektivitet",`${Math.round((v.specs.thermalEfficiency||0.45)*100)}%`],["Rullemodstand",`${(v.specs.rollingResistance||0.006)*1000} ‰`],["Luftmodstand",`Cd ${v.specs.dragCoefficient||0.36}`],["EURO",v.specs.euro],["Gear",v.specs.transmission]].map(([k,val]) => val && (
+                  {[["Engine", v.specs.engine],["Efficiency",`${Math.round((v.specs.thermalEfficiency||0.45)*100)}%`],["Roll. resist.",`${(v.specs.rollingResistance||0.006)*1000} ‰`],["Aero drag",`Cd ${v.specs.dragCoefficient||0.36}`],["Standard",v.specs.euro],["Gearbox",v.specs.transmission]].map(([k,val]) => val && (
                     <div key={k} className="bg-slate-900/60 rounded px-2 py-1">
                       <p className="text-[9px] text-slate-500">{k}</p>
                       <p className="text-[10px] text-slate-200 font-mono truncate">{val}</p>
