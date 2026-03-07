@@ -271,12 +271,12 @@ export default function Dashboard() {
 
             {/* Recent Activity Cards - Mobile & Desktop */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <Card className="bg-slate-900/50 border-slate-800">
+              <Card className="hologram-border bg-opacity-5" style={{ background: 'rgba(6,182,212,0.05)', borderColor: 'rgba(6,182,212,0.4)' }}>
                 <CardContent className="pt-6">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-white font-semibold flex items-center gap-2">
-                      <Package className="w-5 h-5 text-cyan-400" />
-                      Recent Shipments
+                    <h3 className="font-semibold flex items-center gap-2 hologram-text uppercase tracking-widest text-sm">
+                      <Package className="w-5 h-5" />
+                      SHIPMENTS
                     </h3>
                     <Link to={createPageUrl("Shipments")}>
                       <Button variant="ghost" size="sm" className="text-cyan-400 hover:text-cyan-300 text-xs">
