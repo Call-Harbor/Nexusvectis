@@ -68,6 +68,7 @@ const APP_CATEGORIES = [
     ['parallel_processor', Zap, 'Parallel Processor'],
     ['vehicle_builder', Calculator, '🔧 Transportbygger & Simulator'],
     ['harbor_app_builder', Zap, '⚡ H.A.R.B.O.R App Builder'],
+    ['fleet_store', Store, '🛒 Fleet Store'],
   ]],
   ['Productivity', [
     ['document_editor', FileText, 'FleetDocs'],
