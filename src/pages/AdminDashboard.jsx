@@ -244,16 +244,6 @@ export default function AdminDashboard() {
       revenue: inv.total_amount
     }));
 
-  if (userLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-950">
-        <Loader2 className="w-8 h-8 animate-spin text-cyan-400" />
-      </div>
-    );
-  }
-
-
-
   return (
     <AdminLayout currentPage="AdminDashboard">
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6 lg:p-8">
