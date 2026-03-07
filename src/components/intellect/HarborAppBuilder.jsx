@@ -865,6 +865,14 @@ Return ONLY raw JavaScript code. No \`\`\`js markers. No explanation text.`,
                     </div>
                     <div className="flex items-center gap-1.5">
                       <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/40 text-[10px]">LIVE</Badge>
+                      <button onClick={() => { setDesignTab("pages"); setStep("design"); }}
+                        className="flex items-center gap-1 px-2 py-1 rounded text-[10px] text-slate-400 hover:text-white hover:bg-slate-800/60 transition-all border border-slate-700/50">
+                        <Wrench className="w-3 h-3" /> Edit Design
+                      </button>
+                      <button onClick={handleBuildFromDesign}
+                        className="flex items-center gap-1 px-2 py-1 rounded text-[10px] bg-violet-500/20 text-violet-400 hover:bg-violet-500/30 border border-violet-500/40 transition-all">
+                        <RefreshCw className="w-3 h-3" /> Regenerate
+                      </button>
                       {activeView === "code" && (
                         <button onClick={handleCopyCode}
                           className="flex items-center gap-1 px-2 py-1 rounded text-[10px] text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
