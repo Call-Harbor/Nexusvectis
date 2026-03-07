@@ -714,9 +714,10 @@ Return ONLY raw JavaScript code. No \`\`\`js markers. No explanation text.`,
               )}
 
             </motion.div>
-          )}
+            )}
 
-        </AnimatePresence>
+          </AnimatePresence>
+        </div>
       </div>
     </div>
   );
