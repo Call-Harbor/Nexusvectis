@@ -533,49 +533,79 @@ BUILD REQUIREMENTS:
         {/* Main content */}
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Top bar */}
-          <div className="flex-shrink-0 h-16 border-b border-slate-800/50 bg-slate-900/40 backdrop-blur-xl flex items-center justify-between px-6">
-            <div>
-              <h2 className="text-sm font-semibold text-white">{appMeta?.name || 'New App'}</h2>
-              <p className="text-xs text-slate-500">{appMeta?.description}</p>
-            </div>
-            <div className="flex items-center gap-2">
-              {generatedCode && (
-                <>
-                  <button
-                    onClick={() => setShowCode(!showCode)}
-                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-slate-800/60 transition-all"
-                  >
-                    {showCode ? <Eye className="w-4 h-4" /> : <Code2 className="w-4 h-4" />}
-                  </button>
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(generatedCode);
-                      toast.success("Code copied!");
-                    }}
-                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-slate-800/60 transition-all"
-                  >
-                    <Copy className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={handleSave}
-                    disabled={saving}
-                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-cyan-500/20 transition-all border border-cyan-500/30"
-                  >
-                    {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                  </button>
-                </>
-              )}
-              {!generatedCode && (
-                <Button
-                  onClick={handleBuild}
-                  disabled={isBuilding || entities.length === 0}
-                  className="bg-gradient-to-r from-cyan-600 to-violet-600 hover:from-cyan-500 hover:to-violet-500 text-white font-mono font-bold border-0"
-                >
-                  <Zap className="w-4 h-4 mr-2" />
-                  BUILD
-                </Button>
-              )}
-            </div>
+          <div className="flex-shrink-0 border-b border-slate-800/50 bg-slate-900/40 backdrop-blur-xl px-6 py-4">
+           <div className="flex items-center justify-between mb-3">
+             <div>
+               <h2 className="text-sm font-semibold text-white">{appMeta?.name || 'New App'}</h2>
+               <p className="text-xs text-slate-500">{appMeta?.description}</p>
+             </div>
+             <div className="flex items-center gap-2">
+               {generatedCode && (
+                 <>
+                   <button
+                     onClick={() => setShowCode(!showCode)}
+                     className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-slate-800/60 transition-all"
+                   >
+                     {showCode ? <Eye className="w-4 h-4" /> : <Code2 className="w-4 h-4" />}
+                   </button>
+                   <button
+                     onClick={() => {
+                       navigator.clipboard.writeText(generatedCode);
+                       toast.success("Code copied!");
+                     }}
+                     className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-slate-800/60 transition-all"
+                   >
+                     <Copy className="w-4 h-4" />
+                   </button>
+                   <button
+                     onClick={handleSave}
+                     disabled={saving}
+                     className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-cyan-500/20 transition-all border border-cyan-500/30"
+                   >
+                     {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                   </button>
+                 </>
+               )}
+               {!generatedCode && (
+                 <Button
+                   onClick={handleBuild}
+                   disabled={isBuilding || entities.length === 0}
+                   className="bg-gradient-to-r from-cyan-600 to-violet-600 hover:from-cyan-500 hover:to-violet-500 text-white font-mono font-bold border-0"
+                 >
+                   <Zap className="w-4 h-4 mr-2" />
+                   BUILD
+                 </Button>
+               )}
+             </div>
+           </div>
+           {generatedCode && (
+             <div className="flex gap-2">
+               <input
+                 type="text"
+                 value={expandPrompt}
+                 onChange={e => setExpandPrompt(e.target.value)}
+                 placeholder="Expand app: add new features, entities, or pages..."
+                 className="flex-1 px-3 py-1.5 bg-slate-800/60 border border-slate-700 rounded-lg text-xs text-white placeholder-slate-600 focus:outline-none focus:border-cyan-500/50"
+               />
+               <button
+                 onClick={handleExpandApp}
+                 disabled={isExpanding || !expandPrompt.trim()}
+                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-white bg-emerald-600/80 hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+               >
+                 {isExpanding ? (
+                   <>
+                     <Loader2 className="w-3 h-3 animate-spin" />
+                     Expanding...
+                   </>
+                 ) : (
+                   <>
+                     <Sparkles className="w-3 h-3" />
+                     Expand
+                   </>
+                 )}
+               </button>
+             </div>
+           )}
           </div>
 
           {/* Content */}
