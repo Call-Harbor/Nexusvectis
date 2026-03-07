@@ -717,9 +717,9 @@ Return ONLY raw JavaScript code. No \`\`\`js markers. No explanation text.`,
             </motion.div>
             )}
 
-          </AnimatePresence>
-        </div>
-      </div>
-    </div>
-  );
-}
+            </AnimatePresence>
+            </div>
+            </div>
+            </div>
+            );
+            }
