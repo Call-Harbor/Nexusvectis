@@ -450,7 +450,7 @@ export default function Layout({ children, currentPageName }) {
 
       {/* Mobile Header */}
       {!hideNav && (
-      <header className="fixed top-0 left-0 right-0 h-16 bg-slate-900/80 backdrop-blur-xl border-b border-slate-800/50 z-50 lg:hidden">
+      <header className="fixed top-0 left-0 right-0 h-16 backdrop-blur-xl z-50 lg:hidden" style={{ background: 'linear-gradient(90deg, rgba(15,23,42,0.95) 0%, rgba(10,10,30,0.95) 100%)', borderBottom: '2px solid rgba(6,182,212,0.3)' }}>
         <div className="flex items-center justify-between h-full px-4">
           <img 
             src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/697e930c62bf3e3832b34edb/bc9d40ccc_FullLogo_Transparent1.png" 
