@@ -371,7 +371,7 @@ function StepSelectVehicle({ config, onChange }) {
                   <div className="flex items-center gap-2 mb-0.5">
                     <span>{v.flag}</span>
                     <span className="text-slate-400 text-xs font-semibold uppercase tracking-wide">{v.brand}</span>
-                    {sel && <Badge className="text-[9px] px-1.5" style={{ background:`${meta.color}25`, color:meta.color, border:`1px solid ${meta.color}40` }}>Valgt</Badge>}
+                    {sel && <Badge className="text-[9px] px-1.5" style={{ background:`${meta.color}25`, color:meta.color, border:`1px solid ${meta.color}40` }}>Selected</Badge>}
                   </div>
                   <p className="text-white font-bold text-sm">{v.model}</p>
                 </div>
