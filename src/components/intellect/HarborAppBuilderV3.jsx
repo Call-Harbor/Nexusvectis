@@ -112,6 +112,65 @@ export default function HarborAppBuilderV3({ onClose, vehicles = [], routes = []
     setBuildLog(prev => [...prev, { msg, type, ts: Date.now() }]);
   };
 
+  const handleAnalyzePrompt = async () => {
+    if (!userPrompt.trim()) return;
+    setIsAnalyzing(true);
+    addLog("🤖 Analyzing your requirements...", "system");
+
+    try {
+      const analysis = await base44.integrations.Core.InvokeLLM({
+        prompt: `Analyze this app description and extract the data model and pages needed:
+
+USER DESCRIPTION: "${userPrompt}"
+
+Respond with JSON:
+{
+  "entities": [
+    {
+      "name": "Entity name (singular, PascalCase)",
+      "description": "What this entity represents",
+      "fields": [
+        { "name": "fieldName", "type": "string|number|boolean|date|text|email|url", "required": true, "description": "Field purpose" }
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "name": "Page name",
+      "route": "page-route",
+      "type": "list|detail|form|dashboard",
+      "description": "What this page does"
+    }
+  ],
+  "appName": "App name",
+  "appDescription": "Short description"
+}`,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            entities: { type: "array" },
+            pages: { type: "array" },
+            appName: { type: "string" },
+            appDescription: { type: "string" }
+          }
+        }
+      });
+
+      const schema = typeof analysis === "string" ? JSON.parse(analysis) : analysis;
+      
+      setEntities(schema.entities || []);
+      setPages(schema.pages || []);
+      setAppMeta({ name: schema.appName || "New App", description: schema.appDescription || "" });
+      
+      addLog(`✅ Generated ${schema.entities?.length || 0} entities & ${schema.pages?.length || 0} pages`, "success");
+      await new Promise(r => setTimeout(r, 400));
+      setActiveTab("entities");
+    } catch (err) {
+      addLog(`❌ Error analyzing: ${err.message}`, "error");
+    }
+    setIsAnalyzing(false);
+  };
+
   const handleBuild = async () => {
     if (entities.length === 0) {
       toast.error("Define at least one entity");
