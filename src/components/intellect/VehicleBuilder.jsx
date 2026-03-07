@@ -947,7 +947,7 @@ export default function VehicleBuilder({ onClose }) {
         )}
         {step < 2 && (
           <Button onClick={() => setStep(s => s+1)} disabled={!canProceed} className="gap-2 ml-auto" style={{ background:canProceed?`linear-gradient(135deg, ${meta?.color||"#06b6d4"}, #8b5cf6)`:undefined }}>
-            Næste <ChevronRight className="w-4 h-4" />
+            Next <ChevronRight className="w-4 h-4" />
           </Button>
         )}
         {step===2 && (
