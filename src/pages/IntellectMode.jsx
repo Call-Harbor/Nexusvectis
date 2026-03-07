@@ -772,22 +772,80 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-black relative overflow-hidden">
-      {/* Animated background */}
+      {/* Jarvis Holographic Background */}
       <div className="absolute inset-0">
-        <div className="absolute inset-0 bg-gradient-to-br from-cyan-950/30 via-slate-950 to-violet-950/30" />
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.08)_1px,transparent_1px)] bg-[size:50px_50px]" />
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-violet-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
-        <div className="absolute inset-0 bg-[linear-gradient(transparent_50%,rgba(6,182,212,0.03)_50%)] bg-[size:100%_4px] pointer-events-none" />
+        {/* Deep space gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-black to-blue-950" />
+        
+        {/* Holographic grid */}
+        <motion.div 
+          className="absolute inset-0 opacity-20"
+          animate={{ backgroundPosition: ['0% 0%', '100% 100%'] }}
+          transition={{ duration: 40, repeat: Infinity, repeatType: 'reverse' }}
+          style={{
+            backgroundImage: 'linear-gradient(0deg, #06b6d4 1px, transparent 1px), linear-gradient(90deg, #06b6d4 1px, transparent 1px)',
+            backgroundSize: '80px 80px',
+          }}
+        />
+
+        {/* Scanning lines */}
+        <motion.div
+          className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-500 to-transparent"
+          animate={{ y: ['0%', '100%'] }}
+          transition={{ duration: 12, repeat: Infinity, ease: 'linear' }}
+          style={{ opacity: 0.4 }}
+        />
+
+        {/* Central energy core */}
+        <motion.div
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full"
+          animate={{ scale: [0.8, 1, 0.8] }}
+          transition={{ duration: 8, repeat: Infinity }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 via-transparent to-violet-500/10 rounded-full blur-3xl" />
+        </motion.div>
+
+        {/* Floating HUD elements */}
         <div className="absolute inset-0 overflow-hidden">
-          {[...Array(20)].map((_, i) => {
-            const randomX = Math.random() * 100 - 50;
-            return (
-              <div key={i} className="absolute w-1 h-1 bg-cyan-400/30 rounded-full animate-float-particle"
-                style={{ left: `${Math.random() * 100}%`, top: `${Math.random() * 100}%`, animationDuration: `${5 + Math.random() * 10}s`, animationDelay: `${Math.random() * 5}s`, '--float-x': `${randomX}px` }} />
-            );
-          })}
+          {[...Array(30)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute w-px h-px bg-cyan-400"
+              animate={{
+                y: ['0%', '100%'],
+                opacity: [0, 0.8, 0],
+              }}
+              transition={{
+                duration: 8 + Math.random() * 8,
+                repeat: Infinity,
+                delay: Math.random() * 5,
+              }}
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                boxShadow: '0 0 10px #06b6d4',
+              }}
+            />
+          ))}
         </div>
+
+        {/* Corner brackets */}
+        <div className="absolute top-4 left-4 w-8 h-8 border-t-2 border-l-2 border-cyan-500/60" />
+        <div className="absolute top-4 right-4 w-8 h-8 border-t-2 border-r-2 border-cyan-500/60" />
+        <div className="absolute bottom-4 left-4 w-8 h-8 border-b-2 border-l-2 border-cyan-500/60" />
+        <div className="absolute bottom-4 right-4 w-8 h-8 border-b-2 border-r-2 border-cyan-500/60" />
+
+        {/* Ambient glow orbs */}
+        <motion.div
+          className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl"
+          animate={{ scale: [1, 1.3, 1], rotate: [0, 360] }}
+          transition={{ duration: 20, repeat: Infinity }}
+        />
+        <motion.div
+          className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-violet-500/5 rounded-full blur-3xl"
+          animate={{ scale: [1.3, 1, 1.3], rotate: [360, 0] }}
+          transition={{ duration: 25, repeat: Infinity }}
+        />
       </div>
 
       <div className="relative z-10 h-screen flex flex-col">
