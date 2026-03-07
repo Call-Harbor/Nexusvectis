@@ -537,12 +537,12 @@ function SimulationResults({ result, config }) {
   const scoreColor = result.efficiencyScore >= 75 ? "#10b981" : result.efficiencyScore >= 50 ? "#f59e0b" : "#ef4444";
 
   const sections = [
-    { id:"overview", label:"Overblik", icon:BarChart3 },
-    { id:"physics", label:"Fysik", icon:Cpu },
-    { id:"energy", label:"Energi", icon:Zap },
-    { id:"emissions", label:"Emissioner", icon:Wind },
-    { id:"costs", label:"Økonomi", icon:DollarSign },
-    { id:"route", label:"Rute", icon:MapPin },
+    { id:"overview", label:"Overview", icon:BarChart3 },
+    { id:"physics", label:"Physics", icon:Cpu },
+    { id:"energy", label:"Energy", icon:Zap },
+    { id:"emissions", label:"Emissions", icon:Wind },
+    { id:"costs", label:"Economics", icon:DollarSign },
+    { id:"route", label:"Route", icon:MapPin },
   ];
 
   return (
