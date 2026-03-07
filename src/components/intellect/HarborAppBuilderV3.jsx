@@ -179,6 +179,45 @@ Respond with JSON:
     setIsAnalyzing(false);
   };
 
+  const handleExpandApp = async () => {
+    if (!expandPrompt.trim() || !generatedCode) return;
+    setIsExpanding(true);
+    addLog("🚀 Expanding app with new features...", "system");
+
+    try {
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `You are H.A.R.B.O.R AI enhancing an existing React app. 
+
+CURRENT APP CODE:
+${generatedCode}
+
+EXPANSION REQUEST: "${expandPrompt}"
+
+REQUIREMENTS:
+1. Keep all existing functionality intact
+2. Add the requested new features/entities/pages
+3. Maintain the dark Jarvis aesthetic and code style
+4. Return ONLY the COMPLETE updated JavaScript code, no markdown`,
+        response_json_schema: null
+      });
+
+      let code = typeof result === "string" ? result : JSON.stringify(result);
+      code = code.replace(/^```(?:jsx?|javascript)?\n?/gm, "").replace(/```$/gm, "").trim();
+      if (!code.includes("function GeneratedApp")) {
+        code = `function GeneratedApp({ orgId, vehicles, routes, shipments, alerts, customers, currentUser }) {\n${code}\n}`;
+      }
+
+      setGeneratedCode(code);
+      setExpandPrompt("");
+      addLog("✅ App expanded successfully!", "success");
+      toast.success("App updated with new features!");
+    } catch (err) {
+      addLog(`❌ Error expanding: ${err.message}`, "error");
+      toast.error("Failed to expand app");
+    }
+    setIsExpanding(false);
+  };
+
   const handleBuild = async () => {
     if (entities.length === 0) {
       toast.error("Define at least one entity");
