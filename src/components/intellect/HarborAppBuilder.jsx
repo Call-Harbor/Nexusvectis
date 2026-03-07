@@ -290,6 +290,85 @@ export default function HarborAppBuilder({ onClose, vehicles = [], routes = [], 
     setBuildLog(prev => [...prev, { msg, type, ts: Date.now() }]);
   };
 
+  const handleSkipToDesign = () => {
+    setStep("design");
+    setPrompt("");
+    setPages([]);
+    setEntities([]);
+    setIntegrations([]);
+  };
+
+  const handleBuildFromDesign = async () => {
+    if (pages.length === 0) {
+      toast.error("Add at least one page");
+      return;
+    }
+    setIsBuilding(true);
+    setStep("building");
+    setBuildLog([]);
+    setBuildProgress(0);
+    setGeneratedCode("");
+    setCurrentSavedId(null);
+
+    addLog("🚀 H.A.R.B.O.R AI building multi-page app...", "system");
+    setBuildProgress(10);
+    await new Promise(r => setTimeout(r, 300));
+    addLog(`📊 Building ${pages.length} pages with ${entities.length} entities and ${integrations.length} API integrations`, "info");
+    setBuildProgress(20);
+    await new Promise(r => setTimeout(r, 400));
+    addLog("🧠 Generating advanced app structure...", "info");
+    setBuildProgress(35);
+
+    // Build advanced app with design specs
+    const designContext = `
+ADVANCED APP DESIGN SPECIFICATION:
+
+Pages (${pages.length}):
+${pages.map(p => `- ${p.name} (${p.route}): ${p.type} page, description: ${p.description}`).join('\n')}
+
+Data Entities (${entities.length}):
+${entities.map(e => `- ${e.name}: [${e.fields.map(f => `${f.name}:${f.type}${f.required ? '*' : ''}`).join(', ')}]`).join('\n')}
+
+API Integrations (${integrations.length}):
+${integrations.map(i => `- ${i.name} (${i.baseUrl}): ${i.methods.map(m => `${m.method} ${m.path}`).join(', ')}`).join('\n')}
+`;
+
+    const result = await base44.integrations.Core.InvokeLLM({
+      prompt: `You are H.A.R.B.O.R AI — advanced multi-page app builder.
+
+${designContext}
+
+Generate a COMPLETE, production-ready React app with React Router that:
+1. Has a main Layout component with navigation between all pages
+2. Each page imports its own components and data hooks
+3. Uses the specified entities and integrations
+4. Fully functional with real organization data
+
+Export: function GeneratedApp({ orgId, vehicles, routes, shipments, alerts, customers, currentUser }) {
+
+Return ONLY JavaScript code. No markdown, no explanation.`,
+      response_json_schema: null
+    });
+
+    let code = typeof result === "string" ? result : JSON.stringify(result);
+    code = code.replace(/^```(?:jsx?|javascript)?\n?/gm, "").replace(/```$/gm, "").trim();
+    if (!code.includes("function GeneratedApp")) {
+      code = `function GeneratedApp({ orgId, vehicles, routes, shipments, alerts, customers, currentUser }) {\n${code}\n}`;
+    }
+
+    setGeneratedCode(code);
+    setBuildProgress(90);
+    addLog("🎨 Rendering advanced preview...", "success");
+    await new Promise(r => setTimeout(r, 400));
+    setAppMeta({ name: pages[0]?.name + " Suite", description: `${pages.length}-page app with ${entities.length} data models`, category: "custom", icon_emoji: "🏢" });
+    setBuildProgress(100);
+    addLog("✅ Advanced app built successfully!", "success");
+    await new Promise(r => setTimeout(r, 500));
+    setStep("preview");
+    setIsBuilding(false);
+    return;
+  };
+
   const handleBuild = async () => {
     if (!prompt.trim()) return;
     setIsBuilding(true);
