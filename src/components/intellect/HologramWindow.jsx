@@ -83,15 +83,12 @@ const HologramWindow = React.memo(({ id, title, icon: Icon, children, position, 
         <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" style={{ boxShadow: 'inset 0 0 25px rgba(6,182,212,0.12)' }} />
 
         <div className="relative flex flex-col h-full">
-          <div ref={headerRef} className="flex items-center justify-between px-4 py-2.5 border-b border-cyan-500/15 cursor-move touch-none" style={{ background: "rgba(0,0,0,0.3)" }}>
-           <div className="flex items-center gap-2.5">
-             <div className="relative flex items-center justify-center flex-shrink-0" style={{ width: 20, height: 20 }}>
-               <svg width="20" height="20" viewBox="0 0 20 20" className="absolute">
-                 <polygon points="10,1.5 17.5,5.5 17.5,14.5 10,18.5 2.5,14.5 2.5,5.5" fill="rgba(6,182,212,0.08)" stroke="#06b6d4" strokeWidth="0.8" opacity="0.7" />
-               </svg>
-               <Icon style={{ width: 8, height: 8, color: "#06b6d4", position: "relative", zIndex: 1 }} />
+          <div ref={headerRef} className="flex items-center justify-between px-3 py-2 border-b cursor-move touch-none font-mono" style={{ borderColor: 'rgba(6, 182, 212, 0.5)', background: 'rgba(0, 0, 0, 0.4)' }}>
+           <div className="flex items-center gap-2">
+             <div className="flex items-center gap-1.5">
+               {Icon && <Icon style={{ width: 12, height: 12, color: 'rgba(6, 182, 212, 0.8)' }} />}
              </div>
-             <span className="text-[11px] font-bold text-white truncate font-mono uppercase tracking-[0.15em]" style={{ color: "#06b6d4", textShadow: "0 0 6px rgba(6,182,212,0.4)" }}>{title}</span>
+             <span className="text-[10px] font-bold text-white truncate uppercase tracking-wider" style={{ color: 'rgba(6, 182, 212, 0.9)', textShadow: '0 0 8px rgba(6,182,212,0.3)' }}>{title}</span>
            </div>
             <div className="flex gap-1 sm:gap-2 items-center">
               {onSendToScreen && (
