@@ -1,992 +1,391 @@
-import { useState, useMemo, useRef, useEffect } from "react";
+import { useState, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import * as THREE from "three";
 import {
   Truck, Ship, Plane, Train, ChevronRight, ChevronLeft,
   Fuel, Wind, BarChart3, Zap, Weight,
   CheckCircle2, Play, RotateCcw, X,
   Settings, Activity, TrendingUp, Gauge,
-  Calculator, Info, Box, RotateCw, ChevronDown
+  Calculator, Info, AlertTriangle, Thermometer,
+  Clock, MapPin, DollarSign, Leaf, Cpu, BarChart2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
-import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, RadarChart, Radar, PolarGrid, PolarAngleAxis } from "recharts";
+import {
+  AreaChart, Area, LineChart, Line, BarChart, Bar,
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  RadarChart, Radar, PolarGrid, PolarAngleAxis, ComposedChart,
+  ReferenceLine, Legend
+} from "recharts";
 
-// ── Real vehicle models with accurate specs ───────────────────────────────────
-
+// ── Real vehicle models ───────────────────────────────────────────────────────
 const REAL_VEHICLES = {
   truck: [
-    {
-      id: "volvo_fh16_750",
-      brand: "Volvo", model: "FH16 750",
-      color: "#1a3a6e", cabColor: "#1a3a6e",
-      flag: "🇸🇪",
-      specs: {
-        engine: "D16K, 16.1L I6 diesel", power: "750 hp / 553 kW", torque: "3,550 Nm",
-        gvw: 44000, tare: 8200, maxPayload: 25000,
-        baseConsumption: 31.5, co2PerLiter: 2.64,
-        speedKph: 90, topSpeed: 90,
-        wheelbase: "3,900 mm", cab: "Globetrotter XL",
-        euro: "Euro 6", transmission: "I-Shift 12-speed",
-      },
-      desc: "Europe's most powerful series-production truck. Industry benchmark for long-haul.",
-      trailerType: "standard",
-    },
-    {
-      id: "mercedes_actros_1863",
-      brand: "Mercedes-Benz", model: "Actros 1863 LS",
-      color: "#1c1c2e", cabColor: "#2d2d40",
-      flag: "🇩🇪",
-      specs: {
-        engine: "OM 473, 15.6L I6 diesel", power: "630 hp / 463 kW", torque: "3,000 Nm",
-        gvw: 40000, tare: 8100, maxPayload: 25000,
-        baseConsumption: 30.2, co2PerLiter: 2.64,
-        speedKph: 89, topSpeed: 89,
-        wheelbase: "3,800 mm", cab: "StreamSpace",
-        euro: "Euro 6d", transmission: "PowerShift 3 12-speed",
-      },
-      desc: "World's first production truck with autonomous driving Level 2. MirrorCam standard.",
-      trailerType: "standard",
-    },
-    {
-      id: "scania_r650",
-      brand: "Scania", model: "R 650 V8",
-      color: "#b91c1c", cabColor: "#991b1b",
-      flag: "🇸🇪",
-      specs: {
-        engine: "DC16, 16.4L V8 diesel", power: "650 hp / 478 kW", torque: "3,400 Nm",
-        gvw: 44000, tare: 8300, maxPayload: 24000,
-        baseConsumption: 32.8, co2PerLiter: 2.64,
-        speedKph: 90, topSpeed: 90,
-        wheelbase: "3,700 mm", cab: "Topline",
-        euro: "Euro 6", transmission: "Opticruise G25 CM",
-      },
-      desc: "The legendary V8 — iconic sound, supreme power. Preferred by owner-operators.",
-      trailerType: "standard",
-    },
-    {
-      id: "man_tgx_640",
-      brand: "MAN", model: "TGX 26.640",
-      color: "#15803d", cabColor: "#166534",
-      flag: "🇩🇪",
-      specs: {
-        engine: "D38, 15.2L I6 diesel", power: "640 hp / 471 kW", torque: "3,000 Nm",
-        gvw: 44000, tare: 8000, maxPayload: 26000,
-        baseConsumption: 29.8, co2PerLiter: 2.64,
-        speedKph: 90, topSpeed: 90,
-        wheelbase: "3,600 mm", cab: "GX cab",
-        euro: "Euro 6d", transmission: "MAN TipMatic 12AS 2540 TO",
-      },
-      desc: "New generation MAN — 25% improved aerodynamics, predictive cruise control.",
-      trailerType: "standard",
-    },
-    {
-      id: "daf_xf_530",
-      brand: "DAF", model: "XF 530 FT",
-      color: "#d97706", cabColor: "#b45309",
-      flag: "🇳🇱",
-      specs: {
-        engine: "MX-13, 12.9L I6 diesel", power: "530 hp / 390 kW", torque: "2,600 Nm",
-        gvw: 44000, tare: 7900, maxPayload: 26000,
-        baseConsumption: 28.5, co2PerLiter: 2.64,
-        speedKph: 90, topSpeed: 90,
-        wheelbase: "3,800 mm", cab: "Super Space Cab",
-        euro: "Euro 6", transmission: "AS Tronic 12-speed",
-      },
-      desc: "Truck of the Year 2018. Best payload-to-tare ratio in class.",
-      trailerType: "standard",
-    },
-    {
-      id: "volvo_fm_reefer",
-      brand: "Volvo", model: "FM 500 + Reefer",
-      color: "#0e4d92", cabColor: "#0e4d92",
-      flag: "🇸🇪",
-      specs: {
-        engine: "D13K, 12.8L I6 diesel", power: "500 hp / 368 kW", torque: "2,600 Nm",
-        gvw: 44000, tare: 9700, maxPayload: 22000,
-        baseConsumption: 34.5, co2PerLiter: 2.64,
-        speedKph: 85, topSpeed: 85,
-        wheelbase: "3,800 mm", cab: "Globetrotter",
-        euro: "Euro 6", transmission: "I-Shift 12-speed",
-      },
-      desc: "Cold chain specialist with Thermo King Advancer reefer unit. -30°C to +30°C.",
-      trailerType: "refrigerated",
-    },
-    {
-      id: "scania_r500_tanker",
-      brand: "Scania", model: "R 500 + Tank",
-      color: "#6b21a8", cabColor: "#581c87",
-      flag: "🇸🇪",
-      specs: {
-        engine: "DC13, 12.7L I6 diesel", power: "500 hp / 368 kW", torque: "2,600 Nm",
-        gvw: 44000, tare: 10800, maxPayload: 23000,
-        baseConsumption: 33.2, co2PerLiter: 2.64,
-        speedKph: 85, topSpeed: 85,
-        wheelbase: "3,700 mm", cab: "Highline",
-        euro: "Euro 6", transmission: "Opticruise G25",
-      },
-      desc: "ADR-certified tanker configuration for liquid chemicals and fuel transport.",
-      trailerType: "tanker",
-    },
-    {
-      id: "daf_xf_flatbed",
-      brand: "DAF", model: "XF 480 + Flatbed",
-      color: "#92400e", cabColor: "#78350f",
-      flag: "🇳🇱",
-      specs: {
-        engine: "MX-13, 12.9L I6 diesel", power: "480 hp / 353 kW", torque: "2,500 Nm",
-        gvw: 44000, tare: 7200, maxPayload: 27000,
-        baseConsumption: 27.8, co2PerLiter: 2.64,
-        speedKph: 90, topSpeed: 90,
-        wheelbase: "4,200 mm", cab: "Space Cab",
-        euro: "Euro 6", transmission: "AS Tronic",
-      },
-      desc: "Heavy machinery and oversize cargo specialist on flatbed configuration.",
-      trailerType: "flatbed",
-    },
+    { id:"volvo_fh16_750", brand:"Volvo", model:"FH16 750", flag:"🇸🇪", color:"#1a3a6e",
+      specs:{ engine:"D16K 16.1L I6", power:"750 hp / 553 kW", torque:"3,550 Nm", gvw:44000, tare:8200, maxPayload:25000, baseConsumption:31.5, co2PerLiter:2.64, speedKph:90, topSpeed:90, euro:"Euro 6", transmission:"I-Shift 12-speed", idleConsumption:2.8, engineDisplacement:16.1, cylinderCount:6, compressionRatio:17.5, turbo:"Twin-turbo compound", afr:30, thermalEfficiency:0.46, rollingResistance:0.006, dragCoefficient:0.36, frontalArea:9.5 }},
+    { id:"mercedes_actros_1863", brand:"Mercedes-Benz", model:"Actros 1863 LS", flag:"🇩🇪", color:"#2d2d40",
+      specs:{ engine:"OM 473 15.6L I6", power:"630 hp / 463 kW", torque:"3,000 Nm", gvw:40000, tare:8100, maxPayload:25000, baseConsumption:30.2, co2PerLiter:2.64, speedKph:89, topSpeed:89, euro:"Euro 6d", transmission:"PowerShift 3", idleConsumption:2.5, engineDisplacement:15.6, cylinderCount:6, compressionRatio:17.0, turbo:"Twin-turbo", afr:29, thermalEfficiency:0.47, rollingResistance:0.006, dragCoefficient:0.34, frontalArea:9.2 }},
+    { id:"scania_r650", brand:"Scania", model:"R 650 V8", flag:"🇸🇪", color:"#991b1b",
+      specs:{ engine:"DC16 16.4L V8", power:"650 hp / 478 kW", torque:"3,400 Nm", gvw:44000, tare:8300, maxPayload:24000, baseConsumption:32.8, co2PerLiter:2.64, speedKph:90, topSpeed:90, euro:"Euro 6", transmission:"Opticruise G25", idleConsumption:3.1, engineDisplacement:16.4, cylinderCount:8, compressionRatio:17.3, turbo:"Twin-turbo V", afr:31, thermalEfficiency:0.44, rollingResistance:0.0065, dragCoefficient:0.37, frontalArea:9.6 }},
+    { id:"man_tgx_640", brand:"MAN", model:"TGX 26.640", flag:"🇩🇪", color:"#166534",
+      specs:{ engine:"D38 15.2L I6", power:"640 hp / 471 kW", torque:"3,000 Nm", gvw:44000, tare:8000, maxPayload:26000, baseConsumption:29.8, co2PerLiter:2.64, speedKph:90, topSpeed:90, euro:"Euro 6d", transmission:"MAN TipMatic 12AS", idleConsumption:2.6, engineDisplacement:15.2, cylinderCount:6, compressionRatio:17.2, turbo:"Turbo compound", afr:30, thermalEfficiency:0.48, rollingResistance:0.0058, dragCoefficient:0.33, frontalArea:9.1 }},
+    { id:"daf_xf_530", brand:"DAF", model:"XF 530 FT", flag:"🇳🇱", color:"#b45309",
+      specs:{ engine:"MX-13 12.9L I6", power:"530 hp / 390 kW", torque:"2,600 Nm", gvw:44000, tare:7900, maxPayload:26000, baseConsumption:28.5, co2PerLiter:2.64, speedKph:90, topSpeed:90, euro:"Euro 6", transmission:"AS Tronic 12-speed", idleConsumption:2.4, engineDisplacement:12.9, cylinderCount:6, compressionRatio:17.0, turbo:"Single-stage turbo", afr:28, thermalEfficiency:0.45, rollingResistance:0.006, dragCoefficient:0.35, frontalArea:9.3 }},
   ],
-
   ship: [
-    {
-      id: "maersk_emma",
-      brand: "Maersk", model: "Emma Mærsk class",
-      color: "#0f3460", hullColor: "#0f3460", funnelColor: "#004b9b",
-      flag: "🇩🇰",
-      specs: {
-        type: "Ultra-large container vessel (ULCV)", built: "2006",
-        length: "397 m", beam: "56 m", draft: "15.5 m",
-        deadweight: 156907, teu: 18000,
-        engine: "Wärtsilä-Sulzer 14RT-flex96C", power: "80,080 kW",
-        baseConsumption: 350, co2PerLiter: 3.15,
-        speedKph: 27.6, topSpeed: 29.6,
-        flag_reg: "Denmark", operator: "A.P. Møller-Mærsk",
-      },
-      desc: "Legendary Danish container giant. One of the world's largest container ships ever built.",
-      shipType: "container",
-    },
-    {
-      id: "msc_gulsun",
-      brand: "MSC", model: "Gülsün class",
-      color: "#1a1a2e", hullColor: "#1a1a2e", funnelColor: "#cc6600",
-      flag: "🇨🇭",
-      specs: {
-        type: "Mega container vessel", built: "2019",
-        length: "400 m", beam: "61.5 m", draft: "16 m",
-        deadweight: 228000, teu: 23756,
-        engine: "MAN B&W 11G95ME-C10.5", power: "63,000 kW",
-        baseConsumption: 420, co2PerLiter: 3.15,
-        speedKph: 22.8, topSpeed: 22.8,
-        flag_reg: "Panama", operator: "Mediterranean Shipping Company",
-      },
-      desc: "World's largest container ship by TEU capacity as of 2019. 23,756 TEU.",
-      shipType: "container",
-    },
-    {
-      id: "knock_nevis",
-      brand: "Seawise Giant", model: "TI-class VLCC",
-      color: "#374151", hullColor: "#1f2937", funnelColor: "#ef4444",
-      flag: "🇸🇦",
-      specs: {
-        type: "Very Large Crude Carrier (VLCC)", built: "1979",
-        length: "458 m", beam: "68.8 m", draft: "24.6 m",
-        deadweight: 564763, teu: 0,
-        engine: "Steam turbine", power: "50,000 kW",
-        baseConsumption: 300, co2PerLiter: 3.15,
-        speedKph: 28, topSpeed: 30,
-        flag_reg: "Panama", operator: "Various tanker operators",
-      },
-      desc: "Longest ship ever built (458 m). Ultra-large crude oil tanker (ULCC).",
-      shipType: "tanker",
-    },
-    {
-      id: "vale_brasil",
-      brand: "Vale", model: "Valemax bulk carrier",
-      color: "#064e3b", hullColor: "#064e3b", funnelColor: "#16a34a",
-      flag: "🇧🇷",
-      specs: {
-        type: "Very Large Ore Carrier (VLOC)", built: "2011",
-        length: "362 m", beam: "65 m", draft: "23 m",
-        deadweight: 400000, teu: 0,
-        engine: "MAN B&W diesel", power: "32,000 kW",
-        baseConsumption: 230, co2PerLiter: 3.15,
-        speedKph: 24, topSpeed: 24,
-        flag_reg: "Brazil", operator: "Vale S.A.",
-      },
-      desc: "World's largest bulk carrier. Carries iron ore from Brazil to Asia (400,000 DWT).",
-      shipType: "bulk",
-    },
-    {
-      id: "ever_given",
-      brand: "Evergreen", model: "Ever Given (ULCV)",
-      color: "#065f46", hullColor: "#065f46", funnelColor: "#22c55e",
-      flag: "🇹🇼",
-      specs: {
-        type: "Ultra-large container vessel", built: "2018",
-        length: "399.94 m", beam: "58.8 m", draft: "14.5 m",
-        deadweight: 199629, teu: 20388,
-        engine: "MAN B&W 11G90ME-C", power: "58,900 kW",
-        baseConsumption: 380, co2PerLiter: 3.15,
-        speedKph: 25, topSpeed: 25,
-        flag_reg: "Panama", operator: "Evergreen Marine",
-      },
-      desc: "Became world-famous after blocking the Suez Canal for 6 days in March 2021.",
-      shipType: "container",
-    },
+    { id:"maersk_emma", brand:"Maersk", model:"Emma Mærsk class", flag:"🇩🇰", color:"#0f3460",
+      specs:{ engine:"Wärtsilä-Sulzer 14RT-flex96C", power:"80,080 kW", torque:"N/A", gvw:0, tare:0, maxPayload:156907000, deadweight:156907, teu:18000, baseConsumption:350, co2PerLiter:3.15, speedKph:27.6, topSpeed:29.6, euro:"IMO Tier II", transmission:"Direct drive", idleConsumption:40, engineDisplacement:25480, cylinderCount:14, compressionRatio:21, turbo:"Turbo compound", afr:45, thermalEfficiency:0.55, rollingResistance:0, dragCoefficient:0, frontalArea:0, hullForm:"container", engineRPM:102, sfoc:171 }},
+    { id:"msc_gulsun", brand:"MSC", model:"Gülsün class", flag:"🇨🇭", color:"#1a1a2e",
+      specs:{ engine:"MAN B&W 11G95ME-C10.5", power:"63,000 kW", torque:"N/A", gvw:0, tare:0, maxPayload:228000000, deadweight:228000, teu:23756, baseConsumption:420, co2PerLiter:3.15, speedKph:22.8, topSpeed:22.8, euro:"IMO Tier III", transmission:"Direct drive", idleConsumption:50, engineDisplacement:0, cylinderCount:11, compressionRatio:21, turbo:"Turbo compound", afr:45, thermalEfficiency:0.56, rollingResistance:0, dragCoefficient:0, frontalArea:0, hullForm:"container", engineRPM:80, sfoc:163 }},
+    { id:"ever_given", brand:"Evergreen", model:"Ever Given", flag:"🇹🇼", color:"#065f46",
+      specs:{ engine:"MAN B&W 11G90ME-C", power:"58,900 kW", torque:"N/A", gvw:0, tare:0, maxPayload:199629000, deadweight:199629, teu:20388, baseConsumption:380, co2PerLiter:3.15, speedKph:25, topSpeed:25, euro:"IMO Tier III", transmission:"Direct drive", idleConsumption:45, engineDisplacement:0, cylinderCount:11, compressionRatio:21, turbo:"Turbo", afr:44, thermalEfficiency:0.55, rollingResistance:0, dragCoefficient:0, frontalArea:0, hullForm:"container", engineRPM:84, sfoc:168 }},
+    { id:"vale_brasil", brand:"Vale", model:"Valemax bulk carrier", flag:"🇧🇷", color:"#064e3b",
+      specs:{ engine:"MAN B&W diesel", power:"32,000 kW", torque:"N/A", gvw:0, tare:0, maxPayload:400000000, deadweight:400000, teu:0, baseConsumption:230, co2PerLiter:3.15, speedKph:24, topSpeed:24, euro:"IMO Tier II", transmission:"Direct drive", idleConsumption:30, engineDisplacement:0, cylinderCount:7, compressionRatio:21, turbo:"Turbo", afr:44, thermalEfficiency:0.53, rollingResistance:0, dragCoefficient:0, frontalArea:0, hullForm:"bulk", engineRPM:95, sfoc:178 }},
   ],
-
   aircraft: [
-    {
-      id: "boeing_747_8f",
-      brand: "Boeing", model: "747-8F",
-      color: "#e5e7eb", stripeColor: "#1d4ed8",
-      flag: "🇺🇸",
-      specs: {
-        type: "Wide-body cargo freighter", firstFlight: "2010",
-        length: "76.3 m", wingspan: "68.4 m", height: "19.4 m",
-        maxPayload: 133980, mtow: 447696,
-        engines: "4× GEnx-2B67B turbofan", thrust: "4× 296.3 kN",
-        baseConsumption: 11800, co2PerLiter: 2.52,
-        speedKph: 908, topSpeed: 988,
-        range: "8,130 km", ceiling: "13,100 m",
-        operator: "UPS, Cargolux, Korean Air Cargo",
-      },
-      desc: "Queen of the Skies — most successful large cargo aircraft. Main deck + lower deck.",
-      engineCount: 4,
-    },
-    {
-      id: "boeing_777f",
-      brand: "Boeing", model: "777F",
-      color: "#f8fafc", stripeColor: "#ea580c",
-      flag: "🇺🇸",
-      specs: {
-        type: "Wide-body cargo freighter", firstFlight: "2008",
-        length: "63.7 m", wingspan: "64.8 m", height: "18.6 m",
-        maxPayload: 102010, mtow: 347814,
-        engines: "2× GE90-110B1L turbofan", thrust: "2× 489.3 kN",
-        baseConsumption: 9800, co2PerLiter: 2.52,
-        speedKph: 905, topSpeed: 945,
-        range: "9,200 km", ceiling: "13,100 m",
-        operator: "FedEx, Emirates SkyCargo, China Southern",
-      },
-      desc: "World's largest twin-engine cargo aircraft. Preferred by express freight operators.",
-      engineCount: 2,
-    },
-    {
-      id: "airbus_a380f",
-      brand: "Airbus", model: "A330-200F",
-      color: "#f0f4ff", stripeColor: "#7c3aed",
-      flag: "🇫🇷",
-      specs: {
-        type: "Wide-body cargo freighter", firstFlight: "2009",
-        length: "58.8 m", wingspan: "60.3 m", height: "16.9 m",
-        maxPayload: 70000, mtow: 233000,
-        engines: "2× Rolls-Royce Trent 772B", thrust: "2× 316.3 kN",
-        baseConsumption: 8200, co2PerLiter: 2.52,
-        speedKph: 871, topSpeed: 900,
-        range: "7,400 km", ceiling: "12,500 m",
-        operator: "DHL, Turkish Cargo, Etihad Cargo",
-      },
-      desc: "Most fuel-efficient widebody freighter. 15% lower fuel burn vs. previous generation.",
-      engineCount: 2,
-    },
-    {
-      id: "antonov_an124",
-      brand: "Antonov", model: "An-124 Ruslan",
-      color: "#d1d5db", stripeColor: "#2563eb",
-      flag: "🇺🇦",
-      specs: {
-        type: "Strategic heavy transport", firstFlight: "1982",
-        length: "69.1 m", wingspan: "73.3 m", height: "21.1 m",
-        maxPayload: 150000, mtow: 405000,
-        engines: "4× ZMKB Progress D-18T turbofan", thrust: "4× 229.5 kN",
-        baseConsumption: 14500, co2PerLiter: 2.52,
-        speedKph: 865, topSpeed: 865,
-        range: "5,400 km", ceiling: "12,000 m",
-        operator: "Antonov Airlines, Volga-Dnepr",
-      },
-      desc: "World's heaviest operational cargo aircraft (150t payload). Front + rear loading.",
-      engineCount: 4,
-    },
-    {
-      id: "fedex_md11f",
-      brand: "FedEx / McDonnell Douglas", model: "MD-11F",
-      color: "#fff7ed", stripeColor: "#7c2d12",
-      flag: "🇺🇸",
-      specs: {
-        type: "Wide-body trijet freighter", firstFlight: "1990",
-        length: "61.6 m", wingspan: "51.7 m", height: "17.6 m",
-        maxPayload: 90760, mtow: 285990,
-        engines: "3× GE CF6-80C2D1F turbofan", thrust: "3× 273.6 kN",
-        baseConsumption: 10500, co2PerLiter: 2.52,
-        speedKph: 876, topSpeed: 945,
-        range: "6,840 km", ceiling: "12,800 m",
-        operator: "FedEx Express, UPS (retired)",
-      },
-      desc: "Iconic trijet with tail-mounted engine. FedEx's legendary overnight express workhorse.",
-      engineCount: 3,
-    },
+    { id:"boeing_747_8f", brand:"Boeing", model:"747-8F", flag:"🇺🇸", color:"#1d4ed8",
+      specs:{ engine:"4× GEnx-2B67B", power:"4× 296 kN thrust", torque:"N/A", gvw:0, tare:0, maxPayload:133980, mtow:447696, baseConsumption:11800, co2PerLiter:2.52, speedKph:908, topSpeed:988, euro:"ICAO Chapter 4", transmission:"FADEC", idleConsumption:800, engineDisplacement:0, cylinderCount:0, compressionRatio:45, turbo:"Turbofan BPR 8.0", afr:50, thermalEfficiency:0.52, rollingResistance:0, dragCoefficient:0.022, frontalArea:0, engineCount:4, bypassRatio:8.0, specificFuelConsumption:15.5, cruiseAlt:12500 }},
+    { id:"boeing_777f", brand:"Boeing", model:"777F", flag:"🇺🇸", color:"#ea580c",
+      specs:{ engine:"2× GE90-110B1L", power:"2× 489 kN thrust", torque:"N/A", gvw:0, tare:0, maxPayload:102010, mtow:347814, baseConsumption:9800, co2PerLiter:2.52, speedKph:905, topSpeed:945, euro:"ICAO Chapter 4", transmission:"FADEC", idleConsumption:650, engineDisplacement:0, cylinderCount:0, compressionRatio:42, turbo:"Turbofan BPR 9.0", afr:52, thermalEfficiency:0.54, rollingResistance:0, dragCoefficient:0.020, frontalArea:0, engineCount:2, bypassRatio:9.0, specificFuelConsumption:14.8, cruiseAlt:12500 }},
+    { id:"antonov_an124", brand:"Antonov", model:"An-124 Ruslan", flag:"🇺🇦", color:"#2563eb",
+      specs:{ engine:"4× D-18T turbofan", power:"4× 229.5 kN", torque:"N/A", gvw:0, tare:0, maxPayload:150000, mtow:405000, baseConsumption:14500, co2PerLiter:2.52, speedKph:865, topSpeed:865, euro:"ICAO Chapter 3", transmission:"FADEC", idleConsumption:1000, engineDisplacement:0, cylinderCount:0, compressionRatio:38, turbo:"Turbofan BPR 5.6", afr:48, thermalEfficiency:0.48, rollingResistance:0, dragCoefficient:0.026, frontalArea:0, engineCount:4, bypassRatio:5.6, specificFuelConsumption:18.2, cruiseAlt:12000 }},
   ],
-
   train: [
-    {
-      id: "db_class_189",
-      brand: "DB Cargo / Siemens", model: "Class 189 (ES64F4)",
-      color: "#dc2626", cabColor: "#b91c1c",
-      flag: "🇩🇪",
-      specs: {
-        type: "Electric freight locomotive", built: "2002–2009",
-        length: "19.58 m", weight: 88000,
-        maxPayload: 3200000, tractiveForce: "300 kN",
-        power: "6,400 kW (8,600 hp)", voltage: "15kV / 25kV AC",
-        baseConsumption: 5.2, co2PerLiter: 0.233,
-        speedKph: 140, topSpeed: 140,
-        axles: "Bo'Bo'", wheelDiameter: "1,250 mm",
-        operator: "DB Cargo, ÖBB Rail Cargo, SBB Cargo",
-      },
-      desc: "Europe's most-used freight locomotive. Multi-system capable across 4 countries.",
-      wagons: 3,
-    },
-    {
-      id: "union_pacific_big_boy",
-      brand: "Union Pacific", model: "Big Boy 4014",
-      color: "#1f2937", cabColor: "#111827",
-      flag: "🇺🇸",
-      specs: {
-        type: "Steam articulated locomotive", built: "1941",
-        length: "40.47 m", weight: 548000,
-        maxPayload: 6000000, tractiveForce: "601 kN",
-        power: "6,290 hp (4,692 kW)", voltage: "Steam (coal/oil)",
-        baseConsumption: 28, co2PerLiter: 2.9,
-        speedKph: 112, topSpeed: 112,
-        axles: "4-8-8-4", wheelDiameter: "1,778 mm",
-        operator: "Union Pacific Railroad",
-      },
-      desc: "Largest steam locomotive ever built. Restored 4014 still hauls excursion trains.",
-      wagons: 4,
-    },
-    {
-      id: "siemens_vectron",
-      brand: "Siemens", model: "Vectron MS",
-      color: "#0ea5e9", cabColor: "#0284c7",
-      flag: "🇩🇪",
-      specs: {
-        type: "Multi-system electric/diesel", built: "2010–present",
-        length: "18.98 m", weight: 90000,
-        maxPayload: 3500000, tractiveForce: "400 kN",
-        power: "6,400 kW (8,600 hp)", voltage: "15kV/25kV AC + 3kV/1.5kV DC",
-        baseConsumption: 4.8, co2PerLiter: 0.233,
-        speedKph: 160, topSpeed: 160,
-        axles: "Bo'Bo'", wheelDiameter: "1,250 mm",
-        operator: "Various European operators (36 countries)",
-      },
-      desc: "Most modern multi-system European freight loco. Digital LZB/ETCS Level 2 signalling.",
-      wagons: 3,
-    },
-    {
-      id: "ge_es44ac",
-      brand: "GE Transportation", model: "ES44AC (GEVO)",
-      color: "#f59e0b", cabColor: "#d97706",
-      flag: "🇺🇸",
-      specs: {
-        type: "Diesel-electric freight locomotive", built: "2005–present",
-        length: "22.56 m", weight: 196000,
-        maxPayload: 5000000, tractiveForce: "667 kN",
-        power: "4,400 hp (3,281 kW)", voltage: "Diesel-electric",
-        baseConsumption: 18, co2PerLiter: 2.7,
-        speedKph: 120, topSpeed: 120,
-        axles: "C-C", wheelDiameter: "1,067 mm",
-        operator: "BNSF, CSX, Norfolk Southern, UP",
-      },
-      desc: "North America's workhorse. Hauls 10,000+ ton coal and grain trains across the continent.",
-      wagons: 5,
-    },
-    {
-      id: "class_66",
-      brand: "EMD / Progress Rail", model: "Class 66 (JT42CWR)",
-      color: "#166534", cabColor: "#14532d",
-      flag: "🇬🇧",
-      specs: {
-        type: "Diesel freight locomotive", built: "1998–2016",
-        length: "20.06 m", weight: 130000,
-        maxPayload: 3000000, tractiveForce: "409 kN",
-        power: "3,300 hp (2,462 kW)", voltage: "Diesel-electric",
-        baseConsumption: 16, co2PerLiter: 2.7,
-        speedKph: 120, topSpeed: 120,
-        axles: "Co-Co", wheelDiameter: "1,092 mm",
-        operator: "DB Cargo UK, Freightliner, GBRf",
-      },
-      desc: "UK's most common freight locomotive. 446 units operating across Britain and Europe.",
-      wagons: 3,
-    },
+    { id:"db_class_189", brand:"DB Cargo / Siemens", model:"Class 189 (ES64F4)", flag:"🇩🇪", color:"#dc2626",
+      specs:{ engine:"4× 3-phase induction motors", power:"6,400 kW", torque:"300 kN tractive", gvw:0, tare:88000, maxPayload:3200000, baseConsumption:5.2, co2PerLiter:0.233, speedKph:140, topSpeed:140, euro:"EN 50126", transmission:"4-quadrant converter", idleConsumption:0.3, engineDisplacement:0, cylinderCount:0, compressionRatio:0, turbo:"N/A", afr:0, thermalEfficiency:0.92, rollingResistance:0.0015, dragCoefficient:1.8, frontalArea:10, axles:"Bo'Bo'", voltage:"15kV/25kV AC" }},
+    { id:"siemens_vectron", brand:"Siemens", model:"Vectron MS", flag:"🇩🇪", color:"#0284c7",
+      specs:{ engine:"4× 3-phase IGBT motors", power:"6,400 kW", torque:"400 kN tractive", gvw:0, tare:90000, maxPayload:3500000, baseConsumption:4.8, co2PerLiter:0.233, speedKph:160, topSpeed:160, euro:"EN 50126", transmission:"IGBT inverter", idleConsumption:0.25, engineDisplacement:0, cylinderCount:0, compressionRatio:0, turbo:"N/A", afr:0, thermalEfficiency:0.93, rollingResistance:0.0014, dragCoefficient:1.7, frontalArea:10, axles:"Bo'Bo'", voltage:"Multi-system" }},
+    { id:"ge_es44ac", brand:"GE Transportation", model:"ES44AC (GEVO)", flag:"🇺🇸", color:"#d97706",
+      specs:{ engine:"16-cyl GEVO diesel", power:"4,400 hp / 3,281 kW", torque:"667 kN tractive", gvw:0, tare:196000, maxPayload:5000000, baseConsumption:18, co2PerLiter:2.7, speedKph:120, topSpeed:120, euro:"EPA Tier 4", transmission:"AC traction motors", idleConsumption:1.8, engineDisplacement:65, cylinderCount:16, compressionRatio:14.7, turbo:"Twin-turbo", afr:35, thermalEfficiency:0.42, rollingResistance:0.0012, dragCoefficient:2.2, frontalArea:12, axles:"C-C", voltage:"Diesel-electric" }},
   ],
 };
 
-// ── Payload limits derived from real specs ────────────────────────────────────
 const TRAILER_OPTIONS = [
-  { id: "standard_curtain", label: "Curtainsider trailer", weight: 8000, dragCoef: 1.0, img: "🏗️", desc: "13.6m load length, 33 EUR pallets" },
-  { id: "reefer", label: "Refrigerated (Thermo King)", weight: 9500, dragCoef: 1.08, img: "❄️", desc: "+8% fuel — active cooling unit", extraPower: 5 },
-  { id: "flatbed", label: "Flatbed trailer", weight: 6500, dragCoef: 0.95, img: "📦", desc: "Oversize / heavy machinery" },
-  { id: "tanker", label: "Tank trailer (ADR)", weight: 10500, dragCoef: 1.12, img: "🛢️", desc: "Liquids, chemicals, fuel" },
-  { id: "car_carrier", label: "Car transporter", weight: 11000, dragCoef: 1.25, img: "🚗", desc: "Up to 10 passenger vehicles" },
-  { id: "mega", label: "Mega trailer (3m)", weight: 8200, dragCoef: 1.18, img: "📐", desc: "Extra volumetric capacity" },
+  { id:"standard_curtain", label:"Curtainsider trailer", weight:8000, dragMod:1.0, img:"🏗️", desc:"13.6m, 33 EUR pallets — standard long-haul" },
+  { id:"reefer", label:"Refrigerated (Thermo King)", weight:9500, dragMod:1.08, img:"❄️", desc:"+8% fuel — active cooling unit", extraPower:5 },
+  { id:"flatbed", label:"Flatbed trailer", weight:6500, dragMod:0.95, img:"📦", desc:"Oversize / heavy machinery — low drag" },
+  { id:"tanker", label:"Tank trailer (ADR)", weight:10500, dragMod:1.12, img:"🛢️", desc:"Liquids, chemicals, fuel — high tare" },
+  { id:"car_carrier", label:"Car transporter", weight:11000, dragMod:1.25, img:"🚗", desc:"Multi-level — very high aerodynamic drag" },
+  { id:"mega", label:"Mega trailer (3m height)", weight:8200, dragMod:1.18, img:"📐", desc:"Extra volumetric capacity" },
 ];
-
 const CONTAINER_OPTIONS = [
-  { id: "std_20", label: "20' TEU containers", weight: 2200, dragCoef: 1.0, img: "📦", desc: "Standard ISO 20-foot" },
-  { id: "std_40", label: "40' FEU containers", weight: 3800, dragCoef: 1.0, img: "📦", desc: "Standard ISO 40-foot" },
-  { id: "reefer_40", label: "Reefer containers (40')", weight: 4500, dragCoef: 1.0, img: "❄️", desc: "+12% power for refrigeration", extraPower: 12 },
-  { id: "bulk", label: "Bulk cargo (ore/grain)", weight: 0, dragCoef: 0.85, img: "🌾", desc: "Open hold bulk stowage" },
-  { id: "tanker_load", label: "Crude/chemical tanker", weight: 0, dragCoef: 0.9, img: "🛢️", desc: "Full tank loading" },
+  { id:"std_20", label:"20' TEU containers", weight:2200, dragMod:1.0, img:"📦", desc:"Standard ISO 20-foot" },
+  { id:"std_40", label:"40' FEU containers", weight:3800, dragMod:1.0, img:"📦", desc:"Standard ISO 40-foot" },
+  { id:"reefer_40", label:"Reefer containers (40')", weight:4500, dragMod:1.0, img:"❄️", desc:"+12% power for refrigeration", extraPower:12 },
+  { id:"bulk", label:"Bulk cargo (ore/grain)", weight:0, dragMod:0.9, img:"🌾", desc:"Open hold bulk stowage" },
+  { id:"tanker_load", label:"Crude/chemical tanker", weight:0, dragMod:0.92, img:"🛢️", desc:"Full tank loading" },
 ];
-
 const ULD_OPTIONS = [
-  { id: "ld3", label: "LD3 containers", weight: 80, dragCoef: 1.0, img: "📦", desc: "Standard narrowbody ULD" },
-  { id: "ld7", label: "LD7 / LD11 containers", weight: 120, dragCoef: 1.0, img: "📦", desc: "Widebody main deck" },
-  { id: "pallet_88", label: "PMC 88×125 pallets", weight: 110, dragCoef: 1.0, img: "🧱", desc: "Standard air freight pallet" },
-  { id: "pharma", label: "Pharma / Temp-controlled", weight: 150, dragCoef: 1.0, img: "💊", desc: "+8% active temp control", extraPower: 8 },
-  { id: "dangerous", label: "DGR (Dangerous Goods)", weight: 90, dragCoef: 1.0, img: "⚠️", desc: "IATA DGR certified" },
+  { id:"ld3", label:"LD3 containers", weight:80, dragMod:1.0, img:"📦", desc:"Standard narrowbody ULD" },
+  { id:"ld7", label:"LD7/LD11 containers", weight:120, dragMod:1.0, img:"📦", desc:"Widebody main deck" },
+  { id:"pallet_88", label:"PMC 88×125 pallets", weight:110, dragMod:1.0, img:"🧱", desc:"Standard air freight pallet" },
+  { id:"pharma", label:"Pharma / Temp-controlled", weight:150, dragMod:1.0, img:"💊", desc:"+8% active temp control", extraPower:8 },
+  { id:"dangerous", label:"DGR (Dangerous Goods)", weight:90, dragMod:1.02, img:"⚠️", desc:"IATA DGR — speed restricted -5%" },
 ];
-
 const WAGON_OPTIONS = [
-  { id: "flat_wagon", label: "Flat wagons (containers)", weight: 20000, dragCoef: 1.0, img: "🚃", desc: "Intermodal 20'/40' containers" },
-  { id: "tank_wagon", label: "Tank wagons", weight: 25000, dragCoef: 1.05, img: "🛢️", desc: "Liquids / chemicals" },
-  { id: "gondola", label: "Gondola wagons (bulk)", weight: 22000, dragCoef: 0.95, img: "⛏️", desc: "Coal, ore, gravel" },
-  { id: "boxcar", label: "Covered boxcars", weight: 24000, dragCoef: 1.02, img: "📦", desc: "General enclosed freight" },
-  { id: "reefer_wagon", label: "Refrigerated wagons", weight: 28000, dragCoef: 1.08, img: "❄️", desc: "Cold chain rail", extraPower: 6 },
+  { id:"flat_wagon", label:"Flat wagons (containers)", weight:20000, dragMod:1.0, img:"🚃", desc:"Intermodal 20'/40' containers" },
+  { id:"tank_wagon", label:"Tank wagons", weight:25000, dragMod:1.05, img:"🛢️", desc:"Liquids / chemicals" },
+  { id:"gondola", label:"Gondola wagons (bulk)", weight:22000, dragMod:0.95, img:"⛏️", desc:"Coal, ore, gravel" },
+  { id:"boxcar", label:"Covered boxcars", weight:24000, dragMod:1.02, img:"📦", desc:"General enclosed freight" },
+  { id:"reefer_wagon", label:"Refrigerated wagons", weight:28000, dragMod:1.08, img:"❄️", desc:"Cold chain rail", extraPower:6 },
 ];
-
-function getAttachmentOptions(vehicleType) {
-  if (vehicleType === "truck") return TRAILER_OPTIONS;
-  if (vehicleType === "ship") return CONTAINER_OPTIONS;
-  if (vehicleType === "aircraft") return ULD_OPTIONS;
-  if (vehicleType === "train") return WAGON_OPTIONS;
-  return [];
+function getAttachmentOptions(t) {
+  return { truck:TRAILER_OPTIONS, ship:CONTAINER_OPTIONS, aircraft:ULD_OPTIONS, train:WAGON_OPTIONS }[t] || [];
 }
-
-// ── 3D Model Builders ─────────────────────────────────────────────────────────
-
-function buildTruck3D(vehicle) {
-  const group = new THREE.Group();
-  const cabCol = new THREE.Color(vehicle.cabColor || vehicle.color);
-  const bodyCol = new THREE.Color(vehicle.color);
-  const darkMetal = new THREE.Color("#1a1a2e");
-  const chrome = new THREE.Color("#c0c0c0");
-  const glassColor = new THREE.Color("#a8d8ea");
-  const rubber = new THREE.Color("#111111");
-  const lightYellow = new THREE.Color("#ffee88");
-  const lightRed = new THREE.Color("#ff4444");
-
-  // Cab
-  const cabMat = new THREE.MeshPhysicalMaterial({ color: cabCol, roughness: 0.25, metalness: 0.65 });
-  const cab = new THREE.Mesh(new THREE.BoxGeometry(2.2, 2.2, 2.8), cabMat);
-  cab.position.set(0, 1.5, 1.0); group.add(cab);
-  const visor = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.15, 0.8), new THREE.MeshPhysicalMaterial({ color: darkMetal, roughness: 0.5, metalness: 0.8 }));
-  visor.position.set(0, 2.68, 0.6); group.add(visor);
-  const glassMat = new THREE.MeshPhysicalMaterial({ color: glassColor, roughness: 0.05, metalness: 0.1, transparent: true, opacity: 0.6 });
-  const windshield = new THREE.Mesh(new THREE.BoxGeometry(1.8, 1.0, 0.08), glassMat);
-  windshield.position.set(0, 1.8, 2.36); group.add(windshield);
-  [-1.05, 1.05].forEach(x => { const sw = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.7, 0.9), glassMat); sw.position.set(x, 1.9, 1.3); group.add(sw); });
-  const grill = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.9, 0.1), new THREE.MeshPhysicalMaterial({ color: darkMetal, roughness: 0.4, metalness: 0.9 }));
-  grill.position.set(0, 0.9, 2.35); group.add(grill);
-  const headlightMat = new THREE.MeshStandardMaterial({ color: lightYellow, emissive: lightYellow, emissiveIntensity: 1.2 });
-  [-0.7, 0.7].forEach(x => { const hl = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.3, 0.1), headlightMat); hl.position.set(x, 1.1, 2.38); group.add(hl); });
-  const exhaustMat = new THREE.MeshStandardMaterial({ color: chrome, roughness: 0.2, metalness: 0.95 });
-  [-0.9, 0.9].forEach(x => { const ex = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 1.2, 8), exhaustMat); ex.position.set(x, 2.8, 0.7); group.add(ex); });
-  const fuelTankGeo = new THREE.CylinderGeometry(0.3, 0.3, 1.4, 16); fuelTankGeo.rotateZ(Math.PI / 2);
-  const tankMat = new THREE.MeshPhysicalMaterial({ color: chrome, roughness: 0.1, metalness: 1.0 });
-  [-1.2, 1.2].forEach(x => { const ft = new THREE.Mesh(fuelTankGeo, tankMat); ft.position.set(x, 0.55, 0.2); group.add(ft); });
-
-  // Trailer
-  const trailerGroup = new THREE.Group();
-  trailerGroup.position.set(0, 0, -2.5);
-  const trailerType = vehicle.trailerType || "standard";
-  if (trailerType === "refrigerated") {
-    const trailer = new THREE.Mesh(new THREE.BoxGeometry(2.4, 2.6, 8.5), new THREE.MeshPhysicalMaterial({ color: new THREE.Color("#f0f0f0"), roughness: 0.5, metalness: 0.3 }));
-    trailer.position.set(0, 1.8, -1.75); trailerGroup.add(trailer);
-    for (let i = 0; i < 8; i++) {
-      const rib = new THREE.Mesh(new THREE.BoxGeometry(2.42, 2.62, 0.05), new THREE.MeshStandardMaterial({ color: chrome, roughness: 0.3, metalness: 0.8 }));
-      rib.position.set(0, 1.8, -1.75 + (i - 3.5) * 1.0); trailerGroup.add(rib);
-    }
-    const cooler = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.7, 1.0), new THREE.MeshStandardMaterial({ color: new THREE.Color("#888888"), roughness: 0.3, metalness: 0.8 }));
-    cooler.position.set(0, 3.25, 1.0); trailerGroup.add(cooler);
-  } else if (trailerType === "flatbed") {
-    const bed = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.18, 9.5), new THREE.MeshPhysicalMaterial({ color: new THREE.Color("#8B4513"), roughness: 0.9, metalness: 0.1 }));
-    bed.position.set(0, 0.8, -2.25); trailerGroup.add(bed);
-    const railMat = new THREE.MeshStandardMaterial({ color: chrome, roughness: 0.2, metalness: 0.9 });
-    [-1.16, 1.16].forEach(x => { const rail = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.35, 9.5), railMat); rail.position.set(x, 1.06, -2.25); trailerGroup.add(rail); });
-  } else if (trailerType === "tanker") {
-    const tankBodyGeo = new THREE.CylinderGeometry(1.1, 1.1, 9.0, 24); tankBodyGeo.rotateZ(Math.PI / 2);
-    const tankBody = new THREE.Mesh(tankBodyGeo, new THREE.MeshPhysicalMaterial({ color: new THREE.Color("#c8c8c8"), roughness: 0.15, metalness: 0.95 }));
-    tankBody.position.set(0, 1.8, -2.0); trailerGroup.add(tankBody);
-    for (let i = 0; i < 5; i++) {
-      const ringGeo = new THREE.TorusGeometry(1.12, 0.04, 8, 24); ringGeo.rotateY(Math.PI / 2);
-      const ring = new THREE.Mesh(ringGeo, new THREE.MeshStandardMaterial({ color: darkMetal, roughness: 0.3, metalness: 0.9 }));
-      ring.position.set(0, 1.8, -2.0 + (i - 2) * 1.8); trailerGroup.add(ring);
-    }
-  } else {
-    // Standard box trailer in brand color
-    const trailer = new THREE.Mesh(new THREE.BoxGeometry(2.4, 2.6, 9.0), new THREE.MeshPhysicalMaterial({ color: bodyCol, roughness: 0.4, metalness: 0.5 }));
-    trailer.position.set(0, 1.8, -2.0); trailerGroup.add(trailer);
-    const stripe = new THREE.Mesh(new THREE.BoxGeometry(2.42, 0.3, 9.02), new THREE.MeshStandardMaterial({ color: new THREE.Color(vehicle.color).offsetHSL(0, 0, -0.2) }));
-    stripe.position.set(0, 2.5, -2.0); trailerGroup.add(stripe);
-  }
-  const under = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.25, 8.5), new THREE.MeshStandardMaterial({ color: darkMetal, roughness: 0.7, metalness: 0.6 }));
-  under.position.set(0, 0.3, -2.0); trailerGroup.add(under);
-  const rearLightMat = new THREE.MeshStandardMaterial({ color: lightRed, emissive: lightRed, emissiveIntensity: 0.8 });
-  [-0.9, 0.9].forEach(x => { const rl = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.25, 0.08), rearLightMat); rl.position.set(x, 1.6, -6.45); trailerGroup.add(rl); });
-  group.add(trailerGroup);
-
-  // Wheels
-  const wheelGeo = new THREE.CylinderGeometry(0.5, 0.5, 0.35, 24); wheelGeo.rotateZ(Math.PI / 2);
-  const wheelMat = new THREE.MeshStandardMaterial({ color: rubber, roughness: 0.9 });
-  const hubGeo = new THREE.CylinderGeometry(0.28, 0.28, 0.36, 12); hubGeo.rotateZ(Math.PI / 2);
-  const hubMat = new THREE.MeshStandardMaterial({ color: chrome, roughness: 0.2, metalness: 0.9 });
-  const addW = (x, y, z) => {
-    const w = new THREE.Mesh(wheelGeo, wheelMat); w.position.set(x, y, z); group.add(w);
-    const h = new THREE.Mesh(hubGeo, hubMat); h.position.set(x, y, z); group.add(h);
-  };
-  addW(-1.3, 0.5, 1.8); addW(1.3, 0.5, 1.8);
-  [-0.5, -1.3].forEach(z => [-1.45, 1.45].forEach(x => addW(x, 0.5, z)));
-  [-5.8, -6.8].forEach(z => [-1.45, 1.45].forEach(x => addW(x, 0.5, z)));
-
-  group.rotation.y = Math.PI / 6;
-  group.position.y = 0.5;
-  return group;
-}
-
-function buildShip3D(vehicle) {
-  const group = new THREE.Group();
-  const hullCol = new THREE.Color(vehicle.hullColor || vehicle.color);
-  const funnelCol = new THREE.Color(vehicle.funnelColor || "#ff6600");
-  const white = new THREE.Color("#f0f0f0");
-  const darkMetal = new THREE.Color("#333344");
-
-  // Hull
-  const hullShape = new THREE.Shape();
-  hullShape.moveTo(-3, 0); hullShape.lineTo(-3.5, -1.5); hullShape.lineTo(-2.5, -2.5);
-  hullShape.lineTo(2.5, -2.5); hullShape.lineTo(3.5, -1.5); hullShape.lineTo(3, 0); hullShape.closePath();
-  const hull = new THREE.Mesh(new THREE.ExtrudeGeometry(hullShape, { depth: 14, bevelEnabled: true, bevelThickness: 0.3, bevelSize: 0.2, bevelSegments: 4 }), new THREE.MeshPhysicalMaterial({ color: hullCol, roughness: 0.5, metalness: 0.7 }));
-  hull.rotation.y = Math.PI / 2; hull.position.set(7, 0, -3); group.add(hull);
-  const waterline = new THREE.Mesh(new THREE.BoxGeometry(7.2, 0.25, 14.2), new THREE.MeshStandardMaterial({ color: new THREE.Color("#cc2222") }));
-  waterline.position.set(0, -1.4, 0); group.add(waterline);
-  const deck = new THREE.Mesh(new THREE.BoxGeometry(6.8, 0.3, 14), new THREE.MeshPhysicalMaterial({ color: new THREE.Color("#666666"), roughness: 0.7, metalness: 0.4 }));
-  deck.position.set(0, 0.35, 0); group.add(deck);
-
-  const shipType = vehicle.shipType || "container";
-  if (shipType === "container") {
-    const containerColors = ["#1e40af", "#dc2626", "#15803d", "#92400e", "#6d28d9", "#0f766e", "#be185d", "#0369a1"];
-    [[-2,0],[0,0],[2,0],[-2,1.3],[0,1.3],[2,1.3],[-1,2.6],[1,2.6]].forEach(([x,y], ri) => {
-      [-5,-2.5,0,2.5,5].forEach((z, zi) => {
-        const c = new THREE.Mesh(new THREE.BoxGeometry(1.8,1.1,2.3), new THREE.MeshPhysicalMaterial({ color: new THREE.Color(containerColors[(ri+zi)%containerColors.length]), roughness: 0.4, metalness: 0.3 }));
-        c.position.set(x, 1.0+y, z); group.add(c);
-        const edges = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(1.8,1.1,2.3)), new THREE.LineBasicMaterial({ color: 0x000000 }));
-        edges.position.set(x, 1.0+y, z); group.add(edges);
-      });
-    });
-  } else if (shipType === "tanker") {
-    [-5,-1.5,2,5].forEach(z => {
-      const t = new THREE.Mesh(new THREE.CylinderGeometry(1.4,1.4,3,20), new THREE.MeshPhysicalMaterial({ color: white, roughness: 0.2, metalness: 0.8 }));
-      t.position.set(0, 2.2, z); group.add(t);
-    });
-    const pipeGeo = new THREE.CylinderGeometry(0.1,0.1,14,8); pipeGeo.rotateZ(Math.PI/2);
-    [-1.1, 0, 1.1].forEach(x => { const p = new THREE.Mesh(pipeGeo, new THREE.MeshStandardMaterial({ color: new THREE.Color("#888888"), roughness: 0.3, metalness: 0.8 })); p.position.set(x, 0.85, 0); group.add(p); });
-  } else {
-    const hold = new THREE.Mesh(new THREE.BoxGeometry(5.5,1.5,11), new THREE.MeshPhysicalMaterial({ color: darkMetal, roughness: 0.8, metalness: 0.4 }));
-    hold.position.set(0, 1.25, 0); group.add(hold);
-    for (let i = -2; i <= 2; i++) {
-      const hatch = new THREE.Mesh(new THREE.BoxGeometry(5.2, 0.1, 1.8), new THREE.MeshStandardMaterial({ color: new THREE.Color("#444444"), roughness: 0.5, metalness: 0.6 }));
-      hatch.position.set(0, 2.07, i * 2.2); group.add(hatch);
-    }
-  }
-
-  // Bridge
-  const bridge = new THREE.Mesh(new THREE.BoxGeometry(4.5, 3.5, 4), new THREE.MeshPhysicalMaterial({ color: white, roughness: 0.4, metalness: 0.3 }));
-  bridge.position.set(0, 2.4, -5.5); group.add(bridge);
-  const glassMat = new THREE.MeshPhysicalMaterial({ color: new THREE.Color("#88bbdd"), transparent: true, opacity: 0.7, roughness: 0.05 });
-  [0,1,2].forEach(i => { const win = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.8, 0.1), glassMat); win.position.set(0, 2.8+i*1.0, -3.49); group.add(win); });
-  const funnel = new THREE.Mesh(new THREE.CylinderGeometry(0.5,0.7,2.5,16), new THREE.MeshStandardMaterial({ color: funnelCol, roughness: 0.3, metalness: 0.5 }));
-  funnel.position.set(0, 5.8, -5.5); group.add(funnel);
-  const funnelTop = new THREE.Mesh(new THREE.CylinderGeometry(0.52,0.52,0.4,16), new THREE.MeshStandardMaterial({ color: darkMetal, roughness: 0.3 }));
-  funnelTop.position.set(0, 7.0, -5.5); group.add(funnelTop);
-  const mast = new THREE.Mesh(new THREE.CylinderGeometry(0.07,0.07,4,8), new THREE.MeshStandardMaterial({ color: white, roughness: 0.3 }));
-  mast.position.set(0, 9, -5.5); group.add(mast);
-
-  group.rotation.y = -Math.PI / 8;
-  group.scale.set(0.5, 0.5, 0.5);
-  group.position.y = -0.5;
-  return group;
-}
-
-function buildAircraft3D(vehicle) {
-  const group = new THREE.Group();
-  const bodyCol = new THREE.Color(vehicle.color || "#e5e7eb");
-  const stripeCol = new THREE.Color(vehicle.stripeColor || "#1d4ed8");
-  const darkMetal = new THREE.Color("#222233");
-  const glass = new THREE.Color("#7ecef4");
-  const engineCount = vehicle.engineCount || 2;
-
-  const fuselageGeo = new THREE.CylinderGeometry(0.7, 0.35, 10, 22); fuselageGeo.rotateZ(Math.PI / 2);
-  const fuselageMat = new THREE.MeshPhysicalMaterial({ color: bodyCol, roughness: 0.25, metalness: 0.6 });
-  group.add(new THREE.Mesh(fuselageGeo, fuselageMat));
-  const noseGeo = new THREE.ConeGeometry(0.7, 2.2, 22); noseGeo.rotateZ(-Math.PI / 2);
-  const nose = new THREE.Mesh(noseGeo, fuselageMat); nose.position.set(6.1, 0, 0); group.add(nose);
-
-  const wingShape = new THREE.Shape();
-  wingShape.moveTo(0, 0); wingShape.lineTo(engineCount === 4 ? 5.0 : 4.0, -1.5); wingShape.lineTo(engineCount === 4 ? 5.4 : 4.4, -0.6); wingShape.lineTo(1.0, 0.25); wingShape.closePath();
-  const wingMat = new THREE.MeshPhysicalMaterial({ color: bodyCol, roughness: 0.3, metalness: 0.5 });
-  const wingGeo = new THREE.ExtrudeGeometry(wingShape, { depth: 0.14, bevelEnabled: false });
-  const wingL = new THREE.Mesh(wingGeo, wingMat); wingL.rotation.x = Math.PI / 2; wingL.position.set(-0.5, -0.1, 0); group.add(wingL);
-  const wingR = wingL.clone(); wingR.rotation.x = -Math.PI / 2; wingR.position.set(-0.5, -0.1, 0.14); group.add(wingR);
-
-  // Engines
-  const engPositions = engineCount === 4
-    ? [[1.2, -0.7, -2.0], [1.2, -0.7, 2.0], [0.2, -0.7, -3.5], [0.2, -0.7, 3.5]]
-    : engineCount === 3
-    ? [[1.0, -0.65, -2.2], [1.0, -0.65, 2.2], [-3.8, 0.8, 0]]
-    : [[1.0, -0.65, -2.2], [1.0, -0.65, 2.2]];
-  engPositions.forEach(([x,y,z]) => {
-    const engGeo = new THREE.CylinderGeometry(0.38, 0.32, 1.8, 18); engGeo.rotateZ(Math.PI / 2);
-    const eng = new THREE.Mesh(engGeo, new THREE.MeshPhysicalMaterial({ color: darkMetal, roughness: 0.3, metalness: 0.9 }));
-    eng.position.set(x, y, z); group.add(eng);
-    const intakeGeo = new THREE.TorusGeometry(0.38, 0.05, 8, 18); intakeGeo.rotateY(Math.PI / 2);
-    const intake = new THREE.Mesh(intakeGeo, new THREE.MeshStandardMaterial({ color: new THREE.Color("#c0c0c0"), roughness: 0.2, metalness: 1.0 }));
-    intake.position.set(x + 0.92, y, z); group.add(intake);
-  });
-
-  const tail = new THREE.Mesh(new THREE.BoxGeometry(0.9, 2.2, 0.14), wingMat); tail.position.set(-4.5, 0.9, 0); group.add(tail);
-  const tailHorz = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.14, engineCount === 3 ? 5 : 4), wingMat); tailHorz.position.set(-4.5, -0.1, 0); group.add(tailHorz);
-
-  const cockpitGeo = new THREE.BoxGeometry(0.06, 0.45, 1.1);
-  const cockpitMat = new THREE.MeshPhysicalMaterial({ color: glass, transparent: true, opacity: 0.6, roughness: 0.05 });
-  const cockpit = new THREE.Mesh(cockpitGeo, cockpitMat); cockpit.position.set(5.3, 0.35, 0); group.add(cockpit);
-
-  const stripe = new THREE.Mesh(new THREE.BoxGeometry(10.5, 0.28, 0.72), new THREE.MeshStandardMaterial({ color: stripeCol, roughness: 0.3 }));
-  stripe.position.set(-0.5, 0.22, 0); group.add(stripe);
-
-  group.rotation.y = Math.PI / 5;
-  group.scale.set(0.72, 0.72, 0.72);
-  group.position.y = 1.5;
-  return group;
-}
-
-function buildTrain3D(vehicle) {
-  const group = new THREE.Group();
-  const locoCol = new THREE.Color(vehicle.color || "#dc2626");
-  const cabCol = new THREE.Color(vehicle.cabColor || vehicle.color);
-  const darkMetal = new THREE.Color("#1a1a1a");
-  const glass = new THREE.Color("#a8d8ea");
-  const wagons = vehicle.wagons || 3;
-
-  // Locomotive body
-  const locoBody = new THREE.Mesh(new THREE.BoxGeometry(3, 2.5, 6), new THREE.MeshPhysicalMaterial({ color: locoCol, roughness: 0.3, metalness: 0.65 }));
-  locoBody.position.set(0, 1.5, 2); group.add(locoBody);
-  // Cab section
-  const cabin = new THREE.Mesh(new THREE.BoxGeometry(2.8, 1.2, 2.5), new THREE.MeshPhysicalMaterial({ color: cabCol, roughness: 0.3, metalness: 0.65 }));
-  cabin.position.set(0, 3.05, 3.25); group.add(cabin);
-  const frontGlass = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.85, 0.09), new THREE.MeshPhysicalMaterial({ color: glass, transparent: true, opacity: 0.65, roughness: 0.05 }));
-  frontGlass.position.set(0, 3.15, 4.49); group.add(frontGlass);
-  const headlightMat = new THREE.MeshStandardMaterial({ color: new THREE.Color("#ffee88"), emissive: new THREE.Color("#ffee88"), emissiveIntensity: 1.5 });
-  [-0.8, 0.8].forEach(x => { const hl = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.25, 0.1), headlightMat); hl.position.set(x, 2.8, 4.95); group.add(hl); });
-  // Pantograph
-  const pantoMat = new THREE.MeshStandardMaterial({ color: new THREE.Color("#888888"), roughness: 0.3, metalness: 0.8 });
-  const panto1 = new THREE.Mesh(new THREE.BoxGeometry(2.5, 0.06, 0.06), pantoMat); panto1.position.set(0, 4.1, 1.5); group.add(panto1);
-  const panto2 = new THREE.Mesh(new THREE.BoxGeometry(0.06, 1.0, 0.06), pantoMat); panto2.position.set(0, 3.6, 1.5); group.add(panto2);
-  // Body stripe
-  const stripe = new THREE.Mesh(new THREE.BoxGeometry(3.02, 0.35, 8.02), new THREE.MeshStandardMaterial({ color: new THREE.Color(vehicle.color).offsetHSL(0, 0, -0.2), roughness: 0.3 }));
-  stripe.position.set(0, 2.5, 2); group.add(stripe);
-
-  // Wagons
-  for (let i = 0; i < wagons; i++) {
-    const z = -6 - i * 7;
-    const wagonMat = new THREE.MeshPhysicalMaterial({ color: new THREE.Color("#374151"), roughness: 0.4, metalness: 0.5 });
-    const wagon = new THREE.Mesh(new THREE.BoxGeometry(2.85, 2.4, 6.2), wagonMat);
-    wagon.position.set(0, 1.4, z); group.add(wagon);
-    const bottom = new THREE.Mesh(new THREE.BoxGeometry(2.65, 0.3, 6.0), new THREE.MeshStandardMaterial({ color: darkMetal, roughness: 0.6, metalness: 0.6 }));
-    bottom.position.set(0, 0.3, z); group.add(bottom);
-    // Wagon stripe matching loco color
-    const wStripe = new THREE.Mesh(new THREE.BoxGeometry(2.87, 0.25, 6.22), new THREE.MeshStandardMaterial({ color: locoCol, roughness: 0.3 }));
-    wStripe.position.set(0, 2.45, z); group.add(wStripe);
-  }
-
-  // Wheels
-  const wheelGeo = new THREE.CylinderGeometry(0.48, 0.48, 0.28, 22); wheelGeo.rotateZ(Math.PI / 2);
-  const wheelMat = new THREE.MeshStandardMaterial({ color: darkMetal, roughness: 0.5, metalness: 0.9 });
-  const addW = (x, y, z) => { const w = new THREE.Mesh(wheelGeo, wheelMat); w.position.set(x, y, z); group.add(w); };
-  [2.5, -0.5].forEach(z => [-1.55, 1.55].forEach(x => addW(x, 0.48, z)));
-  for (let i = 0; i < wagons; i++) {
-    const z = -6 - i * 7;
-    [z - 2, z + 2].forEach(wz => [-1.55, 1.55].forEach(x => addW(x, 0.48, wz)));
-  }
-
-  // Rails
-  const railMat = new THREE.MeshStandardMaterial({ color: new THREE.Color("#6b7280"), roughness: 0.5, metalness: 0.8 });
-  [-1.55, 1.55].forEach(x => { const r = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.12, 40), railMat); r.position.set(x, 0.06, -10); group.add(r); });
-  for (let i = 0; i < 10; i++) {
-    const sleeper = new THREE.Mesh(new THREE.BoxGeometry(3.8, 0.12, 0.22), new THREE.MeshStandardMaterial({ color: new THREE.Color("#5c3d1e"), roughness: 0.9 }));
-    sleeper.position.set(0, 0.0, -2 + i * -4); group.add(sleeper);
-  }
-
-  group.rotation.y = Math.PI / 8;
-  group.position.y = 0.3;
-  return group;
-}
-
-// ── 3D Preview Component ──────────────────────────────────────────────────────
-function Vehicle3DPreview({ vehicle, vehicleType }) {
-  const containerRef = useRef(null);
-  const sceneRef = useRef(null);
-  const rendererRef = useRef(null);
-  const cameraRef = useRef(null);
-  const animRef = useRef(null);
-  const modelRef = useRef(null);
-  const rotRef = useRef({ x: 0.12, y: 0.4 });
-  const isDragging = useRef(false);
-  const prevMouse = useRef({ x: 0, y: 0 });
-  const autoRotate = useRef(true);
-  const [autoOn, setAutoOn] = useState(true);
-
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-    const w = container.clientWidth || 600;
-    const h = container.clientHeight || 360;
-
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x060a14);
-    sceneRef.current = scene;
-
-    const camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 500);
-    camera.position.set(8, 5, 12);
-    camera.lookAt(0, 1, 0);
-    cameraRef.current = camera;
-
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(w, h);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.shadowMap.enabled = true;
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.2;
-    container.appendChild(renderer.domElement);
-    rendererRef.current = renderer;
-
-    scene.add(new THREE.AmbientLight(0x223344, 0.6));
-    const mainLight = new THREE.DirectionalLight(0xffffff, 2.2);
-    mainLight.position.set(10, 15, 10); mainLight.castShadow = true; scene.add(mainLight);
-    const fillLight = new THREE.DirectionalLight(0x4488bb, 0.8); fillLight.position.set(-8, 5, -5); scene.add(fillLight);
-    const rimLight = new THREE.DirectionalLight(0x00ffff, 0.4); rimLight.position.set(0, -3, -10); scene.add(rimLight);
-    scene.add(new THREE.HemisphereLight(0x223366, 0x0a0a14, 0.5));
-    scene.add(new THREE.GridHelper(30, 30, 0x0d3d5a, 0x0a2a3a));
-    const floor = new THREE.Mesh(new THREE.PlaneGeometry(30, 30), new THREE.MeshStandardMaterial({ color: 0x05101e, roughness: 0.9 }));
-    floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; scene.add(floor);
-
-    const starVerts = [];
-    for (let i = 0; i < 800; i++) starVerts.push((Math.random()-0.5)*200,(Math.random()-0.5)*200,(Math.random()-0.5)*200);
-    const starGeo = new THREE.BufferGeometry();
-    starGeo.setAttribute("position", new THREE.Float32BufferAttribute(starVerts, 3));
-    scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0x88aacc, size: 0.5, transparent: true, opacity: 0.4 })));
-
-    const onDown = (e) => { isDragging.current = true; autoRotate.current = false; setAutoOn(false); prevMouse.current = { x: e.clientX, y: e.clientY }; };
-    const onMove = (e) => {
-      if (!isDragging.current || !modelRef.current) return;
-      const dx = e.clientX - prevMouse.current.x;
-      const dy = e.clientY - prevMouse.current.y;
-      rotRef.current.y += dx * 0.008;
-      rotRef.current.x = Math.max(-0.6, Math.min(0.8, rotRef.current.x + dy * 0.005));
-      modelRef.current.rotation.y = rotRef.current.y;
-      modelRef.current.rotation.x = rotRef.current.x;
-      prevMouse.current = { x: e.clientX, y: e.clientY };
-    };
-    const onUp = () => { isDragging.current = false; };
-    const onWheel = (e) => { e.preventDefault(); camera.position.z = Math.max(5, Math.min(28, camera.position.z + e.deltaY * 0.02)); camera.position.y = Math.max(2, Math.min(15, camera.position.y + e.deltaY * 0.005)); };
-    renderer.domElement.addEventListener("mousedown", onDown);
-    renderer.domElement.addEventListener("mousemove", onMove);
-    renderer.domElement.addEventListener("mouseup", onUp);
-    renderer.domElement.addEventListener("mouseleave", onUp);
-    renderer.domElement.addEventListener("wheel", onWheel, { passive: false });
-
-    const onResize = () => {
-      if (!container) return;
-      camera.aspect = container.clientWidth / container.clientHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(container.clientWidth, container.clientHeight);
-    };
-    window.addEventListener("resize", onResize);
-
-    const animate = () => {
-      animRef.current = requestAnimationFrame(animate);
-      if (autoRotate.current && modelRef.current) { rotRef.current.y += 0.005; modelRef.current.rotation.y = rotRef.current.y; }
-      renderer.render(scene, camera);
-    };
-    animate();
-
-    return () => {
-      window.removeEventListener("resize", onResize);
-      cancelAnimationFrame(animRef.current);
-      if (container.contains(renderer.domElement)) container.removeChild(renderer.domElement);
-      renderer.dispose();
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!sceneRef.current || !vehicle) return;
-    if (modelRef.current) { sceneRef.current.remove(modelRef.current); modelRef.current = null; }
-    autoRotate.current = true; setAutoOn(true);
-    rotRef.current = { x: 0.12, y: 0.4 };
-    let model;
-    if (vehicleType === "truck") model = buildTruck3D(vehicle);
-    else if (vehicleType === "ship") model = buildShip3D(vehicle);
-    else if (vehicleType === "aircraft") model = buildAircraft3D(vehicle);
-    else if (vehicleType === "train") model = buildTrain3D(vehicle);
-    if (model) {
-      sceneRef.current.add(model);
-      modelRef.current = model;
-      model.rotation.y = rotRef.current.y;
-      model.rotation.x = rotRef.current.x;
-    }
-  }, [vehicle, vehicleType]);
-
-  const toggleAutoRotate = () => { autoRotate.current = !autoRotate.current; setAutoOn(autoRotate.current); };
-
-  return (
-    <div className="relative w-full h-full rounded-xl overflow-hidden border border-cyan-500/20" style={{ background: "#060a14" }}>
-      <div ref={containerRef} className="w-full h-full" />
-      <div className="absolute top-3 right-3">
-        <button onClick={toggleAutoRotate} className={`p-1.5 rounded-lg border transition-all ${autoOn ? "bg-cyan-500/20 border-cyan-500/40 text-cyan-400" : "bg-slate-900/60 border-slate-700/40 text-slate-400 hover:text-cyan-400"}`}>
-          <RotateCw className="w-3.5 h-3.5" />
-        </button>
-      </div>
-      <div className="absolute bottom-3 right-3 text-[10px] text-slate-500 font-mono text-right leading-relaxed">
-        <p>Drag to rotate · Scroll to zoom</p>
-      </div>
-      <div className="absolute top-3 left-3 flex items-center gap-2">
-        <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-        <span className="text-[10px] font-mono text-cyan-400/70 uppercase tracking-widest">3D Live Preview</span>
-      </div>
-    </div>
-  );
-}
-
-// ── Simulation Engine ─────────────────────────────────────────────────────────
-function simulate(vehicle, vehicleType, attachment, payload, distance, terrain, weather, speed) {
-  const att = getAttachmentOptions(vehicleType).find(o => o.id === attachment);
-  if (!vehicle || !att) return null;
-  const s = vehicle.specs;
-
-  const nominalSpeed = s.speedKph;
-  const speedRatio = speed / nominalSpeed;
-  const speedFactor = 0.6 + 0.4 * Math.pow(speedRatio, 2.5);
-  const maxP = s.maxPayload || s.deadweight || 100000;
-  const payloadRatio = Math.min(1, payload / maxP);
-  const loadFactor = 1 + payloadRatio * 0.65;
-  const dragFactor = att.dragCoef;
-  const terrainFactors = { flat: 1.0, hills: 1.18, mountains: 1.42, city: 1.28, mixed: 1.12 };
-  const weatherFactors = { clear: 1.0, rain: 1.07, wind_headwind: 1.15, snow: 1.22, fog: 1.03 };
-  const terrainFactor = terrainFactors[terrain] || 1.0;
-  const weatherFactor = weatherFactors[weather] || 1.0;
-  const extraFactor = att.extraPower ? 1 + att.extraPower / 100 : 1.0;
-  const consumptionRate = s.baseConsumption * speedFactor * loadFactor * dragFactor * terrainFactor * weatherFactor * extraFactor;
-  const co2PerUnit = s.co2PerLiter;
-
-  let totalFuel, unit, fuelLabel;
-  if (vehicleType === "truck") { totalFuel = (consumptionRate / 100) * distance; unit = "L"; fuelLabel = "Diesel (L)"; }
-  else if (vehicleType === "ship") { const days = distance / (speed * 24); totalFuel = consumptionRate * days; unit = "ton"; fuelLabel = "Bunker fuel (t)"; }
-  else if (vehicleType === "aircraft") { const hours = distance / speed; totalFuel = consumptionRate * hours; unit = "L"; fuelLabel = "JET-A1 (L)"; }
-  else { const totalTons = (payload / 1000) || 1; totalFuel = consumptionRate * totalTons * distance; unit = "kWh"; fuelLabel = "Electricity (kWh)"; }
-
-  const co2Total = totalFuel * co2PerUnit;
-  const co2PerTonKm = payload > 0 ? (co2Total / ((payload / 1000) * distance)) * 1000 : 0;
-  const efficiencyScore = Math.max(10, Math.round(100 - (loadFactor-1)*30 - (speedFactor-1)*20 - (dragFactor-1)*25 - (terrainFactor-1)*15));
-  const fuelPrices = { truck: 10.5, ship: 4200, aircraft: 8.2, train: 0.85 };
-  const fuelCost = totalFuel * fuelPrices[vehicleType];
-  const driverCost = vehicleType === "truck" ? (distance / speed) * 280 : 0;
-
-  const steps = Math.min(24, Math.max(8, Math.round(distance / (speed * 0.5))));
-  const timeline = Array.from({ length: steps }, (_, i) => {
-    const p = i / (steps - 1);
-    return { step: `${Math.round(p * 100)}%`, fuel: Math.round((totalFuel / steps) * (i + 1)), co2: Math.round((totalFuel / steps) * (i + 1) * co2PerUnit), distance: Math.round(p * distance) };
-  });
-
-  const radarData = [
-    { subject: "Speed", value: Math.max(20, 100 - Math.abs(speedRatio - 1) * 60) },
-    { subject: "Load", value: Math.max(20, 100 - payloadRatio * 40) },
-    { subject: "Aerodynamics", value: Math.max(20, 100 - (dragFactor - 1) * 120) },
-    { subject: "Weather", value: Math.max(20, 100 - (weatherFactor - 1) * 150) },
-    { subject: "Terrain", value: Math.max(20, 100 - (terrainFactor - 1) * 100) },
-    { subject: "Equipment", value: Math.max(20, 100 - (extraFactor - 1) * 200) },
-  ];
-
-  const duration = vehicleType === "ship" ? `${(distance/(speed*24)).toFixed(1)} days` : `${(distance/speed).toFixed(1)} hrs`;
-
-  return { totalFuel: Math.round(totalFuel), unit, fuelLabel, co2Total: Math.round(co2Total), co2PerTonKm: Math.round(co2PerTonKm*10)/10, efficiencyScore, fuelCost: Math.round(fuelCost), driverCost: Math.round(driverCost), totalCost: Math.round(fuelCost + driverCost), timeline, radarData, duration, factors: { speedFactor, loadFactor, dragFactor, terrainFactor, weatherFactor, extraFactor } };
-}
-
-// ── Steps ─────────────────────────────────────────────────────────────────────
 
 const TYPE_META = {
-  truck:    { label: "Trucks",    icon: Truck,  color: "#06b6d4", desc: "Road freight — long-haul semi-trucks" },
-  ship:     { label: "Ships",     icon: Ship,   color: "#8b5cf6", desc: "Maritime — container, tanker, bulk" },
-  aircraft: { label: "Aircraft",  icon: Plane,  color: "#f59e0b", desc: "Air freight — freighters & cargo jets" },
-  train:    { label: "Trains",    icon: Train,  color: "#10b981", desc: "Rail freight — electric & diesel locos" },
+  truck:    { label:"Trucks",   icon:Truck,  color:"#06b6d4", desc:"Road freight" },
+  ship:     { label:"Ships",    icon:Ship,   color:"#8b5cf6", desc:"Maritime" },
+  aircraft: { label:"Aircraft", icon:Plane,  color:"#f59e0b", desc:"Air freight" },
+  train:    { label:"Trains",   icon:Train,  color:"#10b981", desc:"Rail freight" },
 };
 
+// ── Advanced Physics Simulation Engine ───────────────────────────────────────
+function runAdvancedSimulation(vehicle, vehicleType, attachment, params) {
+  const { payload, distance, terrain, weather, speed, driverBehavior, routeProfile, season, cargoTemp } = params;
+  const s = vehicle.specs;
+  const att = getAttachmentOptions(vehicleType).find(o => o.id === attachment);
+  if (!att) return null;
+
+  const maxP = s.maxPayload || s.deadweight || 100000;
+  const payloadRatio = Math.min(1.0, payload / maxP);
+
+  // ── 1. AERODYNAMIC DRAG (advanced)
+  // F_drag = 0.5 * rho * Cd * A * v²
+  const airDensityBase = 1.225; // kg/m³ at sea level 15°C
+  const seasonalDensity = { summer: 1.184, winter: 1.292, spring: 1.225, autumn: 1.248 }[season] || 1.225;
+  const weatherDensityMod = { clear:1.0, rain:1.02, wind_headwind:0.98, snow:1.05, fog:1.01 }[weather] || 1.0;
+  const airDensity = seasonalDensity * weatherDensityMod;
+
+  let cd = s.dragCoefficient || 0.36;
+  let fa = s.frontalArea || 9.5;
+  cd *= att.dragMod;
+  // headwind increases effective speed significantly
+  const headwindBonus = weather === "wind_headwind" ? 1.18 : 1.0;
+  const speedMS = (speed * headwindBonus) / 3.6;
+  const aeroDragForce = 0.5 * airDensity * cd * fa * speedMS * speedMS; // N
+
+  // ── 2. ROLLING RESISTANCE
+  const rrc = s.rollingResistance || 0.006;
+  const totalMassKg = (s.tare || 0) + payload;
+  const g = 9.81;
+  const rollingForce = rrc * totalMassKg * g; // N
+
+  // ── 3. GRADIENT RESISTANCE
+  const terrainGradients = { flat:0.0, hills:0.025, mountains:0.055, city:0.012, mixed:0.018 };
+  const avgGradient = terrainGradients[terrain] || 0.0;
+  const gradientForce = totalMassKg * g * avgGradient; // N
+
+  // ── 4. INERTIA / ACCELERATION (city stop-go)
+  const stopGoFactor = terrain === "city" ? 1.35 : terrain === "mixed" ? 1.08 : 1.0;
+
+  // ── 5. TOTAL TRACTIVE FORCE
+  const totalForce = aeroDragForce + rollingForce + gradientForce; // N
+
+  // ── 6. ENGINE LOAD
+  const enginePowerW = parseFloat((s.power||"500").replace(/[^0-9.]/g, "")) * 1000 * (vehicleType === "aircraft" ? 1 : 0.736);
+  const requiredPower = totalForce * speedMS; // W
+  const engineLoad = vehicleType === "truck" ? Math.min(1.0, requiredPower / (enginePowerW || 400000)) : payloadRatio * 0.7 + 0.3;
+
+  // ── 7. SPECIFIC FUEL CONSUMPTION CURVE (BSFC map emulation)
+  // BSFC (g/kWh) varies with load — sweet spot around 75-80% load
+  let bsfc;
+  if (vehicleType === "truck" || vehicleType === "train") {
+    const loadPct = engineLoad;
+    if (loadPct < 0.3) bsfc = 220 + (0.3 - loadPct) * 300;
+    else if (loadPct < 0.75) bsfc = 200 - (loadPct - 0.3) * 20;
+    else if (loadPct < 0.9) bsfc = 191 + (loadPct - 0.75) * 60;
+    else bsfc = 200 + (loadPct - 0.9) * 200;
+  } else if (vehicleType === "aircraft") {
+    bsfc = s.specificFuelConsumption || 15.5; // mg/N·s (thrust specific)
+  } else {
+    bsfc = s.sfoc || 171; // g/kWh — marine 2-stroke
+  }
+
+  // ── 8. DRIVER BEHAVIOR FACTOR
+  const driverFactors = { eco:0.88, normal:1.0, aggressive:1.18, optimal:0.92 };
+  const driverFactor = driverFactors[driverBehavior] || 1.0;
+
+  // ── 9. TEMPERATURE / COLD START FACTOR
+  const coldStartFactor = season === "winter" ? 1.08 : season === "summer" ? 1.02 : 1.0;
+
+  // ── 10. REEFER / EXTRA POWER
+  const extraPowerFactor = att.extraPower ? 1 + att.extraPower / 100 : 1.0;
+
+  // ── 11. CALCULATE CONSUMPTION per type
+  let baseFuelPerUnit;
+  let totalFuel, unit, fuelLabel;
+  const nominalSpeed = s.speedKph;
+  const speedRatio = speed / nominalSpeed;
+
+  if (vehicleType === "truck") {
+    // L/100km calculation from physics
+    const tractionEnergy = totalForce * (distance * 1000) / (s.thermalEfficiency || 0.45) / (1000 * 35.5e6) * 1000000; // MJ to liters diesel
+    const dieselLHV = 35.5e6; // J/L diesel
+    const fuelFromPhysics = (totalForce * distance * 1000) / ((s.thermalEfficiency || 0.45) * dieselLHV) * 1000;
+    const idleFuel = (distance / speed) * s.idleConsumption * 0.15; // idle during stops
+    totalFuel = (fuelFromPhysics + idleFuel) * driverFactor * coldStartFactor * extraPowerFactor * stopGoFactor;
+    unit = "L"; fuelLabel = "Diesel (L)";
+  } else if (vehicleType === "ship") {
+    // Admiralty formula: Fuel ∝ displacement^(2/3) × speed³
+    const days = distance / (speed * 24);
+    const speedCubeFactor = Math.pow(speedRatio, 3.0); // cubic law for ship resistance
+    const displacementFactor = Math.pow(payloadRatio, 2/3) * 0.4 + 0.6;
+    const seaStateFactor = { clear:1.0, rain:1.08, wind_headwind:1.22, snow:1.15, fog:1.03 }[weather] || 1.0;
+    const foulingFactor = 1.06; // hull fouling avg
+    totalFuel = s.baseConsumption * days * speedCubeFactor * displacementFactor * seaStateFactor * foulingFactor * extraPowerFactor;
+    unit = "ton"; fuelLabel = "Bunker fuel (t)";
+  } else if (vehicleType === "aircraft") {
+    const hours = distance / speed;
+    const liftDragRatio = 17 - payloadRatio * 3;
+    const altitudeFactor = 1.0; // cruising at optimal altitude
+    const windFactor = weather === "wind_headwind" ? 1.12 : 1.0;
+    const takeoffFuel = s.baseConsumption * 0.08; // takeoff phase
+    const climbFuel = s.baseConsumption * 0.12 * hours * 0.15;
+    const cruiseFuel = s.baseConsumption * hours * 0.75 * (1 + payloadRatio * 0.35) * windFactor * altitudeFactor;
+    const descentFuel = s.baseConsumption * 0.04 * hours * 0.10;
+    totalFuel = (takeoffFuel + climbFuel + cruiseFuel + descentFuel) * driverFactor * extraPowerFactor;
+    unit = "L"; fuelLabel = "JET-A1 (L)";
+  } else { // train
+    const totalTrainMassT = ((s.tare || 88000) + payload) / 1000;
+    const electricityPerTonKm = s.baseConsumption; // kWh/1000 ton-km
+    const regenerativeBrakingRecovery = terrain === "hills" || terrain === "mountains" ? 0.15 : terrain === "mixed" ? 0.08 : 0.03;
+    const speedFactor = Math.pow(speedRatio, 2.2);
+    const trackResistance = { flat:1.0, hills:1.35, mountains:1.85, city:1.2, mixed:1.25 }[terrain] || 1.0;
+    const grossKWh = electricityPerTonKm * totalTrainMassT * distance / 1000 * speedFactor * trackResistance;
+    totalFuel = grossKWh * (1 - regenerativeBrakingRecovery) * driverFactor * coldStartFactor * extraPowerFactor;
+    unit = "kWh"; fuelLabel = "Electricity (kWh)";
+  }
+
+  totalFuel = Math.max(0, totalFuel);
+  const co2Total = totalFuel * s.co2PerLiter;
+  const co2PerTonKm = payload > 0 ? (co2Total / ((payload / 1000) * distance)) * 1000 : 0;
+
+  // ── 12. EMISSIONS BREAKDOWN (NOx, PM, SOx, HC)
+  const emissionFactors = {
+    truck:    { nox: 0.46, pm: 0.006, hc: 0.16, sox: 0.001 },
+    ship:     { nox: 18.0, pm: 1.5,   hc: 0.5,  sox: 10.5 },
+    aircraft: { nox: 12.0, pm: 0.03,  hc: 0.4,  sox: 0.8 },
+    train:    { nox: 0.18, pm: 0.002, hc: 0.05, sox: 0.0 },
+  };
+  const ef = emissionFactors[vehicleType];
+  const noxKg = totalFuel * ef.nox / 1000;
+  const pmKg  = totalFuel * ef.pm  / 1000;
+  const hcKg  = totalFuel * ef.hc  / 1000;
+  const soxKg = totalFuel * ef.sox / 1000;
+
+  // ── 13. ENERGY ANALYSIS
+  const dieselLHVkJ = 35500; // kJ/L
+  const totalEnergyMJ = vehicleType === "truck" ? totalFuel * dieselLHVkJ / 1000
+                      : vehicleType === "aircraft" ? totalFuel * 34.7
+                      : vehicleType === "ship" ? totalFuel * 1000 * 40.5 / 1000
+                      : totalFuel * 3.6; // kWh to MJ
+  const usefulWorkMJ = (totalForce * distance * 1000) / 1e6;
+  const thermalLossMJ = totalEnergyMJ * (1 - (s.thermalEfficiency || 0.45));
+  const drivetrainLoss = totalEnergyMJ * 0.07;
+  const auxiliaryLoad = totalEnergyMJ * 0.05;
+  const actualUsefulMJ = totalEnergyMJ - thermalLossMJ - drivetrainLoss - auxiliaryLoad;
+
+  // ── 14. COST ANALYSIS (detailed)
+  const fuelPrices = { truck:11.2, ship:6800, aircraft:9.1, train:1.05 }; // DKK per unit
+  const fuelCost = totalFuel * fuelPrices[vehicleType];
+  const driverHours = distance / speed;
+  const driverCostPerHour = { truck:285, ship:420, aircraft:580, train:310 }[vehicleType] || 300;
+  const driverCost = driverHours * driverCostPerHour;
+  const maintenanceCostPerKm = { truck:1.8, ship:0.12, aircraft:5.2, train:0.85 }[vehicleType] || 1.5;
+  const maintenanceCost = distance * maintenanceCostPerKm;
+  const portFeesOrLanding = vehicleType === "ship" ? 45000 : vehicleType === "aircraft" ? 28000 : 0;
+  const euEtsCost = co2Total * 0.65; // EU ETS carbon price ~65 DKK/ton CO2
+  const totalCost = fuelCost + driverCost + maintenanceCost + portFeesOrLanding + euEtsCost;
+  const costPerTonKm = payload > 0 ? totalCost / ((payload / 1000) * distance) : 0;
+
+  // ── 15. EFFICIENCY SCORE (multi-factor)
+  const speedEff = Math.max(0, 100 - Math.abs(speedRatio - 0.85) * 80);
+  const loadEff = Math.max(0, 100 - Math.abs(payloadRatio - 0.8) * 60);
+  const driverEff = { eco:100, optimal:95, normal:78, aggressive:50 }[driverBehavior] || 78;
+  const envEff = { clear:100, rain:88, wind_headwind:75, snow:65, fog:92 }[weather] || 100;
+  const terrainEff = { flat:100, mixed:88, hills:72, city:68, mountains:55 }[terrain] || 100;
+  const efficiencyScore = Math.round((speedEff * 0.2 + loadEff * 0.3 + driverEff * 0.2 + envEff * 0.15 + terrainEff * 0.15));
+
+  // ── 16. ROUTE PROFILE TIMELINE (24 segments with physics)
+  const segCount = 24;
+  const segDistance = distance / segCount;
+  let cumulFuel = 0, cumulCO2 = 0;
+  const timeline = Array.from({ length: segCount }, (_, i) => {
+    const prog = i / (segCount - 1);
+    // Simulate speed variation along route
+    const terrainVariation = terrain === "mountains" ? Math.sin(prog * Math.PI * 4) * 0.15 :
+                             terrain === "hills" ? Math.sin(prog * Math.PI * 6) * 0.08 :
+                             terrain === "city" ? (Math.sin(prog * Math.PI * 12) * 0.12) : 0;
+    const segSpeed = Math.max(20, speed * (1 + terrainVariation));
+    const segFuel = (totalFuel / segCount) * (1 + terrainVariation * 0.4);
+    cumulFuel += segFuel;
+    cumulCO2 += segFuel * s.co2PerLiter;
+    const instantConsumption = vehicleType === "truck" ? (segFuel / segDistance * 100) : segFuel;
+    return {
+      step: `${Math.round(prog * 100)}%`,
+      distance_km: Math.round(prog * distance),
+      speed: Math.round(segSpeed),
+      fuel_cumul: Math.round(cumulFuel),
+      co2_cumul: Math.round(cumulCO2),
+      instant: Math.round(instantConsumption * 10) / 10,
+      engine_load: Math.round((engineLoad + terrainVariation * 0.3) * 100),
+      power_kw: Math.round(requiredPower / 1000 * (1 + terrainVariation * 0.4)),
+    };
+  });
+
+  // ── 17. COMPARISON BENCHMARKS
+  const benchmarks = {
+    truck:    { avgIndustry: 33, best: 26, co2Bench: 82 },
+    ship:     { avgIndustry: 380, best: 280, co2Bench: 12 },
+    aircraft: { avgIndustry: 12000, best: 9000, co2Bench: 600 },
+    train:    { avgIndustry: 6.5, best: 4.0, co2Bench: 1.8 },
+  };
+  const bench = benchmarks[vehicleType];
+  const vsIndustry = ((totalFuel / (distance || 1) * (vehicleType === "truck" ? 100 : 1)) / bench.avgIndustry - 1) * 100;
+
+  // ── 18. MAINTENANCE / WEAR IMPACT
+  const wearIndex = engineLoad * 0.5 + (speedRatio > 1.05 ? 0.3 : 0) + (terrain === "mountains" || terrain === "city" ? 0.2 : 0);
+  const nextServiceKm = vehicleType === "truck" ? Math.round(120000 - wearIndex * 20000) : 0;
+
+  const duration = vehicleType === "ship" ? `${(distance/(speed*24)).toFixed(1)} dage` : `${(distance/speed).toFixed(1)} timer`;
+
+  return {
+    // Basics
+    totalFuel: Math.round(totalFuel), unit, fuelLabel, duration,
+    co2Total: Math.round(co2Total), co2PerTonKm: Math.round(co2PerTonKm * 10) / 10,
+    efficiencyScore,
+    // Physics breakdown
+    aeroDragForce: Math.round(aeroDragForce), rollingForce: Math.round(rollingForce), gradientForce: Math.round(gradientForce),
+    engineLoad: Math.round(engineLoad * 100), requiredPowerKW: Math.round(requiredPower / 1000),
+    bsfc: Math.round(bsfc), airDensity: Math.round(airDensity * 1000) / 1000,
+    // Emissions
+    noxKg: Math.round(noxKg * 10) / 10, pmKg: Math.round(pmKg * 100) / 100, hcKg: Math.round(hcKg * 10) / 10, soxKg: Math.round(soxKg * 10) / 10,
+    // Energy
+    totalEnergyMJ: Math.round(totalEnergyMJ), thermalLossMJ: Math.round(thermalLossMJ), drivetrainLoss: Math.round(drivetrainLoss), auxiliaryLoad: Math.round(auxiliaryLoad), actualUsefulMJ: Math.round(actualUsefulMJ),
+    // Costs
+    fuelCost: Math.round(fuelCost), driverCost: Math.round(driverCost), maintenanceCost: Math.round(maintenanceCost), portFeesOrLanding: Math.round(portFeesOrLanding), euEtsCost: Math.round(euEtsCost), totalCost: Math.round(totalCost), costPerTonKm: Math.round(costPerTonKm * 100) / 100,
+    // Timeline
+    timeline,
+    // Benchmarks
+    vsIndustry: Math.round(vsIndustry * 10) / 10, bench,
+    // Maintenance
+    wearIndex: Math.round(wearIndex * 100) / 100, nextServiceKm,
+    // Factors
+    factors: { aeroDrag: Math.round(aeroDragForce), rolling: Math.round(rollingForce), gradient: Math.round(gradientForce), driverFactor, coldStart: coldStartFactor, extraPower: extraPowerFactor, stopGo: stopGoFactor, speedCube: Math.round(speedRatio * 100) / 100 },
+  };
+}
+
+// ── Step Components ───────────────────────────────────────────────────────────
 function StepSelectVehicle({ config, onChange }) {
-  const [expandedType, setExpandedType] = useState(config.vehicleType || "truck");
-  const vehicles = REAL_VEHICLES[expandedType] || [];
-  const typeMeta = TYPE_META[expandedType];
+  const [activeType, setActiveType] = useState(config.vehicleType || "truck");
+  const vehicles = REAL_VEHICLES[activeType] || [];
+  const meta = TYPE_META[activeType];
 
   return (
     <div className="space-y-4">
-      <h3 className="text-white font-bold text-lg flex items-center gap-2">
-        <Settings className="w-5 h-5 text-cyan-400" /> Select Vehicle
-      </h3>
-      {/* Type tabs */}
+      <h3 className="text-white font-bold text-lg flex items-center gap-2"><Settings className="w-5 h-5 text-cyan-400" /> Vælg køretøj</h3>
       <div className="grid grid-cols-4 gap-2">
-        {Object.entries(TYPE_META).map(([key, meta]) => {
-          const Icon = meta.icon;
+        {Object.entries(TYPE_META).map(([key, m]) => {
+          const Icon = m.icon;
           return (
-            <button key={key} onClick={() => { setExpandedType(key); onChange({ vehicleType: key, vehicleId: null, attachment: null }); }}
+            <button key={key} onClick={() => { setActiveType(key); onChange({ vehicleType: key, vehicleId: null, attachment: null }); }}
               className="p-3 rounded-xl border text-center transition-all"
-              style={{ background: expandedType===key?`${meta.color}18`:"rgba(15,23,42,0.6)", borderColor: expandedType===key?meta.color:"rgba(100,116,139,0.3)", boxShadow: expandedType===key?`0 0 16px ${meta.color}25`:"none" }}>
-              <Icon className="w-5 h-5 mx-auto mb-1" style={{ color: meta.color }} />
-              <p className="text-white text-xs font-bold">{meta.label}</p>
+              style={{ background: activeType===key?`${m.color}18`:"rgba(15,23,42,0.6)", borderColor: activeType===key?m.color:"rgba(100,116,139,0.3)" }}>
+              <Icon className="w-5 h-5 mx-auto mb-1" style={{ color: m.color }} />
+              <p className="text-white text-xs font-bold">{m.label}</p>
             </button>
           );
         })}
       </div>
-
-      {/* Vehicle list */}
       <div className="space-y-2 max-h-[380px] overflow-y-auto pr-1">
         {vehicles.map(v => {
-          const selected = config.vehicleId === v.id;
+          const sel = config.vehicleId === v.id;
           return (
             <motion.button key={v.id} whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}
-              onClick={() => onChange({ vehicleId: v.id, vehicleType: expandedType, attachment: null })}
+              onClick={() => onChange({ vehicleId: v.id, vehicleType: activeType, attachment: null })}
               className="w-full p-3 rounded-xl border text-left transition-all"
-              style={{ background: selected?`${typeMeta.color}15`:"rgba(15,23,42,0.6)", borderColor: selected?typeMeta.color:"rgba(100,116,139,0.3)", boxShadow: selected?`0 0 14px ${typeMeta.color}20`:"none" }}>
+              style={{ background: sel?`${meta.color}15`:"rgba(15,23,42,0.6)", borderColor: sel?meta.color:"rgba(100,116,139,0.3)" }}>
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-0.5">
-                    <span className="text-base">{v.flag}</span>
+                    <span>{v.flag}</span>
                     <span className="text-slate-400 text-xs font-semibold uppercase tracking-wide">{v.brand}</span>
-                    {selected && <Badge className="text-[9px] px-1.5 py-0" style={{ background: `${typeMeta.color}25`, color: typeMeta.color, border: `1px solid ${typeMeta.color}40` }}>Selected</Badge>}
+                    {sel && <Badge className="text-[9px] px-1.5" style={{ background:`${meta.color}25`, color:meta.color, border:`1px solid ${meta.color}40` }}>Valgt</Badge>}
                   </div>
                   <p className="text-white font-bold text-sm">{v.model}</p>
-                  <p className="text-slate-400 text-xs mt-0.5 line-clamp-2">{v.desc}</p>
                 </div>
-                <div className="flex-shrink-0 text-right space-y-0.5">
-                  {v.specs.power && <p className="text-[10px] font-mono" style={{ color: typeMeta.color }}>{v.specs.power}</p>}
-                  {v.specs.teu && <p className="text-[10px] text-slate-400 font-mono">{v.specs.teu.toLocaleString()} TEU</p>}
-                  {v.specs.length && <p className="text-[10px] text-slate-400 font-mono">{v.specs.length}</p>}
-                  {v.specs.maxPayload && !v.specs.teu && <p className="text-[10px] text-slate-400 font-mono">{(v.specs.maxPayload/1000).toFixed(0)}t payload</p>}
+                <div className="text-right text-[10px] font-mono space-y-0.5">
+                  {v.specs.power && <p style={{ color: meta.color }}>{v.specs.power}</p>}
+                  {v.specs.teu ? <p className="text-slate-400">{v.specs.teu.toLocaleString()} TEU</p> : v.specs.maxPayload && <p className="text-slate-400">{(v.specs.maxPayload/1000).toFixed(0)}t payload</p>}
                 </div>
               </div>
-              {selected && (
-                <div className="mt-2 pt-2 border-t border-slate-700/50 grid grid-cols-3 gap-1.5">
-                  {Object.entries(v.specs).slice(0, 6).map(([k, val]) => (
+              {sel && (
+                <div className="mt-2 pt-2 border-t border-slate-700/40 grid grid-cols-3 gap-1">
+                  {[["Motor", v.specs.engine],["Effektivitet",`${Math.round((v.specs.thermalEfficiency||0.45)*100)}%`],["Rullemodstand",`${(v.specs.rollingResistance||0.006)*1000} ‰`],["Luftmodstand",`Cd ${v.specs.dragCoefficient||0.36}`],["EURO",v.specs.euro],["Gear",v.specs.transmission]].map(([k,val]) => val && (
                     <div key={k} className="bg-slate-900/60 rounded px-2 py-1">
-                      <p className="text-[9px] text-slate-500 uppercase">{k.replace(/_/g," ")}</p>
-                      <p className="text-[10px] text-slate-200 font-mono font-medium truncate">{val}</p>
+                      <p className="text-[9px] text-slate-500">{k}</p>
+                      <p className="text-[10px] text-slate-200 font-mono truncate">{val}</p>
                     </div>
                   ))}
                 </div>
@@ -1000,32 +399,29 @@ function StepSelectVehicle({ config, onChange }) {
 }
 
 function StepSelectAttachment({ config, onChange }) {
-  const vehicleType = config.vehicleType;
-  const options = getAttachmentOptions(vehicleType);
-  const meta = TYPE_META[vehicleType];
-  const labelMap = { truck: "Trailer / Configuration", ship: "Cargo / Container type", aircraft: "ULD / Cargo units", train: "Wagon type" };
-
+  const options = getAttachmentOptions(config.vehicleType);
+  const meta = TYPE_META[config.vehicleType];
+  const labelMap = { truck:"Trailer / konfiguration", ship:"Lasttype / containertype", aircraft:"ULD / lastenheder", train:"Vogntype" };
   return (
     <div className="space-y-3">
-      <h3 className="text-white font-bold text-lg flex items-center gap-2">
-        <Weight className="w-5 h-5 text-cyan-400" /> {labelMap[vehicleType] || "Attachment"}
-      </h3>
+      <h3 className="text-white font-bold text-lg flex items-center gap-2"><Weight className="w-5 h-5 text-cyan-400" /> {labelMap[config.vehicleType]}</h3>
       <div className="space-y-2 max-h-[440px] overflow-y-auto pr-1">
         {options.map(att => {
-          const selected = config.attachment === att.id;
+          const sel = config.attachment === att.id;
           return (
             <motion.button key={att.id} whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
               onClick={() => onChange({ attachment: att.id })}
               className="w-full p-3 rounded-xl border text-left flex items-center gap-3 transition-all"
-              style={{ background: selected?`${meta?.color}15`:"rgba(15,23,42,0.6)", borderColor: selected?meta?.color:"rgba(100,116,139,0.3)" }}>
+              style={{ background: sel?`${meta?.color}15`:"rgba(15,23,42,0.6)", borderColor: sel?meta?.color:"rgba(100,116,139,0.3)" }}>
               <span className="text-2xl">{att.img}</span>
               <div className="flex-1">
                 <p className="text-white font-semibold text-sm">{att.label}</p>
                 <p className="text-slate-400 text-xs">{att.desc}</p>
-                {att.extraPower && <Badge className="mt-1 text-[10px] bg-amber-500/20 text-amber-400 border-amber-500/40">+{att.extraPower}% energy consumption</Badge>}
+                {att.extraPower && <Badge className="mt-1 text-[10px] bg-amber-500/20 text-amber-400 border-amber-500/40">+{att.extraPower}% energiforbrug</Badge>}
+                <p className="text-slate-500 text-[10px] mt-0.5 font-mono">Luftmodstandsmod: ×{att.dragMod}</p>
               </div>
-              {att.weight > 0 && <span className="text-slate-500 text-xs whitespace-nowrap">{(att.weight/1000).toFixed(1)}t tare</span>}
-              {selected && <CheckCircle2 className="w-4 h-4 flex-shrink-0" style={{ color: meta?.color }} />}
+              {att.weight > 0 && <span className="text-slate-500 text-xs">{(att.weight/1000).toFixed(1)}t tara</span>}
+              {sel && <CheckCircle2 className="w-4 h-4 flex-shrink-0" style={{ color: meta?.color }} />}
             </motion.button>
           );
         })}
@@ -1035,55 +431,50 @@ function StepSelectAttachment({ config, onChange }) {
 }
 
 function StepParameters({ config, onChange }) {
-  const vehicleType = config.vehicleType;
-  const vehicle = REAL_VEHICLES[vehicleType]?.find(v => v.id === config.vehicleId);
+  const vehicle = REAL_VEHICLES[config.vehicleType]?.find(v => v.id === config.vehicleId);
   if (!vehicle) return null;
   const s = vehicle.specs;
   const maxP = s.maxPayload || s.deadweight || 100000;
-  const meta = TYPE_META[vehicleType];
-  const speedUnit = vehicleType === "ship" ? "kn" : "km/h";
-  const speedLabel = vehicleType === "ship" ? "(knots)" : "(km/h)";
+  const meta = TYPE_META[config.vehicleType];
+  const vt = config.vehicleType;
 
   return (
-    <div className="space-y-6">
-      <h3 className="text-white font-bold text-lg flex items-center gap-2">
-        <Gauge className="w-5 h-5 text-cyan-400" /> Operating Parameters
-      </h3>
-      <div className="p-3 rounded-xl border border-slate-700/50 bg-slate-900/40 text-xs grid grid-cols-2 gap-2">
-        <div><span className="text-slate-500">Vehicle: </span><span className="text-white font-semibold">{vehicle.brand} {vehicle.model}</span></div>
-        {s.engine && <div><span className="text-slate-500">Engine: </span><span className="text-slate-300">{s.engine}</span></div>}
-        {s.power && <div><span className="text-slate-500">Power: </span><span style={{ color: meta?.color }} className="font-bold">{s.power}</span></div>}
-        {s.euro && <div><span className="text-slate-500">Emission: </span><span className="text-emerald-400">{s.euro}</span></div>}
-        {s.engines && <div className="col-span-2"><span className="text-slate-500">Engines: </span><span className="text-slate-300">{s.engines}</span></div>}
-        {s.operator && <div className="col-span-2"><span className="text-slate-500">Operators: </span><span className="text-slate-300">{s.operator}</span></div>}
-      </div>
+    <div className="space-y-5">
+      <h3 className="text-white font-bold text-lg flex items-center gap-2"><Gauge className="w-5 h-5 text-cyan-400" /> Operationsparametre</h3>
+
+      {/* Payload */}
       <div>
-        <div className="flex justify-between mb-2">
-          <label className="text-slate-300 text-sm font-medium">Payload</label>
-          <span className="text-white font-bold text-sm">{((config.payload || Math.round(maxP*0.7))/1000).toFixed(1)} t</span>
+        <div className="flex justify-between mb-1.5">
+          <label className="text-slate-300 text-sm font-medium">Last</label>
+          <span className="text-white font-bold text-sm">{((config.payload || Math.round(maxP*0.75))/1000).toFixed(1)} t <span className="text-slate-500 text-xs font-normal">({Math.round((config.payload||maxP*0.75)/maxP*100)}% kapacitet)</span></span>
         </div>
-        <Slider min={0} max={maxP} step={Math.max(100, Math.round(maxP/500)*100)} value={[config.payload || Math.round(maxP*0.7)]} onValueChange={([v]) => onChange({ payload: v })} className="w-full" />
-        <div className="flex justify-between text-xs text-slate-500 mt-1"><span>0 t</span><span>Max: {(maxP/1000).toFixed(0)} t</span></div>
+        <Slider min={0} max={maxP} step={Math.max(500, Math.round(maxP/400)*100)} value={[config.payload || Math.round(maxP*0.75)]} onValueChange={([v]) => onChange({ payload: v })} />
+        <div className="flex justify-between text-[10px] text-slate-500 mt-1"><span>0 t</span><span>Max: {(maxP/1000).toFixed(0)} t</span></div>
       </div>
+
+      {/* Distance */}
       <div>
-        <div className="flex justify-between mb-2">
-          <label className="text-slate-300 text-sm font-medium">Route distance</label>
+        <div className="flex justify-between mb-1.5">
+          <label className="text-slate-300 text-sm font-medium">Rutedistance</label>
           <span className="text-white font-bold text-sm">{(config.distance || 500).toLocaleString()} km</span>
         </div>
-        <Slider min={50} max={vehicleType==="ship"?20000:vehicleType==="aircraft"?12000:vehicleType==="train"?5000:3000} step={50} value={[config.distance || 500]} onValueChange={([v]) => onChange({ distance: v })} className="w-full" />
+        <Slider min={50} max={vt==="ship"?20000:vt==="aircraft"?14000:vt==="train"?5000:3500} step={50} value={[config.distance || 500]} onValueChange={([v]) => onChange({ distance: v })} />
       </div>
+
+      {/* Speed */}
       <div>
-        <div className="flex justify-between mb-2">
-          <label className="text-slate-300 text-sm font-medium">Travel speed {speedLabel}</label>
-          <span className="text-white font-bold text-sm">{config.speed || s.speedKph} {speedUnit}</span>
+        <div className="flex justify-between mb-1.5">
+          <label className="text-slate-300 text-sm font-medium">Hastighed {vt==="ship"?"(knob)":"(km/t)"}</label>
+          <span className="text-white font-bold text-sm">{config.speed || s.speedKph} <span className="text-slate-500 text-xs">{vt==="ship"?"kn":"km/t"} · maks {s.topSpeed} {vt==="ship"?"kn":"km/t"}</span></span>
         </div>
-        <Slider min={vehicleType==="ship"?5:vehicleType==="aircraft"?600:vehicleType==="train"?30:40} max={vehicleType==="ship"?35:vehicleType==="aircraft"?980:vehicleType==="train"?200:120} step={1} value={[config.speed || s.speedKph]} onValueChange={([v]) => onChange({ speed: v })} className="w-full" />
-        <p className="text-xs text-slate-500 mt-1">Top speed: {s.topSpeed || s.speedKph} {speedUnit}</p>
+        <Slider min={vt==="ship"?5:vt==="aircraft"?600:vt==="train"?30:40} max={vt==="ship"?35:vt==="aircraft"?980:vt==="train"?200:120} step={1} value={[config.speed || s.speedKph]} onValueChange={([v]) => onChange({ speed: v })} />
       </div>
+
+      {/* Terrain */}
       <div>
-        <label className="text-slate-300 text-sm font-medium block mb-2">Terrain / Route type</label>
-        <div className="grid grid-cols-5 gap-2">
-          {[{id:"flat",label:"Flat",emoji:"🛣️"},{id:"hills",label:"Hills",emoji:"⛰️"},{id:"mountains",label:"Mountains",emoji:"🏔️"},{id:"city",label:"Urban",emoji:"🏙️"},{id:"mixed",label:"Mixed",emoji:"🗺️"}].map(t => (
+        <label className="text-slate-300 text-sm font-medium block mb-2">Terræn / Rutetype</label>
+        <div className="grid grid-cols-5 gap-1.5">
+          {[{id:"flat",label:"Fladt",emoji:"🛣️"},{id:"hills",label:"Bakker",emoji:"⛰️"},{id:"mountains",label:"Bjerg",emoji:"🏔️"},{id:"city",label:"By",emoji:"🏙️"},{id:"mixed",label:"Blandet",emoji:"🗺️"}].map(t => (
             <button key={t.id} onClick={() => onChange({ terrain: t.id })} className="p-2 rounded-lg border text-center text-xs transition-all"
               style={{ background: config.terrain===t.id?`${meta?.color}20`:"rgba(30,41,59,0.8)", borderColor: config.terrain===t.id?meta?.color:"rgba(100,116,139,0.3)", color: config.terrain===t.id?"#fff":"#94a3b8" }}>
               <div>{t.emoji}</div><div className="text-[10px] mt-0.5">{t.label}</div>
@@ -1091,13 +482,44 @@ function StepParameters({ config, onChange }) {
           ))}
         </div>
       </div>
+
+      {/* Weather */}
       <div>
-        <label className="text-slate-300 text-sm font-medium block mb-2">Weather conditions</label>
-        <div className="grid grid-cols-5 gap-2">
-          {[{id:"clear",label:"Clear",emoji:"☀️"},{id:"rain",label:"Rain",emoji:"🌧️"},{id:"wind_headwind",label:"Headwind",emoji:"💨"},{id:"snow",label:"Snow",emoji:"❄️"},{id:"fog",label:"Fog",emoji:"🌫️"}].map(w => (
+        <label className="text-slate-300 text-sm font-medium block mb-2">Vejrforhold</label>
+        <div className="grid grid-cols-5 gap-1.5">
+          {[{id:"clear",label:"Klart",emoji:"☀️"},{id:"rain",label:"Regn",emoji:"🌧️"},{id:"wind_headwind",label:"Modvind",emoji:"💨"},{id:"snow",label:"Sne",emoji:"❄️"},{id:"fog",label:"Tåge",emoji:"🌫️"}].map(w => (
             <button key={w.id} onClick={() => onChange({ weather: w.id })} className="p-2 rounded-lg border text-center text-xs transition-all"
               style={{ background: config.weather===w.id?`${meta?.color}20`:"rgba(30,41,59,0.8)", borderColor: config.weather===w.id?meta?.color:"rgba(100,116,139,0.3)", color: config.weather===w.id?"#fff":"#94a3b8" }}>
               <div>{w.emoji}</div><div className="text-[10px] mt-0.5">{w.label}</div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Driver Behavior */}
+      <div>
+        <label className="text-slate-300 text-sm font-medium block mb-2">Kørerstil / operationsstil</label>
+        <div className="grid grid-cols-4 gap-1.5">
+          {[{id:"eco",label:"Eco",emoji:"🌱",desc:"-12% fuel"},{id:"optimal",label:"Optimal",emoji:"⚡",desc:"-8% fuel"},{id:"normal",label:"Normal",emoji:"🔄",desc:"baseline"},{id:"aggressive",label:"Aggressiv",emoji:"🔥",desc:"+18% fuel"}].map(d => (
+            <button key={d.id} onClick={() => onChange({ driverBehavior: d.id })} className="p-2 rounded-lg border text-center transition-all"
+              style={{ background: config.driverBehavior===d.id?`${meta?.color}20`:"rgba(30,41,59,0.8)", borderColor: config.driverBehavior===d.id?meta?.color:"rgba(100,116,139,0.3)" }}>
+              <div className="text-base">{d.emoji}</div>
+              <div className="text-[10px] text-white font-medium">{d.label}</div>
+              <div className="text-[9px] text-slate-500">{d.desc}</div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Season */}
+      <div>
+        <label className="text-slate-300 text-sm font-medium block mb-2">Årstid</label>
+        <div className="grid grid-cols-4 gap-1.5">
+          {[{id:"spring",label:"Forår",emoji:"🌸"},{id:"summer",label:"Sommer",emoji:"☀️"},{id:"autumn",label:"Efterår",emoji:"🍂"},{id:"winter",label:"Vinter",emoji:"❄️"}].map(s => (
+            <button key={s.id} onClick={() => onChange({ season: s.id })} className="p-2 rounded-lg border text-center transition-all"
+              style={{ background: config.season===s.id?`${meta?.color}20`:"rgba(30,41,59,0.8)", borderColor: config.season===s.id?meta?.color:"rgba(100,116,139,0.3)" }}>
+              <div>{s.emoji}</div>
+              <div className="text-[10px] text-white font-medium mt-0.5">{s.label}</div>
             </button>
           ))}
         </div>
@@ -1106,130 +528,350 @@ function StepParameters({ config, onChange }) {
   );
 }
 
+// ── Simulation Results (advanced) ─────────────────────────────────────────────
 function SimulationResults({ result, config }) {
   const meta = TYPE_META[config.vehicleType];
   const vehicle = REAL_VEHICLES[config.vehicleType]?.find(v => v.id === config.vehicleId);
-  if (!result || !meta) return null;
+  const [activeSection, setActiveSection] = useState("overview");
+  if (!result || !meta || !vehicle) return null;
   const scoreColor = result.efficiencyScore >= 75 ? "#10b981" : result.efficiencyScore >= 50 ? "#f59e0b" : "#ef4444";
 
+  const sections = [
+    { id:"overview", label:"Overblik", icon:BarChart3 },
+    { id:"physics", label:"Fysik", icon:Cpu },
+    { id:"energy", label:"Energi", icon:Zap },
+    { id:"emissions", label:"Emissioner", icon:Wind },
+    { id:"costs", label:"Økonomi", icon:DollarSign },
+    { id:"route", label:"Rute", icon:MapPin },
+  ];
+
   return (
-    <div className="space-y-5">
-      <h3 className="text-white font-bold text-lg flex items-center gap-2">
-        <BarChart3 className="w-5 h-5 text-cyan-400" /> Simulation Results — {vehicle?.brand} {vehicle?.model}
-      </h3>
-      <div className="grid grid-cols-2 gap-3">
-        {[
-          { label: result.fuelLabel, value: result.totalFuel.toLocaleString(), unit: result.unit, icon: Fuel, color: "#f59e0b" },
-          { label: "CO₂ emissions", value: result.co2Total.toLocaleString(), unit: "kg", icon: Wind, color: "#ef4444" },
-          { label: "CO₂ intensity", value: result.co2PerTonKm, unit: "g/ton-km", icon: Activity, color: "#8b5cf6" },
-          { label: "Duration", value: result.duration, unit: "", icon: Gauge, color: "#06b6d4" },
-          { label: "Fuel cost", value: result.fuelCost.toLocaleString(), unit: "DKK", icon: TrendingUp, color: "#10b981" },
-          { label: "Total cost", value: result.totalCost.toLocaleString(), unit: "DKK", icon: Calculator, color: "#06b6d4" },
-        ].map(({ label, value, unit, icon: Icon, color }) => (
-          <div key={label} className="p-3 rounded-xl border" style={{ background: `${color}0a`, borderColor: `${color}30` }}>
-            <Icon className="w-4 h-4 mb-1.5" style={{ color }} />
-            <p className="text-slate-400 text-xs">{label}</p>
-            <p className="text-white font-bold text-lg">{value} <span className="text-slate-500 text-xs font-normal">{unit}</span></p>
-          </div>
-        ))}
-      </div>
-      <div className="p-4 rounded-xl border" style={{ background: `${scoreColor}0a`, borderColor: `${scoreColor}30` }}>
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-slate-300 text-sm font-semibold">Operational Efficiency</span>
-          <span className="font-black text-2xl" style={{ color: scoreColor }}>{result.efficiencyScore}/100</span>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-white font-bold text-base flex items-center gap-2"><BarChart3 className="w-4 h-4 text-cyan-400" /> {vehicle.brand} {vehicle.model}</h3>
+        <div className="flex items-center gap-2">
+          <span className="text-slate-400 text-xs">{config.distance.toLocaleString()} km · {(config.payload/1000).toFixed(1)}t</span>
+          <span className="font-black text-xl" style={{ color: scoreColor }}>{result.efficiencyScore}<span className="text-xs font-normal text-slate-500">/100</span></span>
         </div>
-        <div className="w-full h-3 bg-slate-800 rounded-full overflow-hidden">
-          <motion.div initial={{ width: 0 }} animate={{ width: `${result.efficiencyScore}%` }} transition={{ duration: 1.2, ease: "easeOut" }}
-            className="h-full rounded-full" style={{ background: `linear-gradient(90deg, ${scoreColor}, ${scoreColor}aa)` }} />
-        </div>
-        <p className="text-slate-400 text-xs mt-2">
-          {result.efficiencyScore >= 75 ? "✅ Excellent — optimal operation" : result.efficiencyScore >= 50 ? "⚠️ Moderate — improvement potential exists" : "🔴 Low — consider load optimisation and reduced speed"}
-        </p>
       </div>
-      <div>
-        <p className="text-slate-300 text-sm font-semibold mb-3 flex items-center gap-2"><TrendingUp className="w-4 h-4 text-cyan-400" /> Fuel consumption over route</p>
-        <ResponsiveContainer width="100%" height={170}>
-          <AreaChart data={result.timeline}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-            <XAxis dataKey="step" stroke="#475569" tick={{ fontSize: 10 }} />
-            <YAxis stroke="#475569" tick={{ fontSize: 10 }} />
-            <Tooltip contentStyle={{ backgroundColor: "#0f172a", border: "1px solid #1e293b", borderRadius: "8px" }} />
-            <Area type="monotone" dataKey="fuel" stroke={meta.color} fill={`${meta.color}30`} name={result.fuelLabel} strokeWidth={2} />
-          </AreaChart>
-        </ResponsiveContainer>
+
+      {/* Section Tabs */}
+      <div className="flex gap-1 flex-wrap">
+        {sections.map(s => {
+          const Icon = s.icon;
+          return (
+            <button key={s.id} onClick={() => setActiveSection(s.id)}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all"
+              style={{ background: activeSection===s.id?`${meta.color}20`:"rgba(30,41,59,0.6)", color: activeSection===s.id?meta.color:"#64748b", border: `1px solid ${activeSection===s.id?meta.color:"rgba(100,116,139,0.2)"}` }}>
+              <Icon className="w-3 h-3" />{s.label}
+            </button>
+          );
+        })}
       </div>
-      <div>
-        <p className="text-slate-300 text-sm font-semibold mb-3 flex items-center gap-2"><Wind className="w-4 h-4 text-red-400" /> CO₂ accumulation (kg)</p>
-        <ResponsiveContainer width="100%" height={130}>
-          <BarChart data={result.timeline.filter((_, i) => i % 3 === 0)}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-            <XAxis dataKey="step" stroke="#475569" tick={{ fontSize: 10 }} />
-            <YAxis stroke="#475569" tick={{ fontSize: 10 }} />
-            <Tooltip contentStyle={{ backgroundColor: "#0f172a", border: "1px solid #1e293b", borderRadius: "8px" }} />
-            <Bar dataKey="co2" fill="#ef444460" stroke="#ef4444" name="CO₂ (kg)" radius={[4,4,0,0]} />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
-      <div>
-        <p className="text-slate-300 text-sm font-semibold mb-3 flex items-center gap-2"><Activity className="w-4 h-4 text-violet-400" /> Efficiency profile</p>
-        <ResponsiveContainer width="100%" height={190}>
-          <RadarChart data={result.radarData}>
-            <PolarGrid stroke="#1e293b" />
-            <PolarAngleAxis dataKey="subject" tick={{ fill: "#94a3b8", fontSize: 11 }} />
-            <Radar name="Score" dataKey="value" stroke={meta.color} fill={`${meta.color}30`} strokeWidth={2} />
-          </RadarChart>
-        </ResponsiveContainer>
-      </div>
-      <div className="p-4 rounded-xl border border-slate-700/50 bg-slate-900/40">
-        <p className="text-slate-300 text-sm font-semibold mb-3 flex items-center gap-2"><Info className="w-4 h-4 text-slate-400" /> Factor breakdown</p>
-        <div className="space-y-2">
-          {[["Speed factor", result.factors.speedFactor],["Load factor", result.factors.loadFactor],["Aerodynamic drag", result.factors.dragFactor],["Terrain factor", result.factors.terrainFactor],["Weather factor", result.factors.weatherFactor],["Extra equipment", result.factors.extraFactor]].map(([label, value]) => {
-            const inc = ((value-1)*100).toFixed(0);
-            return (
-              <div key={label} className="flex items-center justify-between text-xs">
-                <span className="text-slate-400">{label}</span>
-                <span className={`font-mono font-bold ${value>1?"text-amber-400":"text-emerald-400"}`}>×{value.toFixed(2)} {value>1&&inc>0?`(+${inc}%)`:"" }</span>
+
+      <AnimatePresence mode="wait">
+        <motion.div key={activeSection} initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:-8 }} transition={{ duration:0.15 }}>
+
+          {/* OVERVIEW */}
+          {activeSection === "overview" && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { label:result.fuelLabel, value:result.totalFuel.toLocaleString(), unit:result.unit, icon:Fuel, color:"#f59e0b" },
+                  { label:"CO₂ total", value:result.co2Total.toLocaleString(), unit:"kg", icon:Wind, color:"#ef4444" },
+                  { label:"CO₂ intensitet", value:result.co2PerTonKm, unit:"g/ton-km", icon:Activity, color:"#8b5cf6" },
+                  { label:"Varighed", value:result.duration, unit:"", icon:Clock, color:"#06b6d4" },
+                  { label:"Total omkostning", value:result.totalCost.toLocaleString(), unit:"DKK", icon:Calculator, color:"#10b981" },
+                  { label:"Pris pr ton-km", value:result.costPerTonKm, unit:"DKK", icon:TrendingUp, color:"#06b6d4" },
+                ].map(({ label, value, unit, icon:Icon, color }) => (
+                  <div key={label} className="p-3 rounded-xl border" style={{ background:`${color}0a`, borderColor:`${color}30` }}>
+                    <Icon className="w-4 h-4 mb-1" style={{ color }} />
+                    <p className="text-slate-400 text-[10px]">{label}</p>
+                    <p className="text-white font-bold text-base leading-tight">{value}</p>
+                    <p className="text-slate-500 text-[10px]">{unit}</p>
+                  </div>
+                ))}
               </div>
-            );
-          })}
-        </div>
-      </div>
+              {/* Efficiency bar */}
+              <div className="p-3 rounded-xl border" style={{ background:`${scoreColor}08`, borderColor:`${scoreColor}25` }}>
+                <div className="flex justify-between mb-1.5">
+                  <span className="text-slate-300 text-xs font-semibold">Driftseffektivitet</span>
+                  <span className="font-black text-lg" style={{ color:scoreColor }}>{result.efficiencyScore}/100</span>
+                </div>
+                <div className="w-full h-2.5 bg-slate-800 rounded-full overflow-hidden">
+                  <motion.div initial={{ width:0 }} animate={{ width:`${result.efficiencyScore}%` }} transition={{ duration:1.2, ease:"easeOut" }}
+                    className="h-full rounded-full" style={{ background:`linear-gradient(90deg, ${scoreColor}, ${scoreColor}88)` }} />
+                </div>
+              </div>
+              {/* vs industry benchmark */}
+              <div className="p-3 rounded-xl border border-slate-700/40 bg-slate-900/40">
+                <p className="text-slate-300 text-xs font-semibold mb-2">Sammenlignet med industri</p>
+                <div className="flex items-center gap-3">
+                  <div className={`text-xl font-black ${result.vsIndustry < 0 ? "text-emerald-400" : "text-amber-400"}`}>
+                    {result.vsIndustry > 0 ? "+" : ""}{result.vsIndustry}%
+                  </div>
+                  <div className="text-xs text-slate-400">
+                    {result.vsIndustry < -10 ? "✅ Markant bedre end branchegennemsnit" :
+                     result.vsIndustry < 0 ? "✅ Bedre end branchegennemsnit" :
+                     result.vsIndustry < 10 ? "⚠️ På linje med branchegennemsnit" :
+                     "🔴 Dårligere end branchegennemsnit"}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* PHYSICS */}
+          {activeSection === "physics" && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { label:"Aerodynamisk modstand", value:`${result.aeroDragForce.toLocaleString()} N`, sub:`Cd=${vehicle.specs.dragCoefficient||0.36} · ρ=${result.airDensity} kg/m³`, color:"#f59e0b" },
+                  { label:"Rullemodstand", value:`${result.rollingForce.toLocaleString()} N`, sub:`RRC = ${vehicle.specs.rollingResistance||0.006} · ${(config.payload/1000).toFixed(0)} t`, color:"#8b5cf6" },
+                  { label:"Stigningsmodstand", value:`${result.gradientForce.toLocaleString()} N`, sub:`Gennemsnit: ${({flat:"0%",hills:"2.5%",mountains:"5.5%",city:"1.2%",mixed:"1.8%"})[config.terrain]}`, color:"#ef4444" },
+                  { label:"Motorbelastning", value:`${result.engineLoad} %`, sub:`Krævet: ${result.requiredPowerKW} kW`, color:"#06b6d4" },
+                  { label:"BSFC", value:`${result.bsfc} g/kWh`, sub:"Brændstofforbrug v/ aktuel last", color:"#10b981" },
+                  { label:"Lufttæthed", value:`${result.airDensity} kg/m³`, sub:`${config.season} · ${config.weather}`, color:"#64748b" },
+                ].map(({ label, value, sub, color }) => (
+                  <div key={label} className="p-3 rounded-xl border border-slate-700/40 bg-slate-900/40">
+                    <p className="text-slate-400 text-[10px] mb-0.5">{label}</p>
+                    <p className="text-white font-bold text-base" style={{ color }}>{value}</p>
+                    <p className="text-slate-500 text-[10px] font-mono">{sub}</p>
+                  </div>
+                ))}
+              </div>
+              {/* Force breakdown bar chart */}
+              <div>
+                <p className="text-slate-300 text-xs font-semibold mb-2">Kraftfordeling (N)</p>
+                <ResponsiveContainer width="100%" height={140}>
+                  <BarChart data={[
+                    { name:"Luftmod.", value:result.aeroDragForce, fill:"#f59e0b" },
+                    { name:"Rullemod.", value:result.rollingForce, fill:"#8b5cf6" },
+                    { name:"Stigmod.", value:result.gradientForce, fill:"#ef4444" },
+                  ]} margin={{ top:5, right:5, bottom:5, left:5 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+                    <XAxis dataKey="name" stroke="#475569" tick={{ fontSize:10 }} />
+                    <YAxis stroke="#475569" tick={{ fontSize:10 }} />
+                    <Tooltip contentStyle={{ backgroundColor:"#0f172a", border:"1px solid #1e293b", borderRadius:"8px", fontSize:11 }} />
+                    <Bar dataKey="value" name="Newton" radius={[4,4,0,0]}>
+                      {[{ fill:"#f59e0b" },{ fill:"#8b5cf6" },{ fill:"#ef4444" }].map((c, i) => <Bar key={i} fill={c.fill} />)}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          )}
+
+          {/* ENERGY */}
+          {activeSection === "energy" && (
+            <div className="space-y-4">
+              <div className="p-3 rounded-xl border border-slate-700/40 bg-slate-900/40">
+                <p className="text-slate-300 text-xs font-semibold mb-3 flex items-center gap-1"><Zap className="w-3.5 h-3.5 text-amber-400" /> Energibalance — Sankey</p>
+                <div className="space-y-2">
+                  {[
+                    { label:"Total tilført energi", value:result.totalEnergyMJ, pct:100, color:"#06b6d4" },
+                    { label:"Varmetab (motor)", value:result.thermalLossMJ, pct:Math.round(result.thermalLossMJ/result.totalEnergyMJ*100), color:"#ef4444" },
+                    { label:"Drivlinetab", value:result.drivetrainLoss, pct:Math.round(result.drivetrainLoss/result.totalEnergyMJ*100), color:"#f59e0b" },
+                    { label:"Hjælpelast (AC, hydraulik)", value:result.auxiliaryLoad, pct:Math.round(result.auxiliaryLoad/result.totalEnergyMJ*100), color:"#8b5cf6" },
+                    { label:"Nyttig trækenergi", value:result.actualUsefulMJ, pct:Math.round(result.actualUsefulMJ/result.totalEnergyMJ*100), color:"#10b981" },
+                  ].map(({ label, value, pct, color }) => (
+                    <div key={label}>
+                      <div className="flex justify-between text-[10px] mb-0.5">
+                        <span className="text-slate-400">{label}</span>
+                        <span className="font-mono" style={{ color }}>{value.toLocaleString()} MJ ({pct}%)</span>
+                      </div>
+                      <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                        <div className="h-full rounded-full" style={{ width:`${pct}%`, background:color }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="p-3 rounded-xl border border-slate-700/40 bg-slate-900/40">
+                <p className="text-slate-300 text-xs font-semibold mb-2">Nøgletal</p>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div className="bg-slate-900 rounded p-2"><p className="text-slate-500">Termisk effektivitet</p><p className="text-emerald-400 font-bold text-base">{Math.round((vehicle.specs.thermalEfficiency||0.45)*100)}%</p></div>
+                  <div className="bg-slate-900 rounded p-2"><p className="text-slate-500">Motor BSFC</p><p className="text-amber-400 font-bold text-base">{result.bsfc} g/kWh</p></div>
+                  <div className="bg-slate-900 rounded p-2"><p className="text-slate-500">Energi pr. ton-km</p><p className="text-cyan-400 font-bold text-base">{Math.round(result.totalEnergyMJ/((config.payload/1000)*config.distance)*10)/10} MJ</p></div>
+                  <div className="bg-slate-900 rounded p-2"><p className="text-slate-500">Motorbelastning</p><p className="text-violet-400 font-bold text-base">{result.engineLoad}%</p></div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* EMISSIONS */}
+          {activeSection === "emissions" && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { label:"CO₂", value:`${result.co2Total.toLocaleString()} kg`, sub:"Kuldioxid", color:"#ef4444", detail:`${result.co2PerTonKm} g/ton-km` },
+                  { label:"NOₓ", value:`${result.noxKg} kg`, sub:"Kvælstofoxider", color:"#f59e0b", detail:"Bidrag til smog + syreregn" },
+                  { label:"PM 2.5/10", value:`${result.pmKg} kg`, sub:"Partikler", color:"#8b5cf6", detail:"Sundhedsfare" },
+                  { label:"HC", value:`${result.hcKg} kg`, sub:"Kulbrinter", color:"#06b6d4", detail:"VOC — troposf. ozon" },
+                  ...(config.vehicleType === "ship" ? [{ label:"SOₓ", value:`${result.soxKg} kg`, sub:"Svovloxider", color:"#64748b", detail:"Bunker fuel svovl" }] : []),
+                ].map(({ label, value, sub, color, detail }) => (
+                  <div key={label} className="p-3 rounded-xl border border-slate-700/40 bg-slate-900/40">
+                    <p className="font-mono font-black text-xs mb-1" style={{ color }}>{label}</p>
+                    <p className="text-white font-bold text-base">{value}</p>
+                    <p className="text-slate-400 text-[10px]">{sub}</p>
+                    <p className="text-slate-500 text-[10px] mt-0.5">{detail}</p>
+                  </div>
+                ))}
+              </div>
+              <div>
+                <p className="text-slate-300 text-xs font-semibold mb-2">CO₂ opbygning over ruten</p>
+                <ResponsiveContainer width="100%" height={160}>
+                  <AreaChart data={result.timeline}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+                    <XAxis dataKey="step" stroke="#475569" tick={{ fontSize:9 }} interval={5} />
+                    <YAxis stroke="#475569" tick={{ fontSize:9 }} />
+                    <Tooltip contentStyle={{ backgroundColor:"#0f172a", border:"1px solid #1e293b", borderRadius:"8px", fontSize:10 }} />
+                    <Area type="monotone" dataKey="co2_cumul" stroke="#ef4444" fill="#ef444420" name="CO₂ kg" strokeWidth={2} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="p-3 rounded-xl border border-emerald-500/20 bg-emerald-500/5">
+                <p className="text-emerald-400 text-xs font-semibold mb-1">EU ETS Carbon Credits</p>
+                <p className="text-white font-bold">{result.euEtsCost.toLocaleString()} DKK</p>
+                <p className="text-slate-400 text-[10px]">Baseret på {result.co2Total} kg CO₂ × ~65 DKK/ton (ETS pris)</p>
+              </div>
+            </div>
+          )}
+
+          {/* COSTS */}
+          {activeSection === "costs" && (
+            <div className="space-y-3">
+              {[
+                { label:"Brændstofomkostning", value:result.fuelCost, icon:"⛽", sub:`${result.totalFuel.toLocaleString()} ${result.unit}`, color:"#f59e0b" },
+                { label:"Løn / besætning", value:result.driverCost, icon:"👤", sub:`${result.duration} × takst`, color:"#8b5cf6" },
+                { label:"Vedligeholdelse", value:result.maintenanceCost, icon:"🔧", sub:`${config.distance} km × takst`, color:"#06b6d4" },
+                ...(result.portFeesOrLanding > 0 ? [{ label:config.vehicleType === "ship" ? "Havneafgifter" : "Landing fees", value:result.portFeesOrLanding, icon:"⚓", sub:"Fast afgift", color:"#64748b" }] : []),
+                { label:"EU ETS kvoter", value:result.euEtsCost, icon:"🌱", sub:`${result.co2Total} kg CO₂`, color:"#10b981" },
+              ].map(({ label, value, icon, sub, color }) => {
+                const pct = Math.round(value / result.totalCost * 100);
+                return (
+                  <div key={label} className="p-3 rounded-xl border border-slate-700/40 bg-slate-900/40">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <div className="flex items-center gap-2">
+                        <span>{icon}</span>
+                        <div>
+                          <p className="text-slate-300 text-xs font-semibold">{label}</p>
+                          <p className="text-slate-500 text-[10px]">{sub}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-white font-bold text-sm">{value.toLocaleString()} DKK</p>
+                        <p className="text-slate-500 text-[10px]">{pct}% af total</p>
+                      </div>
+                    </div>
+                    <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                      <div className="h-full rounded-full transition-all" style={{ width:`${pct}%`, background:color }} />
+                    </div>
+                  </div>
+                );
+              })}
+              <div className="p-3 rounded-xl border-2 flex items-center justify-between" style={{ borderColor:meta.color, background:`${meta.color}08` }}>
+                <p className="text-white font-bold">Total</p>
+                <p className="font-black text-xl" style={{ color:meta.color }}>{result.totalCost.toLocaleString()} DKK</p>
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="p-2 rounded-lg bg-slate-900 border border-slate-700/40">
+                  <p className="text-slate-500">DKK pr. ton</p>
+                  <p className="text-white font-bold">{Math.round(result.totalCost/(config.payload/1000)).toLocaleString()}</p>
+                </div>
+                <div className="p-2 rounded-lg bg-slate-900 border border-slate-700/40">
+                  <p className="text-slate-500">DKK pr. ton-km</p>
+                  <p className="text-white font-bold">{result.costPerTonKm}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ROUTE */}
+          {activeSection === "route" && (
+            <div className="space-y-4">
+              <div>
+                <p className="text-slate-300 text-xs font-semibold mb-2">Øjeblikkeligt forbrug + motorbelastning</p>
+                <ResponsiveContainer width="100%" height={180}>
+                  <ComposedChart data={result.timeline}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+                    <XAxis dataKey="step" stroke="#475569" tick={{ fontSize:9 }} interval={5} />
+                    <YAxis yAxisId="left" stroke="#475569" tick={{ fontSize:9 }} />
+                    <YAxis yAxisId="right" orientation="right" stroke="#475569" tick={{ fontSize:9 }} />
+                    <Tooltip contentStyle={{ backgroundColor:"#0f172a", border:"1px solid #1e293b", borderRadius:"8px", fontSize:10 }} />
+                    <Legend wrapperStyle={{ fontSize:10 }} />
+                    <Area yAxisId="left" type="monotone" dataKey="fuel_cumul" stroke={meta.color} fill={`${meta.color}20`} name="Kumulativt brændstof" strokeWidth={2} />
+                    <Line yAxisId="right" type="monotone" dataKey="engine_load" stroke="#f59e0b" name="Motorlast %" strokeWidth={1.5} dot={false} />
+                  </ComposedChart>
+                </ResponsiveContainer>
+              </div>
+              <div>
+                <p className="text-slate-300 text-xs font-semibold mb-2">Hastighed langs ruten (km/t)</p>
+                <ResponsiveContainer width="100%" height={130}>
+                  <AreaChart data={result.timeline}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+                    <XAxis dataKey="step" stroke="#475569" tick={{ fontSize:9 }} interval={5} />
+                    <YAxis stroke="#475569" tick={{ fontSize:9 }} />
+                    <Tooltip contentStyle={{ backgroundColor:"#0f172a", border:"1px solid #1e293b", borderRadius:"8px", fontSize:10 }} />
+                    <ReferenceLine y={config.speed} stroke={meta.color} strokeDasharray="4 4" label={{ value:"Mål", fill:meta.color, fontSize:9 }} />
+                    <Area type="monotone" dataKey="speed" stroke="#06b6d4" fill="#06b6d420" name="Hastighed" strokeWidth={1.5} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+              {/* Wear & maintenance */}
+              {config.vehicleType === "truck" && (
+                <div className="p-3 rounded-xl border border-slate-700/40 bg-slate-900/40">
+                  <p className="text-slate-300 text-xs font-semibold mb-2 flex items-center gap-1"><AlertTriangle className="w-3.5 h-3.5 text-amber-400" /> Slidindeks & vedligeholdelse</p>
+                  <div className="flex items-center gap-3">
+                    <div className="w-16 h-16 rounded-full flex items-center justify-center border-2" style={{ borderColor: result.wearIndex > 0.7 ? "#ef4444" : result.wearIndex > 0.4 ? "#f59e0b" : "#10b981" }}>
+                      <span className="font-black text-lg" style={{ color: result.wearIndex > 0.7 ? "#ef4444" : result.wearIndex > 0.4 ? "#f59e0b" : "#10b981" }}>{result.wearIndex}</span>
+                    </div>
+                    <div className="text-xs text-slate-400">
+                      <p>Næste service estimeret: <span className="text-white font-bold">{result.nextServiceKm?.toLocaleString()} km</span></p>
+                      <p className="mt-1">Høj motorlast ({result.engineLoad}%) + {config.terrain} terræn øger slidhastighed</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+        </motion.div>
+      </AnimatePresence>
     </div>
   );
 }
 
 // ── Main Component ────────────────────────────────────────────────────────────
-const STEPS = ["Select Vehicle", "Cargo Config", "Parameters", "Simulate"];
+const STEPS = ["Køretøj", "Last", "Parametre", "Simuler"];
 
 export default function VehicleBuilder({ onClose }) {
   const [step, setStep] = useState(0);
-  const [activeTab, setActiveTab] = useState("configure");
   const [config, setConfig] = useState({
-    vehicleType: "truck", vehicleId: null, attachment: null,
-    payload: 20000, distance: 500, speed: 85, terrain: "mixed", weather: "clear",
+    vehicleType:"truck", vehicleId:null, attachment:null,
+    payload:18000, distance:500, speed:85,
+    terrain:"mixed", weather:"clear",
+    driverBehavior:"normal", season:"spring", cargoTemp:null,
   });
   const [simRan, setSimRan] = useState(false);
 
-  const updateConfig = (changes) => {
-    setSimRan(false);
-    setConfig(prev => ({ ...prev, ...changes }));
-  };
+  const updateConfig = (changes) => { setSimRan(false); setConfig(prev => ({ ...prev, ...changes })); };
 
   const vehicle = REAL_VEHICLES[config.vehicleType]?.find(v => v.id === config.vehicleId);
   const meta = TYPE_META[config.vehicleType];
 
   const result = useMemo(() => {
     if (!simRan || !vehicle || !config.attachment) return null;
-    return simulate(vehicle, config.vehicleType, config.attachment, config.payload, config.distance, config.terrain, config.weather, config.speed || vehicle?.specs?.speedKph || 80);
+    return runAdvancedSimulation(vehicle, config.vehicleType, config.attachment, {
+      payload: config.payload, distance: config.distance,
+      terrain: config.terrain, weather: config.weather,
+      speed: config.speed || vehicle.specs.speedKph,
+      driverBehavior: config.driverBehavior || "normal",
+      season: config.season || "spring",
+    });
   }, [simRan, config, vehicle]);
 
-  const canProceed = [
-    config.vehicleId,
-    config.attachment,
-    config.payload != null && config.distance > 0,
-    true
-  ][step];
-
+  const canProceed = [config.vehicleId, config.attachment, config.payload != null && config.distance > 0, true][step];
   const handleRunSim = () => { setSimRan(true); setStep(3); };
 
   return (
@@ -1239,126 +881,81 @@ export default function VehicleBuilder({ onClose }) {
         <div className="flex items-center gap-3">
           {meta && <meta.icon className="w-5 h-5" style={{ color: meta.color }} />}
           <div>
-            <h2 className="text-white font-bold text-sm">Transport Builder & Simulator</h2>
-            <p className="text-slate-500 text-xs">{vehicle ? `${vehicle.brand} ${vehicle.model}` : "Select a real vehicle to begin"}</p>
+            <h2 className="text-white font-bold text-sm">Transport Builder & Avanceret Simulator</h2>
+            <p className="text-slate-500 text-xs">{vehicle ? `${vehicle.brand} ${vehicle.model}` : "Vælg et rigtigt køretøj for at starte"}</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="flex rounded-lg overflow-hidden border border-slate-700/50">
-            <button onClick={() => setActiveTab("configure")} className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider font-mono transition-all ${activeTab==="configure"?"bg-cyan-500/20 text-cyan-400":"text-slate-500 hover:text-slate-300"}`}>
-              <Settings className="w-3 h-3 inline mr-1" />Configure
-            </button>
-            <button onClick={() => setActiveTab("3d")} className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider font-mono transition-all ${activeTab==="3d"?"bg-cyan-500/20 text-cyan-400":"text-slate-500 hover:text-slate-300"}`}>
-              <Box className="w-3 h-3 inline mr-1" />3D View
-            </button>
-          </div>
-          {onClose && <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors"><X className="w-4 h-4" /></button>}
-        </div>
+        {onClose && <button onClick={onClose} className="text-slate-400 hover:text-white"><X className="w-4 h-4" /></button>}
       </div>
 
-      <AnimatePresence mode="wait">
-        {/* 3D Tab */}
-        {activeTab === "3d" && (
-          <motion.div key="3d" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 p-4 flex flex-col gap-3 min-h-0">
-            <div className="flex-1 min-h-0">
-              <Vehicle3DPreview vehicle={vehicle} vehicleType={config.vehicleType} />
-            </div>
-            <div className="flex-shrink-0 p-3 rounded-xl border border-slate-700/40 bg-slate-900/40 space-y-2">
-              {/* Type selector */}
-              <div className="flex gap-2">
-                {Object.entries(TYPE_META).map(([key, m]) => {
-                  const Icon = m.icon;
-                  return (
-                    <button key={key} onClick={() => updateConfig({ vehicleType: key, vehicleId: null, attachment: null })}
-                      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-medium transition-all"
-                      style={{ background: config.vehicleType===key?`${m.color}20`:"rgba(30,41,59,0.6)", borderColor: config.vehicleType===key?m.color:"rgba(100,116,139,0.3)", color: config.vehicleType===key?"#fff":"#94a3b8" }}>
-                      <Icon className="w-3.5 h-3.5" style={{ color: m.color }} />{m.label}
-                    </button>
-                  );
-                })}
+      {/* Step tabs */}
+      <div className="flex border-b border-slate-800/60 flex-shrink-0">
+        {STEPS.map((s, i) => (
+          <button key={s} onClick={() => i < step && setStep(i)}
+            className="flex-1 py-2.5 text-xs font-semibold transition-all relative"
+            style={{ color: step===i?meta?.color||"#06b6d4":"#64748b" }}>
+            <span className="flex items-center justify-center gap-1.5">
+              <span className="w-5 h-5 rounded-full text-[10px] flex items-center justify-center border font-bold"
+                style={{ borderColor:step===i?meta?.color||"#06b6d4":"#334155", background:step===i?`${meta?.color||"#06b6d4"}20`:"transparent" }}>
+                {i+1}
+              </span>
+              <span className="hidden sm:inline">{s}</span>
+            </span>
+            {step===i && <motion.div layoutId="step-ind" className="absolute bottom-0 left-0 right-0 h-0.5" style={{ background:meta?.color||"#06b6d4" }} />}
+          </button>
+        ))}
+      </div>
+
+      <div className="flex-1 overflow-y-auto p-5">
+        <AnimatePresence mode="wait">
+          <motion.div key={step} initial={{ opacity:0, x:20 }} animate={{ opacity:1, x:0 }} exit={{ opacity:0, x:-20 }} transition={{ duration:0.18 }}>
+            {step===0 && <StepSelectVehicle config={config} onChange={updateConfig} />}
+            {step===1 && <StepSelectAttachment config={config} onChange={updateConfig} />}
+            {step===2 && <StepParameters config={config} onChange={updateConfig} />}
+            {step===3 && !simRan && (
+              <div className="flex flex-col items-center justify-center py-12 gap-5">
+                <div className="w-20 h-20 rounded-full flex items-center justify-center" style={{ background:`${meta?.color}20`, border:`2px solid ${meta?.color}40` }}>
+                  {meta && <meta.icon className="w-10 h-10" style={{ color:meta.color }} />}
+                </div>
+                <div className="text-center space-y-1">
+                  <p className="text-white font-bold text-lg">Klar til avanceret simulation</p>
+                  <p className="text-slate-400 text-sm">{vehicle?.brand} {vehicle?.model}</p>
+                  <div className="flex flex-wrap justify-center gap-2 mt-2">
+                    {[`${(config.payload/1000).toFixed(1)} t last`,`${config.distance.toLocaleString()} km`,`${config.speed||vehicle?.specs?.speedKph} km/t`,`${config.terrain}`,`${config.weather}`,`${config.driverBehavior}`,`${config.season}`].map(tag => (
+                      <span key={tag} className="px-2 py-0.5 rounded-full text-[10px] border border-slate-600 text-slate-400">{tag}</span>
+                    ))}
+                  </div>
+                </div>
+                <Button onClick={handleRunSim} className="gap-2 px-8 py-3 font-bold text-base" style={{ background:`linear-gradient(135deg, ${meta?.color||"#06b6d4"}, #8b5cf6)` }}>
+                  <Cpu className="w-5 h-5" /> Start Avanceret Simulation
+                </Button>
               </div>
-              {/* Model selector */}
-              <div className="flex flex-wrap gap-1.5">
-                {(REAL_VEHICLES[config.vehicleType] || []).map(v => (
-                  <button key={v.id} onClick={() => updateConfig({ vehicleId: v.id })}
-                    className="flex items-center gap-1 px-2 py-1 rounded border text-[10px] font-medium transition-all"
-                    style={{ background: config.vehicleId===v.id?`${meta?.color}20`:"rgba(15,23,42,0.7)", borderColor: config.vehicleId===v.id?meta?.color:"rgba(100,116,139,0.2)", color: config.vehicleId===v.id?"#fff":"#64748b" }}>
-                    <span>{v.flag}</span> {v.brand} {v.model}
-                  </button>
-                ))}
-              </div>
-            </div>
+            )}
+            {step===3 && simRan && result && <SimulationResults result={result} config={config} />}
           </motion.div>
+        </AnimatePresence>
+      </div>
+
+      <div className="flex items-center justify-between px-5 py-3 border-t border-slate-800/60 flex-shrink-0">
+        <Button variant="ghost" onClick={() => setStep(s => Math.max(0, s-1))} disabled={step===0} className="gap-2 text-slate-400 hover:text-white">
+          <ChevronLeft className="w-4 h-4" /> Tilbage
+        </Button>
+        {simRan && step===3 && (
+          <Button variant="ghost" onClick={() => { setSimRan(false); setStep(2); }} className="text-slate-400 hover:text-amber-400 text-xs gap-1.5">
+            <RotateCcw className="w-3 h-3" /> Juster parametre
+          </Button>
         )}
-
-        {/* Configure Tab */}
-        {activeTab === "configure" && (
-          <motion.div key="configure" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col flex-1 min-h-0">
-            <div className="flex border-b border-slate-800/60 flex-shrink-0">
-              {STEPS.map((s, i) => (
-                <button key={s} onClick={() => i < step && setStep(i)}
-                  className="flex-1 py-2.5 text-xs font-semibold transition-all relative"
-                  style={{ color: step===i?meta?.color||"#06b6d4":"#64748b" }}>
-                  <span className="flex items-center justify-center gap-1.5">
-                    <span className="w-5 h-5 rounded-full text-[10px] flex items-center justify-center border font-bold"
-                      style={{ borderColor: step===i?meta?.color||"#06b6d4":"#334155", background: step===i?`${meta?.color||"#06b6d4"}20`:"transparent" }}>
-                      {i+1}
-                    </span>
-                    <span className="hidden sm:inline">{s}</span>
-                  </span>
-                  {step===i && <motion.div layoutId="step-indicator" className="absolute bottom-0 left-0 right-0 h-0.5" style={{ background: meta?.color||"#06b6d4" }} />}
-                </button>
-              ))}
-            </div>
-
-            <div className="flex-1 overflow-y-auto p-5">
-              <AnimatePresence mode="wait">
-                <motion.div key={step} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }}>
-                  {step===0 && <StepSelectVehicle config={config} onChange={updateConfig} />}
-                  {step===1 && <StepSelectAttachment config={config} onChange={updateConfig} />}
-                  {step===2 && <StepParameters config={config} onChange={updateConfig} />}
-                  {step===3 && !simRan && (
-                    <div className="flex flex-col items-center justify-center py-12 gap-6">
-                      <div className="w-24 h-24 rounded-full flex items-center justify-center" style={{ background: `${meta?.color}20`, border: `2px solid ${meta?.color}40` }}>
-                        {meta && <meta.icon className="w-12 h-12" style={{ color: meta.color }} />}
-                      </div>
-                      <div className="text-center">
-                        <p className="text-white font-bold text-lg">Ready to simulate</p>
-                        <p className="text-slate-400 text-sm mt-1">{vehicle?.brand} {vehicle?.model} · {(config.payload/1000).toFixed(1)}t · {config.distance} km</p>
-                      </div>
-                      <Button onClick={handleRunSim} className="gap-2 px-8 py-3 font-bold text-base" style={{ background: `linear-gradient(135deg, ${meta?.color||"#06b6d4"}, #8b5cf6)` }}>
-                        <Play className="w-5 h-5" /> Run Simulation
-                      </Button>
-                    </div>
-                  )}
-                  {step===3 && simRan && result && <SimulationResults result={result} config={config} />}
-                </motion.div>
-              </AnimatePresence>
-            </div>
-
-            <div className="flex items-center justify-between px-5 py-3 border-t border-slate-800/60 flex-shrink-0 gap-3">
-              <Button variant="ghost" onClick={() => setStep(s => Math.max(0, s-1))} disabled={step===0} className="gap-2 text-slate-400 hover:text-white">
-                <ChevronLeft className="w-4 h-4" /> Back
-              </Button>
-              {simRan && step===3 && (
-                <Button variant="ghost" onClick={() => { setSimRan(false); setStep(2); }} className="gap-2 text-slate-400 hover:text-amber-400 text-xs">
-                  <RotateCcw className="w-3 h-3" /> Adjust parameters
-                </Button>
-              )}
-              {step < 2 && (
-                <Button onClick={() => setStep(s => s+1)} disabled={!canProceed} className="gap-2 ml-auto" style={{ background: canProceed?`linear-gradient(135deg, ${meta?.color||"#06b6d4"}, #8b5cf6)`:undefined }}>
-                  Next <ChevronRight className="w-4 h-4" />
-                </Button>
-              )}
-              {step===2 && (
-                <Button onClick={handleRunSim} disabled={!config.attachment} className="gap-2 ml-auto font-bold" style={{ background: `linear-gradient(135deg, ${meta?.color||"#06b6d4"}, #8b5cf6)` }}>
-                  <Zap className="w-4 h-4" /> Simulate now
-                </Button>
-              )}
-            </div>
-          </motion.div>
+        {step < 2 && (
+          <Button onClick={() => setStep(s => s+1)} disabled={!canProceed} className="gap-2 ml-auto" style={{ background:canProceed?`linear-gradient(135deg, ${meta?.color||"#06b6d4"}, #8b5cf6)`:undefined }}>
+            Næste <ChevronRight className="w-4 h-4" />
+          </Button>
         )}
-      </AnimatePresence>
+        {step===2 && (
+          <Button onClick={handleRunSim} disabled={!config.attachment} className="gap-2 ml-auto font-bold" style={{ background:`linear-gradient(135deg, ${meta?.color||"#06b6d4"}, #8b5cf6)` }}>
+            <Cpu className="w-4 h-4" /> Simuler nu
+          </Button>
+        )}
+      </div>
     </div>
   );
 }
