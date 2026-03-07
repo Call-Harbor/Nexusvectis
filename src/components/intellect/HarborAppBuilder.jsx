@@ -602,6 +602,7 @@ Return ONLY raw JavaScript code. No \`\`\`js markers. No explanation text.`,
                   onOpen={handleOpenSavedApp}
                   onDelete={handleDeleteApp}
                   onRefresh={loadSavedApps}
+                  installedAppIds={installedAppIds}
                 />
               </motion.div>
             )}
