@@ -187,7 +187,7 @@ function buildTruck3D(config = {}) {
 
   const wheelGeo = new THREE.CylinderGeometry(0.5, 0.5, 0.35, 24); wheelGeo.rotateZ(Math.PI / 2);
   const wheelMat = new THREE.MeshStandardMaterial({ color: rubber, roughness: 0.9 });
-  const addW = (x, y, z) => { group.add(Object.assign(new THREE.Mesh(wheelGeo, wheelMat), { position: new THREE.Vector3(x, y, z) })); };
+  const addW = (x, y, z) => { const w = new THREE.Mesh(wheelGeo, wheelMat); w.position.set(x, y, z); group.add(w); };
   addW(-1.3, 0.5, 1.8); addW(1.3, 0.5, 1.8);
   [-0.5, -1.3].forEach(z => { [-1.4, 1.4].forEach(x => addW(x, 0.5, z)); });
   [-6.0, -7.0].forEach(z => { [-1.4, 1.4].forEach(x => addW(x, 0.5, z)); });
