@@ -537,24 +537,23 @@ Return ONLY raw JavaScript code. No \`\`\`js markers. No explanation text.`,
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex border-b border-slate-800/60 flex-shrink-0">
-        {[
-          { id: "builder", label: "Builder", icon: Zap },
-          { id: "myapps", label: `My Apps (${savedApps.length})`, icon: FolderOpen },
-
-            ].map(tab => (
-          <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center gap-1.5 px-4 py-2.5 text-[11px] font-mono uppercase tracking-wider transition-all border-b-2 ${
-              activeTab === tab.id
-                ? "border-cyan-500 text-cyan-400 bg-cyan-500/5"
-                : "border-transparent text-slate-500 hover:text-slate-300"
-            }`}>
-            <tab.icon className="w-3.5 h-3.5" />
-            {tab.label}
-          </button>
-        ))}
-      </div>
+        {/* Tabs */}
+        <div className="flex border-b border-cyan-500/20 flex-shrink-0 bg-slate-950/40 backdrop-blur-sm">
+          {[
+            { id: "builder", label: "Builder", icon: Zap },
+            { id: "myapps", label: `My Apps (${savedApps.length})`, icon: FolderOpen },
+          ].map(tab => (
+            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-1.5 px-4 py-2.5 text-[11px] font-mono uppercase tracking-widest transition-all border-b-2 ${
+                activeTab === tab.id
+                  ? "border-cyan-500 text-cyan-400 bg-cyan-500/10"
+                  : "border-transparent text-slate-500 hover:text-cyan-400 hover:bg-cyan-500/5"
+              }`}>
+              <tab.icon className="w-3.5 h-3.5" />
+              {tab.label}
+            </button>
+          ))}
+        </div>
 
       {/* Body */}
       <div className="flex-1 overflow-hidden">
