@@ -666,14 +666,14 @@ function SimulationResults({ result, config }) {
           {activeSection === "energy" && (
             <div className="space-y-4">
               <div className="p-3 rounded-xl border border-slate-700/40 bg-slate-900/40">
-                <p className="text-slate-300 text-xs font-semibold mb-3 flex items-center gap-1"><Zap className="w-3.5 h-3.5 text-amber-400" /> Energibalance — Sankey</p>
+                <p className="text-slate-300 text-xs font-semibold mb-3 flex items-center gap-1"><Zap className="w-3.5 h-3.5 text-amber-400" /> Energy Balance — Sankey</p>
                 <div className="space-y-2">
                   {[
-                    { label:"Total tilført energi", value:result.totalEnergyMJ, pct:100, color:"#06b6d4" },
-                    { label:"Varmetab (motor)", value:result.thermalLossMJ, pct:Math.round(result.thermalLossMJ/result.totalEnergyMJ*100), color:"#ef4444" },
-                    { label:"Drivlinetab", value:result.drivetrainLoss, pct:Math.round(result.drivetrainLoss/result.totalEnergyMJ*100), color:"#f59e0b" },
-                    { label:"Hjælpelast (AC, hydraulik)", value:result.auxiliaryLoad, pct:Math.round(result.auxiliaryLoad/result.totalEnergyMJ*100), color:"#8b5cf6" },
-                    { label:"Nyttig trækenergi", value:result.actualUsefulMJ, pct:Math.round(result.actualUsefulMJ/result.totalEnergyMJ*100), color:"#10b981" },
+                    { label:"Total input energy", value:result.totalEnergyMJ, pct:100, color:"#06b6d4" },
+                    { label:"Thermal loss (engine)", value:result.thermalLossMJ, pct:Math.round(result.thermalLossMJ/result.totalEnergyMJ*100), color:"#ef4444" },
+                    { label:"Drivetrain loss", value:result.drivetrainLoss, pct:Math.round(result.drivetrainLoss/result.totalEnergyMJ*100), color:"#f59e0b" },
+                    { label:"Auxiliary load (AC, hydraulics)", value:result.auxiliaryLoad, pct:Math.round(result.auxiliaryLoad/result.totalEnergyMJ*100), color:"#8b5cf6" },
+                    { label:"Useful tractive energy", value:result.actualUsefulMJ, pct:Math.round(result.actualUsefulMJ/result.totalEnergyMJ*100), color:"#10b981" },
                   ].map(({ label, value, pct, color }) => (
                     <div key={label}>
                       <div className="flex justify-between text-[10px] mb-0.5">
