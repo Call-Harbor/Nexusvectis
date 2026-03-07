@@ -111,7 +111,7 @@ export default function Layout({ children, currentPageName }) {
   }, []);
 
   return (
-    <div className="min-h-screen bg-slate-950 flex">
+    <div className="min-h-screen flex" style={{ background: 'linear-gradient(135deg, rgba(2,13,30,0.98) 0%, rgba(15,10,40,0.95) 100%)' }}>
       {/* Sidebar */}
       {!hideNav && (
       <aside className="fixed left-0 top-0 h-full w-64 bg-slate-900/50 backdrop-blur-xl border-r border-slate-800/50 z-40 hidden lg:block">
