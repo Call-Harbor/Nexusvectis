@@ -776,11 +776,11 @@ function SimulationResults({ result, config }) {
               </div>
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div className="p-2 rounded-lg bg-slate-900 border border-slate-700/40">
-                  <p className="text-slate-500">DKK pr. ton</p>
+                  <p className="text-slate-500">DKK per ton</p>
                   <p className="text-white font-bold">{Math.round(result.totalCost/(config.payload/1000)).toLocaleString()}</p>
                 </div>
                 <div className="p-2 rounded-lg bg-slate-900 border border-slate-700/40">
-                  <p className="text-slate-500">DKK pr. ton-km</p>
+                  <p className="text-slate-500">DKK per ton-km</p>
                   <p className="text-white font-bold">{result.costPerTonKm}</p>
                 </div>
               </div>
