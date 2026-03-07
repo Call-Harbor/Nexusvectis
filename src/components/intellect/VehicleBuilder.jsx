@@ -485,9 +485,9 @@ function StepParameters({ config, onChange }) {
 
       {/* Weather */}
       <div>
-        <label className="text-slate-300 text-sm font-medium block mb-2">Vejrforhold</label>
+        <label className="text-slate-300 text-sm font-medium block mb-2">Weather conditions</label>
         <div className="grid grid-cols-5 gap-1.5">
-          {[{id:"clear",label:"Klart",emoji:"☀️"},{id:"rain",label:"Regn",emoji:"🌧️"},{id:"wind_headwind",label:"Modvind",emoji:"💨"},{id:"snow",label:"Sne",emoji:"❄️"},{id:"fog",label:"Tåge",emoji:"🌫️"}].map(w => (
+          {[{id:"clear",label:"Clear",emoji:"☀️"},{id:"rain",label:"Rain",emoji:"🌧️"},{id:"wind_headwind",label:"Headwind",emoji:"💨"},{id:"snow",label:"Snow",emoji:"❄️"},{id:"fog",label:"Fog",emoji:"🌫️"}].map(w => (
             <button key={w.id} onClick={() => onChange({ weather: w.id })} className="p-2 rounded-lg border text-center text-xs transition-all"
               style={{ background: config.weather===w.id?`${meta?.color}20`:"rgba(30,41,59,0.8)", borderColor: config.weather===w.id?meta?.color:"rgba(100,116,139,0.3)", color: config.weather===w.id?"#fff":"#94a3b8" }}>
               <div>{w.emoji}</div><div className="text-[10px] mt-0.5">{w.label}</div>
