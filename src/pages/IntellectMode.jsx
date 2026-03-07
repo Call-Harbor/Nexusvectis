@@ -215,6 +215,7 @@ export default function IntellectMode() {
      openProjectManagement: () => { openWindow('project_management', { x: 120, y: 80 }); setMessages(prev => [...prev, { role: "system", content: "📋 Project Management AI opened — generate tasks, summaries and risk registers" }]); },
      openFleetAITrainer: () => { setShowFleetAITrainer(true); setMessages(prev => [...prev, { role: "system", content: "⚡ HARBOR AI Trainer activated — Train your own AI models and deploy via API" }]); },
      open3DViewer: () => { openWindow('fleet_3d_viewer', { x: 60, y: 50 }); setMessages(prev => [...prev, { role: "system", content: "🚛 Fleet 3D Viewer åbnet — Udforsk realistiske 3D-modeller af lastbiler, skibe, droner og fly" }]); },
+     openVehicleBuilder: () => { openWindow('vehicle_builder', { x: 80, y: 60 }); setMessages(prev => [...prev, { role: "system", content: "🔧 Transportbygger & Simulator åbnet — Konfigurer lastbil, skib, fly eller tog og kør avancerede brændstof- og CO₂-simuleringer" }]); },
    };
    actionMap[action]?.();
   }, [openWindow, vehicles, routes, setMessages]);
