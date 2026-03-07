@@ -523,7 +523,7 @@ export default function FleetAITrainer({ onClose }) {
           {/* Live stats */}
           <div className="hidden md:flex items-center gap-2 text-[10px] font-mono">
             <span className="text-slate-500">ACC:</span>
-            <span className="text-amber-300">{liveAccuracy.toFixed(1)}%</span>
+            <span className="text-amber-300">{(liveAccuracy ?? realAccuracy).toFixed(1)}%</span>
             <span className="text-slate-600">|</span>
             <span className="text-slate-500">GPU:</span>
             <span className="text-cyan-300">72%</span>
