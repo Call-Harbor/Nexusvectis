@@ -576,6 +576,66 @@ export default function AdminDashboard() {
             </div>
           </motion.div>
         </div>
+        {/* Contact Messages */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="rounded-2xl border border-slate-700/50 bg-slate-800/50 backdrop-blur-xl p-6 mb-8"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Mail className="w-5 h-5 text-violet-400" />
+              <h3 className="text-white font-semibold">Contact Form Messages ({contactMessages.length})</h3>
+              {contactMessages.filter(m => m.status === 'new').length > 0 && (
+                <Badge className="bg-red-500/20 text-red-400 border-red-500/30">
+                  {contactMessages.filter(m => m.status === 'new').length} new
+                </Badge>
+              )}
+            </div>
+          </div>
+          <div className="space-y-3 max-h-[500px] overflow-y-auto">
+            {contactMessages.length === 0 ? (
+              <p className="text-slate-500 text-sm text-center py-8">No messages yet</p>
+            ) : contactMessages.map((msg) => (
+              <div
+                key={msg.id}
+                className={`p-4 rounded-lg border transition-all ${
+                  msg.status === 'new'
+                    ? 'bg-violet-500/10 border-violet-500/30'
+                    : 'bg-slate-900/50 border-slate-700/30'
+                }`}
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
+                      <span className="text-white font-medium text-sm">{msg.name}</span>
+                      <span className="text-slate-400 text-xs">{msg.email}</span>
+                      {msg.company && <span className="text-slate-500 text-xs">· {msg.company}</span>}
+                      <Badge variant="outline" className="text-[10px] border-slate-600 text-slate-400">{msg.subject || 'general'}</Badge>
+                    </div>
+                    <p className="text-slate-300 text-sm whitespace-pre-wrap">{msg.message}</p>
+                    <p className="text-slate-600 text-xs mt-2">{new Date(msg.created_date).toLocaleString('da-DK')}</p>
+                  </div>
+                  <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                    {msg.status === 'new' ? (
+                      <button
+                        onClick={() => markAsRead(msg.id)}
+                        className="flex items-center gap-1 text-xs text-violet-400 hover:text-violet-300 border border-violet-500/30 px-2 py-1 rounded"
+                      >
+                        <CheckCircle2 className="w-3 h-3" /> Mark read
+                      </button>
+                    ) : (
+                      <div className="flex items-center gap-1 text-xs text-slate-500">
+                        <Clock className="w-3 h-3" /> {msg.status}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+
       </div>
     </div>
   );
