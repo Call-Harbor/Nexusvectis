@@ -642,7 +642,7 @@ function SimulationResults({ result, config }) {
               </div>
               {/* Force breakdown bar chart */}
               <div>
-                <p className="text-slate-300 text-xs font-semibold mb-2">Kraftfordeling (N)</p>
+                <p className="text-slate-300 text-xs font-semibold mb-2">Force breakdown (N)</p>
                 <ResponsiveContainer width="100%" height={140}>
                   <BarChart data={[
                     { name:"Luftmod.", value:result.aeroDragForce, fill:"#f59e0b" },
