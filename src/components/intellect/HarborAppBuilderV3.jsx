@@ -332,6 +332,46 @@ BUILD REQUIREMENTS:
 
           {/* Content area */}
           <div className="flex-1 overflow-y-auto">
+            {activeTab === "prompt" && (
+              <div className="p-4 space-y-3">
+                <div className="space-y-2">
+                  <p className="text-xs text-slate-400 uppercase tracking-wider">Describe your app idea</p>
+                  <textarea
+                    value={userPrompt}
+                    onChange={e => setUserPrompt(e.target.value)}
+                    placeholder="E.g., 'I need a customer management system with contacts, orders, and invoices. Users should be able to track order status and export data.'"
+                    className="w-full h-32 bg-slate-800/60 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 resize-none"
+                  />
+                </div>
+                <button
+                  onClick={handleAnalyzePrompt}
+                  disabled={isAnalyzing || !userPrompt.trim()}
+                  className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg bg-gradient-to-r from-cyan-600 to-violet-600 hover:from-cyan-500 hover:to-violet-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold text-xs transition-all"
+                >
+                  {isAnalyzing ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Analyzing...
+                    </>
+                  ) : (
+                    <>
+                      <Zap className="w-4 h-4" />
+                      Generate Schema
+                    </>
+                  )}
+                </button>
+                {buildLog.length > 0 && (
+                  <div className="bg-slate-900/60 border border-slate-700/50 rounded-lg p-2 space-y-1 max-h-40 overflow-y-auto">
+                    {buildLog.map((log, i) => (
+                      <div key={i} className={`text-[10px] ${log.type === "error" ? "text-red-400" : log.type === "success" ? "text-emerald-400" : "text-slate-400"}`}>
+                        {log.msg}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             {activeTab === "entities" && (
               <div className="p-3 space-y-2">
                 <button
