@@ -49,7 +49,8 @@ export const WINDOW_META = {
   hologram_presentation: { title: '🎯 FleetSlide', icon: MonitorPlay },
   fleet_ai_trainer: { title: '⚡ H.A.R.B.O.R Trainer', icon: Cpu },
   fleet_3d_viewer: { title: '🚛 Fleet 3D Viewer', icon: Layers },
-  vehicle_builder: { title: '🔧 Transportbygger & Simulator', icon: Layers },
+  vehicle_builder: { title: '🔧 Transport Builder & Simulator', icon: Layers },
+  harbor_app_builder: { title: '⚡ H.A.R.B.O.R App Builder', icon: Cpu },
 };
 
 export function getWindowMeta(type) {
