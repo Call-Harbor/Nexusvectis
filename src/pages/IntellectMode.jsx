@@ -77,7 +77,7 @@ export default function IntellectMode() {
   const [thinkingLogs, setThinkingLogs] = useState([]);
   const [showThinkingTerminal, setShowThinkingTerminal] = useState(false);
   const [processTerminals, setProcessTerminals] = useState([]);
-  const [minimizedProcesses, setMinimizedProcesses] = new Set();
+  const [minimizedProcesses, setMinimizedProcesses] = useState(new Set());
   const [screens, setScreens] = useState([]);
   const [showMultiScreenManager, setShowMultiScreenManager] = useState(false);
   const [multiScreenDismissed, setMultiScreenDismissed] = useState(false);
