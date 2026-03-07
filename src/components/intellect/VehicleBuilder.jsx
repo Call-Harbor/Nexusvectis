@@ -791,7 +791,7 @@ function SimulationResults({ result, config }) {
           {activeSection === "route" && (
             <div className="space-y-4">
               <div>
-                <p className="text-slate-300 text-xs font-semibold mb-2">Øjeblikkeligt forbrug + motorbelastning</p>
+                <p className="text-slate-300 text-xs font-semibold mb-2">Instantaneous consumption + engine load</p>
                 <ResponsiveContainer width="100%" height={180}>
                   <ComposedChart data={result.timeline}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
