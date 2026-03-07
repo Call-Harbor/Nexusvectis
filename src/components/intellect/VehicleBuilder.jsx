@@ -626,12 +626,12 @@ function SimulationResults({ result, config }) {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 {[
-                  { label:"Aerodynamisk modstand", value:`${result.aeroDragForce.toLocaleString()} N`, sub:`Cd=${vehicle.specs.dragCoefficient||0.36} · ρ=${result.airDensity} kg/m³`, color:"#f59e0b" },
-                  { label:"Rullemodstand", value:`${result.rollingForce.toLocaleString()} N`, sub:`RRC = ${vehicle.specs.rollingResistance||0.006} · ${(config.payload/1000).toFixed(0)} t`, color:"#8b5cf6" },
-                  { label:"Stigningsmodstand", value:`${result.gradientForce.toLocaleString()} N`, sub:`Gennemsnit: ${({flat:"0%",hills:"2.5%",mountains:"5.5%",city:"1.2%",mixed:"1.8%"})[config.terrain]}`, color:"#ef4444" },
-                  { label:"Motorbelastning", value:`${result.engineLoad} %`, sub:`Krævet: ${result.requiredPowerKW} kW`, color:"#06b6d4" },
-                  { label:"BSFC", value:`${result.bsfc} g/kWh`, sub:"Brændstofforbrug v/ aktuel last", color:"#10b981" },
-                  { label:"Lufttæthed", value:`${result.airDensity} kg/m³`, sub:`${config.season} · ${config.weather}`, color:"#64748b" },
+                  { label:"Aerodynamic drag", value:`${result.aeroDragForce.toLocaleString()} N`, sub:`Cd=${vehicle.specs.dragCoefficient||0.36} · ρ=${result.airDensity} kg/m³`, color:"#f59e0b" },
+                  { label:"Rolling resistance", value:`${result.rollingForce.toLocaleString()} N`, sub:`RRC = ${vehicle.specs.rollingResistance||0.006} · ${(config.payload/1000).toFixed(0)} t`, color:"#8b5cf6" },
+                  { label:"Grade resistance", value:`${result.gradientForce.toLocaleString()} N`, sub:`Avg gradient: ${({flat:"0%",hills:"2.5%",mountains:"5.5%",city:"1.2%",mixed:"1.8%"})[config.terrain]}`, color:"#ef4444" },
+                  { label:"Engine load", value:`${result.engineLoad} %`, sub:`Required: ${result.requiredPowerKW} kW`, color:"#06b6d4" },
+                  { label:"BSFC", value:`${result.bsfc} g/kWh`, sub:"Fuel consumption at current load", color:"#10b981" },
+                  { label:"Air density", value:`${result.airDensity} kg/m³`, sub:`${config.season} · ${config.weather}`, color:"#64748b" },
                 ].map(({ label, value, sub, color }) => (
                   <div key={label} className="p-3 rounded-xl border border-slate-700/40 bg-slate-900/40">
                     <p className="text-slate-400 text-[10px] mb-0.5">{label}</p>
