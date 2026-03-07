@@ -148,8 +148,14 @@ Respond with JSON:
         response_json_schema: {
           type: "object",
           properties: {
-            entities: { type: "array" },
-            pages: { type: "array" },
+            entities: {
+              type: "array",
+              items: { type: "object" }
+            },
+            pages: {
+              type: "array",
+              items: { type: "object" }
+            },
             appName: { type: "string" },
             appDescription: { type: "string" }
           }
