@@ -736,9 +736,9 @@ export default function FleetAITrainer({ onClose }) {
                 <p className="text-[10px] font-mono text-amber-400/70 mb-3 tracking-widest">SYSTEM RESOURCES</p>
                 <div className="space-y-3">
                   {[
-                    { label: 'GPU CORES', value: 72, color: '#f59e0b' },
-                    { label: 'VRAM', value: 53, color: '#06b6d4' },
-                    { label: 'THROUGHPUT', value: 85, color: '#8b5cf6' },
+                    { label: 'GPU CORES', value: gpuUtilization, color: '#f59e0b' },
+                    { label: 'VRAM', value: vramUtilization, color: '#06b6d4' },
+                    { label: 'THROUGHPUT', value: throughputScore, color: '#8b5cf6' },
                   ].map((item, i) => (
                     <div key={i}>
                       <div className="flex justify-between text-[9px] font-mono mb-1">
