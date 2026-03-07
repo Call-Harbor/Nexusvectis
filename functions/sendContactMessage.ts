@@ -13,14 +13,13 @@ Deno.serve(async (req) => {
 
     // Route to appropriate email based on subject
     const emailMap = {
-      'demo': 'sales@nexusvectis.com',
-      'enterprise': 'enterprise@nexusvectis.com',
-      'support': 'support@nexusvectis.com',
-      'partnership': 'sales@nexusvectis.com',
-      'general': 'support@nexusvectis.com'
+      'general': 'ai@harborvision.dev',
+      'enterprise': 'enterprise@harborvision.dev',
+      'partnership': 'sales@harborvision.dev',
+      'support': 'support@harborvision.dev'
     };
 
-    const recipientEmail = emailMap[subject] || 'support@nexusvectis.com';
+    const recipientEmail = emailMap[subject] || 'ai@harborvision.dev';
 
     // Send email to support team
     await base44.integrations.Core.SendEmail({
