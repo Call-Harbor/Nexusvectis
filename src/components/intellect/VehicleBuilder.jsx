@@ -742,11 +742,11 @@ function SimulationResults({ result, config }) {
           {activeSection === "costs" && (
             <div className="space-y-3">
               {[
-                { label:"Brændstofomkostning", value:result.fuelCost, icon:"⛽", sub:`${result.totalFuel.toLocaleString()} ${result.unit}`, color:"#f59e0b" },
-                { label:"Løn / besætning", value:result.driverCost, icon:"👤", sub:`${result.duration} × takst`, color:"#8b5cf6" },
-                { label:"Vedligeholdelse", value:result.maintenanceCost, icon:"🔧", sub:`${config.distance} km × takst`, color:"#06b6d4" },
-                ...(result.portFeesOrLanding > 0 ? [{ label:config.vehicleType === "ship" ? "Havneafgifter" : "Landing fees", value:result.portFeesOrLanding, icon:"⚓", sub:"Fast afgift", color:"#64748b" }] : []),
-                { label:"EU ETS kvoter", value:result.euEtsCost, icon:"🌱", sub:`${result.co2Total} kg CO₂`, color:"#10b981" },
+                { label:"Fuel cost", value:result.fuelCost, icon:"⛽", sub:`${result.totalFuel.toLocaleString()} ${result.unit}`, color:"#f59e0b" },
+                { label:"Crew / driver cost", value:result.driverCost, icon:"👤", sub:`${result.duration} × rate`, color:"#8b5cf6" },
+                { label:"Maintenance", value:result.maintenanceCost, icon:"🔧", sub:`${config.distance} km × rate`, color:"#06b6d4" },
+                ...(result.portFeesOrLanding > 0 ? [{ label:config.vehicleType === "ship" ? "Port fees" : "Landing fees", value:result.portFeesOrLanding, icon:"⚓", sub:"Fixed fee", color:"#64748b" }] : []),
+                { label:"EU ETS carbon credits", value:result.euEtsCost, icon:"🌱", sub:`${result.co2Total} kg CO₂`, color:"#10b981" },
               ].map(({ label, value, icon, sub, color }) => {
                 const pct = Math.round(value / result.totalCost * 100);
                 return (
