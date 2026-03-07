@@ -505,6 +505,7 @@ Return ONLY raw JavaScript code. No \`\`\`js markers. No explanation text.`,
         {[
           { id: "builder", label: "Builder", icon: Zap },
           { id: "myapps", label: `My Apps (${savedApps.length})`, icon: FolderOpen },
+
             ].map(tab => (
           <button key={tab.id} onClick={() => setActiveTab(tab.id)}
             className={`flex items-center gap-1.5 px-4 py-2.5 text-[11px] font-mono uppercase tracking-wider transition-all border-b-2 ${
