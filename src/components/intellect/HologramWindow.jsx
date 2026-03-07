@@ -94,34 +94,34 @@ const HologramWindow = React.memo(({ id, title, icon: Icon, children, position, 
               {onSendToScreen && (
                 <div className="relative">
                   <Button size="icon" variant="ghost" title="Send to screen" onClick={() => setShowScreenMenu(s => !s)}
-                    className="h-7 w-7 sm:h-8 sm:w-8 text-violet-400 hover:text-violet-300 hover:bg-violet-500/20 transition-all">
-                    <ExternalLink className="w-3 h-3 sm:w-4 sm:h-4" />
+                    className="h-6 w-6 text-orange-400 hover:text-orange-300 transition-all" style={{ fontSize: '10px' }}>
+                    <ExternalLink className="w-3 h-3" />
                   </Button>
                   {showScreenMenu && (
-                    <div className="absolute right-0 top-9 z-[9999] bg-slate-900 border border-violet-500/40 rounded-xl shadow-xl min-w-[180px] py-1">
-                      <p className="text-slate-500 text-[10px] px-3 pt-1 pb-0.5 uppercase tracking-wide">Send to screen</p>
+                    <div className="absolute right-0 top-7 z-[9999] border-2 shadow-xl min-w-[160px] py-1 font-mono" style={{ borderColor: 'rgba(6, 182, 212, 0.6)', background: 'rgba(15,23,42,0.95)' }}>
+                      <p className="text-cyan-400 text-[9px] px-2 pt-1 pb-0.5 uppercase tracking-wider">Send</p>
                       {onSendToScreen.screens.map((s, i) => (
                         <button key={i} onClick={() => { onSendToScreen.send(s, windowType); setShowScreenMenu(false); }}
-                          className="flex items-center gap-2 w-full px-3 py-2 text-xs text-slate-300 hover:bg-violet-500/20 hover:text-white transition-colors">
-                          <Monitor className="w-3.5 h-3.5 text-violet-400" />
-                          {s.label}
+                          className="flex items-center gap-1.5 w-full px-2 py-1 text-[9px] text-cyan-300 hover:text-white transition-colors" style={{ background: 'rgba(6, 182, 212, 0.08)' }}>
+                          <Monitor className="w-3 h-3 text-cyan-400" />
+                          <span>{s.label}</span>
                         </button>
                       ))}
                       {onSendToScreen.screens.length === 0 && (
-                        <p className="text-slate-600 text-xs px-3 py-2">No Hologram Desktops open</p>
+                        <p className="text-slate-500 text-[8px] px-2 py-1">No screens</p>
                       )}
                     </div>
                   )}
-                </div>
-              )}
-              <Button size="icon" variant="ghost" onClick={onMinimize}
-                className="h-7 w-7 sm:h-8 sm:w-8 text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/20 transition-all">
-                <Minimize2 className="w-3 h-3 sm:w-4 sm:h-4" />
-              </Button>
-              <Button size="icon" variant="ghost" onClick={onClose}
-                className="h-7 w-7 sm:h-8 sm:w-8 text-red-400 hover:text-red-300 hover:bg-red-500/20 transition-all">
-                <X className="w-3 h-3 sm:w-4 sm:h-4" />
-              </Button>
+                  </div>
+                  )}
+                  <Button size="icon" variant="ghost" onClick={onMinimize}
+                  className="h-6 w-6 text-cyan-400 hover:text-cyan-300 transition-all">
+                  <Minimize2 className="w-3 h-3" />
+                  </Button>
+                  <Button size="icon" variant="ghost" onClick={onClose}
+                  className="h-6 w-6 text-red-400 hover:text-red-300 transition-all">
+                  <X className="w-3 h-3" />
+                  </Button>
             </div>
           </div>
           <div className="flex-1 overflow-hidden min-h-0 bg-slate-950">
