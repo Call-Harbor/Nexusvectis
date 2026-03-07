@@ -469,6 +469,16 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
     if (!input.trim()) return;
     const currentCommand = input;
 
+    // H.A.R.B.O.R App Builder detection
+    const harborAppMatch = currentCommand.match(/(?:harbor\s+app|build\s+(?:an?\s+)?app|create\s+(?:an?\s+)?app|app\s+builder|lav\s+(?:en?\s+)?app|byg\s+(?:en?\s+)?app|h\.?a\.?r\.?b\.?o\.?r\s+builder)/i);
+    if (harborAppMatch) {
+      setMessages(prev => [...prev, { role: "user", content: currentCommand }]);
+      setInput("");
+      openWindow('harbor_app_builder', { x: 60, y: 50 });
+      setMessages(prev => [...prev, { role: "system", content: "⚡ H.A.R.B.O.R App Builder activated — Describe any app and AI will code it live with your organisation's data" }]);
+      return;
+    }
+
     // Vehicle builder / simulator detection
     const builderMatch = currentCommand.match(/(?:byg\s+(?:en?\s+)?(?:lastbil|skib|fly|tog|k.retøj)|transport(?:bygger|simulator)|simulator|brændstof(?:beregn|simuler)|co2\s+beregn|simuler\s+(?:tur|rute|transport|forbrug)|beregn\s+(?:brændstof|forbrug|co2)|konfigurer\s+(?:lastbil|skib|fly|tog)|build\s+(?:truck|ship|aircraft|train)|vehicle\s+builder|vehicle\s+simulator)/i);
     if (builderMatch) {
