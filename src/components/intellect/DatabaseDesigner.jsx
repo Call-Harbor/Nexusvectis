@@ -28,27 +28,30 @@ export default function DatabaseDesigner({ entities, onEntitiesChange }) {
 
   const addField = (entityId) => {
     const entity = entities.find(e => e.id === entityId);
+    if (!entity) return;
     const updatedEntity = {
       ...entity,
-      fields: [...entity.fields, { id: Date.now(), name: "field", type: "string", required: false }]
+      fields: [...(entity.fields || []), { id: Date.now(), name: "field", type: "string", required: false }]
     };
     onEntitiesChange(entities.map(e => e.id === entityId ? updatedEntity : e));
   };
 
   const updateField = (entityId, fieldId, updates) => {
     const entity = entities.find(e => e.id === entityId);
+    if (!entity) return;
     const updatedEntity = {
       ...entity,
-      fields: entity.fields.map(f => f.id === fieldId ? { ...f, ...updates } : f)
+      fields: (entity.fields || []).map(f => f.id === fieldId ? { ...f, ...updates } : f)
     };
     onEntitiesChange(entities.map(e => e.id === entityId ? updatedEntity : e));
   };
 
   const deleteField = (entityId, fieldId) => {
     const entity = entities.find(e => e.id === entityId);
+    if (!entity) return;
     const updatedEntity = {
       ...entity,
-      fields: entity.fields.filter(f => f.id !== fieldId)
+      fields: (entity.fields || []).filter(f => f.id !== fieldId)
     };
     onEntitiesChange(entities.map(e => e.id === entityId ? updatedEntity : e));
   };
