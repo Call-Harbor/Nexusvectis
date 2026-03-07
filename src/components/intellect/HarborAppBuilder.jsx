@@ -444,18 +444,51 @@ Return ONLY raw JavaScript code. No \`\`\`js markers. No explanation text.`,
   const isPublished = savedApps.find(a => a.id === currentSavedId)?.published_to_store;
 
   return (
-    <div className="flex flex-col h-full w-full bg-slate-950 text-white overflow-hidden">
-      {showPublishModal && (
-        <PublishModal
-          appMeta={appMeta}
-          onConfirm={handlePublishToStore}
-          onCancel={() => setShowPublishModal(false)}
-          saving={publishing}
-        />
-      )}
+    <div className="relative w-full h-full bg-black overflow-hidden">
+      {/* Animated Grid Background */}
+      <motion.div 
+        className="absolute inset-0 opacity-10"
+        animate={{ backgroundPosition: ['0% 0%', '100% 100%'] }}
+        transition={{ duration: 20, repeat: Infinity, repeatType: 'reverse' }}
+        style={{
+          backgroundImage: 'linear-gradient(0deg, #06b6d4 1px, transparent 1px), linear-gradient(90deg, #06b6d4 1px, transparent 1px)',
+          backgroundSize: '50px 50px',
+        }}
+      />
 
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-cyan-500/20 bg-slate-900/80 flex-shrink-0">
+      {/* Floating Orbs */}
+      <motion.div
+        className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl"
+        animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
+        transition={{ duration: 8, repeat: Infinity }}
+      />
+      <motion.div
+        className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-violet-500/20 rounded-full blur-3xl"
+        animate={{ scale: [1.2, 1, 1.2], opacity: [0.3, 0.5, 0.3] }}
+        transition={{ duration: 10, repeat: Infinity }}
+      />
+
+      {/* Scanning Lines */}
+      <motion.div
+        className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-500 to-transparent"
+        animate={{ y: ['0%', '100%'] }}
+        transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
+        style={{ opacity: 0.3 }}
+      />
+
+      {/* Content */}
+      <div className="relative z-10 flex flex-col h-full w-full text-white overflow-hidden">
+        {showPublishModal && (
+          <PublishModal
+            appMeta={appMeta}
+            onConfirm={handlePublishToStore}
+            onCancel={() => setShowPublishModal(false)}
+            saving={publishing}
+          />
+        )}
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-cyan-500/20 bg-slate-950/40 backdrop-blur-xl flex-shrink-0">
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-cyan-500 to-violet-600 flex items-center justify-center">
             <Cpu className="w-4 h-4 text-white" />
