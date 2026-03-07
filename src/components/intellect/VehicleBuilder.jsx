@@ -513,9 +513,9 @@ function StepParameters({ config, onChange }) {
 
       {/* Season */}
       <div>
-        <label className="text-slate-300 text-sm font-medium block mb-2">Årstid</label>
+        <label className="text-slate-300 text-sm font-medium block mb-2">Season</label>
         <div className="grid grid-cols-4 gap-1.5">
-          {[{id:"spring",label:"Forår",emoji:"🌸"},{id:"summer",label:"Sommer",emoji:"☀️"},{id:"autumn",label:"Efterår",emoji:"🍂"},{id:"winter",label:"Vinter",emoji:"❄️"}].map(s => (
+          {[{id:"spring",label:"Spring",emoji:"🌸"},{id:"summer",label:"Summer",emoji:"☀️"},{id:"autumn",label:"Autumn",emoji:"🍂"},{id:"winter",label:"Winter",emoji:"❄️"}].map(s => (
             <button key={s.id} onClick={() => onChange({ season: s.id })} className="p-2 rounded-lg border text-center transition-all"
               style={{ background: config.season===s.id?`${meta?.color}20`:"rgba(30,41,59,0.8)", borderColor: config.season===s.id?meta?.color:"rgba(100,116,139,0.3)" }}>
               <div>{s.emoji}</div>
