@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area, RadarChart, Radar, PolarGrid, PolarAngleAxis } from 'recharts';
 import { base44 } from '@/api/base44Client';
 import AdvancedModelMonitoring from './AdvancedModelMonitoring';
+import { useQuery } from '@tanstack/react-query';
 
 // HARBOR scanning line animation
 const ScanLine = () => (
