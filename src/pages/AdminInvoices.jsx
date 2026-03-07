@@ -105,6 +105,7 @@ export default function AdminInvoices() {
   }
 
   return (
+    <AdminLayout currentPage="AdminInvoices">
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6">
       <div className="max-w-7xl mx-auto">
         <div className="mb-6">
