@@ -701,7 +701,49 @@ Return ONLY raw JavaScript code. No \`\`\`js markers. No explanation text.`,
           {activeTab === "builder" && (
             <motion.div key="builder" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="h-full">
 
-              {/* STEP: IDEA */}
+              {/* STEP: DESIGN */}
+          {step === "design" && (
+            <motion.div key="design" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="h-full flex flex-col">
+              {/* Design tabs */}
+              <div className="flex border-b border-cyan-500/20 flex-shrink-0 bg-slate-950/60">
+                {[
+                  { id: "pages", label: "Pages", icon: LayoutGrid },
+                  { id: "database", label: "Data Model", icon: Database },
+                  { id: "integrations", label: "APIs", icon: Globe },
+                ].map(tab => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setDesignTab(tab.id)}
+                    className={`flex items-center gap-1.5 px-4 py-2.5 text-[11px] font-mono uppercase tracking-widest border-b-2 font-bold transition-all ${
+                      designTab === tab.id
+                        ? "border-emerald-500 text-emerald-400 bg-emerald-500/15"
+                        : "border-transparent text-slate-500 hover:text-slate-300"
+                    }`}
+                  >
+                    <tab.icon className="w-3.5 h-3.5" />
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Design panels */}
+              <div className="flex-1 overflow-hidden">
+                {designTab === "pages" && <MultiPageAppBuilder pages={pages} onPagesChange={setPages} entities={entities} integrations={integrations} />}
+                {designTab === "database" && <DatabaseDesigner entities={entities} onEntitiesChange={setEntities} />}
+                {designTab === "integrations" && <APIIntegrationsPanel integrations={integrations} onIntegrationsChange={setIntegrations} />}
+              </div>
+
+              {/* Build button */}
+              <div className="flex-shrink-0 p-4 border-t border-slate-800/60 bg-slate-950/80 flex gap-2">
+                <Button onClick={() => setStep("idea")} variant="outline" className="flex-1">Back</Button>
+                <Button onClick={handleBuildFromDesign} className="flex-1 bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 border-0 font-bold">
+                  <Sparkles className="w-4 h-4 mr-2" />BUILD APP
+                </Button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* STEP: IDEA */}
               {step === "idea" && (
                 <div className="h-full flex flex-col p-4 gap-4 overflow-y-auto">
                   <div className="flex flex-wrap gap-2">
