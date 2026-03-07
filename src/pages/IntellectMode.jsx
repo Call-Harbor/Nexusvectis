@@ -468,6 +468,16 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
     if (!input.trim()) return;
     const currentCommand = input;
 
+    // Vehicle builder / simulator detection
+    const builderMatch = currentCommand.match(/(?:byg\s+(?:en?\s+)?(?:lastbil|skib|fly|tog|k.retøj)|transport(?:bygger|simulator)|simulator|brændstof(?:beregn|simuler)|co2\s+beregn|simuler\s+(?:tur|rute|transport|forbrug)|beregn\s+(?:brændstof|forbrug|co2)|konfigurer\s+(?:lastbil|skib|fly|tog)|build\s+(?:truck|ship|aircraft|train)|vehicle\s+builder|vehicle\s+simulator)/i);
+    if (builderMatch) {
+      setMessages(prev => [...prev, { role: "user", content: currentCommand }]);
+      setInput("");
+      openWindow('vehicle_builder', { x: 80, y: 60 });
+      setMessages(prev => [...prev, { role: "system", content: "🔧 Transportbygger & Simulator åbnet — Konfigurer dit køretøj trin for trin og kør avanceret brændstof- og CO₂-simulering" }]);
+      return;
+    }
+
     // 3D model viewer detection
     const viewer3DMatch = currentCommand.match(/(?:vis\s+3d|3d\s+model|3d\s+viewer|show\s+3d|fleet\s+3d|lastbil\s+3d|truck\s+3d|skib\s+3d|drone\s+3d|fly\s+3d|vis\s+k.retøj|vis\s+lastbil|vis\s+skib|volvo|scania|mercedes\s+actros|man\s+tgx|daf\s+xf|containerskib|tankskib|cargo\s+drone|fragtfly)/i);
     if (viewer3DMatch) {
