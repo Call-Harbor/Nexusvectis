@@ -6,11 +6,14 @@ import {
   Lightbulb, Package, Truck, Route, AlertTriangle, Users, FileText,
   BarChart3, Zap, CheckCircle2, Loader2, Terminal, Eye, Copy, Settings2,
   Wrench, Activity, Globe, Database, Save, Store, Trash2, Download,
-  FolderOpen, Upload, Plus
+  FolderOpen, Upload, Plus, LayoutGrid
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import DatabaseDesigner from "./DatabaseDesigner";
+import APIIntegrationsPanel from "./APIIntegrationsPanel";
+import MultiPageAppBuilder from "./MultiPageAppBuilder";
 
 
 // --- Live App Sandbox ---
