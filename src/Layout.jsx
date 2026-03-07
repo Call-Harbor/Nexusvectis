@@ -115,13 +115,12 @@ export default function Layout({ children, currentPageName }) {
       {/* Sidebar */}
       {!hideNav && (
       <aside className="fixed left-0 top-0 h-full w-64 backdrop-blur-xl z-40 hidden lg:block" style={{ background: 'linear-gradient(180deg, rgba(15,23,42,0.9) 0%, rgba(10,10,30,0.92) 100%)', borderRight: '2px solid rgba(6,182,212,0.3)' }}>
-        <div className="p-6">
-          <Link to={createPageUrl("Dashboard")} className="flex items-center gap-3">
-            <img 
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/697e930c62bf3e3832b34edb/bc9d40ccc_FullLogo_Transparent1.png" 
-              alt="NexusVectis Logo" 
-              className="h-32 w-auto"
-            />
+        <div className="p-4 border-b" style={{ borderColor: 'rgba(6,182,212,0.4)' }}>
+          <Link to={createPageUrl("Dashboard")} className="flex items-center gap-2">
+            <div className="w-8 h-8 flex items-center justify-center hologram-border" style={{ background: 'rgba(6,182,212,0.1)' }}>
+              <span className="text-xs font-bold hologram-text">[•]</span>
+            </div>
+            <span className="text-xs font-mono font-bold hologram-text uppercase tracking-widest">NEXUS</span>
           </Link>
         </div>
 
