@@ -942,7 +942,7 @@ export default function VehicleBuilder({ onClose }) {
         </Button>
         {simRan && step===3 && (
           <Button variant="ghost" onClick={() => { setSimRan(false); setStep(2); }} className="text-slate-400 hover:text-amber-400 text-xs gap-1.5">
-            <RotateCcw className="w-3 h-3" /> Juster parametre
+            <RotateCcw className="w-3 h-3" /> Adjust parameters
           </Button>
         )}
         {step < 2 && (
