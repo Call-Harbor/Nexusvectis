@@ -417,8 +417,8 @@ function StepSelectAttachment({ config, onChange }) {
               <div className="flex-1">
                 <p className="text-white font-semibold text-sm">{att.label}</p>
                 <p className="text-slate-400 text-xs">{att.desc}</p>
-                {att.extraPower && <Badge className="mt-1 text-[10px] bg-amber-500/20 text-amber-400 border-amber-500/40">+{att.extraPower}% energiforbrug</Badge>}
-                <p className="text-slate-500 text-[10px] mt-0.5 font-mono">Luftmodstandsmod: ×{att.dragMod}</p>
+                {att.extraPower && <Badge className="mt-1 text-[10px] bg-amber-500/20 text-amber-400 border-amber-500/40">+{att.extraPower}% energy consumption</Badge>}
+                <p className="text-slate-500 text-[10px] mt-0.5 font-mono">Aero drag mod: ×{att.dragMod}</p>
               </div>
               {att.weight > 0 && <span className="text-slate-500 text-xs">{(att.weight/1000).toFixed(1)}t tara</span>}
               {sel && <CheckCircle2 className="w-4 h-4 flex-shrink-0" style={{ color: meta?.color }} />}
