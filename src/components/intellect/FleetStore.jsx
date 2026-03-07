@@ -268,23 +268,16 @@ export default function FleetStore({ orgId, onInstall, installedIds = [], onClos
 
   const handleInstall = async (app) => {
     setInstalling(app.id);
-    await base44.entities.HarborApp.create({
-      organization_id: orgId,
-      name: app.name,
-      description: app.description,
-      prompt: app.prompt,
-      code: app.code,
-      published_to_store: false,
-      category: app.category,
-      icon_emoji: app.icon_emoji,
-      tags: app.tags,
-      created_by_name: app.created_by_name,
-    });
-    await base44.entities.HarborApp.update(app.id, { store_installs: (app.store_installs || 0) + 1 });
-    toast.success(`"${app.name}" deployed to your org!`);
-    onInstall?.();
-    // Update local count
-    setApps(prev => prev.map(a => a.id === app.id ? { ...a, store_installs: (a.store_installs || 0) + 1 } : a));
+    try {
+      // Just increment the install counter and call onInstall with the app ID
+      await base44.entities.HarborApp.update(app.id, { store_installs: (app.store_installs || 0) + 1 });
+      toast.success(`"${app.name}" added to your library!`);
+      onInstall?.(app.id);
+      // Update local count
+      setApps(prev => prev.map(a => a.id === app.id ? { ...a, store_installs: (a.store_installs || 0) + 1 } : a));
+    } catch (err) {
+      toast.error("Failed to add app: " + err.message);
+    }
     setInstalling(null);
   };
 
