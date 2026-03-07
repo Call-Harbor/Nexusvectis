@@ -246,24 +246,43 @@ REQUIREMENTS:
 
     try {
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are H.A.R.B.O.R AI building a React app matching Base44's UX patterns with Jarvis visual style.
+        prompt: `You are H.A.R.B.O.R AI building a complete, fully functional React app.
 
-SCHEMA:
+ENTITIES TO MANAGE:
 ${entityDefs}
 
-PAGES:
+PAGES TO CREATE:
 ${pageDefs}
 
 BUILD REQUIREMENTS:
-1. Export function GeneratedApp({ orgId, vehicles, routes, shipments, alerts, customers, currentUser })
-2. Dark theme: bg-slate-950, borders cyan-500/20, text slate-300
-3. Sidebar layout with left nav
-4. CRUD operations on entities
-5. Real-time data binding
-6. Jarvis aesthetic: font-mono, tracking-wider, cyan glows
-7. Use Tailwind + React only
-8. Must work with provided org data
-9. Return ONLY JavaScript code, no markdown`,
+1. Export: function GeneratedApp({ orgId, vehicles, routes, shipments, alerts, customers, currentUser }) { return (...) }
+2. Dark Jarvis theme: bg-slate-950, text-slate-300, borders cyan-500/20, cyan glows
+3. Include useState for data management
+4. Create a sidebar with navigation between pages
+5. For each page, create FULL UI with:
+   - Headers with titles
+   - Data display (list/grid/cards)
+   - Add/Edit/Delete forms with input fields
+   - Action buttons
+   - Status indicators
+6. Sample data: Use hardcoded demo data if no props available
+7. Use only Tailwind CSS + React - NO external libraries
+8. Every page must have visible content and controls
+9. Return ONLY the complete working JavaScript code, no markdown, no \`\`\`
+
+EXAMPLE STRUCTURE:
+function GeneratedApp(props) {
+  const [data, setData] = useState([...]);
+  return (
+    <div className="min-h-screen bg-slate-950 text-white">
+      <header>...</header>
+      <div className="flex">
+        <nav>...</nav>
+        <main>...</main>
+      </div>
+    </div>
+  );
+}`,
         response_json_schema: null
       });
 
