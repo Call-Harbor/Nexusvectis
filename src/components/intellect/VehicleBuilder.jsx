@@ -498,9 +498,9 @@ function StepParameters({ config, onChange }) {
 
       {/* Driver Behavior */}
       <div>
-        <label className="text-slate-300 text-sm font-medium block mb-2">Kørerstil / operationsstil</label>
+        <label className="text-slate-300 text-sm font-medium block mb-2">Driving style / operation mode</label>
         <div className="grid grid-cols-4 gap-1.5">
-          {[{id:"eco",label:"Eco",emoji:"🌱",desc:"-12% fuel"},{id:"optimal",label:"Optimal",emoji:"⚡",desc:"-8% fuel"},{id:"normal",label:"Normal",emoji:"🔄",desc:"baseline"},{id:"aggressive",label:"Aggressiv",emoji:"🔥",desc:"+18% fuel"}].map(d => (
+          {[{id:"eco",label:"Eco",emoji:"🌱",desc:"-12% fuel"},{id:"optimal",label:"Optimal",emoji:"⚡",desc:"-8% fuel"},{id:"normal",label:"Normal",emoji:"🔄",desc:"baseline"},{id:"aggressive",label:"Aggressive",emoji:"🔥",desc:"+18% fuel"}].map(d => (
             <button key={d.id} onClick={() => onChange({ driverBehavior: d.id })} className="p-2 rounded-lg border text-center transition-all"
               style={{ background: config.driverBehavior===d.id?`${meta?.color}20`:"rgba(30,41,59,0.8)", borderColor: config.driverBehavior===d.id?meta?.color:"rgba(100,116,139,0.3)" }}>
               <div className="text-base">{d.emoji}</div>
