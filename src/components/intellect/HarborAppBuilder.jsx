@@ -252,8 +252,9 @@ function PublishModal({ appMeta, onConfirm, onCancel, saving }) {
 
 // --- Main Component ---
 export default function HarborAppBuilder({ onClose, vehicles = [], routes = [], shipments = [], alerts = [], customers = [], currentUser, orgId, installedAppIds = new Set(), onInstall }) {
-  const [step, setStep] = useState("idea"); // idea | building | preview
+  const [step, setStep] = useState("idea"); // idea | design | building | preview
   const [activeTab, setActiveTab] = useState("builder"); // builder | myapps
+  const [designTab, setDesignTab] = useState("pages"); // pages | database | integrations
   const [prompt, setPrompt] = useState("");
   const [generatedCode, setGeneratedCode] = useState("");
   const [buildLog, setBuildLog] = useState([]);
@@ -268,6 +269,9 @@ export default function HarborAppBuilder({ onClose, vehicles = [], routes = [], 
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [showPublishModal, setShowPublishModal] = useState(false);
+  const [pages, setPages] = useState([]);
+  const [entities, setEntities] = useState([]);
+  const [integrations, setIntegrations] = useState([]);
   const promptRef = useRef(null);
 
   useEffect(() => {
