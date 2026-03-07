@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
 Deno.serve(async (req) => {
   try {
@@ -11,43 +11,14 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    // Route to appropriate email based on subject
-    const emailMap = {
-      'general': 'ai@harborvision.dev',
-      'enterprise': 'enterprise@harborvision.dev',
-      'partnership': 'sales@harborvision.dev',
-      'support': 'support@harborvision.dev'
-    };
-
-    const recipientEmail = emailMap[subject] || 'ai@harborvision.dev';
-
-    // Send email to support team
-    await base44.integrations.Core.SendEmail({
-      to: recipientEmail,
-      subject: `New Contact Form Submission: ${subject}`,
-      body: `
-New message from: ${name}
-Email: ${email}
-${company ? `Company: ${company}` : ''}
-Subject: ${subject}
-
-Message:
-${message}
-      `
-    });
-
-    // Send confirmation email to user
-    await base44.integrations.Core.SendEmail({
-      to: email,
-      subject: 'We received your message',
-      body: `
-Hi ${name},
-
-Thank you for reaching out to NexusVectis. We've received your message and will get back to you within 24 hours.
-
-Best regards,
-The NexusVectis Team
-      `
+    // Save contact message to database
+    await base44.asServiceRole.entities.ContactMessage.create({
+      name,
+      email,
+      company: company || '',
+      subject: subject || 'general',
+      message,
+      status: 'new'
     });
 
     return Response.json({ success: true, message: 'Message sent successfully' });
