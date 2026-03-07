@@ -246,7 +246,7 @@ REQUIREMENTS:
 
     try {
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are H.A.R.B.O.R AI building a complete, fully functional React app.
+        prompt: `You are H.A.R.B.O.R AI building premium, production-grade React applications with world-class UI/UX.
 
 ENTITIES TO MANAGE:
 ${entityDefs}
@@ -254,35 +254,43 @@ ${entityDefs}
 PAGES TO CREATE:
 ${pageDefs}
 
-BUILD REQUIREMENTS:
+DESIGN REQUIREMENTS:
 1. Export: function GeneratedApp({ orgId, vehicles, routes, shipments, alerts, customers, currentUser }) { return (...) }
-2. Dark Jarvis theme: bg-slate-950, text-slate-300, borders cyan-500/20, cyan glows
-3. Include useState for data management
-4. Create a sidebar with navigation between pages
-5. For each page, create FULL UI with:
-   - Headers with titles
-   - Data display (list/grid/cards)
-   - Add/Edit/Delete forms with input fields
-   - Action buttons
-   - Status indicators
-6. Sample data: Use hardcoded demo data if no props available
-7. Use only Tailwind CSS + React - NO external libraries
-8. Every page must have visible content and controls
-9. Return ONLY the complete working JavaScript code, no markdown, no \`\`\`
+2. Premium Dark Theme:
+   - Primary: bg-slate-950 with gradient overlays
+   - Accents: gradient from-cyan-500 to-violet-500
+   - Cards: bg-slate-900/50 with border border-cyan-500/20 and backdrop blur
+   - Text: text-slate-100 for primary, text-slate-400 for secondary
+3. Modern Component Patterns:
+   - Glassmorphism cards (backdrop-blur-xl)
+   - Gradient buttons (from-cyan-600 to-violet-600)
+   - Status badges with colors (emerald, amber, red)
+   - Smooth hover effects and transitions
+   - Icon integration with lucide-react (use common icons like Zap, Star, TrendingUp, etc)
+4. Layout Structure:
+   - Header: bg-slate-900/50 backdrop-blur with gradient accent line
+   - Sidebar: Fixed navigation with active states
+   - Main content: Grid layouts, data tables with proper spacing
+5. Each Page Must Include:
+   - Hero section with gradient background and stats
+   - Search/filter controls
+   - Data grids/cards with professional styling
+   - Modal forms for create/edit with shadow and blur backdrop
+   - Real-time stats cards showing key metrics
+   - Professional forms with proper field styling
+   - Empty states with illustrations/icons
+6. Advanced Features:
+   - Color-coded status indicators (success, warning, error, info)
+   - Animated counters for metrics
+   - Progress bars for capacity/utilization
+   - Tables with sorting/pagination appearance
+   - Smooth transitions on interactions
+7. Use ONLY Tailwind CSS - NO external dependencies
+8. Include react.useState and basic hooks
+9. All forms must be fully functional with visual feedback
+10. Return ONLY complete working JavaScript code, no markdown, no \`\`\`
 
-EXAMPLE STRUCTURE:
-function GeneratedApp(props) {
-  const [data, setData] = useState([...]);
-  return (
-    <div className="min-h-screen bg-slate-950 text-white">
-      <header>...</header>
-      <div className="flex">
-        <nav>...</nav>
-        <main>...</main>
-      </div>
-    </div>
-  );
-}`,
+BUILD A PROFESSIONAL SPA THAT LOOKS LIKE A $10K+ DESIGN!`,
         response_json_schema: null
       });
 
