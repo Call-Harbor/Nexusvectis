@@ -595,7 +595,7 @@ function SimulationResults({ result, config }) {
               {/* Efficiency bar */}
               <div className="p-3 rounded-xl border" style={{ background:`${scoreColor}08`, borderColor:`${scoreColor}25` }}>
                 <div className="flex justify-between mb-1.5">
-                  <span className="text-slate-300 text-xs font-semibold">Driftseffektivitet</span>
+                  <span className="text-slate-300 text-xs font-semibold">Operational Efficiency</span>
                   <span className="font-black text-lg" style={{ color:scoreColor }}>{result.efficiencyScore}/100</span>
                 </div>
                 <div className="w-full h-2.5 bg-slate-800 rounded-full overflow-hidden">
