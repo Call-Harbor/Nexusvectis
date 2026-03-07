@@ -821,14 +821,14 @@ function SimulationResults({ result, config }) {
               {/* Wear & maintenance */}
               {config.vehicleType === "truck" && (
                 <div className="p-3 rounded-xl border border-slate-700/40 bg-slate-900/40">
-                  <p className="text-slate-300 text-xs font-semibold mb-2 flex items-center gap-1"><AlertTriangle className="w-3.5 h-3.5 text-amber-400" /> Slidindeks & vedligeholdelse</p>
+                  <p className="text-slate-300 text-xs font-semibold mb-2 flex items-center gap-1"><AlertTriangle className="w-3.5 h-3.5 text-amber-400" /> Wear Index & Maintenance</p>
                   <div className="flex items-center gap-3">
                     <div className="w-16 h-16 rounded-full flex items-center justify-center border-2" style={{ borderColor: result.wearIndex > 0.7 ? "#ef4444" : result.wearIndex > 0.4 ? "#f59e0b" : "#10b981" }}>
                       <span className="font-black text-lg" style={{ color: result.wearIndex > 0.7 ? "#ef4444" : result.wearIndex > 0.4 ? "#f59e0b" : "#10b981" }}>{result.wearIndex}</span>
                     </div>
                     <div className="text-xs text-slate-400">
-                      <p>Næste service estimeret: <span className="text-white font-bold">{result.nextServiceKm?.toLocaleString()} km</span></p>
-                      <p className="mt-1">Høj motorlast ({result.engineLoad}%) + {config.terrain} terræn øger slidhastighed</p>
+                      <p>Next service estimated: <span className="text-white font-bold">{result.nextServiceKm?.toLocaleString()} km</span></p>
+                      <p className="mt-1">High engine load ({result.engineLoad}%) + {config.terrain} terrain increases wear rate</p>
                     </div>
                   </div>
                 </div>
