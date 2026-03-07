@@ -771,7 +771,7 @@ function SimulationResults({ result, config }) {
                 );
               })}
               <div className="p-3 rounded-xl border-2 flex items-center justify-between" style={{ borderColor:meta.color, background:`${meta.color}08` }}>
-                <p className="text-white font-bold">Total</p>
+                <p className="text-white font-bold">Grand Total</p>
                 <p className="font-black text-xl" style={{ color:meta.color }}>{result.totalCost.toLocaleString()} DKK</p>
               </div>
               <div className="grid grid-cols-2 gap-2 text-xs">
