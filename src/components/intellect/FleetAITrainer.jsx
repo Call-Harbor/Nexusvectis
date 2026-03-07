@@ -67,7 +67,7 @@ export default function FleetAITrainer({ onClose }) {
   const [crawlingIds, setCrawlingIds] = useState(new Set());
   const [aiInsights, setAiInsights] = useState([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [liveAccuracy, setLiveAccuracy] = useState(selectedModel.accuracy);
+  const [liveAccuracy, setLiveAccuracy] = useState(null); // will sync to realAccuracy
   const [savedModels, setSavedModels] = useState([]);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [isSimulating, setIsSimulating] = useState(false);
