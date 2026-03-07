@@ -688,12 +688,12 @@ function SimulationResults({ result, config }) {
                 </div>
               </div>
               <div className="p-3 rounded-xl border border-slate-700/40 bg-slate-900/40">
-                <p className="text-slate-300 text-xs font-semibold mb-2">Nøgletal</p>
+                <p className="text-slate-300 text-xs font-semibold mb-2">Key metrics</p>
                 <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div className="bg-slate-900 rounded p-2"><p className="text-slate-500">Termisk effektivitet</p><p className="text-emerald-400 font-bold text-base">{Math.round((vehicle.specs.thermalEfficiency||0.45)*100)}%</p></div>
-                  <div className="bg-slate-900 rounded p-2"><p className="text-slate-500">Motor BSFC</p><p className="text-amber-400 font-bold text-base">{result.bsfc} g/kWh</p></div>
-                  <div className="bg-slate-900 rounded p-2"><p className="text-slate-500">Energi pr. ton-km</p><p className="text-cyan-400 font-bold text-base">{Math.round(result.totalEnergyMJ/((config.payload/1000)*config.distance)*10)/10} MJ</p></div>
-                  <div className="bg-slate-900 rounded p-2"><p className="text-slate-500">Motorbelastning</p><p className="text-violet-400 font-bold text-base">{result.engineLoad}%</p></div>
+                  <div className="bg-slate-900 rounded p-2"><p className="text-slate-500">Thermal efficiency</p><p className="text-emerald-400 font-bold text-base">{Math.round((vehicle.specs.thermalEfficiency||0.45)*100)}%</p></div>
+                  <div className="bg-slate-900 rounded p-2"><p className="text-slate-500">Engine BSFC</p><p className="text-amber-400 font-bold text-base">{result.bsfc} g/kWh</p></div>
+                  <div className="bg-slate-900 rounded p-2"><p className="text-slate-500">Energy per ton-km</p><p className="text-cyan-400 font-bold text-base">{Math.round(result.totalEnergyMJ/((config.payload/1000)*config.distance)*10)/10} MJ</p></div>
+                  <div className="bg-slate-900 rounded p-2"><p className="text-slate-500">Engine load</p><p className="text-violet-400 font-bold text-base">{result.engineLoad}%</p></div>
                 </div>
               </div>
             </div>
