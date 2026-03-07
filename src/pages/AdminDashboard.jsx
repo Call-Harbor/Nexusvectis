@@ -11,6 +11,7 @@ import {
   Globe, Truck, Warehouse, DollarSign, TrendingUp, AlertCircle,
   Users, Building2, Loader2, ExternalLink, Save, FileText, Mail, CheckCircle2, Clock
 } from "lucide-react";
+import AdminLayout from "@/components/admin/AdminLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
