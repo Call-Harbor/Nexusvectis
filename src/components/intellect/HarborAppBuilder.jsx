@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { useState, useEffect, useRef } from "react";
-import { useState as useStateImport } from "react";
 import { 
   Cpu, Sparkles, Send, Code2, Play, RefreshCw, X, ChevronRight, 
   Lightbulb, Package, Truck, Route, AlertTriangle, Users, FileText,
