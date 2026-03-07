@@ -51,6 +51,7 @@ export const WINDOW_META = {
   fleet_3d_viewer: { title: '🚛 Fleet 3D Viewer', icon: Layers },
   vehicle_builder: { title: '🔧 Transport Builder & Simulator', icon: Layers },
   harbor_app_builder: { title: '⚡ H.A.R.B.O.R App Builder', icon: Cpu },
+  fleet_store: { title: '🛒 Fleet Store', icon: Store },
 };
 
 export function getWindowMeta(type) {
