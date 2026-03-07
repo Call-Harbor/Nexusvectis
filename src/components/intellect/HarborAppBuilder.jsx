@@ -222,7 +222,7 @@ function PublishModal({ appMeta, onConfirm, onCancel, saving }) {
 // --- Main Component ---
 export default function HarborAppBuilder({ onClose, vehicles = [], routes = [], shipments = [], alerts = [], customers = [], currentUser, orgId }) {
   const [step, setStep] = useState("idea"); // idea | building | preview
-  const [activeTab, setActiveTab] = useState("builder"); // builder | myapps | store
+  const [activeTab, setActiveTab] = useState("builder"); // builder | myapps
   const [prompt, setPrompt] = useState("");
   const [generatedCode, setGeneratedCode] = useState("");
   const [buildLog, setBuildLog] = useState([]);
