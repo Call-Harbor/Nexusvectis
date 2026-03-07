@@ -308,7 +308,7 @@ function runAdvancedSimulation(vehicle, vehicleType, attachment, params) {
   const wearIndex = engineLoad * 0.5 + (speedRatio > 1.05 ? 0.3 : 0) + (terrain === "mountains" || terrain === "city" ? 0.2 : 0);
   const nextServiceKm = vehicleType === "truck" ? Math.round(120000 - wearIndex * 20000) : 0;
 
-  const duration = vehicleType === "ship" ? `${(distance/(speed*24)).toFixed(1)} dage` : `${(distance/speed).toFixed(1)} timer`;
+  const duration = vehicleType === "ship" ? `${(distance/(speed*24)).toFixed(1)} days` : `${(distance/speed).toFixed(1)} hrs`;
 
   return {
     // Basics
