@@ -31,6 +31,7 @@ import ParallelTaskProcessor from "@/components/intellect/ParallelTaskProcessor"
 import Fleet3DViewer from "@/components/intellect/Fleet3DViewer";
 import VehicleBuilder from "@/components/intellect/VehicleBuilder";
 import HarborAppBuilder from "@/components/intellect/HarborAppBuilder";
+import FleetStore from "@/components/intellect/FleetStore";
 import FleetAnalysisFormatter from "@/components/intellect/FleetAnalysisFormatter";
 import AdvancedFleetAnalysisHologram from "@/components/intellect/AdvancedFleetAnalysisHologram";
 
