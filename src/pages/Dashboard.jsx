@@ -200,13 +200,13 @@ export default function Dashboard() {
 
               <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 sm:flex-initial">
-                  <TabsList className="bg-slate-800/50 border border-slate-700/50 w-full">
-                    <TabsTrigger value="tracking" className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400 text-xs sm:text-sm flex-1 sm:flex-initial">
+                  <TabsList className="hologram-border w-full" style={{ background: 'rgba(6,182,212,0.05)', borderColor: 'rgba(6,182,212,0.3)' }}>
+                    <TabsTrigger value="tracking" className="text-xs sm:text-sm flex-1 sm:flex-initial data-[state=active]:hologram-border" style={{ borderRadius: '0.375rem' }}>
                       <Satellite className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
                       <span className="hidden sm:inline">Live Tracking</span>
                       <span className="sm:hidden">Tracking</span>
                     </TabsTrigger>
-                    <TabsTrigger value="analytics" className="data-[state=active]:bg-violet-500/20 data-[state=active]:text-violet-400 text-xs sm:text-sm flex-1 sm:flex-initial">
+                    <TabsTrigger value="analytics" className="text-xs sm:text-sm flex-1 sm:flex-initial data-[state=active]:hologram-border" style={{ borderRadius: '0.375rem' }}>
                       <BarChart3 className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
                       <span className="hidden sm:inline">Analytics</span>
                       <span className="sm:hidden">Stats</span>
