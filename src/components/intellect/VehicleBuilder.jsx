@@ -440,13 +440,13 @@ function StepParameters({ config, onChange }) {
 
   return (
     <div className="space-y-5">
-      <h3 className="text-white font-bold text-lg flex items-center gap-2"><Gauge className="w-5 h-5 text-cyan-400" /> Operationsparametre</h3>
+      <h3 className="text-white font-bold text-lg flex items-center gap-2"><Gauge className="w-5 h-5 text-cyan-400" /> Operating Parameters</h3>
 
       {/* Payload */}
       <div>
         <div className="flex justify-between mb-1.5">
-          <label className="text-slate-300 text-sm font-medium">Last</label>
-          <span className="text-white font-bold text-sm">{((config.payload || Math.round(maxP*0.75))/1000).toFixed(1)} t <span className="text-slate-500 text-xs font-normal">({Math.round((config.payload||maxP*0.75)/maxP*100)}% kapacitet)</span></span>
+          <label className="text-slate-300 text-sm font-medium">Payload</label>
+          <span className="text-white font-bold text-sm">{((config.payload || Math.round(maxP*0.75))/1000).toFixed(1)} t <span className="text-slate-500 text-xs font-normal">({Math.round((config.payload||maxP*0.75)/maxP*100)}% capacity)</span></span>
         </div>
         <Slider min={0} max={maxP} step={Math.max(500, Math.round(maxP/400)*100)} value={[config.payload || Math.round(maxP*0.75)]} onValueChange={([v]) => onChange({ payload: v })} />
         <div className="flex justify-between text-[10px] text-slate-500 mt-1"><span>0 t</span><span>Max: {(maxP/1000).toFixed(0)} t</span></div>
@@ -455,7 +455,7 @@ function StepParameters({ config, onChange }) {
       {/* Distance */}
       <div>
         <div className="flex justify-between mb-1.5">
-          <label className="text-slate-300 text-sm font-medium">Rutedistance</label>
+          <label className="text-slate-300 text-sm font-medium">Route distance</label>
           <span className="text-white font-bold text-sm">{(config.distance || 500).toLocaleString()} km</span>
         </div>
         <Slider min={50} max={vt==="ship"?20000:vt==="aircraft"?14000:vt==="train"?5000:3500} step={50} value={[config.distance || 500]} onValueChange={([v]) => onChange({ distance: v })} />
@@ -464,17 +464,17 @@ function StepParameters({ config, onChange }) {
       {/* Speed */}
       <div>
         <div className="flex justify-between mb-1.5">
-          <label className="text-slate-300 text-sm font-medium">Hastighed {vt==="ship"?"(knob)":"(km/t)"}</label>
-          <span className="text-white font-bold text-sm">{config.speed || s.speedKph} <span className="text-slate-500 text-xs">{vt==="ship"?"kn":"km/t"} · maks {s.topSpeed} {vt==="ship"?"kn":"km/t"}</span></span>
+          <label className="text-slate-300 text-sm font-medium">Speed {vt==="ship"?"(knots)":"(km/h)"}</label>
+          <span className="text-white font-bold text-sm">{config.speed || s.speedKph} <span className="text-slate-500 text-xs">{vt==="ship"?"kn":"km/h"} · max {s.topSpeed} {vt==="ship"?"kn":"km/h"}</span></span>
         </div>
         <Slider min={vt==="ship"?5:vt==="aircraft"?600:vt==="train"?30:40} max={vt==="ship"?35:vt==="aircraft"?980:vt==="train"?200:120} step={1} value={[config.speed || s.speedKph]} onValueChange={([v]) => onChange({ speed: v })} />
       </div>
 
       {/* Terrain */}
       <div>
-        <label className="text-slate-300 text-sm font-medium block mb-2">Terræn / Rutetype</label>
+        <label className="text-slate-300 text-sm font-medium block mb-2">Terrain / Route type</label>
         <div className="grid grid-cols-5 gap-1.5">
-          {[{id:"flat",label:"Fladt",emoji:"🛣️"},{id:"hills",label:"Bakker",emoji:"⛰️"},{id:"mountains",label:"Bjerg",emoji:"🏔️"},{id:"city",label:"By",emoji:"🏙️"},{id:"mixed",label:"Blandet",emoji:"🗺️"}].map(t => (
+          {[{id:"flat",label:"Flat",emoji:"🛣️"},{id:"hills",label:"Hills",emoji:"⛰️"},{id:"mountains",label:"Mountains",emoji:"🏔️"},{id:"city",label:"Urban",emoji:"🏙️"},{id:"mixed",label:"Mixed",emoji:"🗺️"}].map(t => (
             <button key={t.id} onClick={() => onChange({ terrain: t.id })} className="p-2 rounded-lg border text-center text-xs transition-all"
               style={{ background: config.terrain===t.id?`${meta?.color}20`:"rgba(30,41,59,0.8)", borderColor: config.terrain===t.id?meta?.color:"rgba(100,116,139,0.3)", color: config.terrain===t.id?"#fff":"#94a3b8" }}>
               <div>{t.emoji}</div><div className="text-[10px] mt-0.5">{t.label}</div>
