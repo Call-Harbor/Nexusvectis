@@ -124,7 +124,7 @@ const HologramWindow = React.memo(({ id, title, icon: Icon, children, position, 
                   </Button>
             </div>
           </div>
-          <div className="flex-1 overflow-hidden min-h-0 bg-slate-950">
+          <div className="flex-1 overflow-hidden min-h-0" style={{ background: 'rgba(10,10,25,0.8)' }}>
             {children}
           </div>
         </div>
