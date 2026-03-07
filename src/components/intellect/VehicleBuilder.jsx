@@ -881,8 +881,8 @@ export default function VehicleBuilder({ onClose }) {
         <div className="flex items-center gap-3">
           {meta && <meta.icon className="w-5 h-5" style={{ color: meta.color }} />}
           <div>
-            <h2 className="text-white font-bold text-sm">Transport Builder & Avanceret Simulator</h2>
-            <p className="text-slate-500 text-xs">{vehicle ? `${vehicle.brand} ${vehicle.model}` : "Vælg et rigtigt køretøj for at starte"}</p>
+            <h2 className="text-white font-bold text-sm">Transport Builder & Advanced Simulator</h2>
+            <p className="text-slate-500 text-xs">{vehicle ? `${vehicle.brand} ${vehicle.model}` : "Select a vehicle to get started"}</p>
           </div>
         </div>
         {onClose && <button onClick={onClose} className="text-slate-400 hover:text-white"><X className="w-4 h-4" /></button>}
