@@ -319,12 +319,18 @@ export default function HarborAppBuilder({ onClose, vehicles = [], routes = [], 
     addLog(`📊 Building ${pages.length} pages with ${entities.length} entities and ${integrations.length} API integrations`, "info");
     setBuildProgress(20);
     await new Promise(r => setTimeout(r, 400));
+    addLog(`🎨 Applying ${appTheme} theme with ${appLayout} layout...`, "info");
+    setBuildProgress(30);
+    await new Promise(r => setTimeout(r, 300));
     addLog("🧠 Generating advanced app structure...", "info");
     setBuildProgress(35);
 
-    // Build advanced app with design specs
     const designContext = `
 ADVANCED APP DESIGN SPECIFICATION:
+
+Theme: ${appTheme} (futuristic, cyberpunk-inspired, advanced UI)
+Layout: ${appLayout}
+Features: ${Object.entries(appFeatures).filter(([,v]) => v).map(([k]) => k).join(", ")}
 
 Pages (${pages.length}):
 ${pages.map(p => `- ${p.name} (${p.route}): ${p.type} page, description: ${p.description}`).join('\n')}
@@ -336,20 +342,40 @@ API Integrations (${integrations.length}):
 ${integrations.map(i => `- ${i.name} (${i.baseUrl}): ${i.methods.map(m => `${m.method} ${m.path}`).join(', ')}`).join('\n')}
 `;
 
+    const themeStyle = appTheme === "jarvis" ? `
+// Jarvis Theme - Futuristic AI Interface
+const jarvisTheme = {
+  colors: { primary: "#06b6d4", secondary: "#8b5cf6", bg: "#0f172a", accent: "#10b981" },
+  fonts: { mono: "font-mono", heading: "font-black" },
+  effects: { glow: "drop-shadow(0 0 8px rgba(6,182,212,0.4))", blur: "backdrop-blur-xl" }
+};` : "";
+
     const result = await base44.integrations.Core.InvokeLLM({
-      prompt: `You are H.A.R.B.O.R AI — advanced multi-page app builder.
+      prompt: `You are H.A.R.B.O.R AI — advanced app builder with ${appTheme} theme.
+
+${themeStyle}
 
 ${designContext}
 
-Generate a COMPLETE, production-ready React app with React Router that:
-1. Has a main Layout component with navigation between all pages
-2. Each page imports its own components and data hooks
-3. Uses the specified entities and integrations
-4. Fully functional with real organization data
+Generate a COMPLETE, production-ready React app that:
+1. Uses dark futuristic design with cyan/violet accents (${appTheme})
+2. Has proper Layout with ${appLayout} navigation
+3. All pages built with Tailwind + React Router
+4. Real-time data updates and interactions
+5. Professional animations and transitions
+6. Fully functional with actual org data
+${appFeatures.auth ? "7. User authentication checks" : ""}
+${appFeatures.search ? "8. Search/filter functionality on all data pages" : ""}
+${appFeatures.notifications ? "9. Real-time notification system" : ""}
 
-Export: function GeneratedApp({ orgId, vehicles, routes, shipments, alerts, customers, currentUser }) {
+CRITICAL: 
+- Use Tailwind CSS for ALL styling (bg-slate-950, text-white, border-cyan-500, etc)
+- Every component must match the ${appTheme} aesthetic
+- All text must use font-mono tracking-wider for that JARVIS feel
+- Include animated borders, glowing effects, holographic panels
+- Return ONLY functional JavaScript/JSX code, NO markdown
 
-Return ONLY JavaScript code. No markdown, no explanation.`,
+Export: function GeneratedApp({ orgId, vehicles, routes, shipments, alerts, customers, currentUser }) { ... }`,
       response_json_schema: null
     });
 
@@ -361,11 +387,16 @@ Return ONLY JavaScript code. No markdown, no explanation.`,
 
     setGeneratedCode(code);
     setBuildProgress(90);
-    addLog("🎨 Rendering advanced preview...", "success");
+    addLog("🎨 Rendering advanced preview with Jarvis theme...", "success");
     await new Promise(r => setTimeout(r, 400));
-    setAppMeta({ name: pages[0]?.name + " Suite", description: `${pages.length}-page app with ${entities.length} data models`, category: "custom", icon_emoji: "🏢" });
+    setAppMeta({ 
+      name: pages[0]?.name + " Suite", 
+      description: `${pages.length}-page ${appTheme} app with ${entities.length} data models`, 
+      category: "custom", 
+      icon_emoji: "⚡" 
+    });
     setBuildProgress(100);
-    addLog("✅ Advanced app built successfully!", "success");
+    addLog("✅ Advanced app built with Jarvis theme!", "success");
     await new Promise(r => setTimeout(r, 500));
     setStep("preview");
     setIsBuilding(false);
