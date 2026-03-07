@@ -78,7 +78,8 @@ root.render(
 }
 
 export default function HarborAppBuilderV3({ onClose, vehicles = [], routes = [], shipments = [], alerts = [], customers = [], currentUser, orgId, installedAppIds = new Set() }) {
-  const [activeTab, setActiveTab] = useState("entities"); // entities | pages | preview
+  const [activeTab, setActiveTab] = useState("prompt"); // prompt | entities | pages | preview
+  const [userPrompt, setUserPrompt] = useState("");
   const [selectedEntity, setSelectedEntity] = useState(null);
   const [entities, setEntities] = useState([]);
   const [pages, setPages] = useState([]);
@@ -93,6 +94,7 @@ export default function HarborAppBuilderV3({ onClose, vehicles = [], routes = []
   const [saving, setSaving] = useState(false);
   const [showCode, setShowCode] = useState(false);
   const [searchApps, setSearchApps] = useState("");
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   useEffect(() => {
     loadApps();
