@@ -563,16 +563,16 @@ Return ONLY raw JavaScript code. No \`\`\`js markers. No explanation text.`,
             {/* MY APPS TAB */}
             {activeTab === "myapps" && (
               <motion.div key="myapps" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="h-full overflow-y-auto p-6">
-              <MyAppsPanel
-                orgId={orgId}
-                apps={savedApps}
-                loading={loadingApps}
-                onOpen={handleOpenSavedApp}
-                onDelete={handleDeleteApp}
-                onRefresh={loadSavedApps}
-              />
-            </motion.div>
-          )}
+                <MyAppsPanel
+                  orgId={orgId}
+                  apps={savedApps}
+                  loading={loadingApps}
+                  onOpen={handleOpenSavedApp}
+                  onDelete={handleDeleteApp}
+                  onRefresh={loadSavedApps}
+                />
+              </motion.div>
+            )}
 
           {/* BUILDER TAB */}
           {activeTab === "builder" && (
