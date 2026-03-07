@@ -59,23 +59,28 @@ const HologramWindow = React.memo(({ id, title, icon: Icon, children, position, 
       className={isMobile ? "fixed inset-4" : "fixed resize overflow-auto"}
       onPointerDown={handlePointerDown}
     >
-      <div className="rounded-xl border border-cyan-400/40 overflow-hidden h-full flex flex-col relative group" style={{ background: "linear-gradient(135deg, rgba(0,15,30,0.95) 0%, rgba(10,10,30,0.93) 100%)", boxShadow: "0 0 40px rgba(6,182,212,0.2), inset 0 0 40px rgba(6,182,212,0.1), 0 0 80px rgba(6,182,212,0.05)" }}>
-        {/* Holographic scan lines */}
+      <div className="border overflow-hidden h-full flex flex-col relative group" style={{ 
+        borderColor: 'rgba(6, 182, 212, 0.6)',
+        borderWidth: '2px',
+        background: 'linear-gradient(135deg, rgba(15,23,42,0.95) 0%, rgba(20,20,50,0.93) 100%)',
+        boxShadow: '0 0 30px rgba(6,182,212,0.25), inset 0 0 20px rgba(6,182,212,0.08), 0 0 60px rgba(6,182,212,0.1)',
+      }}>
+        {/* Scan line */}
         <motion.div 
-          className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-400 to-transparent"
-          animate={{ scaleX: [1, 1.1, 1] }}
-          transition={{ duration: 2, repeat: Infinity }}
-          style={{ opacity: 0.6 }}
+          className="absolute top-0 left-0 right-0 h-px"
+          animate={{ opacity: [0.3, 0.8, 0.3] }}
+          transition={{ duration: 3, repeat: Infinity }}
+          style={{ background: 'linear-gradient(90deg, transparent, rgba(6,182,212,0.8), transparent)' }}
         />
 
-        {/* Corner HUD brackets */}
-        <div className="absolute top-2 left-2 w-4 h-4 border-t-2 border-l-2 border-cyan-400/60" />
-        <div className="absolute top-2 right-2 w-4 h-4 border-t-2 border-r-2 border-cyan-400/60" />
-        <div className="absolute bottom-2 left-2 w-4 h-4 border-b-2 border-l-2 border-violet-400/60" />
-        <div className="absolute bottom-2 right-2 w-4 h-4 border-b-2 border-r-2 border-violet-400/60" />
+        {/* Corner brackets - cyan top, amber bottom */}
+        <div className="absolute top-1 left-1 w-3 h-3 border-t-2 border-l-2" style={{ borderColor: 'rgba(6, 182, 212, 0.7)' }} />
+        <div className="absolute top-1 right-1 w-3 h-3 border-t-2 border-r-2" style={{ borderColor: 'rgba(6, 182, 212, 0.7)' }} />
+        <div className="absolute bottom-1 left-1 w-3 h-3 border-b-2 border-l-2" style={{ borderColor: 'rgba(251, 146, 60, 0.7)' }} />
+        <div className="absolute bottom-1 right-1 w-3 h-3 border-b-2 border-r-2" style={{ borderColor: 'rgba(251, 146, 60, 0.7)' }} />
 
-        {/* Glow effect on hover */}
-        <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" style={{ boxShadow: "inset 0 0 30px rgba(6,182,212,0.15)" }} />
+        {/* Hover glow */}
+        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" style={{ boxShadow: 'inset 0 0 25px rgba(6,182,212,0.12)' }} />
 
         <div className="relative flex flex-col h-full">
           <div ref={headerRef} className="flex items-center justify-between px-4 py-2.5 border-b border-cyan-500/15 cursor-move touch-none" style={{ background: "rgba(0,0,0,0.3)" }}>
