@@ -708,16 +708,18 @@ Return ONLY raw JavaScript code. No \`\`\`js markers. No explanation text.`,
           {step === "design" && (
             <motion.div key="design" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="h-full flex flex-col">
               {/* Design tabs */}
-              <div className="flex border-b border-cyan-500/20 flex-shrink-0 bg-slate-950/60">
+              <div className="flex border-b border-cyan-500/20 flex-shrink-0 bg-slate-950/60 overflow-x-auto">
                 {[
                   { id: "pages", label: "Pages", icon: LayoutGrid },
                   { id: "database", label: "Data Model", icon: Database },
                   { id: "integrations", label: "APIs", icon: Globe },
+                  { id: "styling", label: "Styling & Theme", icon: Settings2 },
+                  { id: "features", label: "Features", icon: Zap },
                 ].map(tab => (
                   <button
                     key={tab.id}
                     onClick={() => setDesignTab(tab.id)}
-                    className={`flex items-center gap-1.5 px-4 py-2.5 text-[11px] font-mono uppercase tracking-widest border-b-2 font-bold transition-all ${
+                    className={`flex items-center gap-1.5 px-4 py-2.5 text-[11px] font-mono uppercase tracking-widest border-b-2 font-bold transition-all flex-shrink-0 ${
                       designTab === tab.id
                         ? "border-emerald-500 text-emerald-400 bg-emerald-500/15"
                         : "border-transparent text-slate-500 hover:text-slate-300"
