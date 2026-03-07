@@ -252,9 +252,9 @@ function PublishModal({ appMeta, onConfirm, onCancel, saving }) {
 
 // --- Main Component ---
 export default function HarborAppBuilder({ onClose, vehicles = [], routes = [], shipments = [], alerts = [], customers = [], currentUser, orgId, installedAppIds = new Set(), onInstall }) {
-  const [step, setStep] = useState("idea"); // idea | design | building | preview
-  const [activeTab, setActiveTab] = useState("builder"); // builder | myapps
-  const [designTab, setDesignTab] = useState("pages"); // pages | database | integrations
+  const [activeSection, setActiveSection] = useState("entities"); // entities | pages | preview | settings
+  const [selectedEntity, setSelectedEntity] = useState(null);
+  const [isBuilding, setIsBuilding] = useState(false);
   const [prompt, setPrompt] = useState("");
   const [generatedCode, setGeneratedCode] = useState("");
   const [buildLog, setBuildLog] = useState([]);
