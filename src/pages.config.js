@@ -52,6 +52,7 @@ import APIDocumentation from './pages/APIDocumentation';
 import APIMetrics from './pages/APIMetrics';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminInvoices from './pages/AdminInvoices';
+import AdminMessages from './pages/AdminMessages';
 import AdminMonitor from './pages/AdminMonitor';
 import Alerts from './pages/Alerts';
 import AnalyticsPage from './pages/AnalyticsPage';
@@ -100,7 +101,6 @@ import Shipments from './pages/Shipments';
 import TermsOfService from './pages/TermsOfService';
 import UserManagement from './pages/UserManagement';
 import WarehouseAutomation from './pages/WarehouseAutomation';
-import AdminMessages from './pages/AdminMessages';
 import __Layout from './Layout.jsx';
 
 
@@ -110,6 +110,7 @@ export const PAGES = {
     "APIMetrics": APIMetrics,
     "AdminDashboard": AdminDashboard,
     "AdminInvoices": AdminInvoices,
+    "AdminMessages": AdminMessages,
     "AdminMonitor": AdminMonitor,
     "Alerts": Alerts,
     "AnalyticsPage": AnalyticsPage,
@@ -158,7 +159,6 @@ export const PAGES = {
     "TermsOfService": TermsOfService,
     "UserManagement": UserManagement,
     "WarehouseAutomation": WarehouseAutomation,
-    "AdminMessages": AdminMessages,
 }
 
 export const pagesConfig = {
