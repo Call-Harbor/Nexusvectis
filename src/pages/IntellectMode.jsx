@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -46,7 +47,8 @@ import VideoCallHologram from "@/components/intellect/VideoCallHologram";
 import ParallelTaskProcessor from "@/components/intellect/ParallelTaskProcessor";
 import ProcessThinkingTerminal from "@/components/intellect/ProcessThinkingTerminal";
 import AICoach from "@/components/intellect/AICoach";
-import MessageFormatter from "@/components/intellect/MessageFormatter";
+import MessageComposer from "@/components/intellect/MessageComposer";
+import ContentComposer from "@/components/intellect/ContentComposer";
 
 const INITIAL_MESSAGES = [
   { role: "system", content: "⚡ FLEET AI online. World's most advanced logistics intelligence system ready. I can: perform predictive maintenance analysis, forecast demand, optimize routes multi-modally, generate CO2 reports, detect anomalies, assess risks, benchmark performance, and execute any fleet operation. Command me." }
@@ -63,7 +65,7 @@ export default function IntellectMode() {
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [activeWindows, setActiveWindows] = useState([]);
-  const [minimizedWindows, setMinimizedWindows] = useState(new Set());
+  const [minimizedWindows, setMinimizedWindows] = new Set();
   const [commandHistory, setCommandHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [isListening, setIsListening] = useState(false);
@@ -78,7 +80,7 @@ export default function IntellectMode() {
   const [thinkingLogs, setThinkingLogs] = useState([]);
   const [showThinkingTerminal, setShowThinkingTerminal] = useState(false);
   const [processTerminals, setProcessTerminals] = useState([]);
-  const [minimizedProcesses, setMinimizedProcesses] = useState(new Set());
+  const [minimizedProcesses, setMinimizedProcesses] = new Set();
   const [screens, setScreens] = useState([]);
   const [showMultiScreenManager, setShowMultiScreenManager] = useState(false);
   const [multiScreenDismissed, setMultiScreenDismissed] = useState(false);
