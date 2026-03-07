@@ -476,7 +476,7 @@ export default function Layout({ children, currentPageName }) {
             className="fixed inset-0 bg-black/50 z-40 lg:hidden"
             onClick={() => setMobileMenuOpen(false)}
           />
-          <div className="fixed top-16 right-0 bottom-0 w-80 bg-slate-900/95 backdrop-blur-xl border-l border-slate-800/50 z-40 lg:hidden overflow-y-auto">
+          <div className="fixed top-16 right-0 bottom-0 w-80 backdrop-blur-xl z-40 lg:hidden overflow-y-auto" style={{ background: 'linear-gradient(180deg, rgba(15,23,42,0.95) 0%, rgba(10,10,30,0.95) 100%)', borderLeft: '2px solid rgba(6,182,212,0.3)' }}>
             <nav className="p-4 space-y-2">
               {navItems.map((item) => {
                 const isActive = currentPageName === item.page;
