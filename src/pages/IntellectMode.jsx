@@ -217,10 +217,10 @@ export default function IntellectMode() {
      openFleetAITrainer: () => { setShowFleetAITrainer(true); setMessages(prev => [...prev, { role: "system", content: "⚡ HARBOR AI Trainer activated — Train your own AI models and deploy via API" }]); },
      open3DViewer: () => { openWindow('fleet_3d_viewer', { x: 60, y: 50 }); setMessages(prev => [...prev, { role: "system", content: "🚛 Fleet 3D Viewer åbnet — Udforsk realistiske 3D-modeller af lastbiler, skibe, droner og fly" }]); },
      openVehicleBuilder: () => { openWindow('vehicle_builder', { x: 80, y: 60 }); setMessages(prev => [...prev, { role: "system", content: "🔧 Transport Builder & Simulator opened — Configure truck, ship, aircraft or train and run advanced fuel & CO₂ simulations" }]); },
-     openHarborAppBuilder: () => { openWindow('harbor_app_builder', { x: 60, y: 50 }); setMessages(prev => [...prev, { role: "system", content: "⚡ H.A.R.B.O.R App Builder activated — Describe any app and AI will build it live with your org data" }]); },
-   };
-   actionMap[action]?.();
-  }, [openWindow, vehicles, routes, setMessages]);
+     openHarborAppBuilder: () => { openWindow('harbor_app_builder', { x: 60, y: 50 }, { installedAppIds, onInstall: (appId) => setInstalledAppIds(prev => new Set([...prev, appId])) }); setMessages(prev => [...prev, { role: "system", content: "⚡ H.A.R.B.O.R App Builder activated — Describe any app and AI will build it live with your org data" }]); },
+     };
+     actionMap[action]?.();
+     }, [openWindow, vehicles, routes, setMessages, installedAppIds]);
 
   const executePrompt = useCallback((prompt) => {
     pendingPromptRef.current = prompt;
