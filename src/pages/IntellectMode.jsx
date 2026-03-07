@@ -62,7 +62,7 @@ export default function IntellectMode() {
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [activeWindows, setActiveWindows] = useState([]);
-  const [minimizedWindows, setMinimizedWindows] = new Set();
+  const [minimizedWindows, setMinimizedWindows] = useState(new Set());
   const [commandHistory, setCommandHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [isListening, setIsListening] = useState(false);
