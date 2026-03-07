@@ -571,10 +571,10 @@ export default function FleetAITrainer({ onClose }) {
           <TabsContent value="training" className="flex-1 overflow-auto p-4 space-y-4 mt-0">
             {/* Top stat row */}
             <div className="grid grid-cols-4 gap-2">
-              <StatCard label="Accuracy" value={`${liveAccuracy.toFixed(1)}%`} icon={Crosshair} pulse={isTraining} />
-              <StatCard label="Epochs" value="50" icon={GitBranch} color="cyan" />
-              <StatCard label="GPU" value="72%" icon={Cpu} color="cyan" pulse />
-              <StatCard label="Throughput" value="12.5K/s" icon={Radio} />
+              <StatCard label="Accuracy" value={`${isTraining ? liveAccuracy.toFixed(1) : realAccuracy.toFixed(1)}%`} icon={Crosshair} pulse={isTraining} />
+              <StatCard label="AI Commands" value={fleetAIUsages.length.toString()} icon={GitBranch} color="cyan" />
+              <StatCard label="GPU" value={`${gpuUtilization}%`} icon={Cpu} color="cyan" pulse />
+              <StatCard label="Vehicles" value={`${activeVehicles}/${vehicles.length}`} icon={Radio} />
             </div>
 
             {/* Training control */}
