@@ -561,20 +561,30 @@ Return ONLY raw JavaScript code. No \`\`\`js markers. No explanation text.`,
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-cyan-500/20 flex-shrink-0 bg-slate-950/40 backdrop-blur-sm">
+        <div className="flex border-b border-cyan-500/20 flex-shrink-0 bg-slate-950/60 backdrop-blur-sm">
           {[
-            { id: "builder", label: "Builder", icon: Zap },
-            { id: "myapps", label: `My Apps (${savedApps.length})`, icon: FolderOpen },
+            { id: "builder", label: "BUILDER", icon: Zap },
+            { id: "myapps", label: `MY APPS (${savedApps.length})`, icon: FolderOpen },
           ].map(tab => (
-            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-1.5 px-4 py-2.5 text-[11px] font-mono uppercase tracking-widest transition-all border-b-2 ${
+            <motion.button 
+              key={tab.id} 
+              onClick={() => setActiveTab(tab.id)}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.97 }}
+              className={`relative flex items-center gap-1.5 px-4 py-2.5 text-[11px] font-mono uppercase tracking-widest transition-all border-b-2 font-bold ${
                 activeTab === tab.id
-                  ? "border-cyan-500 text-cyan-400 bg-cyan-500/10"
-                  : "border-transparent text-slate-500 hover:text-cyan-400 hover:bg-cyan-500/5"
+                  ? "border-cyan-500 text-cyan-400 bg-cyan-500/15"
+                  : "border-transparent text-slate-500 hover:text-slate-300 hover:bg-slate-800/40"
               }`}>
+              {activeTab === tab.id && (
+                <motion.div
+                  layoutId="activeTab"
+                  className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 bg-cyan-400 rounded-full"
+                />
+              )}
               <tab.icon className="w-3.5 h-3.5" />
               {tab.label}
-            </button>
+            </motion.button>
           ))}
         </div>
 
