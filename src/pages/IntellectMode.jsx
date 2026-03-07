@@ -467,6 +467,16 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
     if (!input.trim()) return;
     const currentCommand = input;
 
+    // 3D model viewer detection
+    const viewer3DMatch = currentCommand.match(/(?:vis\s+3d|3d\s+model|3d\s+viewer|show\s+3d|fleet\s+3d|lastbil\s+3d|truck\s+3d|skib\s+3d|drone\s+3d|fly\s+3d|vis\s+k.retøj|vis\s+lastbil|vis\s+skib|volvo|scania|mercedes\s+actros|man\s+tgx|daf\s+xf|containerskib|tankskib|cargo\s+drone|fragtfly)/i);
+    if (viewer3DMatch) {
+      setMessages(prev => [...prev, { role: "user", content: currentCommand }]);
+      setInput("");
+      openWindow('fleet_3d_viewer', { x: 60, y: 50 });
+      setMessages(prev => [...prev, { role: "system", content: "🚛 Fleet 3D Viewer åbnet — Udforsk realistiske 3D-modeller af lastbiler (Volvo, Scania, Mercedes, MAN, DAF), containerskibe, tankskibe, cargo droner og fragtfly. Klik og træk for at rotere!" }]);
+      return;
+    }
+
     // Image generation detection
     const imageMatch = currentCommand.match(/(?:generer(?:er)?\s+(?:et\s+)?billede(?:\s+af)?[:\s]*|generate\s+(?:an?\s+)?image(?:\s+of)?[:\s]*|lav\s+(?:et\s+)?billede(?:\s+af)?[:\s]*|create\s+(?:an?\s+)?image(?:\s+of)?[:\s]*)(.+)/i);
     if (imageMatch || currentCommand.toLowerCase().match(/^(?:billede|image|generer billede|generate image)$/)) {
