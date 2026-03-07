@@ -605,16 +605,16 @@ function SimulationResults({ result, config }) {
               </div>
               {/* vs industry benchmark */}
               <div className="p-3 rounded-xl border border-slate-700/40 bg-slate-900/40">
-                <p className="text-slate-300 text-xs font-semibold mb-2">Sammenlignet med industri</p>
+                <p className="text-slate-300 text-xs font-semibold mb-2">vs. Industry benchmark</p>
                 <div className="flex items-center gap-3">
                   <div className={`text-xl font-black ${result.vsIndustry < 0 ? "text-emerald-400" : "text-amber-400"}`}>
                     {result.vsIndustry > 0 ? "+" : ""}{result.vsIndustry}%
                   </div>
                   <div className="text-xs text-slate-400">
-                    {result.vsIndustry < -10 ? "✅ Markant bedre end branchegennemsnit" :
-                     result.vsIndustry < 0 ? "✅ Bedre end branchegennemsnit" :
-                     result.vsIndustry < 10 ? "⚠️ På linje med branchegennemsnit" :
-                     "🔴 Dårligere end branchegennemsnit"}
+                    {result.vsIndustry < -10 ? "✅ Significantly better than industry average" :
+                     result.vsIndustry < 0 ? "✅ Better than industry average" :
+                     result.vsIndustry < 10 ? "⚠️ In line with industry average" :
+                     "🔴 Below industry average"}
                   </div>
                 </div>
               </div>
