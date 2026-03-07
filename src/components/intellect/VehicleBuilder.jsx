@@ -806,7 +806,7 @@ function SimulationResults({ result, config }) {
                 </ResponsiveContainer>
               </div>
               <div>
-                <p className="text-slate-300 text-xs font-semibold mb-2">Hastighed langs ruten (km/t)</p>
+                <p className="text-slate-300 text-xs font-semibold mb-2">Speed along route (km/h)</p>
                 <ResponsiveContainer width="100%" height={130}>
                   <AreaChart data={result.timeline}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
