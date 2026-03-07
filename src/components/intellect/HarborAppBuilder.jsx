@@ -624,28 +624,20 @@ Return ONLY raw JavaScript code. No \`\`\`js markers. No explanation text.`,
         )}
 
         {/* Top HUD bar */}
-        <div className="relative flex-shrink-0 flex items-center justify-between px-6 py-3 border-b border-cyan-500/20 bg-slate-950/80 backdrop-blur-xl z-20">
+        <div className="relative flex-shrink-0 flex items-center justify-between px-6 py-3 border-b border-slate-800/50 bg-slate-900/40 backdrop-blur-xl z-20">
           {/* Left: Logo & title */}
           <div className="flex items-center gap-4">
-            <div className="relative">
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-                className="w-8 h-8 rounded-full border-2 border-cyan-500/40 flex items-center justify-center"
-              >
-                <div className="w-4 h-4 rounded-full border border-cyan-400/60 flex items-center justify-center">
-                  <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-                </div>
-              </motion.div>
-              <div className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
-            </div>
+            <img 
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/697e930c62bf3e3832b34edb/bc9d40ccc_FullLogo_Transparent1.png" 
+              alt="Base44 Logo" 
+              className="h-10 w-auto"
+            />
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-cyan-400 font-black tracking-[0.3em] text-sm">H.A.R.B.O.R</span>
-                <span className="text-white font-black tracking-[0.3em] text-sm">BUILDER</span>
-                <div className="px-1.5 py-0.5 rounded bg-cyan-500/20 border border-cyan-500/40 text-[9px] text-cyan-400 tracking-widest">v2.0</div>
+                <span className="text-slate-300 font-semibold tracking-tight text-xs">H.A.R.B.O.R Builder</span>
+                <div className="px-1.5 py-0.5 rounded bg-cyan-500/20 border border-cyan-500/40 text-[9px] text-cyan-400 tracking-widest font-mono">v2.0</div>
               </div>
-              <p className="text-[9px] text-slate-500 tracking-widest">AI-POWERED APP GENERATOR</p>
+              <p className="text-[9px] text-slate-500 tracking-widest font-mono">MULTI-PAGE APP DESIGNER</p>
             </div>
           </div>
         {/* Right: action buttons */}
