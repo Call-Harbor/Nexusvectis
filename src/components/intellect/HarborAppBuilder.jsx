@@ -146,7 +146,7 @@ function CornerBrackets({ color = "border-cyan-500/40" }) {
 }
 
 // --- My Saved Apps Panel ---
-function MyAppsPanel({ orgId, onOpen, onDelete, apps, loading, onRefresh }) {
+function MyAppsPanel({ orgId, onOpen, onDelete, apps, loading, onRefresh, installedAppIds = new Set() }) {
   if (loading) return (
     <div className="flex items-center justify-center h-40 gap-2 text-slate-500">
       <Loader2 className="w-4 h-4 animate-spin" /><span className="text-sm">Loading apps...</span>
@@ -162,32 +162,36 @@ function MyAppsPanel({ orgId, onOpen, onDelete, apps, loading, onRefresh }) {
 
   return (
     <div className="space-y-2">
-      {apps.map(app => (
-        <div key={app.id} className="flex items-center gap-3 p-3 rounded-xl border border-slate-800/60 bg-slate-900/60 hover:border-cyan-500/20 transition-all group">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-slate-800 to-slate-700 border border-slate-700 flex items-center justify-center text-base flex-shrink-0">
-            {app.icon_emoji || "⚡"}
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1.5">
-              <p className="text-xs font-semibold text-white truncate">{app.name}</p>
-              {app.published_to_store && (
-                <Badge className="bg-violet-500/20 text-violet-300 border-violet-500/40 text-[9px] px-1">STORE</Badge>
-              )}
+      {apps.map(app => {
+        const isInstalled = installedAppIds.has(app.id);
+        return (
+          <div key={app.id} className={`flex items-center gap-3 p-3 rounded-xl border transition-all group ${isInstalled ? 'border-emerald-500/40 bg-emerald-950/30 hover:border-emerald-500/60' : 'border-slate-800/60 bg-slate-900/60 hover:border-cyan-500/20'}`}>
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-slate-800 to-slate-700 border border-slate-700 flex items-center justify-center text-base flex-shrink-0">
+              {app.icon_emoji || "⚡"}
             </div>
-            <p className="text-[10px] text-slate-500 truncate">{app.description || app.prompt?.slice(0, 60) + "..."}</p>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1.5">
+                <p className="text-xs font-semibold text-white truncate">{app.name}</p>
+                {isInstalled && <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/40 text-[9px] px-1">INSTALLED</Badge>}
+                {app.published_to_store && (
+                  <Badge className="bg-violet-500/20 text-violet-300 border-violet-500/40 text-[9px] px-1">STORE</Badge>
+                )}
+              </div>
+              <p className="text-[10px] text-slate-500 truncate">{app.description || app.prompt?.slice(0, 60) + "..."}</p>
+            </div>
+            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button onClick={() => onOpen(app)}
+                className="p-1.5 rounded-lg hover:bg-cyan-500/20 text-slate-400 hover:text-cyan-400 transition-all" title="Open">
+                <Play className="w-3.5 h-3.5" />
+              </button>
+              <button onClick={() => onDelete(app)}
+                className="p-1.5 rounded-lg hover:bg-red-500/20 text-slate-400 hover:text-red-400 transition-all" title="Delete">
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            </div>
           </div>
-          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-            <button onClick={() => onOpen(app)}
-              className="p-1.5 rounded-lg hover:bg-cyan-500/20 text-slate-400 hover:text-cyan-400 transition-all" title="Open">
-              <Play className="w-3.5 h-3.5" />
-            </button>
-            <button onClick={() => onDelete(app)}
-              className="p-1.5 rounded-lg hover:bg-red-500/20 text-slate-400 hover:text-red-400 transition-all" title="Delete">
-              <Trash2 className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
