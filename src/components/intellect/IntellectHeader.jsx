@@ -66,6 +66,7 @@ const APP_CATEGORIES = [
     ['fleetai_trainer', Cpu, 'H.A.R.B.O.R Trainer'],
     ['course_ai', GraduationCap, 'Fleet AI Courses'],
     ['parallel_processor', Zap, 'Parallel Processor'],
+    ['vehicle_builder', Calculator, '🔧 Transportbygger & Simulator'],
   ]],
   ['Productivity', [
     ['document_editor', FileText, 'FleetDocs'],
