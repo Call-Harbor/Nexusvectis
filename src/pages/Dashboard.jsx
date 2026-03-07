@@ -287,9 +287,9 @@ export default function Dashboard() {
                   </div>
                   <div className="space-y-2">
                     {shipments.slice(0, 4).map(shipment => (
-                      <div key={shipment.id} className="flex items-center justify-between p-2.5 rounded-lg bg-slate-800/50 hover:bg-slate-800/70 transition-colors">
+                      <div key={shipment.id} className="flex items-center justify-between p-2.5 rounded-lg hologram-border transition-colors" style={{ background: 'rgba(6,182,212,0.05)', borderColor: 'rgba(6,182,212,0.25)' }}>
                         <div className="flex-1 min-w-0">
-                          <p className="text-white text-sm font-medium truncate">{shipment.tracking_number}</p>
+                          <p className="hologram-text text-sm font-medium truncate uppercase tracking-wider">[{shipment.tracking_number}]</p>
                           <p className="text-slate-400 text-xs truncate">{shipment.origin} → {shipment.destination}</p>
                         </div>
                         <Badge className={
