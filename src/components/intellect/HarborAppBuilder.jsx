@@ -555,13 +555,13 @@ Return ONLY raw JavaScript code. No \`\`\`js markers. No explanation text.`,
           ))}
         </div>
 
-      {/* Body */}
-      <div className="flex-1 overflow-hidden">
-        <AnimatePresence mode="wait">
+        {/* Body */}
+        <div className="flex-1 overflow-hidden">
+          <AnimatePresence mode="wait">
 
-          {/* MY APPS TAB */}
-          {activeTab === "myapps" && (
-            <motion.div key="myapps" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="h-full overflow-y-auto p-3">
+            {/* MY APPS TAB */}
+            {activeTab === "myapps" && (
+              <motion.div key="myapps" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="h-full overflow-y-auto p-6">
               <MyAppsPanel
                 orgId={orgId}
                 apps={savedApps}
