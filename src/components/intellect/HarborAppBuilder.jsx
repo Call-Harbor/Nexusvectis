@@ -468,37 +468,25 @@ Return ONLY raw JavaScript code. No \`\`\`js markers. No explanation text.`,
   const isPublished = savedApps.find(a => a.id === currentSavedId)?.published_to_store;
 
   return (
-    <div className="relative w-full h-full bg-black overflow-hidden">
-      {/* Animated Grid Background */}
-      <motion.div 
-        className="absolute inset-0 opacity-10"
-        animate={{ backgroundPosition: ['0% 0%', '100% 100%'] }}
-        transition={{ duration: 20, repeat: Infinity, repeatType: 'reverse' }}
-        style={{
-          backgroundImage: 'linear-gradient(0deg, #06b6d4 1px, transparent 1px), linear-gradient(90deg, #06b6d4 1px, transparent 1px)',
-          backgroundSize: '50px 50px',
-        }}
-      />
-
-      {/* Floating Orbs */}
-      <motion.div
-        className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl"
-        animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
-        transition={{ duration: 8, repeat: Infinity }}
-      />
-      <motion.div
-        className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-violet-500/20 rounded-full blur-3xl"
-        animate={{ scale: [1.2, 1, 1.2], opacity: [0.3, 0.5, 0.3] }}
-        transition={{ duration: 10, repeat: Infinity }}
-      />
-
-      {/* Scanning Lines */}
-      <motion.div
-        className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-500 to-transparent"
-        animate={{ y: ['0%', '100%'] }}
-        transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
-        style={{ opacity: 0.3 }}
-      />
+    <div className="relative w-full h-full bg-slate-950 overflow-hidden flex flex-col font-mono">
+      {/* Animated grid background */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute inset-0"
+          style={{
+            backgroundImage: `
+              linear-gradient(rgba(6,182,212,0.03) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(6,182,212,0.03) 1px, transparent 1px)
+            `,
+            backgroundSize: '40px 40px'
+          }}
+        />
+        {/* Radial glow center */}
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full"
+          style={{ background: "radial-gradient(ellipse, rgba(6,182,212,0.04) 0%, transparent 70%)" }} />
+        {/* Side glow */}
+        <div className="absolute top-0 right-0 w-96 h-96 rounded-full"
+          style={{ background: "radial-gradient(ellipse, rgba(139,92,246,0.06) 0%, transparent 70%)" }} />
+      </div>
 
       {/* Content */}
       <div className="relative z-10 flex flex-col h-full w-full text-white overflow-hidden">
