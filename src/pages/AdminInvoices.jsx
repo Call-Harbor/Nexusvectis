@@ -322,5 +322,6 @@ export default function AdminInvoices() {
         </Card>
       </div>
     </div>
+    </AdminLayout>
   );
 }
