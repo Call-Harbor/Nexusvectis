@@ -244,7 +244,7 @@ function PublishModal({ appMeta, onConfirm, onCancel, saving }) {
 }
 
 // --- Main Component ---
-export default function HarborAppBuilder({ onClose, vehicles = [], routes = [], shipments = [], alerts = [], customers = [], currentUser, orgId }) {
+export default function HarborAppBuilder({ onClose, vehicles = [], routes = [], shipments = [], alerts = [], customers = [], currentUser, orgId, installedAppIds = new Set(), onInstall }) {
   const [step, setStep] = useState("idea"); // idea | building | preview
   const [activeTab, setActiveTab] = useState("builder"); // builder | myapps
   const [prompt, setPrompt] = useState("");
