@@ -645,9 +645,9 @@ function SimulationResults({ result, config }) {
                 <p className="text-slate-300 text-xs font-semibold mb-2">Force breakdown (N)</p>
                 <ResponsiveContainer width="100%" height={140}>
                   <BarChart data={[
-                    { name:"Luftmod.", value:result.aeroDragForce, fill:"#f59e0b" },
-                    { name:"Rullemod.", value:result.rollingForce, fill:"#8b5cf6" },
-                    { name:"Stigmod.", value:result.gradientForce, fill:"#ef4444" },
+                    { name:"Aero drag", value:result.aeroDragForce, fill:"#f59e0b" },
+                    { name:"Rolling", value:result.rollingForce, fill:"#8b5cf6" },
+                    { name:"Grade", value:result.gradientForce, fill:"#ef4444" },
                   ]} margin={{ top:5, right:5, bottom:5, left:5 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
                     <XAxis dataKey="name" stroke="#475569" tick={{ fontSize:10 }} />
