@@ -499,21 +499,31 @@ Return ONLY raw JavaScript code. No \`\`\`js markers. No explanation text.`,
           />
         )}
 
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-cyan-500/20 bg-slate-950/40 backdrop-blur-xl flex-shrink-0">
-        <div className="flex items-center gap-3">
-          <motion.div 
-            animate={{ rotate: 360 }}
-            transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
-            className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-violet-600 flex items-center justify-center border border-cyan-400/50"
-          >
-            <Cpu className="w-4 h-4 text-white" />
-          </motion.div>
-          <div>
-            <h2 className="text-base font-bold text-white font-mono tracking-widest" style={{ textShadow: '0 0 10px rgba(6,182,212,0.5)' }}>⚡ H.A.R.B.O.R APP BUILDER</h2>
-            <p className="text-[10px] text-cyan-400/60 font-mono">AI-POWERED COMPONENT GENERATOR</p>
+        {/* Top HUD bar */}
+        <div className="relative flex-shrink-0 flex items-center justify-between px-6 py-3 border-b border-cyan-500/20 bg-slate-950/80 backdrop-blur-xl z-20">
+          {/* Left: Logo & title */}
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                className="w-8 h-8 rounded-full border-2 border-cyan-500/40 flex items-center justify-center"
+              >
+                <div className="w-4 h-4 rounded-full border border-cyan-400/60 flex items-center justify-center">
+                  <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                </div>
+              </motion.div>
+              <div className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-cyan-400 font-black tracking-[0.3em] text-sm">H.A.R.B.O.R</span>
+                <span className="text-white font-black tracking-[0.3em] text-sm">BUILDER</span>
+                <div className="px-1.5 py-0.5 rounded bg-cyan-500/20 border border-cyan-500/40 text-[9px] text-cyan-400 tracking-widest">v2.0</div>
+              </div>
+              <p className="text-[9px] text-slate-500 tracking-widest">AI-POWERED APP GENERATOR</p>
+            </div>
           </div>
-        </div>
         <div className="flex items-center gap-1.5">
          {step === "preview" && (
            <>
