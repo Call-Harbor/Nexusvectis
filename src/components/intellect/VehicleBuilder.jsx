@@ -761,7 +761,7 @@ function SimulationResults({ result, config }) {
                       </div>
                       <div className="text-right">
                         <p className="text-white font-bold text-sm">{value.toLocaleString()} DKK</p>
-                        <p className="text-slate-500 text-[10px]">{pct}% af total</p>
+                        <p className="text-slate-500 text-[10px]">{pct}% of total</p>
                       </div>
                     </div>
                     <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
