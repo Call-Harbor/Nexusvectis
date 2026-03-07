@@ -316,8 +316,8 @@ export default function Dashboard() {
                       MAINTENANCE
                     </h3>
                     <Link to={createPageUrl("MaintenanceManagement")}>
-                      <Button variant="ghost" size="sm" className="text-violet-400 hover:text-violet-300 text-xs">
-                        View All
+                      <Button size="sm" className="text-orange-300 hover:text-orange-200 text-xs" variant="ghost">
+                        [VIEW ALL]
                         <ArrowRight className="w-3 h-3 ml-1" />
                       </Button>
                     </Link>
