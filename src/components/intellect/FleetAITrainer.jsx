@@ -465,7 +465,7 @@ export default function FleetAITrainer({ onClose }) {
           <div>
             <div className="flex items-center gap-2">
               <span className="text-amber-400 font-bold font-mono text-sm tracking-widest">H.A.R.B.O.R.</span>
-              <span className="text-[10px] font-mono text-amber-500/60 border border-amber-500/30 px-1 rounded">HARBOR AI TRAINER v3.0</span>
+              <span className="text-[10px] font-mono text-amber-500/60 border border-amber-500/30 px-1 rounded">H.A.R.B.O.R TRAINER v3.0</span>
             </div>
             <div className="flex items-center gap-2 mt-0.5">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
