@@ -247,7 +247,8 @@ export default function AdminDashboard() {
   return (
     <AdminLayout currentPage="AdminDashboard">
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6 lg:p-8">
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+      {userLoading && <div className="flex items-center justify-center h-96"><Loader2 className="w-8 h-8 animate-spin text-cyan-400" /></div>}
+      {!userLoading && <><div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl" />
         <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-violet-500/10 rounded-full blur-3xl" />
       </div>

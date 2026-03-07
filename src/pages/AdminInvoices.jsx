@@ -319,6 +319,7 @@ export default function AdminInvoices() {
           </CardContent>
         </Card>
       </div>
+      </>}
     </div>
     </AdminLayout>
   );
