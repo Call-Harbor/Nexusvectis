@@ -415,6 +415,7 @@ export default function WindowContentRenderer({ type, data, vehicles, routes, sh
   if (type === 'fleet_3d_viewer') return <Fleet3DViewer onClose={data?.onClose} initialVehicleId={data?.vehicleId} vehicles={vehicles} />;
   if (type === 'vehicle_builder') return <VehicleBuilder onClose={data?.onClose} />;
   if (type === 'harbor_app_builder') return <HarborAppBuilder onClose={data?.onClose} vehicles={vehicles} routes={routes} shipments={shipments} alerts={alerts} customers={customers} currentUser={currentUser} orgId={orgId} />;
+  if (type === 'fleet_store') return <FleetStore orgId={orgId} installedIds={data?.installedIds || []} onInstall={data?.onInstall} onClose={data?.onClose} />;
   if (PAGE_MAP[type]) {
     return <iframe src={`${createPageUrl(PAGE_MAP[type])}?hologram=true`} className="w-full h-full border-0" title={PAGE_MAP[type]} />;
   }
