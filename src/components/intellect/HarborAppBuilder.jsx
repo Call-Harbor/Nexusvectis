@@ -258,23 +258,14 @@ export default function HarborAppBuilder({ onClose, vehicles = [], routes = [], 
   const [prompt, setPrompt] = useState("");
   const [generatedCode, setGeneratedCode] = useState("");
   const [buildLog, setBuildLog] = useState([]);
-  const [isBuilding, setIsBuilding] = useState(false);
   const [buildProgress, setBuildProgress] = useState(0);
   const [appMeta, setAppMeta] = useState(null);
-  const [selectedTemplate, setSelectedTemplate] = useState(null);
-  const [activeView, setActiveView] = useState("preview");
   const [savedApps, setSavedApps] = useState([]);
   const [loadingApps, setLoadingApps] = useState(false);
-  const [currentSavedId, setCurrentSavedId] = useState(null);
+  const [currentAppId, setCurrentAppId] = useState(null);
   const [saving, setSaving] = useState(false);
-  const [publishing, setPublishing] = useState(false);
-  const [showPublishModal, setShowPublishModal] = useState(false);
-  const [pages, setPages] = useState([]);
-  const [entities, setEntities] = useState([]);
-  const [integrations, setIntegrations] = useState([]);
-  const [appTheme, setAppTheme] = useState("jarvis");
-  const [appLayout, setAppLayout] = useState("sidebar");
-  const [appFeatures, setAppFeatures] = useState({ auth: true, search: true, notifications: true, darkmode: true });
+  const [generatedCode, setGeneratedCode] = useState("");
+  const [buildLog, setBuildLog] = useState([]);
   const promptRef = useRef(null);
 
   useEffect(() => {
