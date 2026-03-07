@@ -688,7 +688,7 @@ export default function Layout({ children, currentPageName }) {
 
       {/* Mobile Bottom Nav */}
       {!hideNav && (
-      <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/90 backdrop-blur-xl border-t border-slate-800/50 z-40 lg:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 backdrop-blur-xl z-40 lg:hidden" style={{ background: 'linear-gradient(180deg, rgba(15,23,42,0.95) 0%, rgba(10,10,30,0.95) 100%)', borderTop: '2px solid rgba(6,182,212,0.3)' }}>
         <div className="flex items-center justify-around py-2">
           {navItems.map((item) => {
             const isActive = currentPageName === item.page;
