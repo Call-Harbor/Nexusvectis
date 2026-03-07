@@ -311,6 +311,7 @@ BUILD REQUIREMENTS:
           {/* Nav tabs */}
           <div className="flex border-b border-slate-800/50 flex-shrink-0">
             {[
+              { id: "prompt", label: "Describe", icon: Sparkles },
               { id: "entities", label: "Entities", icon: Database },
               { id: "pages", label: "Pages", icon: LayoutGrid },
             ].map(tab => (
