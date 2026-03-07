@@ -813,8 +813,8 @@ function SimulationResults({ result, config }) {
                     <XAxis dataKey="step" stroke="#475569" tick={{ fontSize:9 }} interval={5} />
                     <YAxis stroke="#475569" tick={{ fontSize:9 }} />
                     <Tooltip contentStyle={{ backgroundColor:"#0f172a", border:"1px solid #1e293b", borderRadius:"8px", fontSize:10 }} />
-                    <ReferenceLine y={config.speed} stroke={meta.color} strokeDasharray="4 4" label={{ value:"Mål", fill:meta.color, fontSize:9 }} />
-                    <Area type="monotone" dataKey="speed" stroke="#06b6d4" fill="#06b6d420" name="Hastighed" strokeWidth={1.5} />
+                    <ReferenceLine y={config.speed} stroke={meta.color} strokeDasharray="4 4" label={{ value:"Target", fill:meta.color, fontSize:9 }} />
+                    <Area type="monotone" dataKey="speed" stroke="#06b6d4" fill="#06b6d420" name="Speed" strokeWidth={1.5} />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
