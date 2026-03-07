@@ -719,7 +719,7 @@ function SimulationResults({ result, config }) {
                 ))}
               </div>
               <div>
-                <p className="text-slate-300 text-xs font-semibold mb-2">CO₂ opbygning over ruten</p>
+                <p className="text-slate-300 text-xs font-semibold mb-2">CO₂ accumulation along route</p>
                 <ResponsiveContainer width="100%" height={160}>
                   <AreaChart data={result.timeline}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
