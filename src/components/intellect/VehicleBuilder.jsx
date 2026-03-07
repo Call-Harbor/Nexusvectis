@@ -579,10 +579,10 @@ function SimulationResults({ result, config }) {
                 {[
                   { label:result.fuelLabel, value:result.totalFuel.toLocaleString(), unit:result.unit, icon:Fuel, color:"#f59e0b" },
                   { label:"CO₂ total", value:result.co2Total.toLocaleString(), unit:"kg", icon:Wind, color:"#ef4444" },
-                  { label:"CO₂ intensitet", value:result.co2PerTonKm, unit:"g/ton-km", icon:Activity, color:"#8b5cf6" },
-                  { label:"Varighed", value:result.duration, unit:"", icon:Clock, color:"#06b6d4" },
-                  { label:"Total omkostning", value:result.totalCost.toLocaleString(), unit:"DKK", icon:Calculator, color:"#10b981" },
-                  { label:"Pris pr ton-km", value:result.costPerTonKm, unit:"DKK", icon:TrendingUp, color:"#06b6d4" },
+                  { label:"CO₂ intensity", value:result.co2PerTonKm, unit:"g/ton-km", icon:Activity, color:"#8b5cf6" },
+                  { label:"Duration", value:result.duration, unit:"", icon:Clock, color:"#06b6d4" },
+                  { label:"Total cost", value:result.totalCost.toLocaleString(), unit:"DKK", icon:Calculator, color:"#10b981" },
+                  { label:"Cost per ton-km", value:result.costPerTonKm, unit:"DKK", icon:TrendingUp, color:"#06b6d4" },
                 ].map(({ label, value, unit, icon:Icon, color }) => (
                   <div key={label} className="p-3 rounded-xl border" style={{ background:`${color}0a`, borderColor:`${color}30` }}>
                     <Icon className="w-4 h-4 mb-1" style={{ color }} />
