@@ -927,7 +927,7 @@ export default function VehicleBuilder({ onClose }) {
                   </div>
                 </div>
                 <Button onClick={handleRunSim} className="gap-2 px-8 py-3 font-bold text-base" style={{ background:`linear-gradient(135deg, ${meta?.color||"#06b6d4"}, #8b5cf6)` }}>
-                  <Cpu className="w-5 h-5" /> Start Avanceret Simulation
+                  <Cpu className="w-5 h-5" /> Start Advanced Simulation
                 </Button>
               </div>
             )}
