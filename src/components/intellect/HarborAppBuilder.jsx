@@ -803,10 +803,16 @@ Return ONLY raw JavaScript code. No \`\`\`js markers. No explanation text.`,
                     <p className="text-[10px] text-slate-500">Full access to your organisation's live data. Press ⌘+Enter to build.</p>
                   </div>
 
-                  <Button onClick={handleBuild} disabled={!prompt.trim()}
-                    className="w-full bg-gradient-to-r from-cyan-600 to-violet-600 hover:from-cyan-500 hover:to-violet-500 text-white font-mono font-bold tracking-wider border-0 gap-2">
-                    <Zap className="w-4 h-4" />BUILD WITH H.A.R.B.O.R AI
-                  </Button>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button onClick={handleBuild} disabled={!prompt.trim()}
+                      className="bg-gradient-to-r from-cyan-600 to-violet-600 hover:from-cyan-500 hover:to-violet-500 text-white font-mono font-bold tracking-wider border-0 gap-2">
+                      <Zap className="w-4 h-4" />BUILD
+                    </Button>
+                    <Button onClick={handleSkipToDesign}
+                      className="bg-slate-800 hover:bg-slate-700 text-slate-200 font-mono font-bold tracking-wider border border-slate-600">
+                      <Wrench className="w-4 h-4 mr-1" />ADVANCED
+                    </Button>
+                  </div>
                 </div>
               )}
 
