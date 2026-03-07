@@ -524,38 +524,39 @@ Return ONLY raw JavaScript code. No \`\`\`js markers. No explanation text.`,
               <p className="text-[9px] text-slate-500 tracking-widest">AI-POWERED APP GENERATOR</p>
             </div>
           </div>
+        {/* Right: action buttons */}
         <div className="flex items-center gap-1.5">
-         {step === "preview" && (
-           <>
-             <button
-               onClick={() => setActiveView(v => v === "preview" ? "code" : "preview")}
-               className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-mono transition-all ${activeView === "code" ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/40" : "text-slate-400 hover:text-white hover:bg-slate-800"}`}
-             >
-               {activeView === "preview" ? <Code2 className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-               {activeView === "preview" ? "Code" : "Preview"}
-             </button>
-             <button onClick={handleSave} disabled={saving}
-               className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-mono transition-all ${isSaved ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" : "bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700"}`}>
-               {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
-               {isSaved ? "Saved" : "Save"}
-             </button>
-             {!isPublished && (
-               <button onClick={() => setShowPublishModal(true)}
-                 className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-mono bg-violet-600/20 text-violet-300 hover:bg-violet-600/30 border border-violet-500/30 transition-all">
-                 <Store className="w-3.5 h-3.5" /> Publish
-               </button>
-             )}
-             {isPublished && (
-               <Badge className="bg-violet-500/20 text-violet-300 border-violet-500/40 text-[10px]">
-                 <Store className="w-2.5 h-2.5 mr-1" />In Store
-               </Badge>
-             )}
-             <button onClick={handleRebuild}
-               className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-mono text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
-               <RefreshCw className="w-3.5 h-3.5" /> Rebuild
-             </button>
-           </>
-         )}
+          {step === "preview" && (
+            <>
+              <button
+                onClick={() => setActiveView(v => v === "preview" ? "code" : "preview")}
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-mono transition-all ${activeView === "code" ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/40" : "text-slate-400 hover:text-white hover:bg-slate-800/60"}`}
+              >
+                {activeView === "preview" ? <Code2 className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                {activeView === "preview" ? "CODE" : "PREVIEW"}
+              </button>
+              <button onClick={handleSave} disabled={saving}
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-mono transition-all ${isSaved ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" : "bg-slate-800/60 text-slate-300 hover:text-white hover:bg-slate-700"}`}>
+                {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+                {isSaved ? "SAVED" : "SAVE"}
+              </button>
+              {!isPublished && (
+                <button onClick={() => setShowPublishModal(true)}
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-mono bg-violet-600/20 text-violet-300 hover:bg-violet-600/30 border border-violet-500/30 transition-all tracking-wider uppercase font-bold">
+                  <Store className="w-3.5 h-3.5" /> PUBLISH
+                </button>
+              )}
+              {isPublished && (
+                <Badge className="bg-violet-500/20 text-violet-300 border-violet-500/40 text-[10px] uppercase tracking-wider">
+                  <Store className="w-2.5 h-2.5 mr-1" />PUBLISHED
+                </Badge>
+              )}
+              <button onClick={handleRebuild}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-mono text-slate-400 hover:text-white hover:bg-slate-800/60 transition-all uppercase tracking-wider font-bold">
+                <RefreshCw className="w-3.5 h-3.5" /> REBUILD
+              </button>
+            </>
+          )}
         </div>
         </div>
 
