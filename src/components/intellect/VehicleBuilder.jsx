@@ -363,8 +363,8 @@ function Vehicle3DPreview({ vehicleType, attachmentId }) {
     scene.add(new THREE.AmbientLight(0x223344, 0.6));
     const mainLight = new THREE.DirectionalLight(0xffffff, 2.0);
     mainLight.position.set(10, 15, 10); mainLight.castShadow = true; scene.add(mainLight);
-    scene.add(Object.assign(new THREE.DirectionalLight(0x4488bb, 0.8), { position: new THREE.Vector3(-8, 5, -5) }));
-    scene.add(Object.assign(new THREE.DirectionalLight(0x00ffff, 0.4), { position: new THREE.Vector3(0, -3, -10) }));
+    const fillLight = new THREE.DirectionalLight(0x4488bb, 0.8); fillLight.position.set(-8, 5, -5); scene.add(fillLight);
+    const rimLight = new THREE.DirectionalLight(0x00ffff, 0.4); rimLight.position.set(0, -3, -10); scene.add(rimLight);
     scene.add(new THREE.HemisphereLight(0x223366, 0x0a0a14, 0.5));
 
     scene.add(new THREE.GridHelper(30, 30, 0x0d3d5a, 0x0a2a3a));
