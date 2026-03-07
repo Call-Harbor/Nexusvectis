@@ -95,6 +95,8 @@ export default function HarborAppBuilderV3({ onClose, vehicles = [], routes = []
   const [showCode, setShowCode] = useState(false);
   const [searchApps, setSearchApps] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [expandPrompt, setExpandPrompt] = useState("");
+  const [isExpanding, setIsExpanding] = useState(false);
 
   useEffect(() => {
     loadApps();
