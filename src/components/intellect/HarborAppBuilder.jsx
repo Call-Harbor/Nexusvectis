@@ -121,6 +121,30 @@ const IDEA_TEMPLATES = [
 
 const CATEGORY_EMOJIS = { analytics: "📊", monitoring: "🔍", operations: "⚙️", crm: "👥", productivity: "⚡", custom: "✨" };
 
+// Animated scanner line
+function ScanLine() {
+  return (
+    <motion.div
+      className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-400/60 to-transparent pointer-events-none z-10"
+      initial={{ top: "0%" }}
+      animate={{ top: ["0%", "100%", "0%"] }}
+      transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
+    />
+  );
+}
+
+// Corner brackets decoration
+function CornerBrackets({ color = "border-cyan-500/40" }) {
+  return (
+    <>
+      <div className={`absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 ${color}`} />
+      <div className={`absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 ${color}`} />
+      <div className={`absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 ${color}`} />
+      <div className={`absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 ${color}`} />
+    </>
+  );
+}
+
 // --- My Saved Apps Panel ---
 function MyAppsPanel({ orgId, onOpen, onDelete, apps, loading, onRefresh }) {
   if (loading) return (
