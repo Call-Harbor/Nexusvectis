@@ -236,19 +236,10 @@ export default function Dashboard() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: idx * 0.05 }}
                       whileHover={{ scale: 1.02, y: -2 }}
-                      className={`p-3 sm:p-4 rounded-xl backdrop-blur-xl border transition-all cursor-pointer group ${
-                        action.color === 'cyan' ? 'bg-cyan-500/10 border-cyan-500/30 hover:border-cyan-500/50' :
-                        action.color === 'violet' ? 'bg-violet-500/10 border-violet-500/30 hover:border-violet-500/50' :
-                        action.color === 'emerald' ? 'bg-emerald-500/10 border-emerald-500/30 hover:border-emerald-500/50' :
-                        'bg-amber-500/10 border-amber-500/30 hover:border-amber-500/50'
-                      }`}
-                    >
-                      <Icon className={`w-5 h-5 mb-2 group-hover:scale-110 transition-transform ${
-                        action.color === 'cyan' ? 'text-cyan-400' :
-                        action.color === 'violet' ? 'text-violet-400' :
-                        action.color === 'emerald' ? 'text-emerald-400' :
-                        'text-amber-400'
-                      }`} />
+                       className="p-3 sm:p-4 rounded-lg hologram-border backdrop-blur-xl transition-all cursor-pointer group"
+                       style={{ background: 'rgba(6,182,212,0.08)', borderColor: 'rgba(6,182,212,0.4)' }}
+                      >
+                       <Icon className="w-5 h-5 mb-2 group-hover:scale-110 transition-transform hologram-text" />
                       <p className="text-white text-sm font-medium">{action.label}</p>
                     </motion.div>
                   </Link>
