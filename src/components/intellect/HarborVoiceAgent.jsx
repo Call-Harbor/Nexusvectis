@@ -73,31 +73,54 @@ export function getBestFemaleVoice(lang = "da-DK") {
 }
 
 export function harborSpeak(text, { lang = "da-DK", rate = 1.0, pitch = 1.1, volume = 1, onStart, onEnd } = {}) {
-  if (!window.speechSynthesis) return;
+  if (!window.speechSynthesis) { onEnd?.(); return; }
   window.speechSynthesis.cancel();
 
-  const utt = new SpeechSynthesisUtterance(text);
-  utt.lang = lang;
-  utt.rate = rate;
-  utt.pitch = pitch;
-  utt.volume = volume;
+  const doSpeak = () => {
+    const utt = new SpeechSynthesisUtterance(text);
+    utt.lang = lang;
+    utt.rate = rate;
+    utt.pitch = pitch;
+    utt.volume = volume;
 
-  const setVoiceAndSpeak = () => {
     const voice = getBestFemaleVoice(lang);
     if (voice) utt.voice = voice;
     if (onStart) utt.onstart = onStart;
     if (onEnd) utt.onend = onEnd;
+
+    // Chrome bugfix: resume if suspended
+    if (window.speechSynthesis.paused) window.speechSynthesis.resume();
     window.speechSynthesis.speak(utt);
+
+    // Chrome keepalive hack — prevents silent cutoff on long texts
+    const keepAlive = setInterval(() => {
+      if (!window.speechSynthesis.speaking) { clearInterval(keepAlive); return; }
+      window.speechSynthesis.pause();
+      window.speechSynthesis.resume();
+    }, 10000);
+
+    utt.onend = () => { clearInterval(keepAlive); onEnd?.(); };
+    utt.onerror = () => { clearInterval(keepAlive); onEnd?.(); };
   };
 
   const voices = window.speechSynthesis.getVoices();
   if (voices.length === 0) {
+    // Retry a few times in case voices haven't loaded yet
+    let retries = 0;
+    const trySpeak = () => {
+      const v = window.speechSynthesis.getVoices();
+      if (v.length > 0 || retries >= 5) { doSpeak(); return; }
+      retries++;
+      setTimeout(trySpeak, 250);
+    };
     window.speechSynthesis.onvoiceschanged = () => {
       window.speechSynthesis.onvoiceschanged = null;
-      setVoiceAndSpeak();
+      doSpeak();
     };
+    // Also start retry in case event never fires
+    setTimeout(trySpeak, 300);
   } else {
-    setVoiceAndSpeak();
+    doSpeak();
   }
 }
 
