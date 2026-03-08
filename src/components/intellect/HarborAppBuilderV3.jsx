@@ -840,6 +840,102 @@ Requirements:
           </div>
         </div>
       </div>
+
+      {/* ─── PUBLISH MODAL ─────────────────────────── */}
+      <AnimatePresence>
+        {showPublishModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50"
+            onClick={e => e.target === e.currentTarget && setShowPublishModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 20 }}
+              className="bg-slate-900 border border-slate-700 rounded-2xl p-6 w-full max-w-md shadow-2xl"
+            >
+              <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-500 to-violet-600 flex items-center justify-center">
+                    <Store className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-white">Publish to Fleet Store</h3>
+                    <p className="text-[10px] text-slate-500">Share your app with all organizations</p>
+                  </div>
+                </div>
+                <button onClick={() => setShowPublishModal(false)} className="text-slate-500 hover:text-white transition-colors">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-800/60 border border-slate-700/50 mb-5">
+                <span className="text-2xl">{appMeta?.icon || "⚡"}</span>
+                <div>
+                  <p className="text-sm font-semibold text-white">{appMeta?.name || "Generated App"}</p>
+                  <p className="text-[10px] text-slate-500">Ready to publish</p>
+                </div>
+                <div className="ml-auto flex items-center gap-1.5 px-2 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                  <span className="text-[10px] text-emerald-400 font-medium">Ready</span>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5 block">Category</label>
+                  <select
+                    value={publishForm.category}
+                    onChange={e => setPublishForm(p => ({ ...p, category: e.target.value }))}
+                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-500"
+                  >
+                    <option value="custom">Custom</option>
+                    <option value="analytics">Analytics</option>
+                    <option value="monitoring">Monitoring</option>
+                    <option value="operations">Operations</option>
+                    <option value="crm">CRM</option>
+                    <option value="productivity">Productivity</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5 block">Description</label>
+                  <textarea
+                    value={publishForm.description}
+                    onChange={e => setPublishForm(p => ({ ...p, description: e.target.value }))}
+                    placeholder="Describe what this app does..."
+                    rows={3}
+                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 resize-none"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5 block">Tags (comma-separated)</label>
+                  <input
+                    value={publishForm.tags}
+                    onChange={e => setPublishForm(p => ({ ...p, tags: e.target.value }))}
+                    placeholder="e.g. inventory, management, warehouse"
+                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500"
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-3 mt-6">
+                <button onClick={() => setShowPublishModal(false)}
+                  className="flex-1 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-sm font-medium transition-all">
+                  Cancel
+                </button>
+                <button onClick={handlePublish} disabled={publishing}
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-violet-600 hover:from-cyan-500 hover:to-violet-500 text-white text-sm font-semibold transition-all disabled:opacity-50">
+                  {publishing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                  {publishing ? "Publishing..." : "Publish to Store"}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
