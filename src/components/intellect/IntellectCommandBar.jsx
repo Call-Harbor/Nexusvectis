@@ -1,11 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
-import { Send, Mic, Zap, Paperclip, FileText, X, Sparkles, Shield, Building2, Satellite, Newspaper, LayoutDashboard } from "lucide-react";
+import { Send, Mic, MicOff, Zap, Paperclip, FileText, X, Sparkles, Shield, Building2, Satellite, Newspaper, LayoutDashboard } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import MessageFormatter from "./MessageFormatter";
+import VoiceController from "./VoiceController";
 
 export default function IntellectCommandBar({
   input, setInput, messages, streamingMessage, messagesEndRef,
