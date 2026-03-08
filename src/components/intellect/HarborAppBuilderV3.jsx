@@ -729,9 +729,14 @@ Requirements:
                   <Copy className="w-4 h-4" />
                 </button>
                 <button onClick={handleSave} disabled={saving}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm bg-gradient-to-r from-cyan-600 to-violet-600 hover:from-cyan-500 hover:to-violet-500 text-white font-semibold transition-all">
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-semibold transition-all">
                   {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
                   <span className="text-xs">Save</span>
+                </button>
+                <button onClick={() => { setPublishForm({ category: "custom", description: appMeta?.description || "", tags: "" }); setShowPublishModal(true); }}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm bg-gradient-to-r from-cyan-600 to-violet-600 hover:from-cyan-500 hover:to-violet-500 text-white font-semibold transition-all shadow-lg shadow-cyan-500/20">
+                  <Store className="w-3.5 h-3.5" />
+                  <span className="text-xs">Publish</span>
                 </button>
               </div>
             )}
