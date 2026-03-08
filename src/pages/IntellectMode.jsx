@@ -139,6 +139,13 @@ export default function IntellectMode() {
     enabled: !!orgId, staleTime: 30000
   });
 
+  // ── Load installed apps from user profile ─────────────────────────────────
+  useEffect(() => {
+    if (currentUser?.installed_harbor_apps) {
+      setInstalledAppIds(new Set(currentUser.installed_harbor_apps));
+    }
+  }, [currentUser]);
+
   // ── Effects ────────────────────────────────────────────────────────────────
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, streamingMessage]);
 
