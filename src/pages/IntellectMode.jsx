@@ -188,6 +188,14 @@ export default function IntellectMode() {
     });
   }, []);
 
+  // ── Installed Apps Persistence ────────────────────────────────────────────
+  const updateInstalledApps = useCallback(async (newSet) => {
+    setInstalledAppIds(newSet);
+    try {
+      await base44.auth.updateMe({ installed_harbor_apps: [...newSet] });
+    } catch (e) { console.error('Failed to save installed apps', e); }
+  }, []);
+
   // ── Screen Management ──────────────────────────────────────────────────────
   const trackDesktopWindow = useCallback((screenLabel, winRef) => {
     const id = Date.now();
