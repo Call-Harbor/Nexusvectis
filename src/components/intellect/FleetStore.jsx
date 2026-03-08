@@ -250,6 +250,7 @@ export default function FleetStore({ orgId, onInstall, installedIds = [], onClos
   const [installing, setInstalling] = useState(null);
   const [selectedApp, setSelectedApp] = useState(null);
   const [tick, setTick] = useState(0);
+  const [localInstalledIds, setLocalInstalledIds] = useState([...installedIds]);
 
   // Holographic clock tick
   useEffect(() => {
