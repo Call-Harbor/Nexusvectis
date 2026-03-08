@@ -150,7 +150,7 @@ export default function IntellectCommandBar({
         </div>
 
         <div className="mt-3 flex items-center justify-between text-xs text-slate-500">
-          <div className="flex items-center gap-2"><Zap className="w-3 h-3 text-cyan-500" /><span>Press Enter to send</span></div>
+          <div className="flex items-center gap-2"><Zap className="w-3 h-3 text-cyan-500" /><span>Press Enter to send • <span style={{color:"rgba(6,182,212,0.7)"}}>Mic for voice control</span></span></div>
           <span className="text-slate-600">{uploadedFiles.length > 0 ? `${uploadedFiles.length} file(s) ready` : 'Attach files for AI analysis'}</span>
         </div>
       </div>
