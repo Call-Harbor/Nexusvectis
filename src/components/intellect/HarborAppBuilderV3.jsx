@@ -338,7 +338,7 @@ Return JSON:
       const pageDefs = (schema.pages || []).map(p => `${p.name} (${p.type}): ${p.description}`).join('\n');
 
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are the world's best UI engineer. Build a COMPLETE, PIXEL-PERFECT, PRODUCTION-GRADE React SPA. This must look like it was built by a top-tier design team with months of work.
+        prompt: `You are building an official NexusVectis enterprise application. This app will run inside the NexusVectis platform and MUST follow NexusVectis design standards exactly.
 
 APP: ${schema.appName}
 DESCRIPTION: ${schema.appDescription}
@@ -349,83 +349,95 @@ ${entityDefs}
 PAGES:
 ${pageDefs}
 
-═══════════════════════════════════════
-MANDATORY DESIGN SYSTEM — FOLLOW EXACTLY
-═══════════════════════════════════════
+══════════════════════════════════════════════
+NEXUSVECTIS DESIGN STANDARDS — MANDATORY
+══════════════════════════════════════════════
 
-LAYOUT:
-• Full-screen: min-h-screen flex bg-slate-950
-• Left sidebar: w-64 bg-slate-900 border-r border-slate-800 flex flex-col (ALWAYS visible)
-• Main area: flex-1 flex flex-col overflow-hidden
-• Top header: h-16 px-6 flex items-center justify-between bg-slate-900/50 border-b border-slate-800 backdrop-blur
+BRAND COLORS:
+• Primary bg: #0f172a (slate-950)
+• Secondary bg: #0f172a / #1e293b (slate-900)
+• Accent cyan: #06b6d4 (cyan-500)
+• Accent violet: #7c3aed (violet-600)
+• Text primary: #f1f5f9 (slate-100)
+• Text muted: #64748b (slate-500)
+• Border: #1e293b (slate-800)
+• Success: #10b981 (emerald-500)
+• Warning: #f59e0b (amber-500)
+• Danger: #ef4444 (red-500)
 
-SIDEBAR must contain:
-• App logo/name at top with gradient icon
-• Navigation links with icons (use emoji icons like 📊 🏠 👥 📦 📋 ⚙️)
-• Active state: bg-cyan-500/10 text-cyan-400 border-l-2 border-cyan-500 rounded-r-lg
-• Inactive: text-slate-400 hover:text-white hover:bg-slate-800/50 rounded-lg
-• Bottom: user avatar area
+LAYOUT (fixed — do not deviate):
+• Root: style="display:flex;height:100vh;background:#0f172a;color:#f1f5f9;overflow:hidden"
+• Sidebar: style="width:240px;background:#0f172a;borderRight:1px solid #1e293b;display:flex;flexDirection:column;flexShrink:0"
+• Main: style="flex:1;display:flex;flexDirection:column;overflow:hidden"
+• Topbar: style="height:56px;background:#0f172a;borderBottom:1px solid #1e293b;display:flex;alignItems:center;justifyContent:space-between;padding:0 24px;flexShrink:0"
+• Content: style="flex:1;overflowY:auto;padding:24px;background:#0f172a"
 
-EVERY PAGE must have ALL of these:
-1. PAGE HEADER: Full-width gradient banner (from-slate-900 via-slate-800 to-slate-900 with subtle cyan glow), page title in text-2xl font-bold, subtitle, breadcrumb
-2. STATS ROW: 4 metric cards side by side, each with: icon in colored rounded bg, large number, label, trend indicator (↑ +12%)
-3. CONTROLS BAR: search input + filter dropdowns + primary action button (gradient)
-4. DATA TABLE or CARD GRID (at least 5 demo rows/cards with realistic data)
-5. PAGINATION bar at bottom
+SIDEBAR structure:
+• Logo area (padding:20px): App name with gradient icon (cyan→violet)
+• Nav links: padding:10px 12px, borderRadius:8px, fontSize:13px
+  - Active: background:#0e7490/20, color:#06b6d4, borderLeft:2px solid #06b6d4
+  - Hover: background:#1e293b, color:white
+• Footer: user info with avatar initials circle
 
-STAT CARDS — use this exact pattern:
-• bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-cyan-500/30 transition-all
-• Icon wrapper: w-12 h-12 rounded-xl bg-gradient-to-br [color] flex items-center justify-center text-xl
-• Number: text-3xl font-bold text-white
-• Label: text-sm text-slate-400
-• Trend: text-xs text-emerald-400 (or red-400) font-medium
+TOPBAR structure:
+• Left: Breadcrumb (page name)
+• Right: search + action button + user badge
 
-DATA TABLE — use this exact pattern:
-• Container: bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden
-• Header row: bg-slate-800/50 text-xs text-slate-400 uppercase tracking-wider px-4 py-3
-• Data rows: px-4 py-4 border-b border-slate-800/50 hover:bg-slate-800/30 transition-colors
-• Action buttons: small pill buttons (px-3 py-1 rounded-lg text-xs) — Edit=blue, Delete=red
+EVERY PAGE must have:
+1. HERO HEADER (padding:24px, background:linear-gradient(135deg,#0f172a,#1e293b), borderRadius:12px, marginBottom:24px):
+   - Page title (fontSize:22px, fontWeight:700, color:white)
+   - Subtitle (fontSize:13px, color:#64748b)
+   - Action button top-right (gradient cyan→violet)
 
-STATUS BADGES:
-• Active/Success: bg-emerald-500/15 text-emerald-400 border border-emerald-500/25 px-2.5 py-0.5 rounded-full text-xs font-medium
-• Warning/Pending: bg-amber-500/15 text-amber-400 border border-amber-500/25
-• Error/Cancelled: bg-red-500/15 text-red-400 border border-red-500/25
-• Info: bg-blue-500/15 text-blue-400 border border-blue-500/25
+2. STATS GRID (display:grid, gridTemplateColumns:repeat(4,1fr), gap:16px, marginBottom:24px):
+   Each card: background:#1e293b, border:1px solid #334155, borderRadius:12px, padding:20px
+   - Icon box: width:44px, height:44px, borderRadius:10px, gradient bg
+   - Number: fontSize:28px, fontWeight:700, color:white, marginTop:12px
+   - Label: fontSize:12px, color:#64748b, marginTop:4px
+   - Trend badge: fontSize:11px, color:#10b981 or #ef4444
+
+3. DATA CONTAINER (background:#1e293b, border:1px solid #334155, borderRadius:12px, overflow:hidden):
+   - Controls bar: padding:16px, borderBottom:1px solid #334155, display:flex, gap:12px
+   - Search: background:#0f172a, border:1px solid #334155, borderRadius:8px, padding:8px 12px 8px 36px, color:white, fontSize:13px, width:280px
+   - Table header: background:#0f172a, padding:10px 16px, fontSize:11px, color:#64748b, textTransform:uppercase, letterSpacing:0.05em
+   - Table row: padding:14px 16px, borderBottom:1px solid #1e293b, fontSize:13px
+   - Row hover: background:#334155/30
+   - Min 6 rows of realistic data
+
+4. STATUS BADGES (inline-flex, alignItems:center, padding:3px 10px, borderRadius:99px, fontSize:11px, fontWeight:500):
+   - Active: background:#10b981/15, color:#10b981, border:1px solid #10b981/30
+   - Pending: background:#f59e0b/15, color:#f59e0b, border:1px solid #f59e0b/30
+   - Inactive: background:#ef4444/15, color:#ef4444, border:1px solid #ef4444/30
+
+5. ACTION BUTTONS per row:
+   - Edit: background:#0e7490/20, color:#06b6d4, border:1px solid #0e7490/30, padding:4px 12px, borderRadius:6px, fontSize:12px
+   - Delete: background:#ef4444/10, color:#ef4444, border:1px solid #ef4444/20, padding:4px 12px, borderRadius:6px, fontSize:12px
 
 MODAL FORMS:
-• Overlay: fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50
-• Panel: bg-slate-900 border border-slate-700 rounded-2xl p-6 w-full max-w-lg shadow-2xl
-• Input fields: w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/20
-• Labels: text-sm font-medium text-slate-300 mb-1.5 block
-• Submit button: w-full py-2.5 bg-gradient-to-r from-cyan-600 to-violet-600 hover:from-cyan-500 hover:to-violet-500 text-white font-semibold rounded-xl
+• Overlay: position:fixed, inset:0, background:rgba(0,0,0,0.7), backdropFilter:blur(4px), display:flex, alignItems:center, justifyContent:center, zIndex:50
+• Panel: background:#1e293b, border:1px solid #334155, borderRadius:16px, padding:28px, width:480px, maxWidth:90vw, boxShadow:0 25px 50px rgba(0,0,0,0.5)
+• Input: width:100%, background:#0f172a, border:1px solid #334155, borderRadius:8px, padding:10px 14px, color:white, fontSize:13px
+• Input focus: border-color #06b6d4, outline none
+• Label: fontSize:12px, fontWeight:600, color:#94a3b8, marginBottom:6px, display:block, textTransform:uppercase, letterSpacing:0.05em
+• Submit: width:100%, padding:12px, background:linear-gradient(to right,#0e7490,#7c3aed), color:white, fontWeight:600, borderRadius:10px, border:none, fontSize:14px, cursor:pointer
 
-BUTTONS:
-• Primary: px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-600 to-violet-600 hover:from-cyan-500 hover:to-violet-500 text-white text-sm font-semibold transition-all shadow-lg shadow-cyan-500/20
-• Secondary: px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium border border-slate-700 transition-all
+PRIMARY BUTTON: background:linear-gradient(to right,#0e7490,#7c3aed), color:white, padding:9px 18px, borderRadius:8px, border:none, fontSize:13px, fontWeight:600, cursor:pointer
 
-SEARCH INPUT:
-• relative div wrapper with search icon (🔍) absolutely positioned left
-• input: pl-10 pr-4 py-2 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 w-72
+══════════════════════════════════════════════
+DEMO DATA
+══════════════════════════════════════════════
+• 6-8 realistic records per entity with varied statuses, real-looking names/numbers/dates
 
-═══════════════════════════════════════
-DEMO DATA — PRE-POPULATE EVERYTHING
-═══════════════════════════════════════
-• Add 5-8 realistic demo records for EACH entity
-• Use realistic names, numbers, dates, statuses
-• Mix different statuses (active, pending, inactive, etc.)
-• Use real-looking data (company names, product names, real countries, etc.)
+══════════════════════════════════════════════
+CODE RULES
+══════════════════════════════════════════════
+1. Export: function GeneratedApp(props) { ... } — use props.currentUser for user info
+2. Use React.useState for all state
+3. Use INLINE STYLES only (no Tailwind — the iframe has its own Tailwind but use style={{}} for reliability)
+4. ALL CRUD interactions work: add, edit, delete, search filters the list
+5. Return ONLY raw JavaScript — NO markdown, NO backticks
 
-═══════════════════════════════════════
-CODE REQUIREMENTS
-═══════════════════════════════════════
-1. Export: function GeneratedApp(props) { ... }
-2. useState for all state (selectedPage, modal open/close, form data, search term, data arrays)
-3. Tailwind CSS ONLY — zero external libraries
-4. ALL interactions work: add/edit/delete rows, search filters list, navigation switches pages
-5. NO placeholder comments like "// add more fields" — implement everything fully
-6. Return ONLY pure JavaScript code — NO markdown, NO backticks, NO explanation text
-
-MAKE IT LOOK STUNNING. EVERY PIXEL MUST LOOK INTENTIONAL AND PROFESSIONAL.`,
+PRODUCE A STUNNING NEXUSVECTIS ENTERPRISE APP.`,
         response_json_schema: null
       });
 
