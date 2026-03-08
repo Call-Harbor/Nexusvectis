@@ -16,6 +16,8 @@ function LiveAppSandbox({ code, orgId, vehicles, routes, shipments, alerts, cust
   useEffect(() => {
     if (!code || !iframeRef.current) return;
     const orgDataScript = `window.__ORG_DATA__ = ${JSON.stringify({ orgId, vehicles, routes, shipments, alerts, customers, currentUser })};`;
+    // NexusVectis auth — injected into every generated app
+    const nvUser = currentUser ? JSON.stringify(currentUser) : 'null';
     const html = `<!DOCTYPE html>
 <html>
 <head>
@@ -35,21 +37,70 @@ function LiveAppSandbox({ code, orgId, vehicles, routes, shipments, alerts, cust
 </head>
 <body>
 <div id="root"><\/div>
-<script>${orgDataScript}</script>
+<script>${orgDataScript}
+window.__NV_USER__ = ${nvUser};
+<\/script>
 <script type="text/babel">
 const { useState, useEffect, useRef, useMemo, useCallback } = React;
 const orgData = window.__ORG_DATA__;
+const nvUser = window.__NV_USER__;
+
+// NexusVectis auth gate — wraps every generated app
+function NVAuthGate({ children }) {
+  if (!nvUser) {
+    return (
+      <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'#0f172a'}}>
+        <div style={{textAlign:'center',padding:'2rem',borderRadius:'1rem',border:'1px solid #1e293b',background:'#0f172a',maxWidth:'360px'}}>
+          <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/697e930c62bf3e3832b34edb/bc9d40ccc_FullLogo_Transparent1.png" style={{height:'48px',margin:'0 auto 1.5rem',display:'block'}} alt="NexusVectis" />
+          <p style={{color:'#94a3b8',fontSize:'14px',marginBottom:'1.5rem'}}>Sign in to your NexusVectis account to access this app.</p>
+          <div style={{padding:'10px 20px',background:'linear-gradient(to right,#0891b2,#7c3aed)',borderRadius:'8px',color:'white',fontSize:'14px',fontWeight:600,display:'inline-block'}}>
+            🔒 NexusVectis Login Required
+          </div>
+        </div>
+      </div>
+    );
+  }
+  return children;
+}
+
+// NexusVectis top bar — shown in every app
+function NVTopBar() {
+  return (
+    <div style={{height:'40px',background:'#0f172a',borderBottom:'1px solid #1e293b',display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 16px',flexShrink:0}}>
+      <div style={{display:'flex',alignItems:'center',gap:'8px'}}>
+        <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/697e930c62bf3e3832b34edb/bc9d40ccc_FullLogo_Transparent1.png" style={{height:'20px',opacity:0.7}} alt="NV" />
+        <span style={{color:'#475569',fontSize:'10px',letterSpacing:'0.1em'}}>HARBOR APP</span>
+      </div>
+      {nvUser && (
+        <div style={{display:'flex',alignItems:'center',gap:'8px'}}>
+          <div style={{width:'6px',height:'6px',borderRadius:'50%',background:'#10b981'}}></div>
+          <span style={{color:'#64748b',fontSize:'11px'}}>{nvUser.full_name || nvUser.email}</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
 class ErrorBoundary extends React.Component {
   constructor(props) { super(props); this.state = { hasError: false, error: null }; }
   static getDerivedStateFromError(error) { return { hasError: true, error }; }
   render() {
-    if (this.state.hasError) return <div style={{padding:'2rem',color:'#f87171',fontFamily:'monospace'}}><b>App Error:</b><pre style={{fontSize:'12px',opacity:0.8,marginTop:'8px'}}>{this.state.error?.message}<\/pre><\/div>;
+    if (this.state.hasError) return <div style={{padding:'2rem',color:'#f87171',fontFamily:'monospace'}}><b>App Error:<\/b><pre style={{fontSize:'12px',opacity:0.8,marginTop:'8px'}}>{this.state.error?.message}<\/pre><\/div>;
     return this.props.children;
   }
 }
 ${code}
 const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(<ErrorBoundary><GeneratedApp {...orgData} \/><\/ErrorBoundary>);
+root.render(
+  <NVAuthGate>
+    <div style={{display:'flex',flexDirection:'column',height:'100vh'}}>
+      <NVTopBar \/>
+      <div style={{flex:1,overflow:'hidden'}}>
+        <ErrorBoundary><GeneratedApp {...orgData} currentUser={nvUser} \/><\/ErrorBoundary>
+      <\/div>
+    <\/div>
+  <\/NVAuthGate>
+);
 <\/script>
 <\/body>
 <\/html>`;
