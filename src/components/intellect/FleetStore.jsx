@@ -465,7 +465,7 @@ export default function FleetStore({ orgId, onInstall, installedIds = [], onClos
                     <AppCard
                       key={app.id}
                       app={app}
-                      isInstalled={installedIds.includes(app.id)}
+                      isInstalled={localInstalledIds.includes(app.id)}
                       isInstalling={installing === app.id}
                       onInstall={handleInstall}
                       onPreview={setSelectedApp}
