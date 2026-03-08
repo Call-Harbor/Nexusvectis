@@ -338,7 +338,7 @@ Return JSON:
       const pageDefs = (schema.pages || []).map(p => `${p.name} (${p.type}): ${p.description}`).join('\n');
 
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are building an official NexusVectis enterprise application. This app will run inside the NexusVectis platform and MUST follow NexusVectis design standards exactly.
+        prompt: `You are building an official NexusVectis enterprise application with MULTIPLE FULLY WORKING PAGES. Every single page must be complete and functional.
 
 APP: ${schema.appName}
 DESCRIPTION: ${schema.appDescription}
@@ -346,98 +346,99 @@ DESCRIPTION: ${schema.appDescription}
 ENTITIES:
 ${entityDefs}
 
-PAGES:
+PAGES TO BUILD (ALL OF THEM — NO SKIPPING):
 ${pageDefs}
 
 ══════════════════════════════════════════════
 NEXUSVECTIS DESIGN STANDARDS — MANDATORY
 ══════════════════════════════════════════════
 
-BRAND COLORS:
-• Primary bg: #0f172a (slate-950)
-• Secondary bg: #0f172a / #1e293b (slate-900)
-• Accent cyan: #06b6d4 (cyan-500)
-• Accent violet: #7c3aed (violet-600)
-• Text primary: #f1f5f9 (slate-100)
-• Text muted: #64748b (slate-500)
-• Border: #1e293b (slate-800)
-• Success: #10b981 (emerald-500)
-• Warning: #f59e0b (amber-500)
-• Danger: #ef4444 (red-500)
+COLORS:
+• bg-primary: #0f172a  • bg-card: #1e293b  • border: #334155
+• cyan: #06b6d4  • violet: #7c3aed  • text: #f1f5f9  • muted: #64748b
+• success: #10b981  • warning: #f59e0b  • danger: #ef4444
 
-LAYOUT (fixed — do not deviate):
-• Root: style="display:flex;height:100vh;background:#0f172a;color:#f1f5f9;overflow:hidden"
-• Sidebar: style="width:240px;background:#0f172a;borderRight:1px solid #1e293b;display:flex;flexDirection:column;flexShrink:0"
-• Main: style="flex:1;display:flex;flexDirection:column;overflow:hidden"
-• Topbar: style="height:56px;background:#0f172a;borderBottom:1px solid #1e293b;display:flex;alignItems:center;justifyContent:space-between;padding:0 24px;flexShrink:0"
-• Content: style="flex:1;overflowY:auto;padding:24px;background:#0f172a"
+LAYOUT:
+function GeneratedApp(props) {
+  const [currentPage, setCurrentPage] = React.useState("${(schema.pages || [])[0]?.name || 'Dashboard'}");
+  // ... all state for ALL entities
+  return (
+    <div style={{display:"flex",height:"100vh",background:"#0f172a",color:"#f1f5f9",overflow:"hidden",fontFamily:"system-ui,sans-serif"}}>
+      <Sidebar currentPage={currentPage} setCurrentPage={setCurrentPage} user={props.currentUser} />
+      <div style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden"}}>
+        <Topbar currentPage={currentPage} user={props.currentUser} />
+        <div style={{flex:1,overflowY:"auto",padding:"24px",background:"#0f172a"}}>
+          {/* Render page content based on currentPage */}
+        </div>
+      </div>
+    </div>
+  );
+}
 
-SIDEBAR structure:
-• Logo area (padding:20px): App name with gradient icon (cyan→violet)
-• Nav links: padding:10px 12px, borderRadius:8px, fontSize:13px
-  - Active: background:#0e7490/20, color:#06b6d4, borderLeft:2px solid #06b6d4
-  - Hover: background:#1e293b, color:white
-• Footer: user info with avatar initials circle
+SIDEBAR (width:240px, background:#0f172a, borderRight:1px solid #334155):
+• Logo area: gradient icon + app name
+• Nav items for EVERY PAGE with emoji icons (📊🏠👥📦📋⚙️💼📈🔔📝)
+  - Active: {background:"rgba(6,182,212,0.15)",color:"#06b6d4",borderLeft:"3px solid #06b6d4",borderRadius:"0 8px 8px 0"}
+  - Inactive: {color:"#64748b",borderRadius:8px} hover:{background:"#1e293b",color:"white"}
+• Bottom: user avatar (initials circle) + name + email
 
-TOPBAR structure:
-• Left: Breadcrumb (page name)
-• Right: search + action button + user badge
+TOPBAR (height:56px, borderBottom:1px solid #334155):
+• Left: page title (fontSize:18px, fontWeight:700)
+• Right: primary action button (gradient cyan→violet) + user badge
 
-EVERY PAGE must have:
-1. HERO HEADER (padding:24px, background:linear-gradient(135deg,#0f172a,#1e293b), borderRadius:12px, marginBottom:24px):
-   - Page title (fontSize:22px, fontWeight:700, color:white)
-   - Subtitle (fontSize:13px, color:#64748b)
-   - Action button top-right (gradient cyan→violet)
+EACH PAGE must have ALL of these sections:
+1. STATS ROW (grid, 4 cols, gap:16px, marginBottom:24px):
+   Card: {background:"#1e293b",border:"1px solid #334155",borderRadius:12,padding:20}
+   Icon: {width:44,height:44,borderRadius:10,background:"linear-gradient(135deg,#0e7490,#7c3aed)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20}
+   Value: {fontSize:28,fontWeight:700,color:"white",marginTop:12}
+   Label: {fontSize:12,color:"#64748b",marginTop:4}
+   Trend: {fontSize:11,color:"#10b981",marginTop:6} (use ↑ or ↓)
 
-2. STATS GRID (display:grid, gridTemplateColumns:repeat(4,1fr), gap:16px, marginBottom:24px):
-   Each card: background:#1e293b, border:1px solid #334155, borderRadius:12px, padding:20px
-   - Icon box: width:44px, height:44px, borderRadius:10px, gradient bg
-   - Number: fontSize:28px, fontWeight:700, color:white, marginTop:12px
-   - Label: fontSize:12px, color:#64748b, marginTop:4px
-   - Trend badge: fontSize:11px, color:#10b981 or #ef4444
+2. CONTROLS BAR (display:flex, gap:12, marginBottom:16, alignItems:center):
+   Search: {background:"#1e293b",border:"1px solid #334155",borderRadius:8,padding:"9px 14px 9px 36px",color:"white",fontSize:13,width:280,outline:"none"}
+   Primary button: {background:"linear-gradient(to right,#0e7490,#7c3aed)",color:"white",padding:"9px 18px",borderRadius:8,border:"none",fontSize:13,fontWeight:600,cursor:"pointer"}
 
-3. DATA CONTAINER (background:#1e293b, border:1px solid #334155, borderRadius:12px, overflow:hidden):
-   - Controls bar: padding:16px, borderBottom:1px solid #334155, display:flex, gap:12px
-   - Search: background:#0f172a, border:1px solid #334155, borderRadius:8px, padding:8px 12px 8px 36px, color:white, fontSize:13px, width:280px
-   - Table header: background:#0f172a, padding:10px 16px, fontSize:11px, color:#64748b, textTransform:uppercase, letterSpacing:0.05em
-   - Table row: padding:14px 16px, borderBottom:1px solid #1e293b, fontSize:13px
-   - Row hover: background:#334155/30
-   - Min 6 rows of realistic data
+3. DATA TABLE ({background:"#1e293b",border:"1px solid #334155",borderRadius:12,overflow:"hidden"}):
+   Header row: {background:"#0f172a",padding:"10px 16px",fontSize:11,color:"#64748b",textTransform:"uppercase",letterSpacing:"0.05em",display:"grid"}
+   Data row: {padding:"14px 16px",borderBottom:"1px solid #334155",fontSize:13,display:"grid",alignItems:"center",cursor:"pointer"}
+   Row hover: backgroundColor:"#334155"
+   AT LEAST 6 REALISTIC DATA ROWS pre-populated
 
-4. STATUS BADGES (inline-flex, alignItems:center, padding:3px 10px, borderRadius:99px, fontSize:11px, fontWeight:500):
-   - Active: background:#10b981/15, color:#10b981, border:1px solid #10b981/30
-   - Pending: background:#f59e0b/15, color:#f59e0b, border:1px solid #f59e0b/30
-   - Inactive: background:#ef4444/15, color:#ef4444, border:1px solid #ef4444/30
+4. STATUS BADGES: {display:"inline-flex",alignItems:"center",padding:"3px 10px",borderRadius:99,fontSize:11,fontWeight:500}
+   Active: {background:"rgba(16,185,129,0.15)",color:"#10b981",border:"1px solid rgba(16,185,129,0.3)"}
+   Pending: {background:"rgba(245,158,11,0.15)",color:"#f59e0b",border:"1px solid rgba(245,158,11,0.3)"}
+   Inactive/Error: {background:"rgba(239,68,68,0.15)",color:"#ef4444",border:"1px solid rgba(239,68,68,0.3)"}
 
-5. ACTION BUTTONS per row:
-   - Edit: background:#0e7490/20, color:#06b6d4, border:1px solid #0e7490/30, padding:4px 12px, borderRadius:6px, fontSize:12px
-   - Delete: background:#ef4444/10, color:#ef4444, border:1px solid #ef4444/20, padding:4px 12px, borderRadius:6px, fontSize:12px
+5. ROW ACTIONS:
+   Edit btn: {background:"rgba(6,182,212,0.15)",color:"#06b6d4",border:"1px solid rgba(6,182,212,0.3)",padding:"4px 12px",borderRadius:6,fontSize:12,cursor:"pointer",marginRight:8}
+   Delete btn: {background:"rgba(239,68,68,0.1)",color:"#ef4444",border:"1px solid rgba(239,68,68,0.2)",padding:"4px 12px",borderRadius:6,fontSize:12,cursor:"pointer"}
 
-MODAL FORMS:
-• Overlay: position:fixed, inset:0, background:rgba(0,0,0,0.7), backdropFilter:blur(4px), display:flex, alignItems:center, justifyContent:center, zIndex:50
-• Panel: background:#1e293b, border:1px solid #334155, borderRadius:16px, padding:28px, width:480px, maxWidth:90vw, boxShadow:0 25px 50px rgba(0,0,0,0.5)
-• Input: width:100%, background:#0f172a, border:1px solid #334155, borderRadius:8px, padding:10px 14px, color:white, fontSize:13px
-• Input focus: border-color #06b6d4, outline none
-• Label: fontSize:12px, fontWeight:600, color:#94a3b8, marginBottom:6px, display:block, textTransform:uppercase, letterSpacing:0.05em
-• Submit: width:100%, padding:12px, background:linear-gradient(to right,#0e7490,#7c3aed), color:white, fontWeight:600, borderRadius:10px, border:none, fontSize:14px, cursor:pointer
-
-PRIMARY BUTTON: background:linear-gradient(to right,#0e7490,#7c3aed), color:white, padding:9px 18px, borderRadius:8px, border:none, fontSize:13px, fontWeight:600, cursor:pointer
+6. ADD/EDIT MODAL (when button clicked):
+   Overlay: {position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",backdropFilter:"blur(4px)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:50}
+   Panel: {background:"#1e293b",border:"1px solid #334155",borderRadius:16,padding:28,width:480,maxWidth:"90vw",boxShadow:"0 25px 50px rgba(0,0,0,0.6)"}
+   Input: {width:"100%",background:"#0f172a",border:"1px solid #334155",borderRadius:8,padding:"10px 14px",color:"white",fontSize:13,outline:"none",boxSizing:"border-box",marginBottom:16}
+   Label: {fontSize:11,fontWeight:600,color:"#94a3b8",marginBottom:6,display:"block",textTransform:"uppercase",letterSpacing:"0.08em"}
+   Submit: {width:"100%",padding:12,background:"linear-gradient(to right,#0e7490,#7c3aed)",color:"white",fontWeight:600,borderRadius:10,border:"none",fontSize:14,cursor:"pointer"}
 
 ══════════════════════════════════════════════
-DEMO DATA
+DEMO DATA — REQUIRED
 ══════════════════════════════════════════════
-• 6-8 realistic records per entity with varied statuses, real-looking names/numbers/dates
+• useState initializer for EACH entity with 6-8 realistic pre-filled records
+• Use real company names, real-looking dates (2024-2025), varied statuses
+• Dashboard page must compute real stats from the data arrays
 
 ══════════════════════════════════════════════
-CODE RULES
+STRICT CODE RULES
 ══════════════════════════════════════════════
-1. Export: function GeneratedApp(props) { ... } — use props.currentUser for user info
-2. Use React.useState for all state
-3. Use INLINE STYLES only (no Tailwind — the iframe has its own Tailwind but use style={{}} for reliability)
-4. ALL CRUD interactions work: add, edit, delete, search filters the list
-5. Return ONLY raw JavaScript — NO markdown, NO backticks
+1. ONE function: function GeneratedApp(props) — ALL sub-components defined INSIDE or as named functions before
+2. ALL pages rendered via conditional: if(currentPage === "X") return <XPage ... />
+3. ALL CRUD fully working: clicking Edit opens pre-filled modal, Save updates array, Delete removes row, Add opens empty modal
+4. Search filters the displayed rows in real-time
+5. INLINE STYLES ONLY — no className, no Tailwind
+6. NO placeholder comments — implement EVERYTHING
+7. Return ONLY raw JavaScript — NO markdown, NO backticks, NO explanation
 
-PRODUCE A STUNNING NEXUSVECTIS ENTERPRISE APP.`,
+MAKE IT PRODUCTION-PERFECT. ALL PAGES FULLY FUNCTIONAL.`,
         response_json_schema: null
       });
 
