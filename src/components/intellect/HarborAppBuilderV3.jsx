@@ -129,11 +129,27 @@ function NVTopBar() {
   );
 }
 
+// Report errors to parent for auto-fix
+window.onerror = function(msg, src, line, col, err) {
+  window.parent.postMessage({ type: 'APP_ERROR', message: (err?.message || msg) + ' (line ' + line + ')' }, '*');
+};
+window.addEventListener('unhandledrejection', function(e) {
+  window.parent.postMessage({ type: 'APP_ERROR', message: e.reason?.message || String(e.reason) }, '*');
+});
+
 class ErrorBoundary extends React.Component {
   constructor(props) { super(props); this.state = { hasError: false, error: null }; }
   static getDerivedStateFromError(error) { return { hasError: true, error }; }
+  componentDidCatch(error) {
+    window.parent.postMessage({ type: 'APP_ERROR', message: error.message }, '*');
+  }
   render() {
-    if (this.state.hasError) return <div style={{padding:'2rem',color:'#f87171',fontFamily:'monospace'}}><b>App Error:<\/b><pre style={{fontSize:'12px',opacity:0.8,marginTop:'8px'}}>{this.state.error?.message}<\/pre><\/div>;
+    if (this.state.hasError) return (
+      <div style={{padding:'2rem',color:'#f87171',fontFamily:'monospace',background:'#0f172a',minHeight:'100vh'}}>
+        <b>⚠️ App Error — Auto-fixing...</b>
+        <pre style={{fontSize:'12px',opacity:0.8,marginTop:'8px'}}>{this.state.error?.message}<\/pre>
+      <\/div>
+    );
     return this.props.children;
   }
 }
