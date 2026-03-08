@@ -174,7 +174,17 @@ root.render(
     return () => URL.revokeObjectURL(url);
   }, [code, orgId, vehicles, routes, shipments, alerts, customers, currentUser]);
 
-  return <iframe ref={iframeRef} className="w-full h-full border-0" sandbox="allow-scripts allow-same-origin" title="Generated App" />;
+  return (
+    <div className="relative w-full h-full">
+      <iframe ref={iframeRef} className="w-full h-full border-0" sandbox="allow-scripts allow-same-origin" title="Generated App" />
+      {autoFixing && (
+        <div className="absolute bottom-4 right-4 flex items-center gap-2 px-3 py-2 rounded-xl bg-amber-500/15 border border-amber-500/30 backdrop-blur-sm">
+          <Loader2 className="w-3.5 h-3.5 text-amber-400 animate-spin" />
+          <span className="text-xs text-amber-300 font-medium">Auto-fixing error...</span>
+        </div>
+      )}
+    </div>
+  );
 }
 
 const BUILD_STEPS = [
