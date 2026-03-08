@@ -606,7 +606,7 @@ EXPANSION REQUEST: "${expandPrompt}"
 
 Requirements:
 - Keep all existing functionality intact
-- Add the new features maintaining the same premium dark design style
+- Add new features maintaining the same H.A.R.B.O.R cyberpunk terminal aesthetic (dark navy bg #030a0e, cyan #00d4ff, amber #f5a623, Courier New monospace font, terminal-style borders and labels)
 - Return ONLY complete updated JavaScript code, no markdown, no backticks`,
         response_json_schema: null
       });
