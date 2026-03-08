@@ -158,7 +158,7 @@ function AppCard({ app, isInstalled, isInstalling, onInstall, onUninstall, onPre
 }
 
 // Detail panel
-function AppDetailPanel({ app, isInstalled, isInstalling, onInstall, onClose }) {
+function AppDetailPanel({ app, isInstalled, isInstalling, onInstall, onUninstall, onClose }) {
   const accent = CATEGORY_ACCENT[app.category] || CATEGORY_ACCENT.custom;
   return (
     <motion.div
