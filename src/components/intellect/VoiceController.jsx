@@ -7,7 +7,7 @@ import {
   MessageSquare, LayoutDashboard, FileText, Navigation,
 } from "lucide-react";
 import { toast } from "sonner";
-import { harborSpeak, getBestFemaleVoice, generateProactiveMessage } from "./HarborVoiceAgent";
+import { harborSpeak, getBestFemaleVoice, generateProactiveMessage, checkHumanCheckins, recordActivity, detectHumanConversation, getHumanReply } from "./HarborVoiceAgent";
 
 // ─── Voice Command Registry ───────────────────────────────────────────────
 // Maps spoken phrases → action identifiers
