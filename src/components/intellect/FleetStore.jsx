@@ -52,7 +52,7 @@ function CornerBrackets({ color = "border-cyan-500/40" }) {
 }
 
 // App card
-function AppCard({ app, isInstalled, isInstalling, onInstall, onPreview }) {
+function AppCard({ app, isInstalled, isInstalling, onInstall, onUninstall, onPreview }) {
   const accent = CATEGORY_ACCENT[app.category] || CATEGORY_ACCENT.custom;
   const [hovered, setHovered] = useState(false);
 
