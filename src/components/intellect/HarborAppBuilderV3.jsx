@@ -421,7 +421,7 @@ Return JSON:
       const pageDefs = (schema.pages || []).map(p => `${p.name} (${p.type}): ${p.description}`).join('\n');
 
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are a senior React engineer building a production-ready NexusVectis enterprise app. Every button, form, modal, and interaction MUST work 100%. No placeholders, no TODOs, no broken handlers.
+        prompt: `You are a senior React engineer building a production-ready H.A.R.B.O.R enterprise app with a cyberpunk/terminal aesthetic. Every button, form, modal, and interaction MUST work 100%. No placeholders, no TODOs, no broken handlers.
 
 APP: ${schema.appName}
 DESCRIPTION: ${schema.appDescription}
@@ -429,7 +429,7 @@ DESCRIPTION: ${schema.appDescription}
 ENTITIES:
 ${entityDefs}
 
-PAGES (build ALL of them):
+PAGES (build ALL of them as TAB VIEWS — no sidebar, use horizontal tab navigation):
 ${pageDefs}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -451,85 +451,126 @@ MODAL PATTERN (copy exactly for every entity):
   // DELETE:    setItems(prev => prev.filter(x => x.id !== item.id));
   // SEARCH:    items.filter(x => JSON.stringify(x).toLowerCase().includes(search.toLowerCase()))
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-DESIGN SYSTEM
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Colors: bg #0f172a, card #1e293b, border #334155, cyan #06b6d4, violet #7c3aed, text #f1f5f9, muted #64748b, green #10b981, amber #f59e0b, red #ef4444
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+H.A.R.B.O.R CYBERPUNK DESIGN SYSTEM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-LAYOUT STRUCTURE:
+COLOR PALETTE (USE THESE EXACT VALUES):
+• Background:    #030a0e  (near-black with blue tint)
+• Surface:       #0a1628  (dark navy card bg)
+• Surface2:      #0d1f35  (slightly lighter panel bg)
+• Border:        #1a3a5c  (dark blue border)
+• Border bright: #0e4f6e  (active/hover border)
+• Cyan primary:  #00d4ff  (main accent — bright cyan)
+• Amber:         #f5a623  (secondary accent — warm amber/gold)
+• Amber dim:     #c47a10  (dimmer amber)
+• Green:         #00ff9d  (success / active)
+• Red:           #ff3b4e  (error / danger)
+• Text primary:  #e0f4ff  (near-white with cyan tint)
+• Text muted:    #4a7a9b  (muted blue-grey)
+• Text dim:      #1e4a6b  (very dim, labels)
+
+FONTS: fontFamily: "'Courier New', Courier, monospace" for ALL text. This is a terminal-style app.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+LAYOUT STRUCTURE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 function GeneratedApp(props) {
-  const [currentPage, setCurrentPage] = React.useState("${(schema.pages || [])[0]?.name || 'Dashboard'}");
+  const [currentTab, setCurrentTab] = React.useState("${(schema.pages || [])[0]?.name || 'Dashboard'}");
   // ALL entity state here
   return (
-    <div style={{display:"flex",height:"100vh",background:"#0f172a",color:"#f1f5f9",overflow:"hidden",fontFamily:"system-ui,sans-serif"}}>
-      <Sidebar currentPage={currentPage} setCurrentPage={setCurrentPage} />
-      <div style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden"}}>
-        <Topbar currentPage={currentPage} onAdd={...} />
-        <div style={{flex:1,overflowY:"auto",padding:"24px"}}>
-          {/* page routing */}
-        </div>
+    <div style={{display:"flex",flexDirection:"column",height:"100vh",background:"#030a0e",color:"#e0f4ff",overflow:"hidden",fontFamily:"'Courier New',Courier,monospace",backgroundImage:"radial-gradient(ellipse at 20% 50%, rgba(0,50,80,0.15) 0%, transparent 60%)"}}>
+      <TopBar appName="${schema.appName}" />
+      <TabNav tabs={[...pageNames]} currentTab={currentTab} setCurrentTab={setCurrentTab} />
+      <div style={{flex:1,overflowY:"auto",padding:"16px 20px"}}>
+        {/* render page based on currentTab */}
       </div>
-      {/* ALL modals rendered here, outside page divs */}
+      {/* ALL modals here */}
     </div>
   );
 }
 
-SIDEBAR: width 240px, background #0f172a, borderRight 1px solid #334155
-• Logo: gradient (cyan→violet) icon + app name text
-• Nav link per page with emoji. Active: bg rgba(6,182,212,0.12) color #06b6d4 borderLeft 3px solid #06b6d4. Inactive: color #64748b, hover bg #1e293b color white
-• Bottom: user initials avatar + name
+TOP BAR (height 44px):
+• background: #030a0e, borderBottom: "1px solid #1a3a5c"
+• Left: small ⚡ icon (amber) + "H.A.R.B.O.R." text (amber, fontSize 12, letterSpacing 3, fontWeight bold) + app name badge (border 1px solid #0e4f6e, color #00d4ff, fontSize 10, padding 2px 8px)
+• Right: status indicator "● SYSTEM NOMINAL" (green dot, fontSize 10, color #4a7a9b) + "ADD NEW" button (border 1px solid #f5a623, color #f5a623, bg transparent, padding 5px 14px, fontSize 10, letterSpacing 2, cursor pointer, hover bg rgba(245,166,35,0.1))
 
-TOPBAR: height 56px, borderBottom 1px solid #334155, display flex, alignItems center, padding 0 24px
-• Page title bold 18px left side
-• "Add New [Entity]" button right side: gradient bg linear-gradient(to right,#0e7490,#7c3aed), color white, padding 8px 16px, borderRadius 8, border none, cursor pointer, fontWeight 600
+TAB NAV (height 36px):
+• background: #030a0e, borderBottom: "1px solid #1a3a5c", display flex, paddingLeft 12, gap 0
+• Each tab: padding 8px 20px, fontSize 11, letterSpacing 2, textTransform uppercase, cursor pointer, border none, bg transparent
+• Active tab: color #00d4ff, borderBottom "2px solid #00d4ff", background "rgba(0,212,255,0.05)"
+• Inactive: color #4a7a9b, hover color #e0f4ff
 
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 EACH PAGE MUST HAVE:
-1. STATS ROW — 4 stat cards in a CSS grid (gridTemplateColumns: repeat(4,1fr), gap 16px, marginBottom 24px)
-   Each card: bg #1e293b, border 1px solid #334155, borderRadius 12, padding 20px
-   Emoji icon div (44px, borderRadius 10, gradient bg), big number (28px bold), label (12px muted), trend arrow (green/red 11px)
-   Stats MUST be computed from actual state arrays (e.g. items.length, items.filter(x=>x.status==='active').length)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-2. SEARCH + FILTER BAR — display flex gap 12 marginBottom 16
-   Search input (width 280, bg #1e293b, border #334155, borderRadius 8, padding 9px 14px, color white, outline none)
-   onChange: setSearch(e.target.value)
-   Optional filter <select> for status
+1. STATS ROW — 4 stat cards in CSS grid (gridTemplateColumns: repeat(4,1fr), gap 12px, marginBottom 16px)
+   Each card: bg #0a1628, border "1px solid #1a3a5c", padding 14px 16px, position relative
+   • Corner brackets decoration (CSS pseudo-like divs at corners — 8px lines, color #0e4f6e)
+   • Stat label: fontSize 10, color #4a7a9b, letterSpacing 3, textTransform uppercase, marginBottom 6
+   • Stat value: fontSize 26, fontWeight bold, color #00d4ff (or #f5a623 for secondary stats)
+   • Trend: fontSize 10, color #00ff9d (up) or #ff3b4e (down)
+   Stats MUST use real computed values from state arrays.
 
-3. DATA TABLE — bg #1e293b, border 1px solid #334155, borderRadius 12, overflow hidden
-   Header: bg #0f172a, display grid with proper gridTemplateColumns matching columns, padding 10px 16px, fontSize 11, color #64748b, textTransform uppercase
-   Rows: display grid same columns, padding 14px 16px, borderBottom 1px solid #334155, fontSize 13, cursor pointer
-   Row onMouseEnter/Leave to toggle hover bg #334155
-   Last column: Edit + Delete buttons
-   Edit: bg rgba(6,182,212,0.15) color #06b6d4 border 1px solid rgba(6,182,212,0.3) padding 4px 12px borderRadius 6 fontSize 12 cursor pointer marginRight 8
-   Delete: bg rgba(239,68,68,0.1) color #ef4444 border 1px solid rgba(239,68,68,0.2) padding 4px 12px borderRadius 6 fontSize 12 cursor pointer
-   Show filtered data: {filteredItems.map(item => ...)}
+2. SECTION HEADER — before each section:
+   display flex, alignItems center, gap 8, marginBottom 10
+   • "›_" prefix in amber (#f5a623), fontSize 12
+   • Section title in caps, fontSize 11, letterSpacing 3, color #e0f4ff
+   • Horizontal line: flex 1, height 1px, bg #1a3a5c, marginLeft 10
 
-4. STATUS BADGES — display inline-flex, padding 3px 10px, borderRadius 99, fontSize 11, fontWeight 500
-   active/completed/paid: green tones. pending/review: amber. inactive/cancelled/failed: red.
+3. SEARCH + FILTER BAR — display flex, gap 10, marginBottom 12
+   Search: bg #0a1628, border "1px solid #1a3a5c", color #e0f4ff, padding 7px 12px, fontSize 11, outline none, width 240
+   Focus: border-color #00d4ff (use onFocus/onBlur state)
+   Placeholder color: #1e4a6b
 
-5. ADD/EDIT MODAL — MUST BE 100% FUNCTIONAL
-   • Triggered by "Add New" button (setEditingItem(null); setForm({}); setShowModal(true))
-   • Triggered by row Edit button (setEditingItem(item); setForm({...item}); setShowModal(true))
-   • Overlay: position fixed, inset 0, bg rgba(0,0,0,0.8), backdropFilter blur(6px), display flex, alignItems center, justifyContent center, zIndex 1000
-   • Panel: bg #1e293b, border 1px solid #334155, borderRadius 16, padding 28, width 520, maxWidth 90vw
-   • Title: "Edit [Entity]" or "Add [Entity]" based on editingItem
-   • ONE <input> or <select> per field with value={form.fieldName||''} onChange={e=>setForm(p=>({...p,fieldName:e.target.value}))}
-   • Cancel button: closes modal
-   • Save button: executes save logic, closes modal
-   • Click overlay background to close
+4. DATA TABLE — bg #0a1628, border "1px solid #1a3a5c", overflow hidden
+   Header row: bg #030a0e, display grid, padding 8px 14px, fontSize 10, color #4a7a9b, letterSpacing 2, textTransform uppercase, borderBottom "1px solid #1a3a5c"
+   Data rows: display grid, padding 11px 14px, borderBottom "1px solid #0d1f35", fontSize 11, color #e0f4ff
+   Row hover: bg #0d1f35
+   • Edit btn: border "1px solid #0e4f6e", color #00d4ff, bg transparent, padding 3px 10px, fontSize 10, letterSpacing 1, cursor pointer
+   • Delete btn: border "1px solid rgba(255,59,78,0.3)", color #ff3b4e, bg transparent, padding 3px 10px, fontSize 10, cursor pointer
+
+5. STATUS BADGES — display inline-flex, padding 2px 8px, fontSize 10, letterSpacing 1, fontWeight bold
+   active/online/completed: border "1px solid #00ff9d", color #00ff9d, bg "rgba(0,255,157,0.08)"
+   pending/processing: border "1px solid #f5a623", color #f5a623, bg "rgba(245,166,35,0.08)"
+   inactive/offline/failed: border "1px solid #ff3b4e", color #ff3b4e, bg "rgba(255,59,78,0.08)"
+
+6. ADD/EDIT MODAL — MUST BE 100% FUNCTIONAL
+   • Overlay: position fixed, inset 0, bg "rgba(3,10,14,0.92)", backdropFilter blur(4px), zIndex 1000
+   • Panel: bg #0a1628, border "1px solid #1a3a5c", padding 24px, width 480, maxWidth "90vw"
+   • Title: fontSize 12, letterSpacing 3, color #00d4ff, textTransform uppercase, marginBottom 20, borderBottom "1px solid #1a3a5c", paddingBottom 10
+   • Field label: fontSize 10, letterSpacing 2, color #4a7a9b, textTransform uppercase, marginBottom 4
+   • Input: bg "#030a0e", border "1px solid #1a3a5c", color #e0f4ff, padding 8px 12px, fontSize 11, width "100%", outline none, fontFamily inherit
+   • Focus input: border-color #00d4ff
+   • Cancel: border "1px solid #1a3a5c", color #4a7a9b, bg transparent, padding 7px 20px, fontSize 10, letterSpacing 2, cursor pointer
+   • Save: border "1px solid #f5a623", color #f5a623, bg "rgba(245,166,35,0.1)", padding 7px 20px, fontSize 10, letterSpacing 2, cursor pointer
+   • Click overlay to close
+
+7. SYSTEM LOG (optional bottom panel for dashboards) — monospace terminal output:
+   bg #030a0e, border "1px solid #1a3a5c", padding 12px, maxHeight 100px, overflowY auto, fontSize 10
+   Lines prefixed with "> " in amber, text in #4a7a9b
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CHARTS (when needed):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Use inline SVG or simple div-based bar charts with amber/cyan fills. No external chart libraries.
+Bar chart bars: bg #f5a623 or #00d4ff, height 100%, display inline-block
+Chart container: border "1px solid #1a3a5c", bg #0a1628, padding 14px
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ABSOLUTE RULES — NO EXCEPTIONS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-1. INLINE STYLES ONLY — zero className, zero Tailwind classes
-2. Use only React.useState, React.useEffect (not destructured imports at top level)
-3. Every onClick, onChange, onSubmit handler must be a real function — NO empty handlers
-4. Every modal MUST have working close, save, and field-editing
-5. Every Delete button MUST actually remove from state
-6. Every Edit button MUST pre-fill the form with existing values
-7. Search MUST filter visible rows in real-time
-8. IDs: seed data uses numbers 1-8. New records use Date.now()
-9. NO placeholder comments like "// implement here" or "// TODO"
-10. Return ONLY raw JavaScript — NO markdown fences, NO backticks, NO explanation text`,
+1. INLINE STYLES ONLY — zero className, zero Tailwind
+2. fontFamily: "'Courier New', Courier, monospace" everywhere
+3. Use only React.useState, React.useEffect (not destructured)
+4. Every handler must be a real function — NO empty handlers
+5. Every modal MUST have working close, save, field-editing
+6. Every Delete MUST remove from state. Every Edit MUST pre-fill form.
+7. Search MUST filter in real-time
+8. IDs: seed data uses numbers 1-8. New records: Date.now()
+9. NO placeholder comments, NO TODO, NO "implement here"
+10. Return ONLY raw JavaScript — NO markdown, NO backticks, NO explanation`,
         response_json_schema: null
       });
 
