@@ -606,6 +606,32 @@ Requirements:
     setSaving(false);
   };
 
+  const handleInstallFromStore = async (appId) => {
+    // Find the app from the store and copy it into this org's library
+    try {
+      const storeApp = await base44.entities.HarborApp.filter({ id: appId }, null, 1);
+      const app = storeApp?.[0];
+      if (!app) return;
+      // Create a copy in the current org
+      const saved = await base44.entities.HarborApp.create({
+        organization_id: orgId,
+        name: app.name,
+        description: app.description,
+        prompt: app.prompt || "",
+        code: app.code,
+        category: app.category,
+        icon_emoji: app.icon_emoji,
+        created_by_name: app.created_by_name,
+      });
+      await loadApps();
+      // Auto-open the installed app
+      handleLoadApp({ ...app, id: saved.id });
+      toast.success(`✅ "${app.name}" er nu tilgængelig i dine apps!`);
+    } catch (err) {
+      console.error("Install from store failed:", err);
+    }
+  };
+
   const handleDelete = async (app, e) => {
     e.stopPropagation();
     await base44.entities.HarborApp.delete(app.id);
