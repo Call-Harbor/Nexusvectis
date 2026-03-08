@@ -483,7 +483,7 @@ export default function FleetStore({ orgId, onInstall, installedIds = [], onClos
             <div className="flex-shrink-0 w-72 xl:w-80">
               <AppDetailPanel
                 app={selectedApp}
-                isInstalled={installedIds.includes(selectedApp.id)}
+                isInstalled={localInstalledIds.includes(selectedApp.id)}
                 isInstalling={installing === selectedApp.id}
                 onInstall={handleInstall}
                 onClose={() => setSelectedApp(null)}
