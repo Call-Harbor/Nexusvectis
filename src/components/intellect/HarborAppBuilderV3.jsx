@@ -287,7 +287,7 @@ Return JSON:
       const pageDefs = (schema.pages || []).map(p => `${p.name} (${p.type}): ${p.description}`).join('\n');
 
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are an elite React developer building a STUNNING, PRODUCTION-READY application. This is NOT a prototype - it must look like a $50,000 custom-built SaaS product.
+        prompt: `You are the world's best UI engineer. Build a COMPLETE, PIXEL-PERFECT, PRODUCTION-GRADE React SPA. This must look like it was built by a top-tier design team with months of work.
 
 APP: ${schema.appName}
 DESCRIPTION: ${schema.appDescription}
@@ -298,30 +298,83 @@ ${entityDefs}
 PAGES:
 ${pageDefs}
 
-ABSOLUTE REQUIREMENTS:
-1. Export EXACTLY: function GeneratedApp(props) { ... }
-2. Use useState for ALL local state (pre-populate with 3-5 realistic demo records)
-3. Dark premium theme ONLY: bg-slate-950, bg-slate-900, slate-800 backgrounds
-4. Accent: cyan-500, violet-500, emerald-500, amber-500 for status indicators
-5. EVERY page must be complete with:
-   - Top header bar with title + action buttons
-   - Stats row (3-4 metric cards with numbers)
-   - Filterable/searchable data table OR card grid
-   - Functional ADD form (inline or modal) with ALL fields
-   - Edit/Delete actions on each row/card
-   - Empty state message
-6. ALL buttons must DO something (add, edit, delete, filter, search)
-7. Use inline modals (position:fixed overlay) for forms
-8. Sidebar navigation with icons for all pages
-9. Status badges: emerald=active/done, amber=pending/warning, red=error/cancelled, blue=info
-10. Cards with: rounded-xl, bg-slate-800/50, border border-slate-700/50, hover:border-cyan-500/30 hover:shadow-lg hover:shadow-cyan-500/5 transition-all
-11. Buttons: bg-gradient-to-r from-cyan-600 to-violet-600 hover:from-cyan-500 hover:to-violet-500 text-white rounded-lg px-4 py-2
-12. Tables: striped rows, hover highlight, proper column headers
-13. Forms: dark inputs with bg-slate-800, border-slate-700, focus:border-cyan-500 rounded-lg
-14. Use Tailwind CSS ONLY - zero external packages
-15. Return COMPLETE JavaScript code ONLY - NO markdown, NO triple backticks, NO explanation
+═══════════════════════════════════════
+MANDATORY DESIGN SYSTEM — FOLLOW EXACTLY
+═══════════════════════════════════════
 
-The app MUST have real data and real interactions. Make it impressive.`,
+LAYOUT:
+• Full-screen: min-h-screen flex bg-slate-950
+• Left sidebar: w-64 bg-slate-900 border-r border-slate-800 flex flex-col (ALWAYS visible)
+• Main area: flex-1 flex flex-col overflow-hidden
+• Top header: h-16 px-6 flex items-center justify-between bg-slate-900/50 border-b border-slate-800 backdrop-blur
+
+SIDEBAR must contain:
+• App logo/name at top with gradient icon
+• Navigation links with icons (use emoji icons like 📊 🏠 👥 📦 📋 ⚙️)
+• Active state: bg-cyan-500/10 text-cyan-400 border-l-2 border-cyan-500 rounded-r-lg
+• Inactive: text-slate-400 hover:text-white hover:bg-slate-800/50 rounded-lg
+• Bottom: user avatar area
+
+EVERY PAGE must have ALL of these:
+1. PAGE HEADER: Full-width gradient banner (from-slate-900 via-slate-800 to-slate-900 with subtle cyan glow), page title in text-2xl font-bold, subtitle, breadcrumb
+2. STATS ROW: 4 metric cards side by side, each with: icon in colored rounded bg, large number, label, trend indicator (↑ +12%)
+3. CONTROLS BAR: search input + filter dropdowns + primary action button (gradient)
+4. DATA TABLE or CARD GRID (at least 5 demo rows/cards with realistic data)
+5. PAGINATION bar at bottom
+
+STAT CARDS — use this exact pattern:
+• bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-cyan-500/30 transition-all
+• Icon wrapper: w-12 h-12 rounded-xl bg-gradient-to-br [color] flex items-center justify-center text-xl
+• Number: text-3xl font-bold text-white
+• Label: text-sm text-slate-400
+• Trend: text-xs text-emerald-400 (or red-400) font-medium
+
+DATA TABLE — use this exact pattern:
+• Container: bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden
+• Header row: bg-slate-800/50 text-xs text-slate-400 uppercase tracking-wider px-4 py-3
+• Data rows: px-4 py-4 border-b border-slate-800/50 hover:bg-slate-800/30 transition-colors
+• Action buttons: small pill buttons (px-3 py-1 rounded-lg text-xs) — Edit=blue, Delete=red
+
+STATUS BADGES:
+• Active/Success: bg-emerald-500/15 text-emerald-400 border border-emerald-500/25 px-2.5 py-0.5 rounded-full text-xs font-medium
+• Warning/Pending: bg-amber-500/15 text-amber-400 border border-amber-500/25
+• Error/Cancelled: bg-red-500/15 text-red-400 border border-red-500/25
+• Info: bg-blue-500/15 text-blue-400 border border-blue-500/25
+
+MODAL FORMS:
+• Overlay: fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50
+• Panel: bg-slate-900 border border-slate-700 rounded-2xl p-6 w-full max-w-lg shadow-2xl
+• Input fields: w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/20
+• Labels: text-sm font-medium text-slate-300 mb-1.5 block
+• Submit button: w-full py-2.5 bg-gradient-to-r from-cyan-600 to-violet-600 hover:from-cyan-500 hover:to-violet-500 text-white font-semibold rounded-xl
+
+BUTTONS:
+• Primary: px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-600 to-violet-600 hover:from-cyan-500 hover:to-violet-500 text-white text-sm font-semibold transition-all shadow-lg shadow-cyan-500/20
+• Secondary: px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium border border-slate-700 transition-all
+
+SEARCH INPUT:
+• relative div wrapper with search icon (🔍) absolutely positioned left
+• input: pl-10 pr-4 py-2 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 w-72
+
+═══════════════════════════════════════
+DEMO DATA — PRE-POPULATE EVERYTHING
+═══════════════════════════════════════
+• Add 5-8 realistic demo records for EACH entity
+• Use realistic names, numbers, dates, statuses
+• Mix different statuses (active, pending, inactive, etc.)
+• Use real-looking data (company names, product names, real countries, etc.)
+
+═══════════════════════════════════════
+CODE REQUIREMENTS
+═══════════════════════════════════════
+1. Export: function GeneratedApp(props) { ... }
+2. useState for all state (selectedPage, modal open/close, form data, search term, data arrays)
+3. Tailwind CSS ONLY — zero external libraries
+4. ALL interactions work: add/edit/delete rows, search filters list, navigation switches pages
+5. NO placeholder comments like "// add more fields" — implement everything fully
+6. Return ONLY pure JavaScript code — NO markdown, NO backticks, NO explanation text
+
+MAKE IT LOOK STUNNING. EVERY PIXEL MUST LOOK INTENTIONAL AND PROFESSIONAL.`,
         response_json_schema: null
       });
 
