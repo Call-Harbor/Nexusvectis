@@ -328,7 +328,7 @@ function EmptyState({ onStart }) {
   );
 }
 
-export default function HarborAppBuilderV3({ onClose, vehicles = [], routes = [], shipments = [], alerts = [], customers = [], currentUser, orgId, installedAppIds = new Set() }) {
+export default function HarborAppBuilderV3({ onClose, vehicles = [], routes = [], shipments = [], alerts = [], customers = [], currentUser, orgId, installedAppIds = new Set(), autoInstallAppId = null }) {
   const [phase, setPhase] = useState("idle"); // idle | analyzing | building | preview
   const [userPrompt, setUserPrompt] = useState("");
   const [entities, setEntities] = useState([]);
