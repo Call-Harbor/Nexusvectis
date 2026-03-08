@@ -64,7 +64,7 @@ export default function IntellectCommandBar({
           />
         )}
       </AnimatePresence>
-    <div className="p-3 sm:p-4 lg:p-6">
+      <div className="p-3 sm:p-4 lg:p-6">
       <div className="max-w-4xl mx-auto">
         {/* Messages */}
         <div className="mb-3 sm:mb-4 max-h-32 sm:max-h-48 overflow-y-auto space-y-1.5 sm:space-y-2 pr-2">
