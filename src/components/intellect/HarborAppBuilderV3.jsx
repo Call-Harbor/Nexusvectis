@@ -10,8 +10,56 @@ import {
 import { toast } from "sonner";
 import DatabaseDesigner from "./DatabaseDesigner";
 
-function LiveAppSandbox({ code, orgId, vehicles, routes, shipments, alerts, customers, currentUser }) {
+function LiveAppSandbox({ code, orgId, vehicles, routes, shipments, alerts, customers, currentUser, onCodeFixed }) {
   const iframeRef = useRef(null);
+  const [autoFixing, setAutoFixing] = useState(false);
+  const [fixAttempts, setFixAttempts] = useState(0);
+  const lastErrorRef = useRef(null);
+
+  // Listen for errors from the iframe
+  useEffect(() => {
+    const handleMessage = async (event) => {
+      if (event.data?.type === "APP_ERROR" && !autoFixing && fixAttempts < 3) {
+        const errorMsg = event.data.message;
+        if (lastErrorRef.current === errorMsg) return; // avoid loops
+        lastErrorRef.current = errorMsg;
+        setAutoFixing(true);
+        setFixAttempts(prev => prev + 1);
+        try {
+          const result = await base44.integrations.Core.InvokeLLM({
+            prompt: `Fix this React app error. Return ONLY the corrected JavaScript code, no markdown, no backticks, no explanations.
+
+ERROR: ${errorMsg}
+
+CODE:
+${code}
+
+Rules:
+- Keep function named GeneratedApp
+- Use only inline styles (no className)
+- Fix only the error, keep all other functionality intact`,
+            response_json_schema: null
+          });
+          let fixed = typeof result === "string" ? result : JSON.stringify(result);
+          fixed = fixed.replace(/^```(?:jsx?|javascript|js)?\n?/gm, "").replace(/```\s*$/gm, "").trim();
+          if (fixed.includes("function GeneratedApp") || fixed.includes("GeneratedApp")) {
+            onCodeFixed?.(fixed);
+          }
+        } catch (e) {
+          console.error("Auto-fix failed:", e);
+        }
+        setAutoFixing(false);
+      }
+    };
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, [code, autoFixing, fixAttempts, onCodeFixed]);
+
+  useEffect(() => {
+    // Reset fix attempts when new code is loaded
+    setFixAttempts(0);
+    lastErrorRef.current = null;
+  }, [code]);
 
   useEffect(() => {
     if (!code || !iframeRef.current) return;
