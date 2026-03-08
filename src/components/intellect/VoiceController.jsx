@@ -395,16 +395,23 @@ export default function VoiceController({
     else startListening();
   };
 
-  // Greet on open
+  // Greet on open — human + professional mix
   useEffect(() => {
-    const greetings = [
-      "Hej! H.A.R.B.O.R her. Klar til at hjælpe dig.",
-      `Goddag. Du har ${vehicles.length} køretøjer og ${alerts.filter(a => !a.is_read).length} ulæste advarsler. Hvad har du brug for?`,
-      "H.A.R.B.O.R online. Sig en kommando eller stil mig et spørgsmål.",
-    ];
-    const msg = greetings[Math.floor(Math.random() * greetings.length)];
-    setHarborMessage(msg);
-    setTimeout(() => speak(msg), 400);
+    const hour = new Date().getHours();
+    let greeting;
+    if (hour < 10) {
+      greeting = `Godmorgen! Her er H.A.R.B.O.R. Jeg håber du har sovet godt. Du har ${vehicles.length} køretøjer klar. Hvad starter vi med?`;
+    } else if (hour < 12) {
+      greeting = `Hej! H.A.R.B.O.R her. Formiddagen er i gang — ${alerts.filter(a => !a.is_read).length} advarsler venter. Hvad kan jeg hjælpe med?`;
+    } else if (hour < 14) {
+      greeting = `God eftermiddag! H.A.R.B.O.R online. Har du fået spist frokost? Hvad kan jeg gøre for dig?`;
+    } else if (hour < 17) {
+      greeting = `Hej igen! Eftermiddagen er i fuld gang. ${vehicles.length} køretøjer i flåden. Hvad har du brug for?`;
+    } else {
+      greeting = `God aften! H.A.R.B.O.R her. Det er ved at blive sent — husk at tage en pause. Hvad kan jeg hjælpe med?`;
+    }
+    setHarborMessage(greeting);
+    setTimeout(() => speak(greeting), 400);
     return () => { stopListening(); window.speechSynthesis?.cancel(); };
   }, []);
 
