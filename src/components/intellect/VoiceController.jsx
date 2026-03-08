@@ -413,7 +413,12 @@ export default function VoiceController({
       greeting = `God aften! H.A.R.B.O.R her. Det er ved at blive sent — husk at tage en pause. Hvad kan jeg hjælpe med?`;
     }
     setHarborMessage(greeting);
-    setTimeout(() => speakRef.current?.(greeting), 400);
+    setTimeout(() => {
+      speakRef.current?.(greeting, () => {
+        // Auto-start listening after greeting is done
+        startListening();
+      });
+    }, 400);
     return () => { stopListening(); window.speechSynthesis?.cancel(); };
   }, []);
 
