@@ -127,9 +127,19 @@ export default function IntellectCommandBar({
               style={{ color: "#06b6d4", border: "1px solid rgba(6,182,212,0.3)" }}>
               {isUploading ? <Sparkles className="w-4 h-4 animate-spin" /> : <Paperclip className="w-4 h-4" />}
             </button>
-            <button onClick={handleVoice} className={`px-3 py-3 sm:px-4 rounded-lg transition-all hidden sm:flex ${isListening ? 'bg-red-500/20 border-red-500/50' : 'border-slate-700 hover:bg-slate-800'}`}
-              style={!isListening ? { color: "#06b6d4", border: "1px solid rgba(6,182,212,0.3)" } : {}}>
-              <Mic className="w-4 h-4" />
+            <button
+              onClick={handleVoiceToggle}
+              className={`px-3 py-3 sm:px-4 rounded-lg transition-all flex relative`}
+              style={isListening
+                ? { color: "#f87171", border: "1px solid rgba(239,68,68,0.5)", background: "rgba(239,68,68,0.1)", boxShadow: "0 0 12px rgba(239,68,68,0.2)" }
+                : { color: "#06b6d4", border: "1px solid rgba(6,182,212,0.3)" }
+              }
+              title="Advanced Voice Control"
+            >
+              {isListening
+                ? <><MicOff className="w-4 h-4" /><motion.span animate={{ scale: [1,1.6,1], opacity:[1,0.3,1] }} transition={{ duration: 0.8, repeat: Infinity }} className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-red-400" /></>
+                : <Mic className="w-4 h-4" />
+              }
             </button>
             <button onClick={processCommand} disabled={!input.trim()} 
               className="px-4 py-3 sm:px-5 rounded-lg font-mono tracking-widest uppercase text-sm font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
