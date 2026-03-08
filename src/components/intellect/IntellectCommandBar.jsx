@@ -33,15 +33,13 @@ export default function IntellectCommandBar({
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  const handleVoice = async () => {
-    if (!('webkitSpeechRecognition' in window)) { toast.error('Voice input not supported'); return; }
-    const recognition = new window.webkitSpeechRecognition();
-    recognition.lang = 'en-US'; recognition.continuous = false; recognition.interimResults = false;
-    recognition.onstart = () => setIsListening(true);
-    recognition.onend = () => setIsListening(false);
-    recognition.onresult = (event) => setInput(event.results[0][0].transcript);
-    recognition.onerror = () => { toast.error('Voice input failed'); setIsListening(false); };
-    recognition.start();
+  const [showVoiceController, setShowVoiceController] = useState(false);
+
+  const handleVoiceToggle = () => {
+    const supported = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+    if (!supported) { toast.error("Voice input not supported in this browser"); return; }
+    setShowVoiceController(p => !p);
+    setIsListening(p => !p);
   };
 
   return (
