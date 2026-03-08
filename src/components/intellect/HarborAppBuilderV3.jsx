@@ -415,7 +415,7 @@ Return JSON:
       const pageDefs = (schema.pages || []).map(p => `${p.name} (${p.type}): ${p.description}`).join('\n');
 
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are building an official NexusVectis enterprise application with MULTIPLE FULLY WORKING PAGES. Every single page must be complete and functional.
+        prompt: `You are a senior React engineer building a production-ready NexusVectis enterprise app. Every button, form, modal, and interaction MUST work 100%. No placeholders, no TODOs, no broken handlers.
 
 APP: ${schema.appName}
 DESCRIPTION: ${schema.appDescription}
@@ -423,99 +423,107 @@ DESCRIPTION: ${schema.appDescription}
 ENTITIES:
 ${entityDefs}
 
-PAGES TO BUILD (ALL OF THEM — NO SKIPPING):
+PAGES (build ALL of them):
 ${pageDefs}
 
-══════════════════════════════════════════════
-NEXUSVECTIS DESIGN STANDARDS — MANDATORY
-══════════════════════════════════════════════
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+STATE ARCHITECTURE — CRITICAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ALL state lives in GeneratedApp. Every entity gets:
+  const [items, setItems] = React.useState([...6-8 records with unique numeric ids 1-8...]);
+  const [showModal, setShowModal] = React.useState(false);
+  const [editingItem, setEditingItem] = React.useState(null);
+  const [search, setSearch] = React.useState("");
+  const [form, setForm] = React.useState({});
 
-COLORS:
-• bg-primary: #0f172a  • bg-card: #1e293b  • border: #334155
-• cyan: #06b6d4  • violet: #7c3aed  • text: #f1f5f9  • muted: #64748b
-• success: #10b981  • warning: #f59e0b  • danger: #ef4444
+MODAL PATTERN (copy exactly for every entity):
+  // Open ADD:  setEditingItem(null); setForm({}); setShowModal(true);
+  // Open EDIT: setEditingItem(item); setForm({...item}); setShowModal(true);
+  // SAVE:      if(editingItem) { setItems(prev => prev.map(x => x.id===editingItem.id ? {...x,...form} : x)); }
+  //            else { setItems(prev => [...prev, {...form, id: Date.now()}]); }
+  //            setShowModal(false); setForm({});
+  // DELETE:    setItems(prev => prev.filter(x => x.id !== item.id));
+  // SEARCH:    items.filter(x => JSON.stringify(x).toLowerCase().includes(search.toLowerCase()))
 
-LAYOUT:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DESIGN SYSTEM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Colors: bg #0f172a, card #1e293b, border #334155, cyan #06b6d4, violet #7c3aed, text #f1f5f9, muted #64748b, green #10b981, amber #f59e0b, red #ef4444
+
+LAYOUT STRUCTURE:
 function GeneratedApp(props) {
   const [currentPage, setCurrentPage] = React.useState("${(schema.pages || [])[0]?.name || 'Dashboard'}");
-  // ... all state for ALL entities
+  // ALL entity state here
   return (
     <div style={{display:"flex",height:"100vh",background:"#0f172a",color:"#f1f5f9",overflow:"hidden",fontFamily:"system-ui,sans-serif"}}>
-      <Sidebar currentPage={currentPage} setCurrentPage={setCurrentPage} user={props.currentUser} />
+      <Sidebar currentPage={currentPage} setCurrentPage={setCurrentPage} />
       <div style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden"}}>
-        <Topbar currentPage={currentPage} user={props.currentUser} />
-        <div style={{flex:1,overflowY:"auto",padding:"24px",background:"#0f172a"}}>
-          {/* Render page content based on currentPage */}
+        <Topbar currentPage={currentPage} onAdd={...} />
+        <div style={{flex:1,overflowY:"auto",padding:"24px"}}>
+          {/* page routing */}
         </div>
       </div>
+      {/* ALL modals rendered here, outside page divs */}
     </div>
   );
 }
 
-SIDEBAR (width:240px, background:#0f172a, borderRight:1px solid #334155):
-• Logo area: gradient icon + app name
-• Nav items for EVERY PAGE with emoji icons (📊🏠👥📦📋⚙️💼📈🔔📝)
-  - Active: {background:"rgba(6,182,212,0.15)",color:"#06b6d4",borderLeft:"3px solid #06b6d4",borderRadius:"0 8px 8px 0"}
-  - Inactive: {color:"#64748b",borderRadius:8px} hover:{background:"#1e293b",color:"white"}
-• Bottom: user avatar (initials circle) + name + email
+SIDEBAR: width 240px, background #0f172a, borderRight 1px solid #334155
+• Logo: gradient (cyan→violet) icon + app name text
+• Nav link per page with emoji. Active: bg rgba(6,182,212,0.12) color #06b6d4 borderLeft 3px solid #06b6d4. Inactive: color #64748b, hover bg #1e293b color white
+• Bottom: user initials avatar + name
 
-TOPBAR (height:56px, borderBottom:1px solid #334155):
-• Left: page title (fontSize:18px, fontWeight:700)
-• Right: primary action button (gradient cyan→violet) + user badge
+TOPBAR: height 56px, borderBottom 1px solid #334155, display flex, alignItems center, padding 0 24px
+• Page title bold 18px left side
+• "Add New [Entity]" button right side: gradient bg linear-gradient(to right,#0e7490,#7c3aed), color white, padding 8px 16px, borderRadius 8, border none, cursor pointer, fontWeight 600
 
-EACH PAGE must have ALL of these sections:
-1. STATS ROW (grid, 4 cols, gap:16px, marginBottom:24px):
-   Card: {background:"#1e293b",border:"1px solid #334155",borderRadius:12,padding:20}
-   Icon: {width:44,height:44,borderRadius:10,background:"linear-gradient(135deg,#0e7490,#7c3aed)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20}
-   Value: {fontSize:28,fontWeight:700,color:"white",marginTop:12}
-   Label: {fontSize:12,color:"#64748b",marginTop:4}
-   Trend: {fontSize:11,color:"#10b981",marginTop:6} (use ↑ or ↓)
+EACH PAGE MUST HAVE:
+1. STATS ROW — 4 stat cards in a CSS grid (gridTemplateColumns: repeat(4,1fr), gap 16px, marginBottom 24px)
+   Each card: bg #1e293b, border 1px solid #334155, borderRadius 12, padding 20px
+   Emoji icon div (44px, borderRadius 10, gradient bg), big number (28px bold), label (12px muted), trend arrow (green/red 11px)
+   Stats MUST be computed from actual state arrays (e.g. items.length, items.filter(x=>x.status==='active').length)
 
-2. CONTROLS BAR (display:flex, gap:12, marginBottom:16, alignItems:center):
-   Search: {background:"#1e293b",border:"1px solid #334155",borderRadius:8,padding:"9px 14px 9px 36px",color:"white",fontSize:13,width:280,outline:"none"}
-   Primary button: {background:"linear-gradient(to right,#0e7490,#7c3aed)",color:"white",padding:"9px 18px",borderRadius:8,border:"none",fontSize:13,fontWeight:600,cursor:"pointer"}
+2. SEARCH + FILTER BAR — display flex gap 12 marginBottom 16
+   Search input (width 280, bg #1e293b, border #334155, borderRadius 8, padding 9px 14px, color white, outline none)
+   onChange: setSearch(e.target.value)
+   Optional filter <select> for status
 
-3. DATA TABLE ({background:"#1e293b",border:"1px solid #334155",borderRadius:12,overflow:"hidden"}):
-   Header row: {background:"#0f172a",padding:"10px 16px",fontSize:11,color:"#64748b",textTransform:"uppercase",letterSpacing:"0.05em",display:"grid"}
-   Data row: {padding:"14px 16px",borderBottom:"1px solid #334155",fontSize:13,display:"grid",alignItems:"center",cursor:"pointer"}
-   Row hover: backgroundColor:"#334155"
-   AT LEAST 6 REALISTIC DATA ROWS pre-populated
+3. DATA TABLE — bg #1e293b, border 1px solid #334155, borderRadius 12, overflow hidden
+   Header: bg #0f172a, display grid with proper gridTemplateColumns matching columns, padding 10px 16px, fontSize 11, color #64748b, textTransform uppercase
+   Rows: display grid same columns, padding 14px 16px, borderBottom 1px solid #334155, fontSize 13, cursor pointer
+   Row onMouseEnter/Leave to toggle hover bg #334155
+   Last column: Edit + Delete buttons
+   Edit: bg rgba(6,182,212,0.15) color #06b6d4 border 1px solid rgba(6,182,212,0.3) padding 4px 12px borderRadius 6 fontSize 12 cursor pointer marginRight 8
+   Delete: bg rgba(239,68,68,0.1) color #ef4444 border 1px solid rgba(239,68,68,0.2) padding 4px 12px borderRadius 6 fontSize 12 cursor pointer
+   Show filtered data: {filteredItems.map(item => ...)}
 
-4. STATUS BADGES: {display:"inline-flex",alignItems:"center",padding:"3px 10px",borderRadius:99,fontSize:11,fontWeight:500}
-   Active: {background:"rgba(16,185,129,0.15)",color:"#10b981",border:"1px solid rgba(16,185,129,0.3)"}
-   Pending: {background:"rgba(245,158,11,0.15)",color:"#f59e0b",border:"1px solid rgba(245,158,11,0.3)"}
-   Inactive/Error: {background:"rgba(239,68,68,0.15)",color:"#ef4444",border:"1px solid rgba(239,68,68,0.3)"}
+4. STATUS BADGES — display inline-flex, padding 3px 10px, borderRadius 99, fontSize 11, fontWeight 500
+   active/completed/paid: green tones. pending/review: amber. inactive/cancelled/failed: red.
 
-5. ROW ACTIONS:
-   Edit btn: {background:"rgba(6,182,212,0.15)",color:"#06b6d4",border:"1px solid rgba(6,182,212,0.3)",padding:"4px 12px",borderRadius:6,fontSize:12,cursor:"pointer",marginRight:8}
-   Delete btn: {background:"rgba(239,68,68,0.1)",color:"#ef4444",border:"1px solid rgba(239,68,68,0.2)",padding:"4px 12px",borderRadius:6,fontSize:12,cursor:"pointer"}
+5. ADD/EDIT MODAL — MUST BE 100% FUNCTIONAL
+   • Triggered by "Add New" button (setEditingItem(null); setForm({}); setShowModal(true))
+   • Triggered by row Edit button (setEditingItem(item); setForm({...item}); setShowModal(true))
+   • Overlay: position fixed, inset 0, bg rgba(0,0,0,0.8), backdropFilter blur(6px), display flex, alignItems center, justifyContent center, zIndex 1000
+   • Panel: bg #1e293b, border 1px solid #334155, borderRadius 16, padding 28, width 520, maxWidth 90vw
+   • Title: "Edit [Entity]" or "Add [Entity]" based on editingItem
+   • ONE <input> or <select> per field with value={form.fieldName||''} onChange={e=>setForm(p=>({...p,fieldName:e.target.value}))}
+   • Cancel button: closes modal
+   • Save button: executes save logic, closes modal
+   • Click overlay background to close
 
-6. ADD/EDIT MODAL (when button clicked):
-   Overlay: {position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",backdropFilter:"blur(4px)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:50}
-   Panel: {background:"#1e293b",border:"1px solid #334155",borderRadius:16,padding:28,width:480,maxWidth:"90vw",boxShadow:"0 25px 50px rgba(0,0,0,0.6)"}
-   Input: {width:"100%",background:"#0f172a",border:"1px solid #334155",borderRadius:8,padding:"10px 14px",color:"white",fontSize:13,outline:"none",boxSizing:"border-box",marginBottom:16}
-   Label: {fontSize:11,fontWeight:600,color:"#94a3b8",marginBottom:6,display:"block",textTransform:"uppercase",letterSpacing:"0.08em"}
-   Submit: {width:"100%",padding:12,background:"linear-gradient(to right,#0e7490,#7c3aed)",color:"white",fontWeight:600,borderRadius:10,border:"none",fontSize:14,cursor:"pointer"}
-
-══════════════════════════════════════════════
-DEMO DATA — REQUIRED
-══════════════════════════════════════════════
-• useState initializer for EACH entity with 6-8 realistic pre-filled records
-• Use real company names, real-looking dates (2024-2025), varied statuses
-• Dashboard page must compute real stats from the data arrays
-
-══════════════════════════════════════════════
-STRICT CODE RULES
-══════════════════════════════════════════════
-1. ONE function: function GeneratedApp(props) — ALL sub-components defined INSIDE or as named functions before
-2. ALL pages rendered via conditional: if(currentPage === "X") return <XPage ... />
-3. ALL CRUD fully working: clicking Edit opens pre-filled modal, Save updates array, Delete removes row, Add opens empty modal
-4. Search filters the displayed rows in real-time
-5. INLINE STYLES ONLY — no className, no Tailwind
-6. NO placeholder comments — implement EVERYTHING
-7. Return ONLY raw JavaScript — NO markdown, NO backticks, NO explanation
-
-MAKE IT PRODUCTION-PERFECT. ALL PAGES FULLY FUNCTIONAL.`,
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ABSOLUTE RULES — NO EXCEPTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. INLINE STYLES ONLY — zero className, zero Tailwind classes
+2. Use only React.useState, React.useEffect (not destructured imports at top level)
+3. Every onClick, onChange, onSubmit handler must be a real function — NO empty handlers
+4. Every modal MUST have working close, save, and field-editing
+5. Every Delete button MUST actually remove from state
+6. Every Edit button MUST pre-fill the form with existing values
+7. Search MUST filter visible rows in real-time
+8. IDs: seed data uses numbers 1-8. New records use Date.now()
+9. NO placeholder comments like "// implement here" or "// TODO"
+10. Return ONLY raw JavaScript — NO markdown fences, NO backticks, NO explanation text`,
         response_json_schema: null
       });
 
