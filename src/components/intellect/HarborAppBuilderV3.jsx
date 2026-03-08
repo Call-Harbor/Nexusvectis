@@ -353,6 +353,17 @@ export default function HarborAppBuilderV3({ onClose, vehicles = [], routes = []
 
   useEffect(() => { loadApps(); }, [orgId]);
 
+  // Listen for install events from the Fleet Store (even when builder is already open)
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.detail?.orgId === orgId) {
+        handleInstallFromStore(e.detail.appId);
+      }
+    };
+    window.addEventListener('harbor_install_app', handler);
+    return () => window.removeEventListener('harbor_install_app', handler);
+  }, [orgId]);
+
   useEffect(() => {
     if (autoInstallAppId && orgId) {
       handleInstallFromStore(autoInstallAppId);
