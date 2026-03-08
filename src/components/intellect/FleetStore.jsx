@@ -283,6 +283,22 @@ export default function FleetStore({ orgId, onInstall, installedIds = [], onClos
     setInstalling(null);
   };
 
+  const handleUninstall = async (app) => {
+    setInstalling(app.id);
+    try {
+      const count = Math.max(0, (app.store_installs || 1) - 1);
+      await base44.entities.HarborApp.update(app.id, { store_installs: count });
+      setLocalInstalledIds(prev => prev.filter(id => id !== app.id));
+      setApps(prev => prev.map(a => a.id === app.id ? { ...a, store_installs: count } : a));
+      if (selectedApp?.id === app.id) setSelectedApp(prev => ({ ...prev, store_installs: count }));
+      onUninstall?.(app.id);
+      toast.success(`"${app.name}" removed from your library.`);
+    } catch (err) {
+      toast.error("Failed to remove app: " + err.message);
+    }
+    setInstalling(null);
+  };
+
   const filtered = apps.filter(app => {
     const matchCat = activeCategory === "all" || app.category === activeCategory;
     const matchSearch = !search || app.name?.toLowerCase().includes(search.toLowerCase()) || app.description?.toLowerCase().includes(search.toLowerCase());
