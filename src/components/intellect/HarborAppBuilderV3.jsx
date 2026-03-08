@@ -905,7 +905,7 @@ Requirements:
                       />
                     </div>
                   ) : (
-                    <LiveAppSandbox code={generatedCode} orgId={orgId} vehicles={vehicles} routes={routes} shipments={shipments} alerts={alerts} customers={customers} currentUser={currentUser} />
+                    <LiveAppSandbox code={generatedCode} orgId={orgId} vehicles={vehicles} routes={routes} shipments={shipments} alerts={alerts} customers={customers} currentUser={currentUser} onCodeFixed={(fixed) => { setGeneratedCode(fixed); toast.success("🔧 Error auto-fixed!"); }} />
                   )}
                 </motion.div>
               )}
