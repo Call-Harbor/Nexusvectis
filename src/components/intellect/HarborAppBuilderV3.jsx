@@ -353,6 +353,12 @@ export default function HarborAppBuilderV3({ onClose, vehicles = [], routes = []
 
   useEffect(() => { loadApps(); }, [orgId]);
 
+  useEffect(() => {
+    if (autoInstallAppId && orgId) {
+      handleInstallFromStore(autoInstallAppId);
+    }
+  }, [autoInstallAppId, orgId]);
+
   const loadApps = async () => {
     if (!orgId) return;
     const apps = await base44.entities.HarborApp.filter({ organization_id: orgId }, '-created_date', 50);
