@@ -94,7 +94,12 @@ export default function IntellectMode() {
   const [parallelProcessorTasks, setParallelProcessorTasks] = useState([]);
   const [isCircularMenuOpen, setIsCircularMenuOpen] = useState(false);
   const [showFleetAITrainer, setShowFleetAITrainer] = useState(false);
-  const [installedAppIds, setInstalledAppIds] = useState(new Set());
+  const [installedAppIds, setInstalledAppIds] = useState(() => {
+    try {
+      const saved = localStorage.getItem('harbor_installed_apps');
+      return saved ? new Set(JSON.parse(saved)) : new Set();
+    } catch { return new Set(); }
+  });
 
   const messagesEndRef = useRef(null);
   const queryClient = useQueryClient();
