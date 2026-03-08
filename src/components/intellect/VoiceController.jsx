@@ -521,11 +521,16 @@ export default function VoiceController({
                 suggestion={suggestion}
                 onAccept={() => {
                   setSuggestion(null);
-                  if (suggestion.action === "open_alerts") onNavigate?.("Alerts");
-                  else if (suggestion.action === "analyze_fleet") onOpenWindow?.("deep_analysis");
-                  else if (suggestion.action === "check_route") onOpenWindow?.("routes");
-                  else if (suggestion.action === "morning_briefing" || suggestion.action === "daily_summary") onOpenWindow?.("deep_analysis");
-                  speak("Godt. Åbner nu.");
+                  if (suggestion.action === "open_alerts") { onNavigate?.("Alerts"); speak("Åbner advarsler nu."); }
+                  else if (suggestion.action === "analyze_fleet") { onOpenWindow?.("deep_analysis"); speak("Åbner flådeanalyse."); }
+                  else if (suggestion.action === "check_route") { onOpenWindow?.("routes"); speak("Her er ruteoversigten."); }
+                  else if (suggestion.action === "morning_briefing" || suggestion.action === "daily_summary") { onOpenWindow?.("deep_analysis"); speak("Åbner daglig briefing."); }
+                  else if (suggestion.action === "break") { speak("Godt! Tag en god pause. Jeg holder øje med tingene. Vi ses om lidt! 😊"); }
+                  else if (suggestion.action === "coffee") { speak("God idé! Nyd din kaffe. ☕ Jeg er her når du er klar."); }
+                  else if (suggestion.action === "breakfast") { speak("Dejligt! Spis en god morgenmad. Det er dagens vigtigste måltid!"); }
+                  else if (suggestion.action === "lunch") { speak("Rigtig god idé! Nyd frokosten. Gå fra computeren og lad op."); }
+                  else if (suggestion.action === "dinner") { speak("God aften! Nyd maden og slap af efter en lang dag."); }
+                  else { speak("Godt. Åbner nu."); }
                 }}
                 onDismiss={() => { setSuggestion(null); speak("Ingen problem."); }}
               />
