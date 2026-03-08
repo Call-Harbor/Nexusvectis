@@ -542,6 +542,44 @@ Requirements:
 
   const filteredApps = savedApps.filter(app => app.name.toLowerCase().includes(searchApps.toLowerCase()));
 
+  const handlePublish = async () => {
+    if (!currentAppId && !generatedCode) return;
+    setPublishing(true);
+    try {
+      let appId = currentAppId;
+      // Save first if not saved
+      if (!appId) {
+        const saved = await base44.entities.HarborApp.create({
+          organization_id: orgId,
+          name: appMeta?.name || "Generated App",
+          description: publishForm.description || appMeta?.description || "",
+          prompt: userPrompt,
+          code: generatedCode,
+          category: publishForm.category,
+          icon_emoji: appMeta?.icon || "⚡",
+          created_by_name: currentUser?.full_name || currentUser?.email || "Unknown",
+          published_to_store: true,
+          tags: publishForm.tags ? publishForm.tags.split(",").map(t => t.trim()).filter(Boolean) : [],
+        });
+        appId = saved.id;
+        setCurrentAppId(appId);
+      } else {
+        await base44.entities.HarborApp.update(appId, {
+          published_to_store: true,
+          category: publishForm.category,
+          description: publishForm.description || appMeta?.description || "",
+          tags: publishForm.tags ? publishForm.tags.split(",").map(t => t.trim()).filter(Boolean) : [],
+        });
+      }
+      await loadApps();
+      setShowPublishModal(false);
+      toast.success("🚀 App published to Fleet Store!");
+    } catch (err) {
+      toast.error("Publish failed: " + err.message);
+    }
+    setPublishing(false);
+  };
+
   return (
     <div className="relative w-full h-full bg-slate-950 text-white flex overflow-hidden">
       {/* Subtle grid bg */}
