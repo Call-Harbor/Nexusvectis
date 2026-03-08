@@ -272,6 +272,9 @@ export default function HarborAppBuilderV3({ onClose, vehicles = [], routes = []
   const [isExpanding, setIsExpanding] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [selectedEntity, setSelectedEntity] = useState(null);
+  const [showPublishModal, setShowPublishModal] = useState(false);
+  const [publishing, setPublishing] = useState(false);
+  const [publishForm, setPublishForm] = useState({ category: "custom", description: "", tags: "" });
   const promptRef = useRef(null);
 
   useEffect(() => { loadApps(); }, [orgId]);
