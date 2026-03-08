@@ -1115,6 +1115,11 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
           setShowProfileSearch={setShowProfileSearch}
           handleQuickAction={handleQuickAction}
           openWindow={openWindow}
+          vehicles={vehicles}
+          alerts={alerts}
+          routes={routes}
+          onNavigate={(page) => navigate(createPageUrl(page))}
+          onCloseWindows={() => setActiveWindows([])}
         />
       </div>
 
