@@ -5,7 +5,7 @@ import {
   Plus, Search, Trash2, Save, Eye, Code2, Copy, Loader2,
   ChevronRight, Database, LayoutGrid, Zap, Settings, Sparkles,
   ArrowRight, Terminal, Cpu, Globe, Layers, Play, RefreshCw,
-  CheckCircle2, Circle, Box, Wand2, Rocket, PanelLeft
+  CheckCircle2, Circle, Box, Wand2, Rocket, PanelLeft, Store, Upload, X
 } from "lucide-react";
 import { toast } from "sonner";
 import DatabaseDesigner from "./DatabaseDesigner";
