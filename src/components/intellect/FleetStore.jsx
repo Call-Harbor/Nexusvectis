@@ -221,18 +221,18 @@ function AppDetailPanel({ app, isInstalled, isInstalling, onInstall, onUninstall
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.97 }}
-          disabled={isInstalled || isInstalling}
-          onClick={() => onInstall(app)}
+          disabled={isInstalling}
+          onClick={() => isInstalled ? onUninstall(app) : onInstall(app)}
           className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl font-mono font-black text-sm tracking-widest transition-all ${
             isInstalled
-              ? "bg-emerald-500/20 text-emerald-400 border-2 border-emerald-500/40 cursor-default"
+              ? "bg-red-500/15 text-red-400 border-2 border-red-500/30 hover:bg-red-500/25"
               : `bg-gradient-to-r from-cyan-500/20 to-violet-500/20 ${accent.text} border-2 ${accent.border} hover:from-cyan-500/30 hover:to-violet-500/30 shadow-lg ${accent.glow}`
           }`}
         >
           {isInstalling ? (
-            <><Loader2 className="w-4 h-4 animate-spin" /> INSTALLING...</>
+            <><Loader2 className="w-4 h-4 animate-spin" /> PROCESSING...</>
           ) : isInstalled ? (
-            <><CheckCircle2 className="w-4 h-4" /> INSTALLED</>
+            <><X className="w-4 h-4" /> UNINSTALL</>
           ) : (
             <><Download className="w-4 h-4" /> DEPLOY TO ORG</>
           )}
