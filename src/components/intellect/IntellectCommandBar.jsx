@@ -166,6 +166,6 @@ export default function IntellectCommandBar({
         </div>
       </div>
     </div>
-    </>
+  </>
   );
 }
