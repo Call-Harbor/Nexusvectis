@@ -142,9 +142,7 @@ export default function IntellectMode() {
   // ── Effects ────────────────────────────────────────────────────────────────
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, streamingMessage]);
 
-  useEffect(() => {
-    localStorage.setItem('harbor_installed_apps', JSON.stringify([...installedAppIds]));
-  }, [installedAppIds]);
+
 
   useEffect(() => {
     if (pendingPromptRef.current && input === pendingPromptRef.current && !isProcessing) {
