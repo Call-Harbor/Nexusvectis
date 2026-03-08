@@ -50,8 +50,14 @@ export default function IntellectCommandBar({
           <VoiceController
             language="da-DK"
             onTranscript={(text) => setInput(text)}
-            onSend={() => { setShowVoiceController(false); setIsListening(false); processCommand(); }}
+            onSend={() => { processCommand(); }}
             onClose={() => { setShowVoiceController(false); setIsListening(false); }}
+            onNavigate={onNavigate}
+            onOpenWindow={openWindow}
+            onCloseWindows={onCloseWindows}
+            vehicles={vehicles || []}
+            alerts={alerts || []}
+            routes={routes || []}
           />
         )}
       </AnimatePresence>
