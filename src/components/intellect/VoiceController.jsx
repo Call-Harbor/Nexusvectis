@@ -267,6 +267,17 @@ export default function VoiceController({
   const handleFinalText = useCallback((text) => {
     setLastCommand(text);
     setHistory(p => [text, ...p].slice(0, 8));
+    recordActivity();
+
+    // Check for human/conversational input first
+    const humanType = detectHumanConversation(text);
+    if (humanType) {
+      const reply = getHumanReply(humanType, text);
+      speak(reply);
+      setHarborMessage(reply);
+      setSuggestion(null);
+      return;
+    }
 
     const action = matchCommand(text);
 
