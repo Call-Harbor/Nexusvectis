@@ -242,7 +242,7 @@ function AppDetailPanel({ app, isInstalled, isInstalling, onInstall, onClose }) 
   );
 }
 
-export default function FleetStore({ orgId, onInstall, installedIds = [], onClose }) {
+export default function FleetStore({ orgId, onInstall, onUninstall, installedIds = [], onClose }) {
   const [apps, setApps] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
