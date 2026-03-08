@@ -210,7 +210,7 @@ export default function VoiceController({
       const humanMsg = checkHumanCheckins();
       if (humanMsg) {
         setSuggestion(humanMsg);
-        speak(humanMsg.text);
+        speakRef.current?.(humanMsg.text);
         setHarborMessage(humanMsg.text);
         return;
       }
@@ -218,7 +218,7 @@ export default function VoiceController({
       const fleetMsg = generateProactiveMessage(vehicles, alerts, routes);
       if (fleetMsg) {
         setSuggestion(fleetMsg);
-        speak(fleetMsg.text);
+        speakRef.current?.(fleetMsg.text);
         setHarborMessage(fleetMsg.text);
       }
     }, 3000);
