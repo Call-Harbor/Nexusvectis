@@ -503,6 +503,7 @@ export default function FleetStore({ orgId, onInstall, onUninstall, installedIds
                 isInstalled={localInstalledIds.includes(selectedApp.id)}
                 isInstalling={installing === selectedApp.id}
                 onInstall={handleInstall}
+                onUninstall={handleUninstall}
                 onClose={() => setSelectedApp(null)}
               />
             </div>
