@@ -86,11 +86,6 @@ export function harborSpeak(text, { lang = "da-DK", rate = 1.0, pitch = 1.1, vol
     const voice = getBestFemaleVoice(lang);
     if (voice) utt.voice = voice;
     if (onStart) utt.onstart = onStart;
-    if (onEnd) utt.onend = onEnd;
-
-    // Chrome bugfix: resume if suspended
-    if (window.speechSynthesis.paused) window.speechSynthesis.resume();
-    window.speechSynthesis.speak(utt);
 
     // Chrome keepalive hack — prevents silent cutoff on long texts
     const keepAlive = setInterval(() => {
@@ -101,6 +96,10 @@ export function harborSpeak(text, { lang = "da-DK", rate = 1.0, pitch = 1.1, vol
 
     utt.onend = () => { clearInterval(keepAlive); onEnd?.(); };
     utt.onerror = () => { clearInterval(keepAlive); onEnd?.(); };
+
+    // Chrome bugfix: resume if suspended
+    if (window.speechSynthesis.paused) window.speechSynthesis.resume();
+    window.speechSynthesis.speak(utt);
   };
 
   const voices = window.speechSynthesis.getVoices();
