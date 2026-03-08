@@ -484,6 +484,7 @@ export default function FleetStore({ orgId, onInstall, onUninstall, installedIds
                       isInstalled={localInstalledIds.includes(app.id)}
                       isInstalling={installing === app.id}
                       onInstall={handleInstall}
+                      onUninstall={handleUninstall}
                       onPreview={setSelectedApp}
                     />
                   ))}
