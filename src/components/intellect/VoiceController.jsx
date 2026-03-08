@@ -382,7 +382,7 @@ export default function VoiceController({
     { label: "Dashboard", icon: LayoutDashboard, action: () => onNavigate?.("Dashboard") },
     { label: "Flåde", icon: Truck, action: () => onOpenWindow?.("fleet") },
     { label: "Advarsler", icon: AlertTriangle, action: () => onNavigate?.("Alerts") },
-    { label: "Ruter", icon: Route, action: () => onOpenWindow?.("routes") },
+    { label: "Ruter", icon: Navigation, action: () => onOpenWindow?.("routes") },
     { label: "Forsendelser", icon: Package, action: () => onOpenWindow?.("shipments") },
     { label: "Analyse", icon: BarChart3, action: () => onOpenWindow?.("deep_analysis") },
     { label: "App Builder", icon: Zap, action: () => onOpenWindow?.("harbor_app_builder") },
