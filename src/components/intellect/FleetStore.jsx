@@ -122,18 +122,18 @@ function AppCard({ app, isInstalled, isInstalling, onInstall, onUninstall, onPre
           </div>
           <motion.button
             whileTap={{ scale: 0.95 }}
-            disabled={isInstalled || isInstalling}
-            onClick={e => { e.stopPropagation(); onInstall(app); }}
+            disabled={isInstalling}
+            onClick={e => { e.stopPropagation(); isInstalled ? onUninstall(app) : onInstall(app); }}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-mono font-bold transition-all ${
               isInstalled
-                ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 cursor-default"
+                ? "bg-red-500/15 text-red-400 border border-red-500/30 hover:bg-red-500/25"
                 : "bg-cyan-500/20 text-cyan-400 border border-cyan-500/40 hover:bg-cyan-500/30"
             }`}
           >
             {isInstalling ? (
               <Loader2 className="w-3 h-3 animate-spin" />
             ) : isInstalled ? (
-              <><CheckCircle2 className="w-3 h-3" /> ADDED</>
+              <><X className="w-3 h-3" /> REMOVE</>
             ) : (
               <><Download className="w-3 h-3" /> ADD</>
             )}
