@@ -88,7 +88,7 @@ function Waveform({ isActive, amplitude = 0, isSpeaking = false }) {
 }
 
 // ─── Quick Command Chip ───────────────────────────────────────────────────
-function CommandChip({ label, icon: Icon, onClick }) {
+function CommandChip({ label, icon: IconComp, onClick }) {
   return (
     <button
       onClick={onClick}
@@ -101,7 +101,7 @@ function CommandChip({ label, icon: Icon, onClick }) {
       onMouseEnter={e => { e.currentTarget.style.background = "rgba(6,182,212,0.15)"; e.currentTarget.style.borderColor = "rgba(6,182,212,0.4)"; }}
       onMouseLeave={e => { e.currentTarget.style.background = "rgba(6,182,212,0.06)"; e.currentTarget.style.borderColor = "rgba(6,182,212,0.2)"; }}
     >
-      {Icon && <Icon className="w-3 h-3" />}
+      {IconComp && <IconComp className="w-3 h-3" />}
       <span>{label}</span>
     </button>
   );
