@@ -13,6 +13,7 @@ export default function IntellectCommandBar({
   uploadedFiles, setUploadedFiles, isUploading, setIsUploading,
   isListening, setIsListening, fileInputRef,
   processCommand, setShowCompanyAnalysis, setShowProfileSearch, handleQuickAction, openWindow,
+  vehicles, alerts, routes, onNavigate, onCloseWindows,
 }) {
   const removeFile = (index) => setUploadedFiles(prev => prev.filter((_, i) => i !== index));
 
