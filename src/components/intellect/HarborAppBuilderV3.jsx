@@ -752,10 +752,24 @@ Requirements:
 
               {/* PREVIEW */}
               {phase === "preview" && (
-                <motion.div key="preview" initial={{ opacity:0 }} animate={{ opacity:1 }} className="h-full">
+                <motion.div key="preview" initial={{ opacity:0 }} animate={{ opacity:1 }} className="h-full flex">
                   {showCode ? (
-                    <div className="h-full overflow-auto bg-slate-950 p-6">
-                      <pre className="text-xs text-slate-300 whitespace-pre-wrap leading-relaxed font-mono">{generatedCode}</pre>
+                    <div className="flex flex-col h-full w-full">
+                      <div className="flex items-center gap-2 px-4 py-2 bg-slate-900/80 border-b border-slate-800 flex-shrink-0">
+                        <div className="flex gap-1.5">
+                          <div className="w-3 h-3 rounded-full bg-red-500/60" />
+                          <div className="w-3 h-3 rounded-full bg-amber-500/60" />
+                          <div className="w-3 h-3 rounded-full bg-emerald-500/60" />
+                        </div>
+                        <span className="text-xs text-slate-500 font-mono ml-2">GeneratedApp.jsx</span>
+                        <span className="ml-auto text-[10px] text-slate-600">Click anywhere to edit · Changes apply in real-time</span>
+                      </div>
+                      <textarea
+                        value={generatedCode}
+                        onChange={e => setGeneratedCode(e.target.value)}
+                        className="flex-1 bg-slate-950 text-xs text-slate-300 font-mono p-6 focus:outline-none resize-none leading-relaxed"
+                        spellCheck={false}
+                      />
                     </div>
                   ) : (
                     <LiveAppSandbox code={generatedCode} orgId={orgId} vehicles={vehicles} routes={routes} shipments={shipments} alerts={alerts} customers={customers} currentUser={currentUser} />
