@@ -182,6 +182,7 @@ export default function VoiceController({
   useEffect(() => { ttsEnabledRef.current = ttsEnabled; }, [ttsEnabled]);
 
   // ─── Speak ──────────────────────────────────────────────────────────────
+  const speakRef = useRef(null);
   const speak = useCallback((text, onDone) => {
     if (!ttsEnabledRef.current) { onDone?.(); return; }
     setIsSpeaking(true);
@@ -193,6 +194,7 @@ export default function VoiceController({
       onEnd: () => { setIsSpeaking(false); onDone?.(); },
     });
   }, [lang]);
+  speakRef.current = speak;
 
   // ─── Record activity on mount + periodically ──────────────────────────
   useEffect(() => {
