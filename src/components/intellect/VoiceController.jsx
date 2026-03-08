@@ -194,18 +194,44 @@ export default function VoiceController({
     });
   }, [lang]);
 
-  // ─── Proactive suggestions ─────────────────────────────────────────────
+  // ─── Record activity on mount + periodically ──────────────────────────
   useEffect(() => {
-    if (!vehicles.length && !alerts.length) return;
-    const timeout = setTimeout(() => {
-      const msg = generateProactiveMessage(vehicles, alerts, routes);
-      if (msg) {
-        setSuggestion(msg);
-        speak(msg.text);
-        setHarborMessage(msg.text);
+    recordActivity();
+    const activityInterval = setInterval(recordActivity, 60 * 1000); // every minute
+    return () => clearInterval(activityInterval);
+  }, []);
+
+  // ─── Proactive + human checkins ───────────────────────────────────────
+  useEffect(() => {
+    // First check: human checkin (pause, food, weekend, etc.)
+    const humanTimeout = setTimeout(() => {
+      const humanMsg = checkHumanCheckins();
+      if (humanMsg) {
+        setSuggestion(humanMsg);
+        speak(humanMsg.text);
+        setHarborMessage(humanMsg.text);
+        return;
+      }
+      // Fall back to fleet suggestions
+      const fleetMsg = generateProactiveMessage(vehicles, alerts, routes);
+      if (fleetMsg) {
+        setSuggestion(fleetMsg);
+        speak(fleetMsg.text);
+        setHarborMessage(fleetMsg.text);
       }
     }, 3000);
-    return () => clearTimeout(timeout);
+
+    // Periodic human checkins every 15 minutes
+    const periodicInterval = setInterval(() => {
+      const humanMsg = checkHumanCheckins();
+      if (humanMsg && !suggestion) {
+        setSuggestion(humanMsg);
+        speak(humanMsg.text);
+        setHarborMessage(humanMsg.text);
+      }
+    }, 15 * 60 * 1000);
+
+    return () => { clearTimeout(humanTimeout); clearInterval(periodicInterval); };
   }, []); // Only on mount
 
   // ─── Amplitude tracking ────────────────────────────────────────────────
