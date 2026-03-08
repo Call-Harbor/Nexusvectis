@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Mic, MicOff, Volume2, VolumeX, X, ChevronRight,
-  Zap, Radio, Sparkles, Brain, BarChart3, Truck,
-  AlertTriangle, Package, Route, Settings, Globe,
-  MessageSquare, LayoutDashboard, FileText, Activity,
+  Mic, MicOff, Volume2, VolumeX, X,
+  Zap, Sparkles, Brain, BarChart3, Truck,
+  AlertTriangle, Package, Settings, Globe,
+  MessageSquare, LayoutDashboard, FileText, Navigation,
 } from "lucide-react";
 import { toast } from "sonner";
 import { harborSpeak, getBestFemaleVoice, generateProactiveMessage } from "./HarborVoiceAgent";
