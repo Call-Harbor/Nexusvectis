@@ -299,7 +299,7 @@ export default function PredictiveMaintenancePanel({ orgId }) {
       {/* Vehicle list */}
       <div className="space-y-3">
         {filtered.length === 0 ? (
-          <p className="text-slate-500 text-sm text-center py-8">Ingen køretøjer i denne kategori</p>
+          <p className="text-slate-500 text-sm text-center py-8">No vehicles in this category</p>
         ) : (
           filtered.map((v, i) => <VehicleCard key={v.vehicle_id} vehicle={v} index={i} />)
         )}

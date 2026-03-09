@@ -43,7 +43,7 @@ async function getAIInsights(summaryData) {
   const prompt = `You are a fleet maintenance AI. Analyze this data and respond ONLY with valid JSON (no markdown):
 ${JSON.stringify(summaryData)}
 
-{"fleet_health_score":<0-100>,"total_preventive_savings_eur":<number>,"key_findings":["<finding1>","<finding2>","<finding3>"],"highest_risk_component_fleet_wide":"<name>","ai_summary":"<2 sentences in Danish>"}`;
+{"fleet_health_score":<0-100>,"total_preventive_savings_eur":<number>,"key_findings":["<finding1>","<finding2>","<finding3>"],"highest_risk_component_fleet_wide":"<name>","ai_summary":"<2 sentences in English>"}`;
 
   try {
     const res = await fetch("https://api.mistral.ai/v1/chat/completions", {
