@@ -125,6 +125,7 @@ function VehicleCard({ vehicle, index }) {
               {/* Component grid */}
               <div>
                 <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Component Risk Breakdown</p>
+
                 <ComponentGrid components={vehicle.components} />
               </div>
 
@@ -149,6 +150,7 @@ function VehicleCard({ vehicle, index }) {
               {vehicle.components.filter(c => c.risk > 40).length > 0 && (
                 <div>
                   <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Recommended Services</p>
+
                   <div className="space-y-1">
                     {vehicle.components.filter(c => c.risk > 40).map(comp => (
                       <div key={comp.name} className="flex items-start gap-2 text-xs p-2 rounded-lg bg-slate-800/30">
@@ -171,14 +173,15 @@ function VehicleCard({ vehicle, index }) {
               <div className="flex items-center justify-between p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
                 <div>
                   <p className="text-xs text-emerald-400 font-bold">Preventive Cost</p>
+
                   <p className="text-lg font-black text-white">€{vehicle.preventive_cost_eur.toLocaleString()}</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-xs text-slate-400">vs Reactive</p>
+                  <p className="text-xs text-slate-400">vs. Reactive</p>
                   <p className="text-sm font-bold text-red-400 line-through">€{vehicle.reactive_cost_eur.toLocaleString()}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-xs text-emerald-400 font-bold">Potential Saving</p>
+                  <p className="text-xs text-emerald-400 font-bold">Potential Savings</p>
                   <p className="text-lg font-black text-emerald-400">€{vehicle.potential_savings_eur.toLocaleString()}</p>
                 </div>
               </div>
@@ -207,12 +210,12 @@ export default function PredictiveMaintenancePanel({ orgId }) {
         <motion.div animate={{ rotate: 360 }} transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}>
           <Brain className="w-10 h-10 text-cyan-400" />
         </motion.div>
-        <p className="text-slate-400 font-mono text-sm">AI analyserer køretøjsdata...</p>
+        <p className="text-slate-400 font-mono text-sm">AI analyzing vehicle data...</p>
       </div>
     );
   }
 
-  if (!data) return <div className="p-6 text-slate-400">Ingen vedligeholdelsesdata tilgængelig</div>;
+  if (!data) return <div className="p-6 text-slate-400">No maintenance data available</div>;
 
   const { summary, vehicle_analyses, ai_insights, optimized_schedule } = data;
 
@@ -228,7 +231,7 @@ export default function PredictiveMaintenancePanel({ orgId }) {
           { label: "Fleet Health", value: `${summary.fleet_health_score}%`, icon: Activity, color: summary.fleet_health_score > 70 ? 'text-emerald-400' : 'text-orange-400' },
           { label: "Critical Vehicles", value: summary.critical_vehicles, icon: AlertTriangle, color: 'text-red-400' },
           { label: "Potential Savings", value: `€${(summary.total_potential_savings_eur || 0).toLocaleString()}`, icon: DollarSign, color: 'text-emerald-400' },
-          { label: "Downtime Avoidance", value: `${summary.potential_downtime_avoidance_hours}h`, icon: TrendingDown, color: 'text-cyan-400' },
+          { label: "Downtime Saved", value: `${summary.potential_downtime_avoidance_hours}h`, icon: TrendingDown, color: 'text-cyan-400' },
         ].map(item => (
           <Card key={item.label} className="bg-slate-800/50 border-slate-700 p-4">
             <div className="flex items-center justify-between">
@@ -253,6 +256,7 @@ export default function PredictiveMaintenancePanel({ orgId }) {
           <div className="flex items-center gap-2 mb-3">
             <Brain className="w-4 h-4 text-violet-400" />
             <span className="text-sm font-bold text-violet-300">AI Fleet Intelligence</span>
+
             <Badge className="ml-auto bg-violet-500/20 text-violet-400 border-violet-500/40 text-[10px]">MISTRAL AI</Badge>
           </div>
           <p className="text-sm text-slate-300 leading-relaxed mb-3">{ai_insights.ai_summary}</p>
@@ -269,7 +273,7 @@ export default function PredictiveMaintenancePanel({ orgId }) {
           {ai_insights.highest_risk_component_fleet_wide && (
             <div className="mt-3 pt-3 border-t border-violet-500/20 flex items-center gap-2 text-xs text-slate-400">
               <Wrench className="w-3 h-3 text-orange-400" />
-              <span>Highest fleet-wide risk component: <strong className="text-orange-400">{ai_insights.highest_risk_component_fleet_wide}</strong></span>
+              <span>Highest fleet-wide risk: <strong className="text-orange-400">{ai_insights.highest_risk_component_fleet_wide}</strong></span>
             </div>
           )}
         </motion.div>
@@ -287,7 +291,7 @@ export default function PredictiveMaintenancePanel({ orgId }) {
                 : 'text-slate-500 border border-slate-700/50 hover:text-slate-300'
             }`}
           >
-            {f === 'all' ? `All (${vehicle_analyses.length})` : `${f} (${vehicle_analyses.filter(v => v.urgency === f).length})`}
+            {f === 'all' ? `All (${vehicle_analyses.length})` : `${f.charAt(0).toUpperCase()+f.slice(1)} (${vehicle_analyses.filter(v => v.urgency === f).length})`}
           </button>
         ))}
       </div>
@@ -306,7 +310,7 @@ export default function PredictiveMaintenancePanel({ orgId }) {
         <div>
           <h3 className="text-sm font-bold text-slate-300 uppercase tracking-widest mb-3 flex items-center gap-2">
             <Clock className="w-4 h-4 text-cyan-400" />
-            Optimeret Serviceplan (Høj Risiko)
+            Optimized Service Schedule (High Risk)
           </h3>
           <div className="grid gap-2">
             {optimized_schedule.map((item, idx) => (
