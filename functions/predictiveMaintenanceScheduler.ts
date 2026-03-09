@@ -1,201 +1,61 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
-const MISTRAL_API_KEY = Deno.env.get("MISTRAL_API_KEY");
+const MISTRAL_KEY = Deno.env.get("MISTRAL_API_KEY");
 
-// ─── Component scoring based on vehicle telemetry ─────────────────────────
-function scoreComponents(vehicle, maintenanceHistory) {
+function scoreComponents(vehicle, history) {
   const now = Date.now();
-  const msSinceService = vehicle.last_maintenance
-    ? now - new Date(vehicle.last_maintenance).getTime()
-    : now - new Date(vehicle.created_date || now).getTime();
-  const daysSinceService = msSinceService / (1000 * 60 * 60 * 24);
-  const monthsSinceService = daysSinceService / 30;
-
+  const msOld = vehicle.last_maintenance ? now - new Date(vehicle.last_maintenance).getTime() : 180 * 86400000;
+  const daysOld = msOld / 86400000;
+  const mo = daysOld / 30;
   const km = vehicle.total_distance_km || 0;
   const fuel = vehicle.fuel_level ?? 100;
-  const efficiency = vehicle.efficiency_score ?? 80;
+  const eff = vehicle.efficiency_score ?? 80;
   const co2 = vehicle.co2_emissions ?? 0;
-  const signal = vehicle.signal_strength ?? 100;
-  const speed = vehicle.speed ?? 0;
+  const sig = vehicle.signal_strength ?? 100;
+  const emgCount = history.filter(m => m.type === 'emergency').length;
 
-  // Count past emergency maintenances
-  const emergencyCount = maintenanceHistory.filter(m => m.type === 'emergency').length;
-
-  const components = [
-    {
-      name: "Engine",
-      risk: Math.min(
-        (monthsSinceService > 3 ? (monthsSinceService - 3) * 8 : 0) +
-        (km > 50000 ? Math.min((km - 50000) / 5000, 30) : 0) +
-        (efficiency < 60 ? (60 - efficiency) * 0.8 : 0) +
-        (emergencyCount * 5),
-        100
-      ),
-      service: "Oil & Filter Change + Engine Diagnostics",
-      interval_km: 15000,
-      interval_days: 90,
-      part_cost_eur: 180,
-      labor_hours: 2,
-    },
-    {
-      name: "Brakes",
-      risk: Math.min(
-        (monthsSinceService > 6 ? (monthsSinceService - 6) * 6 : 0) +
-        (km > 80000 ? Math.min((km - 80000) / 3000, 35) : 0) +
-        (speed > 90 ? 10 : 0),
-        100
-      ),
-      service: "Brake Pad & Disc Inspection + Replacement",
-      interval_km: 30000,
-      interval_days: 180,
-      part_cost_eur: 320,
-      labor_hours: 3,
-    },
-    {
-      name: "Transmission",
-      risk: Math.min(
-        (monthsSinceService > 12 ? (monthsSinceService - 12) * 4 : 0) +
-        (km > 100000 ? Math.min((km - 100000) / 5000, 25) : 0) +
-        (efficiency < 50 ? 20 : 0),
-        100
-      ),
-      service: "Transmission Fluid & Clutch Inspection",
-      interval_km: 60000,
-      interval_days: 365,
-      part_cost_eur: 450,
-      labor_hours: 4,
-    },
-    {
-      name: "Tires",
-      risk: Math.min(
-        (monthsSinceService > 9 ? (monthsSinceService - 9) * 5 : 0) +
-        (km > 40000 ? Math.min((km - 40000) / 2000, 30) : 0) +
-        (speed > 100 ? 15 : 0),
-        100
-      ),
-      service: "Tire Rotation, Pressure Check & Alignment",
-      interval_km: 20000,
-      interval_days: 270,
-      part_cost_eur: 600,
-      labor_hours: 2,
-    },
-    {
-      name: "Fuel System",
-      risk: Math.min(
-        (fuel < 15 ? 40 : fuel < 25 ? 20 : 0) +
-        (co2 > 500 ? Math.min((co2 - 500) / 50, 25) : 0) +
-        (monthsSinceService > 6 ? 10 : 0),
-        100
-      ),
-      service: "Fuel Filter, Injector Cleaning & Tank Inspection",
-      interval_km: 30000,
-      interval_days: 180,
-      part_cost_eur: 150,
-      labor_hours: 2,
-    },
-    {
-      name: "Electrical & Sensors",
-      risk: Math.min(
-        (signal < 40 ? (40 - signal) * 1.5 : 0) +
-        (monthsSinceService > 12 ? 15 : 0) +
-        (vehicle.status === 'offline' ? 30 : 0),
-        100
-      ),
-      service: "Battery, Alternator & Sensor Calibration",
-      interval_km: 40000,
-      interval_days: 365,
-      part_cost_eur: 200,
-      labor_hours: 2,
-    },
-    {
-      name: "Cooling System",
-      risk: Math.min(
-        (monthsSinceService > 18 ? (monthsSinceService - 18) * 3 : 0) +
-        (efficiency < 55 ? 20 : 0) +
-        (co2 > 600 ? 15 : 0),
-        100
-      ),
-      service: "Coolant Flush, Thermostat & Radiator Check",
-      interval_km: 60000,
-      interval_days: 540,
-      part_cost_eur: 120,
-      labor_hours: 2,
-    },
-    {
-      name: "Exhaust & Emissions",
-      risk: Math.min(
-        (co2 > 400 ? Math.min((co2 - 400) / 30, 40) : 0) +
-        (efficiency < 65 ? (65 - efficiency) * 0.5 : 0) +
-        (monthsSinceService > 12 ? 10 : 0),
-        100
-      ),
-      service: "Exhaust System Inspection & Emissions Test",
-      interval_km: 50000,
-      interval_days: 365,
-      part_cost_eur: 250,
-      labor_hours: 3,
-    },
+  const defs = [
+    { name:"Engine", risk: Math.min((mo>3?(mo-3)*8:0)+(km>50000?Math.min((km-50000)/5000,30):0)+(eff<60?(60-eff)*0.8:0)+emgCount*5,100), svc:"Oil & Filter Change + Engine Diagnostics", cost:180, hrs:2 },
+    { name:"Brakes", risk: Math.min((mo>6?(mo-6)*6:0)+(km>80000?Math.min((km-80000)/3000,35):0),100), svc:"Brake Pad & Disc Inspection", cost:320, hrs:3 },
+    { name:"Transmission", risk: Math.min((mo>12?(mo-12)*4:0)+(km>100000?Math.min((km-100000)/5000,25):0)+(eff<50?20:0),100), svc:"Transmission Fluid & Clutch Check", cost:450, hrs:4 },
+    { name:"Tires", risk: Math.min((mo>9?(mo-9)*5:0)+(km>40000?Math.min((km-40000)/2000,30):0),100), svc:"Tire Rotation & Alignment", cost:600, hrs:2 },
+    { name:"Fuel System", risk: Math.min((fuel<15?40:fuel<25?20:0)+(co2>500?Math.min((co2-500)/50,25):0),100), svc:"Fuel Filter & Injector Cleaning", cost:150, hrs:2 },
+    { name:"Electrical", risk: Math.min((sig<40?(40-sig)*1.5:0)+(vehicle.status==='offline'?30:0),100), svc:"Battery & Sensor Calibration", cost:200, hrs:2 },
+    { name:"Cooling", risk: Math.min((mo>18?(mo-18)*3:0)+(eff<55?20:0),100), svc:"Coolant Flush & Radiator Check", cost:120, hrs:2 },
+    { name:"Exhaust", risk: Math.min((co2>400?Math.min((co2-400)/30,40):0)+(eff<65?(65-eff)*0.5:0),100), svc:"Exhaust & Emissions Test", cost:250, hrs:3 },
   ];
 
-  return components.map(c => ({
-    ...c,
-    risk: Math.round(c.risk),
-    urgency: c.risk > 75 ? 'critical' : c.risk > 45 ? 'high' : c.risk > 20 ? 'medium' : 'low',
-    estimated_failure_days: c.risk > 0 ? Math.max(Math.round((100 - c.risk) * 0.8), 3) : 999,
-    reactive_cost_eur: Math.round(c.part_cost_eur * 2.8 + c.labor_hours * 120),
-    preventive_cost_eur: Math.round(c.part_cost_eur + c.labor_hours * 85),
-  }));
+  return defs.map(d => {
+    const r = Math.round(d.risk);
+    const urg = r>75?'critical':r>45?'high':r>20?'medium':'low';
+    return {
+      name: d.name, risk: r, urgency: urg, service: d.svc,
+      estimated_failure_days: r>0 ? Math.max(Math.round((100-r)*0.8),3) : 999,
+      preventive_cost_eur: Math.round(d.cost + d.hrs*85),
+      reactive_cost_eur: Math.round(d.cost*2.8 + d.hrs*120),
+      labor_hours: d.hrs,
+    };
+  });
 }
 
-// ─── Call Mistral for AI-driven deep analysis ────────────────────────────
-async function getAIInsights(vehiclesWithComponents) {
-  if (!MISTRAL_API_KEY) return null;
+async function getAIInsights(summaryData) {
+  if (!MISTRAL_KEY) return null;
+  const prompt = `You are a fleet maintenance AI. Analyze this data and respond ONLY with valid JSON (no markdown):
+${JSON.stringify(summaryData)}
 
-  const fleetSummary = vehiclesWithComponents.slice(0, 8).map(v => ({
-    name: v.name,
-    type: v.type,
-    km: v.total_distance_km || 0,
-    fuel: v.fuel_level,
-    efficiency: v.efficiency_score,
-    co2: v.co2_emissions,
-    days_since_service: v.days_since_service,
-    top_risks: v.components.filter(c => c.risk > 40).map(c => `${c.name} (${c.risk}%)`),
-  }));
+{"fleet_health_score":<0-100>,"total_preventive_savings_eur":<number>,"key_findings":["<finding1>","<finding2>","<finding3>"],"highest_risk_component_fleet_wide":"<name>","ai_summary":"<2 sentences in Danish>"}`;
 
-  const prompt = `You are an expert fleet maintenance AI. Analyze this fleet data and provide actionable insights.
-
-Fleet data: ${JSON.stringify(fleetSummary, null, 2)}
-
-Respond with JSON only (no markdown):
-{
-  "fleet_health_score": <0-100>,
-  "total_preventive_savings_eur": <number>,
-  "key_findings": [<3-4 concise strings>],
-  "highest_risk_component_fleet_wide": "<component name>",
-  "recommended_batch_services": [{"date_offset_days": <number>, "vehicles": ["name"], "services": ["service"], "reason": "why batch together"}],
-  "ai_summary": "<2-3 sentence executive summary in Danish>"
-}`;
-
-  const res = await fetch("https://api.mistral.ai/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${MISTRAL_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: "mistral-small-latest",
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.2,
-      max_tokens: 800,
-    }),
-  });
-
-  if (!res.ok) return null;
-  const data = await res.json();
-  const content = data.choices?.[0]?.message?.content || "";
   try {
-    const jsonMatch = content.match(/\{[\s\S]*\}/);
-    return jsonMatch ? JSON.parse(jsonMatch[0]) : null;
+    const res = await fetch("https://api.mistral.ai/v1/chat/completions", {
+      method:"POST",
+      headers:{"Authorization":`Bearer ${MISTRAL_KEY}`,"Content-Type":"application/json"},
+      body: JSON.stringify({ model:"mistral-small-latest", messages:[{role:"user",content:prompt}], temperature:0.2, max_tokens:500 }),
+    });
+    if (!res.ok) return null;
+    const d = await res.json();
+    const txt = d.choices?.[0]?.message?.content || "";
+    const m = txt.match(/\{[\s\S]*\}/);
+    return m ? JSON.parse(m[0]) : null;
   } catch { return null; }
 }
 
@@ -203,29 +63,24 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
-    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!user) return Response.json({ error:'Unauthorized' }, { status:401 });
 
-    const body = await req.json();
-    const { organization_id } = body;
+    const { organization_id } = await req.json();
 
     const [vehicles, maintenanceRecords] = await Promise.all([
       base44.entities.Vehicle.filter({ organization_id }),
       base44.entities.Maintenance.filter({ organization_id }),
     ]);
 
-    // Per-vehicle deep component analysis
     const vehicleAnalyses = vehicles.map(vehicle => {
       const history = maintenanceRecords.filter(m => m.vehicle_id === vehicle.id);
       const components = scoreComponents(vehicle, history);
       const daysSinceService = vehicle.last_maintenance
-        ? Math.round((Date.now() - new Date(vehicle.last_maintenance).getTime()) / (1000 * 60 * 60 * 24))
-        : null;
-
-      const criticalComponents = components.filter(c => c.urgency === 'critical');
-      const highComponents = components.filter(c => c.urgency === 'high');
-      const overallRisk = Math.round(components.reduce((sum, c) => sum + c.risk, 0) / components.length);
-      const totalPreventiveCost = components.filter(c => c.risk > 20).reduce((s, c) => s + c.preventive_cost_eur, 0);
-      const totalReactiveCost = components.filter(c => c.risk > 20).reduce((s, c) => s + c.reactive_cost_eur, 0);
+        ? Math.round((Date.now() - new Date(vehicle.last_maintenance).getTime()) / 86400000) : null;
+      const overallRisk = Math.round(components.reduce((s,c) => s+c.risk, 0) / components.length);
+      const urg = overallRisk>70?'critical':overallRisk>45?'high':overallRisk>20?'medium':'low';
+      const prevCost = components.filter(c=>c.risk>20).reduce((s,c)=>s+c.preventive_cost_eur,0);
+      const reactCost = components.filter(c=>c.risk>20).reduce((s,c)=>s+c.reactive_cost_eur,0);
 
       return {
         vehicle_id: vehicle.id,
@@ -237,73 +92,63 @@ Deno.serve(async (req) => {
         total_distance_km: vehicle.total_distance_km,
         days_since_service: daysSinceService,
         overall_risk: overallRisk,
-        urgency: overallRisk > 70 ? 'critical' : overallRisk > 45 ? 'high' : overallRisk > 20 ? 'medium' : 'low',
+        urgency: urg,
         components,
-        critical_components: criticalComponents.map(c => c.name),
-        high_risk_components: highComponents.map(c => c.name),
-        preventive_cost_eur: Math.round(totalPreventiveCost),
-        reactive_cost_eur: Math.round(totalReactiveCost),
-        potential_savings_eur: Math.round(totalReactiveCost - totalPreventiveCost),
-        estimated_downtime_hours: components.filter(c => c.risk > 20).reduce((s, c) => s + c.labor_hours, 0),
-        history_count: history.length,
-        emergency_count: history.filter(m => m.type === 'emergency').length,
+        critical_components: components.filter(c=>c.urgency==='critical').map(c=>c.name),
+        high_risk_components: components.filter(c=>c.urgency==='high').map(c=>c.name),
+        preventive_cost_eur: Math.round(prevCost),
+        reactive_cost_eur: Math.round(reactCost),
+        potential_savings_eur: Math.max(Math.round(reactCost - prevCost), 0),
+        estimated_downtime_hours: components.filter(c=>c.risk>20).reduce((s,c)=>s+c.labor_hours,0),
+        emergency_count: history.filter(m=>m.type==='emergency').length,
       };
-    }).sort((a, b) => b.overall_risk - a.overall_risk);
+    }).sort((a,b) => b.overall_risk - a.overall_risk);
 
-    // Get AI insights from Mistral
-    const aiInsights = await getAIInsights(
-      vehicleAnalyses.map(v => ({ ...v, ...vehicles.find(x => x.id === v.vehicle_id) }))
-    );
+    const aiInsights = await getAIInsights({
+      vehicle_count: vehicles.length,
+      top_vehicles: vehicleAnalyses.slice(0,5).map(v=>({ name:v.vehicle_name, risk:v.overall_risk, urgency:v.urgency, top_issues:v.critical_components.concat(v.high_risk_components).slice(0,3) }))
+    });
 
-    // Create maintenance orders for critical vehicles
-    const criticalVehicles = vehicleAnalyses.filter(v => v.urgency === 'critical');
+    const criticalVehicles = vehicleAnalyses.filter(v=>v.urgency==='critical');
     const createdOrders = [];
-
-    for (const risk of criticalVehicles.slice(0, 5)) {
-      const criticalComp = risk.components.find(c => c.urgency === 'critical');
-      if (!criticalComp) continue;
+    for (const risk of criticalVehicles.slice(0,5)) {
+      const critComp = risk.components.find(c=>c.urgency==='critical');
+      if (!critComp) continue;
       const order = await base44.asServiceRole.entities.Maintenance.create({
-        organization_id,
-        vehicle_id: risk.vehicle_id,
-        type: 'predictive',
-        priority: 'critical',
-        component: criticalComp.name,
-        description: `AI Predictive: ${risk.critical_components.join(', ')} require immediate service. Est. failure in ${criticalComp.estimated_failure_days} days.`,
-        predicted_failure_date: new Date(Date.now() + criticalComp.estimated_failure_days * 86400000).toISOString().split('T')[0],
-        scheduled_date: new Date(Date.now() + 2 * 86400000).toISOString().split('T')[0],
+        organization_id, vehicle_id:risk.vehicle_id, type:'predictive', priority:'critical',
+        component: critComp.name,
+        description: `AI Predictive: ${[...risk.critical_components,...risk.high_risk_components].join(', ')} — proaktiv service anbefalet.`,
+        predicted_failure_date: new Date(Date.now()+critComp.estimated_failure_days*86400000).toISOString().split('T')[0],
+        scheduled_date: new Date(Date.now()+2*86400000).toISOString().split('T')[0],
         cost_estimate: risk.preventive_cost_eur,
         downtime_hours: risk.estimated_downtime_hours,
         ai_confidence: risk.overall_risk,
-        status: 'pending',
+        status:'pending',
       });
       createdOrders.push(order);
     }
 
-    // Optimized schedule for high-risk (not critical)
-    const optimizedSchedule = vehicleAnalyses
-      .filter(v => v.urgency === 'high')
-      .slice(0, 6)
-      .map((v, idx) => ({
-        vehicle_id: v.vehicle_id,
-        vehicle_name: v.vehicle_name,
-        suggested_schedule_date: new Date(Date.now() + (7 + idx * 3) * 86400000).toISOString().split('T')[0],
-        batch_group: Math.floor(idx / 2) + 1,
-        services: v.components.filter(c => c.risk > 40).map(c => c.service),
-        cost_eur: v.preventive_cost_eur,
-      }));
+    const optimizedSchedule = vehicleAnalyses.filter(v=>v.urgency==='high').slice(0,6).map((v,i) => ({
+      vehicle_id: v.vehicle_id, vehicle_name: v.vehicle_name,
+      suggested_schedule_date: new Date(Date.now()+(7+i*3)*86400000).toISOString().split('T')[0],
+      batch_group: Math.floor(i/2)+1,
+      services: v.components.filter(c=>c.risk>40).map(c=>c.service),
+      cost_eur: v.preventive_cost_eur,
+    }));
 
-    const totalSavings = vehicleAnalyses.reduce((sum, v) => sum + v.potential_savings_eur, 0);
+    const healthScore = aiInsights?.fleet_health_score
+      ?? Math.round(100 - vehicleAnalyses.reduce((s,v)=>s+v.overall_risk,0)/Math.max(vehicles.length,1));
 
     return Response.json({
       summary: {
         total_vehicles: vehicles.length,
         critical_vehicles: criticalVehicles.length,
-        high_risk_vehicles: vehicleAnalyses.filter(v => v.urgency === 'high').length,
+        high_risk_vehicles: vehicleAnalyses.filter(v=>v.urgency==='high').length,
         maintenance_orders_created: createdOrders.length,
-        total_preventive_cost_eur: vehicleAnalyses.reduce((s, v) => s + v.preventive_cost_eur, 0),
-        total_potential_savings_eur: Math.max(totalSavings, 0),
-        potential_downtime_avoidance_hours: criticalVehicles.reduce((s, v) => s + v.estimated_downtime_hours, 0),
-        fleet_health_score: aiInsights?.fleet_health_score ?? Math.round(100 - vehicleAnalyses.reduce((s, v) => s + v.overall_risk, 0) / Math.max(vehicles.length, 1)),
+        total_preventive_cost_eur: vehicleAnalyses.reduce((s,v)=>s+v.preventive_cost_eur,0),
+        total_potential_savings_eur: vehicleAnalyses.reduce((s,v)=>s+v.potential_savings_eur,0),
+        potential_downtime_avoidance_hours: criticalVehicles.reduce((s,v)=>s+v.estimated_downtime_hours,0),
+        fleet_health_score: healthScore,
       },
       vehicle_analyses: vehicleAnalyses,
       ai_insights: aiInsights,
@@ -313,6 +158,6 @@ Deno.serve(async (req) => {
     });
 
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: error.message }, { status:500 });
   }
 });
