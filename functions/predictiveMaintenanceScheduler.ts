@@ -117,7 +117,7 @@ Deno.serve(async (req) => {
       const order = await base44.asServiceRole.entities.Maintenance.create({
         organization_id, vehicle_id:risk.vehicle_id, type:'predictive', priority:'critical',
         component: critComp.name,
-        description: `AI Predictive: ${[...risk.critical_components,...risk.high_risk_components].join(', ')} — proaktiv service anbefalet.`,
+        description: `AI Predictive: ${[...risk.critical_components,...risk.high_risk_components].join(', ')} — proactive service recommended.`,
         predicted_failure_date: new Date(Date.now()+critComp.estimated_failure_days*86400000).toISOString().split('T')[0],
         scheduled_date: new Date(Date.now()+2*86400000).toISOString().split('T')[0],
         cost_estimate: risk.preventive_cost_eur,
