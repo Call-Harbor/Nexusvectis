@@ -159,6 +159,7 @@ export default function VoiceController({
   routes = [],
   fleetData = {},
   language = "da-DK",
+  autoStart = false,
 }) {
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
