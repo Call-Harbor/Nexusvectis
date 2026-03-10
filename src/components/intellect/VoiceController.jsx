@@ -400,7 +400,7 @@ export default function VoiceController({
 
     recognitionRef.current = recognition;
     recognition.start();
-  }, [lang, handleFinalText, startAmplitude, stopAmplitude]);
+  }, [lang, startAmplitude, stopAmplitude]);
 
   const stopListening = useCallback(() => {
     recognitionRef.current?.stop();
