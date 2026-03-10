@@ -336,9 +336,9 @@ export default function VoiceController({
 
     // Free-form — pass to chat input and auto-send
     onTranscript?.(text);
-    setHarborMessage(`Behandler: "${text}"`);
-    speak("Forstået. Analyserer nu.");
-    setTimeout(() => onSend?.(), 700);
+    setHarborMessage(`Processing: "${text}"`);
+    speak("Understood. Analyzing now.");
+    setTimeout(() => onSend?.(text), 700);
   }, [speak, onClose, onSend, onTranscript, onCloseWindows, onNavigate, onOpenWindow, vehicles, alerts, routes]);
 
   // ─── Start / Stop recognition ──────────────────────────────────────────

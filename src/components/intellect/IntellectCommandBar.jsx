@@ -53,7 +53,7 @@ export default function IntellectCommandBar({
           <VoiceController
             language="da-DK"
             onTranscript={(text) => setInput(text)}
-            onSend={() => { processCommand(); }}
+            onSend={(text) => { processCommand(text); }}
             onClose={() => { setShowVoiceController(false); setIsListening(false); }}
             onNavigate={onNavigate}
             onOpenWindow={openWindow}

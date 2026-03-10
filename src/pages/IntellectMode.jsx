@@ -483,9 +483,9 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
   };
 
   // ── Main Command Processor ─────────────────────────────────────────────────
-  const processCommand = async () => {
-    if (!input.trim()) return;
-    const currentCommand = input;
+  const processCommand = async (commandText) => {
+    const currentCommand = commandText || input;
+    if (!currentCommand.trim()) return;
 
     // H.A.R.B.O.R App Builder detection
     const harborAppMatch = currentCommand.match(/(?:harbor\s+app|build\s+(?:an?\s+)?app|create\s+(?:an?\s+)?app|app\s+builder|lav\s+(?:en?\s+)?app|byg\s+(?:en?\s+)?app|h\.?a\.?r\.?b\.?o\.?r\s+builder)/i);
