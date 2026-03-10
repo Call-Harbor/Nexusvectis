@@ -441,8 +441,17 @@ export default function VoiceController({
   }, [stopAmplitude]);
 
   const toggleListening = () => {
-    if (isListening) stopListening();
-    else startListening();
+    if (isListening) {
+      stopListening();
+    } else {
+      // First mic press: speak greeting (needs user gesture for autoplay)
+      if (!voiceReady) {
+        setVoiceReady(true);
+        speakRef.current?.(greetingRef.current, () => startListening());
+      } else {
+        startListening();
+      }
+    }
   };
 
   // Build greeting text on mount (but don't speak yet — needs user gesture first)
