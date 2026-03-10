@@ -20,6 +20,7 @@ export default function MapMonitor() {
   const [showAlerts, setShowAlerts] = useState(true);
   const [dismissedAlerts, setDismissedAlerts] = useState(new Set());
   const [aiMode, setAiMode] = useState(false);
+  const [view3D, setView3D] = useState(false);
 
   // Get current user
   useQuery({
