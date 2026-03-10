@@ -170,6 +170,7 @@ export default function VoiceController({
   const [harborMessage, setHarborMessage] = useState("Hej! Jeg er H.A.R.B.O.R. Sig en kommando eller stil mig et spørgsmål.");
   const [history, setHistory] = useState([]);
   const [continuous, setContinuous] = useState(true);
+  const [voiceReady, setVoiceReady] = useState(false);
 
   const recognitionRef = useRef(null);
   const micStreamRef = useRef(null);
