@@ -2,13 +2,14 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import LiveTrackingMap from "@/components/tracking/LiveTrackingMap";
+import Fleet3DGlobeMap from "@/components/tracking/Fleet3DGlobeMap";
 import MapHeader from "@/components/tracking/MapHeader";
 import EnhancedVehiclePanel from "@/components/tracking/EnhancedVehiclePanel";
 import SmartInsights from "@/components/tracking/SmartInsights";
 import RealtimeAlerts from "@/components/tracking/RealtimeAlerts";
 import AIControlPanel from "@/components/tracking/AIControlPanel";
-import { Loader2, X } from "lucide-react";
-import { AnimatePresence } from "framer-motion";
+import { Loader2, Globe, Map } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 
 export default function MapMonitor() {
   const queryClient = useQueryClient();
