@@ -653,8 +653,8 @@ export default function VoiceController({
             <Waveform isActive={isListening} amplitude={amplitude} isSpeaking={isSpeaking} />
           </div>
 
-          <span className="text-[9px] font-mono tracking-wider flex-shrink-0" style={{ color: isListening ? "#22c55e" : "#334155" }}>
-            {isListening ? "LYTTER" : "TRYK"}
+          <span className="text-[9px] font-mono tracking-wider flex-shrink-0" style={{ color: isListening ? "#22c55e" : voiceReady ? "#334155" : "#06b6d4" }}>
+            {isListening ? "LYTTER" : voiceReady ? "TRYK" : "KLIK FOR STEMME"}
           </span>
         </div>
 
