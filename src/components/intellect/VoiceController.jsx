@@ -355,6 +355,9 @@ export default function VoiceController({
     setTimeout(() => onSendRef.current?.(text), 700);
   }, [vehicles, alerts, routes]);
 
+  const handleFinalTextRef = useRef(handleFinalText);
+  useEffect(() => { handleFinalTextRef.current = handleFinalText; }, [handleFinalText]);
+
   // ─── Start / Stop recognition ──────────────────────────────────────────
   const startListening = useCallback(() => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
