@@ -361,15 +361,30 @@ export default function VoiceController({
   // ─── Start / Stop recognition ──────────────────────────────────────────
   const startListening = useCallback(() => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SR) { toast.error("Stemmegenkendelse ikke understøttet i denne browser"); return; }
+    if (!SR) {
+      toast.error("Stemmegenkendelse ikke understøttet — brug Chrome eller Edge");
+      setHarborMessage("⚠️ Stemmegenkendelse ikke understøttet i denne browser. Brug Chrome eller Edge.");
+      return;
+    }
+
+    // Stop any existing recognition first
+    if (recognitionRef.current) {
+      try { recognitionRef.current.stop(); } catch {}
+      recognitionRef.current = null;
+    }
 
     const recognition = new SR();
     recognition.lang = lang;
-    recognition.continuous = isContinuousRef.current;
+    recognition.continuous = false; // Single utterance mode — more reliable
     recognition.interimResults = true;
     recognition.maxAlternatives = 1;
 
-    recognition.onstart = () => { setIsListening(true); setInterimText(""); startAmplitude(); };
+    recognition.onstart = () => {
+      setIsListening(true);
+      setInterimText("");
+      setHarborMessage("Lytter... sig din kommando");
+      startAmplitude();
+    };
 
     recognition.onresult = (event) => {
       let interim = "";
@@ -384,22 +399,37 @@ export default function VoiceController({
     };
 
     recognition.onerror = (e) => {
-      if (e.error !== "no-speech" && e.error !== "aborted") toast.error(`Stemme fejl: ${e.error}`);
+      console.error("Speech error:", e.error);
+      if (e.error === "not-allowed" || e.error === "permission-denied") {
+        toast.error("Mikrofon adgang nægtet — tillad mikrofon i browser-indstillinger");
+        setHarborMessage("⚠️ Mikrofon adgang nægtet. Tillad mikrofon adgang i din browsers adresselinje.");
+      } else if (e.error !== "no-speech" && e.error !== "aborted") {
+        toast.error(`Stemme fejl: ${e.error}`);
+      }
       setIsListening(false);
       stopAmplitude();
+      recognitionRef.current = null;
     };
 
     recognition.onend = () => {
       setIsListening(false);
       stopAmplitude();
-      // Auto-restart if continuous
-      if (isContinuousRef.current && recognitionRef.current) {
-        try { recognitionRef.current = new SR(); recognition.onstart = recognition.onresult = recognition.onerror = recognition.onend = null; startListening(); } catch {}
+      recognitionRef.current = null;
+      // Auto-restart if continuous mode is on
+      if (isContinuousRef.current) {
+        setTimeout(() => startListening(), 300);
       }
     };
 
     recognitionRef.current = recognition;
-    recognition.start();
+    try {
+      recognition.start();
+    } catch (e) {
+      console.error("Failed to start recognition:", e);
+      toast.error("Kunne ikke starte mikrofon: " + e.message);
+      setIsListening(false);
+      recognitionRef.current = null;
+    }
   }, [lang, startAmplitude, stopAmplitude]);
 
   const stopListening = useCallback(() => {
