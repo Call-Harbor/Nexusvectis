@@ -445,7 +445,8 @@ export default function VoiceController({
     else startListening();
   };
 
-  // Greet on open — human + professional mix
+  // Build greeting text on mount (but don't speak yet — needs user gesture first)
+  const greetingRef = useRef("");
   useEffect(() => {
     const hour = new Date().getHours();
     let greeting;
@@ -460,10 +461,8 @@ export default function VoiceController({
     } else {
       greeting = `God aften! H.A.R.B.O.R her. Det er ved at blive sent — husk at tage en pause. Hvad kan jeg hjælpe med?`;
     }
+    greetingRef.current = greeting;
     setHarborMessage(greeting);
-    setTimeout(() => {
-      speakRef.current?.(greeting);
-    }, 400);
     return () => { stopListening(); window.speechSynthesis?.cancel(); };
   }, []);
 
