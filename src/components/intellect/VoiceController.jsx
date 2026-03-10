@@ -54,31 +54,28 @@ function matchCommand(text) {
 
 // ─── Waveform ─────────────────────────────────────────────────────────────
 function Waveform({ isActive, amplitude = 0, isSpeaking = false }) {
-  const count = 24;
+  const count = 40;
   return (
-    <div className="flex items-center justify-center gap-0.5" style={{ height: 48 }}>
+    <div className="flex items-center justify-center gap-[2px]" style={{ height: 40 }}>
       {Array.from({ length: count }, (_, i) => {
         const center = Math.abs(i - count / 2) / (count / 2);
-        const base = 0.08 + (1 - center) * 0.35;
-        const color = isSpeaking
-          ? `rgba(167,139,250,${0.5 + (1 - center) * 0.5})`
-          : `linear-gradient(to top, #06b6d4, #8b5cf6)`;
+        const base = 0.05 + (1 - center) * 0.4;
+        const grad = isSpeaking
+          ? `rgba(167,139,250,${0.4 + (1 - center) * 0.6})`
+          : `rgba(6,182,212,${0.4 + (1 - center) * 0.6})`;
         return (
           <motion.div
             key={i}
-            style={{
-              width: 2,
-              borderRadius: 2,
-              background: isSpeaking ? color : "linear-gradient(to top, #06b6d4, #8b5cf6)",
-            }}
+            style={{ width: 2, borderRadius: 4, background: grad }}
             animate={isActive || isSpeaking ? {
-              scaleY: [base, base + amplitude * (0.3 + (1 - center) * 0.7) + (isSpeaking ? 0.4 : 0), base],
-            } : { scaleY: base * 0.3 }}
+              scaleY: [base, base + amplitude * (0.4 + (1 - center) * 0.8) + (isSpeaking ? 0.5 : 0), base],
+            } : { scaleY: base * 0.25 }}
             transition={{
-              duration: 0.25 + (i % 4) * 0.07,
+              duration: 0.2 + (i % 5) * 0.06,
               repeat: Infinity,
               repeatType: "mirror",
-              delay: i * 0.03,
+              delay: i * 0.02,
+              ease: "easeInOut",
             }}
           />
         );
@@ -90,20 +87,20 @@ function Waveform({ isActive, amplitude = 0, isSpeaking = false }) {
 // ─── Quick Command Chip ───────────────────────────────────────────────────
 function CommandChip({ label, icon: IconComp, onClick }) {
   return (
-    <button
+    <motion.button
       onClick={onClick}
-      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-mono transition-all"
+      whileHover={{ scale: 1.04 }}
+      whileTap={{ scale: 0.96 }}
+      className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-mono transition-colors"
       style={{
-        background: "rgba(6,182,212,0.06)",
-        border: "1px solid rgba(6,182,212,0.2)",
+        background: "rgba(6,182,212,0.07)",
+        border: "1px solid rgba(6,182,212,0.18)",
         color: "#67e8f9",
       }}
-      onMouseEnter={e => { e.currentTarget.style.background = "rgba(6,182,212,0.15)"; e.currentTarget.style.borderColor = "rgba(6,182,212,0.4)"; }}
-      onMouseLeave={e => { e.currentTarget.style.background = "rgba(6,182,212,0.06)"; e.currentTarget.style.borderColor = "rgba(6,182,212,0.2)"; }}
     >
-      {IconComp && <IconComp className="w-3 h-3" />}
+      {IconComp && <IconComp className="w-3 h-3 opacity-70" />}
       <span>{label}</span>
-    </button>
+    </motion.button>
   );
 }
 
@@ -111,34 +108,39 @@ function CommandChip({ label, icon: IconComp, onClick }) {
 function SuggestionBubble({ suggestion, onAccept, onDismiss }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 16, scale: 0.96 }}
+      initial={{ opacity: 0, y: 12, scale: 0.97 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: -10, scale: 0.96 }}
+      exit={{ opacity: 0, y: -8, scale: 0.97 }}
       className="rounded-2xl p-4 flex flex-col gap-3"
       style={{
-        background: "rgba(139,92,246,0.1)",
-        border: "1px solid rgba(139,92,246,0.3)",
+        background: "linear-gradient(135deg, rgba(139,92,246,0.12), rgba(6,182,212,0.06))",
+        border: "1px solid rgba(139,92,246,0.25)",
       }}
     >
-      <div className="flex items-start gap-2">
-        <Sparkles className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" style={{ color: "#c4b5fd" }} />
-        <p className="text-xs font-mono leading-relaxed" style={{ color: "#e2d9ff" }}>{suggestion.text}</p>
+      <div className="flex items-start gap-3">
+        <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
+          style={{ background: "rgba(139,92,246,0.2)", border: "1px solid rgba(139,92,246,0.4)" }}>
+          <Sparkles className="w-3.5 h-3.5" style={{ color: "#c4b5fd" }} />
+        </div>
+        <p className="text-xs leading-relaxed" style={{ color: "#e2d9ff" }}>{suggestion.text}</p>
       </div>
-      <div className="flex gap-2">
-        <button
+      <div className="flex gap-2 ml-10">
+        <motion.button
+          whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
           onClick={onAccept}
-          className="flex-1 py-1.5 rounded-lg text-[10px] font-mono font-bold tracking-widest transition-all"
-          style={{ background: "rgba(139,92,246,0.25)", border: "1px solid rgba(139,92,246,0.5)", color: "#c4b5fd" }}
+          className="flex-1 py-2 rounded-xl text-[10px] font-mono font-bold tracking-widest transition-all"
+          style={{ background: "rgba(139,92,246,0.3)", border: "1px solid rgba(139,92,246,0.5)", color: "#c4b5fd" }}
         >
           JA, GØR DET
-        </button>
-        <button
+        </motion.button>
+        <motion.button
+          whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
           onClick={onDismiss}
-          className="px-3 py-1.5 rounded-lg text-[10px] font-mono transition-all"
-          style={{ background: "transparent", border: "1px solid rgba(71,85,105,0.4)", color: "#64748b" }}
+          className="px-4 py-2 rounded-xl text-[10px] font-mono transition-all"
+          style={{ background: "rgba(15,23,42,0.6)", border: "1px solid rgba(51,65,85,0.5)", color: "#64748b" }}
         >
           Ikke nu
-        </button>
+        </motion.button>
       </div>
     </motion.div>
   );
