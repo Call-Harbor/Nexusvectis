@@ -499,85 +499,121 @@ export default function VoiceController({
     { label: "Luk vinduer", icon: X, action: () => onCloseWindows?.() },
   ];
 
+  const statusColor = isSpeaking ? "#a78bfa" : isListening ? "#22d3ee" : "#334155";
+  const statusLabel = isSpeaking ? "TALER" : isListening ? "LYTTER" : voiceReady ? "STANDBY" : "KLIK FOR AT AKTIVERE";
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 32 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 20 }}
-      className="fixed inset-x-0 bottom-0 z-[60] flex justify-center pb-2 px-2 pointer-events-none"
+      exit={{ opacity: 0, y: 32 }}
+      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+      className="fixed inset-x-0 bottom-0 z-[60] flex justify-center pb-3 px-3 pointer-events-none"
     >
-      <div
-        className="w-full max-w-2xl pointer-events-auto rounded-2xl overflow-hidden"
+      {/* Ambient glow underneath */}
+      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-24 pointer-events-none"
         style={{
-          background: "rgba(2,6,18,0.97)",
-          border: "1px solid rgba(6,182,212,0.3)",
+          background: isListening
+            ? "radial-gradient(ellipse, rgba(6,182,212,0.15) 0%, transparent 70%)"
+            : isSpeaking
+            ? "radial-gradient(ellipse, rgba(139,92,246,0.12) 0%, transparent 70%)"
+            : "transparent",
+          filter: "blur(12px)",
+          transition: "background 0.5s ease",
+        }}
+      />
+
+      <div
+        className="w-full max-w-2xl pointer-events-auto overflow-hidden"
+        style={{
+          borderRadius: 24,
+          background: "linear-gradient(180deg, rgba(5,10,30,0.98) 0%, rgba(2,6,18,0.99) 100%)",
+          border: `1px solid ${isListening ? "rgba(6,182,212,0.4)" : isSpeaking ? "rgba(139,92,246,0.35)" : "rgba(30,41,59,0.8)"}`,
           boxShadow: isListening
-            ? "0 -4px 60px rgba(6,182,212,0.2), 0 0 120px rgba(139,92,246,0.1)"
-            : "0 -4px 40px rgba(0,0,0,0.8)",
-          backdropFilter: "blur(24px)",
+            ? "0 -8px 60px rgba(6,182,212,0.18), 0 0 0 1px rgba(6,182,212,0.08) inset"
+            : isSpeaking
+            ? "0 -8px 60px rgba(139,92,246,0.15), 0 0 0 1px rgba(139,92,246,0.06) inset"
+            : "0 -4px 40px rgba(0,0,0,0.7)",
+          backdropFilter: "blur(32px)",
+          transition: "border-color 0.4s ease, box-shadow 0.4s ease",
         }}
       >
-        {/* Top strip */}
-        <div className="flex items-center justify-between px-5 pt-3 pb-2" style={{ borderBottom: "1px solid rgba(6,182,212,0.1)" }}>
-          <div className="flex items-center gap-2">
-            <motion.div
-              animate={isSpeaking ? { scale: [1, 1.3, 1], opacity: [1, 0.5, 1] } : isListening ? { scale: [1, 1.15, 1] } : { scale: 1 }}
-              transition={{ duration: 0.7, repeat: Infinity }}
-              className="w-2 h-2 rounded-full"
-              style={{ background: isSpeaking ? "#a78bfa" : isListening ? "#22c55e" : "#334155" }}
-            />
-            <span className="text-[10px] font-bold font-mono tracking-[0.2em]" style={{ color: "#06b6d4" }}>
-              H.A.R.B.O.R
-            </span>
-            <span className="text-[9px] font-mono" style={{ color: "#334155" }}>
-              {isSpeaking ? "TALER" : isListening ? "LYTTER" : "STANDBY"}
-            </span>
+        {/* Header bar */}
+        <div className="flex items-center justify-between px-5 py-3" style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+          <div className="flex items-center gap-3">
+            {/* Animated status orb */}
+            <div className="relative w-6 h-6 flex items-center justify-center">
+              <motion.div
+                className="absolute inset-0 rounded-full"
+                animate={isListening || isSpeaking ? {
+                  scale: [1, 1.8, 1],
+                  opacity: [0.4, 0, 0.4],
+                } : { scale: 1, opacity: 0 }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+                style={{ background: statusColor }}
+              />
+              <div className="w-2.5 h-2.5 rounded-full" style={{ background: statusColor, boxShadow: `0 0 8px ${statusColor}` }} />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold tracking-[0.25em]" style={{ color: "#06b6d4" }}>H.A.R.B.O.R</span>
+                <span className="text-[9px] font-mono px-1.5 py-0.5 rounded-md"
+                  style={{ background: "rgba(255,255,255,0.04)", color: statusColor, border: `1px solid ${statusColor}30` }}>
+                  {statusLabel}
+                </span>
+              </div>
+            </div>
           </div>
+
           <div className="flex items-center gap-1">
-            {/* TTS toggle */}
             <button
               onClick={() => setTtsEnabled(p => !p)}
-              className="p-1.5 rounded-lg transition-all"
-              style={{ color: ttsEnabled ? "#06b6d4" : "#334155" }}
+              className="p-2 rounded-xl transition-all hover:bg-white/5"
+              style={{ color: ttsEnabled ? "#06b6d4" : "#475569" }}
+              title={ttsEnabled ? "Sluk stemme" : "Tænd stemme"}
             >
-              {ttsEnabled ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
+              {ttsEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
             </button>
-            {/* Continuous toggle */}
             <button
               onClick={() => setContinuous(p => { const next = !p; isContinuousRef.current = next; return next; })}
-              className="px-2 py-1 rounded text-[9px] font-mono transition-all"
+              className="px-2 py-1 rounded-lg text-[9px] font-mono font-bold tracking-wider transition-all"
               style={{
-                background: continuous ? "rgba(6,182,212,0.12)" : "rgba(30,41,59,0.5)",
-                border: `1px solid ${continuous ? "rgba(6,182,212,0.35)" : "rgba(51,65,85,0.5)"}`,
+                background: continuous ? "rgba(6,182,212,0.1)" : "transparent",
+                border: `1px solid ${continuous ? "rgba(6,182,212,0.3)" : "rgba(51,65,85,0.4)"}`,
                 color: continuous ? "#67e8f9" : "#475569",
               }}
             >
-              KONTINU
+              AUTO
             </button>
-            {/* Language */}
-            {LANGS.map(l => (
-              <button
-                key={l.code}
-                onClick={() => setLang(l.code)}
-                className="px-1.5 py-1 rounded text-[9px] font-mono transition-all"
-                style={{
-                  background: lang === l.code ? "rgba(6,182,212,0.12)" : "transparent",
-                  color: lang === l.code ? "#67e8f9" : "#334155",
-                }}
-              >
-                {l.label}
-              </button>
-            ))}
-            {/* Show commands */}
+            <div className="flex items-center gap-0.5 ml-1">
+              {LANGS.map(l => (
+                <button
+                  key={l.code}
+                  onClick={() => setLang(l.code)}
+                  className="px-2 py-1 rounded-lg text-[9px] font-mono transition-all"
+                  style={{
+                    background: lang === l.code ? "rgba(6,182,212,0.12)" : "transparent",
+                    color: lang === l.code ? "#67e8f9" : "#475569",
+                    fontWeight: lang === l.code ? 700 : 400,
+                  }}
+                >
+                  {l.label}
+                </button>
+              ))}
+            </div>
             <button
               onClick={() => setShowCommands(p => !p)}
-              className="p-1.5 rounded-lg transition-all"
-              style={{ color: showCommands ? "#8b5cf6" : "#334155" }}
+              className="p-2 rounded-xl transition-all hover:bg-white/5"
+              style={{ color: showCommands ? "#8b5cf6" : "#475569" }}
             >
-              <MessageSquare className="w-3.5 h-3.5" />
+              <MessageSquare className="w-4 h-4" />
             </button>
-            <button onClick={onClose} className="p-1.5 rounded-lg transition-all hover:bg-red-500/10" style={{ color: "#334155" }}>
-              <X className="w-3.5 h-3.5" />
+            <button
+              onClick={onClose}
+              className="p-2 rounded-xl transition-all hover:bg-red-500/10"
+              style={{ color: "#475569" }}
+            >
+              <X className="w-4 h-4" />
             </button>
           </div>
         </div>
@@ -585,7 +621,7 @@ export default function VoiceController({
         {/* Suggestion bubble */}
         <AnimatePresence>
           {suggestion && (
-            <div className="px-5 pt-3">
+            <div className="px-5 pt-4">
               <SuggestionBubble
                 suggestion={suggestion}
                 onAccept={() => {
@@ -594,8 +630,8 @@ export default function VoiceController({
                   else if (suggestion.action === "analyze_fleet") { onOpenWindow?.("deep_analysis"); speak("Åbner flådeanalyse."); }
                   else if (suggestion.action === "check_route") { onOpenWindow?.("routes"); speak("Her er ruteoversigten."); }
                   else if (suggestion.action === "morning_briefing" || suggestion.action === "daily_summary") { onOpenWindow?.("deep_analysis"); speak("Åbner daglig briefing."); }
-                  else if (suggestion.action === "break") { speak("Godt! Tag en god pause. Jeg holder øje med tingene. Vi ses om lidt! 😊"); }
-                  else if (suggestion.action === "coffee") { speak("God idé! Nyd din kaffe. ☕ Jeg er her når du er klar."); }
+                  else if (suggestion.action === "break") { speak("Godt! Tag en god pause. Jeg holder øje med tingene. Vi ses om lidt!"); }
+                  else if (suggestion.action === "coffee") { speak("God idé! Nyd din kaffe. Jeg er her når du er klar."); }
                   else if (suggestion.action === "breakfast") { speak("Dejligt! Spis en god morgenmad. Det er dagens vigtigste måltid!"); }
                   else if (suggestion.action === "lunch") { speak("Rigtig god idé! Nyd frokosten. Gå fra computeren og lad op."); }
                   else if (suggestion.action === "dinner") { speak("God aften! Nyd maden og slap af efter en lang dag."); }
@@ -607,57 +643,72 @@ export default function VoiceController({
           )}
         </AnimatePresence>
 
-        {/* Harbor message / transcript */}
-        <div className="px-5 pt-3 pb-2 min-h-[44px]">
-          <AnimatePresence mode="wait">
-            <motion.p
-              key={interimText || harborMessage}
-              initial={{ opacity: 0, y: 4 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              className="text-sm font-mono leading-relaxed"
-              style={{ color: interimText ? "#c4b5fd" : isSpeaking ? "#e2d9ff" : "#94a3b8" }}
-            >
-              {interimText ? `"${interimText}"` : (isSpeaking ? `🔊 ${harborMessage}` : harborMessage)}
-            </motion.p>
-          </AnimatePresence>
-        </div>
-
-        {/* Waveform + mic button */}
-        <div className="flex items-center gap-4 px-5 pb-3">
+        {/* Main interaction area */}
+        <div className="flex items-center gap-4 px-5 py-4">
+          {/* Big mic button */}
           <motion.button
             onClick={toggleListening}
-            whileTap={{ scale: 0.92 }}
-            className="relative flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center"
+            whileHover={{ scale: 1.06 }}
+            whileTap={{ scale: 0.93 }}
+            className="relative flex-shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center"
             style={{
               background: isListening
-                ? "linear-gradient(135deg, rgba(239,68,68,0.2), rgba(220,38,38,0.1))"
-                : "linear-gradient(135deg, rgba(6,182,212,0.15), rgba(139,92,246,0.1))",
-              border: isListening ? "2px solid rgba(239,68,68,0.6)" : "2px solid rgba(6,182,212,0.5)",
-              boxShadow: isListening ? "0 0 20px rgba(239,68,68,0.3)" : "0 0 16px rgba(6,182,212,0.15)",
+                ? "linear-gradient(135deg, rgba(239,68,68,0.25), rgba(220,38,38,0.15))"
+                : "linear-gradient(135deg, rgba(6,182,212,0.2), rgba(139,92,246,0.12))",
+              border: isListening
+                ? "1.5px solid rgba(239,68,68,0.7)"
+                : "1.5px solid rgba(6,182,212,0.5)",
+              boxShadow: isListening
+                ? "0 0 24px rgba(239,68,68,0.35), 0 0 0 8px rgba(239,68,68,0.05)"
+                : "0 0 20px rgba(6,182,212,0.2), 0 0 0 8px rgba(6,182,212,0.04)",
             }}
           >
             {isListening && (
-              <motion.div
-                animate={{ scale: [1, 1.6, 1], opacity: [0.5, 0, 0.5] }}
-                transition={{ duration: 1.2, repeat: Infinity }}
-                className="absolute inset-0 rounded-full"
-                style={{ border: "1px solid rgba(239,68,68,0.4)" }}
-              />
+              <>
+                <motion.div
+                  animate={{ scale: [1, 1.7, 1], opacity: [0.6, 0, 0.6] }}
+                  transition={{ duration: 1.4, repeat: Infinity }}
+                  className="absolute inset-0 rounded-2xl"
+                  style={{ border: "1px solid rgba(239,68,68,0.5)" }}
+                />
+                <motion.div
+                  animate={{ scale: [1, 2.2, 1], opacity: [0.3, 0, 0.3] }}
+                  transition={{ duration: 1.4, repeat: Infinity, delay: 0.3 }}
+                  className="absolute inset-0 rounded-2xl"
+                  style={{ border: "1px solid rgba(239,68,68,0.2)" }}
+                />
+              </>
             )}
             {isListening
-              ? <MicOff className="w-5 h-5" style={{ color: "#f87171" }} />
-              : <Mic className="w-5 h-5" style={{ color: "#06b6d4" }} />
+              ? <MicOff className="w-6 h-6" style={{ color: "#f87171" }} />
+              : <Mic className="w-6 h-6" style={{ color: "#22d3ee" }} />
             }
           </motion.button>
 
-          <div className="flex-1">
+          {/* Message + waveform */}
+          <div className="flex-1 flex flex-col gap-2 min-w-0">
+            <AnimatePresence mode="wait">
+              <motion.p
+                key={interimText || harborMessage}
+                initial={{ opacity: 0, y: 3 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="text-sm leading-relaxed truncate"
+                style={{
+                  color: interimText ? "#c4b5fd" : isSpeaking ? "#e2d9ff" : "#94a3b8",
+                  fontStyle: interimText ? "italic" : "normal",
+                }}
+              >
+                {interimText
+                  ? `"${interimText}"`
+                  : isSpeaking
+                  ? harborMessage
+                  : harborMessage}
+              </motion.p>
+            </AnimatePresence>
             <Waveform isActive={isListening} amplitude={amplitude} isSpeaking={isSpeaking} />
           </div>
-
-          <span className="text-[9px] font-mono tracking-wider flex-shrink-0" style={{ color: isListening ? "#22c55e" : voiceReady ? "#334155" : "#06b6d4" }}>
-            {isListening ? "LYTTER" : voiceReady ? "TRYK" : "KLIK FOR STEMME"}
-          </span>
         </div>
 
         {/* Quick command chips */}
@@ -668,41 +719,43 @@ export default function VoiceController({
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
               className="overflow-hidden"
-              style={{ borderTop: "1px solid rgba(6,182,212,0.1)" }}
+              style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}
             >
-              <div className="px-5 py-3">
-                <p className="text-[9px] font-mono uppercase tracking-widest text-slate-600 mb-2">Tryk for at navigere / åbne</p>
-                <div className="flex flex-wrap gap-2">
-                  {NAV_COMMANDS.map(cmd => (
-                    <CommandChip
-                      key={cmd.label}
-                      label={cmd.label}
-                      icon={cmd.icon}
-                      onClick={() => {
-                        cmd.action();
-                        speak(`${cmd.label} åbnet.`);
-                        setHarborMessage(`${cmd.label} åbnet.`);
-                      }}
-                    />
-                  ))}
+              <div className="px-5 py-4 space-y-4">
+                <div>
+                  <p className="text-[9px] font-mono uppercase tracking-[0.2em] mb-2.5" style={{ color: "#334155" }}>Hurtig navigation</p>
+                  <div className="flex flex-wrap gap-2">
+                    {NAV_COMMANDS.map(cmd => (
+                      <CommandChip
+                        key={cmd.label}
+                        label={cmd.label}
+                        icon={cmd.icon}
+                        onClick={() => {
+                          cmd.action();
+                          speak(`${cmd.label} åbnet.`);
+                          setHarborMessage(`${cmd.label} åbnet.`);
+                        }}
+                      />
+                    ))}
+                  </div>
                 </div>
-              </div>
-              <div className="px-5 pb-3">
-                <p className="text-[9px] font-mono uppercase tracking-widest text-slate-600 mb-1.5">Stemmesnarvejer</p>
-                <div className="grid grid-cols-2 gap-1 text-[9px] font-mono" style={{ color: "#475569" }}>
-                  {[
-                    ["åbn flåde", "navigér til flåde"],
-                    ["åbn advarsler", "navigér til advarsler"],
-                    ["luk alle vinduer", "lukker alle"],
-                    ["send", "udfør kommando"],
-                    ["morgen briefing", "daglig status"],
-                    ["stop lyt", "luk voice control"],
-                  ].map(([cmd, desc]) => (
-                    <div key={cmd} className="flex gap-1">
-                      <span style={{ color: "#67e8f9" }}>"{cmd}"</span>
-                      <span>— {desc}</span>
-                    </div>
-                  ))}
+                <div>
+                  <p className="text-[9px] font-mono uppercase tracking-[0.2em] mb-2" style={{ color: "#334155" }}>Stemmesnarvejer</p>
+                  <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-[10px] font-mono">
+                    {[
+                      ["åbn flåde", "navigér til flåde"],
+                      ["åbn advarsler", "navigér til advarsler"],
+                      ["luk alle vinduer", "lukker alle"],
+                      ["send", "udfør kommando"],
+                      ["morgen briefing", "daglig status"],
+                      ["stop lyt", "luk voice control"],
+                    ].map(([cmd, desc]) => (
+                      <div key={cmd} className="flex gap-1.5 items-center">
+                        <span style={{ color: "#22d3ee" }}>"{cmd}"</span>
+                        <span style={{ color: "#334155" }}>— {desc}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </motion.div>
