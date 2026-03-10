@@ -457,6 +457,14 @@ export default function VoiceController({
     }
   };
 
+  // Auto-start listening if triggered by user gesture (mic button click)
+  useEffect(() => {
+    if (autoStart) {
+      setVoiceReady(true);
+      speakRef.current?.(greetingRef.current, () => startListening());
+    }
+  }, [autoStart]);
+
   // Build greeting text on mount (but don't speak yet — needs user gesture first)
   const greetingRef = useRef("");
   useEffect(() => {
