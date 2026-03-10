@@ -181,6 +181,20 @@ export default function VoiceController({
   useEffect(() => { isContinuousRef.current = continuous; }, [continuous]);
   useEffect(() => { ttsEnabledRef.current = ttsEnabled; }, [ttsEnabled]);
 
+  // ─── Stable refs for callbacks (avoid stale closure in recognition handler) ─
+  const onSendRef = useRef(onSend);
+  const onTranscriptRef = useRef(onTranscript);
+  const onCloseRef = useRef(onClose);
+  const onNavigateRef = useRef(onNavigate);
+  const onOpenWindowRef = useRef(onOpenWindow);
+  const onCloseWindowsRef = useRef(onCloseWindows);
+  useEffect(() => { onSendRef.current = onSend; }, [onSend]);
+  useEffect(() => { onTranscriptRef.current = onTranscript; }, [onTranscript]);
+  useEffect(() => { onCloseRef.current = onClose; }, [onClose]);
+  useEffect(() => { onNavigateRef.current = onNavigate; }, [onNavigate]);
+  useEffect(() => { onOpenWindowRef.current = onOpenWindow; }, [onOpenWindow]);
+  useEffect(() => { onCloseWindowsRef.current = onCloseWindows; }, [onCloseWindows]);
+
   // ─── Speak ──────────────────────────────────────────────────────────────
   const speakRef = useRef(null);
   const speak = useCallback((text, onDone) => {
