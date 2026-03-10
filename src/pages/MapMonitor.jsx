@@ -113,30 +113,29 @@ export default function MapMonitor() {
         onToggleAI={() => setAiMode(!aiMode)}
       />
 
-      {/* 2D / 3D toggle */}
-      <div className="absolute top-4 right-4 z-[1000] flex items-center gap-1 p-1 rounded-xl"
-        style={{ background: "rgba(2,6,18,0.85)", border: "1px solid rgba(6,182,212,0.2)" }}>
-        <button
-          onClick={() => setView3D(false)}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono transition-all"
-          style={!view3D
-            ? { background: "rgba(6,182,212,0.2)", color: "#22d3ee", border: "1px solid rgba(6,182,212,0.4)" }
-            : { color: "#475569", border: "1px solid transparent" }}
-        >
-          <Map className="w-3.5 h-3.5" /> 2D
-        </button>
-        <button
-          onClick={() => setView3D(true)}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono transition-all"
-          style={view3D
-            ? { background: "rgba(139,92,246,0.2)", color: "#a78bfa", border: "1px solid rgba(139,92,246,0.4)" }
-            : { color: "#475569", border: "1px solid transparent" }}
-        >
-          <Globe className="w-3.5 h-3.5" /> 3D
-        </button>
-      </div>
-
       <div className="flex-1 w-full relative">
+        {/* 2D / 3D toggle */}
+        <div className="absolute top-4 right-4 z-[1000] flex items-center gap-1 p-1 rounded-xl"
+          style={{ background: "rgba(2,6,18,0.85)", border: "1px solid rgba(6,182,212,0.2)" }}>
+          <button
+            onClick={() => setView3D(false)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono transition-all"
+            style={!view3D
+              ? { background: "rgba(6,182,212,0.2)", color: "#22d3ee", border: "1px solid rgba(6,182,212,0.4)" }
+              : { color: "#475569", border: "1px solid transparent" }}
+          >
+            <Map className="w-3.5 h-3.5" /> 2D
+          </button>
+          <button
+            onClick={() => setView3D(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono transition-all"
+            style={view3D
+              ? { background: "rgba(139,92,246,0.2)", color: "#a78bfa", border: "1px solid rgba(139,92,246,0.4)" }
+              : { color: "#475569", border: "1px solid transparent" }}
+          >
+            <Globe className="w-3.5 h-3.5" /> 3D
+          </button>
+        </div>
         {view3D ? (
           <Fleet3DGlobeMap
             vehicles={vehicles}
