@@ -289,7 +289,7 @@ export default function VoiceController({
     const humanType = detectHumanConversation(text);
     if (humanType) {
       const reply = getHumanReply(humanType, text);
-      speak(reply);
+      speakRef.current?.(reply);
       setHarborMessage(reply);
       setSuggestion(null);
       return;
@@ -298,62 +298,62 @@ export default function VoiceController({
     const action = matchCommand(text);
 
     if (action === "cmd:close_voice") {
-      speak("Farvel! Kalder på mig når du har brug for hjælp.");
-      setTimeout(() => onClose?.(), 800);
+      speakRef.current?.("Farvel! Kalder på mig når du har brug for hjælp.");
+      setTimeout(() => onCloseRef.current?.(), 800);
       return;
     }
     if (action === "cmd:send") {
-      speak("Sender kommando.");
-      onSend?.();
+      speakRef.current?.("Sender kommando.");
+      onSendRef.current?.();
       return;
     }
     if (action === "cmd:clear") {
-      onTranscript?.("");
-      speak("Ryddet.");
+      onTranscriptRef.current?.("");
+      speakRef.current?.("Ryddet.");
       return;
     }
     if (action === "cmd:close_windows") {
-      onCloseWindows?.();
-      speak("Lukker alle vinduer.");
+      onCloseWindowsRef.current?.();
+      speakRef.current?.("Lukker alle vinduer.");
       setHarborMessage("Lukker alle vinduer.");
       return;
     }
     if (action === "cmd:help") {
       const helpMsg = "Du kan sige åbn flåde, åbn advarsler, åbn ruter, åbn dashboard, luk alle vinduer, eller stil mig et spørgsmål.";
-      speak(helpMsg);
+      speakRef.current?.(helpMsg);
       setHarborMessage(helpMsg);
       setShowCommands(true);
       return;
     }
     if (action === "cmd:morning_briefing") {
       const briefing = `Her er din morgen briefing. Du har ${vehicles.length} køretøjer, ${alerts.filter(a => !a.is_read).length} ulæste advarsler og ${routes.filter(r => r.status === "active").length} aktive ruter.`;
-      speak(briefing);
+      speakRef.current?.(briefing);
       setHarborMessage(briefing);
       return;
     }
     if (action?.startsWith("nav:")) {
       const page = action.split(":")[1];
       const msg = `Navigerer til ${page}.`;
-      speak(msg);
+      speakRef.current?.(msg);
       setHarborMessage(msg);
-      onNavigate?.(page);
+      onNavigateRef.current?.(page);
       return;
     }
     if (action?.startsWith("window:")) {
       const windowType = action.split(":")[1];
       const msg = `Åbner ${windowType.replace(/_/g, " ")}.`;
-      speak(msg);
+      speakRef.current?.(msg);
       setHarborMessage(msg);
-      onOpenWindow?.(windowType);
+      onOpenWindowRef.current?.(windowType);
       return;
     }
 
     // Free-form — pass to chat input and auto-send
-    onTranscript?.(text);
+    onTranscriptRef.current?.(text);
     setHarborMessage(`Processing: "${text}"`);
-    speak("Understood. Analyzing now.");
-    setTimeout(() => onSend?.(text), 700);
-  }, [speak, onClose, onSend, onTranscript, onCloseWindows, onNavigate, onOpenWindow, vehicles, alerts, routes]);
+    speakRef.current?.("Understood. Analyzing now.");
+    setTimeout(() => onSendRef.current?.(text), 700);
+  }, [vehicles, alerts, routes]);
 
   // ─── Start / Stop recognition ──────────────────────────────────────────
   const startListening = useCallback(() => {
