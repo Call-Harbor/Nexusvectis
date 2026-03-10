@@ -188,7 +188,8 @@ export default function MapMonitor() {
           />
         </div>
 
-        {/* Right Panel: Vehicle Details */}
+        {/* Right Panel: Vehicle Details — only in 2D mode */}
+        {!view3D && (
         <div className="absolute top-24 right-4 bottom-4 z-[999] pointer-events-auto">
           <AnimatePresence>
             {selectedVehicle && (
@@ -199,6 +200,22 @@ export default function MapMonitor() {
             )}
           </AnimatePresence>
         </div>
+        )}
+
+        {/* Vehicle detail panel in 3D mode */}
+        {view3D && selectedVehicle && (
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            className="absolute top-16 right-4 z-[999] pointer-events-auto"
+          >
+            <EnhancedVehiclePanel
+              vehicle={selectedVehicle}
+              onClose={() => setSelectedVehicle(null)}
+            />
+          </motion.div>
+        )}
       </div>
     </div>
   );
