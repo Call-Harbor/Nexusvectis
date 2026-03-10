@@ -380,7 +380,7 @@ export default function VoiceController({
         else interim += t;
       }
       if (interim) setInterimText(interim);
-      if (final) { setInterimText(""); handleFinalText(final.trim()); }
+      if (final) { setInterimText(""); handleFinalTextRef.current(final.trim()); }
     };
 
     recognition.onerror = (e) => {
