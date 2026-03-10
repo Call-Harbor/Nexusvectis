@@ -431,10 +431,7 @@ export default function VoiceController({
     }
     setHarborMessage(greeting);
     setTimeout(() => {
-      speakRef.current?.(greeting, () => {
-        // Auto-start listening after greeting is done
-        startListening();
-      });
+      speakRef.current?.(greeting);
     }, 400);
     return () => { stopListening(); window.speechSynthesis?.cancel(); };
   }, []);
