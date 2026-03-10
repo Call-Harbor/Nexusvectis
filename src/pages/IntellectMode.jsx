@@ -153,8 +153,9 @@ export default function IntellectMode() {
 
   useEffect(() => {
     if (pendingPromptRef.current && input === pendingPromptRef.current && !isProcessing) {
+      const cmd = pendingPromptRef.current;
       pendingPromptRef.current = null;
-      processCommand();
+      processCommand(cmd);
     }
   }, [input]);
 
