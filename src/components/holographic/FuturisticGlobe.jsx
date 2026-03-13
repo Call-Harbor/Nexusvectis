@@ -498,13 +498,13 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], onSelectVe
         // 1. Behind camera check (z > 1 means behind)
         if (screenPos.z > 1 || screenPos.z < -1) return;
         
-        // 2. Check if facing camera (dot product with view direction)
-        const viewDir = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
-        const toArc = new THREE.Vector3().subVectors(arcPosition, camera.position).normalize();
-        const dotProduct = viewDir.dot(toArc);
+        // 2. Check if facing camera using normal vector
+        const arcNormal = arcPosition.clone().normalize(); // Vector from globe center to arc
+        const toCamera = new THREE.Vector3().subVectors(camera.position, arcPosition).normalize();
+        const dotProduct = arcNormal.dot(toCamera);
         
-        // Only visible if in front of camera (positive dot product)
-        if (dotProduct <= 0) return;
+        // Only visible if facing camera (dot product > 0 means same hemisphere as camera)
+        if (dotProduct <= 0.1) return;
         
         // 3. Check if within screen bounds
         const isInBounds = screenPos.x >= -1.2 && screenPos.x <= 1.2 && 
