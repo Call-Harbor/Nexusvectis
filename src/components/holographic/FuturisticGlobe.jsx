@@ -468,13 +468,6 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], onSelectVe
       const newVisibleRoutes = [];
       const seenRouteIds = new Set();
       
-      // Debug logging
-      if (time % 100 === 0) {
-        console.log('Total routeArcs:', routeArcs.length);
-        console.log('First segment arcs:', routeArcs.filter(arc => arc.userData.isFirstSegment).length);
-        console.log('Unique route IDs in arcs:', new Set(routeArcs.map(arc => arc.userData.routeId)).size);
-      }
-      
       // Get camera view frustum for advanced culling
       const frustum = new THREE.Frustum();
       const projScreenMatrix = new THREE.Matrix4();
