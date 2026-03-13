@@ -527,8 +527,17 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], onSelectVe
             screenPos.y < -margin || screenPos.y > margin) return;
         
         // Convert to pixel coordinates
-        const x = (screenPos.x * 0.5 + 0.5) * el.clientWidth;
-        const y = (-(screenPos.y * 0.5) + 0.5) * el.clientHeight;
+        let x = (screenPos.x * 0.5 + 0.5) * el.clientWidth;
+        let y = (-(screenPos.y * 0.5) + 0.5) * el.clientHeight;
+        
+        // Hologram card dimensions (approximate)
+        const cardWidth = 320;
+        const cardHeight = 400;
+        const padding = 20;
+        
+        // Clamp position to keep hologram fully visible
+        x = Math.max(padding, Math.min(x, el.clientWidth - cardWidth - padding));
+        y = Math.max(padding, Math.min(y, el.clientHeight - cardHeight - padding));
         
         newVisibleRoutes.push({
           route,
