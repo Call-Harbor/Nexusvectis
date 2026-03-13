@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "../utils";
 import { 
-  Globe, Sparkles, Radio, Activity, Maximize2, Minimize2, Layers, Zap
+  Globe, Sparkles, Activity, Maximize2, Minimize2, Layers, Zap
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -61,9 +61,33 @@ export default function Dashboard() {
     refetchInterval: 10000,
   });
 
+  const { data: resources = [] } = useQuery({
+    queryKey: ['resources'],
+    queryFn: async () => {
+      const user = await base44.auth.me();
+      const orgId = user?.organization_id || user?.data?.organization_id;
+      if (!orgId) return [];
+      return await base44.entities.Resource.filter({ organization_id: orgId });
+    },
+    refetchInterval: 10000,
+  });
+
+  const { data: digitalTwins = [] } = useQuery({
+    queryKey: ['digitalTwins'],
+    queryFn: async () => {
+      const user = await base44.auth.me();
+      const orgId = user?.organization_id || user?.data?.organization_id;
+      if (!orgId) return [];
+      return await base44.entities.DigitalTwin.filter({ organization_id: orgId });
+    },
+    refetchInterval: 10000,
+  });
+
   const activeVehicles = vehicles.filter(v => v.status === 'active').length;
   const totalRoutes = routes.length;
   const activeRoutes = routes.filter(r => r.status === 'active').length;
+  const totalResources = resources.length;
+  const totalTwins = digitalTwins.length;
   const avgEfficiency = vehicles.length > 0 
     ? Math.round(vehicles.reduce((acc, v) => acc + (v.efficiency_score || 0), 0) / vehicles.length)
     : 0;
@@ -135,76 +159,56 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Live Stats Bar */}
+        {/* Compact Live Stats */}
         <motion.div 
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="mt-4 sm:mt-6 grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3"
+          className="mt-3 flex items-center gap-4 text-xs text-slate-400"
         >
-          <motion.div
-            whileHover={{ scale: 1.02 }}
-            className="p-3 rounded-xl bg-slate-900/60 backdrop-blur-xl border border-cyan-500/30"
-          >
-            <div className="flex items-center gap-2 mb-1">
-              <Activity className="w-4 h-4 text-cyan-400" />
-              <span className="text-xs text-slate-400">Active Fleet</span>
-            </div>
-            <p className="text-xl sm:text-2xl font-bold text-white">
-              {activeVehicles}<span className="text-sm text-slate-500">/{vehicles.length}</span>
-            </p>
-          </motion.div>
-
-          <motion.div
-            whileHover={{ scale: 1.02 }}
-            className="p-3 rounded-xl bg-slate-900/60 backdrop-blur-xl border border-violet-500/30"
-          >
-            <div className="flex items-center gap-2 mb-1">
-              <Layers className="w-4 h-4 text-violet-400" />
-              <span className="text-xs text-slate-400">Routes</span>
-            </div>
-            <p className="text-xl sm:text-2xl font-bold text-white">
-              {activeRoutes}<span className="text-sm text-slate-500">/{totalRoutes}</span>
-            </p>
-          </motion.div>
-
-          <motion.div
-            whileHover={{ scale: 1.02 }}
-            className="p-3 rounded-xl bg-slate-900/60 backdrop-blur-xl border border-emerald-500/30"
-          >
-            <div className="flex items-center gap-2 mb-1">
-              <Zap className="w-4 h-4 text-emerald-400" />
-              <span className="text-xs text-slate-400">Efficiency</span>
-            </div>
-            <p className="text-xl sm:text-2xl font-bold text-white">{avgEfficiency}%</p>
-          </motion.div>
-
-          <motion.div
-            whileHover={{ scale: 1.02 }}
-            className="p-3 rounded-xl bg-slate-900/60 backdrop-blur-xl border border-amber-500/30"
-          >
-            <div className="flex items-center gap-2 mb-1">
-              <Radio className="w-4 h-4 text-amber-400" />
-              <span className="text-xs text-slate-400">Status</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <motion.div 
-                className="w-2 h-2 rounded-full bg-emerald-400"
-                animate={{ scale: [1, 1.3, 1], opacity: [0.6, 1, 0.6] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              />
-              <p className="text-sm sm:text-base font-bold text-emerald-400">Operational</p>
-            </div>
-          </motion.div>
+          <div className="flex items-center gap-2">
+            <Activity className="w-3 h-3 text-cyan-400" />
+            <span>{activeVehicles}/{vehicles.length} Fleet</span>
+          </div>
+          <div className="w-px h-3 bg-slate-700" />
+          <div className="flex items-center gap-2">
+            <Layers className="w-3 h-3 text-violet-400" />
+            <span>{activeRoutes}/{totalRoutes} Routes</span>
+          </div>
+          <div className="w-px h-3 bg-slate-700" />
+          <div className="flex items-center gap-2">
+            <Globe className="w-3 h-3 text-emerald-400" />
+            <span>{totalResources} Resources</span>
+          </div>
+          <div className="w-px h-3 bg-slate-700" />
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-3 h-3 text-amber-400" />
+            <span>{totalTwins} Twins</span>
+          </div>
+          <div className="w-px h-3 bg-slate-700" />
+          <div className="flex items-center gap-2">
+            <Zap className="w-3 h-3 text-cyan-400" />
+            <span>{avgEfficiency}% Efficiency</span>
+          </div>
+          <div className="ml-auto flex items-center gap-2">
+            <motion.div 
+              className="w-2 h-2 rounded-full bg-emerald-400"
+              animate={{ scale: [1, 1.3, 1], opacity: [0.6, 1, 0.6] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            />
+            <span className="text-emerald-400 font-medium">Operational</span>
+          </div>
         </motion.div>
       </motion.div>
 
       {/* Main Globe Container */}
-      <div className="px-4 sm:px-6 pb-6">
-        <div className="w-full rounded-2xl overflow-hidden border border-cyan-500/20 bg-slate-900/30 backdrop-blur-sm" style={{ height: 'calc(100vh - 320px)' }}>
+      <div className="px-4 sm:px-6 pb-6 mt-2">
+        <div className="w-full" style={{ height: 'calc(100vh - 220px)' }}>
           <FuturisticGlobe 
             vehicles={vehicles}
             routes={routes}
+            resources={resources}
+            digitalTwins={digitalTwins}
             onSelectVehicle={setSelectedVehicle}
           />
         </div>
