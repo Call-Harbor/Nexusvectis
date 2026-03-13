@@ -548,10 +548,20 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], onSelectVe
         });
       });
       
+      // Double-check for duplicates before setting state
+      const uniqueRoutes = [];
+      const finalSeenIds = new Set();
+      newVisibleRoutes.forEach(routeData => {
+        if (!finalSeenIds.has(routeData.route.id)) {
+          finalSeenIds.add(routeData.route.id);
+          uniqueRoutes.push(routeData);
+        }
+      });
+      
       // Only update state if there's a change
-      if (newVisibleRoutes.length !== visibleRoutes.length ||
-          !newVisibleRoutes.every((nr, i) => visibleRoutes[i]?.route.id === nr.route.id)) {
-        setVisibleRoutes(newVisibleRoutes);
+      if (uniqueRoutes.length !== visibleRoutes.length ||
+          !uniqueRoutes.every((nr, i) => visibleRoutes[i]?.route.id === nr.route.id)) {
+        setVisibleRoutes(uniqueRoutes);
       }
 
       renderer.render(scene, camera);
