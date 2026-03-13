@@ -195,7 +195,7 @@ export default function CircularNav({ currentPageName, user }) {
 
               return activeMenu?.items.map((item, index) => {
                 const itemAngle = startAngle + (index / (totalItems - 1 || 1)) * spreadAngle;
-                const radius = 200;
+                const radius = 240;
                 const x = Math.cos(itemAngle) * radius;
                 const y = Math.sin(itemAngle) * radius;
                 const isActive = currentPageName === item.page;
