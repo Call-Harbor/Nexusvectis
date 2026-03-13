@@ -167,25 +167,7 @@ export default function CircularNav({ currentPageName, user }) {
               );
             })}
 
-            {/* Fleet AI Quick Action */}
-            <motion.button
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ 
-                scale: 1, 
-                opacity: 1,
-                y: -140
-              }}
-              exit={{ scale: 0, opacity: 0 }}
-              transition={{ delay: 0.25, type: "spring", stiffness: 350, damping: 25 }}
-              onClick={() => navigate(createPageUrl("IntellectMode"))}
-              whileHover={{ scale: 1.08 }}
-              whileTap={{ scale: 0.95 }}
-              className="absolute bottom-16 left-2 px-4 py-2 rounded-full bg-gradient-to-r from-cyan-500/30 to-violet-500/30 backdrop-blur-2xl border border-cyan-400/50 text-white text-sm font-medium shadow-xl hover:shadow-lg hover:border-cyan-400/70 flex items-center gap-2 transition-shadow"
-            >
-              <Zap className="w-4 h-4" strokeWidth={1.5} />
-              FLEET AI
-              <Badge className="bg-amber-500/30 text-amber-300 border-amber-500/50 text-[10px]">BETA</Badge>
-            </motion.button>
+
           </>
         )}
       </AnimatePresence>
@@ -253,22 +235,39 @@ export default function CircularNav({ currentPageName, user }) {
         )}
       </AnimatePresence>
 
-      {/* User Info */}
+      {/* Bottom Action Bar - Fleet AI & User Info */}
       <AnimatePresence mode="wait">
-        {isOpen && user && (
+        {isOpen && (
           <motion.div
             initial={{ scale: 0, opacity: 0 }}
             animate={{ 
               scale: 1, 
               opacity: 1,
-              x: 180
+              y: 80
             }}
             exit={{ scale: 0, opacity: 0 }}
-            transition={{ delay: 0.15, type: "spring", stiffness: 350, damping: 25 }}
-            className="absolute bottom-2 left-2 px-4 py-2 rounded-full bg-slate-900/90 backdrop-blur-2xl border border-slate-700/50 shadow-lg hover:shadow-xl hover:border-slate-600/70 flex items-center gap-3 transition-shadow"
+            transition={{ delay: 0.1, type: "spring", stiffness: 350, damping: 25 }}
+            className="absolute top-full mt-4 left-1/2 -translate-x-1/2 flex flex-col gap-2 pointer-events-auto z-10"
           >
-            <span className="text-sm text-slate-300 truncate max-w-[120px]">{user.full_name || user.email}</span>
-            <NotificationCenter user={user} />
+            {/* Fleet AI Button */}
+            <motion.button
+              onClick={() => navigate(createPageUrl("IntellectMode"))}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.98 }}
+              className="px-4 py-2 rounded-full bg-gradient-to-r from-cyan-500/30 to-violet-500/30 backdrop-blur-2xl border border-cyan-400/50 text-white text-sm font-medium shadow-lg hover:shadow-xl hover:border-cyan-400/70 flex items-center gap-2 transition-shadow whitespace-nowrap"
+            >
+              <Zap className="w-4 h-4" strokeWidth={1.5} />
+              FLEET AI
+              <Badge className="bg-amber-500/30 text-amber-300 border-amber-500/50 text-[10px]">BETA</Badge>
+            </motion.button>
+
+            {/* User Info */}
+            {user && (
+              <div className="px-4 py-2 rounded-full bg-slate-900/90 backdrop-blur-2xl border border-slate-700/50 shadow-lg flex items-center gap-3 whitespace-nowrap">
+                <span className="text-sm text-slate-300">{user.full_name || user.email}</span>
+                <NotificationCenter user={user} />
+              </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
