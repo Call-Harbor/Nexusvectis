@@ -27,7 +27,7 @@ export default function RouteHologramCard({ route, x, y, index }) {
       style={{
         position: 'absolute',
         left: x + 180,
-        top: y - 150,
+        top: y - 200,
         zIndex: 1000 - index,
         pointerEvents: 'none',
         transformStyle: 'preserve-3d',

@@ -538,9 +538,9 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], onSelectVe
         let y = (-(screenPos.y * 0.5) + 0.5) * el.clientHeight;
         
         // Hologram card dimensions (approximate)
-        const cardWidth = 320;
-        const cardHeight = 400;
-        const padding = 20;
+        const cardWidth = 400;
+        const cardHeight = 500;
+        const padding = 30;
         
         // Clamp position to keep hologram fully visible
         x = Math.max(padding, Math.min(x, el.clientWidth - cardWidth - padding));
