@@ -1,101 +1,11 @@
-import { Link, useNavigate } from "react-router-dom";
-import { createPageUrl } from "./utils";
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { motion } from "framer-motion";
-import { 
-  LayoutDashboard, 
-  Truck, 
-  Route, 
-  Warehouse, 
-  Bell, 
-  Globe,
-  ChevronRight,
-  Sparkles,
-  Satellite,
-  Menu,
-  X,
-  ChevronDown,
-  Settings,
-  Users,
-  Shield,
-  FileText,
-  Package,
-  Zap,
-  Activity,
-  Wrench,
-  DollarSign,
-  Target
-} from "lucide-react";
-import { cn } from "@/lib/utils";
 import CircularNav from "./components/navigation/CircularNav";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-
-const navItems = [
-  { name: "Dashboard", icon: LayoutDashboard, page: "Dashboard" },
-  { name: "Alerts", icon: Bell, page: "Alerts" },
-];
-
-const fleetMenuItems = [
-  { name: "Fleet", icon: Truck, page: "Fleet" },
-  { name: "Fleet Monitor", icon: Globe, page: "MapMonitor" },
-  { name: "Drivers", icon: Users, page: "DriverManagement" },
-  { name: "Assets", icon: Package, page: "AssetManagement" },
-  { name: "Assignments", icon: Route, page: "Assignment" },
-  { name: "Maintenance", icon: Wrench, page: "MaintenanceManagement" },
-];
-
-const logisticsMenuItems = [
-  { name: "Shipments", icon: Package, page: "Shipments" },
-  { name: "Routes", icon: Route, page: "Routes" },
-  { name: "Resources", icon: Warehouse, page: "Resources" },
-  { name: "GPS Integration", icon: Satellite, page: "GPSIntegration" },
-];
-
-const businessMenuItems = [
-  { name: "CRM & Pipeline", icon: Target, page: "CRM" },
-  { name: "Customers", icon: Users, page: "CustomerManagement" },
-  { name: "Contracts", icon: FileText, page: "ContractManagement" },
-  { name: "Invoices", icon: FileText, page: "Invoices" },
-  { name: "Documents", icon: FileText, page: "DocumentManagement" },
-];
-
-const aiMenuItems = [
-  { name: "Intellect Mode", icon: Sparkles, page: "IntellectMode" },
-  { name: "AI Optimization", icon: Sparkles, page: "AIOptimization" },
-  { name: "Demand Forecasting", icon: Activity, page: "DemandForecasting" },
-  { name: "Warehouse Automation", icon: Package, page: "WarehouseAutomation" },
-  { name: "Green TMS", icon: Sparkles, page: "GreenTMS" },
-];
-
-const systemMenuItems = [
-  { name: "Users", icon: Users, page: "UserManagement" },
-  { name: "HR Management", icon: Users, page: "HRManagement" },
-  { name: "Security", icon: Shield, page: "Security" },
-  { name: "Reports", icon: FileText, page: "Reports" },
-  { name: "Notifications", icon: Bell, page: "NotificationSettings" },
-  { name: "Settings", icon: Settings, page: "Settings" },
-];
-
-const developerMenuItems = [
-  { name: "API Docs", icon: FileText, page: "APIDocumentation" },
-  { name: "API Metrics", icon: Activity, page: "APIMetrics" },
-];
 
 export default function Layout({ children, currentPageName }) {
   const isHologram = new URLSearchParams(window.location.search).get('hologram') === 'true';
   const hideNav = isHologram || currentPageName === "MapMonitor" || currentPageName === "AdminMonitor" || currentPageName === "Landing" || currentPageName === "Home" || currentPageName === "IntellectMode" || currentPageName === "HologramDesktop" || currentPageName === "FleetSlidePresenter" || currentPageName === "CustomerPortal" || currentPageName === "CustomerTracking" || currentPageName === "CustomerDashboard" || currentPageName === "About" || currentPageName === "Careers" || currentPageName === "Contact" || currentPageName === "Blog" || currentPageName === "FleetAIPage" || currentPageName === "LiveTrackingPage" || currentPageName === "AnalyticsPage" || currentPageName === "IntegrationsPage" || currentPageName === "PrivacyPolicy" || currentPageName === "TermsOfService" || currentPageName === "SecurityPage" || currentPageName === "Newsroom" || currentPageName === "HarborInfo";
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [user, setUser] = useState(null);
-  const navigate = useNavigate();
-  const isIntellectMode = currentPageName === "IntellectMode";
 
   useEffect(() => {
     const loadUser = async () => {
@@ -116,75 +26,9 @@ export default function Layout({ children, currentPageName }) {
         <CircularNav currentPageName={currentPageName} user={user} />
       )}
 
-      {/* OLD NAV - HIDDEN */}
-      {false && !hideNav && (
-      <nav className="fixed top-0 left-0 right-0 z-50 hidden lg:block">
-        <div className="mx-6 mt-4">
-          <div className="bg-slate-900/40 backdrop-blur-2xl rounded-2xl border border-cyan-500/20 shadow-2xl shadow-cyan-500/10">
-            <div className="flex items-center justify-between px-6 py-4">
-              {/* Logo */}
-              <Link to={createPageUrl("Dashboard")} className="flex items-center gap-3">
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                  className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-violet-500 flex items-center justify-center"
-                >
-                  <Sparkles className="w-6 h-6 text-white" />
-                </motion.div>
-                <div>
-                  <h1 className="text-xl font-bold bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent">
-                    NexusVectis
-                  </h1>
-                  <p className="text-[10px] text-slate-400">Neural Fleet Intelligence</p>
-                </div>
-              </Link>
 
-              {/* Main Navigation */}
-              <div className="flex items-center gap-2">
-                {navItems.map((item) => {
-                  const isActive = currentPageName === item.page;
-                  const Icon = item.icon;
-                  const isMapMonitor = item.page === "MapMonitor";
-          
-                  return isMapMonitor ? (
-                    <a
-                      key={item.name}
-                      href={createPageUrl(item.page)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={cn(
-                        "px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2",
-                        "text-slate-400 hover:text-white hover:bg-slate-800/50"
-                      )}
-                    >
-                      <Icon className="w-4 h-4" />
-                      <span>{item.name}</span>
-                    </a>
-                  ) : (
-                    <Link
-                      key={item.name}
-                      to={createPageUrl(item.page)}
-                      className={cn(
-                        "px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2 relative",
-                        isActive 
-                          ? "bg-gradient-to-r from-cyan-500/20 to-violet-500/20 text-white" 
-                          : "text-slate-400 hover:text-white hover:bg-slate-800/30"
-                      )}
-                    >
-                      <Icon className={cn("w-4 h-4", isActive && "text-cyan-400")} />
-                      <span>{item.name}</span>
-                      {isActive && (
-                        <motion.div
-                          layoutId="activeTab"
-                          className="absolute inset-0 rounded-xl border border-cyan-400/50 -z-10"
-                          transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                        />
-                      )}
-                    </Link>
-                  );
-                })}
 
-                <DropdownMenu>
+
                   <DropdownMenuTrigger asChild>
                     <button
                       className={cn(
