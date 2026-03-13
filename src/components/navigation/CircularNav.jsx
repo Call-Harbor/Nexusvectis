@@ -121,7 +121,7 @@ export default function CircularNav({ currentPageName, user }) {
         {isOpen && (
           <>
             {menuCategories.map((category, index) => {
-              const angle = (index / menuCategories.length) * Math.PI - Math.PI / 2;
+              const angle = (index / menuCategories.length) * Math.PI + Math.PI / 2;
               const radius = 120;
               const x = Math.cos(angle) * radius;
               const y = Math.sin(angle) * radius;
@@ -166,7 +166,7 @@ export default function CircularNav({ currentPageName, user }) {
               animate={{ 
                 scale: 1, 
                 x: 0, 
-                y: -140, 
+                y: 140, 
                 opacity: 1 
               }}
               exit={{ scale: 0, x: 0, y: 0, opacity: 0 }}
@@ -194,7 +194,7 @@ export default function CircularNav({ currentPageName, user }) {
                 const totalItems = menuCategories.find(c => c.name === activeCategory).items.length;
                 
                 // Calculate angle for submenu spreading from category button
-                const categoryAngle = (categoryIndex / menuCategories.length) * Math.PI - Math.PI / 2;
+                const categoryAngle = (categoryIndex / menuCategories.length) * Math.PI + Math.PI / 2;
                 const spreadAngle = Math.PI / 4; // 45 degrees spread
                 const startAngle = categoryAngle - spreadAngle / 2;
                 const itemAngle = startAngle + (index / (totalItems - 1 || 1)) * spreadAngle;
@@ -223,7 +223,7 @@ export default function CircularNav({ currentPageName, user }) {
                       stiffness: 260,
                       damping: 20
                     }}
-                    className="absolute bottom-2 left-2"
+                    className="absolute bottom-2 left-2 max-w-48"
                   >
                     <Link
                       to={createPageUrl(item.page)}
