@@ -461,9 +461,13 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], onSelectVe
 
       // Update visible routes with 2D screen positions
       const newVisibleRoutes = [];
+      const seenRouteIds = new Set();
       
       routeArcs.forEach((arc, index) => {
         const route = arc.userData.route;
+        
+        // Skip if we already have this route
+        if (seenRouteIds.has(route.id)) return;
         
         // Get center point of arc
         const geometry = arc.geometry;
@@ -490,6 +494,7 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], onSelectVe
           const x = (screenPos.x * 0.5 + 0.5) * el.clientWidth;
           const y = (-(screenPos.y * 0.5) + 0.5) * el.clientHeight;
           
+          seenRouteIds.add(route.id);
           newVisibleRoutes.push({
             route,
             x,
