@@ -334,13 +334,14 @@ export default function Dashboard() {
       </motion.div>
 
       {/* Main Content Grid */}
-      <div className="absolute inset-0 pt-56 sm:pt-52 md:pt-48 pb-20 lg:pb-4 px-2 sm:px-4 lg:px-6 flex flex-col lg:flex-row gap-3 overflow-y-auto lg:overflow-hidden">
-        {/* Left Panel - AI Insights */}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="w-full lg:w-64 flex-shrink-0 space-y-3 lg:space-y-4 overflow-y-visible lg:overflow-y-auto"
-        >
+      <div className="absolute inset-0 pt-60 sm:pt-56 md:pt-52 lg:pt-48 pb-24 lg:pb-4 px-2 sm:px-4 lg:px-6 overflow-y-auto lg:overflow-hidden">
+        <div className="flex flex-col lg:flex-row gap-3 min-h-full">
+          {/* Left Panel - AI Insights */}
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="w-full lg:w-64 flex-shrink-0 space-y-3 lg:space-y-4"
+          >
           {/* Predictive Analytics */}
           <div className="bg-slate-900/95 backdrop-blur-xl rounded-xl lg:rounded-2xl border border-cyan-500/40 p-3 lg:p-4 shadow-lg">
             <div className="flex items-center gap-2 lg:gap-3 mb-3 lg:mb-4">
@@ -424,22 +425,23 @@ export default function Dashboard() {
           <div className="lg:block">
             <AIInsightWidget entity_type="fleet" entity_id="all" compact />
           </div>
-        </motion.div>
+          </motion.div>
 
-        {/* Center - 3D Globe */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="flex-1 rounded-xl lg:rounded-2xl overflow-hidden border border-cyan-500/30 bg-black/50 backdrop-blur-xl shadow-2xl shadow-cyan-500/20 min-h-[50vh] lg:min-h-0"
-        >
-          <FuturisticGlobe 
-            vehicles={vehicles}
-            routes={routes}
-            resources={resources}
-            digitalTwins={digitalTwins}
-            onSelectVehicle={setSelectedVehicle}
-          />
-        </motion.div>
+          {/* Center - 3D Globe */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="flex-1 rounded-xl lg:rounded-2xl overflow-hidden border border-cyan-500/30 bg-black/50 backdrop-blur-xl shadow-2xl shadow-cyan-500/20 min-h-[60vh] lg:min-h-0"
+          >
+            <FuturisticGlobe 
+              vehicles={vehicles}
+              routes={routes}
+              resources={resources}
+              digitalTwins={digitalTwins}
+              onSelectVehicle={setSelectedVehicle}
+            />
+          </motion.div>
+        </div>
       </div>
 
       {/* Selected Vehicle Hologram */}
