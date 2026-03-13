@@ -332,12 +332,12 @@ export default function Dashboard() {
       </motion.div>
 
       {/* Main Content Grid */}
-      <div className="absolute inset-0 pt-48 sm:pt-52 pb-4 px-4 sm:px-6 grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="absolute inset-0 pt-48 sm:pt-52 pb-4 px-4 sm:px-6 flex gap-4">
         {/* Left Panel - AI Insights */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          className="lg:col-span-1 space-y-4 overflow-y-auto max-h-full"
+          className="w-80 flex-shrink-0 space-y-4 overflow-y-auto max-h-full hidden lg:block"
         >
           {/* Predictive Analytics */}
           <div className="bg-slate-900/80 backdrop-blur-xl rounded-2xl border border-cyan-500/30 p-4">
@@ -428,7 +428,7 @@ export default function Dashboard() {
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="lg:col-span-2 rounded-2xl overflow-hidden border border-cyan-500/30 bg-black/50 backdrop-blur-xl shadow-2xl shadow-cyan-500/20"
+          className="flex-1 rounded-2xl overflow-hidden border border-cyan-500/30 bg-black/50 backdrop-blur-xl shadow-2xl shadow-cyan-500/20"
         >
           <FuturisticGlobe 
             vehicles={vehicles}
