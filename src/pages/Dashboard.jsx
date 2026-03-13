@@ -78,11 +78,11 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="fixed inset-0 bg-black overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 relative overflow-hidden">
       {/* Background effects */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-violet-500/5 rounded-full blur-3xl" />
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-violet-500/10 rounded-full blur-3xl" />
       </div>
 
       <AIAssistantBadge />
@@ -91,7 +91,7 @@ export default function Dashboard() {
       <motion.div 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="absolute top-0 left-0 right-0 z-50 p-4 sm:p-6 bg-gradient-to-b from-black/80 via-black/40 to-transparent backdrop-blur-sm"
+        className="relative z-10 p-4 sm:p-6"
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3 sm:gap-4">
@@ -200,14 +200,12 @@ export default function Dashboard() {
       </motion.div>
 
       {/* Main Globe Container */}
-      <div className="absolute inset-0 pt-32 sm:pt-40 pb-4 sm:pb-6">
-        <div className="w-full h-full relative">
-          <FuturisticGlobe 
-            vehicles={vehicles}
-            routes={routes}
-            onSelectVehicle={setSelectedVehicle}
-          />
-        </div>
+      <div className="relative z-10 w-full" style={{ height: 'calc(100vh - 280px)' }}>
+        <FuturisticGlobe 
+          vehicles={vehicles}
+          routes={routes}
+          onSelectVehicle={setSelectedVehicle}
+        />
       </div>
 
       {/* Selected Vehicle Panel */}
@@ -217,7 +215,7 @@ export default function Dashboard() {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 20 }}
-            className="absolute bottom-6 right-6 w-80 sm:w-96 z-50"
+            className="fixed bottom-6 right-6 w-80 sm:w-96 z-50"
           >
             <div className="bg-slate-900/95 backdrop-blur-xl rounded-2xl border-2 border-cyan-400/50 p-4 shadow-2xl shadow-cyan-500/20">
               <div className="flex items-center justify-between mb-3">
@@ -274,7 +272,7 @@ export default function Dashboard() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1 }}
-        className="absolute bottom-6 left-6 z-40 hidden sm:block"
+        className="fixed bottom-6 left-6 z-40 hidden sm:block"
       >
         <div className="bg-slate-900/80 backdrop-blur-xl rounded-xl border border-slate-700/50 p-4 text-xs text-slate-400 space-y-2">
           <p className="flex items-center gap-2">
