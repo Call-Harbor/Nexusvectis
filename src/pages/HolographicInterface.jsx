@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
-import Fleet3DGlobeMap from "../components/tracking/Fleet3DGlobeMap";
+import FuturisticGlobe from "../components/holographic/FuturisticGlobe";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -182,7 +182,7 @@ export default function HolographicInterface() {
         isFullscreen ? "inset-0 z-10" : "top-44 left-6 right-6 bottom-6 z-10",
         "rounded-2xl overflow-hidden border border-slate-800/50 shadow-2xl"
       )}>
-        <Fleet3DGlobeMap 
+        <FuturisticGlobe 
           vehicles={vehicles} 
           routes={routes}
           onSelectVehicle={setSelectedVehicle}
