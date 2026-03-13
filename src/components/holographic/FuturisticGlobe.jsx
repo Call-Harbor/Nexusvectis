@@ -1,8 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
-import { motion } from "framer-motion";
-import { Route as RouteIcon, Sparkles } from "lucide-react";
-import { cn } from "@/lib/utils";
+import RouteHologramCard from "./RouteHologramCard";
 
 const STATUS_COLORS = {
   active:      { int: 0x00ffff, hex: "#00ffff", glow: 0x00ccff },
@@ -529,80 +527,13 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], onSelectVe
       
       {/* Floating Route Holograms */}
       {visibleRoutes.slice(0, 3).map((routeData, idx) => (
-        <motion.div
+        <RouteHologramCard
           key={`route-hologram-${routeData.route.id}-${routeData.index}`}
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.8 }}
-          style={{
-            position: 'absolute',
-            left: routeData.x + 150,
-            top: routeData.y - 80,
-            zIndex: 100 + idx,
-            pointerEvents: 'none'
-          }}
-          className="w-80 bg-slate-900/90 backdrop-blur-xl border-2 border-cyan-400/50 rounded-xl shadow-2xl overflow-hidden"
-        >
-          {/* Holographic header */}
-          <div className="bg-gradient-to-r from-cyan-500/20 to-violet-500/20 border-b border-cyan-400/30 px-4 py-2">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <RouteIcon className="w-4 h-4 text-cyan-400" />
-                {routeData.route.name}
-              </h3>
-              <div className={cn(
-                "px-2 py-0.5 rounded-full text-[10px] font-semibold",
-                routeData.route.status === 'active' && "bg-emerald-500/20 text-emerald-400 border border-emerald-500/50",
-                routeData.route.status === 'planned' && "bg-blue-500/20 text-blue-400 border border-blue-500/50",
-                routeData.route.status === 'completed' && "bg-slate-500/20 text-slate-400 border border-slate-500/50",
-                routeData.route.status === 'delayed' && "bg-amber-500/20 text-amber-400 border border-amber-500/50"
-              )}>
-                {routeData.route.status?.toUpperCase() || 'UNKNOWN'}
-              </div>
-            </div>
-          </div>
-
-          {/* Route data */}
-          <div className="p-4 space-y-2">
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <div>
-                <p className="text-slate-500">Origin</p>
-                <p className="text-white font-semibold truncate">{routeData.route.origin}</p>
-              </div>
-              <div>
-                <p className="text-slate-500">Destination</p>
-                <p className="text-white font-semibold truncate">{routeData.route.destination}</p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-3 gap-2 text-xs pt-2 border-t border-slate-700/50">
-              <div>
-                <p className="text-slate-500">Distance</p>
-                <p className="text-cyan-400 font-bold">{routeData.route.distance_km || 0} km</p>
-              </div>
-              <div>
-                <p className="text-slate-500">Duration</p>
-                <p className="text-cyan-400 font-bold">{routeData.route.estimated_duration_hours || 0}h</p>
-              </div>
-              <div>
-                <p className="text-slate-500">Type</p>
-                <p className="text-white font-semibold capitalize">{routeData.route.transport_type || 'N/A'}</p>
-              </div>
-            </div>
-
-            {routeData.route.ai_optimized && (
-              <div className="flex items-center gap-1.5 px-2 py-1 bg-violet-500/10 border border-violet-500/30 rounded">
-                <Sparkles className="w-3 h-3 text-violet-400" />
-                <span className="text-[10px] text-violet-400 font-semibold">AI OPTIMIZED</span>
-              </div>
-            )}
-          </div>
-
-          {/* Holographic border effect */}
-          <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute inset-0 border border-cyan-400/30 rounded-xl animate-pulse" />
-          </div>
-        </motion.div>
+          route={routeData.route}
+          x={routeData.x}
+          y={routeData.y}
+          index={idx}
+        />
       ))}
     </div>
   );
