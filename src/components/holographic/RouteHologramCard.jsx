@@ -1,11 +1,15 @@
-import React, { useState, useRef } from 'react';
-import { motion, useMotionValue, useTransform } from 'framer-motion';
-import { Route, Sparkles, TrendingUp, AlertCircle, Clock, MapPin, Zap } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { motion, useMotionValue, useTransform, AnimatePresence } from 'framer-motion';
+import { Route, Sparkles, TrendingUp, AlertCircle, Clock, MapPin, Zap, X, Maximize2, Navigation, Truck, AlertTriangle, CheckCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { base44 } from '@/api/base44Client';
+import { useQuery } from '@tanstack/react-query';
 
-export default function RouteHologramCard({ route, x, y, index }) {
+export default function RouteHologramCard({ route, x, y, index, onClose }) {
   const cardRef = useRef(null);
   const [isHovered, setIsHovered] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [selectedWaypoint, setSelectedWaypoint] = useState(null);
   
   // Mouse tracking for 3D effect
   const mouseX = useMotionValue(0);
@@ -16,8 +20,33 @@ export default function RouteHologramCard({ route, x, y, index }) {
   const rotateY = useTransform(mouseX, [-0.5, 0.5], [-10, 10]);
   const scale = useTransform(mouseY, [-0.5, 0.5], [0.95, 1.05]);
   
+  // Fetch real-time vehicles on this route
+  const { data: routeVehicles = [] } = useQuery({
+    queryKey: ['route-vehicles', route.id],
+    queryFn: async () => {
+      const vehicles = await base44.entities.Vehicle.filter({ route_id: route.id });
+      return vehicles;
+    },
+    refetchInterval: 5000, // Update every 5 seconds
+    enabled: !!route.id
+  });
+
+  // Fetch route exceptions
+  const { data: routeExceptions = [] } = useQuery({
+    queryKey: ['route-exceptions', route.id],
+    queryFn: async () => {
+      const exceptions = await base44.entities.Exception.filter({ 
+        route_id: route.id,
+        status: { $ne: 'resolved' }
+      });
+      return exceptions;
+    },
+    refetchInterval: 10000,
+    enabled: !!route.id
+  });
+  
   const handleMouseMove = (e) => {
-    if (!cardRef.current) return;
+    if (!cardRef.current || isExpanded) return;
     const rect = cardRef.current.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
@@ -28,14 +57,30 @@ export default function RouteHologramCard({ route, x, y, index }) {
   };
   
   const handleMouseLeave = () => {
-    mouseX.set(0);
-    mouseY.set(0);
+    if (!isExpanded) {
+      mouseX.set(0);
+      mouseY.set(0);
+    }
     setIsHovered(false);
+  };
+
+  const handleExpand = () => {
+    setIsExpanded(!isExpanded);
+    if (!isExpanded) {
+      mouseX.set(0);
+      mouseY.set(0);
+    }
   };
 
   const efficiency = route.ai_optimized ? 95 + Math.random() * 5 : 70 + Math.random() * 15;
   const reliability = 80 + Math.random() * 20;
   const costOptimization = route.ai_optimized ? 85 + Math.random() * 10 : 60 + Math.random() * 20;
+
+  // Calculate real-time progress
+  const activeVehicles = routeVehicles.filter(v => v.status === 'active').length;
+  const totalProgress = routeVehicles.length > 0
+    ? (routeVehicles.reduce((sum, v) => sum + (v.progress || 0), 0) / routeVehicles.length)
+    : 0;
 
   return (
     <motion.div
@@ -43,36 +88,56 @@ export default function RouteHologramCard({ route, x, y, index }) {
       initial={{ opacity: 0, scale: 0.7, z: -200, rotateY: -30 }}
       animate={{ 
         opacity: 1, 
-        scale: 1, 
-        z: 0,
+        scale: isExpanded ? 1.1 : 1, 
+        z: isExpanded ? 100 : 0,
         rotateY: 0,
-        y: [0, -10, 0]
+        y: isExpanded ? 0 : [0, -10, 0],
+        width: isExpanded ? '600px' : '384px',
+        left: isExpanded ? '50%' : x + 180,
+        top: isExpanded ? '50%' : y - 200,
+        x: isExpanded ? '-50%' : 0,
+        y: isExpanded ? '-50%' : [0, -10, 0]
       }}
       transition={{
         opacity: { duration: 0.5 },
         scale: { duration: 0.5, type: "spring" },
         z: { duration: 0.8 },
         rotateY: { duration: 0.8 },
-        y: { duration: 4, repeat: Infinity, ease: "easeInOut" }
+        y: { duration: 4, repeat: Infinity, ease: "easeInOut" },
+        width: { duration: 0.4 },
+        left: { duration: 0.4 },
+        top: { duration: 0.4 }
       }}
       exit={{ opacity: 0, scale: 0.7, z: -200, rotateY: 30 }}
       style={{
-        position: 'absolute',
-        left: x + 180,
-        top: y - 200,
-        zIndex: 1000 - index,
+        position: isExpanded ? 'fixed' : 'absolute',
+        zIndex: isExpanded ? 10000 : (1000 - index),
         pointerEvents: 'auto',
         transformStyle: 'preserve-3d',
         perspective: '1500px',
-        rotateX,
-        rotateY,
-        scale
+        rotateX: isExpanded ? 0 : rotateX,
+        rotateY: isExpanded ? 0 : rotateY,
+        scale: isExpanded ? 1 : scale
       }}
       onMouseMove={handleMouseMove}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={handleMouseLeave}
-      className="w-96 cursor-pointer"
+      className="cursor-pointer"
     >
+      {/* Backdrop blur overlay when expanded */}
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm -z-10"
+            style={{ left: 0, top: 0, width: '100vw', height: '100vh' }}
+            onClick={() => setIsExpanded(false)}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Main hologram container with depth layers */}
       <motion.div 
         className="relative"
@@ -109,7 +174,9 @@ export default function RouteHologramCard({ route, x, y, index }) {
             transformStyle: 'preserve-3d',
             boxShadow: isHovered 
               ? '0 30px 60px rgba(6, 182, 212, 0.5), 0 0 100px rgba(139, 92, 246, 0.3)'
-              : '0 20px 40px rgba(6, 182, 212, 0.3)'
+              : '0 20px 40px rgba(6, 182, 212, 0.3)',
+            maxHeight: isExpanded ? '80vh' : 'auto',
+            overflowY: isExpanded ? 'auto' : 'visible'
           }}
         >
           {/* Holographic shine effect */}
@@ -130,49 +197,13 @@ export default function RouteHologramCard({ route, x, y, index }) {
               transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
               className="absolute w-full h-2 bg-gradient-to-r from-transparent via-cyan-400/60 to-transparent blur-sm"
             />
-            <motion.div
-              animate={{ y: ['100%', '0%'], opacity: [0, 0.8, 0] }}
-              transition={{ duration: 4, repeat: Infinity, ease: "linear", delay: 1.5 }}
-              className="absolute w-full h-1 bg-gradient-to-r from-transparent via-violet-400/50 to-transparent"
-            />
           </div>
 
-          {/* Animated corner brackets */}
-          <motion.div 
-            className="absolute top-0 left-0 w-20 h-20 border-t-2 border-l-2 border-cyan-400/80"
-            animate={{ borderColor: ['rgba(6, 182, 212, 0.8)', 'rgba(6, 182, 212, 1)', 'rgba(6, 182, 212, 0.8)'] }}
-            transition={{ duration: 2, repeat: Infinity }}
-            style={{ transform: 'translateZ(70px)' }}
-          />
-          <motion.div 
-            className="absolute top-0 right-0 w-20 h-20 border-t-2 border-r-2 border-cyan-400/80"
-            animate={{ borderColor: ['rgba(6, 182, 212, 0.8)', 'rgba(6, 182, 212, 1)', 'rgba(6, 182, 212, 0.8)'] }}
-            transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
-            style={{ transform: 'translateZ(70px)' }}
-          />
-          <motion.div 
-            className="absolute bottom-0 left-0 w-20 h-20 border-b-2 border-l-2 border-cyan-400/80"
-            animate={{ borderColor: ['rgba(6, 182, 212, 0.8)', 'rgba(6, 182, 212, 1)', 'rgba(6, 182, 212, 0.8)'] }}
-            transition={{ duration: 2, repeat: Infinity, delay: 1 }}
-            style={{ transform: 'translateZ(70px)' }}
-          />
-          <motion.div 
-            className="absolute bottom-0 right-0 w-20 h-20 border-b-2 border-r-2 border-cyan-400/80"
-            animate={{ borderColor: ['rgba(6, 182, 212, 0.8)', 'rgba(6, 182, 212, 1)', 'rgba(6, 182, 212, 0.8)'] }}
-            transition={{ duration: 2, repeat: Infinity, delay: 1.5 }}
-            style={{ transform: 'translateZ(70px)' }}
-          />
-
-          {/* Header with floating effect */}
+          {/* Header with controls */}
           <motion.div 
             className="relative px-6 py-4 bg-gradient-to-r from-cyan-500/20 via-violet-500/20 to-cyan-500/20 border-b-2 border-cyan-400/40"
             style={{ transform: 'translateZ(40px)' }}
           >
-            <motion.div
-              animate={{ opacity: [0.3, 0.8, 0.3], x: ['-100%', '100%'] }}
-              transition={{ duration: 3, repeat: Infinity }}
-              className="absolute inset-0 bg-gradient-to-r from-transparent via-cyan-400/20 to-transparent"
-            />
             <div className="relative flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <motion.div 
@@ -191,28 +222,78 @@ export default function RouteHologramCard({ route, x, y, index }) {
                 <div>
                   <motion.h3 
                     className="text-lg font-bold text-white tracking-wide drop-shadow-[0_0_15px_rgba(6,182,212,0.6)]"
-                    animate={{ textShadow: ['0 0 15px rgba(6,182,212,0.6)', '0 0 25px rgba(6,182,212,0.9)', '0 0 15px rgba(6,182,212,0.6)'] }}
-                    transition={{ duration: 2, repeat: Infinity }}
                   >
                     {route.name}
                   </motion.h3>
                   <p className="text-xs text-cyan-300/70 font-mono">ID: {route.id?.slice(0, 8)}</p>
                 </div>
               </div>
-              <motion.div 
-                className={cn(
-                  "px-3 py-1 rounded-md text-xs font-bold tracking-wider border-2",
-                  route.status === 'active' && "bg-emerald-500/20 text-emerald-300 border-emerald-400/50",
-                  route.status === 'planned' && "bg-blue-500/20 text-blue-300 border-blue-400/50",
-                  route.status === 'completed' && "bg-slate-500/20 text-slate-300 border-slate-400/50",
-                  route.status === 'delayed' && "bg-amber-500/20 text-amber-300 border-amber-400/50"
-                )}
-                whileHover={{ scale: 1.1, borderWidth: '3px' }}
-                style={{ transform: 'translateZ(5px)' }}
-              >
-                {route.status?.toUpperCase() || 'UNKNOWN'}
-              </motion.div>
+              
+              <div className="flex items-center gap-2">
+                <motion.div 
+                  className={cn(
+                    "px-3 py-1 rounded-md text-xs font-bold tracking-wider border-2",
+                    route.status === 'active' && "bg-emerald-500/20 text-emerald-300 border-emerald-400/50",
+                    route.status === 'planned' && "bg-blue-500/20 text-blue-300 border-blue-400/50",
+                    route.status === 'completed' && "bg-slate-500/20 text-slate-300 border-slate-400/50",
+                    route.status === 'delayed' && "bg-amber-500/20 text-amber-300 border-amber-400/50"
+                  )}
+                  whileHover={{ scale: 1.1 }}
+                >
+                  {route.status?.toUpperCase() || 'UNKNOWN'}
+                </motion.div>
+
+                <motion.button
+                  onClick={handleExpand}
+                  whileHover={{ scale: 1.1, rotate: 180 }}
+                  whileTap={{ scale: 0.9 }}
+                  className="p-2 rounded-lg bg-cyan-500/20 border border-cyan-400/30 text-cyan-400 hover:bg-cyan-500/30 transition-colors"
+                >
+                  {isExpanded ? <X className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+                </motion.button>
+              </div>
             </div>
+
+            {/* Real-time status bar */}
+            {activeVehicles > 0 && (
+              <motion.div 
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                className="mt-3 pt-3 border-t border-cyan-400/20"
+              >
+                <div className="flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2">
+                    <Truck className="w-4 h-4 text-cyan-400" />
+                    <span className="text-slate-300">{activeVehicles} vehicle{activeVehicles !== 1 ? 's' : ''} active</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-slate-400">Progress:</span>
+                    <div className="w-24 h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${totalProgress}%` }}
+                        className="h-full bg-gradient-to-r from-cyan-500 to-emerald-500"
+                      />
+                    </div>
+                    <span className="text-cyan-400 font-bold">{Math.round(totalProgress)}%</span>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Exception alerts */}
+            {routeExceptions.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                className="mt-3 pt-3 border-t border-amber-400/20"
+              >
+                <div className="flex items-center gap-2 text-xs text-amber-400">
+                  <AlertTriangle className="w-4 h-4" />
+                  <span>{routeExceptions.length} active exception{routeExceptions.length !== 1 ? 's' : ''}</span>
+                </div>
+              </motion.div>
+            )}
           </motion.div>
 
           {/* Content with parallax depth */}
@@ -223,8 +304,9 @@ export default function RouteHologramCard({ route, x, y, index }) {
               style={{ transform: 'translateZ(20px)' }}
             >
               <motion.div 
-                className="flex-1 space-y-1"
+                className="flex-1 space-y-1 cursor-pointer"
                 whileHover={{ scale: 1.05 }}
+                onClick={() => setSelectedWaypoint(route.waypoints?.[0])}
                 style={{ transform: 'translateZ(10px)' }}
               >
                 <p className="text-xs text-cyan-400/70 font-mono tracking-wider">ORIGIN</p>
@@ -241,11 +323,12 @@ export default function RouteHologramCard({ route, x, y, index }) {
                 transition={{ duration: 2, repeat: Infinity }}
                 className="text-cyan-400 text-xl drop-shadow-[0_0_10px_rgba(6,182,212,0.8)]"
               >
-                →
+                <Navigation className="w-5 h-5" />
               </motion.div>
               <motion.div 
-                className="flex-1 space-y-1"
+                className="flex-1 space-y-1 cursor-pointer"
                 whileHover={{ scale: 1.05 }}
+                onClick={() => setSelectedWaypoint(route.waypoints?.[route.waypoints.length - 1])}
                 style={{ transform: 'translateZ(10px)' }}
               >
                 <p className="text-xs text-violet-400/70 font-mono tracking-wider">DESTINATION</p>
@@ -255,6 +338,29 @@ export default function RouteHologramCard({ route, x, y, index }) {
                 </div>
               </motion.div>
             </motion.div>
+
+            {/* Waypoint details when selected */}
+            <AnimatePresence>
+              {selectedWaypoint && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="bg-slate-800/60 rounded-lg p-3 border border-cyan-400/30"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-bold text-cyan-400">WAYPOINT DETAILS</span>
+                    <button onClick={() => setSelectedWaypoint(null)} className="text-slate-400 hover:text-white">
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                  <div className="text-xs space-y-1 text-slate-300">
+                    <p><span className="text-slate-500">Name:</span> {selectedWaypoint.name}</p>
+                    <p><span className="text-slate-500">Coordinates:</span> {selectedWaypoint.lat?.toFixed(4)}, {selectedWaypoint.lng?.toFixed(4)}</p>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Metrics grid with hover effects */}
             <motion.div 
@@ -268,6 +374,7 @@ export default function RouteHologramCard({ route, x, y, index }) {
                   borderColor: 'rgba(6, 182, 212, 0.6)',
                   boxShadow: '0 0 20px rgba(6, 182, 212, 0.4)'
                 }}
+                whileTap={{ scale: 0.95 }}
                 style={{ transform: 'translateZ(15px)' }}
               >
                 <motion.div 
@@ -295,6 +402,7 @@ export default function RouteHologramCard({ route, x, y, index }) {
                   borderColor: 'rgba(139, 92, 246, 0.6)',
                   boxShadow: '0 0 20px rgba(139, 92, 246, 0.4)'
                 }}
+                whileTap={{ scale: 0.95 }}
                 style={{ transform: 'translateZ(15px)' }}
               >
                 <motion.div 
@@ -322,6 +430,7 @@ export default function RouteHologramCard({ route, x, y, index }) {
                   borderColor: 'rgba(16, 185, 129, 0.6)',
                   boxShadow: '0 0 20px rgba(16, 185, 129, 0.4)'
                 }}
+                whileTap={{ scale: 0.95 }}
                 style={{ transform: 'translateZ(15px)' }}
               >
                 <motion.div 
@@ -343,6 +452,90 @@ export default function RouteHologramCard({ route, x, y, index }) {
               </motion.div>
             </motion.div>
 
+            {/* Expanded content: Active vehicles */}
+            <AnimatePresence>
+              {isExpanded && routeVehicles.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="space-y-2 pt-3 border-t border-cyan-400/20"
+                >
+                  <h4 className="text-xs font-bold text-cyan-400 tracking-wider mb-2">ACTIVE VEHICLES</h4>
+                  <div className="space-y-2 max-h-48 overflow-y-auto">
+                    {routeVehicles.slice(0, 5).map((vehicle) => (
+                      <motion.div
+                        key={vehicle.id}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="flex items-center justify-between p-2 bg-slate-800/40 rounded border border-slate-700/40"
+                      >
+                        <div className="flex items-center gap-2">
+                          <Truck className="w-3 h-3 text-cyan-400" />
+                          <span className="text-xs text-white">{vehicle.name}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className={cn(
+                            "w-2 h-2 rounded-full",
+                            vehicle.status === 'active' && "bg-emerald-400 animate-pulse",
+                            vehicle.status === 'idle' && "bg-amber-400",
+                            vehicle.status === 'maintenance' && "bg-red-400"
+                          )} />
+                          <span className="text-xs text-slate-400">{vehicle.speed || 0} km/h</span>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Expanded content: Exceptions */}
+            <AnimatePresence>
+              {isExpanded && routeExceptions.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="space-y-2 pt-3 border-t border-amber-400/20"
+                >
+                  <h4 className="text-xs font-bold text-amber-400 tracking-wider mb-2">ACTIVE EXCEPTIONS</h4>
+                  <div className="space-y-2">
+                    {routeExceptions.map((exception) => (
+                      <motion.div
+                        key={exception.id}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="p-3 bg-amber-500/10 rounded border border-amber-400/30"
+                      >
+                        <div className="flex items-start justify-between mb-1">
+                          <span className="text-xs font-bold text-amber-400">{exception.title}</span>
+                          <span className={cn(
+                            "text-[10px] px-2 py-0.5 rounded",
+                            exception.severity === 'critical' && "bg-red-500/20 text-red-400",
+                            exception.severity === 'high' && "bg-orange-500/20 text-orange-400",
+                            exception.severity === 'medium' && "bg-amber-500/20 text-amber-400",
+                            exception.severity === 'low' && "bg-blue-500/20 text-blue-400"
+                          )}>
+                            {exception.severity?.toUpperCase()}
+                          </span>
+                        </div>
+                        <p className="text-[10px] text-slate-400">{exception.description}</p>
+                        {exception.ai_recommendation && (
+                          <div className="mt-2 pt-2 border-t border-amber-400/20">
+                            <p className="text-[10px] text-violet-400 flex items-center gap-1">
+                              <Sparkles className="w-3 h-3" />
+                              AI: {exception.ai_recommendation}
+                            </p>
+                          </div>
+                        )}
+                      </motion.div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             {/* AI Analysis with advanced effects */}
             {route.ai_optimized && (
               <motion.div
@@ -354,8 +547,9 @@ export default function RouteHologramCard({ route, x, y, index }) {
                   ]
                 }}
                 transition={{ duration: 2, repeat: Infinity }}
-                className="p-4 bg-gradient-to-br from-violet-500/20 to-purple-500/10 border-2 border-violet-400/50 rounded-lg relative overflow-hidden"
+                className="p-4 bg-gradient-to-br from-violet-500/20 to-purple-500/10 border-2 border-violet-400/50 rounded-lg relative overflow-hidden cursor-pointer"
                 style={{ transform: 'translateZ(35px)' }}
+                whileHover={{ scale: 1.02 }}
               >
                 <motion.div 
                   className="absolute inset-0 bg-gradient-to-r from-violet-500/20 to-cyan-500/20"
@@ -374,6 +568,7 @@ export default function RouteHologramCard({ route, x, y, index }) {
                       <Sparkles className="w-5 h-5 text-violet-400 drop-shadow-[0_0_10px_rgba(139,92,246,0.8)]" />
                     </motion.div>
                     <span className="text-sm font-bold text-violet-300 tracking-wider">AI OPTIMIZATION ACTIVE</span>
+                    <CheckCircle className="w-4 h-4 text-emerald-400 ml-auto" />
                   </div>
                   <div className="grid grid-cols-3 gap-3">
                     <div>
@@ -487,71 +682,32 @@ export default function RouteHologramCard({ route, x, y, index }) {
             className="absolute inset-0 border-2 border-cyan-400/50 rounded-2xl pointer-events-none"
             style={{ transform: 'translateZ(80px)' }}
           />
-
-          {/* Animated corner data points */}
-          <motion.div 
-            className="absolute top-2 left-2 w-2 h-2 bg-cyan-400 rounded-full"
-            animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
-            transition={{ duration: 2, repeat: Infinity }}
-            style={{ 
-              transform: 'translateZ(90px)',
-              boxShadow: '0 0 10px rgba(6, 182, 212, 0.8)'
-            }}
-          />
-          <motion.div 
-            className="absolute top-2 right-2 w-2 h-2 bg-violet-400 rounded-full"
-            animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
-            transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
-            style={{ 
-              transform: 'translateZ(90px)',
-              boxShadow: '0 0 10px rgba(139, 92, 246, 0.8)'
-            }}
-          />
-          <motion.div 
-            className="absolute bottom-2 left-2 w-2 h-2 bg-emerald-400 rounded-full"
-            animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
-            transition={{ duration: 2, repeat: Infinity, delay: 1 }}
-            style={{ 
-              transform: 'translateZ(90px)',
-              boxShadow: '0 0 10px rgba(16, 185, 129, 0.8)'
-            }}
-          />
-          <motion.div 
-            className="absolute bottom-2 right-2 w-2 h-2 bg-amber-400 rounded-full"
-            animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
-            transition={{ duration: 2, repeat: Infinity, delay: 1.5 }}
-            style={{ 
-              transform: 'translateZ(90px)',
-              boxShadow: '0 0 10px rgba(251, 191, 36, 0.8)'
-            }}
-          />
         </motion.div>
 
         {/* Holographic projection lines with depth */}
-        <motion.div 
-          className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-px bg-gradient-to-b from-cyan-400/60 to-transparent"
-          style={{ height: isHovered ? '50px' : '40px' }}
-          animate={{ 
-            opacity: [0.4, 0.8, 0.4],
-            boxShadow: [
-              '0 0 5px rgba(6, 182, 212, 0.3)',
-              '0 0 15px rgba(6, 182, 212, 0.6)',
-              '0 0 5px rgba(6, 182, 212, 0.3)'
-            ]
-          }}
-          transition={{ duration: 2, repeat: Infinity }}
-        />
-        <motion.div
-          animate={{ 
-            scaleX: [1, 1.5, 1],
-            opacity: [0.6, 1, 0.6]
-          }}
-          transition={{ duration: 2, repeat: Infinity }}
-          className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-20 h-px bg-gradient-to-r from-transparent via-cyan-400/60 to-transparent"
-        />
+        {!isExpanded && (
+          <>
+            <motion.div 
+              className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-px bg-gradient-to-b from-cyan-400/60 to-transparent"
+              style={{ height: isHovered ? '50px' : '40px' }}
+              animate={{ 
+                opacity: [0.4, 0.8, 0.4]
+              }}
+              transition={{ duration: 2, repeat: Infinity }}
+            />
+            <motion.div
+              animate={{ 
+                scaleX: [1, 1.5, 1],
+                opacity: [0.6, 1, 0.6]
+              }}
+              transition={{ duration: 2, repeat: Infinity }}
+              className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-20 h-px bg-gradient-to-r from-transparent via-cyan-400/60 to-transparent"
+            />
+          </>
+        )}
 
         {/* Floating holographic particles */}
-        {[...Array(5)].map((_, i) => (
+        {!isExpanded && [...Array(5)].map((_, i) => (
           <motion.div
             key={i}
             className="absolute w-1 h-1 rounded-full bg-cyan-400/60"
