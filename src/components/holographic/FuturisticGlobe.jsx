@@ -464,9 +464,15 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], onSelectVe
       pointLight2.position.x = Math.cos(time * 0.3 + Math.PI) * 3;
       pointLight2.position.z = Math.sin(time * 0.3 + Math.PI) * 3;
 
-      // Update visible routes with 2D screen positions
+      // Update visible routes with 2D screen positions using advanced spatial visibility
       const newVisibleRoutes = [];
       const seenRouteIds = new Set();
+      
+      // Get camera view frustum for advanced culling
+      const frustum = new THREE.Frustum();
+      const projScreenMatrix = new THREE.Matrix4();
+      projScreenMatrix.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
+      frustum.setFromProjectionMatrix(projScreenMatrix);
       
       // Only process routes marked as first segment
       const firstSegmentArcs = routeArcs.filter(arc => arc.userData.isFirstSegment);
@@ -474,53 +480,63 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], onSelectVe
       firstSegmentArcs.forEach((arc, index) => {
         const route = arc.userData.route;
         
-        // Double-check we haven't seen this route ID
+        // Ensure unique route ID
         if (seenRouteIds.has(route.id)) return;
         seenRouteIds.add(route.id);
         
-        // Get center point of arc
+        // Get center point of arc in local coordinates
         const geometry = arc.geometry;
         const positions = geometry.attributes.position.array;
         const midIndex = Math.floor(positions.length / 2 / 3) * 3;
-        const arcPosition = new THREE.Vector3(
+        const arcLocalPos = new THREE.Vector3(
           positions[midIndex],
           positions[midIndex + 1],
           positions[midIndex + 2]
         );
         
         // Transform to world space (apply globe rotation)
-        arcPosition.applyMatrix4(globe.matrixWorld);
+        const arcWorldPos = arcLocalPos.clone().applyMatrix4(globe.matrixWorld);
         
-        // Project 3D position to 2D screen
-        const screenPos = arcPosition.clone().project(camera);
+        // === VISIBILITY CHECK 1: Frustum Culling ===
+        if (!frustum.containsPoint(arcWorldPos)) return;
         
-        // Check if point is visible:
-        // 1. Behind camera check (z > 1 means behind)
-        if (screenPos.z > 1 || screenPos.z < -1) return;
+        // === VISIBILITY CHECK 2: Hemisphere Check ===
+        // Get the surface normal at arc position (pointing outward from globe center)
+        const globeCenter = new THREE.Vector3();
+        globe.getWorldPosition(globeCenter);
+        const surfaceNormal = new THREE.Vector3().subVectors(arcWorldPos, globeCenter).normalize();
         
-        // 2. Check if facing camera using normal vector
-        const arcNormal = arcPosition.clone().normalize(); // Vector from globe center to arc
-        const toCamera = new THREE.Vector3().subVectors(camera.position, arcPosition).normalize();
-        const dotProduct = arcNormal.dot(toCamera);
+        // Get camera direction
+        const cameraWorldPos = new THREE.Vector3();
+        camera.getWorldPosition(cameraWorldPos);
+        const cameraDirection = new THREE.Vector3().subVectors(arcWorldPos, cameraWorldPos).normalize();
         
-        // Only visible if facing camera (dot product > 0 means same hemisphere as camera)
-        if (dotProduct <= 0.1) return;
+        // Dot product: positive means arc faces camera
+        const visibility = surfaceNormal.dot(cameraDirection.negate());
+        if (visibility < 0.15) return; // Threshold to avoid edge cases
         
-        // 3. Check if within screen bounds
-        const isInBounds = screenPos.x >= -1.2 && screenPos.x <= 1.2 && 
-                          screenPos.y >= -1.2 && screenPos.y <= 1.2;
+        // === VISIBILITY CHECK 3: Screen Projection ===
+        const screenPos = arcWorldPos.clone().project(camera);
         
-        if (isInBounds) {
-          const x = (screenPos.x * 0.5 + 0.5) * el.clientWidth;
-          const y = (-(screenPos.y * 0.5) + 0.5) * el.clientHeight;
-          
-          newVisibleRoutes.push({
-            route,
-            x,
-            y,
-            index
-          });
-        }
+        // Depth check (NDC z: -1 is near plane, 1 is far plane)
+        if (screenPos.z < -1 || screenPos.z > 1) return;
+        
+        // Screen bounds with margin
+        const margin = 1.3;
+        if (screenPos.x < -margin || screenPos.x > margin || 
+            screenPos.y < -margin || screenPos.y > margin) return;
+        
+        // Convert to pixel coordinates
+        const x = (screenPos.x * 0.5 + 0.5) * el.clientWidth;
+        const y = (-(screenPos.y * 0.5) + 0.5) * el.clientHeight;
+        
+        newVisibleRoutes.push({
+          route,
+          x,
+          y,
+          index,
+          visibility // Include visibility score for potential sorting/fading
+        });
       });
       
       // Only update state if there's a change
