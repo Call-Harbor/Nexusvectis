@@ -27,10 +27,8 @@ import {
   DollarSign,
   Target
 } from "lucide-react";
-import NotificationCenter from "./components/notifications/NotificationCenter";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import CircularNav from "./components/navigation/CircularNav";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -113,8 +111,13 @@ export default function Layout({ children, currentPageName }) {
 
   return (
     <div className="min-h-screen bg-slate-950">
-      {/* Futuristic Top Navigation */}
+      {/* Circular Navigation */}
       {!hideNav && (
+        <CircularNav currentPageName={currentPageName} user={user} />
+      )}
+
+      {/* OLD NAV - HIDDEN */}
+      {false && !hideNav && (
       <nav className="fixed top-0 left-0 right-0 z-50 hidden lg:block">
         <div className="mx-6 mt-4">
           <div className="bg-slate-900/40 backdrop-blur-2xl rounded-2xl border border-cyan-500/20 shadow-2xl shadow-cyan-500/10">
@@ -741,7 +744,7 @@ export default function Layout({ children, currentPageName }) {
       )}
 
       {/* Main Content */}
-      <main className={`${!hideNav ? 'pt-28 lg:pt-24 pb-20 lg:pb-0' : ''}`}>
+      <main className={`${!hideNav ? 'pb-20 lg:pb-0' : ''}`}>
         {children}
       </main>
     </div>
