@@ -111,341 +111,346 @@ export default function Layout({ children, currentPageName }) {
   }, []);
 
   return (
-    <div className="min-h-screen bg-slate-950 flex">
-      {/* Sidebar */}
+    <div className="min-h-screen bg-slate-950">
+      {/* Futuristic Top Navigation */}
       {!hideNav && (
-      <aside className="fixed left-0 top-0 h-full w-64 bg-slate-900/50 backdrop-blur-xl border-r border-slate-800/50 z-40 hidden lg:block">
-        <div className="p-6">
-          <Link to={createPageUrl("Dashboard")} className="flex items-center gap-3">
-            <img 
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/697e930c62bf3e3832b34edb/bc9d40ccc_FullLogo_Transparent1.png" 
-              alt="NexusVectis Logo" 
-              className="h-32 w-auto"
-            />
-          </Link>
-        </div>
-
-        <nav className="px-3 space-y-1">
-          {navItems.map((item) => {
-            const isActive = currentPageName === item.page;
-            const Icon = item.icon;
-            const isMapMonitor = item.page === "MapMonitor";
-    
-            return isMapMonitor ? (
-              <a
-                key={item.name}
-                href={createPageUrl(item.page)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={cn(
-                  "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all",
-                  "text-slate-400 hover:text-white hover:bg-slate-800/50"
-                )}
-              >
-                <Icon className="w-5 h-5" />
-                <span>{item.name}</span>
-              </a>
-            ) : (
-              <Link
-                key={item.name}
-                to={createPageUrl(item.page)}
-                className={cn(
-                  "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all",
-                  isActive 
-                    ? "bg-gradient-to-r from-cyan-500/20 to-violet-500/10 text-white border border-cyan-500/30" 
-                    : "text-slate-400 hover:text-white hover:bg-slate-800/50"
-                )}
-              >
-                <Icon className={cn("w-5 h-5", isActive && "text-cyan-400")} />
-                <span>{item.name}</span>
-                {isActive && <ChevronRight className="w-4 h-4 ml-auto text-cyan-400" />}
+      <nav className="fixed top-0 left-0 right-0 z-50 hidden lg:block">
+        <div className="mx-6 mt-4">
+          <div className="bg-slate-900/40 backdrop-blur-2xl rounded-2xl border border-cyan-500/20 shadow-2xl shadow-cyan-500/10">
+            <div className="flex items-center justify-between px-6 py-4">
+              {/* Logo */}
+              <Link to={createPageUrl("Dashboard")} className="flex items-center gap-3">
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                  className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-violet-500 flex items-center justify-center"
+                >
+                  <Sparkles className="w-6 h-6 text-white" />
+                </motion.div>
+                <div>
+                  <h1 className="text-xl font-bold bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent">
+                    NexusVectis
+                  </h1>
+                  <p className="text-[10px] text-slate-400">Neural Fleet Intelligence</p>
+                </div>
               </Link>
-            );
-          })}
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button
-                className={cn(
-                  "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all w-full",
-                  fleetMenuItems.some(item => item.page === currentPageName)
-                    ? "bg-gradient-to-r from-cyan-500/20 to-violet-500/10 text-white border border-cyan-500/30"
-                    : "text-slate-400 hover:text-white hover:bg-slate-800/50"
-                )}
-              >
-                <Truck className={cn("w-5 h-5", fleetMenuItems.some(item => item.page === currentPageName) && "text-cyan-400")} />
-                <span>Fleet Operations</span>
-                <ChevronDown className="w-4 h-4 ml-auto" />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56 bg-slate-900 border-slate-800 text-white ml-3">
-              <DropdownMenuLabel>Fleet Operations</DropdownMenuLabel>
-              <DropdownMenuSeparator className="bg-slate-800" />
-              {fleetMenuItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = currentPageName === item.page;
-                const isMapMonitor = item.page === "MapMonitor";
-
-                return isMapMonitor ? (
-                  <DropdownMenuItem key={item.name} asChild>
+              {/* Main Navigation */}
+              <div className="flex items-center gap-2">
+                {navItems.map((item) => {
+                  const isActive = currentPageName === item.page;
+                  const Icon = item.icon;
+                  const isMapMonitor = item.page === "MapMonitor";
+          
+                  return isMapMonitor ? (
                     <a
+                      key={item.name}
                       href={createPageUrl(item.page)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className={cn(
-                        "flex items-center gap-3 cursor-pointer",
-                        isActive && "text-cyan-400"
+                        "px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2",
+                        "text-slate-400 hover:text-white hover:bg-slate-800/50"
                       )}
                     >
                       <Icon className="w-4 h-4" />
                       <span>{item.name}</span>
                     </a>
-                  </DropdownMenuItem>
-                ) : (
-                  <DropdownMenuItem key={item.name} asChild>
+                  ) : (
                     <Link
+                      key={item.name}
                       to={createPageUrl(item.page)}
                       className={cn(
-                        "flex items-center gap-3 cursor-pointer",
-                        isActive && "text-cyan-400"
+                        "px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2 relative",
+                        isActive 
+                          ? "bg-gradient-to-r from-cyan-500/20 to-violet-500/20 text-white" 
+                          : "text-slate-400 hover:text-white hover:bg-slate-800/30"
                       )}
                     >
-                      <Icon className="w-4 h-4" />
+                      <Icon className={cn("w-4 h-4", isActive && "text-cyan-400")} />
                       <span>{item.name}</span>
+                      {isActive && (
+                        <motion.div
+                          layoutId="activeTab"
+                          className="absolute inset-0 rounded-xl border border-cyan-400/50 -z-10"
+                          transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                        />
+                      )}
                     </Link>
-                  </DropdownMenuItem>
-                );
-              })}
-            </DropdownMenuContent>
-          </DropdownMenu>
+                  );
+                })}
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button
-                className={cn(
-                  "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all w-full",
-                  logisticsMenuItems.some(item => item.page === currentPageName)
-                    ? "bg-gradient-to-r from-cyan-500/20 to-violet-500/10 text-white border border-cyan-500/30"
-                    : "text-slate-400 hover:text-white hover:bg-slate-800/50"
-                )}
-              >
-                <Route className={cn("w-5 h-5", logisticsMenuItems.some(item => item.page === currentPageName) && "text-cyan-400")} />
-                <span>Logistics & Planning</span>
-                <ChevronDown className="w-4 h-4 ml-auto" />
-              </button>
-            </DropdownMenuTrigger>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      className={cn(
+                        "px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2",
+                        fleetMenuItems.some(item => item.page === currentPageName)
+                          ? "bg-gradient-to-r from-cyan-500/20 to-violet-500/20 text-white"
+                          : "text-slate-400 hover:text-white hover:bg-slate-800/30"
+                      )}
+                    >
+                      <Truck className={cn("w-4 h-4", fleetMenuItems.some(item => item.page === currentPageName) && "text-cyan-400")} />
+                      <span>Fleet</span>
+                      <ChevronDown className="w-3 h-3" />
+                    </button>
+                  </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56 bg-slate-900 border-slate-800 text-white ml-3">
-              <DropdownMenuLabel>Logistics & Planning</DropdownMenuLabel>
-              <DropdownMenuSeparator className="bg-slate-800" />
-              {logisticsMenuItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = currentPageName === item.page;
-                return (
-                  <DropdownMenuItem key={item.name} asChild>
-                    <Link
-                      to={createPageUrl(item.page)}
+                    <DropdownMenuLabel>Fleet Operations</DropdownMenuLabel>
+                    <DropdownMenuSeparator className="bg-slate-800" />
+                    {fleetMenuItems.map((item) => {
+                      const Icon = item.icon;
+                      const isActive = currentPageName === item.page;
+                      const isMapMonitor = item.page === "MapMonitor";
+
+                      return isMapMonitor ? (
+                        <DropdownMenuItem key={item.name} asChild>
+                          <a
+                            href={createPageUrl(item.page)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={cn(
+                              "flex items-center gap-3 cursor-pointer",
+                              isActive && "text-cyan-400"
+                            )}
+                          >
+                            <Icon className="w-4 h-4" />
+                            <span>{item.name}</span>
+                          </a>
+                        </DropdownMenuItem>
+                      ) : (
+                        <DropdownMenuItem key={item.name} asChild>
+                          <Link
+                            to={createPageUrl(item.page)}
+                            className={cn(
+                              "flex items-center gap-3 cursor-pointer",
+                              isActive && "text-cyan-400"
+                            )}
+                          >
+                            <Icon className="w-4 h-4" />
+                            <span>{item.name}</span>
+                          </Link>
+                        </DropdownMenuItem>
+                      );
+                    })}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
                       className={cn(
-                        "flex items-center gap-3 cursor-pointer",
-                        isActive && "text-cyan-400"
+                        "px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2",
+                        logisticsMenuItems.some(item => item.page === currentPageName)
+                          ? "bg-gradient-to-r from-cyan-500/20 to-violet-500/20 text-white"
+                          : "text-slate-400 hover:text-white hover:bg-slate-800/30"
                       )}
                     >
-                      <Icon className="w-4 h-4" />
-                      <span>{item.name}</span>
-                    </Link>
-                  </DropdownMenuItem>
-                );
-              })}
-            </DropdownMenuContent>
-          </DropdownMenu>
+                      <Route className={cn("w-4 h-4", logisticsMenuItems.some(item => item.page === currentPageName) && "text-cyan-400")} />
+                      <span>Logistics</span>
+                      <ChevronDown className="w-3 h-3" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56 bg-slate-900/95 backdrop-blur-xl border-cyan-500/20 text-white shadow-2xl">
+                    <DropdownMenuLabel>Logistics & Planning</DropdownMenuLabel>
+                    <DropdownMenuSeparator className="bg-slate-800" />
+                    {logisticsMenuItems.map((item) => {
+                      const Icon = item.icon;
+                      const isActive = currentPageName === item.page;
+                      return (
+                        <DropdownMenuItem key={item.name} asChild>
+                          <Link
+                            to={createPageUrl(item.page)}
+                            className={cn(
+                              "flex items-center gap-3 cursor-pointer",
+                              isActive && "text-cyan-400"
+                            )}
+                          >
+                            <Icon className="w-4 h-4" />
+                            <span>{item.name}</span>
+                          </Link>
+                        </DropdownMenuItem>
+                      );
+                    })}
+                  </DropdownMenuContent>
+                </DropdownMenu>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button
-                className={cn(
-                  "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all w-full",
-                  businessMenuItems.some(item => item.page === currentPageName)
-                    ? "bg-gradient-to-r from-cyan-500/20 to-violet-500/10 text-white border border-cyan-500/30"
-                    : "text-slate-400 hover:text-white hover:bg-slate-800/50"
-                )}
-              >
-                <DollarSign className={cn("w-5 h-5", businessMenuItems.some(item => item.page === currentPageName) && "text-cyan-400")} />
-                <span>Business Management</span>
-                <ChevronDown className="w-4 h-4 ml-auto" />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56 bg-slate-900 border-slate-800 text-white ml-3">
-              <DropdownMenuLabel>Business Management</DropdownMenuLabel>
-              <DropdownMenuSeparator className="bg-slate-800" />
-              {businessMenuItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = currentPageName === item.page;
-                return (
-                  <DropdownMenuItem key={item.name} asChild>
-                    <Link
-                      to={createPageUrl(item.page)}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
                       className={cn(
-                        "flex items-center gap-3 cursor-pointer",
-                        isActive && "text-cyan-400"
+                        "px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2",
+                        businessMenuItems.some(item => item.page === currentPageName)
+                          ? "bg-gradient-to-r from-cyan-500/20 to-violet-500/20 text-white"
+                          : "text-slate-400 hover:text-white hover:bg-slate-800/30"
                       )}
                     >
-                      <Icon className="w-4 h-4" />
-                      <span>{item.name}</span>
-                    </Link>
-                  </DropdownMenuItem>
-                );
-              })}
-            </DropdownMenuContent>
-          </DropdownMenu>
+                      <DollarSign className={cn("w-4 h-4", businessMenuItems.some(item => item.page === currentPageName) && "text-cyan-400")} />
+                      <span>Business</span>
+                      <ChevronDown className="w-3 h-3" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56 bg-slate-900/95 backdrop-blur-xl border-cyan-500/20 text-white shadow-2xl">
+                    <DropdownMenuLabel>Business Management</DropdownMenuLabel>
+                    <DropdownMenuSeparator className="bg-slate-800" />
+                    {businessMenuItems.map((item) => {
+                      const Icon = item.icon;
+                      const isActive = currentPageName === item.page;
+                      return (
+                        <DropdownMenuItem key={item.name} asChild>
+                          <Link
+                            to={createPageUrl(item.page)}
+                            className={cn(
+                              "flex items-center gap-3 cursor-pointer",
+                              isActive && "text-cyan-400"
+                            )}
+                          >
+                            <Icon className="w-4 h-4" />
+                            <span>{item.name}</span>
+                          </Link>
+                        </DropdownMenuItem>
+                      );
+                    })}
+                  </DropdownMenuContent>
+                </DropdownMenu>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button
-                className={cn(
-                  "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all w-full",
-                  aiMenuItems.some(item => item.page === currentPageName)
-                    ? "bg-gradient-to-r from-cyan-500/20 to-violet-500/10 text-white border border-cyan-500/30"
-                    : "text-slate-400 hover:text-white hover:bg-slate-800/50"
-                )}
-              >
-                <Sparkles className={cn("w-5 h-5", aiMenuItems.some(item => item.page === currentPageName) && "text-cyan-400")} />
-                <span>AI & Automation</span>
-                <ChevronDown className="w-4 h-4 ml-auto" />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56 bg-slate-900 border-slate-800 text-white ml-3">
-              <DropdownMenuLabel>AI & Automation</DropdownMenuLabel>
-              <DropdownMenuSeparator className="bg-slate-800" />
-              {aiMenuItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = currentPageName === item.page;
-                return (
-                  <DropdownMenuItem key={item.name} asChild>
-                    <Link
-                      to={createPageUrl(item.page)}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
                       className={cn(
-                        "flex items-center gap-3 cursor-pointer",
-                        isActive && "text-cyan-400"
+                        "px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2",
+                        aiMenuItems.some(item => item.page === currentPageName)
+                          ? "bg-gradient-to-r from-cyan-500/20 to-violet-500/20 text-white"
+                          : "text-slate-400 hover:text-white hover:bg-slate-800/30"
                       )}
                     >
-                      <Icon className="w-4 h-4" />
-                      <span>{item.name}</span>
-                      {item.page === "IntellectMode" && (
-                        <Badge className="ml-auto bg-amber-500/20 text-amber-400 border-amber-500/40 text-[10px] font-semibold">BETA</Badge>
-                      )}
-                    </Link>
-                  </DropdownMenuItem>
-                );
-              })}
-            </DropdownMenuContent>
-          </DropdownMenu>
+                      <Sparkles className={cn("w-4 h-4", aiMenuItems.some(item => item.page === currentPageName) && "text-cyan-400")} />
+                      <span>AI</span>
+                      <ChevronDown className="w-3 h-3" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56 bg-slate-900/95 backdrop-blur-xl border-cyan-500/20 text-white shadow-2xl">
+                    <DropdownMenuLabel>AI & Automation</DropdownMenuLabel>
+                    <DropdownMenuSeparator className="bg-slate-800" />
+                    {aiMenuItems.map((item) => {
+                      const Icon = item.icon;
+                      const isActive = currentPageName === item.page;
+                      return (
+                        <DropdownMenuItem key={item.name} asChild>
+                          <Link
+                            to={createPageUrl(item.page)}
+                            className={cn(
+                              "flex items-center gap-3 cursor-pointer",
+                              isActive && "text-cyan-400"
+                            )}
+                          >
+                            <Icon className="w-4 h-4" />
+                            <span>{item.name}</span>
+                            {item.page === "IntellectMode" && (
+                              <Badge className="ml-auto bg-amber-500/20 text-amber-400 border-amber-500/40 text-[10px] font-semibold">BETA</Badge>
+                            )}
+                          </Link>
+                        </DropdownMenuItem>
+                      );
+                    })}
+                  </DropdownMenuContent>
+                </DropdownMenu>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button
-                className={cn(
-                  "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all w-full",
-                  systemMenuItems.some(item => item.page === currentPageName)
-                    ? "bg-gradient-to-r from-cyan-500/20 to-violet-500/10 text-white border border-cyan-500/30"
-                    : "text-slate-400 hover:text-white hover:bg-slate-800/50"
-                )}
-              >
-                <Settings className={cn("w-5 h-5", systemMenuItems.some(item => item.page === currentPageName) && "text-cyan-400")} />
-                <span>System</span>
-                <ChevronDown className="w-4 h-4 ml-auto" />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56 bg-slate-900 border-slate-800 text-white ml-3">
-              <DropdownMenuLabel>System</DropdownMenuLabel>
-              <DropdownMenuSeparator className="bg-slate-800" />
-              {systemMenuItems.filter(item => !item.adminOnly || user?.role === 'admin').map((item) => {
-                const Icon = item.icon;
-                const isActive = currentPageName === item.page;
-                return (
-                  <DropdownMenuItem key={item.name} asChild>
-                    <Link
-                      to={createPageUrl(item.page)}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
                       className={cn(
-                        "flex items-center gap-3 cursor-pointer",
-                        isActive && "text-cyan-400"
+                        "px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2",
+                        systemMenuItems.some(item => item.page === currentPageName)
+                          ? "bg-gradient-to-r from-cyan-500/20 to-violet-500/20 text-white"
+                          : "text-slate-400 hover:text-white hover:bg-slate-800/30"
                       )}
                     >
-                      <Icon className="w-4 h-4" />
-                      <span>{item.name}</span>
-                    </Link>
-                  </DropdownMenuItem>
-                );
-              })}
-            </DropdownMenuContent>
-          </DropdownMenu>
+                      <Settings className={cn("w-4 h-4", systemMenuItems.some(item => item.page === currentPageName) && "text-cyan-400")} />
+                      <span>System</span>
+                      <ChevronDown className="w-3 h-3" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56 bg-slate-900/95 backdrop-blur-xl border-cyan-500/20 text-white shadow-2xl">
+                    <DropdownMenuLabel>System</DropdownMenuLabel>
+                    <DropdownMenuSeparator className="bg-slate-800" />
+                    {systemMenuItems.filter(item => !item.adminOnly || user?.role === 'admin').map((item) => {
+                      const Icon = item.icon;
+                      const isActive = currentPageName === item.page;
+                      return (
+                        <DropdownMenuItem key={item.name} asChild>
+                          <Link
+                            to={createPageUrl(item.page)}
+                            className={cn(
+                              "flex items-center gap-3 cursor-pointer",
+                              isActive && "text-cyan-400"
+                            )}
+                          >
+                            <Icon className="w-4 h-4" />
+                            <span>{item.name}</span>
+                          </Link>
+                        </DropdownMenuItem>
+                      );
+                    })}
+                  </DropdownMenuContent>
+                </DropdownMenu>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button
-                className={cn(
-                  "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all w-full",
-                  developerMenuItems.some(item => item.page === currentPageName)
-                    ? "bg-gradient-to-r from-cyan-500/20 to-violet-500/10 text-white border border-cyan-500/30"
-                    : "text-slate-400 hover:text-white hover:bg-slate-800/50"
-                )}
-              >
-                <Activity className={cn("w-5 h-5", developerMenuItems.some(item => item.page === currentPageName) && "text-cyan-400")} />
-                <span>Developer</span>
-                <ChevronDown className="w-4 h-4 ml-auto" />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56 bg-slate-900 border-slate-800 text-white ml-3">
-              <DropdownMenuLabel>Developer</DropdownMenuLabel>
-              <DropdownMenuSeparator className="bg-slate-800" />
-              {developerMenuItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = currentPageName === item.page;
-                return (
-                  <DropdownMenuItem key={item.name} asChild>
-                    <Link
-                      to={createPageUrl(item.page)}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
                       className={cn(
-                        "flex items-center gap-3 cursor-pointer",
-                        isActive && "text-cyan-400"
+                        "px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2",
+                        developerMenuItems.some(item => item.page === currentPageName)
+                          ? "bg-gradient-to-r from-cyan-500/20 to-violet-500/20 text-white"
+                          : "text-slate-400 hover:text-white hover:bg-slate-800/30"
                       )}
                     >
-                      <Icon className="w-4 h-4" />
-                      <span>{item.name}</span>
-                    </Link>
-                  </DropdownMenuItem>
-                );
-              })}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </nav>
-
-        <div className="absolute bottom-0 left-0 right-0 p-4 space-y-3">
-          {user && (
-            <div className="flex items-center justify-between px-2 py-1.5 rounded-xl bg-slate-800/40 border border-slate-700/40">
-              <span className="text-xs text-slate-400 truncate">{user.full_name || user.email}</span>
-              <NotificationCenter user={user} />
-            </div>
-          )}
-          <Button
-            onClick={() => navigate(createPageUrl("IntellectMode"))}
-            className="w-full bg-gradient-to-r from-cyan-500 to-violet-500 hover:from-cyan-600 hover:to-violet-600 border-0"
-          >
-            <Zap className="w-4 h-4 mr-2" />
-            FLEET AI Mode
-            <Badge className="ml-2 bg-amber-500/30 text-amber-300 border-amber-500/50 text-[10px] font-bold">BETA</Badge>
-          </Button>
-          <div className="p-4 rounded-xl bg-gradient-to-br from-violet-500/10 to-cyan-500/10 border border-violet-500/20">
-              <div className="flex items-center gap-2 mb-2">
-                <Sparkles className="w-4 h-4 text-violet-400" />
-                <span className="text-sm font-medium text-white">AI Status</span>
+                      <Activity className={cn("w-4 h-4", developerMenuItems.some(item => item.page === currentPageName) && "text-cyan-400")} />
+                      <span>Dev</span>
+                      <ChevronDown className="w-3 h-3" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56 bg-slate-900/95 backdrop-blur-xl border-cyan-500/20 text-white shadow-2xl">
+                    <DropdownMenuLabel>Developer</DropdownMenuLabel>
+                    <DropdownMenuSeparator className="bg-slate-800" />
+                    {developerMenuItems.map((item) => {
+                      const Icon = item.icon;
+                      const isActive = currentPageName === item.page;
+                      return (
+                        <DropdownMenuItem key={item.name} asChild>
+                          <Link
+                            to={createPageUrl(item.page)}
+                            className={cn(
+                              "flex items-center gap-3 cursor-pointer",
+                              isActive && "text-cyan-400"
+                            )}
+                          >
+                            <Icon className="w-4 h-4" />
+                            <span>{item.name}</span>
+                          </Link>
+                        </DropdownMenuItem>
+                      );
+                    })}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
-              <p className="text-xs text-slate-400">System operating normally</p>
-              <div className="flex items-center gap-2 mt-2">
-                <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="text-xs text-emerald-400">Online</span>
+
+              {/* Right Actions */}
+              <div className="flex items-center gap-3">
+                {user && <NotificationCenter user={user} />}
+                <Button
+                  onClick={() => navigate(createPageUrl("IntellectMode"))}
+                  className="bg-gradient-to-r from-cyan-500 to-violet-500 hover:from-cyan-600 hover:to-violet-600 border-0 px-4 py-2"
+                >
+                  <Zap className="w-4 h-4 mr-2" />
+                  FLEET AI
+                  <Badge className="ml-2 bg-amber-500/30 text-amber-300 border-amber-500/50 text-[10px] font-bold">BETA</Badge>
+                </Button>
               </div>
             </div>
+          </div>
         </div>
-      </aside>
+      </nav>
       )}
 
       {/* Mobile Header */}
@@ -735,7 +740,7 @@ export default function Layout({ children, currentPageName }) {
       )}
 
       {/* Main Content */}
-      <main className={`flex-1 ${!hideNav ? 'lg:ml-64 pt-16 lg:pt-0 pb-20 lg:pb-0' : ''}`}>
+      <main className={`${!hideNav ? 'pt-28 lg:pt-24 pb-20 lg:pb-0' : ''}`}>
         {children}
       </main>
     </div>
