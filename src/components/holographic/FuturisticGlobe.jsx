@@ -460,31 +460,50 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], onSelectVe
       pointLight2.position.z = Math.sin(time * 0.3 + Math.PI) * 3;
 
       // Update visible routes with 2D screen positions
-      const updatedRoutes = routeArcs.map((arc, index) => {
+      const newVisibleRoutes = [];
+      
+      routeArcs.forEach((arc, index) => {
         const route = arc.userData.route;
-        const arcPosition = new THREE.Vector3();
-        arc.getWorldPosition(arcPosition);
+        
+        // Get center point of arc
+        const geometry = arc.geometry;
+        const positions = geometry.attributes.position.array;
+        const midIndex = Math.floor(positions.length / 2 / 3) * 3;
+        const arcPosition = new THREE.Vector3(
+          positions[midIndex],
+          positions[midIndex + 1],
+          positions[midIndex + 2]
+        );
+        
+        // Transform to world space
+        arc.localToWorld(arcPosition);
         
         // Project 3D position to 2D screen
         const screenPos = arcPosition.clone().project(camera);
-        const x = (screenPos.x * 0.5 + 0.5) * el.clientWidth;
-        const y = (-(screenPos.y * 0.5) + 0.5) * el.clientHeight;
         
-        // Check if route is in front of camera and within screen bounds
-        const isVisible = screenPos.z < 1 && 
-                         screenPos.x >= -1 && screenPos.x <= 1 && 
-                         screenPos.y >= -1 && screenPos.y <= 1;
+        // Check if route is visible (in front of camera and within screen bounds)
+        const isInFront = screenPos.z < 1 && screenPos.z > -1;
+        const isInBounds = screenPos.x >= -1.2 && screenPos.x <= 1.2 && 
+                          screenPos.y >= -1.2 && screenPos.y <= 1.2;
         
-        return {
-          route,
-          x,
-          y,
-          isVisible,
-          index
-        };
-      }).filter(r => r.isVisible);
+        if (isInFront && isInBounds) {
+          const x = (screenPos.x * 0.5 + 0.5) * el.clientWidth;
+          const y = (-(screenPos.y * 0.5) + 0.5) * el.clientHeight;
+          
+          newVisibleRoutes.push({
+            route,
+            x,
+            y,
+            index
+          });
+        }
+      });
       
-      setVisibleRoutes(updatedRoutes);
+      // Only update state if there's a change
+      if (newVisibleRoutes.length !== visibleRoutes.length ||
+          !newVisibleRoutes.every((nr, i) => visibleRoutes[i]?.route.id === nr.route.id)) {
+        setVisibleRoutes(newVisibleRoutes);
+      }
 
       renderer.render(scene, camera);
     };
