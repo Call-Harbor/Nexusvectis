@@ -334,12 +334,12 @@ export default function Dashboard() {
       </motion.div>
 
       {/* Main Content Grid */}
-      <div className="absolute inset-0 pt-56 sm:pt-52 md:pt-48 pb-4 px-2 sm:px-4 lg:px-6 flex flex-col lg:flex-row gap-3">
+      <div className="absolute inset-0 pt-56 sm:pt-52 md:pt-48 pb-20 lg:pb-4 px-2 sm:px-4 lg:px-6 flex flex-col lg:flex-row gap-3 overflow-y-auto lg:overflow-hidden">
         {/* Left Panel - AI Insights */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          className="w-full lg:w-64 flex-shrink-0 space-y-3 lg:space-y-4 overflow-y-auto max-h-[40vh] lg:max-h-full"
+          className="w-full lg:w-64 flex-shrink-0 space-y-3 lg:space-y-4 overflow-y-visible lg:overflow-y-auto"
         >
           {/* Predictive Analytics */}
           <div className="bg-slate-900/95 backdrop-blur-xl rounded-xl lg:rounded-2xl border border-cyan-500/40 p-3 lg:p-4 shadow-lg">
@@ -421,7 +421,7 @@ export default function Dashboard() {
           )}
 
           {/* Real-time AI Widget */}
-          <div className="hidden lg:block">
+          <div className="lg:block">
             <AIInsightWidget entity_type="fleet" entity_id="all" compact />
           </div>
         </motion.div>
