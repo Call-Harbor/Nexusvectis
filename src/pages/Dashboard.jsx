@@ -334,13 +334,13 @@ export default function Dashboard() {
       </motion.div>
 
       {/* Main Content Grid */}
-      <div className="absolute inset-0 pt-60 sm:pt-56 md:pt-52 lg:pt-48 pb-24 lg:pb-4 px-2 sm:px-4 lg:px-6 overflow-y-auto lg:overflow-hidden">
-        <div className="flex flex-col lg:flex-row gap-3 min-h-full">
+      <div className="absolute top-[280px] sm:top-[260px] lg:top-[240px] left-0 right-0 bottom-20 lg:bottom-0 px-3 sm:px-4 lg:px-6 overflow-y-auto">
+        <div className="flex flex-col lg:flex-row gap-4 h-full">
           {/* Left Panel - AI Insights */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="w-full lg:w-64 flex-shrink-0 space-y-3 lg:space-y-4"
+            className="w-full lg:w-72 flex-shrink-0 space-y-4"
           >
           {/* Predictive Analytics */}
           <div className="bg-slate-900/95 backdrop-blur-xl rounded-xl lg:rounded-2xl border border-cyan-500/40 p-3 lg:p-4 shadow-lg">
@@ -431,7 +431,7 @@ export default function Dashboard() {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="flex-1 rounded-xl lg:rounded-2xl overflow-hidden border border-cyan-500/30 bg-black/50 backdrop-blur-xl shadow-2xl shadow-cyan-500/20 min-h-[60vh] lg:min-h-0"
+            className="flex-1 rounded-2xl overflow-hidden border border-cyan-500/30 bg-black/50 backdrop-blur-xl shadow-2xl shadow-cyan-500/20 h-[500px] lg:h-auto"
           >
             <FuturisticGlobe 
               vehicles={vehicles}
