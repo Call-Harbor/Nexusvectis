@@ -492,23 +492,26 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], onSelectVe
         // Transform to world space (apply globe rotation)
         arcPosition.applyMatrix4(globe.matrixWorld);
         
-        // Check if point is in front of camera
-        const toCameraDir = new THREE.Vector3().subVectors(camera.position, arcPosition).normalize();
-        const arcNormal = arcPosition.clone().normalize();
-        const dotProduct = arcNormal.dot(toCameraDir);
-        
-        // Only visible if facing camera (positive dot product)
-        if (dotProduct <= 0) return;
-        
         // Project 3D position to 2D screen
         const screenPos = arcPosition.clone().project(camera);
         
-        // Check if within screen bounds
-        const isInFront = screenPos.z < 1 && screenPos.z > -1;
+        // Check if point is visible:
+        // 1. Behind camera check (z > 1 means behind)
+        if (screenPos.z > 1 || screenPos.z < -1) return;
+        
+        // 2. Check if facing camera (dot product with view direction)
+        const viewDir = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
+        const toArc = new THREE.Vector3().subVectors(arcPosition, camera.position).normalize();
+        const dotProduct = viewDir.dot(toArc);
+        
+        // Only visible if in front of camera (positive dot product)
+        if (dotProduct <= 0) return;
+        
+        // 3. Check if within screen bounds
         const isInBounds = screenPos.x >= -1.2 && screenPos.x <= 1.2 && 
                           screenPos.y >= -1.2 && screenPos.y <= 1.2;
         
-        if (isInFront && isInBounds) {
+        if (isInBounds) {
           const x = (screenPos.x * 0.5 + 0.5) * el.clientWidth;
           const y = (-(screenPos.y * 0.5) + 0.5) * el.clientHeight;
           
