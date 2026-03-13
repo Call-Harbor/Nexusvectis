@@ -78,20 +78,20 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
       {/* Background effects */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10">
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl" />
         <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-violet-500/10 rounded-full blur-3xl" />
       </div>
 
       <AIAssistantBadge />
 
-      {/* Header Overlay */}
+      {/* Header */}
       <motion.div 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative z-10 p-4 sm:p-6"
+        className="p-4 sm:p-6"
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3 sm:gap-4">
@@ -200,12 +200,14 @@ export default function Dashboard() {
       </motion.div>
 
       {/* Main Globe Container */}
-      <div className="relative z-10 w-full" style={{ height: 'calc(100vh - 280px)' }}>
-        <FuturisticGlobe 
-          vehicles={vehicles}
-          routes={routes}
-          onSelectVehicle={setSelectedVehicle}
-        />
+      <div className="px-4 sm:px-6 pb-6">
+        <div className="w-full rounded-2xl overflow-hidden border border-cyan-500/20 bg-slate-900/30 backdrop-blur-sm" style={{ height: 'calc(100vh - 320px)' }}>
+          <FuturisticGlobe 
+            vehicles={vehicles}
+            routes={routes}
+            onSelectVehicle={setSelectedVehicle}
+          />
+        </div>
       </div>
 
       {/* Selected Vehicle Panel */}
