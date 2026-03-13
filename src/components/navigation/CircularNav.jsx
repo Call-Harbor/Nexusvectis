@@ -242,12 +242,11 @@ export default function CircularNav({ currentPageName, user }) {
             initial={{ scale: 0, opacity: 0 }}
             animate={{ 
               scale: 1, 
-              opacity: 1,
-              x: 220
+              opacity: 1
             }}
             exit={{ scale: 0, opacity: 0 }}
             transition={{ delay: 0.1, type: "spring", stiffness: 350, damping: 25 }}
-            className="absolute bottom-2 left-2 flex flex-col gap-2 pointer-events-auto z-10"
+            className="fixed bottom-10 right-10 flex flex-col gap-2 pointer-events-auto z-40"
           >
             {/* Fleet AI Button */}
             <motion.button
