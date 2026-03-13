@@ -483,13 +483,21 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], onSelectVe
           positions[midIndex + 2]
         );
         
-        // Transform to world space
-        arc.localToWorld(arcPosition);
+        // Transform to world space (apply globe rotation)
+        arcPosition.applyMatrix4(globe.matrixWorld);
+        
+        // Check if point is in front of camera
+        const toCameraDir = new THREE.Vector3().subVectors(camera.position, arcPosition).normalize();
+        const arcNormal = arcPosition.clone().normalize();
+        const dotProduct = arcNormal.dot(toCameraDir);
+        
+        // Only visible if facing camera (positive dot product)
+        if (dotProduct <= 0) return;
         
         // Project 3D position to 2D screen
         const screenPos = arcPosition.clone().project(camera);
         
-        // Check if route is visible (in front of camera and within screen bounds)
+        // Check if within screen bounds
         const isInFront = screenPos.z < 1 && screenPos.z > -1;
         const isInBounds = screenPos.x >= -1.2 && screenPos.x <= 1.2 && 
                           screenPos.y >= -1.2 && screenPos.y <= 1.2;
