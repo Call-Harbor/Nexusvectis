@@ -91,26 +91,27 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], onSelectVe
       }
     );
     
-    // Main holographic material with texture
+    // Main holographic material with texture - high contrast
     const earthMaterial = new THREE.MeshPhongMaterial({
       map: earthTexture,
-      color: 0x003366,
-      emissive: 0x001133,
+      color: 0xffffff,
+      emissive: 0x004477,
+      emissiveIntensity: 0.3,
       specular: 0x00ffff,
-      shininess: 40,
-      transparent: true,
-      opacity: 0.95,
+      shininess: 60,
+      transparent: false,
+      opacity: 1.0,
       wireframe: false
     });
     
     const earth = new THREE.Mesh(earthGeometry, earthMaterial);
     globe.add(earth);
 
-    // Glowing holographic grid overlay
+    // Glowing holographic grid overlay - more subtle
     const gridMaterial = new THREE.MeshBasicMaterial({
       color: 0x00ffff,
       transparent: true,
-      opacity: 0.04,
+      opacity: 0.02,
       wireframe: true,
       side: THREE.DoubleSide
     });
@@ -230,24 +231,24 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], onSelectVe
     scene.add(stars);
 
     // ══════════════════════════════════════════════════════════════
-    // ADVANCED LIGHTING
+    // ADVANCED LIGHTING - BRIGHTER FOR VISIBILITY
     // ══════════════════════════════════════════════════════════════
-    const ambientLight = new THREE.AmbientLight(0x0044ff, 1.5);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 2.5);
     scene.add(ambientLight);
 
-    const mainLight = new THREE.DirectionalLight(0x00ffff, 2.5);
+    const mainLight = new THREE.DirectionalLight(0xffffff, 3.5);
     mainLight.position.set(5, 3, 5);
     scene.add(mainLight);
 
-    const backLight = new THREE.DirectionalLight(0x0088ff, 1.2);
+    const backLight = new THREE.DirectionalLight(0x88ddff, 2.0);
     backLight.position.set(-5, -2, -5);
     scene.add(backLight);
 
-    const pointLight1 = new THREE.PointLight(0x00ffff, 1.5, 50);
+    const pointLight1 = new THREE.PointLight(0x00ffff, 2.5, 50);
     pointLight1.position.set(3, 2, 3);
     scene.add(pointLight1);
 
-    const pointLight2 = new THREE.PointLight(0xff00ff, 1, 50);
+    const pointLight2 = new THREE.PointLight(0x88ccff, 1.8, 50);
     pointLight2.position.set(-3, -2, -3);
     scene.add(pointLight2);
 
