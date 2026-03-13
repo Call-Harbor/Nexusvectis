@@ -1,5 +1,8 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
+import { motion } from "framer-motion";
+import { Route as RouteIcon, Sparkles } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const STATUS_COLORS = {
   active:      { int: 0x00ffff, hex: "#00ffff", glow: 0x00ccff },
@@ -42,6 +45,8 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], onSelectVe
   const sceneRef = useRef(null);
   const cameraRef = useRef(null);
   const rendererRef = useRef(null);
+  const [hoveredRoute, setHoveredRoute] = useState(null);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     const el = mountRef.current;
@@ -346,6 +351,7 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], onSelectVe
     // ══════════════════════════════════════════════════════════════
     // ROUTE ARCS - HOLOGRAPHIC PATHS
     // ══════════════════════════════════════════════════════════════
+    const routeArcs = [];
     routes.forEach(route => {
       const waypoints = (route.waypoints || []).filter(w => w.lat && w.lng);
       for (let i = 0; i < waypoints.length - 1; i++) {
@@ -356,7 +362,9 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], onSelectVe
           waypoints[i + 1].lng,
           0x00ffff
         );
+        arc.userData = { routeId: route.id, route };
         globe.add(arc);
+        routeArcs.push(arc);
       }
     });
 
@@ -388,6 +396,26 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], onSelectVe
 
     const onMouseDown = (e) => { isDragging = true; lastX = e.clientX; lastY = e.clientY; };
     const onMouseMove = (e) => {
+      // Update mouse position for hologram
+      setMousePosition({ x: e.clientX, y: e.clientY });
+
+      // Check for route hover
+      const rect = el.getBoundingClientRect();
+      mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+      
+      raycaster.setFromCamera(mouse, camera);
+      const routeIntersects = raycaster.intersectObjects(routeArcs, true);
+      
+      if (routeIntersects.length > 0 && !isDragging) {
+        const hoveredArc = routeIntersects[0].object;
+        setHoveredRoute(hoveredArc.userData.route);
+        el.style.cursor = 'pointer';
+      } else {
+        setHoveredRoute(null);
+        el.style.cursor = isDragging ? 'grabbing' : 'grab';
+      }
+
       if (!isDragging) return;
       const deltaX = e.clientX - lastX;
       const deltaY = e.clientY - lastY;
@@ -488,10 +516,118 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], onSelectVe
   }, [vehicles, routes, onSelectVehicle]);
 
   return (
-    <div 
-      ref={mountRef} 
-      className="w-full h-full bg-black" 
-      style={{ cursor: 'grab' }}
-    />
+    <div className="relative w-full h-full">
+      <div 
+        ref={mountRef} 
+        className="w-full h-full bg-black" 
+        style={{ cursor: 'grab' }}
+      />
+      
+      {/* Route Hologram Overlay */}
+      {hoveredRoute && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.9 }}
+          style={{
+            position: 'fixed',
+            left: mousePosition.x + 20,
+            top: mousePosition.y - 100,
+            zIndex: 1000,
+            pointerEvents: 'none'
+          }}
+          className="w-96 bg-slate-900/95 backdrop-blur-xl border-2 border-cyan-400/50 rounded-2xl shadow-2xl overflow-hidden"
+        >
+          {/* Holographic header */}
+          <div className="bg-gradient-to-r from-cyan-500/20 to-violet-500/20 border-b border-cyan-400/30 px-6 py-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                <RouteIcon className="w-5 h-5 text-cyan-400" />
+                {hoveredRoute.name}
+              </h3>
+              <div className={cn(
+                "px-3 py-1 rounded-full text-xs font-semibold",
+                hoveredRoute.status === 'active' && "bg-emerald-500/20 text-emerald-400 border border-emerald-500/50",
+                hoveredRoute.status === 'planned' && "bg-blue-500/20 text-blue-400 border border-blue-500/50",
+                hoveredRoute.status === 'completed' && "bg-slate-500/20 text-slate-400 border border-slate-500/50",
+                hoveredRoute.status === 'delayed' && "bg-amber-500/20 text-amber-400 border border-amber-500/50"
+              )}>
+                {hoveredRoute.status?.toUpperCase() || 'UNKNOWN'}
+              </div>
+            </div>
+          </div>
+
+          {/* Route data grid */}
+          <div className="p-6 space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <p className="text-xs text-slate-400">Origin</p>
+                <p className="text-sm font-semibold text-white">{hoveredRoute.origin}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs text-slate-400">Destination</p>
+                <p className="text-sm font-semibold text-white">{hoveredRoute.destination}</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <p className="text-xs text-slate-400">Distance</p>
+                <p className="text-sm font-semibold text-cyan-400">{hoveredRoute.distance_km || 0} km</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs text-slate-400">Duration</p>
+                <p className="text-sm font-semibold text-cyan-400">{hoveredRoute.estimated_duration_hours || 0}h</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <p className="text-xs text-slate-400">Transport Type</p>
+                <p className="text-sm font-semibold text-white capitalize">{hoveredRoute.transport_type || 'N/A'}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs text-slate-400">Priority</p>
+                <div className={cn(
+                  "inline-block px-2 py-1 rounded text-xs font-semibold",
+                  hoveredRoute.priority === 'critical' && "bg-red-500/20 text-red-400",
+                  hoveredRoute.priority === 'high' && "bg-orange-500/20 text-orange-400",
+                  hoveredRoute.priority === 'normal' && "bg-blue-500/20 text-blue-400",
+                  hoveredRoute.priority === 'low' && "bg-slate-500/20 text-slate-400"
+                )}>
+                  {hoveredRoute.priority?.toUpperCase() || 'NORMAL'}
+                </div>
+              </div>
+            </div>
+
+            {hoveredRoute.ai_optimized && (
+              <div className="flex items-center gap-2 px-3 py-2 bg-violet-500/10 border border-violet-500/30 rounded-lg">
+                <Sparkles className="w-4 h-4 text-violet-400" />
+                <span className="text-xs text-violet-400 font-semibold">AI Optimized Route</span>
+              </div>
+            )}
+
+            {hoveredRoute.co2_estimate && (
+              <div className="space-y-1">
+                <p className="text-xs text-slate-400">CO₂ Emissions</p>
+                <p className="text-sm font-semibold text-emerald-400">{hoveredRoute.co2_estimate} kg</p>
+              </div>
+            )}
+
+            {hoveredRoute.waypoints && hoveredRoute.waypoints.length > 0 && (
+              <div className="space-y-1">
+                <p className="text-xs text-slate-400">Waypoints</p>
+                <p className="text-sm font-semibold text-white">{hoveredRoute.waypoints.length} stops</p>
+              </div>
+            )}
+          </div>
+
+          {/* Holographic border effect */}
+          <div className="absolute inset-0 pointer-events-none">
+            <div className="absolute inset-0 border-2 border-cyan-400/20 rounded-2xl animate-pulse" />
+          </div>
+        </motion.div>
+      )}
+    </div>
   );
 }
