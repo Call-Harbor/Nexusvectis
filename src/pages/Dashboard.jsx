@@ -340,22 +340,22 @@ export default function Dashboard() {
           className="w-80 flex-shrink-0 space-y-4 overflow-y-auto max-h-full hidden lg:block"
         >
           {/* Predictive Analytics */}
-          <div className="bg-slate-900/80 backdrop-blur-xl rounded-2xl border border-cyan-500/30 p-4">
+          <div className="bg-slate-900/95 backdrop-blur-xl rounded-2xl border border-cyan-500/40 p-4 shadow-lg">
             <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 rounded-lg bg-gradient-to-br from-cyan-500/20 to-violet-500/20">
+              <div className="p-2 rounded-lg bg-gradient-to-br from-cyan-500/30 to-violet-500/30">
                 <TrendingUp className="w-5 h-5 text-cyan-400" />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-white">Predictive Intelligence</h3>
-                <p className="text-xs text-slate-400">AI-Powered Forecasting</p>
+                <h3 className="text-base font-bold text-white">Predictive Intelligence</h3>
+                <p className="text-xs text-cyan-300">AI-Powered Forecasting</p>
               </div>
             </div>
             
             <div className="space-y-3">
-              <div className="p-3 rounded-xl bg-slate-800/50 border border-cyan-500/20">
+              <div className="p-3 rounded-xl bg-slate-800/80 border border-cyan-500/30">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs text-slate-400">Accuracy Score</span>
-                  <span className="text-lg font-bold text-cyan-400">{predictiveScore}%</span>
+                  <span className="text-xs text-cyan-200 font-medium">Accuracy Score</span>
+                  <span className="text-2xl font-bold text-cyan-400">{predictiveScore}%</span>
                 </div>
                 <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
                   <motion.div
@@ -367,12 +367,12 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              <div className="p-3 rounded-xl bg-slate-800/50 border border-violet-500/20">
+              <div className="p-3 rounded-xl bg-slate-800/80 border border-violet-500/30">
                 <div className="flex items-center gap-2 mb-2">
                   <Cpu className="w-4 h-4 text-violet-400" />
-                  <span className="text-xs text-slate-400">Neural Processing</span>
+                  <span className="text-xs text-violet-300 font-medium">Neural Processing</span>
                 </div>
-                <div className="space-y-1 text-xs text-slate-300">
+                <div className="space-y-1 text-xs text-white">
                   <p>• Route optimization algorithms active</p>
                   <p>• Real-time traffic analysis running</p>
                   <p>• Predictive maintenance models trained</p>
@@ -408,10 +408,10 @@ export default function Dashboard() {
                     key={exception.id}
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
-                    className="p-2 rounded-lg bg-red-500/10 border border-red-500/30"
+                    className="p-3 rounded-lg bg-red-500/20 border border-red-500/40"
                   >
-                    <p className="text-xs font-medium text-white">{exception.title}</p>
-                    <p className="text-[10px] text-slate-400 mt-1">{exception.type}</p>
+                    <p className="text-sm font-bold text-white">{exception.title}</p>
+                    <p className="text-xs text-red-200 mt-1 uppercase tracking-wide">{exception.type}</p>
                   </motion.div>
                 ))}
               </div>
