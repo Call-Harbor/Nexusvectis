@@ -21,12 +21,10 @@ export default function Layout({ children, currentPageName }) {
 
   return (
     <div className="min-h-screen bg-slate-950">
-      {/* Circular Navigation */}
       {!hideNav && (
         <CircularNav currentPageName={currentPageName} user={user} />
       )}
 
-      {/* Main Content */}
       <main>
         {children}
       </main>
