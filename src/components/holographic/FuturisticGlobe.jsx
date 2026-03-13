@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
+import { AnimatePresence } from "framer-motion";
 import RouteHologramCard from "./RouteHologramCard";
 
 const STATUS_COLORS = {
@@ -526,15 +527,17 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], onSelectVe
       />
       
       {/* Floating Route Holograms */}
-      {visibleRoutes.slice(0, 3).map((routeData, idx) => (
-        <RouteHologramCard
-          key={`route-hologram-${routeData.route.id}-${routeData.index}`}
-          route={routeData.route}
-          x={routeData.x}
-          y={routeData.y}
-          index={idx}
-        />
-      ))}
+      <AnimatePresence mode="popLayout">
+        {visibleRoutes.slice(0, 3).map((routeData, idx) => (
+          <RouteHologramCard
+            key={`route-hologram-${routeData.route.id}`}
+            route={routeData.route}
+            x={routeData.x}
+            y={routeData.y}
+            index={idx}
+          />
+        ))}
+      </AnimatePresence>
     </div>
   );
 }
