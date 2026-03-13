@@ -39,7 +39,7 @@ function createHolographicArc(lat1, lng1, lat2, lng2, color = 0x00ffff) {
   return new THREE.Line(geometry, material);
 }
 
-export default function FuturisticGlobe({ vehicles = [], routes = [], onSelectVehicle }) {
+export default function FuturisticGlobe({ vehicles = [], routes = [], resources = [], digitalTwins = [], onSelectVehicle }) {
   const mountRef = useRef(null);
   const sceneRef = useRef(null);
   const cameraRef = useRef(null);
@@ -256,6 +256,94 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], onSelectVe
     scene.add(pointLight2);
 
     // ══════════════════════════════════════════════════════════════
+    // RESOURCE MARKERS - PORTS, WAREHOUSES, HUBS
+    // ══════════════════════════════════════════════════════════════
+    const resourceMarkers = [];
+    
+    resources.forEach(resource => {
+      if (!resource.latitude || !resource.longitude) return;
+      
+      const pos = latLngToVec3(resource.latitude, resource.longitude, 1.04);
+      
+      // Resource marker (glowing cube)
+      const markerGeometry = new THREE.BoxGeometry(0.03, 0.03, 0.03);
+      const markerMaterial = new THREE.MeshBasicMaterial({
+        color: 0xffaa00,
+        transparent: true,
+        opacity: 0.8,
+        emissive: 0xffaa00,
+        emissiveIntensity: 0.5
+      });
+      const marker = new THREE.Mesh(markerGeometry, markerMaterial);
+      marker.position.copy(pos);
+      marker.userData = { resource, type: 'resource' };
+      globe.add(marker);
+      resourceMarkers.push(marker);
+      
+      // Resource glow ring
+      const ringGeometry = new THREE.RingGeometry(0.04, 0.06, 32);
+      const ringMaterial = new THREE.MeshBasicMaterial({
+        color: 0xffaa00,
+        transparent: true,
+        opacity: 0.4,
+        side: THREE.DoubleSide,
+        blending: THREE.AdditiveBlending
+      });
+      const ring = new THREE.Mesh(ringGeometry, ringMaterial);
+      ring.position.copy(pos);
+      ring.quaternion.setFromUnitVectors(
+        new THREE.Vector3(0, 0, 1),
+        pos.clone().normalize()
+      );
+      ring.userData = { phase: Math.random() * Math.PI * 2 };
+      globe.add(ring);
+    });
+
+    // ══════════════════════════════════════════════════════════════
+    // DIGITAL TWIN MARKERS - AI ENTITIES
+    // ══════════════════════════════════════════════════════════════
+    const twinMarkers = [];
+    
+    digitalTwins.forEach(twin => {
+      if (!twin.latitude || !twin.longitude) return;
+      
+      const pos = latLngToVec3(twin.latitude, twin.longitude, 1.06);
+      
+      // Twin marker (glowing octahedron)
+      const markerGeometry = new THREE.OctahedronGeometry(0.025, 0);
+      const markerMaterial = new THREE.MeshBasicMaterial({
+        color: 0xff00ff,
+        transparent: true,
+        opacity: 0.9,
+        emissive: 0xff00ff,
+        emissiveIntensity: 0.6
+      });
+      const marker = new THREE.Mesh(markerGeometry, markerMaterial);
+      marker.position.copy(pos);
+      marker.userData = { digitalTwin: twin, type: 'twin' };
+      globe.add(marker);
+      twinMarkers.push(marker);
+      
+      // Spinning holographic ring
+      const ringGeometry = new THREE.TorusGeometry(0.035, 0.005, 16, 32);
+      const ringMaterial = new THREE.MeshBasicMaterial({
+        color: 0xff00ff,
+        transparent: true,
+        opacity: 0.5,
+        blending: THREE.AdditiveBlending
+      });
+      const ring = new THREE.Mesh(ringGeometry, ringMaterial);
+      ring.position.copy(pos);
+      ring.quaternion.setFromUnitVectors(
+        new THREE.Vector3(0, 1, 0),
+        pos.clone().normalize()
+      );
+      ring.userData = { phase: Math.random() * Math.PI * 2 };
+      globe.add(ring);
+      twinMarkers.push(ring);
+    });
+
+    // ══════════════════════════════════════════════════════════════
     // VEHICLE MARKERS - HOLOGRAPHIC STYLE
     // ══════════════════════════════════════════════════════════════
     const vehicleMarkers = [];
@@ -458,6 +546,20 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], onSelectVe
         beam.material.opacity = 0.2 + 0.3 * (0.5 + 0.5 * Math.sin(phase));
       });
 
+      // Rotate digital twin markers
+      twinMarkers.forEach((twin, i) => {
+        if (i % 2 === 0) {
+          twin.rotation.y = time * 2;
+          twin.rotation.x = Math.sin(time * 1.5) * 0.3;
+        }
+      });
+
+      // Pulse resource markers
+      resourceMarkers.forEach(resource => {
+        resource.rotation.y = time * 0.5;
+        resource.scale.setScalar(1 + 0.1 * Math.sin(time * 3));
+      });
+
       // Rotate point lights
       pointLight1.position.x = Math.cos(time * 0.5) * 4;
       pointLight1.position.z = Math.sin(time * 0.5) * 4;
@@ -603,7 +705,7 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], onSelectVe
         el.removeChild(renderer.domElement);
       }
     };
-  }, [vehicles, routes, onSelectVehicle]);
+  }, [vehicles, routes, resources, digitalTwins, onSelectVehicle]);
 
   return (
     <div className="relative w-full h-full">
