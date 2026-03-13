@@ -13,6 +13,15 @@ import NotificationCenter from "../notifications/NotificationCenter";
 
 const menuCategories = [
   { 
+    name: "Dashboard", 
+    icon: Target, 
+    color: "cyan",
+    items: [
+      { name: "Dashboard", icon: Target, page: "Dashboard" },
+      { name: "Alerts", icon: Shield, page: "Alerts" },
+    ]
+  },
+  { 
     name: "Fleet", 
     icon: Truck, 
     color: "cyan",
