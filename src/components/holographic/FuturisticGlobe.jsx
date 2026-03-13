@@ -82,14 +82,24 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], onSelectVe
     // ══════════════════════════════════════════════════════════════
     const earthGeometry = new THREE.SphereGeometry(1, 128, 128);
     
-    // Main holographic material
+    // Load Earth texture
+    const textureLoader = new THREE.TextureLoader();
+    const earthTexture = textureLoader.load(
+      'https://raw.githubusercontent.com/turban/webgl-earth/master/images/2_no_clouds_4k.jpg',
+      () => {
+        renderer.render(scene, camera);
+      }
+    );
+    
+    // Main holographic material with texture
     const earthMaterial = new THREE.MeshPhongMaterial({
-      color: 0x001122,
-      emissive: 0x002244,
+      map: earthTexture,
+      color: 0x003366,
+      emissive: 0x001133,
       specular: 0x00ffff,
       shininess: 40,
       transparent: true,
-      opacity: 0.85,
+      opacity: 0.95,
       wireframe: false
     });
     
@@ -100,12 +110,12 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], onSelectVe
     const gridMaterial = new THREE.MeshBasicMaterial({
       color: 0x00ffff,
       transparent: true,
-      opacity: 0.08,
+      opacity: 0.04,
       wireframe: true,
       side: THREE.DoubleSide
     });
     const gridSphere = new THREE.Mesh(
-      new THREE.SphereGeometry(1.002, 48, 24),
+      new THREE.SphereGeometry(1.003, 48, 24),
       gridMaterial
     );
     globe.add(gridSphere);
