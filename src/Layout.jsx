@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "./utils";
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
+import { motion } from "framer-motion";
 import { 
   LayoutDashboard, 
   Truck, 
