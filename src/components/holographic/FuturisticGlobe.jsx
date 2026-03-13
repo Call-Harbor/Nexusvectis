@@ -555,8 +555,15 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], onSelectVe
         if (!finalSeenIds.has(routeData.route.id)) {
           finalSeenIds.add(routeData.route.id);
           uniqueRoutes.push(routeData);
+        } else {
+          console.warn('DUPLICATE DETECTED:', routeData.route.id, routeData.route.name);
         }
       });
+      
+      // Log what we're showing
+      if (uniqueRoutes.length > 0 && time % 100 === 0) {
+        console.log('Showing routes:', uniqueRoutes.map(r => ({ id: r.route.id, name: r.route.name })));
+      }
       
       // Only update state if there's a change
       if (uniqueRoutes.length !== visibleRoutes.length ||
