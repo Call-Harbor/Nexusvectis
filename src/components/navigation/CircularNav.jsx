@@ -78,7 +78,7 @@ export default function CircularNav({ currentPageName, user }) {
   };
 
   return (
-    <div className="fixed bottom-32 left-6 z-50">
+    <div className="fixed bottom-32 left-10 z-50">
       {/* Main Menu Button */}
       <motion.button
         onClick={() => {
@@ -173,7 +173,7 @@ export default function CircularNav({ currentPageName, user }) {
               transition={{ delay: 0.3 }}
               onClick={() => navigate(createPageUrl("IntellectMode"))}
               whileHover={{ scale: 1.1 }}
-              className="absolute bottom-2 left-2 px-4 py-2 rounded-full bg-gradient-to-r from-cyan-500/30 to-violet-500/30 backdrop-blur-2xl border border-cyan-400/50 text-white text-sm font-medium shadow-xl flex items-center gap-2"
+              className="absolute bottom-6 left-2 px-4 py-2 rounded-full bg-gradient-to-r from-cyan-500/30 to-violet-500/30 backdrop-blur-2xl border border-cyan-400/50 text-white text-sm font-medium shadow-xl flex items-center gap-2"
             >
               <Zap className="w-4 h-4" />
               FLEET AI
