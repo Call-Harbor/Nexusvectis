@@ -1,56 +1,66 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "../../utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { 
-  LayoutDashboard, Truck, Route, Warehouse, Bell, Sparkles, 
-  Settings, Users, Shield, FileText, Package, Activity, 
+  Truck, Route, Warehouse, Sparkles, 
+  Settings, Users, Shield, FileText, Package, 
   DollarSign, Target, Menu, X, Zap
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import NotificationCenter from "../notifications/NotificationCenter";
 
-const mainMenuItems = [
-  { name: "Dashboard", icon: LayoutDashboard, page: "Dashboard" },
-  { name: "Alerts", icon: Bell, page: "Alerts" },
-];
-
-const fleetMenuItems = [
-  { name: "Fleet", icon: Truck, page: "Fleet" },
-  { name: "Drivers", icon: Users, page: "DriverManagement" },
-  { name: "Assets", icon: Package, page: "AssetManagement" },
-];
-
-const logisticsMenuItems = [
-  { name: "Shipments", icon: Package, page: "Shipments" },
-  { name: "Routes", icon: Route, page: "Routes" },
-  { name: "Resources", icon: Warehouse, page: "Resources" },
-];
-
-const businessMenuItems = [
-  { name: "CRM", icon: Target, page: "CRM" },
-  { name: "Customers", icon: Users, page: "CustomerManagement" },
-  { name: "Contracts", icon: FileText, page: "ContractManagement" },
-];
-
-const aiMenuItems = [
-  { name: "Intellect Mode", icon: Sparkles, page: "IntellectMode", badge: "BETA" },
-  { name: "AI Optimization", icon: Sparkles, page: "AIOptimization" },
-];
-
-const systemMenuItems = [
-  { name: "Users", icon: Users, page: "UserManagement" },
-  { name: "Security", icon: Shield, page: "Security" },
-  { name: "Settings", icon: Settings, page: "Settings" },
-];
-
 const menuCategories = [
-  { name: "Fleet", icon: Truck, items: fleetMenuItems, color: "cyan" },
-  { name: "Logistics", icon: Route, items: logisticsMenuItems, color: "violet" },
-  { name: "Business", icon: DollarSign, items: businessMenuItems, color: "emerald" },
-  { name: "AI", icon: Sparkles, items: aiMenuItems, color: "pink" },
-  { name: "System", icon: Settings, items: systemMenuItems, color: "amber" },
+  { 
+    name: "Fleet", 
+    icon: Truck, 
+    color: "cyan",
+    items: [
+      { name: "Fleet", icon: Truck, page: "Fleet" },
+      { name: "Drivers", icon: Users, page: "DriverManagement" },
+      { name: "Assets", icon: Package, page: "AssetManagement" },
+    ]
+  },
+  { 
+    name: "Logistics", 
+    icon: Route, 
+    color: "violet",
+    items: [
+      { name: "Shipments", icon: Package, page: "Shipments" },
+      { name: "Routes", icon: Route, page: "Routes" },
+      { name: "Resources", icon: Warehouse, page: "Resources" },
+    ]
+  },
+  { 
+    name: "Business", 
+    icon: DollarSign, 
+    color: "emerald",
+    items: [
+      { name: "CRM", icon: Target, page: "CRM" },
+      { name: "Customers", icon: Users, page: "CustomerManagement" },
+      { name: "Contracts", icon: FileText, page: "ContractManagement" },
+    ]
+  },
+  { 
+    name: "AI", 
+    icon: Sparkles, 
+    color: "pink",
+    items: [
+      { name: "Intellect Mode", icon: Sparkles, page: "IntellectMode", badge: "BETA" },
+      { name: "AI Optimization", icon: Sparkles, page: "AIOptimization" },
+    ]
+  },
+  { 
+    name: "System", 
+    icon: Settings, 
+    color: "amber",
+    items: [
+      { name: "Users", icon: Users, page: "UserManagement" },
+      { name: "Security", icon: Shield, page: "Security" },
+      { name: "Settings", icon: Settings, page: "Settings" },
+    ]
+  },
 ];
 
 export default function CircularNav({ currentPageName, user }) {
@@ -58,23 +68,18 @@ export default function CircularNav({ currentPageName, user }) {
   const [activeCategory, setActiveCategory] = useState(null);
   const navigate = useNavigate();
 
-  const handleCategoryClick = (category) => {
-    if (activeCategory === category.name) {
-      setActiveCategory(null);
-    } else {
-      setActiveCategory(category.name);
-    }
-  };
+  const colorMap = useMemo(() => ({
+    cyan: "from-cyan-500/20 to-cyan-500/5 border-cyan-400/30 text-cyan-400",
+    violet: "from-violet-500/20 to-violet-500/5 border-violet-400/30 text-violet-400",
+    emerald: "from-emerald-500/20 to-emerald-500/5 border-emerald-400/30 text-emerald-400",
+    pink: "from-pink-500/20 to-pink-500/5 border-pink-400/30 text-pink-400",
+    amber: "from-amber-500/20 to-amber-500/5 border-amber-400/30 text-amber-400",
+  }), []);
 
-  const getColorClasses = (color) => {
-    const colors = {
-      cyan: "from-cyan-500/20 to-cyan-500/5 border-cyan-400/30 text-cyan-400",
-      violet: "from-violet-500/20 to-violet-500/5 border-violet-400/30 text-violet-400",
-      emerald: "from-emerald-500/20 to-emerald-500/5 border-emerald-400/30 text-emerald-400",
-      pink: "from-pink-500/20 to-pink-500/5 border-pink-400/30 text-pink-400",
-      amber: "from-amber-500/20 to-amber-500/5 border-amber-400/30 text-amber-400",
-    };
-    return colors[color] || colors.cyan;
+  const getColorClasses = (color) => colorMap[color] || colorMap.cyan;
+
+  const toggleCategory = (categoryName) => {
+    setActiveCategory(activeCategory === categoryName ? null : categoryName);
   };
 
   return (
@@ -83,21 +88,20 @@ export default function CircularNav({ currentPageName, user }) {
       <motion.button
         onClick={() => {
           setIsOpen(!isOpen);
-          setActiveCategory(null);
+          if (isOpen) setActiveCategory(null);
         }}
         whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
+        whileTap={{ scale: 0.95 }}
         className={cn(
-          "w-16 h-16 rounded-full backdrop-blur-2xl border-2 shadow-2xl transition-all relative overflow-hidden",
+          "w-16 h-16 rounded-full backdrop-blur-2xl border-2 shadow-2xl relative overflow-hidden flex items-center justify-center",
           isOpen 
             ? "bg-gradient-to-br from-cyan-500/30 to-violet-500/30 border-cyan-400/50" 
-            : "bg-slate-900/80 border-slate-700/50"
+            : "bg-slate-900/80 border-slate-700/50 hover:border-slate-600/80"
         )}
       >
         <motion.div
           animate={{ rotate: isOpen ? 90 : 0 }}
-          transition={{ duration: 0.3 }}
-          className="absolute inset-0 flex items-center justify-center"
+          transition={{ duration: 0.3, type: "spring", stiffness: 300, damping: 30 }}
         >
           {isOpen ? (
             <X className="w-7 h-7 text-cyan-400" />
@@ -106,18 +110,20 @@ export default function CircularNav({ currentPageName, user }) {
           )}
         </motion.div>
         
-        {/* Pulsing ring */}
-        {!isOpen && (
-          <motion.div
-            animate={{ scale: [1, 1.3, 1], opacity: [0.5, 0, 0.5] }}
-            transition={{ duration: 2, repeat: Infinity }}
-            className="absolute inset-0 rounded-full border-2 border-cyan-400"
-          />
-        )}
+        {/* Pulsing ring when closed */}
+        <AnimatePresence>
+          {!isOpen && (
+            <motion.div
+              animate={{ scale: [1, 1.3, 1], opacity: [0.5, 0, 0.5] }}
+              transition={{ duration: 2, repeat: Infinity }}
+              className="absolute inset-0 rounded-full border-2 border-cyan-400"
+            />
+          )}
+        </AnimatePresence>
       </motion.button>
 
       {/* Category Menu Items (First Circle) */}
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {isOpen && (
           <>
             {menuCategories.map((category, index) => {
@@ -125,57 +131,58 @@ export default function CircularNav({ currentPageName, user }) {
               const radius = 120;
               const x = Math.cos(angle) * radius;
               const y = Math.sin(angle) * radius;
+              const isActive = activeCategory === category.name;
 
               return (
                 <motion.button
-                  key={category.name}
-                  initial={{ scale: 0, x: 0, y: 0, opacity: 0 }}
+                  key={`cat-${category.name}`}
+                  initial={{ scale: 0, opacity: 0 }}
                   animate={{ 
                     scale: 1, 
+                    opacity: 1,
                     x, 
-                    y, 
-                    opacity: 1 
+                    y
                   }}
-                  exit={{ scale: 0, x: 0, y: 0, opacity: 0 }}
+                  exit={{ scale: 0, opacity: 0 }}
                   transition={{ 
-                    delay: index * 0.05,
+                    delay: index * 0.04,
                     type: "spring",
-                    stiffness: 300,
-                    damping: 20
+                    stiffness: 350,
+                    damping: 25
                   }}
-                  onClick={() => handleCategoryClick(category)}
-                  whileHover={{ scale: 1.2 }}
-                  whileTap={{ scale: 0.9 }}
+                  onClick={() => toggleCategory(category.name)}
+                  whileHover={{ scale: 1.15 }}
+                  whileTap={{ scale: 0.95 }}
                   className={cn(
-                    "absolute w-14 h-14 rounded-full backdrop-blur-2xl border-2 shadow-xl flex items-center justify-center transition-all",
+                    "absolute w-14 h-14 rounded-full backdrop-blur-2xl border-2 shadow-xl flex items-center justify-center",
                     "bg-gradient-to-br",
-                    activeCategory === category.name 
+                    isActive 
                       ? getColorClasses(category.color)
-                      : "from-slate-900/80 to-slate-800/80 border-slate-700/50 text-slate-400 hover:text-white"
+                      : "from-slate-900/80 to-slate-800/80 border-slate-700/50 text-slate-400 hover:text-white hover:border-slate-600"
                   )}
                   style={{ bottom: 8, left: 8 }}
                 >
-                  <category.icon className="w-6 h-6" />
+                  <category.icon className="w-6 h-6" strokeWidth={1.5} />
                 </motion.button>
               );
             })}
 
-            {/* Quick Actions */}
+            {/* Fleet AI Quick Action */}
             <motion.button
-              initial={{ scale: 0, x: 0, y: 0, opacity: 0 }}
+              initial={{ scale: 0, opacity: 0 }}
               animate={{ 
                 scale: 1, 
-                x: 0, 
-                y: -140, 
-                opacity: 1 
+                opacity: 1,
+                y: -140
               }}
-              exit={{ scale: 0, x: 0, y: 0, opacity: 0 }}
-              transition={{ delay: 0.3 }}
+              exit={{ scale: 0, opacity: 0 }}
+              transition={{ delay: 0.25, type: "spring", stiffness: 350, damping: 25 }}
               onClick={() => navigate(createPageUrl("IntellectMode"))}
-              whileHover={{ scale: 1.1 }}
-              className="absolute bottom-16 left-2 px-4 py-2 rounded-full bg-gradient-to-r from-cyan-500/30 to-violet-500/30 backdrop-blur-2xl border border-cyan-400/50 text-white text-sm font-medium shadow-xl flex items-center gap-2"
+              whileHover={{ scale: 1.08 }}
+              whileTap={{ scale: 0.95 }}
+              className="absolute bottom-16 left-2 px-4 py-2 rounded-full bg-gradient-to-r from-cyan-500/30 to-violet-500/30 backdrop-blur-2xl border border-cyan-400/50 text-white text-sm font-medium shadow-xl hover:shadow-lg hover:border-cyan-400/70 flex items-center gap-2 transition-shadow"
             >
-              <Zap className="w-4 h-4" />
+              <Zap className="w-4 h-4" strokeWidth={1.5} />
               FLEET AI
               <Badge className="bg-amber-500/30 text-amber-300 border-amber-500/50 text-[10px]">BETA</Badge>
             </motion.button>
@@ -184,57 +191,53 @@ export default function CircularNav({ currentPageName, user }) {
       </AnimatePresence>
 
       {/* Submenu Items (Second Circle) */}
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {isOpen && activeCategory && (
           <>
-            {menuCategories
-              .find(c => c.name === activeCategory)
-              ?.items.map((item, index) => {
-                const categoryIndex = menuCategories.findIndex(c => c.name === activeCategory);
-                const totalItems = menuCategories.find(c => c.name === activeCategory).items.length;
-                
-                // Calculate angle for submenu spreading from category button
-                const categoryAngle = (categoryIndex / menuCategories.length) * Math.PI - Math.PI / 2;
-                const spreadAngle = Math.PI / 4; // 45 degrees spread
-                const startAngle = categoryAngle - spreadAngle / 2;
+            {(() => {
+              const activeMenu = menuCategories.find(c => c.name === activeCategory);
+              const categoryIndex = menuCategories.findIndex(c => c.name === activeCategory);
+              const categoryAngle = (categoryIndex / menuCategories.length) * Math.PI - Math.PI / 2;
+              const spreadAngle = Math.PI / 4;
+              const startAngle = categoryAngle - spreadAngle / 2;
+              const totalItems = activeMenu?.items.length || 1;
+
+              return activeMenu?.items.map((item, index) => {
                 const itemAngle = startAngle + (index / (totalItems - 1 || 1)) * spreadAngle;
-                
                 const radius = 200;
                 const x = Math.cos(itemAngle) * radius;
                 const y = Math.sin(itemAngle) * radius;
-
                 const isActive = currentPageName === item.page;
-                const Icon = item.icon;
 
                 return (
                   <motion.div
-                    key={item.page}
-                    initial={{ scale: 0, x: 0, y: 0, opacity: 0 }}
+                    key={`item-${item.page}`}
+                    initial={{ scale: 0, opacity: 0 }}
                     animate={{ 
                       scale: 1, 
+                      opacity: 1,
                       x, 
-                      y, 
-                      opacity: 1 
+                      y
                     }}
-                    exit={{ scale: 0, x: 0, y: 0, opacity: 0 }}
+                    exit={{ scale: 0, opacity: 0 }}
                     transition={{ 
-                      delay: index * 0.05,
+                      delay: index * 0.04,
                       type: "spring",
-                      stiffness: 260,
-                      damping: 20
+                      stiffness: 350,
+                      damping: 25
                     }}
                     className="absolute bottom-2 left-2 max-w-48"
                   >
                     <Link
                       to={createPageUrl(item.page)}
                       className={cn(
-                        "flex items-center gap-2 px-3 py-2 rounded-full backdrop-blur-2xl border shadow-xl text-sm font-medium transition-all whitespace-nowrap",
+                        "flex items-center gap-2 px-3 py-2 rounded-full backdrop-blur-2xl border shadow-lg text-sm font-medium transition-all whitespace-nowrap hover:shadow-xl",
                         isActive
                           ? "bg-gradient-to-r from-cyan-500/30 to-violet-500/30 border-cyan-400/50 text-white"
-                          : "bg-slate-900/90 border-slate-700/50 text-slate-300 hover:text-white hover:border-cyan-400/30"
+                          : "bg-slate-900/90 border-slate-700/50 text-slate-300 hover:text-white hover:border-slate-600/70"
                       )}
                     >
-                      <Icon className="w-4 h-4" />
+                      <item.icon className="w-4 h-4" strokeWidth={1.5} />
                       <span>{item.name}</span>
                       {item.badge && (
                         <Badge className="bg-amber-500/30 text-amber-300 border-amber-500/50 text-[10px]">
@@ -244,27 +247,27 @@ export default function CircularNav({ currentPageName, user }) {
                     </Link>
                   </motion.div>
                 );
-              })}
+              });
+            })()}
           </>
         )}
       </AnimatePresence>
 
       {/* User Info */}
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {isOpen && user && (
           <motion.div
-            initial={{ scale: 0, x: 0, y: 0, opacity: 0 }}
+            initial={{ scale: 0, opacity: 0 }}
             animate={{ 
               scale: 1, 
-              x: 180, 
-              y: 0, 
-              opacity: 1 
+              opacity: 1,
+              x: 180
             }}
-            exit={{ scale: 0, x: 0, y: 0, opacity: 0 }}
-            transition={{ delay: 0.2 }}
-            className="absolute bottom-2 left-2 px-4 py-2 rounded-full bg-slate-900/90 backdrop-blur-2xl border border-slate-700/50 shadow-xl flex items-center gap-3"
+            exit={{ scale: 0, opacity: 0 }}
+            transition={{ delay: 0.15, type: "spring", stiffness: 350, damping: 25 }}
+            className="absolute bottom-2 left-2 px-4 py-2 rounded-full bg-slate-900/90 backdrop-blur-2xl border border-slate-700/50 shadow-lg hover:shadow-xl hover:border-slate-600/70 flex items-center gap-3 transition-shadow"
           >
-            <span className="text-sm text-slate-300">{user.full_name || user.email}</span>
+            <span className="text-sm text-slate-300 truncate max-w-[120px]">{user.full_name || user.email}</span>
             <NotificationCenter user={user} />
           </motion.div>
         )}
