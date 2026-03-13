@@ -136,8 +136,8 @@ export default function CircularNav({ currentPageName, user }) {
         {isOpen && (
           <>
             {menuCategories.map((category, index) => {
-              const angle = (index / menuCategories.length) * Math.PI - Math.PI / 2;
-              const radius = 120;
+               const angle = (index / menuCategories.length) * Math.PI - Math.PI / 2;
+               const radius = 140;
               const x = Math.cos(angle) * radius;
               const y = Math.sin(angle) * radius;
               const isActive = activeCategory === category.name;
