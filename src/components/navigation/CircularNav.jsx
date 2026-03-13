@@ -78,7 +78,7 @@ export default function CircularNav({ currentPageName, user }) {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-50">
+    <div className="fixed bottom-6 left-6 z-50">
       {/* Main Menu Button */}
       <motion.button
         onClick={() => {
@@ -153,7 +153,7 @@ export default function CircularNav({ currentPageName, user }) {
                       ? getColorClasses(category.color)
                       : "from-slate-900/80 to-slate-800/80 border-slate-700/50 text-slate-400 hover:text-white"
                   )}
-                  style={{ bottom: 8, right: 8 }}
+                  style={{ bottom: 8, left: 8 }}
                 >
                   <category.icon className="w-6 h-6" />
                 </motion.button>
@@ -173,7 +173,7 @@ export default function CircularNav({ currentPageName, user }) {
               transition={{ delay: 0.3 }}
               onClick={() => navigate(createPageUrl("IntellectMode"))}
               whileHover={{ scale: 1.1 }}
-              className="absolute bottom-2 right-2 px-4 py-2 rounded-full bg-gradient-to-r from-cyan-500/30 to-violet-500/30 backdrop-blur-2xl border border-cyan-400/50 text-white text-sm font-medium shadow-xl flex items-center gap-2"
+              className="absolute bottom-2 left-2 px-4 py-2 rounded-full bg-gradient-to-r from-cyan-500/30 to-violet-500/30 backdrop-blur-2xl border border-cyan-400/50 text-white text-sm font-medium shadow-xl flex items-center gap-2"
             >
               <Zap className="w-4 h-4" />
               FLEET AI
@@ -223,7 +223,7 @@ export default function CircularNav({ currentPageName, user }) {
                       stiffness: 260,
                       damping: 20
                     }}
-                    className="absolute bottom-2 right-2"
+                    className="absolute bottom-2 left-2"
                   >
                     <Link
                       to={createPageUrl(item.page)}
@@ -256,13 +256,13 @@ export default function CircularNav({ currentPageName, user }) {
             initial={{ scale: 0, x: 0, y: 0, opacity: 0 }}
             animate={{ 
               scale: 1, 
-              x: -180, 
+              x: 180, 
               y: 0, 
               opacity: 1 
             }}
             exit={{ scale: 0, x: 0, y: 0, opacity: 0 }}
             transition={{ delay: 0.2 }}
-            className="absolute bottom-2 right-2 px-4 py-2 rounded-full bg-slate-900/90 backdrop-blur-2xl border border-slate-700/50 shadow-xl flex items-center gap-3"
+            className="absolute bottom-2 left-2 px-4 py-2 rounded-full bg-slate-900/90 backdrop-blur-2xl border border-slate-700/50 shadow-xl flex items-center gap-3"
           >
             <span className="text-sm text-slate-300">{user.full_name || user.email}</span>
             <NotificationCenter user={user} />
