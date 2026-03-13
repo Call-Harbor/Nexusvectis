@@ -470,8 +470,10 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], onSelectVe
         const x = (screenPos.x * 0.5 + 0.5) * el.clientWidth;
         const y = (-(screenPos.y * 0.5) + 0.5) * el.clientHeight;
         
-        // Check if route is in front of camera
-        const isVisible = screenPos.z < 1;
+        // Check if route is in front of camera and within screen bounds
+        const isVisible = screenPos.z < 1 && 
+                         screenPos.x >= -1 && screenPos.x <= 1 && 
+                         screenPos.y >= -1 && screenPos.y <= 1;
         
         return {
           route,
