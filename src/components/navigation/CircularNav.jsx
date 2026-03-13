@@ -246,7 +246,7 @@ export default function CircularNav({ currentPageName, user }) {
             }}
             exit={{ scale: 0, opacity: 0 }}
             transition={{ delay: 0.1, type: "spring", stiffness: 350, damping: 25 }}
-            className="fixed bottom-10 right-10 flex flex-col gap-2 pointer-events-auto z-40"
+            className="fixed bottom-4 left-1/2 -translate-x-1/2 flex flex-col gap-2 pointer-events-auto z-40"
           >
             {/* Fleet AI Button */}
             <motion.button
