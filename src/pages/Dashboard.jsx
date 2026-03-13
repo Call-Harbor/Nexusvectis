@@ -337,7 +337,7 @@ export default function Dashboard() {
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          className="w-80 flex-shrink-0 space-y-4 overflow-y-auto max-h-full hidden lg:block"
+          className="w-64 flex-shrink-0 space-y-4 overflow-y-auto max-h-full hidden lg:block"
         >
           {/* Predictive Analytics */}
           <div className="bg-slate-900/95 backdrop-blur-xl rounded-2xl border border-cyan-500/40 p-4 shadow-lg">
