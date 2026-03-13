@@ -466,12 +466,18 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], onSelectVe
 
       // Update visible routes with 2D screen positions
       const newVisibleRoutes = [];
+      const processedRoutes = new Set();
       
       routeArcs.forEach((arc, index) => {
         const route = arc.userData.route;
         
+        // Skip if we've already processed this route
+        if (processedRoutes.has(route.id)) return;
+        
         // Only show hologram for first segment of each route
         if (!arc.userData.isFirstSegment) return;
+        
+        processedRoutes.add(route.id);
         
         // Get center point of arc
         const geometry = arc.geometry;
