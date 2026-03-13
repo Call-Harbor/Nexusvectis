@@ -92,7 +92,7 @@ export default function CircularNav({ currentPageName, user }) {
   };
 
   return (
-    <div className="fixed bottom-56 left-10 z-50">
+    <div className="fixed bottom-56 left-1/2 -translate-x-1/2 z-50">
       {/* Main Menu Button */}
       <motion.button
         onClick={() => {
