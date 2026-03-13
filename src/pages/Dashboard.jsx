@@ -152,8 +152,8 @@ export default function Dashboard() {
         <div className="bg-gradient-to-b from-black/95 via-black/80 to-transparent backdrop-blur-xl border-b border-cyan-500/20">
           <div className="p-4 sm:p-6">
             {/* Top Bar */}
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-4">
+              <div className="flex items-center gap-3 sm:gap-4">
                 <motion.div 
                   className="relative"
                   animate={{ 
@@ -176,42 +176,44 @@ export default function Dashboard() {
                 </motion.div>
                 
                 <div>
-                  <div className="flex items-center gap-3">
-                    <h1 className="text-3xl font-bold bg-gradient-to-r from-cyan-400 via-violet-400 to-cyan-400 bg-clip-text text-transparent">
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-cyan-400 via-violet-400 to-cyan-400 bg-clip-text text-transparent">
                       NexusVectis
                     </h1>
-                    <Badge className="bg-gradient-to-r from-cyan-500/20 to-violet-500/20 text-cyan-400 border-cyan-400/30 animate-pulse">
+                    <Badge className="bg-gradient-to-r from-cyan-500/20 to-violet-500/20 text-cyan-400 border-cyan-400/30 animate-pulse text-[10px] sm:text-xs">
                       NEXUS
                     </Badge>
                   </div>
-                  <p className="text-sm text-slate-400 flex items-center gap-2 mt-1">
+                  <p className="text-xs sm:text-sm text-slate-400 flex items-center gap-2 mt-1">
                     <Brain className="w-3 h-3 text-violet-400" />
-                    Neural Fleet Intelligence • Real-time AI Analytics
+                    <span className="hidden sm:inline">Neural Fleet Intelligence • Real-time AI Analytics</span>
+                    <span className="sm:hidden">Neural Fleet AI</span>
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
                 <motion.button
                   onClick={() => setAiMode(aiMode === 'active' ? 'learning' : 'active')}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className={`px-4 py-2 rounded-xl font-medium text-sm transition-all ${
+                  className={`px-3 sm:px-4 py-2 rounded-xl font-medium text-xs sm:text-sm transition-all flex-1 sm:flex-none ${
                     aiMode === 'active'
                       ? 'bg-gradient-to-r from-cyan-500/30 to-violet-500/30 text-cyan-400 border border-cyan-400/50'
                       : 'bg-gradient-to-r from-violet-500/30 to-pink-500/30 text-violet-400 border border-violet-400/50'
                   }`}
                 >
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="w-4 h-4" />
-                    <span>{aiMode === 'active' ? 'AI Active' : 'Learning Mode'}</span>
+                  <div className="flex items-center justify-center gap-2">
+                    <Sparkles className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <span className="hidden sm:inline">{aiMode === 'active' ? 'AI Active' : 'Learning Mode'}</span>
+                    <span className="sm:hidden">{aiMode === 'active' ? 'Active' : 'Learning'}</span>
                   </div>
                 </motion.button>
               </div>
             </div>
 
             {/* Neural Status Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2 sm:gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-2">
               <motion.div
                 whileHover={{ scale: 1.02, y: -2 }}
                 className="p-3 rounded-xl bg-slate-900/60 backdrop-blur-xl border border-cyan-500/30 relative overflow-hidden group"
@@ -332,30 +334,30 @@ export default function Dashboard() {
       </motion.div>
 
       {/* Main Content Grid */}
-      <div className="absolute inset-0 pt-48 sm:pt-52 pb-4 px-4 sm:px-6 flex gap-3">
+      <div className="absolute inset-0 pt-56 sm:pt-52 md:pt-48 pb-4 px-2 sm:px-4 lg:px-6 flex flex-col lg:flex-row gap-3">
         {/* Left Panel - AI Insights */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          className="w-64 flex-shrink-0 space-y-4 overflow-y-auto max-h-full hidden lg:block"
+          className="w-full lg:w-64 flex-shrink-0 space-y-3 lg:space-y-4 overflow-y-auto max-h-[40vh] lg:max-h-full"
         >
           {/* Predictive Analytics */}
-          <div className="bg-slate-900/95 backdrop-blur-xl rounded-2xl border border-cyan-500/40 p-4 shadow-lg">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 rounded-lg bg-gradient-to-br from-cyan-500/30 to-violet-500/30">
-                <TrendingUp className="w-5 h-5 text-cyan-400" />
+          <div className="bg-slate-900/95 backdrop-blur-xl rounded-xl lg:rounded-2xl border border-cyan-500/40 p-3 lg:p-4 shadow-lg">
+            <div className="flex items-center gap-2 lg:gap-3 mb-3 lg:mb-4">
+              <div className="p-1.5 lg:p-2 rounded-lg bg-gradient-to-br from-cyan-500/30 to-violet-500/30">
+                <TrendingUp className="w-4 h-4 lg:w-5 lg:h-5 text-cyan-400" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-white">Predictive Intelligence</h3>
-                <p className="text-xs text-cyan-300">AI-Powered Forecasting</p>
+                <h3 className="text-sm lg:text-base font-bold text-white">Predictive Intelligence</h3>
+                <p className="text-[10px] lg:text-xs text-cyan-300">AI-Powered Forecasting</p>
               </div>
             </div>
             
-            <div className="space-y-3">
-              <div className="p-3 rounded-xl bg-slate-800/80 border border-cyan-500/30">
+            <div className="space-y-2 lg:space-y-3">
+              <div className="p-2 lg:p-3 rounded-lg lg:rounded-xl bg-slate-800/80 border border-cyan-500/30">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs text-cyan-200 font-medium">Accuracy Score</span>
-                  <span className="text-2xl font-bold text-cyan-400">{predictiveScore}%</span>
+                  <span className="text-[10px] lg:text-xs text-cyan-200 font-medium">Accuracy Score</span>
+                  <span className="text-xl lg:text-2xl font-bold text-cyan-400">{predictiveScore}%</span>
                 </div>
                 <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
                   <motion.div
@@ -367,15 +369,15 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              <div className="p-3 rounded-xl bg-slate-800/80 border border-violet-500/30">
+              <div className="p-2 lg:p-3 rounded-lg lg:rounded-xl bg-slate-800/80 border border-violet-500/30">
                 <div className="flex items-center gap-2 mb-2">
-                  <Cpu className="w-4 h-4 text-violet-400" />
-                  <span className="text-xs text-violet-300 font-medium">Neural Processing</span>
+                  <Cpu className="w-3 h-3 lg:w-4 lg:h-4 text-violet-400" />
+                  <span className="text-[10px] lg:text-xs text-violet-300 font-medium">Neural Processing</span>
                 </div>
-                <div className="space-y-1 text-xs text-white">
-                  <p>• Route optimization algorithms active</p>
-                  <p>• Real-time traffic analysis running</p>
-                  <p>• Predictive maintenance models trained</p>
+                <div className="space-y-0.5 lg:space-y-1 text-[10px] lg:text-xs text-white">
+                  <p>• Route optimization <span className="hidden lg:inline">algorithms </span>active</p>
+                  <p>• Real-time traffic analysis<span className="hidden lg:inline"> running</span></p>
+                  <p>• Predictive maintenance<span className="hidden lg:inline"> models trained</span></p>
                 </div>
               </div>
             </div>
@@ -386,32 +388,32 @@ export default function Dashboard() {
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="bg-slate-900/80 backdrop-blur-xl rounded-2xl border border-red-500/50 p-4"
+              className="bg-slate-900/80 backdrop-blur-xl rounded-xl lg:rounded-2xl border border-red-500/50 p-3 lg:p-4"
             >
-              <div className="flex items-center gap-3 mb-3">
+              <div className="flex items-center gap-2 lg:gap-3 mb-3">
                 <motion.div 
                   animate={{ scale: [1, 1.2, 1] }}
                   transition={{ duration: 2, repeat: Infinity }}
-                  className="p-2 rounded-lg bg-red-500/20"
+                  className="p-1.5 lg:p-2 rounded-lg bg-red-500/20"
                 >
-                  <AlertTriangle className="w-5 h-5 text-red-400" />
+                  <AlertTriangle className="w-4 h-4 lg:w-5 lg:h-5 text-red-400" />
                 </motion.div>
                 <div>
-                  <h3 className="text-sm font-bold text-white">Critical Exceptions</h3>
-                  <p className="text-xs text-red-400">Immediate attention required</p>
+                  <h3 className="text-xs lg:text-sm font-bold text-white">Critical Exceptions</h3>
+                  <p className="text-[10px] lg:text-xs text-red-400"><span className="hidden sm:inline">Immediate attention required</span><span className="sm:hidden">Urgent</span></p>
                 </div>
               </div>
               
-              <div className="space-y-2">
+              <div className="space-y-1.5 lg:space-y-2">
                 {exceptions.slice(0, 3).map((exception) => (
                   <motion.div
                     key={exception.id}
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
-                    className="p-3 rounded-lg bg-red-500/20 border border-red-500/40"
+                    className="p-2 lg:p-3 rounded-lg bg-red-500/20 border border-red-500/40"
                   >
-                    <p className="text-sm font-bold text-white">{exception.title}</p>
-                    <p className="text-xs text-red-200 mt-1 uppercase tracking-wide">{exception.type}</p>
+                    <p className="text-xs lg:text-sm font-bold text-white line-clamp-1">{exception.title}</p>
+                    <p className="text-[10px] lg:text-xs text-red-200 mt-0.5 lg:mt-1 uppercase tracking-wide">{exception.type}</p>
                   </motion.div>
                 ))}
               </div>
@@ -428,7 +430,7 @@ export default function Dashboard() {
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="flex-1 rounded-2xl overflow-hidden border border-cyan-500/30 bg-black/50 backdrop-blur-xl shadow-2xl shadow-cyan-500/20"
+          className="flex-1 rounded-xl lg:rounded-2xl overflow-hidden border border-cyan-500/30 bg-black/50 backdrop-blur-xl shadow-2xl shadow-cyan-500/20 min-h-[50vh] lg:min-h-0"
         >
           <FuturisticGlobe 
             vehicles={vehicles}
@@ -447,10 +449,10 @@ export default function Dashboard() {
             initial={{ opacity: 0, scale: 0.8, rotateY: -30 }}
             animate={{ opacity: 1, scale: 1, rotateY: 0 }}
             exit={{ opacity: 0, scale: 0.8, rotateY: 30 }}
-            className="fixed bottom-6 right-6 w-80 sm:w-96 z-50"
+            className="fixed bottom-4 sm:bottom-6 right-4 sm:right-6 w-[calc(100vw-2rem)] sm:w-80 lg:w-96 z-50 max-w-md"
             style={{ transformStyle: 'preserve-3d' }}
           >
-            <div className="relative bg-slate-900/95 backdrop-blur-2xl rounded-2xl border-2 border-cyan-400/50 p-5 shadow-2xl shadow-cyan-500/30">
+            <div className="relative bg-slate-900/95 backdrop-blur-2xl rounded-xl lg:rounded-2xl border-2 border-cyan-400/50 p-4 lg:p-5 shadow-2xl shadow-cyan-500/30">
               {/* Holographic scan line */}
               <motion.div
                 animate={{ y: ['0%', '100%'] }}
@@ -458,10 +460,10 @@ export default function Dashboard() {
                 className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-50"
               />
               
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
+              <div className="flex items-center justify-between mb-3 lg:mb-4">
+                <div className="flex items-center gap-2 lg:gap-3">
                   <motion.div 
-                    className={`w-3 h-3 rounded-full ${
+                    className={`w-2 h-2 lg:w-3 lg:h-3 rounded-full ${
                       selectedVehicle.status === 'active' ? 'bg-emerald-400' :
                       selectedVehicle.status === 'idle' ? 'bg-amber-400' :
                       'bg-slate-400'
@@ -472,7 +474,7 @@ export default function Dashboard() {
                     }}
                     transition={{ duration: 1.5, repeat: Infinity }}
                   />
-                  <h3 className="text-lg font-bold text-white">{selectedVehicle.name}</h3>
+                  <h3 className="text-base lg:text-lg font-bold text-white truncate">{selectedVehicle.name}</h3>
                 </div>
                 <motion.button
                   whileHover={{ scale: 1.1 }}
@@ -484,15 +486,15 @@ export default function Dashboard() {
                 </motion.button>
               </div>
               
-              <div className="grid grid-cols-2 gap-3 mb-4">
-                <div className="p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/30">
-                  <p className="text-xs text-cyan-400 mb-1">Speed</p>
-                  <p className="text-2xl font-bold text-white">{selectedVehicle.speed || 0}</p>
-                  <p className="text-xs text-slate-400">km/h</p>
+              <div className="grid grid-cols-2 gap-2 lg:gap-3 mb-3 lg:mb-4">
+                <div className="p-2 lg:p-3 rounded-lg lg:rounded-xl bg-cyan-500/10 border border-cyan-500/30">
+                  <p className="text-[10px] lg:text-xs text-cyan-400 mb-0.5 lg:mb-1">Speed</p>
+                  <p className="text-xl lg:text-2xl font-bold text-white">{selectedVehicle.speed || 0}</p>
+                  <p className="text-[10px] lg:text-xs text-slate-400">km/h</p>
                 </div>
-                <div className="p-3 rounded-xl bg-violet-500/10 border border-violet-500/30">
-                  <p className="text-xs text-violet-400 mb-1">Fuel</p>
-                  <p className="text-2xl font-bold text-white">{selectedVehicle.fuel_level || 0}%</p>
+                <div className="p-2 lg:p-3 rounded-lg lg:rounded-xl bg-violet-500/10 border border-violet-500/30">
+                  <p className="text-[10px] lg:text-xs text-violet-400 mb-0.5 lg:mb-1">Fuel</p>
+                  <p className="text-xl lg:text-2xl font-bold text-white">{selectedVehicle.fuel_level || 0}%</p>
                   <div className="mt-1 h-1 bg-slate-700 rounded-full overflow-hidden">
                     <motion.div
                       initial={{ width: 0 }}
@@ -503,19 +505,19 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              <div className="space-y-2 text-xs">
-                <div className="flex items-center justify-between p-2 rounded-lg bg-slate-800/50">
+              <div className="space-y-1.5 lg:space-y-2 text-[10px] lg:text-xs">
+                <div className="flex items-center justify-between p-1.5 lg:p-2 rounded-lg bg-slate-800/50">
                   <span className="text-slate-400">Type</span>
                   <span className="text-white font-bold uppercase">{selectedVehicle.type}</span>
                 </div>
-                <div className="flex items-center justify-between p-2 rounded-lg bg-slate-800/50">
+                <div className="flex items-center justify-between p-1.5 lg:p-2 rounded-lg bg-slate-800/50">
                   <span className="text-slate-400">Efficiency</span>
                   <span className="text-emerald-400 font-bold">{selectedVehicle.efficiency_score || 0}%</span>
                 </div>
                 {selectedVehicle.destination && (
-                  <div className="p-2 rounded-lg bg-slate-800/50">
-                    <span className="text-slate-400 block mb-1">Destination</span>
-                    <span className="text-white font-medium">{selectedVehicle.destination}</span>
+                  <div className="p-1.5 lg:p-2 rounded-lg bg-slate-800/50">
+                    <span className="text-slate-400 block mb-0.5 lg:mb-1">Destination</span>
+                    <span className="text-white font-medium truncate block">{selectedVehicle.destination}</span>
                   </div>
                 )}
               </div>
@@ -529,24 +531,24 @@ export default function Dashboard() {
         initial={{ opacity: 0, scale: 0 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 1 }}
-        className="fixed bottom-6 left-6 z-40"
+        className="fixed bottom-4 sm:bottom-6 left-4 sm:left-6 z-40"
       >
-        <div className="bg-slate-900/90 backdrop-blur-xl rounded-xl border border-emerald-500/30 p-3 shadow-xl">
-          <div className="flex items-center gap-3">
+        <div className="bg-slate-900/90 backdrop-blur-xl rounded-lg lg:rounded-xl border border-emerald-500/30 p-2 lg:p-3 shadow-xl">
+          <div className="flex items-center gap-2 lg:gap-3">
             <motion.div
               animate={{ rotate: 360 }}
               transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
             >
-              <Radio className="w-5 h-5 text-emerald-400" />
+              <Radio className="w-4 h-4 lg:w-5 lg:h-5 text-emerald-400" />
             </motion.div>
             <div>
-              <p className="text-xs font-bold text-emerald-400">SYSTEM OPERATIONAL</p>
-              <p className="text-[10px] text-slate-400">All systems nominal</p>
+              <p className="text-[10px] lg:text-xs font-bold text-emerald-400">SYSTEM <span className="hidden sm:inline">OPERATIONAL</span></p>
+              <p className="text-[9px] lg:text-[10px] text-slate-400 hidden sm:block">All systems nominal</p>
             </div>
             <motion.div
               animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
               transition={{ duration: 2, repeat: Infinity }}
-              className="w-2 h-2 rounded-full bg-emerald-400"
+              className="w-1.5 h-1.5 lg:w-2 lg:h-2 rounded-full bg-emerald-400"
             />
           </div>
         </div>
