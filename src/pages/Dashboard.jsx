@@ -332,7 +332,7 @@ export default function Dashboard() {
       </motion.div>
 
       {/* Main Content Grid */}
-      <div className="absolute inset-0 pt-48 sm:pt-52 pb-4 px-4 sm:px-6 flex gap-4">
+      <div className="absolute inset-0 pt-64 pb-4 px-4 sm:px-6 flex gap-4">
         {/* Left Panel - AI Insights */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
