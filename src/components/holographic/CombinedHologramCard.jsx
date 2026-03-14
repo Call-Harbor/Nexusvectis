@@ -251,7 +251,7 @@ export default function CombinedHologramCard({ items, x, y, index, depth }) {
           {/* Corner Navigation Menu - Platform Style */}
           <motion.div
             ref={navRef}
-            className="absolute top-4 right-4 z-20"
+            className="absolute top-4 right-4 z-50 pointer-events-auto"
             style={{ transform: 'translateZ(50px)' }}
           >
             {/* Center button */}
