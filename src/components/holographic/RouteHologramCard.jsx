@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 
-export default function RouteHologramCard({ route, x, y, index, onClose }) {
+export default function RouteHologramCard({ route, x, y, index, depth, onClose }) {
   const cardRef = useRef(null);
   const [isHovered, setIsHovered] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
