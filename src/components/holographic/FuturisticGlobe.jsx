@@ -39,12 +39,13 @@ function createHolographicArc(lat1, lng1, lat2, lng2, color = 0x00ffff) {
   return new THREE.Line(geometry, material);
 }
 
-export default function FuturisticGlobe({ vehicles = [], routes = [], resources = [], digitalTwins = [], onSelectVehicle }) {
+export default function FuturisticGlobe({ vehicles = [], routes = [], resources = [], digitalTwins = [], onSelectVehicle, onSelectResource }) {
   const mountRef = useRef(null);
   const sceneRef = useRef(null);
   const cameraRef = useRef(null);
   const rendererRef = useRef(null);
   const [visibleRoutes, setVisibleRoutes] = useState([]);
+  const lastVisibleCountRef = useRef(0);
 
   useEffect(() => {
     const el = mountRef.current;
@@ -471,11 +472,21 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
       mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
       
       raycaster.setFromCamera(mouse, camera);
-      const intersects = raycaster.intersectObjects(vehicleMarkers);
       
-      if (intersects.length > 0) {
-        const vehicle = intersects[0].object.userData.vehicle;
+      // Check vehicle clicks
+      const vehicleIntersects = raycaster.intersectObjects(vehicleMarkers);
+      if (vehicleIntersects.length > 0) {
+        const vehicle = vehicleIntersects[0].object.userData.vehicle;
         onSelectVehicle?.(vehicle);
+        return;
+      }
+      
+      // Check resource clicks
+      const resourceIntersects = raycaster.intersectObjects(resourceMarkers);
+      if (resourceIntersects.length > 0) {
+        const resource = resourceIntersects[0].object.userData.resource;
+        onSelectResource?.(resource);
+        return;
       }
     };
 
@@ -667,10 +678,19 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
         console.log('Showing routes:', uniqueRoutes.map(r => ({ id: r.route.id, name: r.route.name })));
       }
       
-      // Only update state if there's a change
-      if (uniqueRoutes.length !== visibleRoutes.length ||
-          !uniqueRoutes.every((nr, i) => visibleRoutes[i]?.route.id === nr.route.id)) {
+      // Only update state if there's a change - with forced cleanup
+      const currentCount = uniqueRoutes.length;
+      const hasChanged = currentCount !== lastVisibleCountRef.current ||
+                         !uniqueRoutes.every((nr, i) => visibleRoutes[i]?.route.id === nr.route.id);
+      
+      if (hasChanged) {
+        lastVisibleCountRef.current = currentCount;
         setVisibleRoutes(uniqueRoutes);
+      }
+      
+      // Force cleanup if we went from showing routes to showing none
+      if (currentCount === 0 && visibleRoutes.length > 0) {
+        setVisibleRoutes([]);
       }
 
       renderer.render(scene, camera);
@@ -705,7 +725,7 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
         el.removeChild(renderer.domElement);
       }
     };
-  }, [vehicles, routes, resources, digitalTwins, onSelectVehicle]);
+  }, [vehicles, routes, resources, digitalTwins, onSelectVehicle, onSelectResource]);
 
   return (
     <div className="relative w-full h-full">
