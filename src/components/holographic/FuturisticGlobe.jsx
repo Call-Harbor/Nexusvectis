@@ -675,10 +675,10 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
       
       // Perfect collision avoidance - dynamic sizing and spacing (MUST be before any collision logic)
       const totalVisibleEstimate = uniqueRoutes.length + resourceMarkers.length + vehicleMarkers.length;
-      const cardWidth = totalVisibleEstimate > 8 ? 280 : totalVisibleEstimate > 5 ? 320 : totalVisibleEstimate > 3 ? 360 : 400;
-      const cardHeight = totalVisibleEstimate > 8 ? 380 : totalVisibleEstimate > 5 ? 420 : totalVisibleEstimate > 3 ? 460 : 500;
+      const cardWidth = 400;  // Fixed width
+      const cardHeight = 500; // Fixed height  
       const padding = 50;
-      const minSpacing = totalVisibleEstimate > 8 ? 50 : totalVisibleEstimate > 5 ? 60 : totalVisibleEstimate > 3 ? 70 : 80;
+      const minSpacing = 150; // Larger spacing to prevent overlaps
       
       // Create spatial grid for faster collision detection
       const gridCellSize = cardWidth + minSpacing;
@@ -730,24 +730,23 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
         let bestX = routeA.x;
         let bestY = routeA.y;
         let bestScore = Infinity;
-        const maxAttempts = 12;
         
-        // Try multiple positioning strategies
+        // Try multiple positioning strategies with larger offsets
         const strategies = [
           // Original position
           { x: routeA.x, y: routeA.y },
-          // Radial offsets from original
+          // Radial offsets from original - LARGER RADIUS
           ...Array.from({ length: 8 }, (_, angle) => ({
-            x: routeA.x + Math.cos(angle * Math.PI / 4) * 120,
-            y: routeA.y + Math.sin(angle * Math.PI / 4) * 120
+            x: routeA.x + Math.cos(angle * Math.PI / 4) * 250,
+            y: routeA.y + Math.sin(angle * Math.PI / 4) * 250
           })),
-          // Grid-aligned positions near original
+          // Grid-aligned positions
           { x: Math.round(routeA.x / gridCellSize) * gridCellSize, y: Math.round(routeA.y / gridCellSize) * gridCellSize },
-          // Edge-aware positions
-          { x: padding + 60, y: routeA.y },
-          { x: el.clientWidth - cardWidth - padding - 60, y: routeA.y },
-          { x: routeA.x, y: padding + 60 },
-          { x: routeA.x, y: el.clientHeight - cardHeight - padding - 60 }
+          // Edge-aware positions with more spacing
+          { x: padding + 100, y: routeA.y },
+          { x: el.clientWidth - cardWidth - padding - 100, y: routeA.y },
+          { x: routeA.x, y: padding + 100 },
+          { x: routeA.x, y: el.clientHeight - cardHeight - padding - 100 }
         ];
         
         for (const strategy of strategies) {
@@ -774,11 +773,11 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
           }
         }
         
-        // If still colliding, use comprehensive spiral search
+        // If still colliding, use comprehensive spiral search with LARGER steps
         if (bestScore === Infinity) {
           let found = false;
-          for (let radius = 150; radius < 1000 && !found; radius += 70) {
-            for (let angle = 0; angle < Math.PI * 2 && !found; angle += Math.PI / 8) {
+          for (let radius = 300; radius < 1500 && !found; radius += 120) {
+            for (let angle = 0; angle < Math.PI * 2 && !found; angle += Math.PI / 6) {
               const testX = Math.max(padding, Math.min(
                 routeA.x + Math.cos(angle) * radius,
                 el.clientWidth - cardWidth - padding
@@ -921,12 +920,12 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
         const strategies = [
           { x: resA.x, y: resA.y },
           ...Array.from({ length: 8 }, (_, angle) => ({
-            x: resA.x + Math.cos(angle * Math.PI / 4) * 120,
-            y: resA.y + Math.sin(angle * Math.PI / 4) * 120
+            x: resA.x + Math.cos(angle * Math.PI / 4) * 250,
+            y: resA.y + Math.sin(angle * Math.PI / 4) * 250
           })),
           { x: Math.round(resA.x / gridCellSize) * gridCellSize, y: Math.round(resA.y / gridCellSize) * gridCellSize },
-          { x: padding + 60, y: resA.y },
-          { x: el.clientWidth - cardWidth - padding - 60, y: resA.y }
+          { x: padding + 100, y: resA.y },
+          { x: el.clientWidth - cardWidth - padding - 100, y: resA.y }
         ];
         
         for (const strategy of strategies) {
@@ -948,8 +947,8 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
         
         if (bestScore === Infinity) {
           let found = false;
-          for (let radius = 150; radius < 1000 && !found; radius += 70) {
-            for (let angle = 0; angle < Math.PI * 2 && !found; angle += Math.PI / 8) {
+          for (let radius = 300; radius < 1500 && !found; radius += 120) {
+            for (let angle = 0; angle < Math.PI * 2 && !found; angle += Math.PI / 6) {
               const testX = Math.max(padding, Math.min(
                 resA.x + Math.cos(angle) * radius,
                 el.clientWidth - cardWidth - padding
@@ -1002,12 +1001,12 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
         const strategies = [
           { x: vehA.x, y: vehA.y },
           ...Array.from({ length: 8 }, (_, angle) => ({
-            x: vehA.x + Math.cos(angle * Math.PI / 4) * 120,
-            y: vehA.y + Math.sin(angle * Math.PI / 4) * 120
+            x: vehA.x + Math.cos(angle * Math.PI / 4) * 250,
+            y: vehA.y + Math.sin(angle * Math.PI / 4) * 250
           })),
           { x: Math.round(vehA.x / gridCellSize) * gridCellSize, y: Math.round(vehA.y / gridCellSize) * gridCellSize },
-          { x: padding + 60, y: vehA.y },
-          { x: el.clientWidth - cardWidth - padding - 60, y: vehA.y }
+          { x: padding + 100, y: vehA.y },
+          { x: el.clientWidth - cardWidth - padding - 100, y: vehA.y }
         ];
         
         for (const strategy of strategies) {
@@ -1029,8 +1028,8 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
         
         if (bestScore === Infinity) {
           let found = false;
-          for (let radius = 150; radius < 1000 && !found; radius += 70) {
-            for (let angle = 0; angle < Math.PI * 2 && !found; angle += Math.PI / 8) {
+          for (let radius = 300; radius < 1500 && !found; radius += 120) {
+            for (let angle = 0; angle < Math.PI * 2 && !found; angle += Math.PI / 6) {
               const testX = Math.max(padding, Math.min(
                 vehA.x + Math.cos(angle) * radius,
                 el.clientWidth - cardWidth - padding
