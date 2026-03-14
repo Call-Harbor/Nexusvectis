@@ -82,6 +82,8 @@ export default function RouteHologramCard({ route, x, y, index, onClose }) {
     ? (routeVehicles.reduce((sum, v) => sum + (v.progress || 0), 0) / routeVehicles.length)
     : 0;
 
+  const zIndex = isExpanded ? 10000 : (depth ? Math.max(10, 1000 - Math.floor(depth * 100)) : 100);
+
   return (
     <motion.div
       ref={cardRef}
@@ -111,7 +113,7 @@ export default function RouteHologramCard({ route, x, y, index, onClose }) {
       exit={{ opacity: 0, scale: 0.7, z: -200, rotateY: 30 }}
       style={{
         position: isExpanded ? 'fixed' : 'absolute',
-        zIndex: isExpanded ? 10000 : (1000 - index),
+        zIndex: zIndex,
         pointerEvents: 'auto',
         transformStyle: 'preserve-3d',
         perspective: '1500px',
