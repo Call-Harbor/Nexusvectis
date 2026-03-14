@@ -935,30 +935,33 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
             </HologramWindow>
           )}
 
-          {/* 3D Fleet Globe - Always visible floating window */}
-          <HologramWindow 
-            id="3d-globe" 
-            title="Live Fleet Globe" 
-            icon={Globe}
-            position={{ x: window.innerWidth - 650, y: 20 }}
-            onClose={() => {}}
-            onMinimize={() => toggleMinimize('3d-globe')}
-            isMinimized={minimizedWindows.has('3d-globe')}
-            windowType="3d_globe"
-            isFocused={focusedWindow === '3d-globe'}
-            onFocus={setFocusedWindow}
-          >
-            <div className="w-full h-[600px]">
+          {/* 3D Fleet Globe */}
+          {show3DVisualization && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="fixed inset-0 z-50 bg-black/95 backdrop-blur-sm"
+            >
+              <div className="absolute top-4 right-4 z-50 flex gap-2">
+                <button
+                  onClick={() => setShow3DVisualization(null)}
+                  className="px-4 py-2 rounded-xl bg-slate-900/90 backdrop-blur-xl border border-red-500/50 text-red-400 hover:bg-red-500/20 transition-all font-semibold flex items-center gap-2"
+                >
+                  <X className="w-4 h-4" />
+                  Close 3D View
+                </button>
+              </div>
               <FuturisticGlobe 
-                vehicles={vehicles} 
-                routes={routes}
-                resources={resources}
+                vehicles={show3DVisualization.vehicles || vehicles} 
+                routes={show3DVisualization.routes || routes}
+                resources={show3DVisualization.resources || resources}
                 digitalTwins={[]}
                 onSelectVehicle={(v) => {}}
                 onSelectResource={(r) => {}}
               />
-            </div>
-          </HologramWindow>
+            </motion.div>
+          )}
 
           {/* AI Thinking Terminal */}
           <ThinkingTerminalVisual isActive={showThinkingTerminal && isProcessing} logs={thinkingLogs} onClose={() => setShowThinkingTerminal(false)} />
