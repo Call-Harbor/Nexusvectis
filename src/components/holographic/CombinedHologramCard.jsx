@@ -179,45 +179,120 @@ export default function CombinedHologramCard({ items, x, y, index, depth }) {
             </div>
           </motion.div>
 
-          <div className="relative p-6" style={{ transform: 'translateZ(30px)' }}>
-            <div className="flex items-center justify-center gap-4 mb-4">
+          <div className="relative p-6 space-y-4" style={{ transform: 'translateZ(30px)' }}>
+            {/* Item Details */}
+            <div className="bg-cyan-500/10 border border-cyan-400/30 rounded-lg p-4">
+              <p className="text-xs text-cyan-400/70 font-mono uppercase mb-2">Current Item</p>
+              <p className="text-sm font-bold text-white mb-1">
+                {currentItem.data.name || currentItem.data.title || 'Item'}
+              </p>
+              <p className="text-xs text-cyan-300/60">{currentItem.type}</p>
+              <p className="text-xs text-slate-400 mt-1">{currentIndex + 1} of {items.length}</p>
+            </div>
+
+            {/* Advanced Details */}
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              {currentItem.type === 'vehicle' && (
+                <>
+                  <div className="bg-slate-800/60 rounded p-2 border border-cyan-400/20">
+                    <p className="text-cyan-400/60">Status</p>
+                    <p className="text-white font-bold">{currentItem.data.status || 'N/A'}</p>
+                  </div>
+                  <div className="bg-slate-800/60 rounded p-2 border border-cyan-400/20">
+                    <p className="text-cyan-400/60">Speed</p>
+                    <p className="text-white font-bold">{currentItem.data.speed || 0} km/h</p>
+                  </div>
+                  <div className="bg-slate-800/60 rounded p-2 border border-cyan-400/20">
+                    <p className="text-cyan-400/60">Fuel</p>
+                    <p className="text-white font-bold">{currentItem.data.fuel_level || 0}%</p>
+                  </div>
+                  <div className="bg-slate-800/60 rounded p-2 border border-cyan-400/20">
+                    <p className="text-cyan-400/60">Type</p>
+                    <p className="text-white font-bold capitalize">{currentItem.data.type}</p>
+                  </div>
+                </>
+              )}
+              {currentItem.type === 'resource' && (
+                <>
+                  <div className="bg-slate-800/60 rounded p-2 border border-cyan-400/20">
+                    <p className="text-cyan-400/60">Status</p>
+                    <p className="text-white font-bold">{currentItem.data.status || 'N/A'}</p>
+                  </div>
+                  <div className="bg-slate-800/60 rounded p-2 border border-cyan-400/20">
+                    <p className="text-cyan-400/60">Type</p>
+                    <p className="text-white font-bold capitalize">{currentItem.data.type?.replace(/_/g, ' ')}</p>
+                  </div>
+                  <div className="bg-slate-800/60 rounded p-2 border border-cyan-400/20 col-span-2">
+                    <p className="text-cyan-400/60">Location</p>
+                    <p className="text-white font-bold text-xs">{currentItem.data.location || 'Unknown'}</p>
+                  </div>
+                </>
+              )}
+              {currentItem.type === 'route' && (
+                <>
+                  <div className="bg-slate-800/60 rounded p-2 border border-cyan-400/20">
+                    <p className="text-cyan-400/60">Status</p>
+                    <p className="text-white font-bold">{currentItem.data.status || 'N/A'}</p>
+                  </div>
+                  <div className="bg-slate-800/60 rounded p-2 border border-cyan-400/20">
+                    <p className="text-cyan-400/60">Distance</p>
+                    <p className="text-white font-bold">{currentItem.data.distance_km || 0} km</p>
+                  </div>
+                  <div className="bg-slate-800/60 rounded p-2 border border-cyan-400/20 col-span-2">
+                    <p className="text-cyan-400/60">Route</p>
+                    <p className="text-white font-bold text-xs">{currentItem.data.origin} → {currentItem.data.destination}</p>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Circular Navigation */}
+            <div className="flex items-center justify-center gap-4">
               <motion.button
                 onClick={prevItem}
-                whileHover={{ scale: 1.1 }}
+                whileHover={{ scale: 1.1, rotate: -10 }}
                 whileTap={{ scale: 0.9 }}
-                className="p-2 rounded-lg bg-cyan-500/20 border border-cyan-400/30 text-cyan-400"
+                className="p-3 rounded-full bg-gradient-to-br from-cyan-500/30 to-violet-500/20 border border-cyan-400/50 text-cyan-300 hover:from-cyan-500/40 hover:to-violet-500/30 transition-all"
               >
                 <ChevronLeft className="w-5 h-5" />
               </motion.button>
 
-              <div className="flex-1 text-center">
-                <p className="text-sm font-bold text-white mb-1">
-                  {currentItem.data.name || currentItem.data.title || 'Item'}
-                </p>
-                <p className="text-xs text-cyan-400 uppercase">{currentItem.type}</p>
+              {/* Center Indicator */}
+              <div className="relative w-16 h-16 flex items-center justify-center">
+                <motion.div 
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+                  className="absolute inset-0 rounded-full border border-dashed border-cyan-400/30"
+                />
+                <div className="relative w-12 h-12 rounded-full bg-gradient-to-br from-cyan-500/20 to-violet-500/10 border border-cyan-400/40 flex items-center justify-center">
+                  <p className="text-xs font-bold text-cyan-300">{currentIndex + 1}/{items.length}</p>
+                </div>
               </div>
 
               <motion.button
                 onClick={nextItem}
-                whileHover={{ scale: 1.1 }}
+                whileHover={{ scale: 1.1, rotate: 10 }}
                 whileTap={{ scale: 0.9 }}
-                className="p-2 rounded-lg bg-cyan-500/20 border border-cyan-400/30 text-cyan-400"
+                className="p-3 rounded-full bg-gradient-to-br from-cyan-500/30 to-violet-500/20 border border-cyan-400/50 text-cyan-300 hover:from-cyan-500/40 hover:to-violet-500/30 transition-all"
               >
                 <ChevronRight className="w-5 h-5" />
               </motion.button>
             </div>
 
-            <div className="flex justify-center gap-2 mt-4">
+            {/* Dot Navigation */}
+            <div className="flex justify-center gap-2 flex-wrap">
               {items.map((_, idx) => (
                 <motion.button
                   key={idx}
                   onClick={() => setCurrentIndex(idx)}
-                  whileHover={{ scale: 1.2 }}
+                  whileHover={{ scale: 1.3 }}
+                  whileTap={{ scale: 0.8 }}
+                  animate={{ scale: idx === currentIndex ? 1.3 : 1 }}
                   className={cn(
                     "w-2 h-2 rounded-full transition-all",
                     idx === currentIndex 
-                      ? "bg-cyan-400 w-6" 
-                      : "bg-slate-600"
+                      ? "bg-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.8)]" 
+                      : "bg-slate-600 hover:bg-slate-500"
                   )}
                 />
               ))}
