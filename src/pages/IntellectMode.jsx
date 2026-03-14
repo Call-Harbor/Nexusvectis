@@ -133,6 +133,7 @@ export default function IntellectMode() {
   const { data: alerts = [] } = useQuery({ queryKey: ['alerts-intellect', orgId], ...makeOrgQuery('Alert') });
   const { data: routes = [] } = useQuery({ queryKey: ['routes-intellect', orgId], ...makeOrgQuery('Route') });
   const { data: shipments = [] } = useQuery({ queryKey: ['shipments-intellect', orgId], ...makeOrgQuery('Shipment') });
+  const { data: resources = [] } = useQuery({ queryKey: ['resources-intellect', orgId], ...makeOrgQuery('Resource') });
   const { data: customers = [] } = useQuery({
     queryKey: ['customers-intellect', orgId],
     queryFn: () => base44.entities.Customer.filter({ organization_id: orgId }),
@@ -953,7 +954,7 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
               <FuturisticGlobe 
                 vehicles={show3DVisualization.vehicles || vehicles} 
                 routes={show3DVisualization.routes || routes}
-                resources={resources}
+                resources={show3DVisualization.resources || resources}
                 digitalTwins={[]}
                 onSelectVehicle={(v) => {}}
                 onSelectResource={(r) => {}}
