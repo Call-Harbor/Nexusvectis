@@ -11,7 +11,7 @@ const typeIcons = {
   port: MapPin,
 };
 
-export default function ResourceHologramCard({ resource, x, y, index }) {
+export default function ResourceHologramCard({ resource, x, y, index, depth }) {
   const cardRef = useRef(null);
   const [isHovered, setIsHovered] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);

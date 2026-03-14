@@ -11,7 +11,7 @@ const typeIcons = {
   train: Truck,
 };
 
-export default function VehicleHologramCard({ vehicle, x, y, index }) {
+export default function VehicleHologramCard({ vehicle, x, y, index, depth }) {
   const cardRef = useRef(null);
   const [isHovered, setIsHovered] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);

@@ -649,13 +649,17 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
         let x = (screenPos.x * 0.5 + 0.5) * el.clientWidth;
         let y = (-(screenPos.y * 0.5) + 0.5) * el.clientHeight;
         
+        // Calculate depth (distance from camera) for z-index ordering
+        const depth = arcWorldPos.distanceTo(cameraWorldPos);
+        
         newVisibleRoutes.push({
           route,
           x,
           y,
           index,
           visibility,
-          worldPos: arcWorldPos.clone()
+          worldPos: arcWorldPos.clone(),
+          depth
         });
       });
       
@@ -842,7 +846,9 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
         let x = (screenPos.x * 0.5 + 0.5) * el.clientWidth;
         let y = (-(screenPos.y * 0.5) + 0.5) * el.clientHeight;
         
-        newVisibleResources.push({ resource, x, y, index, visibility, worldPos: markerWorldPos.clone() });
+        const depth = markerWorldPos.distanceTo(cameraWorldPos);
+        
+        newVisibleResources.push({ resource, x, y, index, visibility, worldPos: markerWorldPos.clone(), depth });
       });
       
       const uniqueResources = [];
@@ -966,7 +972,9 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
         let x = (screenPos.x * 0.5 + 0.5) * el.clientWidth;
         let y = (-(screenPos.y * 0.5) + 0.5) * el.clientHeight;
         
-        newVisibleVehicles.push({ vehicle, x, y, index, visibility, worldPos: markerWorldPos.clone() });
+        const depth = markerWorldPos.distanceTo(cameraWorldPos);
+        
+        newVisibleVehicles.push({ vehicle, x, y, index, visibility, worldPos: markerWorldPos.clone(), depth });
       });
       
       const uniqueVehicles = [];
@@ -1109,6 +1117,7 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
             x={routeData.x}
             y={routeData.y}
             index={idx}
+            depth={routeData.depth}
           />
         ))}
       </AnimatePresence>
@@ -1122,6 +1131,7 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
             x={resourceData.x}
             y={resourceData.y}
             index={idx}
+            depth={resourceData.depth}
           />
         ))}
       </AnimatePresence>
@@ -1135,6 +1145,7 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
             x={vehicleData.x}
             y={vehicleData.y}
             index={idx}
+            depth={vehicleData.depth}
           />
         ))}
       </AnimatePresence>
