@@ -92,6 +92,7 @@ export default function CircularNav({ currentPageName, user }) {
   };
 
   return (
+    <>
     <div className="fixed bottom-56 left-1/2 -translate-x-1/2 z-50">
       {/* Main Menu Button */}
       <motion.button
@@ -243,29 +244,30 @@ export default function CircularNav({ currentPageName, user }) {
           </>
         )}
       </AnimatePresence>
-
-      {/* Bottom Action Bar - Fleet AI & User Info - Always visible */}
-      <div className="fixed bottom-4 right-4 flex flex-col gap-2 pointer-events-auto z-40">
-        {/* Fleet AI Button */}
-        <motion.button
-          onClick={() => navigate(createPageUrl("IntellectMode"))}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.98 }}
-          className="px-4 py-2 rounded-full bg-gradient-to-r from-cyan-500/30 to-violet-500/30 backdrop-blur-2xl border border-cyan-400/50 text-white text-sm font-medium shadow-lg hover:shadow-xl hover:border-cyan-400/70 flex items-center gap-2 transition-shadow whitespace-nowrap"
-        >
-          <Zap className="w-4 h-4" strokeWidth={1.5} />
-          FLEET AI
-          <Badge className="bg-amber-500/30 text-amber-300 border-amber-500/50 text-[10px]">BETA</Badge>
-        </motion.button>
-
-        {/* User Info */}
-        {user && (
-          <div className="px-4 py-2 rounded-full bg-slate-900/90 backdrop-blur-2xl border border-slate-700/50 shadow-lg flex items-center gap-3 whitespace-nowrap">
-            <span className="text-sm text-slate-300">{user.full_name || user.email}</span>
-            <NotificationCenter user={user} />
-          </div>
-        )}
-      </div>
     </div>
+
+    {/* Bottom Action Bar - Fleet AI & User Info - Always visible */}
+    <div className="fixed bottom-4 right-4 flex flex-col gap-2 pointer-events-auto z-50">
+      {/* Fleet AI Button */}
+      <motion.button
+        onClick={() => navigate(createPageUrl("IntellectMode"))}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.98 }}
+        className="px-4 py-2 rounded-full bg-gradient-to-r from-cyan-500/30 to-violet-500/30 backdrop-blur-2xl border border-cyan-400/50 text-white text-sm font-medium shadow-lg hover:shadow-xl hover:border-cyan-400/70 flex items-center gap-2 transition-shadow whitespace-nowrap"
+      >
+        <Zap className="w-4 h-4" strokeWidth={1.5} />
+        FLEET AI
+        <Badge className="bg-amber-500/30 text-amber-300 border-amber-500/50 text-[10px]">BETA</Badge>
+      </motion.button>
+
+      {/* User Info */}
+      {user && (
+        <div className="px-4 py-2 rounded-full bg-slate-900/90 backdrop-blur-2xl border border-slate-700/50 shadow-lg flex items-center gap-3 whitespace-nowrap">
+          <span className="text-sm text-slate-300">{user.full_name || user.email}</span>
+          <NotificationCenter user={user} />
+        </div>
+      )}
+    </div>
+    </>
   );
 }
