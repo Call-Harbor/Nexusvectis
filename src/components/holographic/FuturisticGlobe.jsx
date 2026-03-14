@@ -733,22 +733,26 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
         let bestY = routeA.y;
         let bestScore = Infinity;
         
-        // Try multiple positioning strategies with larger offsets
+        // Try multiple positioning strategies including vertical and horizontal stacking
         const strategies = [
           // Original position
           { x: routeA.x, y: routeA.y },
-          // Radial offsets from original - LARGER RADIUS
-          ...Array.from({ length: 8 }, (_, angle) => ({
-            x: routeA.x + Math.cos(angle * Math.PI / 4) * 250,
-            y: routeA.y + Math.sin(angle * Math.PI / 4) * 250
-          })),
-          // Grid-aligned positions
-          { x: Math.round(routeA.x / gridCellSize) * gridCellSize, y: Math.round(routeA.y / gridCellSize) * gridCellSize },
-          // Edge-aware positions with more spacing
-          { x: padding + 100, y: routeA.y },
-          { x: el.clientWidth - cardWidth - padding - 100, y: routeA.y },
-          { x: routeA.x, y: padding + 100 },
-          { x: routeA.x, y: el.clientHeight - cardHeight - padding - 100 }
+          // Vertical stacking (above/below)
+          { x: routeA.x, y: routeA.y - cardHeight - 50 },
+          { x: routeA.x, y: routeA.y + cardHeight + 50 },
+          // Horizontal stacking (left/right)
+          { x: routeA.x - cardWidth - 50, y: routeA.y },
+          { x: routeA.x + cardWidth + 50, y: routeA.y },
+          // Diagonal positions
+          { x: routeA.x - cardWidth - 50, y: routeA.y - cardHeight - 50 },
+          { x: routeA.x + cardWidth + 50, y: routeA.y - cardHeight - 50 },
+          { x: routeA.x - cardWidth - 50, y: routeA.y + cardHeight + 50 },
+          { x: routeA.x + cardWidth + 50, y: routeA.y + cardHeight + 50 },
+          // Radial offsets
+          ...Array.from({ length: 16 }, (_, angle) => ({
+            x: routeA.x + Math.cos(angle * Math.PI / 8) * (cardWidth + 100),
+            y: routeA.y + Math.sin(angle * Math.PI / 8) * (cardHeight + 100)
+          }))
         ];
         
         for (const strategy of strategies) {
@@ -770,24 +774,21 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
               bestX = testX;
               bestY = testY;
               bestScore = distFromOriginal;
-              if (distFromOriginal < 50) break; // Good enough, stop searching
+              if (distFromOriginal < 50) break;
             }
           }
         }
         
-        // If still colliding, use comprehensive spiral search with LARGER steps
+        // If still colliding, use grid-based search
         if (bestScore === Infinity) {
           let found = false;
-          for (let radius = 300; radius < 1500 && !found; radius += 120) {
-            for (let angle = 0; angle < Math.PI * 2 && !found; angle += Math.PI / 6) {
-              const testX = Math.max(padding, Math.min(
-                routeA.x + Math.cos(angle) * radius,
-                el.clientWidth - cardWidth - padding
-              ));
-              const testY = Math.max(padding, Math.min(
-                routeA.y + Math.sin(angle) * radius,
-                el.clientHeight - cardHeight - padding
-              ));
+          const stepX = cardWidth + 50;
+          const stepY = cardHeight + 50;
+          
+          for (let offsetY = 0; offsetY < el.clientHeight && !found; offsetY += stepY) {
+            for (let offsetX = 0; offsetX < el.clientWidth && !found; offsetX += stepX) {
+              const testX = Math.max(padding, Math.min(offsetX, el.clientWidth - cardWidth - padding));
+              const testY = Math.max(padding, Math.min(offsetY, el.clientHeight - cardHeight - padding));
               
               if (!checkGridCollision(testX, testY, i)) {
                 bestX = testX;
@@ -801,7 +802,6 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
         routeA.x = bestX;
         routeA.y = bestY;
         
-        // Add to spatial grid with dimensions
         const gridKey = getGridKey(bestX, bestY);
         if (!spatialGrid.has(gridKey)) spatialGrid.set(gridKey, []);
         spatialGrid.get(gridKey).push({ x: bestX, y: bestY, index: i, width: cardWidth, height: cardHeight });
@@ -921,13 +921,14 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
         
         const strategies = [
           { x: resA.x, y: resA.y },
-          ...Array.from({ length: 8 }, (_, angle) => ({
-            x: resA.x + Math.cos(angle * Math.PI / 4) * 250,
-            y: resA.y + Math.sin(angle * Math.PI / 4) * 250
-          })),
-          { x: Math.round(resA.x / gridCellSize) * gridCellSize, y: Math.round(resA.y / gridCellSize) * gridCellSize },
-          { x: padding + 100, y: resA.y },
-          { x: el.clientWidth - cardWidth - padding - 100, y: resA.y }
+          { x: resA.x, y: resA.y - cardHeight - 50 },
+          { x: resA.x, y: resA.y + cardHeight + 50 },
+          { x: resA.x - cardWidth - 50, y: resA.y },
+          { x: resA.x + cardWidth + 50, y: resA.y },
+          ...Array.from({ length: 16 }, (_, angle) => ({
+            x: resA.x + Math.cos(angle * Math.PI / 8) * (cardWidth + 100),
+            y: resA.y + Math.sin(angle * Math.PI / 8) * (cardHeight + 100)
+          }))
         ];
         
         for (const strategy of strategies) {
@@ -949,16 +950,13 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
         
         if (bestScore === Infinity) {
           let found = false;
-          for (let radius = 300; radius < 1500 && !found; radius += 120) {
-            for (let angle = 0; angle < Math.PI * 2 && !found; angle += Math.PI / 6) {
-              const testX = Math.max(padding, Math.min(
-                resA.x + Math.cos(angle) * radius,
-                el.clientWidth - cardWidth - padding
-              ));
-              const testY = Math.max(padding, Math.min(
-                resA.y + Math.sin(angle) * radius,
-                el.clientHeight - cardHeight - padding
-              ));
+          const stepX = cardWidth + 50;
+          const stepY = cardHeight + 50;
+          
+          for (let offsetY = 0; offsetY < el.clientHeight && !found; offsetY += stepY) {
+            for (let offsetX = 0; offsetX < el.clientWidth && !found; offsetX += stepX) {
+              const testX = Math.max(padding, Math.min(offsetX, el.clientWidth - cardWidth - padding));
+              const testY = Math.max(padding, Math.min(offsetY, el.clientHeight - cardHeight - padding));
               
               if (!checkGridCollision(testX, testY, resourceStartIndex + i)) {
                 bestX = testX;
@@ -1002,13 +1000,14 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
         
         const strategies = [
           { x: vehA.x, y: vehA.y },
-          ...Array.from({ length: 8 }, (_, angle) => ({
-            x: vehA.x + Math.cos(angle * Math.PI / 4) * 250,
-            y: vehA.y + Math.sin(angle * Math.PI / 4) * 250
-          })),
-          { x: Math.round(vehA.x / gridCellSize) * gridCellSize, y: Math.round(vehA.y / gridCellSize) * gridCellSize },
-          { x: padding + 100, y: vehA.y },
-          { x: el.clientWidth - cardWidth - padding - 100, y: vehA.y }
+          { x: vehA.x, y: vehA.y - cardHeight - 50 },
+          { x: vehA.x, y: vehA.y + cardHeight + 50 },
+          { x: vehA.x - cardWidth - 50, y: vehA.y },
+          { x: vehA.x + cardWidth + 50, y: vehA.y },
+          ...Array.from({ length: 16 }, (_, angle) => ({
+            x: vehA.x + Math.cos(angle * Math.PI / 8) * (cardWidth + 100),
+            y: vehA.y + Math.sin(angle * Math.PI / 8) * (cardHeight + 100)
+          }))
         ];
         
         for (const strategy of strategies) {
@@ -1030,16 +1029,13 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
         
         if (bestScore === Infinity) {
           let found = false;
-          for (let radius = 300; radius < 1500 && !found; radius += 120) {
-            for (let angle = 0; angle < Math.PI * 2 && !found; angle += Math.PI / 6) {
-              const testX = Math.max(padding, Math.min(
-                vehA.x + Math.cos(angle) * radius,
-                el.clientWidth - cardWidth - padding
-              ));
-              const testY = Math.max(padding, Math.min(
-                vehA.y + Math.sin(angle) * radius,
-                el.clientHeight - cardHeight - padding
-              ));
+          const stepX = cardWidth + 50;
+          const stepY = cardHeight + 50;
+          
+          for (let offsetY = 0; offsetY < el.clientHeight && !found; offsetY += stepY) {
+            for (let offsetX = 0; offsetX < el.clientWidth && !found; offsetX += stepX) {
+              const testX = Math.max(padding, Math.min(offsetX, el.clientWidth - cardWidth - padding));
+              const testY = Math.max(padding, Math.min(offsetY, el.clientHeight - cardHeight - padding));
               
               if (!checkGridCollision(testX, testY, vehicleStartIndex + i)) {
                 bestX = testX;
