@@ -288,14 +288,14 @@ export default function CombinedHologramCard({ items, x, y, index, depth }) {
             <AnimatePresence mode="wait">
               {isNavOpen && items.map((item, idx) => {
                 const angle = (idx / items.length) * Math.PI * 2 - Math.PI / 2;
-                const radius = 80;
+                const radius = 100;
                 const offsetX = Math.cos(angle) * radius;
                 const offsetY = Math.sin(angle) * radius;
                 const isActive = idx === currentIndex;
                 const Icon = item.type === 'route' ? Route : item.type === 'resource' ? Warehouse : Truck;
 
                 return (
-                  <motion.button
+                  <motion.div
                     key={idx}
                     initial={{ scale: 0, opacity: 0 }}
                     animate={{ 
@@ -306,23 +306,26 @@ export default function CombinedHologramCard({ items, x, y, index, depth }) {
                     }}
                     exit={{ scale: 0, opacity: 0 }}
                     transition={{ type: 'spring', stiffness: 350, damping: 25, delay: idx * 0.04 }}
-                    onClick={() => {
-                      setCurrentIndex(idx);
-                      setIsNavOpen(false);
-                    }}
-                    whileHover={{ scale: 1.15 }}
-                    whileTap={{ scale: 0.95 }}
-                    className={cn(
-                      'absolute w-12 h-12 rounded-full backdrop-blur-2xl border-2 shadow-xl flex items-center justify-center transition-all',
-                      'top-0 left-0',
-                      isActive
-                        ? "bg-gradient-to-br from-cyan-500/30 to-violet-500/30 border-cyan-400/50 text-cyan-400"
-                        : "bg-slate-900/80 border-slate-700/50 text-slate-400 hover:text-white hover:border-slate-600"
-                    )}
-                    title={item.data.name || item.data.title || item.type}
+                    className="absolute top-0 left-0 pointer-events-auto"
                   >
-                    <Icon className="w-5 h-5" strokeWidth={1.5} />
-                  </motion.button>
+                    <motion.button
+                      onClick={() => {
+                        setCurrentIndex(idx);
+                        setIsNavOpen(false);
+                      }}
+                      whileHover={{ scale: 1.15 }}
+                      whileTap={{ scale: 0.95 }}
+                      className={cn(
+                        'w-12 h-12 rounded-full backdrop-blur-2xl border-2 shadow-xl flex items-center justify-center transition-all',
+                        isActive
+                          ? "bg-gradient-to-br from-cyan-500/30 to-violet-500/30 border-cyan-400/50 text-cyan-400"
+                          : "bg-slate-900/80 border-slate-700/50 text-slate-400 hover:text-white hover:border-slate-600"
+                      )}
+                      title={item.data.name || item.data.title || item.type}
+                    >
+                      <Icon className="w-5 h-5" strokeWidth={1.5} />
+                    </motion.button>
+                  </motion.div>
                 );
               })}
             </AnimatePresence>
