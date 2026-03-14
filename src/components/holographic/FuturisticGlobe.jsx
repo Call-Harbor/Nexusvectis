@@ -770,9 +770,12 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
         }
       });
       
-      uniqueResources.forEach((resA, i) => {
-        let bestX = resA.x;
-        let bestY = resA.y;
+      // Combine all holograms for unified collision detection
+      const allHolograms = [...uniqueRoutes, ...uniqueResources];
+      
+      allHolograms.forEach((itemA, i) => {
+        let bestX = itemA.x;
+        let bestY = itemA.y;
         let hasCollision = true;
         let attempts = 0;
         const maxAttempts = 8;
@@ -781,15 +784,15 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
           hasCollision = false;
           
           for (let j = 0; j < i; j++) {
-            const resB = uniqueResources[j];
-            const dx = Math.abs(bestX - resB.x);
-            const dy = Math.abs(bestY - resB.y);
+            const itemB = allHolograms[j];
+            const dx = Math.abs(bestX - itemB.x);
+            const dy = Math.abs(bestY - itemB.y);
             
             if (dx < cardWidth + minSpacing && dy < cardHeight + minSpacing) {
               hasCollision = true;
               const offset = (attempts + 1) * 80;
-              bestX = resA.x + offset;
-              bestY = resA.y + offset;
+              bestX = itemA.x + offset;
+              bestY = itemA.y + offset;
               bestX = Math.max(padding, Math.min(bestX, el.clientWidth - cardWidth - padding));
               bestY = Math.max(padding, Math.min(bestY, el.clientHeight - cardHeight - padding));
               break;
@@ -799,17 +802,20 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
           attempts++;
         }
         
-        resA.x = bestX;
-        resA.y = bestY;
+        itemA.x = bestX;
+        itemA.y = bestY;
       });
       
-      const currentResourceCount = uniqueResources.length;
+      // Separate back into routes and resources with updated positions
+      const updatedResources = allHolograms.filter(item => item.resource);
+      
+      const currentResourceCount = updatedResources.length;
       const hasResourceChanged = currentResourceCount !== lastVisibleResourcesCountRef.current ||
-                                  !uniqueResources.every((nr, i) => visibleResources[i]?.resource.id === nr.resource.id);
+                                  !updatedResources.every((nr, i) => visibleResources[i]?.resource.id === nr.resource.id);
       
       if (hasResourceChanged) {
         lastVisibleResourcesCountRef.current = currentResourceCount;
-        setVisibleResources(uniqueResources);
+        setVisibleResources(updatedResources);
       }
       
       if (currentResourceCount === 0 && visibleResources.length > 0) {
@@ -858,7 +864,11 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
         }
       });
       
+      // Combine vehicles with existing holograms for collision detection
+      const allWithVehicles = [...allHolograms, ...uniqueVehicles];
+      
       uniqueVehicles.forEach((vehA, i) => {
+        const startIdx = allHolograms.length + i;
         let bestX = vehA.x;
         let bestY = vehA.y;
         let hasCollision = true;
@@ -868,10 +878,10 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
         while (hasCollision && attempts < maxAttempts) {
           hasCollision = false;
           
-          for (let j = 0; j < i; j++) {
-            const vehB = uniqueVehicles[j];
-            const dx = Math.abs(bestX - vehB.x);
-            const dy = Math.abs(bestY - vehB.y);
+          for (let j = 0; j < startIdx; j++) {
+            const itemB = allWithVehicles[j];
+            const dx = Math.abs(bestX - itemB.x);
+            const dy = Math.abs(bestY - itemB.y);
             
             if (dx < cardWidth + minSpacing && dy < cardHeight + minSpacing) {
               hasCollision = true;

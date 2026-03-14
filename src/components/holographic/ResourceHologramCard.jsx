@@ -1,6 +1,7 @@
-import { motion } from "framer-motion";
-import { Warehouse, MapPin, Package, Activity } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import React, { useState, useRef } from 'react';
+import { motion, useMotionValue, useTransform, AnimatePresence } from 'framer-motion';
+import { Warehouse, MapPin, Package, Activity, X, Maximize2, Zap } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const typeIcons = {
   fuel_depot: Activity,
@@ -11,107 +12,318 @@ const typeIcons = {
 };
 
 export default function ResourceHologramCard({ resource, x, y, index }) {
+  const cardRef = useRef(null);
+  const [isHovered, setIsHovered] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
+  
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+  
+  const rotateX = useTransform(mouseY, [-0.5, 0.5], [10, -10]);
+  const rotateY = useTransform(mouseX, [-0.5, 0.5], [-10, 10]);
+  const scale = useTransform(mouseY, [-0.5, 0.5], [0.95, 1.05]);
+  
   const Icon = typeIcons[resource.type] || Package;
   
   const statusColor = resource.status === 'operational' 
-    ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
+    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/50'
     : resource.status === 'limited'
-    ? 'bg-amber-500/20 text-amber-400 border-amber-500/30'
-    : 'bg-red-500/20 text-red-400 border-red-500/30';
+    ? 'bg-amber-500/20 text-amber-300 border-amber-400/50'
+    : 'bg-red-500/20 text-red-300 border-red-400/50';
 
   const capacityPercent = resource.capacity ? ((resource.current_level || 0) / resource.capacity * 100).toFixed(0) : 0;
 
+  const handleMouseMove = (e) => {
+    if (!cardRef.current || isExpanded) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const percentX = (e.clientX - centerX) / (rect.width / 2);
+    const percentY = (e.clientY - centerY) / (rect.height / 2);
+    mouseX.set(percentX);
+    mouseY.set(percentY);
+  };
+  
+  const handleMouseLeave = () => {
+    if (!isExpanded) {
+      mouseX.set(0);
+      mouseY.set(0);
+    }
+    setIsHovered(false);
+  };
+
+  const handleExpand = () => {
+    setIsExpanded(!isExpanded);
+    if (!isExpanded) {
+      mouseX.set(0);
+      mouseY.set(0);
+    }
+  };
+
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.8, y: 20 }}
-      animate={{ opacity: 1, scale: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.8, y: -20 }}
-      transition={{ delay: index * 0.05, type: "spring" }}
-      className="absolute pointer-events-auto"
-      style={{
-        left: `${x}px`,
-        top: `${y}px`,
-        transform: 'translate(-50%, -50%)',
+      ref={cardRef}
+      initial={{ opacity: 0, scale: 0.7, z: -200, rotateY: -30 }}
+      animate={{ 
+        opacity: 1, 
+        scale: isExpanded ? 1.1 : 1, 
+        z: isExpanded ? 100 : 0,
+        rotateY: 0,
+        y: isExpanded ? 0 : [0, -10, 0],
+        width: isExpanded ? '500px' : '384px',
+        left: isExpanded ? '50%' : x + 180,
+        top: isExpanded ? '50%' : y - 200,
+        x: isExpanded ? '-50%' : 0,
+        y: isExpanded ? '-50%' : [0, -10, 0]
       }}
+      transition={{
+        opacity: { duration: 0.5 },
+        scale: { duration: 0.5, type: "spring" },
+        z: { duration: 0.8 },
+        rotateY: { duration: 0.8 },
+        y: { duration: 4, repeat: Infinity, ease: "easeInOut" },
+        width: { duration: 0.4 },
+        left: { duration: 0.4 },
+        top: { duration: 0.4 }
+      }}
+      exit={{ opacity: 0, scale: 0.7, z: -200, rotateY: 30 }}
+      style={{
+        position: isExpanded ? 'fixed' : 'absolute',
+        zIndex: isExpanded ? 10000 : (1000 - index),
+        pointerEvents: 'auto',
+        transformStyle: 'preserve-3d',
+        perspective: '1500px',
+        rotateX: isExpanded ? 0 : rotateX,
+        rotateY: isExpanded ? 0 : rotateY,
+        scale: isExpanded ? 1 : scale
+      }}
+      onMouseMove={handleMouseMove}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={handleMouseLeave}
+      className="cursor-pointer"
     >
-      <div className="relative">
-        {/* Holographic glow */}
-        <div className="absolute inset-0 bg-gradient-to-br from-amber-500/20 to-orange-500/20 rounded-2xl blur-xl" />
-        
-        {/* Card */}
-        <div className="relative w-80 p-4 rounded-2xl backdrop-blur-xl border-2 border-amber-500/30 bg-slate-900/90 shadow-2xl">
-          {/* Scan lines */}
-          <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-2xl">
-            <div className="absolute inset-0 bg-[linear-gradient(transparent_50%,rgba(251,191,36,0.03)_50%)] bg-[size:100%_4px] animate-scan" />
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm -z-10"
+            style={{ left: 0, top: 0, width: '100vw', height: '100vh' }}
+            onClick={() => setIsExpanded(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      <motion.div className="relative" style={{ transformStyle: 'preserve-3d' }}>
+        <div className="absolute -inset-6" style={{ transform: 'translateZ(-20px)' }}>
+          <motion.div
+            animate={{ 
+              scale: [1, 1.1, 1],
+              opacity: isHovered ? [0.4, 0.7, 0.4] : [0.2, 0.4, 0.2]
+            }}
+            transition={{ duration: 2.5, repeat: Infinity }}
+            className="absolute inset-0 rounded-3xl border-2 border-amber-400/40 blur-lg"
+            style={{ boxShadow: '0 0 40px rgba(251, 191, 36, 0.4)' }}
+          />
+          <motion.div
+            animate={{ 
+              scale: [1, 1.15, 1],
+              opacity: isHovered ? [0.3, 0.6, 0.3] : [0.1, 0.3, 0.1],
+              rotate: [0, 180, 360]
+            }}
+            transition={{ duration: 4, repeat: Infinity }}
+            className="absolute inset-0 rounded-3xl border border-orange-400/30 blur-xl"
+          />
+        </div>
+
+        <motion.div 
+          className="relative bg-gradient-to-br from-slate-900/98 via-slate-800/95 to-slate-900/98 backdrop-blur-3xl rounded-2xl overflow-hidden border-2 border-amber-400/70 shadow-2xl"
+          style={{
+            transformStyle: 'preserve-3d',
+            boxShadow: isHovered 
+              ? '0 30px 60px rgba(251, 191, 36, 0.5), 0 0 100px rgba(255, 165, 0, 0.3)'
+              : '0 20px 40px rgba(251, 191, 36, 0.3)',
+          }}
+        >
+          <motion.div
+            className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400/20 to-transparent"
+            animate={{
+              x: ['-100%', '200%'],
+              opacity: isHovered ? [0, 0.6, 0] : [0, 0, 0]
+            }}
+            transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+            style={{ transform: 'translateZ(60px)' }}
+          />
+
+          <div className="absolute inset-0 overflow-hidden pointer-events-none" style={{ transform: 'translateZ(50px)' }}>
+            <motion.div
+              animate={{ y: ['0%', '100%'], opacity: [0, 1, 0] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+              className="absolute w-full h-2 bg-gradient-to-r from-transparent via-amber-400/60 to-transparent blur-sm"
+            />
           </div>
 
-          <div className="relative">
-            <div className="flex items-start justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <div className="p-2 rounded-lg bg-amber-500/20 border border-amber-500/30">
-                  <Icon className="w-5 h-5 text-amber-400" />
-                </div>
+          <motion.div 
+            className="relative px-6 py-4 bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-amber-500/20 border-b-2 border-amber-400/40"
+            style={{ transform: 'translateZ(40px)' }}
+          >
+            <div className="relative flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <motion.div 
+                  className="relative"
+                  whileHover={{ rotate: 360, scale: 1.2 }}
+                  transition={{ duration: 0.6 }}
+                  style={{ transform: 'translateZ(10px)' }}
+                >
+                  <Icon className="w-6 h-6 text-amber-400 drop-shadow-[0_0_10px_rgba(251,191,36,0.8)]" />
+                  <motion.div
+                    animate={{ scale: [1, 1.5, 1], opacity: [0.5, 0, 0.5] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                    className="absolute inset-0 bg-amber-400 rounded-full blur-lg"
+                  />
+                </motion.div>
                 <div>
-                  <h3 className="font-bold text-white text-sm">{resource.name}</h3>
-                  <p className="text-xs text-slate-400">{resource.location || 'Unknown Location'}</p>
+                  <motion.h3 className="text-lg font-bold text-white tracking-wide drop-shadow-[0_0_15px_rgba(251,191,36,0.6)]">
+                    {resource.name}
+                  </motion.h3>
+                  <p className="text-xs text-amber-300/70 font-mono">ID: {resource.id?.slice(0, 8)}</p>
                 </div>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <motion.div 
+                  className={cn("px-3 py-1 rounded-md text-xs font-bold tracking-wider border-2", statusColor)}
+                  whileHover={{ scale: 1.1 }}
+                >
+                  {resource.status?.toUpperCase() || 'UNKNOWN'}
+                </motion.div>
+
+                <motion.button
+                  onClick={handleExpand}
+                  whileHover={{ scale: 1.1, rotate: 180 }}
+                  whileTap={{ scale: 0.9 }}
+                  className="p-2 rounded-lg bg-amber-500/20 border border-amber-400/30 text-amber-400 hover:bg-amber-500/30 transition-colors"
+                >
+                  {isExpanded ? <X className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+                </motion.button>
               </div>
             </div>
+          </motion.div>
 
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-slate-400">Status</span>
-                <Badge variant="outline" className={statusColor}>
-                  {resource.status || 'Unknown'}
-                </Badge>
-              </div>
-
-              {resource.capacity && (
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-slate-400">Capacity</span>
-                  <span className="text-white font-mono">
-                    {resource.current_level || 0} / {resource.capacity} ({capacityPercent}%)
-                  </span>
+          <div className="relative p-6 space-y-4" style={{ transform: 'translateZ(30px)' }}>
+            <motion.div className="flex items-center gap-3" style={{ transform: 'translateZ(20px)' }}>
+              <div className="flex-1 space-y-1">
+                <p className="text-xs text-amber-400/70 font-mono tracking-wider">LOCATION</p>
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]" />
+                  <p className="text-sm font-bold text-white drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]">{resource.location || 'Unknown'}</p>
                 </div>
-              )}
-
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-slate-400">Type</span>
-                <span className="text-white capitalize">{resource.type?.replace(/_/g, ' ')}</span>
               </div>
+            </motion.div>
 
-              {resource.latitude && resource.longitude && (
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-slate-400">Coordinates</span>
-                  <span className="text-white font-mono">
-                    {resource.latitude.toFixed(4)}°, {resource.longitude.toFixed(4)}°
-                  </span>
+            <motion.div className="grid grid-cols-2 gap-3 pt-3 border-t border-amber-400/20" style={{ transform: 'translateZ(25px)' }}>
+              <motion.div 
+                className="space-y-1 bg-slate-800/60 rounded-lg p-3 border border-amber-400/30 relative overflow-hidden"
+                whileHover={{ scale: 1.05, borderColor: 'rgba(251, 191, 36, 0.6)', boxShadow: '0 0 20px rgba(251, 191, 36, 0.4)' }}
+                style={{ transform: 'translateZ(15px)' }}
+              >
+                <div className="relative z-10">
+                  <p className="text-[10px] text-amber-400/70 font-mono tracking-wider">CAPACITY</p>
+                  <motion.p className="text-xl font-bold text-amber-300 drop-shadow-[0_0_10px_rgba(251,191,36,0.6)]">
+                    {resource.current_level || 0}/{resource.capacity || 0}
+                  </motion.p>
+                  <p className="text-[10px] text-slate-400">units</p>
                 </div>
-              )}
-            </div>
+              </motion.div>
 
-            {/* Capacity bar */}
+              <motion.div 
+                className="space-y-1 bg-slate-800/60 rounded-lg p-3 border border-orange-400/30 relative overflow-hidden"
+                whileHover={{ scale: 1.05, borderColor: 'rgba(255, 165, 0, 0.6)', boxShadow: '0 0 20px rgba(255, 165, 0, 0.4)' }}
+                style={{ transform: 'translateZ(15px)' }}
+              >
+                <div className="relative z-10">
+                  <p className="text-[10px] text-orange-400/70 font-mono tracking-wider">TYPE</p>
+                  <motion.p className="text-base font-bold text-orange-300 drop-shadow-[0_0_10px_rgba(255,165,0,0.6)]">
+                    {resource.type?.replace(/_/g, ' ').toUpperCase()}
+                  </motion.p>
+                </div>
+              </motion.div>
+            </motion.div>
+
             {resource.capacity && (
               <div className="mt-3">
-                <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                <div className="flex items-center justify-between text-xs mb-1">
+                  <span className="text-slate-400">Utilization</span>
+                  <span className="text-amber-400 font-bold">{capacityPercent}%</span>
+                </div>
+                <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${capacityPercent}%` }}
                     transition={{ duration: 0.8, delay: 0.2 }}
                     className={`h-full ${
-                      capacityPercent > 80 
-                        ? 'bg-emerald-500' 
-                        : capacityPercent > 50 
-                        ? 'bg-amber-500' 
-                        : 'bg-red-500'
+                      capacityPercent > 80 ? 'bg-red-500' : capacityPercent > 50 ? 'bg-amber-500' : 'bg-emerald-500'
                     }`}
+                    style={{ boxShadow: '0 0 10px currentColor' }}
                   />
                 </div>
               </div>
             )}
+
+            {resource.latitude && resource.longitude && (
+              <motion.div 
+                className="flex items-center justify-between px-4 py-2 bg-amber-500/10 border border-amber-400/30 rounded-lg"
+                whileHover={{ borderColor: 'rgba(251, 191, 36, 0.5)', backgroundColor: 'rgba(251, 191, 36, 0.15)' }}
+                style={{ transform: 'translateZ(20px)' }}
+              >
+                <span className="text-xs text-amber-400 font-mono">COORDINATES</span>
+                <span className="text-xs font-bold text-amber-300 font-mono">
+                  {resource.latitude.toFixed(4)}°, {resource.longitude.toFixed(4)}°
+                </span>
+              </motion.div>
+            )}
           </div>
-        </div>
-      </div>
+
+          <motion.div
+            animate={{ opacity: [0.4, 0.8, 0.4], scale: [1, 1.01, 1] }}
+            transition={{ duration: 3, repeat: Infinity }}
+            className="absolute inset-0 border-2 border-amber-400/50 rounded-2xl pointer-events-none"
+            style={{ transform: 'translateZ(80px)' }}
+          />
+        </motion.div>
+
+        {!isExpanded && (
+          <>
+            <motion.div 
+              className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-px bg-gradient-to-b from-amber-400/60 to-transparent"
+              style={{ height: isHovered ? '50px' : '40px' }}
+              animate={{ opacity: [0.4, 0.8, 0.4] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            />
+            <motion.div
+              animate={{ scaleX: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
+              transition={{ duration: 2, repeat: Infinity }}
+              className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-20 h-px bg-gradient-to-r from-transparent via-amber-400/60 to-transparent"
+            />
+          </>
+        )}
+
+        {!isExpanded && [...Array(5)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute w-1 h-1 rounded-full bg-amber-400/60"
+            style={{ left: `${20 + i * 15}%`, top: '50%', filter: 'blur(1px)' }}
+            animate={{
+              y: [-30, -60, -30],
+              x: [0, Math.sin(i * 2) * 15, 0],
+              opacity: [0, 1, 0],
+              scale: [0, 1.5, 0]
+            }}
+            transition={{ duration: 4, repeat: Infinity, delay: i * 0.6, ease: "easeInOut" }}
+          />
+        ))}
+      </motion.div>
     </motion.div>
   );
 }
