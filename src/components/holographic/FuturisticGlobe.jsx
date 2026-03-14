@@ -673,12 +673,12 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
         }
       });
       
-      // Advanced collision detection with smart grid-based positioning
-      const totalVisible = uniqueRoutes.length;
-      const cardWidth = totalVisible > 6 ? 320 : totalVisible > 3 ? 360 : 400;
-      const cardHeight = totalVisible > 6 ? 420 : totalVisible > 3 ? 460 : 500;
-      const padding = 40;
-      const minSpacing = totalVisible > 6 ? 30 : totalVisible > 3 ? 35 : 40;
+      // Perfect collision avoidance - dynamic sizing and spacing
+      const totalVisible = uniqueRoutes.length + uniqueResources.length;
+      const cardWidth = totalVisible > 8 ? 280 : totalVisible > 5 ? 320 : totalVisible > 3 ? 360 : 400;
+      const cardHeight = totalVisible > 8 ? 380 : totalVisible > 5 ? 420 : totalVisible > 3 ? 460 : 500;
+      const padding = 50;
+      const minSpacing = totalVisible > 8 ? 50 : totalVisible > 5 ? 60 : totalVisible > 3 ? 70 : 80;
       
       // Create spatial grid for faster collision detection
       const gridCellSize = cardWidth + minSpacing;
@@ -690,7 +690,7 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
         return `${col},${row}`;
       };
       
-      const checkGridCollision = (x, y, excludeIndex) => {
+      const checkGridCollision = (x, y, excludeIndex, checkWidth = cardWidth, checkHeight = cardHeight) => {
         const centerKey = getGridKey(x, y);
         const neighbors = [
           centerKey,
@@ -708,9 +708,14 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
           const items = spatialGrid.get(key) || [];
           for (const item of items) {
             if (item.index === excludeIndex) continue;
+            
+            // Rectangle collision detection with proper spacing
             const dx = Math.abs(x - item.x);
             const dy = Math.abs(y - item.y);
-            if (dx < cardWidth + minSpacing && dy < cardHeight + minSpacing) {
+            const minDx = (checkWidth + (item.width || cardWidth)) / 2 + minSpacing;
+            const minDy = (checkHeight + (item.height || cardHeight)) / 2 + minSpacing;
+            
+            if (dx < minDx && dy < minDy) {
               return true;
             }
           }
@@ -769,11 +774,11 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
           }
         }
         
-        // If still colliding, use spiral search
+        // If still colliding, use comprehensive spiral search
         if (bestScore === Infinity) {
           let found = false;
-          for (let radius = 150; radius < 600 && !found; radius += 80) {
-            for (let angle = 0; angle < Math.PI * 2 && !found; angle += Math.PI / 6) {
+          for (let radius = 150; radius < 1000 && !found; radius += 70) {
+            for (let angle = 0; angle < Math.PI * 2 && !found; angle += Math.PI / 8) {
               const testX = Math.max(padding, Math.min(
                 routeA.x + Math.cos(angle) * radius,
                 el.clientWidth - cardWidth - padding
@@ -795,10 +800,10 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
         routeA.x = bestX;
         routeA.y = bestY;
         
-        // Add to spatial grid
+        // Add to spatial grid with dimensions
         const gridKey = getGridKey(bestX, bestY);
         if (!spatialGrid.has(gridKey)) spatialGrid.set(gridKey, []);
-        spatialGrid.get(gridKey).push({ x: bestX, y: bestY, index: i });
+        spatialGrid.get(gridKey).push({ x: bestX, y: bestY, index: i, width: cardWidth, height: cardHeight });
       });
       
       // Only update state if there's a change - with forced cleanup
@@ -899,8 +904,8 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
         
         if (bestScore === Infinity) {
           let found = false;
-          for (let radius = 150; radius < 600 && !found; radius += 80) {
-            for (let angle = 0; angle < Math.PI * 2 && !found; angle += Math.PI / 6) {
+          for (let radius = 150; radius < 1000 && !found; radius += 70) {
+            for (let angle = 0; angle < Math.PI * 2 && !found; angle += Math.PI / 8) {
               const testX = Math.max(padding, Math.min(
                 resA.x + Math.cos(angle) * radius,
                 el.clientWidth - cardWidth - padding
@@ -924,7 +929,7 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
         
         const gridKey = getGridKey(bestX, bestY);
         if (!spatialGrid.has(gridKey)) spatialGrid.set(gridKey, []);
-        spatialGrid.get(gridKey).push({ x: bestX, y: bestY, index: resourceStartIndex + i });
+        spatialGrid.get(gridKey).push({ x: bestX, y: bestY, index: resourceStartIndex + i, width: cardWidth, height: cardHeight });
       });
       
       const updatedResources = uniqueResources;
@@ -1025,8 +1030,8 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
         
         if (bestScore === Infinity) {
           let found = false;
-          for (let radius = 150; radius < 600 && !found; radius += 80) {
-            for (let angle = 0; angle < Math.PI * 2 && !found; angle += Math.PI / 6) {
+          for (let radius = 150; radius < 1000 && !found; radius += 70) {
+            for (let angle = 0; angle < Math.PI * 2 && !found; angle += Math.PI / 8) {
               const testX = Math.max(padding, Math.min(
                 vehA.x + Math.cos(angle) * radius,
                 el.clientWidth - cardWidth - padding
@@ -1050,7 +1055,7 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
         
         const gridKey = getGridKey(bestX, bestY);
         if (!spatialGrid.has(gridKey)) spatialGrid.set(gridKey, []);
-        spatialGrid.get(gridKey).push({ x: bestX, y: bestY, index: vehicleStartIndex + i });
+        spatialGrid.get(gridKey).push({ x: bestX, y: bestY, index: vehicleStartIndex + i, width: cardWidth, height: cardHeight });
       });
       
       const currentVehicleCount = uniqueVehicles.length;
