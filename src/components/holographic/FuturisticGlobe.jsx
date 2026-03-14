@@ -673,49 +673,6 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
         }
       });
       
-      // Create spatial grid for faster collision detection
-      const gridCellSize = cardWidth + minSpacing;
-      const spatialGrid = new Map();
-      
-      const getGridKey = (x, y) => {
-        const col = Math.floor(x / gridCellSize);
-        const row = Math.floor(y / gridCellSize);
-        return `${col},${row}`;
-      };
-      
-      const checkGridCollision = (x, y, excludeIndex, checkWidth = cardWidth, checkHeight = cardHeight) => {
-        const centerKey = getGridKey(x, y);
-        const neighbors = [
-          centerKey,
-          getGridKey(x - gridCellSize, y),
-          getGridKey(x + gridCellSize, y),
-          getGridKey(x, y - gridCellSize),
-          getGridKey(x, y + gridCellSize),
-          getGridKey(x - gridCellSize, y - gridCellSize),
-          getGridKey(x + gridCellSize, y - gridCellSize),
-          getGridKey(x - gridCellSize, y + gridCellSize),
-          getGridKey(x + gridCellSize, y + gridCellSize)
-        ];
-        
-        for (const key of neighbors) {
-          const items = spatialGrid.get(key) || [];
-          for (const item of items) {
-            if (item.index === excludeIndex) continue;
-            
-            // Rectangle collision detection with proper spacing
-            const dx = Math.abs(x - item.x);
-            const dy = Math.abs(y - item.y);
-            const minDx = (checkWidth + (item.width || cardWidth)) / 2 + minSpacing;
-            const minDy = (checkHeight + (item.height || cardHeight)) / 2 + minSpacing;
-            
-            if (dx < minDx && dy < minDy) {
-              return true;
-            }
-          }
-        }
-        return false;
-      };
-      
       // Sort by visibility score (most visible first get priority placement)
       uniqueRoutes.sort((a, b) => b.visibility - a.visibility);
       
@@ -858,6 +815,65 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
         }
       });
       
+      const uniqueVehicles = [];
+      const finalSeenVehicleIds = new Set();
+      newVisibleVehicles.forEach(data => {
+        if (!finalSeenVehicleIds.has(data.vehicle.id)) {
+          finalSeenVehicleIds.add(data.vehicle.id);
+          uniqueVehicles.push(data);
+        }
+      });
+      
+      // Perfect collision avoidance - dynamic sizing and spacing
+      const totalVisible = uniqueRoutes.length + uniqueResources.length + uniqueVehicles.length;
+      const cardWidth = totalVisible > 8 ? 280 : totalVisible > 5 ? 320 : totalVisible > 3 ? 360 : 400;
+      const cardHeight = totalVisible > 8 ? 380 : totalVisible > 5 ? 420 : totalVisible > 3 ? 460 : 500;
+      const padding = 50;
+      const minSpacing = totalVisible > 8 ? 50 : totalVisible > 5 ? 60 : totalVisible > 3 ? 70 : 80;
+      
+      // Create spatial grid for faster collision detection
+      const gridCellSize = cardWidth + minSpacing;
+      const spatialGrid = new Map();
+      
+      const getGridKey = (x, y) => {
+        const col = Math.floor(x / gridCellSize);
+        const row = Math.floor(y / gridCellSize);
+        return `${col},${row}`;
+      };
+      
+      const checkGridCollision = (x, y, excludeIndex, checkWidth = cardWidth, checkHeight = cardHeight) => {
+        const centerKey = getGridKey(x, y);
+        const neighbors = [
+          centerKey,
+          getGridKey(x - gridCellSize, y),
+          getGridKey(x + gridCellSize, y),
+          getGridKey(x, y - gridCellSize),
+          getGridKey(x, y + gridCellSize),
+          getGridKey(x - gridCellSize, y - gridCellSize),
+          getGridKey(x + gridCellSize, y - gridCellSize),
+          getGridKey(x - gridCellSize, y + gridCellSize),
+          getGridKey(x + gridCellSize, y + gridCellSize)
+        ];
+        
+        for (const key of neighbors) {
+          const items = spatialGrid.get(key) || [];
+          for (const item of items) {
+            if (item.index === excludeIndex) continue;
+            
+            // Rectangle collision detection with proper spacing
+            const dx = Math.abs(x - item.x);
+            const dy = Math.abs(y - item.y);
+            const minDx = (checkWidth + (item.width || cardWidth)) / 2 + minSpacing;
+            const minDy = (checkHeight + (item.height || cardHeight)) / 2 + minSpacing;
+            
+            if (dx < minDx && dy < minDy) {
+              return true;
+            }
+          }
+        }
+        return false;
+      };
+      
       // Process resources with same advanced logic, continuing from routes' spatial grid
       const resourceStartIndex = uniqueRoutes.length;
       uniqueResources.sort((a, b) => b.visibility - a.visibility);
@@ -977,7 +993,6 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
       
       // Process vehicles with same advanced logic
       const vehicleStartIndex = resourceStartIndex + updatedResources.length;
-      uniqueVehicles.sort((a, b) => b.visibility - a.visibility);
       
       uniqueVehicles.forEach((vehA, i) => {
         let bestX = vehA.x;
