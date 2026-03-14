@@ -673,54 +673,25 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
         }
       });
       
-      // Perfect collision avoidance - dynamic sizing and spacing (MUST be before any collision logic)
+      // Collision detection - simple and reliable
       const cardWidth = 400;
       const cardHeight = 500;
       const padding = 50;
+      const minGap = 60; // Minimum gap between cards
       
-      // Create spatial grid for faster collision detection
-      const gridCellSize = Math.max(cardWidth, cardHeight) * 2;
-      const spatialGrid = new Map();
+      const placedCards = []; // Store all placed card positions
       
-      const getGridKey = (x, y) => {
-        const col = Math.floor(x / gridCellSize);
-        const row = Math.floor(y / gridCellSize);
-        return `${col},${row}`;
-      };
-      
-      const checkGridCollision = (x, y, excludeIndex) => {
-        const centerKey = getGridKey(x, y);
-        const neighbors = [
-          centerKey,
-          getGridKey(x - gridCellSize, y),
-          getGridKey(x + gridCellSize, y),
-          getGridKey(x, y - gridCellSize),
-          getGridKey(x, y + gridCellSize),
-          getGridKey(x - gridCellSize, y - gridCellSize),
-          getGridKey(x + gridCellSize, y - gridCellSize),
-          getGridKey(x - gridCellSize, y + gridCellSize),
-          getGridKey(x + gridCellSize, y + gridCellSize)
-        ];
-        
-        for (const key of neighbors) {
-          const items = spatialGrid.get(key) || [];
-          for (const item of items) {
-            if (item.index === excludeIndex) continue;
-            
-            // Check if rectangles overlap (with minimum distance = their size)
-            const halfW1 = cardWidth / 2;
-            const halfH1 = cardHeight / 2;
-            const halfW2 = cardWidth / 2;
-            const halfH2 = cardHeight / 2;
-            
-            const dx = Math.abs((x + halfW1) - (item.x + halfW2));
-            const dy = Math.abs((y + halfH1) - (item.y + halfH2));
-            
-            // Minimum distance is the sum of half-widths + full width (to ensure no overlap)
-            if (dx < (halfW1 + halfW2 + cardWidth) && dy < (halfH1 + halfH2 + cardHeight)) {
-              return true;
-            }
-          }
+      const isOverlapping = (x, y) => {
+        for (const placed of placedCards) {
+          // Check if rectangles overlap
+          const overlap = !(
+            x + cardWidth + minGap < placed.x ||
+            x > placed.x + cardWidth + minGap ||
+            y + cardHeight + minGap < placed.y ||
+            y > placed.y + cardHeight + minGap
+          );
+          
+          if (overlap) return true;
         }
         return false;
       };
@@ -729,82 +700,41 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
       uniqueRoutes.sort((a, b) => b.visibility - a.visibility);
       
       uniqueRoutes.forEach((routeA, i) => {
-        let bestX = routeA.x;
-        let bestY = routeA.y;
-        let bestScore = Infinity;
+        let finalX = routeA.x;
+        let finalY = routeA.y;
         
-        // Try multiple positioning strategies including vertical and horizontal stacking
-        const strategies = [
-          // Original position
-          { x: routeA.x, y: routeA.y },
-          // Vertical stacking (above/below)
-          { x: routeA.x, y: routeA.y - cardHeight - 50 },
-          { x: routeA.x, y: routeA.y + cardHeight + 50 },
-          // Horizontal stacking (left/right)
-          { x: routeA.x - cardWidth - 50, y: routeA.y },
-          { x: routeA.x + cardWidth + 50, y: routeA.y },
-          // Diagonal positions
-          { x: routeA.x - cardWidth - 50, y: routeA.y - cardHeight - 50 },
-          { x: routeA.x + cardWidth + 50, y: routeA.y - cardHeight - 50 },
-          { x: routeA.x - cardWidth - 50, y: routeA.y + cardHeight + 50 },
-          { x: routeA.x + cardWidth + 50, y: routeA.y + cardHeight + 50 },
-          // Radial offsets
-          ...Array.from({ length: 16 }, (_, angle) => ({
-            x: routeA.x + Math.cos(angle * Math.PI / 8) * (cardWidth + 100),
-            y: routeA.y + Math.sin(angle * Math.PI / 8) * (cardHeight + 100)
-          }))
-        ];
+        // Clamp original position
+        finalX = Math.max(padding, Math.min(finalX, el.clientWidth - cardWidth - padding));
+        finalY = Math.max(padding, Math.min(finalY, el.clientHeight - cardHeight - padding));
         
-        for (const strategy of strategies) {
-          let testX = strategy.x;
-          let testY = strategy.y;
-          
-          // Clamp to valid screen area
-          testX = Math.max(padding, Math.min(testX, el.clientWidth - cardWidth - padding));
-          testY = Math.max(padding, Math.min(testY, el.clientHeight - cardHeight - padding));
-          
-          // Check collision
-          if (!checkGridCollision(testX, testY, i)) {
-            // Score based on distance from original position
-            const distFromOriginal = Math.sqrt(
-              Math.pow(testX - routeA.x, 2) + Math.pow(testY - routeA.y, 2)
-            );
-            
-            if (distFromOriginal < bestScore) {
-              bestX = testX;
-              bestY = testY;
-              bestScore = distFromOriginal;
-              if (distFromOriginal < 50) break;
-            }
-          }
-        }
-        
-        // If still colliding, use grid-based search
-        if (bestScore === Infinity) {
+        // If original position overlaps, try systematic grid search
+        if (isOverlapping(finalX, finalY)) {
           let found = false;
-          const stepX = cardWidth + 50;
-          const stepY = cardHeight + 50;
+          const stepX = cardWidth + minGap + 20;
+          const stepY = cardHeight + minGap + 20;
           
-          for (let offsetY = 0; offsetY < el.clientHeight && !found; offsetY += stepY) {
-            for (let offsetX = 0; offsetX < el.clientWidth && !found; offsetX += stepX) {
-              const testX = Math.max(padding, Math.min(offsetX, el.clientWidth - cardWidth - padding));
-              const testY = Math.max(padding, Math.min(offsetY, el.clientHeight - cardHeight - padding));
+          // Try positions in a grid pattern
+          for (let row = 0; row < 10 && !found; row++) {
+            for (let col = 0; col < 10 && !found; col++) {
+              const testX = padding + (col * stepX);
+              const testY = padding + (row * stepY);
               
-              if (!checkGridCollision(testX, testY, i)) {
-                bestX = testX;
-                bestY = testY;
+              if (testX + cardWidth > el.clientWidth - padding || testY + cardHeight > el.clientHeight - padding) {
+                continue;
+              }
+              
+              if (!isOverlapping(testX, testY)) {
+                finalX = testX;
+                finalY = testY;
                 found = true;
               }
             }
           }
         }
         
-        routeA.x = bestX;
-        routeA.y = bestY;
-        
-        const gridKey = getGridKey(bestX, bestY);
-        if (!spatialGrid.has(gridKey)) spatialGrid.set(gridKey, []);
-        spatialGrid.get(gridKey).push({ x: bestX, y: bestY, index: i, width: cardWidth, height: cardHeight });
+        routeA.x = finalX;
+        routeA.y = finalY;
+        placedCards.push({ x: finalX, y: finalY });
       });
       
       // Only update state if there's a change - with forced cleanup
@@ -910,69 +840,42 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
         }
       });
       
-      // Process resources with same advanced logic, continuing from routes' spatial grid
-      const resourceStartIndex = uniqueRoutes.length;
+      // Process resources
       uniqueResources.sort((a, b) => b.visibility - a.visibility);
       
       uniqueResources.forEach((resA, i) => {
-        let bestX = resA.x;
-        let bestY = resA.y;
-        let bestScore = Infinity;
+        let finalX = resA.x;
+        let finalY = resA.y;
         
-        const strategies = [
-          { x: resA.x, y: resA.y },
-          { x: resA.x, y: resA.y - cardHeight - 50 },
-          { x: resA.x, y: resA.y + cardHeight + 50 },
-          { x: resA.x - cardWidth - 50, y: resA.y },
-          { x: resA.x + cardWidth + 50, y: resA.y },
-          ...Array.from({ length: 16 }, (_, angle) => ({
-            x: resA.x + Math.cos(angle * Math.PI / 8) * (cardWidth + 100),
-            y: resA.y + Math.sin(angle * Math.PI / 8) * (cardHeight + 100)
-          }))
-        ];
+        finalX = Math.max(padding, Math.min(finalX, el.clientWidth - cardWidth - padding));
+        finalY = Math.max(padding, Math.min(finalY, el.clientHeight - cardHeight - padding));
         
-        for (const strategy of strategies) {
-          let testX = Math.max(padding, Math.min(strategy.x, el.clientWidth - cardWidth - padding));
-          let testY = Math.max(padding, Math.min(strategy.y, el.clientHeight - cardHeight - padding));
-          
-          if (!checkGridCollision(testX, testY, resourceStartIndex + i)) {
-            const distFromOriginal = Math.sqrt(
-              Math.pow(testX - resA.x, 2) + Math.pow(testY - resA.y, 2)
-            );
-            if (distFromOriginal < bestScore) {
-              bestX = testX;
-              bestY = testY;
-              bestScore = distFromOriginal;
-              if (distFromOriginal < 50) break;
-            }
-          }
-        }
-        
-        if (bestScore === Infinity) {
+        if (isOverlapping(finalX, finalY)) {
           let found = false;
-          const stepX = cardWidth + 50;
-          const stepY = cardHeight + 50;
+          const stepX = cardWidth + minGap + 20;
+          const stepY = cardHeight + minGap + 20;
           
-          for (let offsetY = 0; offsetY < el.clientHeight && !found; offsetY += stepY) {
-            for (let offsetX = 0; offsetX < el.clientWidth && !found; offsetX += stepX) {
-              const testX = Math.max(padding, Math.min(offsetX, el.clientWidth - cardWidth - padding));
-              const testY = Math.max(padding, Math.min(offsetY, el.clientHeight - cardHeight - padding));
+          for (let row = 0; row < 10 && !found; row++) {
+            for (let col = 0; col < 10 && !found; col++) {
+              const testX = padding + (col * stepX);
+              const testY = padding + (row * stepY);
               
-              if (!checkGridCollision(testX, testY, resourceStartIndex + i)) {
-                bestX = testX;
-                bestY = testY;
+              if (testX + cardWidth > el.clientWidth - padding || testY + cardHeight > el.clientHeight - padding) {
+                continue;
+              }
+              
+              if (!isOverlapping(testX, testY)) {
+                finalX = testX;
+                finalY = testY;
                 found = true;
               }
             }
           }
         }
         
-        resA.x = bestX;
-        resA.y = bestY;
-        
-        const gridKey = getGridKey(bestX, bestY);
-        if (!spatialGrid.has(gridKey)) spatialGrid.set(gridKey, []);
-        spatialGrid.get(gridKey).push({ x: bestX, y: bestY, index: resourceStartIndex + i, width: cardWidth, height: cardHeight });
+        resA.x = finalX;
+        resA.y = finalY;
+        placedCards.push({ x: finalX, y: finalY });
       });
       
       const updatedResources = uniqueResources;
@@ -990,68 +893,40 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
         setVisibleResources([]);
       }
 
-      // Process vehicles with same advanced logic
-      const vehicleStartIndex = resourceStartIndex + updatedResources.length;
-      
+      // Process vehicles
       uniqueVehicles.forEach((vehA, i) => {
-        let bestX = vehA.x;
-        let bestY = vehA.y;
-        let bestScore = Infinity;
+        let finalX = vehA.x;
+        let finalY = vehA.y;
         
-        const strategies = [
-          { x: vehA.x, y: vehA.y },
-          { x: vehA.x, y: vehA.y - cardHeight - 50 },
-          { x: vehA.x, y: vehA.y + cardHeight + 50 },
-          { x: vehA.x - cardWidth - 50, y: vehA.y },
-          { x: vehA.x + cardWidth + 50, y: vehA.y },
-          ...Array.from({ length: 16 }, (_, angle) => ({
-            x: vehA.x + Math.cos(angle * Math.PI / 8) * (cardWidth + 100),
-            y: vehA.y + Math.sin(angle * Math.PI / 8) * (cardHeight + 100)
-          }))
-        ];
+        finalX = Math.max(padding, Math.min(finalX, el.clientWidth - cardWidth - padding));
+        finalY = Math.max(padding, Math.min(finalY, el.clientHeight - cardHeight - padding));
         
-        for (const strategy of strategies) {
-          let testX = Math.max(padding, Math.min(strategy.x, el.clientWidth - cardWidth - padding));
-          let testY = Math.max(padding, Math.min(strategy.y, el.clientHeight - cardHeight - padding));
-          
-          if (!checkGridCollision(testX, testY, vehicleStartIndex + i)) {
-            const distFromOriginal = Math.sqrt(
-              Math.pow(testX - vehA.x, 2) + Math.pow(testY - vehA.y, 2)
-            );
-            if (distFromOriginal < bestScore) {
-              bestX = testX;
-              bestY = testY;
-              bestScore = distFromOriginal;
-              if (distFromOriginal < 50) break;
-            }
-          }
-        }
-        
-        if (bestScore === Infinity) {
+        if (isOverlapping(finalX, finalY)) {
           let found = false;
-          const stepX = cardWidth + 50;
-          const stepY = cardHeight + 50;
+          const stepX = cardWidth + minGap + 20;
+          const stepY = cardHeight + minGap + 20;
           
-          for (let offsetY = 0; offsetY < el.clientHeight && !found; offsetY += stepY) {
-            for (let offsetX = 0; offsetX < el.clientWidth && !found; offsetX += stepX) {
-              const testX = Math.max(padding, Math.min(offsetX, el.clientWidth - cardWidth - padding));
-              const testY = Math.max(padding, Math.min(offsetY, el.clientHeight - cardHeight - padding));
+          for (let row = 0; row < 10 && !found; row++) {
+            for (let col = 0; col < 10 && !found; col++) {
+              const testX = padding + (col * stepX);
+              const testY = padding + (row * stepY);
               
-              if (!checkGridCollision(testX, testY, vehicleStartIndex + i)) {
-                bestX = testX;
-                bestY = testY;
+              if (testX + cardWidth > el.clientWidth - padding || testY + cardHeight > el.clientHeight - padding) {
+                continue;
+              }
+              
+              if (!isOverlapping(testX, testY)) {
+                finalX = testX;
+                finalY = testY;
                 found = true;
               }
             }
           }
         }
         
-        vehA.x = bestX;
-        vehA.y = bestY;
-        
-        const gridKey = getGridKey(bestX, bestY);
-        if (!spatialGrid.has(gridKey)) spatialGrid.set(gridKey, []);
-        spatialGrid.get(gridKey).push({ x: bestX, y: bestY, index: vehicleStartIndex + i, width: cardWidth, height: cardHeight });
+        vehA.x = finalX;
+        vehA.y = finalY;
+        placedCards.push({ x: finalX, y: finalY });
       });
       
       const currentVehicleCount = uniqueVehicles.length;
