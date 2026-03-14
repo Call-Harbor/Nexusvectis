@@ -246,56 +246,63 @@ export default function CombinedHologramCard({ items, x, y, index, depth }) {
               )}
             </div>
 
-            {/* Circular Navigation */}
-            <div className="flex items-center justify-center gap-4">
-              <motion.button
-                onClick={prevItem}
-                whileHover={{ scale: 1.1, rotate: -10 }}
-                whileTap={{ scale: 0.9 }}
-                className="p-3 rounded-full bg-gradient-to-br from-cyan-500/30 to-violet-500/20 border border-cyan-400/50 text-cyan-300 hover:from-cyan-500/40 hover:to-violet-500/30 transition-all"
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </motion.button>
-
-              {/* Center Indicator */}
-              <div className="relative w-16 h-16 flex items-center justify-center">
-                <motion.div 
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
-                  className="absolute inset-0 rounded-full border border-dashed border-cyan-400/30"
-                />
-                <div className="relative w-12 h-12 rounded-full bg-gradient-to-br from-cyan-500/20 to-violet-500/10 border border-cyan-400/40 flex items-center justify-center">
-                  <p className="text-xs font-bold text-cyan-300">{currentIndex + 1}/{items.length}</p>
-                </div>
-              </div>
-
-              <motion.button
-                onClick={nextItem}
-                whileHover={{ scale: 1.1, rotate: 10 }}
-                whileTap={{ scale: 0.9 }}
-                className="p-3 rounded-full bg-gradient-to-br from-cyan-500/30 to-violet-500/20 border border-cyan-400/50 text-cyan-300 hover:from-cyan-500/40 hover:to-violet-500/30 transition-all"
-              >
-                <ChevronRight className="w-5 h-5" />
-              </motion.button>
-            </div>
-
-            {/* Dot Navigation */}
-            <div className="flex justify-center gap-2 flex-wrap">
-              {items.map((_, idx) => (
+            {/* Circular Navigation Menu */}
+            <div className="flex items-center justify-center pt-4">
+              <div className="relative w-32 h-32">
+                {/* Center button */}
                 <motion.button
-                  key={idx}
-                  onClick={() => setCurrentIndex(idx)}
-                  whileHover={{ scale: 1.3 }}
-                  whileTap={{ scale: 0.8 }}
-                  animate={{ scale: idx === currentIndex ? 1.3 : 1 }}
-                  className={cn(
-                    "w-2 h-2 rounded-full transition-all",
-                    idx === currentIndex 
-                      ? "bg-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.8)]" 
-                      : "bg-slate-600 hover:bg-slate-500"
-                  )}
-                />
-              ))}
+                  onClick={() => setCurrentIndex((prev) => (prev + 1) % items.length)}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="absolute inset-0 flex items-center justify-center rounded-full bg-gradient-to-br from-cyan-500/30 to-violet-500/20 border-2 border-cyan-400/60 text-cyan-300"
+                >
+                  <div className="flex flex-col items-center">
+                    <Navigation className="w-5 h-5 mb-1" />
+                    <p className="text-xs font-bold">{currentIndex + 1}/{items.length}</p>
+                  </div>
+                </motion.button>
+
+                {/* Circular items */}
+                {items.map((item, idx) => {
+                  const angle = (idx / items.length) * Math.PI * 2;
+                  const radius = 50;
+                  const x = Math.cos(angle - Math.PI / 2) * radius;
+                  const y = Math.sin(angle - Math.PI / 2) * radius;
+                  const isActive = idx === currentIndex;
+
+                  return (
+                    <motion.button
+                      key={idx}
+                      onClick={() => setCurrentIndex(idx)}
+                      animate={{
+                        x,
+                        y,
+                        scale: isActive ? 1.1 : 0.9,
+                        opacity: isActive ? 1 : 0.6,
+                        transition: {
+                          type: 'spring',
+                          stiffness: 200,
+                          damping: 20,
+                        }
+                      }}
+                      whileHover={{ scale: isActive ? 1.15 : 1 }}
+                      whileTap={{ scale: 0.85 }}
+                      className={cn(
+                        'absolute w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all',
+                        'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2',
+                        isActive
+                          ? 'bg-cyan-500/40 border-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.8)]'
+                          : 'bg-slate-800/60 border-slate-600 hover:border-cyan-400/50'
+                      )}
+                      title={item.data.name || item.data.title || item.type}
+                    >
+                      <div className="text-xs text-white">
+                        {idx + 1}
+                      </div>
+                    </motion.button>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </motion.div>
