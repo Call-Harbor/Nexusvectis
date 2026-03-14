@@ -107,33 +107,57 @@ export default function IntellectMode() {
   // ── Data Fetching ──────────────────────────────────────────────────────────
   const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
-  const { data: orgUser } = useQuery({
-    queryKey: ['org-user-intellect'],
-    queryFn: async () => {
-      const users = await base44.entities.User.filter({ email: currentUser.email });
-      return users?.[0] || null;
-    },
-    enabled: !!currentUser,
-    staleTime: 60000
-  });
+  const orgId = currentUser?.organization_id || currentUser?.data?.organization_id;
 
-  const orgId = orgUser?.organization_id;
-
-  const makeOrgQuery = (entity, extra = {}) => ({
+  const { data: vehicles = [] } = useQuery({
+    queryKey: ['vehicles-intellect', orgId],
     queryFn: async () => {
       if (!orgId) return [];
-      return base44.entities[entity].filter({ organization_id: orgId }, ...Object.values(extra));
+      return await base44.entities.Vehicle.filter({ organization_id: orgId });
+    },
+    enabled: !!orgId,
+    refetchInterval: 10000,
+  });
+
+  const { data: alerts = [] } = useQuery({
+    queryKey: ['alerts-intellect', orgId],
+    queryFn: async () => {
+      if (!orgId) return [];
+      return await base44.entities.Alert.filter({ organization_id: orgId });
     },
     enabled: !!orgId,
     refetchInterval: 15000,
-    staleTime: 5000
   });
 
-  const { data: vehicles = [] } = useQuery({ queryKey: ['vehicles-intellect', orgId], ...makeOrgQuery('Vehicle'), refetchInterval: 10000 });
-  const { data: alerts = [] } = useQuery({ queryKey: ['alerts-intellect', orgId], ...makeOrgQuery('Alert') });
-  const { data: routes = [] } = useQuery({ queryKey: ['routes-intellect', orgId], ...makeOrgQuery('Route') });
-  const { data: shipments = [] } = useQuery({ queryKey: ['shipments-intellect', orgId], ...makeOrgQuery('Shipment') });
-  const { data: resources = [] } = useQuery({ queryKey: ['resources-intellect', orgId], ...makeOrgQuery('Resource') });
+  const { data: routes = [] } = useQuery({
+    queryKey: ['routes-intellect', orgId],
+    queryFn: async () => {
+      if (!orgId) return [];
+      return await base44.entities.Route.filter({ organization_id: orgId });
+    },
+    enabled: !!orgId,
+    refetchInterval: 15000,
+  });
+
+  const { data: shipments = [] } = useQuery({
+    queryKey: ['shipments-intellect', orgId],
+    queryFn: async () => {
+      if (!orgId) return [];
+      return await base44.entities.Shipment.filter({ organization_id: orgId });
+    },
+    enabled: !!orgId,
+    refetchInterval: 15000,
+  });
+
+  const { data: resources = [] } = useQuery({
+    queryKey: ['resources-intellect', orgId],
+    queryFn: async () => {
+      if (!orgId) return [];
+      return await base44.entities.Resource.filter({ organization_id: orgId });
+    },
+    enabled: !!orgId,
+    refetchInterval: 10000,
+  });
   const { data: customers = [] } = useQuery({
     queryKey: ['customers-intellect', orgId],
     queryFn: () => base44.entities.Customer.filter({ organization_id: orgId }),
