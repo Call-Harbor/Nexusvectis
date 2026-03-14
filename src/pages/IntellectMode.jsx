@@ -220,7 +220,7 @@ export default function IntellectMode() {
      demandAnalysis: () => openWindow('demand_forecast', { x: 150, y: 150 }),
      riskAssessment: () => openWindow('risk_assessment', { x: 200, y: 200 }),
      performanceAnalytics: () => openWindow('performance_analytics', { x: 250, y: 250 }),
-     show3DFleet: () => setShow3DVisualization({ vehicles, routes }),
+     show3DFleet: () => setShow3DVisualization({ vehicles, routes, resources }),
      openCompanyAnalysis: () => setShowCompanyAnalysis(true),
      openSwarmIntelligence: () => { openWindow('swarm_intelligence', { x: 120, y: 80 }); setMessages(prev => [...prev, { role: "system", content: "🐜 Swarm Intelligence activated" }]); },
      openNeuroRisk: () => { openWindow('neuro_risk', { x: 140, y: 100 }); setMessages(prev => [...prev, { role: "system", content: "🧠 Neuro-Symbolic Risk Fusion activated" }]); },
@@ -746,7 +746,7 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
             break;
           case "SHOW_3D":
             setMessages(prev => [...prev, { role: "assistant", content: message }]);
-            if (parameters.visualization_type) setShow3DVisualization({ type: parameters.type, vehicles, routes });
+            if (parameters.visualization_type) setShow3DVisualization({ type: parameters.type, vehicles, routes, resources });
             break;
           case "CREATE_DOCUMENT":
             openWindow('document_editor', { x: 80, y: 60 }, {
@@ -935,32 +935,30 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
             </HologramWindow>
           )}
 
-          {/* 3D Fleet Globe */}
-          {show3DVisualization && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="fixed inset-8 z-40 rounded-2xl overflow-hidden border-2 border-cyan-500/50 bg-black/90 backdrop-blur-xl shadow-2xl shadow-cyan-500/30"
-            >
-              <div className="absolute top-4 right-4 z-50 flex gap-2">
-                <button
-                  onClick={() => setShow3DVisualization(null)}
-                  className="px-4 py-2 rounded-xl bg-slate-900/90 backdrop-blur-xl border border-red-500/50 text-red-400 hover:bg-red-500/20 transition-all font-semibold"
-                >
-                  Close 3D View
-                </button>
-              </div>
+          {/* 3D Fleet Globe - Always visible floating window */}
+          <HologramWindow 
+            id="3d-globe" 
+            title="Live Fleet Globe" 
+            icon={Globe}
+            position={{ x: window.innerWidth - 650, y: 20 }}
+            onClose={() => {}}
+            onMinimize={() => toggleMinimize('3d-globe')}
+            isMinimized={minimizedWindows.has('3d-globe')}
+            windowType="3d_globe"
+            isFocused={focusedWindow === '3d-globe'}
+            onFocus={setFocusedWindow}
+          >
+            <div className="w-full h-[600px]">
               <FuturisticGlobe 
-                vehicles={show3DVisualization.vehicles || vehicles} 
-                routes={show3DVisualization.routes || routes}
-                resources={show3DVisualization.resources || resources}
+                vehicles={vehicles} 
+                routes={routes}
+                resources={resources}
                 digitalTwins={[]}
                 onSelectVehicle={(v) => {}}
                 onSelectResource={(r) => {}}
               />
-            </motion.div>
-          )}
+            </div>
+          </HologramWindow>
 
           {/* AI Thinking Terminal */}
           <ThinkingTerminalVisual isActive={showThinkingTerminal && isProcessing} logs={thinkingLogs} onClose={() => setShowThinkingTerminal(false)} />
