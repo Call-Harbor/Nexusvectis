@@ -216,7 +216,7 @@ function PromptSearchDropdown({ sections, onSelect, children }) {
   );
 }
 
-export default function IntellectHeader({ orgId, openWindow, executePrompt, setShowAdvancedPanel, setShowParallelProcessor, setShowCompanyAnalysis }) {
+export default function IntellectHeader({ orgId, openWindow, executePrompt, setShowAdvancedPanel, setShowParallelProcessor, setShowCompanyAnalysis, onShow3DGlobe }) {
   const navigate = useNavigate();
 
   const handleAppSelect = (type) => {
@@ -226,6 +226,8 @@ export default function IntellectHeader({ orgId, openWindow, executePrompt, setS
       openWindow('fleet_ai_trainer');
     } else if (type === 'advanced_intelligence') {
       setShowAdvancedPanel?.(true);
+    } else if (type === '3d_globe') {
+      onShow3DGlobe?.();
     } else {
       openWindow(type);
     }
@@ -262,6 +264,14 @@ export default function IntellectHeader({ orgId, openWindow, executePrompt, setS
                 <Globe className="w-3.5 h-3.5 inline mr-2" />APPS<ChevronDown className="w-3.5 h-3.5 inline ml-2" />
               </button>
             </AppSearchDropdown>
+
+            {/* 3D Globe */}
+            <button 
+              onClick={() => onShow3DGlobe?.()}
+              className="px-3 py-2 text-[10px] font-bold tracking-widest uppercase font-mono transition-all"
+              style={{ color: "#06b6d4", border: "1px solid rgba(6,182,212,0.3)", background: "rgba(6,182,212,0.08)", boxShadow: "0 0 12px rgba(6,182,212,0.1)" }}>
+              <Globe className="w-3.5 h-3.5 inline mr-2" />3D GLOBE
+            </button>
 
             {/* Global Search */}
             <button 

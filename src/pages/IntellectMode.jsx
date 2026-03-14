@@ -819,6 +819,7 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
            setShowAdvancedPanel={setShowAdvancedPanel}
            setShowParallelProcessor={setShowParallelProcessor}
            setShowCompanyAnalysis={setShowCompanyAnalysis}
+           onShow3DGlobe={() => setShow3DVisualization({ vehicles, routes, resources })}
          />
 
         {/* Main Canvas */}
