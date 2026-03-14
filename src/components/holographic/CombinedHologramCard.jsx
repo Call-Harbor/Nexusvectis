@@ -248,29 +248,47 @@ export default function CombinedHologramCard({ items, x, y, index, depth }) {
               )}
             </div>
           </div>
-          {/* Corner Navigation Menu */}
+          {/* Corner Navigation Menu - Platform Style */}
           <motion.div
             ref={navRef}
             className="absolute top-4 right-4 z-20"
             style={{ transform: 'translateZ(50px)' }}
-            onMouseEnter={() => setIsNavOpen(true)}
-            onMouseLeave={() => setIsNavOpen(false)}
           >
             {/* Center button */}
             <motion.button
               onClick={() => setIsNavOpen(!isNavOpen)}
               whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              className="relative w-12 h-12 rounded-full bg-cyan-500/30 border-2 border-cyan-400/60 flex items-center justify-center text-cyan-300 hover:bg-cyan-500/40 transition-all"
+              whileTap={{ scale: 0.95 }}
+              className={cn(
+                "w-14 h-14 rounded-full backdrop-blur-2xl border-2 shadow-xl flex items-center justify-center transition-all",
+                isNavOpen 
+                  ? "bg-gradient-to-br from-cyan-500/30 to-violet-500/30 border-cyan-400/50" 
+                  : "bg-slate-900/80 border-slate-700/50 hover:border-slate-600/80"
+              )}
             >
-              <Navigation className="w-5 h-5" />
+              <motion.div
+                animate={{ rotate: isNavOpen ? 90 : 0 }}
+                transition={{ duration: 0.3, type: "spring", stiffness: 300, damping: 30 }}
+              >
+                <Navigation className={cn("w-6 h-6", isNavOpen ? "text-cyan-400" : "text-white")} />
+              </motion.div>
+              
+              <AnimatePresence>
+                {!isNavOpen && (
+                  <motion.div
+                    animate={{ scale: [1, 1.3, 1], opacity: [0.5, 0, 0.5] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                    className="absolute inset-0 rounded-full border-2 border-cyan-400"
+                  />
+                )}
+              </AnimatePresence>
             </motion.button>
 
             {/* Expanding menu items */}
-            <AnimatePresence>
+            <AnimatePresence mode="wait">
               {isNavOpen && items.map((item, idx) => {
                 const angle = (idx / items.length) * Math.PI * 2 - Math.PI / 2;
-                const radius = 70;
+                const radius = 80;
                 const offsetX = Math.cos(angle) * radius;
                 const offsetY = Math.sin(angle) * radius;
                 const isActive = idx === currentIndex;
@@ -279,24 +297,31 @@ export default function CombinedHologramCard({ items, x, y, index, depth }) {
                 return (
                   <motion.button
                     key={idx}
-                    initial={{ opacity: 0, x: 0, y: 0 }}
-                    animate={{ opacity: 1, x: offsetX, y: offsetY }}
-                    exit={{ opacity: 0, x: 0, y: 0 }}
-                    transition={{ type: 'spring', stiffness: 300, damping: 30, delay: idx * 0.05 }}
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ 
+                      scale: 1, 
+                      opacity: 1,
+                      x: offsetX,
+                      y: offsetY
+                    }}
+                    exit={{ scale: 0, opacity: 0 }}
+                    transition={{ type: 'spring', stiffness: 350, damping: 25, delay: idx * 0.04 }}
                     onClick={() => {
                       setCurrentIndex(idx);
                       setIsNavOpen(false);
                     }}
                     whileHover={{ scale: 1.15 }}
+                    whileTap={{ scale: 0.95 }}
                     className={cn(
-                      'absolute w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all',
+                      'absolute w-12 h-12 rounded-full backdrop-blur-2xl border-2 shadow-xl flex items-center justify-center transition-all',
                       'top-0 left-0',
                       isActive
-                        ? 'bg-cyan-500/40 border-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.6)]'
-                        : 'bg-slate-800/80 border-slate-600 hover:border-cyan-400/50'
+                        ? "bg-gradient-to-br from-cyan-500/30 to-violet-500/30 border-cyan-400/50 text-cyan-400"
+                        : "bg-slate-900/80 border-slate-700/50 text-slate-400 hover:text-white hover:border-slate-600"
                     )}
+                    title={item.data.name || item.data.title || item.type}
                   >
-                    <Icon className={cn('w-5 h-5', isActive ? 'text-cyan-300' : 'text-slate-400')} />
+                    <Icon className="w-5 h-5" strokeWidth={1.5} />
                   </motion.button>
                 );
               })}
