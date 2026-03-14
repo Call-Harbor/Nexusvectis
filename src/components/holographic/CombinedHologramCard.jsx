@@ -241,7 +241,7 @@ export default function CombinedHologramCard({ items, x, y, index, depth }) {
                   </motion.div>
                   <div>
                     <motion.h3 className="text-lg font-bold text-white tracking-wide drop-shadow-[0_0_15px_rgba(6,182,212,0.6)]">
-                      {items.length} Items
+                      {currentItem.data.name || currentItem.data.title || 'Item'}
                     </motion.h3>
                     <p className="text-xs text-cyan-300/70 font-mono">{currentIndex + 1} of {items.length}</p>
                   </div>
