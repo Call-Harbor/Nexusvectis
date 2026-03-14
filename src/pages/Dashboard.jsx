@@ -15,8 +15,23 @@ import AIInsightWidget from "@/components/ai/AIInsightWidget";
 
 export default function Dashboard() {
   const [selectedVehicle, setSelectedVehicle] = useState(null);
+  const [selectedResource, setSelectedResource] = useState(null);
   const [aiMode, setAiMode] = useState('active');
   const navigate = useNavigate();
+
+  // Auto-close holograms when scrolling out of view
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+      if (scrollTop > 300) {
+        setSelectedVehicle(null);
+        setSelectedResource(null);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -439,6 +454,7 @@ export default function Dashboard() {
               resources={resources}
               digitalTwins={digitalTwins}
               onSelectVehicle={setSelectedVehicle}
+              onSelectResource={setSelectedResource}
             />
           </motion.div>
         </div>
@@ -522,6 +538,118 @@ export default function Dashboard() {
                     <span className="text-white font-medium truncate block">{selectedVehicle.destination}</span>
                   </div>
                 )}
+                {selectedVehicle.driver && (
+                  <div className="p-1.5 lg:p-2 rounded-lg bg-slate-800/50">
+                    <span className="text-slate-400 block mb-0.5 lg:mb-1">Driver</span>
+                    <span className="text-white font-medium truncate block">{selectedVehicle.driver}</span>
+                  </div>
+                )}
+                {selectedVehicle.signal_type && (
+                  <div className="flex items-center justify-between p-1.5 lg:p-2 rounded-lg bg-slate-800/50">
+                    <span className="text-slate-400">Signal</span>
+                    <span className="text-cyan-400 font-bold">{selectedVehicle.signal_type}</span>
+                  </div>
+                )}
+                {selectedVehicle.co2_emissions && (
+                  <div className="flex items-center justify-between p-1.5 lg:p-2 rounded-lg bg-slate-800/50">
+                    <span className="text-slate-400">CO₂ Emissions</span>
+                    <span className="text-amber-400 font-bold">{selectedVehicle.co2_emissions} kg</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Selected Resource Hologram */}
+      <AnimatePresence>
+        {selectedResource && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8, rotateY: 30 }}
+            animate={{ opacity: 1, scale: 1, rotateY: 0 }}
+            exit={{ opacity: 0, scale: 0.8, rotateY: -30 }}
+            className="fixed bottom-4 sm:bottom-6 left-4 sm:left-6 w-[calc(100vw-2rem)] sm:w-80 lg:w-96 z-50 max-w-md"
+            style={{ transformStyle: 'preserve-3d' }}
+          >
+            <div className="relative bg-slate-900/95 backdrop-blur-2xl rounded-xl lg:rounded-2xl border-2 border-violet-400/50 p-4 lg:p-5 shadow-2xl shadow-violet-500/30">
+              {/* Holographic scan line */}
+              <motion.div
+                animate={{ y: ['0%', '100%'] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-violet-400 to-transparent opacity-50"
+              />
+              
+              <div className="flex items-center justify-between mb-3 lg:mb-4">
+                <div className="flex items-center gap-2 lg:gap-3">
+                  <motion.div 
+                    className={`w-2 h-2 lg:w-3 lg:h-3 rounded-full ${
+                      selectedResource.status === 'operational' ? 'bg-emerald-400' :
+                      selectedResource.status === 'limited' ? 'bg-amber-400' :
+                      'bg-red-400'
+                    }`}
+                    animate={{ 
+                      scale: selectedResource.status === 'operational' ? [1, 1.3, 1] : 1,
+                      opacity: selectedResource.status === 'operational' ? [0.6, 1, 0.6] : 1
+                    }}
+                    transition={{ duration: 1.5, repeat: Infinity }}
+                  />
+                  <h3 className="text-base lg:text-lg font-bold text-white truncate">{selectedResource.name}</h3>
+                </div>
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => setSelectedResource(null)}
+                  className="p-2 rounded-lg hover:bg-slate-800/50 text-slate-400 hover:text-white transition-colors"
+                >
+                  ✕
+                </motion.button>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-2 lg:gap-3 mb-3 lg:mb-4">
+                <div className="p-2 lg:p-3 rounded-lg lg:rounded-xl bg-violet-500/10 border border-violet-500/30">
+                  <p className="text-[10px] lg:text-xs text-violet-400 mb-0.5 lg:mb-1">Capacity</p>
+                  <p className="text-xl lg:text-2xl font-bold text-white">{selectedResource.capacity || 0}</p>
+                  <p className="text-[10px] lg:text-xs text-slate-400">units</p>
+                </div>
+                <div className="p-2 lg:p-3 rounded-lg lg:rounded-xl bg-cyan-500/10 border border-cyan-500/30">
+                  <p className="text-[10px] lg:text-xs text-cyan-400 mb-0.5 lg:mb-1">Current</p>
+                  <p className="text-xl lg:text-2xl font-bold text-white">{selectedResource.current_level || 0}</p>
+                  <div className="mt-1 h-1 bg-slate-700 rounded-full overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${((selectedResource.current_level || 0) / (selectedResource.capacity || 1)) * 100}%` }}
+                      className="h-full bg-gradient-to-r from-cyan-500 to-violet-500"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-1.5 lg:space-y-2 text-[10px] lg:text-xs">
+                <div className="flex items-center justify-between p-1.5 lg:p-2 rounded-lg bg-slate-800/50">
+                  <span className="text-slate-400">Type</span>
+                  <span className="text-white font-bold uppercase">{selectedResource.type?.replace('_', ' ')}</span>
+                </div>
+                <div className="flex items-center justify-between p-1.5 lg:p-2 rounded-lg bg-slate-800/50">
+                  <span className="text-slate-400">Status</span>
+                  <span className={`font-bold uppercase ${
+                    selectedResource.status === 'operational' ? 'text-emerald-400' :
+                    selectedResource.status === 'limited' ? 'text-amber-400' :
+                    'text-red-400'
+                  }`}>{selectedResource.status}</span>
+                </div>
+                {selectedResource.location && (
+                  <div className="p-1.5 lg:p-2 rounded-lg bg-slate-800/50">
+                    <span className="text-slate-400 block mb-0.5 lg:mb-1">Location</span>
+                    <span className="text-white font-medium truncate block">{selectedResource.location}</span>
+                  </div>
+                )}
+                <div className="flex items-center justify-between p-1.5 lg:p-2 rounded-lg bg-slate-800/50">
+                  <span className="text-slate-400">Utilization</span>
+                  <span className="text-violet-400 font-bold">
+                    {Math.round(((selectedResource.current_level || 0) / (selectedResource.capacity || 1)) * 100)}%
+                  </span>
+                </div>
               </div>
             </div>
           </motion.div>

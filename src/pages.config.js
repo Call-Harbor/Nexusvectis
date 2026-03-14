@@ -79,6 +79,7 @@ import GreenTMS from './pages/GreenTMS';
 import HRManagement from './pages/HRManagement';
 import HarborInfo from './pages/HarborInfo';
 import HologramDesktop from './pages/HologramDesktop';
+import HolographicInterface from './pages/HolographicInterface';
 import Home from './pages/Home';
 import IntegrationsPage from './pages/IntegrationsPage';
 import IntellectMode from './pages/IntellectMode';
@@ -137,6 +138,7 @@ export const PAGES = {
     "HRManagement": HRManagement,
     "HarborInfo": HarborInfo,
     "HologramDesktop": HologramDesktop,
+    "HolographicInterface": HolographicInterface,
     "Home": Home,
     "IntegrationsPage": IntegrationsPage,
     "IntellectMode": IntellectMode,
