@@ -16,6 +16,7 @@ export default function CombinedHologramCard({ items, x, y, index, depth }) {
   
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
+  const navRef = useRef(null);
   
   const rotateX = useTransform(mouseY, [-0.5, 0.5], [10, -10]);
   const rotateY = useTransform(mouseX, [-0.5, 0.5], [-10, 10]);
