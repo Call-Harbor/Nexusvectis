@@ -643,21 +643,13 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
         let x = (screenPos.x * 0.5 + 0.5) * el.clientWidth;
         let y = (-(screenPos.y * 0.5) + 0.5) * el.clientHeight;
         
-        // Hologram card dimensions (approximate)
-        const cardWidth = 400;
-        const cardHeight = 500;
-        const padding = 30;
-        
-        // Clamp position to keep hologram fully visible
-        x = Math.max(padding, Math.min(x, el.clientWidth - cardWidth - padding));
-        y = Math.max(padding, Math.min(y, el.clientHeight - cardHeight - padding));
-        
         newVisibleRoutes.push({
           route,
           x,
           y,
           index,
-          visibility // Include visibility score for potential sorting/fading
+          visibility,
+          worldPos: arcWorldPos.clone()
         });
       });
       
@@ -668,15 +660,52 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
         if (!finalSeenIds.has(routeData.route.id)) {
           finalSeenIds.add(routeData.route.id);
           uniqueRoutes.push(routeData);
-        } else {
-          console.warn('DUPLICATE DETECTED:', routeData.route.id, routeData.route.name);
         }
       });
       
-      // Log what we're showing
-      if (uniqueRoutes.length > 0 && time % 100 === 0) {
-        console.log('Showing routes:', uniqueRoutes.map(r => ({ id: r.route.id, name: r.route.name })));
-      }
+      // Apply collision detection and repositioning to prevent overlap
+      const cardWidth = 400;
+      const cardHeight = 500;
+      const padding = 30;
+      const minSpacing = 20;
+      
+      uniqueRoutes.forEach((routeA, i) => {
+        let bestX = routeA.x;
+        let bestY = routeA.y;
+        let hasCollision = true;
+        let attempts = 0;
+        const maxAttempts = 8;
+        
+        while (hasCollision && attempts < maxAttempts) {
+          hasCollision = false;
+          
+          for (let j = 0; j < i; j++) {
+            const routeB = uniqueRoutes[j];
+            const dx = Math.abs(bestX - routeB.x);
+            const dy = Math.abs(bestY - routeB.y);
+            
+            if (dx < cardWidth + minSpacing && dy < cardHeight + minSpacing) {
+              hasCollision = true;
+              
+              // Try repositioning: shift down and slightly right
+              const offset = (attempts + 1) * 80;
+              bestX = routeA.x + offset;
+              bestY = routeA.y + offset;
+              
+              // Clamp to screen bounds
+              bestX = Math.max(padding, Math.min(bestX, el.clientWidth - cardWidth - padding));
+              bestY = Math.max(padding, Math.min(bestY, el.clientHeight - cardHeight - padding));
+              
+              break;
+            }
+          }
+          
+          attempts++;
+        }
+        
+        routeA.x = bestX;
+        routeA.y = bestY;
+      });
       
       // Only update state if there's a change - with forced cleanup
       const currentCount = uniqueRoutes.length;
@@ -735,9 +764,9 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
         style={{ cursor: 'grab' }}
       />
       
-      {/* Floating Route Holograms */}
+      {/* Floating Route Holograms - show all visible routes without limit */}
       <AnimatePresence mode="popLayout">
-        {visibleRoutes.slice(0, 3).map((routeData, idx) => (
+        {visibleRoutes.map((routeData, idx) => (
           <RouteHologramCard
             key={`route-hologram-${routeData.route.id}`}
             route={routeData.route}
