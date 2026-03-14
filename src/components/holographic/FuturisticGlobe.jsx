@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { AnimatePresence } from "framer-motion";
 import RouteHologramCard from "./RouteHologramCard";
+import ResourceHologramCard from "./ResourceHologramCard";
+import VehicleHologramCard from "./VehicleHologramCard";
 
 const STATUS_COLORS = {
   active:      { int: 0x00ffff, hex: "#00ffff", glow: 0x00ccff },
@@ -45,7 +47,11 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
   const cameraRef = useRef(null);
   const rendererRef = useRef(null);
   const [visibleRoutes, setVisibleRoutes] = useState([]);
+  const [visibleResources, setVisibleResources] = useState([]);
+  const [visibleVehicles, setVisibleVehicles] = useState([]);
   const lastVisibleCountRef = useRef(0);
+  const lastVisibleResourcesCountRef = useRef(0);
+  const lastVisibleVehiclesCountRef = useRef(0);
 
   useEffect(() => {
     const el = mountRef.current;
@@ -722,6 +728,182 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
         setVisibleRoutes([]);
       }
 
+      // Update visible resources with same logic
+      const newVisibleResources = [];
+      const seenResourceIds = new Set();
+      
+      resourceMarkers.forEach((marker, index) => {
+        const resource = marker.userData.resource;
+        if (seenResourceIds.has(resource.id)) return;
+        seenResourceIds.add(resource.id);
+        
+        const markerWorldPos = marker.position.clone().applyMatrix4(globe.matrixWorld);
+        
+        if (!frustum.containsPoint(markerWorldPos)) return;
+        
+        const globeCenter = new THREE.Vector3();
+        globe.getWorldPosition(globeCenter);
+        const surfaceNormal = new THREE.Vector3().subVectors(markerWorldPos, globeCenter).normalize();
+        const cameraWorldPos = new THREE.Vector3();
+        camera.getWorldPosition(cameraWorldPos);
+        const cameraDirection = new THREE.Vector3().subVectors(markerWorldPos, cameraWorldPos).normalize();
+        const visibility = surfaceNormal.dot(cameraDirection.negate());
+        if (visibility < 0.15) return;
+        
+        const screenPos = markerWorldPos.clone().project(camera);
+        if (screenPos.z < -1 || screenPos.z > 1) return;
+        const margin = 1.3;
+        if (screenPos.x < -margin || screenPos.x > margin || screenPos.y < -margin || screenPos.y > margin) return;
+        
+        let x = (screenPos.x * 0.5 + 0.5) * el.clientWidth;
+        let y = (-(screenPos.y * 0.5) + 0.5) * el.clientHeight;
+        
+        newVisibleResources.push({ resource, x, y, index, visibility, worldPos: markerWorldPos.clone() });
+      });
+      
+      const uniqueResources = [];
+      const finalSeenResourceIds = new Set();
+      newVisibleResources.forEach(data => {
+        if (!finalSeenResourceIds.has(data.resource.id)) {
+          finalSeenResourceIds.add(data.resource.id);
+          uniqueResources.push(data);
+        }
+      });
+      
+      uniqueResources.forEach((resA, i) => {
+        let bestX = resA.x;
+        let bestY = resA.y;
+        let hasCollision = true;
+        let attempts = 0;
+        const maxAttempts = 8;
+        
+        while (hasCollision && attempts < maxAttempts) {
+          hasCollision = false;
+          
+          for (let j = 0; j < i; j++) {
+            const resB = uniqueResources[j];
+            const dx = Math.abs(bestX - resB.x);
+            const dy = Math.abs(bestY - resB.y);
+            
+            if (dx < cardWidth + minSpacing && dy < cardHeight + minSpacing) {
+              hasCollision = true;
+              const offset = (attempts + 1) * 80;
+              bestX = resA.x + offset;
+              bestY = resA.y + offset;
+              bestX = Math.max(padding, Math.min(bestX, el.clientWidth - cardWidth - padding));
+              bestY = Math.max(padding, Math.min(bestY, el.clientHeight - cardHeight - padding));
+              break;
+            }
+          }
+          
+          attempts++;
+        }
+        
+        resA.x = bestX;
+        resA.y = bestY;
+      });
+      
+      const currentResourceCount = uniqueResources.length;
+      const hasResourceChanged = currentResourceCount !== lastVisibleResourcesCountRef.current ||
+                                  !uniqueResources.every((nr, i) => visibleResources[i]?.resource.id === nr.resource.id);
+      
+      if (hasResourceChanged) {
+        lastVisibleResourcesCountRef.current = currentResourceCount;
+        setVisibleResources(uniqueResources);
+      }
+      
+      if (currentResourceCount === 0 && visibleResources.length > 0) {
+        setVisibleResources([]);
+      }
+
+      // Update visible vehicles with same logic
+      const newVisibleVehicles = [];
+      const seenVehicleIds = new Set();
+      
+      vehicleMarkers.forEach((marker, index) => {
+        const vehicle = marker.userData.vehicle;
+        if (seenVehicleIds.has(vehicle.id)) return;
+        seenVehicleIds.add(vehicle.id);
+        
+        const markerWorldPos = marker.position.clone().applyMatrix4(globe.matrixWorld);
+        
+        if (!frustum.containsPoint(markerWorldPos)) return;
+        
+        const globeCenter = new THREE.Vector3();
+        globe.getWorldPosition(globeCenter);
+        const surfaceNormal = new THREE.Vector3().subVectors(markerWorldPos, globeCenter).normalize();
+        const cameraWorldPos = new THREE.Vector3();
+        camera.getWorldPosition(cameraWorldPos);
+        const cameraDirection = new THREE.Vector3().subVectors(markerWorldPos, cameraWorldPos).normalize();
+        const visibility = surfaceNormal.dot(cameraDirection.negate());
+        if (visibility < 0.15) return;
+        
+        const screenPos = markerWorldPos.clone().project(camera);
+        if (screenPos.z < -1 || screenPos.z > 1) return;
+        const margin = 1.3;
+        if (screenPos.x < -margin || screenPos.x > margin || screenPos.y < -margin || screenPos.y > margin) return;
+        
+        let x = (screenPos.x * 0.5 + 0.5) * el.clientWidth;
+        let y = (-(screenPos.y * 0.5) + 0.5) * el.clientHeight;
+        
+        newVisibleVehicles.push({ vehicle, x, y, index, visibility, worldPos: markerWorldPos.clone() });
+      });
+      
+      const uniqueVehicles = [];
+      const finalSeenVehicleIds = new Set();
+      newVisibleVehicles.forEach(data => {
+        if (!finalSeenVehicleIds.has(data.vehicle.id)) {
+          finalSeenVehicleIds.add(data.vehicle.id);
+          uniqueVehicles.push(data);
+        }
+      });
+      
+      uniqueVehicles.forEach((vehA, i) => {
+        let bestX = vehA.x;
+        let bestY = vehA.y;
+        let hasCollision = true;
+        let attempts = 0;
+        const maxAttempts = 8;
+        
+        while (hasCollision && attempts < maxAttempts) {
+          hasCollision = false;
+          
+          for (let j = 0; j < i; j++) {
+            const vehB = uniqueVehicles[j];
+            const dx = Math.abs(bestX - vehB.x);
+            const dy = Math.abs(bestY - vehB.y);
+            
+            if (dx < cardWidth + minSpacing && dy < cardHeight + minSpacing) {
+              hasCollision = true;
+              const offset = (attempts + 1) * 80;
+              bestX = vehA.x + offset;
+              bestY = vehA.y + offset;
+              bestX = Math.max(padding, Math.min(bestX, el.clientWidth - cardWidth - padding));
+              bestY = Math.max(padding, Math.min(bestY, el.clientHeight - cardHeight - padding));
+              break;
+            }
+          }
+          
+          attempts++;
+        }
+        
+        vehA.x = bestX;
+        vehA.y = bestY;
+      });
+      
+      const currentVehicleCount = uniqueVehicles.length;
+      const hasVehicleChanged = currentVehicleCount !== lastVisibleVehiclesCountRef.current ||
+                                !uniqueVehicles.every((nv, i) => visibleVehicles[i]?.vehicle.id === nv.vehicle.id);
+      
+      if (hasVehicleChanged) {
+        lastVisibleVehiclesCountRef.current = currentVehicleCount;
+        setVisibleVehicles(uniqueVehicles);
+      }
+      
+      if (currentVehicleCount === 0 && visibleVehicles.length > 0) {
+        setVisibleVehicles([]);
+      }
+
       renderer.render(scene, camera);
     };
     animate();
@@ -764,7 +946,7 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
         style={{ cursor: 'grab' }}
       />
       
-      {/* Floating Route Holograms - show all visible routes without limit */}
+      {/* Floating Route Holograms */}
       <AnimatePresence mode="popLayout">
         {visibleRoutes.map((routeData, idx) => (
           <RouteHologramCard
@@ -772,6 +954,32 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
             route={routeData.route}
             x={routeData.x}
             y={routeData.y}
+            index={idx}
+          />
+        ))}
+      </AnimatePresence>
+
+      {/* Floating Resource Holograms */}
+      <AnimatePresence mode="popLayout">
+        {visibleResources.map((resourceData, idx) => (
+          <ResourceHologramCard
+            key={`resource-hologram-${resourceData.resource.id}`}
+            resource={resourceData.resource}
+            x={resourceData.x}
+            y={resourceData.y}
+            index={idx}
+          />
+        ))}
+      </AnimatePresence>
+
+      {/* Floating Vehicle Holograms */}
+      <AnimatePresence mode="popLayout">
+        {visibleVehicles.map((vehicleData, idx) => (
+          <VehicleHologramCard
+            key={`vehicle-hologram-${vehicleData.vehicle.id}`}
+            vehicle={vehicleData.vehicle}
+            x={vehicleData.x}
+            y={vehicleData.y}
             index={idx}
           />
         ))}
