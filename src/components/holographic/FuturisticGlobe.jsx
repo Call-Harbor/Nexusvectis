@@ -727,10 +727,10 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
         const vehicle = marker.userData.vehicle;
         if (seenVehicleIds.has(vehicle.id)) return;
         seenVehicleIds.add(vehicle.id);
-        
+
         const markerWorldPos = marker.position.clone().applyMatrix4(globe.matrixWorld);
         if (!frustum.containsPoint(markerWorldPos)) return;
-        
+
         const globeCenter = new THREE.Vector3();
         globe.getWorldPosition(globeCenter);
         const surfaceNormal = new THREE.Vector3().subVectors(markerWorldPos, globeCenter).normalize();
@@ -739,18 +739,19 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
         const cameraDirection = new THREE.Vector3().subVectors(markerWorldPos, cameraWorldPos).normalize();
         const visibility = surfaceNormal.dot(cameraDirection.negate());
         if (visibility < 0.15) return;
-        
+
         const screenPos = markerWorldPos.clone().project(camera);
         if (screenPos.z < -1 || screenPos.z > 1) return;
         const margin = 1.3;
         if (screenPos.x < -margin || screenPos.x > margin || screenPos.y < -margin || screenPos.y > margin) return;
-        
+
         let x = (screenPos.x * 0.5 + 0.5) * el.clientWidth;
         let y = (-(screenPos.y * 0.5) + 0.5) * el.clientHeight;
         const depth = markerWorldPos.distanceTo(cameraWorldPos);
-        
+
         newVisibleVehicles.push({ vehicle, x, y, index, visibility, worldPos: markerWorldPos.clone(), depth });
       });
+      }
       
       const uniqueVehicles = [];
       const finalSeenVehicleIds = new Set();
