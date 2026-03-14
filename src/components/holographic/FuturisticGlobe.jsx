@@ -4,6 +4,7 @@ import { AnimatePresence } from "framer-motion";
 import RouteHologramCard from "./RouteHologramCard";
 import ResourceHologramCard from "./ResourceHologramCard";
 import VehicleHologramCard from "./VehicleHologramCard";
+import CombinedHologramCard from "./CombinedHologramCard";
 
 const STATUS_COLORS = {
   active:      { int: 0x00ffff, hex: "#00ffff", glow: 0x00ccff },
@@ -673,28 +674,65 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
         }
       });
       
-      // Collision detection - simple and reliable
+      // Group nearby items into combined holograms
       const cardWidth = 400;
       const cardHeight = 500;
       const padding = 50;
-      const minGap = 60; // Minimum gap between cards
+      const clusterDistance = 300; // Distance to consider items as "nearby"
       
-      const placedCards = []; // Store all placed card positions
+      // Combine all items
+      const allItems = [
+        ...uniqueRoutes.map(r => ({ type: 'route', data: r.route, x: r.x, y: r.y, visibility: r.visibility, depth: r.depth })),
+        ...uniqueResources.map(r => ({ type: 'resource', data: r.resource, x: r.x, y: r.y, visibility: r.visibility, depth: r.depth })),
+        ...uniqueVehicles.map(v => ({ type: 'vehicle', data: v.vehicle, x: v.x, y: v.y, visibility: v.visibility, depth: v.depth }))
+      ];
       
-      const isOverlapping = (x, y) => {
-        for (const placed of placedCards) {
-          // Check if rectangles overlap
-          const overlap = !(
-            x + cardWidth + minGap < placed.x ||
-            x > placed.x + cardWidth + minGap ||
-            y + cardHeight + minGap < placed.y ||
-            y > placed.y + cardHeight + minGap
+      // Cluster nearby items
+      const clusters = [];
+      const used = new Set();
+      
+      allItems.forEach((item, idx) => {
+        if (used.has(idx)) return;
+        
+        const cluster = [item];
+        used.add(idx);
+        
+        // Find all nearby items
+        allItems.forEach((other, otherIdx) => {
+          if (used.has(otherIdx)) return;
+          
+          const dist = Math.sqrt(
+            Math.pow(item.x - other.x, 2) + Math.pow(item.y - other.y, 2)
           );
           
-          if (overlap) return true;
+          if (dist < clusterDistance) {
+            cluster.push(other);
+            used.add(otherIdx);
+          }
+        });
+        
+        clusters.push(cluster);
+      });
+      
+      // Create final hologram data
+      const finalHolograms = clusters.map((cluster, idx) => {
+        if (cluster.length === 1) {
+          return { ...cluster[0], items: null };
+        } else {
+          // Use average position for combined hologram
+          const avgX = cluster.reduce((sum, item) => sum + item.x, 0) / cluster.length;
+          const avgY = cluster.reduce((sum, item) => sum + item.y, 0) / cluster.length;
+          const avgDepth = cluster.reduce((sum, item) => sum + item.depth, 0) / cluster.length;
+          
+          return {
+            type: 'combined',
+            x: avgX,
+            y: avgY,
+            depth: avgDepth,
+            items: cluster
+          };
         }
-        return false;
-      };
+      });
       
       // Sort by visibility score (most visible first get priority placement)
       uniqueRoutes.sort((a, b) => b.visibility - a.visibility);
@@ -984,46 +1022,60 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
         style={{ cursor: 'grab' }}
       />
       
-      {/* Floating Route Holograms */}
+      {/* Floating Holograms (Single or Combined) */}
       <AnimatePresence mode="popLayout">
-        {visibleRoutes.map((routeData, idx) => (
-          <RouteHologramCard
-            key={`route-hologram-${routeData.route.id}`}
-            route={routeData.route}
-            x={routeData.x}
-            y={routeData.y}
-            index={idx}
-            depth={routeData.depth}
-          />
-        ))}
-      </AnimatePresence>
-
-      {/* Floating Resource Holograms */}
-      <AnimatePresence mode="popLayout">
-        {visibleResources.map((resourceData, idx) => (
-          <ResourceHologramCard
-            key={`resource-hologram-${resourceData.resource.id}`}
-            resource={resourceData.resource}
-            x={resourceData.x}
-            y={resourceData.y}
-            index={idx}
-            depth={resourceData.depth}
-          />
-        ))}
-      </AnimatePresence>
-
-      {/* Floating Vehicle Holograms */}
-      <AnimatePresence mode="popLayout">
-        {visibleVehicles.map((vehicleData, idx) => (
-          <VehicleHologramCard
-            key={`vehicle-hologram-${vehicleData.vehicle.id}`}
-            vehicle={vehicleData.vehicle}
-            x={vehicleData.x}
-            y={vehicleData.y}
-            index={idx}
-            depth={vehicleData.depth}
-          />
-        ))}
+        {[...visibleRoutes, ...visibleResources, ...visibleVehicles].map((hologramData, idx) => {
+          if (hologramData.items) {
+            // Combined hologram
+            return (
+              <CombinedHologramCard
+                key={`combined-hologram-${idx}`}
+                items={hologramData.items}
+                x={hologramData.x}
+                y={hologramData.y}
+                index={idx}
+                depth={hologramData.depth}
+              />
+            );
+          } else {
+            // Single item hologram
+            if (hologramData.type === 'route') {
+              return (
+                <RouteHologramCard
+                  key={`route-hologram-${hologramData.data.id}`}
+                  route={hologramData.data}
+                  x={hologramData.x}
+                  y={hologramData.y}
+                  index={idx}
+                  depth={hologramData.depth}
+                />
+              );
+            } else if (hologramData.type === 'resource') {
+              return (
+                <ResourceHologramCard
+                  key={`resource-hologram-${hologramData.data.id}`}
+                  resource={hologramData.data}
+                  x={hologramData.x}
+                  y={hologramData.y}
+                  index={idx}
+                  depth={hologramData.depth}
+                />
+              );
+            } else if (hologramData.type === 'vehicle') {
+              return (
+                <VehicleHologramCard
+                  key={`vehicle-hologram-${hologramData.data.id}`}
+                  vehicle={hologramData.data}
+                  x={hologramData.x}
+                  y={hologramData.y}
+                  index={idx}
+                  depth={hologramData.depth}
+                />
+              );
+            }
+          }
+          return null;
+        })}
       </AnimatePresence>
     </div>
   );
