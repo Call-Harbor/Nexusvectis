@@ -673,9 +673,6 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
         }
       });
       
-      // Sort by visibility score (most visible first get priority placement)
-      uniqueRoutes.sort((a, b) => b.visibility - a.visibility);
-      
       uniqueRoutes.forEach((routeA, i) => {
         let bestX = routeA.x;
         let bestY = routeA.y;
@@ -908,6 +905,9 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
         }
         return false;
       };
+      
+      // Sort by visibility score (most visible first get priority placement)
+      uniqueRoutes.sort((a, b) => b.visibility - a.visibility);
       
       // Process resources with same advanced logic, continuing from routes' spatial grid
       const resourceStartIndex = uniqueRoutes.length;
