@@ -38,13 +38,13 @@ import AdvancedFleetAnalysisHologram from "@/components/intellect/AdvancedFleetA
 const CHART_COLORS = ['#06b6d4', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444'];
 
 const PAGE_MAP = {
-  'dashboard': 'Dashboard', 'settings': 'Settings', 'aioptimization': 'AIOptimization',
-  'invoices': 'Invoices', 'apidocs': 'APIDocumentation', 'resources': 'Resources',
-  'warehouseautomation': 'WarehouseAutomation', 'demandforecasting': 'DemandForecasting',
-  'greentms': 'GreenTMS', 'gpsintegration': 'GPSIntegration', 'assignment': 'Assignment',
-  'routeeditor': 'Routes', 'fleet': 'Fleet', 'alerts': 'Alerts', 'routes': 'Routes',
-  'shipments': 'Shipments', 'crm': 'CRM', 'vehicles': 'Fleet', 'drivers': 'DriverManagement',
-  'maintenance': 'MaintenanceManagement', 'hr': 'HRManagement'
+  dashboard: 'Dashboard', settings: 'Settings', aioptimization: 'AIOptimization',
+  invoices: 'Invoices', apidocs: 'APIDocumentation', resources: 'Resources',
+  warehouseautomation: 'WarehouseAutomation', demandforecasting: 'DemandForecasting',
+  greentms: 'GreenTMS', gpsintegration: 'GPSIntegration', assignment: 'Assignment',
+  routeeditor: 'Routes', fleet: 'Fleet', alerts: 'Alerts', routes: 'Routes',
+  shipments: 'Shipments', crm: 'CRM', vehicles: 'Fleet', drivers: 'DriverManagement',
+  maintenance: 'MaintenanceManagement', hr: 'HRManagement'
 };
 
 function ChartWindow({ data, config }) {
