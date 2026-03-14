@@ -248,6 +248,60 @@ export default function CombinedHologramCard({ items, x, y, index, depth }) {
               )}
             </div>
           </div>
+          {/* Corner Navigation Menu */}
+          <motion.div
+            ref={navRef}
+            className="absolute top-4 right-4 z-20"
+            style={{ transform: 'translateZ(50px)' }}
+            onMouseEnter={() => setIsNavOpen(true)}
+            onMouseLeave={() => setIsNavOpen(false)}
+          >
+            {/* Center button */}
+            <motion.button
+              onClick={() => setIsNavOpen(!isNavOpen)}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              className="relative w-12 h-12 rounded-full bg-cyan-500/30 border-2 border-cyan-400/60 flex items-center justify-center text-cyan-300 hover:bg-cyan-500/40 transition-all"
+            >
+              <Navigation className="w-5 h-5" />
+            </motion.button>
+
+            {/* Expanding menu items */}
+            <AnimatePresence>
+              {isNavOpen && items.map((item, idx) => {
+                const angle = (idx / items.length) * Math.PI * 2 - Math.PI / 2;
+                const radius = 70;
+                const offsetX = Math.cos(angle) * radius;
+                const offsetY = Math.sin(angle) * radius;
+                const isActive = idx === currentIndex;
+                const Icon = item.type === 'route' ? Route : item.type === 'resource' ? Warehouse : Truck;
+
+                return (
+                  <motion.button
+                    key={idx}
+                    initial={{ opacity: 0, x: 0, y: 0 }}
+                    animate={{ opacity: 1, x: offsetX, y: offsetY }}
+                    exit={{ opacity: 0, x: 0, y: 0 }}
+                    transition={{ type: 'spring', stiffness: 300, damping: 30, delay: idx * 0.05 }}
+                    onClick={() => {
+                      setCurrentIndex(idx);
+                      setIsNavOpen(false);
+                    }}
+                    whileHover={{ scale: 1.15 }}
+                    className={cn(
+                      'absolute w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all',
+                      'top-0 left-0',
+                      isActive
+                        ? 'bg-cyan-500/40 border-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.6)]'
+                        : 'bg-slate-800/80 border-slate-600 hover:border-cyan-400/50'
+                    )}
+                  >
+                    <Icon className={cn('w-5 h-5', isActive ? 'text-cyan-300' : 'text-slate-400')} />
+                  </motion.button>
+                );
+              })}
+            </AnimatePresence>
+          </motion.div>
         </motion.div>
 
         {[...Array(5)].map((_, i) => (
