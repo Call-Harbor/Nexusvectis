@@ -674,14 +674,12 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
       });
       
       // Perfect collision avoidance - dynamic sizing and spacing (MUST be before any collision logic)
-      const totalVisibleEstimate = uniqueRoutes.length + resourceMarkers.length + vehicleMarkers.length;
-      const cardWidth = 400;  // Fixed width
-      const cardHeight = 500; // Fixed height  
+      const cardWidth = 400;
+      const cardHeight = 500;
       const padding = 50;
-      const minSpacing = 150; // Larger spacing to prevent overlaps
       
       // Create spatial grid for faster collision detection
-      const gridCellSize = cardWidth + minSpacing;
+      const gridCellSize = Math.max(cardWidth, cardHeight) * 2;
       const spatialGrid = new Map();
       
       const getGridKey = (x, y) => {
@@ -690,7 +688,7 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
         return `${col},${row}`;
       };
       
-      const checkGridCollision = (x, y, excludeIndex, checkWidth = cardWidth, checkHeight = cardHeight) => {
+      const checkGridCollision = (x, y, excludeIndex) => {
         const centerKey = getGridKey(x, y);
         const neighbors = [
           centerKey,
@@ -709,13 +707,17 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
           for (const item of items) {
             if (item.index === excludeIndex) continue;
             
-            // Rectangle collision detection with proper spacing
-            const dx = Math.abs(x - item.x);
-            const dy = Math.abs(y - item.y);
-            const minDx = (checkWidth + (item.width || cardWidth)) / 2 + minSpacing;
-            const minDy = (checkHeight + (item.height || cardHeight)) / 2 + minSpacing;
+            // Check if rectangles overlap (with minimum distance = their size)
+            const halfW1 = cardWidth / 2;
+            const halfH1 = cardHeight / 2;
+            const halfW2 = cardWidth / 2;
+            const halfH2 = cardHeight / 2;
             
-            if (dx < minDx && dy < minDy) {
+            const dx = Math.abs((x + halfW1) - (item.x + halfW2));
+            const dy = Math.abs((y + halfH1) - (item.y + halfH2));
+            
+            // Minimum distance is the sum of half-widths + full width (to ensure no overlap)
+            if (dx < (halfW1 + halfW2 + cardWidth) && dy < (halfH1 + halfH2 + cardHeight)) {
               return true;
             }
           }
