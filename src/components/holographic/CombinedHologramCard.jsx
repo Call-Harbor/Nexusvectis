@@ -247,14 +247,32 @@ export default function CombinedHologramCard({ items, x, y, index, depth }) {
                   </div>
                 </div>
                 
-                <motion.button
-                  onClick={handleExpand}
-                  whileHover={{ scale: 1.1, rotate: 180 }}
-                  whileTap={{ scale: 0.9 }}
-                  className="p-2 rounded-lg bg-cyan-500/20 border border-cyan-400/30 text-cyan-400 hover:bg-cyan-500/30 transition-colors"
-                >
-                  <Maximize2 className="w-4 h-4" />
-                </motion.button>
+                <div className="flex gap-2">
+                  <motion.button
+                    onClick={() => setCurrentIndex((prev) => (prev - 1 + items.length) % items.length)}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    className="p-2 rounded-lg bg-cyan-500/20 border border-cyan-400/30 text-cyan-400 hover:bg-cyan-500/30 transition-colors"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </motion.button>
+                  <motion.button
+                    onClick={handleExpand}
+                    whileHover={{ scale: 1.1, rotate: 180 }}
+                    whileTap={{ scale: 0.9 }}
+                    className="p-2 rounded-lg bg-cyan-500/20 border border-cyan-400/30 text-cyan-400 hover:bg-cyan-500/30 transition-colors"
+                  >
+                    <Maximize2 className="w-4 h-4" />
+                  </motion.button>
+                  <motion.button
+                    onClick={() => setCurrentIndex((prev) => (prev + 1) % items.length)}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    className="p-2 rounded-lg bg-cyan-500/20 border border-cyan-400/30 text-cyan-400 hover:bg-cyan-500/30 transition-colors"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </motion.button>
+                </div>
               </div>
             </motion.div>
 
