@@ -858,13 +858,6 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
         }
       });
       
-      // Perfect collision avoidance - dynamic sizing and spacing
-      const totalVisible = uniqueRoutes.length + uniqueResources.length;
-      const cardWidth = totalVisible > 8 ? 280 : totalVisible > 5 ? 320 : totalVisible > 3 ? 360 : 400;
-      const cardHeight = totalVisible > 8 ? 380 : totalVisible > 5 ? 420 : totalVisible > 3 ? 460 : 500;
-      const padding = 50;
-      const minSpacing = totalVisible > 8 ? 50 : totalVisible > 5 ? 60 : totalVisible > 3 ? 70 : 80;
-      
       // Process resources with same advanced logic, continuing from routes' spatial grid
       const resourceStartIndex = uniqueRoutes.length;
       uniqueResources.sort((a, b) => b.visibility - a.visibility);
