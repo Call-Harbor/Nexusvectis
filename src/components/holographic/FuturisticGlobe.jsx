@@ -721,7 +721,8 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
       // Process vehicles
       const newVisibleVehicles = [];
       const seenVehicleIds = new Set();
-      
+
+      if (vehicleMarkers && vehicleMarkers.length > 0) {
       vehicleMarkers.forEach((marker, index) => {
         const vehicle = marker.userData.vehicle;
         if (seenVehicleIds.has(vehicle.id)) return;
