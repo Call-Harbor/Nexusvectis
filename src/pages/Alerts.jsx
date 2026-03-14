@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
@@ -39,6 +39,9 @@ export default function Alerts() {
   const [formData, setFormData] = useState({
     title: "", message: "", type: "info", category: "system", ai_recommendation: ""
   });
+  const [visibleCount, setVisibleCount] = useState(20);
+  const observerRef = useRef(null);
+  const loadMoreRef = useRef(null);
 
   const queryClient = useQueryClient();
 
@@ -114,6 +117,37 @@ export default function Alerts() {
     }).length,
   };
 
+  const loadMore = useCallback(() => {
+    setVisibleCount(prev => Math.min(prev + 20, filteredAlerts.length));
+  }, [filteredAlerts.length]);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && visibleCount < filteredAlerts.length) {
+          loadMore();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (loadMoreRef.current) {
+      observer.observe(loadMoreRef.current);
+    }
+
+    observerRef.current = observer;
+
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, [visibleCount, filteredAlerts.length, loadMore]);
+
+  useEffect(() => {
+    setVisibleCount(20);
+  }, [searchTerm, typeFilter, categoryFilter, statusFilter, sortBy]);
+
   const exportToCSV = () => {
     const headers = ["Title", "Message", "Type", "Category", "Status", "AI Recommendation", "Created Date"];
     const rows = filteredAlerts.map(a => [
@@ -139,6 +173,8 @@ export default function Alerts() {
     a.click();
     window.URL.revokeObjectURL(url);
   };
+
+  const visibleAlerts = filteredAlerts.slice(0, visibleCount);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6 lg:p-8">
@@ -315,7 +351,7 @@ export default function Alerts() {
         {/* Alerts List */}
         <div className="space-y-4">
           <AnimatePresence mode="popLayout">
-            {filteredAlerts.map((alert, index) => {
+            {visibleAlerts.map((alert, index) => {
               const Icon = typeIcons[alert.type] || AlertCircle;
               return (
                 <motion.div
@@ -323,7 +359,7 @@ export default function Alerts() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
-                  transition={{ delay: index * 0.03 }}
+                  transition={{ delay: Math.min(index * 0.03, 0.5) }}
                   className={`p-5 rounded-2xl border backdrop-blur-xl ${
                     alert.is_resolved 
                       ? 'bg-slate-800/30 border-slate-700/30 opacity-60' 
@@ -396,12 +432,30 @@ export default function Alerts() {
               );
             })}
           </AnimatePresence>
+
+          {/* Load More Trigger */}
+          {visibleCount < filteredAlerts.length && (
+            <div ref={loadMoreRef} className="py-8 text-center">
+              <div className="inline-flex items-center gap-2 text-slate-400">
+                <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+                <span className="text-sm">Loading more alerts...</span>
+              </div>
+            </div>
+          )}
         </div>
 
         {filteredAlerts.length === 0 && (
           <div className="text-center py-12">
             <CheckCircle className="w-12 h-12 text-emerald-400 mx-auto mb-3" />
             <p className="text-slate-400">No alerts match your search</p>
+          </div>
+        )}
+
+        {visibleCount >= filteredAlerts.length && filteredAlerts.length > 0 && (
+          <div className="text-center py-6">
+            <p className="text-sm text-slate-500">
+              Showing all {filteredAlerts.length} alert{filteredAlerts.length !== 1 ? 's' : ''}
+            </p>
           </div>
         )}
       </div>
