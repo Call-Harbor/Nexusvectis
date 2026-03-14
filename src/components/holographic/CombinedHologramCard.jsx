@@ -245,59 +245,6 @@ export default function CombinedHologramCard({ items, x, y, index, depth }) {
                 </>
               )}
             </div>
-
-            {/* Circular Navigation Menu */}
-            <div className="flex items-center justify-center pt-2">
-              <div className="relative w-40 h-40">
-                {/* Center dot */}
-                <motion.div
-                  className="absolute inset-0 flex items-center justify-center"
-                  animate={{ scale: [1, 1.05, 1] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                >
-                  <div className="w-3 h-3 rounded-full bg-cyan-400/50" />
-                </motion.div>
-
-                {/* Circular items */}
-                {items.map((item, idx) => {
-                  const angle = (idx / items.length) * Math.PI * 2;
-                  const radius = 60;
-                  const x = Math.cos(angle - Math.PI / 2) * radius;
-                  const y = Math.sin(angle - Math.PI / 2) * radius;
-                  const isActive = idx === currentIndex;
-
-                  const Icon = item.type === 'route' ? Route : item.type === 'resource' ? Warehouse : Truck;
-
-                  return (
-                    <motion.button
-                      key={idx}
-                      onClick={() => setCurrentIndex(idx)}
-                      animate={{
-                        x,
-                        y,
-                      }}
-                      transition={{
-                        type: 'spring',
-                        stiffness: 300,
-                        damping: 30,
-                      }}
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      className={cn(
-                        'absolute w-14 h-14 rounded-full flex items-center justify-center border-2 transition-all',
-                        'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2',
-                        isActive
-                          ? 'bg-cyan-500/40 border-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.6)]'
-                          : 'bg-slate-800/80 border-slate-600'
-                      )}
-                      title={item.data.name || item.data.title || item.type}
-                    >
-                      <Icon className={cn('w-6 h-6', isActive ? 'text-cyan-300' : 'text-slate-400')} />
-                    </motion.button>
-                  );
-                })}
-              </div>
-            </div>
           </div>
         </motion.div>
 
