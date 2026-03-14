@@ -11,7 +11,7 @@ export default function CombinedHologramCard({ items, x, y, index, depth }) {
   const navRef = useRef(null);
   const [isHovered, setIsHovered] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
-  const [isNavOpen, setIsNavOpen] = useState(false);
+  const [isNavOpen, setIsNavOpen] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   
   const mouseX = useMotionValue(0);
