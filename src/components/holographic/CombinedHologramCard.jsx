@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { motion, useMotionValue, useTransform, AnimatePresence } from 'framer-motion';
-import { Route, Warehouse, Truck, Maximize2, Navigation } from 'lucide-react';
+import { Route, Warehouse, Truck, Maximize2, Navigation, ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import RouteHologramCard from './RouteHologramCard';
 import ResourceHologramCard from './ResourceHologramCard';
