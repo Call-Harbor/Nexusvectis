@@ -669,48 +669,132 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
         }
       });
       
-      // Apply collision detection and repositioning to prevent overlap
-      const cardWidth = 400;
-      const cardHeight = 500;
-      const padding = 30;
-      const minSpacing = 20;
+      // Advanced collision detection with smart grid-based positioning
+      const totalVisible = uniqueRoutes.length;
+      const cardWidth = totalVisible > 6 ? 320 : totalVisible > 3 ? 360 : 400;
+      const cardHeight = totalVisible > 6 ? 420 : totalVisible > 3 ? 460 : 500;
+      const padding = 40;
+      const minSpacing = totalVisible > 6 ? 30 : totalVisible > 3 ? 35 : 40;
+      
+      // Create spatial grid for faster collision detection
+      const gridCellSize = cardWidth + minSpacing;
+      const spatialGrid = new Map();
+      
+      const getGridKey = (x, y) => {
+        const col = Math.floor(x / gridCellSize);
+        const row = Math.floor(y / gridCellSize);
+        return `${col},${row}`;
+      };
+      
+      const checkGridCollision = (x, y, excludeIndex) => {
+        const centerKey = getGridKey(x, y);
+        const neighbors = [
+          centerKey,
+          getGridKey(x - gridCellSize, y),
+          getGridKey(x + gridCellSize, y),
+          getGridKey(x, y - gridCellSize),
+          getGridKey(x, y + gridCellSize),
+          getGridKey(x - gridCellSize, y - gridCellSize),
+          getGridKey(x + gridCellSize, y - gridCellSize),
+          getGridKey(x - gridCellSize, y + gridCellSize),
+          getGridKey(x + gridCellSize, y + gridCellSize)
+        ];
+        
+        for (const key of neighbors) {
+          const items = spatialGrid.get(key) || [];
+          for (const item of items) {
+            if (item.index === excludeIndex) continue;
+            const dx = Math.abs(x - item.x);
+            const dy = Math.abs(y - item.y);
+            if (dx < cardWidth + minSpacing && dy < cardHeight + minSpacing) {
+              return true;
+            }
+          }
+        }
+        return false;
+      };
+      
+      // Sort by visibility score (most visible first get priority placement)
+      uniqueRoutes.sort((a, b) => b.visibility - a.visibility);
       
       uniqueRoutes.forEach((routeA, i) => {
         let bestX = routeA.x;
         let bestY = routeA.y;
-        let hasCollision = true;
-        let attempts = 0;
-        const maxAttempts = 8;
+        let bestScore = Infinity;
+        const maxAttempts = 12;
         
-        while (hasCollision && attempts < maxAttempts) {
-          hasCollision = false;
+        // Try multiple positioning strategies
+        const strategies = [
+          // Original position
+          { x: routeA.x, y: routeA.y },
+          // Radial offsets from original
+          ...Array.from({ length: 8 }, (_, angle) => ({
+            x: routeA.x + Math.cos(angle * Math.PI / 4) * 120,
+            y: routeA.y + Math.sin(angle * Math.PI / 4) * 120
+          })),
+          // Grid-aligned positions near original
+          { x: Math.round(routeA.x / gridCellSize) * gridCellSize, y: Math.round(routeA.y / gridCellSize) * gridCellSize },
+          // Edge-aware positions
+          { x: padding + 60, y: routeA.y },
+          { x: el.clientWidth - cardWidth - padding - 60, y: routeA.y },
+          { x: routeA.x, y: padding + 60 },
+          { x: routeA.x, y: el.clientHeight - cardHeight - padding - 60 }
+        ];
+        
+        for (const strategy of strategies) {
+          let testX = strategy.x;
+          let testY = strategy.y;
           
-          for (let j = 0; j < i; j++) {
-            const routeB = uniqueRoutes[j];
-            const dx = Math.abs(bestX - routeB.x);
-            const dy = Math.abs(bestY - routeB.y);
+          // Clamp to valid screen area
+          testX = Math.max(padding, Math.min(testX, el.clientWidth - cardWidth - padding));
+          testY = Math.max(padding, Math.min(testY, el.clientHeight - cardHeight - padding));
+          
+          // Check collision
+          if (!checkGridCollision(testX, testY, i)) {
+            // Score based on distance from original position
+            const distFromOriginal = Math.sqrt(
+              Math.pow(testX - routeA.x, 2) + Math.pow(testY - routeA.y, 2)
+            );
             
-            if (dx < cardWidth + minSpacing && dy < cardHeight + minSpacing) {
-              hasCollision = true;
-              
-              // Try repositioning: shift down and slightly right
-              const offset = (attempts + 1) * 80;
-              bestX = routeA.x + offset;
-              bestY = routeA.y + offset;
-              
-              // Clamp to screen bounds
-              bestX = Math.max(padding, Math.min(bestX, el.clientWidth - cardWidth - padding));
-              bestY = Math.max(padding, Math.min(bestY, el.clientHeight - cardHeight - padding));
-              
-              break;
+            if (distFromOriginal < bestScore) {
+              bestX = testX;
+              bestY = testY;
+              bestScore = distFromOriginal;
+              if (distFromOriginal < 50) break; // Good enough, stop searching
             }
           }
-          
-          attempts++;
+        }
+        
+        // If still colliding, use spiral search
+        if (bestScore === Infinity) {
+          let found = false;
+          for (let radius = 150; radius < 600 && !found; radius += 80) {
+            for (let angle = 0; angle < Math.PI * 2 && !found; angle += Math.PI / 6) {
+              const testX = Math.max(padding, Math.min(
+                routeA.x + Math.cos(angle) * radius,
+                el.clientWidth - cardWidth - padding
+              ));
+              const testY = Math.max(padding, Math.min(
+                routeA.y + Math.sin(angle) * radius,
+                el.clientHeight - cardHeight - padding
+              ));
+              
+              if (!checkGridCollision(testX, testY, i)) {
+                bestX = testX;
+                bestY = testY;
+                found = true;
+              }
+            }
+          }
         }
         
         routeA.x = bestX;
         routeA.y = bestY;
+        
+        // Add to spatial grid
+        const gridKey = getGridKey(bestX, bestY);
+        if (!spatialGrid.has(gridKey)) spatialGrid.set(gridKey, []);
+        spatialGrid.get(gridKey).push({ x: bestX, y: bestY, index: i });
       });
       
       // Only update state if there's a change - with forced cleanup
@@ -770,44 +854,74 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
         }
       });
       
-      // Combine all holograms for unified collision detection
-      const allHolograms = [...uniqueRoutes, ...uniqueResources];
+      // Process resources with same advanced logic, continuing from routes' spatial grid
+      const resourceStartIndex = uniqueRoutes.length;
+      uniqueResources.sort((a, b) => b.visibility - a.visibility);
       
-      allHolograms.forEach((itemA, i) => {
-        let bestX = itemA.x;
-        let bestY = itemA.y;
-        let hasCollision = true;
-        let attempts = 0;
-        const maxAttempts = 8;
+      uniqueResources.forEach((resA, i) => {
+        let bestX = resA.x;
+        let bestY = resA.y;
+        let bestScore = Infinity;
         
-        while (hasCollision && attempts < maxAttempts) {
-          hasCollision = false;
+        const strategies = [
+          { x: resA.x, y: resA.y },
+          ...Array.from({ length: 8 }, (_, angle) => ({
+            x: resA.x + Math.cos(angle * Math.PI / 4) * 120,
+            y: resA.y + Math.sin(angle * Math.PI / 4) * 120
+          })),
+          { x: Math.round(resA.x / gridCellSize) * gridCellSize, y: Math.round(resA.y / gridCellSize) * gridCellSize },
+          { x: padding + 60, y: resA.y },
+          { x: el.clientWidth - cardWidth - padding - 60, y: resA.y }
+        ];
+        
+        for (const strategy of strategies) {
+          let testX = Math.max(padding, Math.min(strategy.x, el.clientWidth - cardWidth - padding));
+          let testY = Math.max(padding, Math.min(strategy.y, el.clientHeight - cardHeight - padding));
           
-          for (let j = 0; j < i; j++) {
-            const itemB = allHolograms[j];
-            const dx = Math.abs(bestX - itemB.x);
-            const dy = Math.abs(bestY - itemB.y);
-            
-            if (dx < cardWidth + minSpacing && dy < cardHeight + minSpacing) {
-              hasCollision = true;
-              const offset = (attempts + 1) * 80;
-              bestX = itemA.x + offset;
-              bestY = itemA.y + offset;
-              bestX = Math.max(padding, Math.min(bestX, el.clientWidth - cardWidth - padding));
-              bestY = Math.max(padding, Math.min(bestY, el.clientHeight - cardHeight - padding));
-              break;
+          if (!checkGridCollision(testX, testY, resourceStartIndex + i)) {
+            const distFromOriginal = Math.sqrt(
+              Math.pow(testX - resA.x, 2) + Math.pow(testY - resA.y, 2)
+            );
+            if (distFromOriginal < bestScore) {
+              bestX = testX;
+              bestY = testY;
+              bestScore = distFromOriginal;
+              if (distFromOriginal < 50) break;
             }
           }
-          
-          attempts++;
         }
         
-        itemA.x = bestX;
-        itemA.y = bestY;
+        if (bestScore === Infinity) {
+          let found = false;
+          for (let radius = 150; radius < 600 && !found; radius += 80) {
+            for (let angle = 0; angle < Math.PI * 2 && !found; angle += Math.PI / 6) {
+              const testX = Math.max(padding, Math.min(
+                resA.x + Math.cos(angle) * radius,
+                el.clientWidth - cardWidth - padding
+              ));
+              const testY = Math.max(padding, Math.min(
+                resA.y + Math.sin(angle) * radius,
+                el.clientHeight - cardHeight - padding
+              ));
+              
+              if (!checkGridCollision(testX, testY, resourceStartIndex + i)) {
+                bestX = testX;
+                bestY = testY;
+                found = true;
+              }
+            }
+          }
+        }
+        
+        resA.x = bestX;
+        resA.y = bestY;
+        
+        const gridKey = getGridKey(bestX, bestY);
+        if (!spatialGrid.has(gridKey)) spatialGrid.set(gridKey, []);
+        spatialGrid.get(gridKey).push({ x: bestX, y: bestY, index: resourceStartIndex + i });
       });
       
-      // Separate back into routes and resources with updated positions
-      const updatedResources = allHolograms.filter(item => item.resource);
+      const updatedResources = uniqueResources;
       
       const currentResourceCount = updatedResources.length;
       const hasResourceChanged = currentResourceCount !== lastVisibleResourcesCountRef.current ||
@@ -864,41 +978,71 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
         }
       });
       
-      // Combine vehicles with existing holograms for collision detection
-      const allWithVehicles = [...allHolograms, ...uniqueVehicles];
+      // Process vehicles with same advanced logic
+      const vehicleStartIndex = resourceStartIndex + uniqueResources.length;
+      uniqueVehicles.sort((a, b) => b.visibility - a.visibility);
       
       uniqueVehicles.forEach((vehA, i) => {
-        const startIdx = allHolograms.length + i;
         let bestX = vehA.x;
         let bestY = vehA.y;
-        let hasCollision = true;
-        let attempts = 0;
-        const maxAttempts = 8;
+        let bestScore = Infinity;
         
-        while (hasCollision && attempts < maxAttempts) {
-          hasCollision = false;
+        const strategies = [
+          { x: vehA.x, y: vehA.y },
+          ...Array.from({ length: 8 }, (_, angle) => ({
+            x: vehA.x + Math.cos(angle * Math.PI / 4) * 120,
+            y: vehA.y + Math.sin(angle * Math.PI / 4) * 120
+          })),
+          { x: Math.round(vehA.x / gridCellSize) * gridCellSize, y: Math.round(vehA.y / gridCellSize) * gridCellSize },
+          { x: padding + 60, y: vehA.y },
+          { x: el.clientWidth - cardWidth - padding - 60, y: vehA.y }
+        ];
+        
+        for (const strategy of strategies) {
+          let testX = Math.max(padding, Math.min(strategy.x, el.clientWidth - cardWidth - padding));
+          let testY = Math.max(padding, Math.min(strategy.y, el.clientHeight - cardHeight - padding));
           
-          for (let j = 0; j < startIdx; j++) {
-            const itemB = allWithVehicles[j];
-            const dx = Math.abs(bestX - itemB.x);
-            const dy = Math.abs(bestY - itemB.y);
-            
-            if (dx < cardWidth + minSpacing && dy < cardHeight + minSpacing) {
-              hasCollision = true;
-              const offset = (attempts + 1) * 80;
-              bestX = vehA.x + offset;
-              bestY = vehA.y + offset;
-              bestX = Math.max(padding, Math.min(bestX, el.clientWidth - cardWidth - padding));
-              bestY = Math.max(padding, Math.min(bestY, el.clientHeight - cardHeight - padding));
-              break;
+          if (!checkGridCollision(testX, testY, vehicleStartIndex + i)) {
+            const distFromOriginal = Math.sqrt(
+              Math.pow(testX - vehA.x, 2) + Math.pow(testY - vehA.y, 2)
+            );
+            if (distFromOriginal < bestScore) {
+              bestX = testX;
+              bestY = testY;
+              bestScore = distFromOriginal;
+              if (distFromOriginal < 50) break;
             }
           }
-          
-          attempts++;
+        }
+        
+        if (bestScore === Infinity) {
+          let found = false;
+          for (let radius = 150; radius < 600 && !found; radius += 80) {
+            for (let angle = 0; angle < Math.PI * 2 && !found; angle += Math.PI / 6) {
+              const testX = Math.max(padding, Math.min(
+                vehA.x + Math.cos(angle) * radius,
+                el.clientWidth - cardWidth - padding
+              ));
+              const testY = Math.max(padding, Math.min(
+                vehA.y + Math.sin(angle) * radius,
+                el.clientHeight - cardHeight - padding
+              ));
+              
+              if (!checkGridCollision(testX, testY, vehicleStartIndex + i)) {
+                bestX = testX;
+                bestY = testY;
+                found = true;
+              }
+            }
+          }
         }
         
         vehA.x = bestX;
         vehA.y = bestY;
+        
+        const gridKey = getGridKey(bestX, bestY);
+        if (!spatialGrid.has(gridKey)) spatialGrid.set(gridKey, []);
+        spatialGrid.get(gridKey).push({ x: bestX, y: bestY, index: vehicleStartIndex + i });
       });
       
       const currentVehicleCount = uniqueVehicles.length;
