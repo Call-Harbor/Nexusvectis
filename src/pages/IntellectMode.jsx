@@ -26,7 +26,7 @@ import { getWindowMeta } from "@/components/intellect/WindowRegistry";
 import CircularBrainMenu from "@/components/intellect/CircularBrainMenu";
 import IntellectHeader from "@/components/intellect/IntellectHeader";
 import IntellectCommandBar from "@/components/intellect/IntellectCommandBar";
-import FleetGlobe3D from "@/components/intellect/FleetGlobe3D";
+import FuturisticGlobe from "@/components/holographic/FuturisticGlobe";
 import ThinkingTerminalVisual from "@/components/intellect/ThinkingTerminalVisual";
 import CompanyAnalysisHologram from "@/components/intellect/CompanyAnalysisHologram";
 import ProfileSearch from "@/components/intellect/ProfileSearch";
@@ -936,8 +936,29 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
 
           {/* 3D Fleet Globe */}
           {show3DVisualization && (
-            <FleetGlobe3D vehicles={show3DVisualization.vehicles || vehicles} routes={show3DVisualization.routes || routes}
-              onClose={() => setShow3DVisualization(null)} onMinimize={() => setShow3DVisualization(null)} />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="fixed inset-8 z-40 rounded-2xl overflow-hidden border-2 border-cyan-500/50 bg-black/90 backdrop-blur-xl shadow-2xl shadow-cyan-500/30"
+            >
+              <div className="absolute top-4 right-4 z-50 flex gap-2">
+                <button
+                  onClick={() => setShow3DVisualization(null)}
+                  className="px-4 py-2 rounded-xl bg-slate-900/90 backdrop-blur-xl border border-red-500/50 text-red-400 hover:bg-red-500/20 transition-all font-semibold"
+                >
+                  Close 3D View
+                </button>
+              </div>
+              <FuturisticGlobe 
+                vehicles={show3DVisualization.vehicles || vehicles} 
+                routes={show3DVisualization.routes || routes}
+                resources={resources}
+                digitalTwins={[]}
+                onSelectVehicle={(v) => {}}
+                onSelectResource={(r) => {}}
+              />
+            </motion.div>
           )}
 
           {/* AI Thinking Terminal */}
