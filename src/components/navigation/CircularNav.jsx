@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "../../utils";
 import { motion, AnimatePresence } from "framer-motion";
@@ -76,6 +76,12 @@ export default function CircularNav({ currentPageName, user }) {
   const [isOpen, setIsOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState(null);
   const navigate = useNavigate();
+
+  // Auto-close menu when page changes
+  useEffect(() => {
+    setIsOpen(false);
+    setActiveCategory(null);
+  }, [currentPageName]);
 
   const colorMap = useMemo(() => ({
     cyan: "from-cyan-500/20 to-cyan-500/5 border-cyan-400/30 text-cyan-400",
