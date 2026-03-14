@@ -673,6 +673,59 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
         }
       });
       
+      // Perfect collision avoidance - dynamic sizing and spacing (MUST be before any collision logic)
+      const totalVisibleEstimate = uniqueRoutes.length + resourceMarkers.length + vehicleMarkers.length;
+      const cardWidth = totalVisibleEstimate > 8 ? 280 : totalVisibleEstimate > 5 ? 320 : totalVisibleEstimate > 3 ? 360 : 400;
+      const cardHeight = totalVisibleEstimate > 8 ? 380 : totalVisibleEstimate > 5 ? 420 : totalVisibleEstimate > 3 ? 460 : 500;
+      const padding = 50;
+      const minSpacing = totalVisibleEstimate > 8 ? 50 : totalVisibleEstimate > 5 ? 60 : totalVisibleEstimate > 3 ? 70 : 80;
+      
+      // Create spatial grid for faster collision detection
+      const gridCellSize = cardWidth + minSpacing;
+      const spatialGrid = new Map();
+      
+      const getGridKey = (x, y) => {
+        const col = Math.floor(x / gridCellSize);
+        const row = Math.floor(y / gridCellSize);
+        return `${col},${row}`;
+      };
+      
+      const checkGridCollision = (x, y, excludeIndex, checkWidth = cardWidth, checkHeight = cardHeight) => {
+        const centerKey = getGridKey(x, y);
+        const neighbors = [
+          centerKey,
+          getGridKey(x - gridCellSize, y),
+          getGridKey(x + gridCellSize, y),
+          getGridKey(x, y - gridCellSize),
+          getGridKey(x, y + gridCellSize),
+          getGridKey(x - gridCellSize, y - gridCellSize),
+          getGridKey(x + gridCellSize, y - gridCellSize),
+          getGridKey(x - gridCellSize, y + gridCellSize),
+          getGridKey(x + gridCellSize, y + gridCellSize)
+        ];
+        
+        for (const key of neighbors) {
+          const items = spatialGrid.get(key) || [];
+          for (const item of items) {
+            if (item.index === excludeIndex) continue;
+            
+            // Rectangle collision detection with proper spacing
+            const dx = Math.abs(x - item.x);
+            const dy = Math.abs(y - item.y);
+            const minDx = (checkWidth + (item.width || cardWidth)) / 2 + minSpacing;
+            const minDy = (checkHeight + (item.height || cardHeight)) / 2 + minSpacing;
+            
+            if (dx < minDx && dy < minDy) {
+              return true;
+            }
+          }
+        }
+        return false;
+      };
+      
+      // Sort by visibility score (most visible first get priority placement)
+      uniqueRoutes.sort((a, b) => b.visibility - a.visibility);
+      
       uniqueRoutes.forEach((routeA, i) => {
         let bestX = routeA.x;
         let bestY = routeA.y;
@@ -855,59 +908,6 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
           uniqueVehicles.push(data);
         }
       });
-      
-      // Perfect collision avoidance - dynamic sizing and spacing
-      const totalVisible = uniqueRoutes.length + uniqueResources.length + uniqueVehicles.length;
-      const cardWidth = totalVisible > 8 ? 280 : totalVisible > 5 ? 320 : totalVisible > 3 ? 360 : 400;
-      const cardHeight = totalVisible > 8 ? 380 : totalVisible > 5 ? 420 : totalVisible > 3 ? 460 : 500;
-      const padding = 50;
-      const minSpacing = totalVisible > 8 ? 50 : totalVisible > 5 ? 60 : totalVisible > 3 ? 70 : 80;
-      
-      // Create spatial grid for faster collision detection
-      const gridCellSize = cardWidth + minSpacing;
-      const spatialGrid = new Map();
-      
-      const getGridKey = (x, y) => {
-        const col = Math.floor(x / gridCellSize);
-        const row = Math.floor(y / gridCellSize);
-        return `${col},${row}`;
-      };
-      
-      const checkGridCollision = (x, y, excludeIndex, checkWidth = cardWidth, checkHeight = cardHeight) => {
-        const centerKey = getGridKey(x, y);
-        const neighbors = [
-          centerKey,
-          getGridKey(x - gridCellSize, y),
-          getGridKey(x + gridCellSize, y),
-          getGridKey(x, y - gridCellSize),
-          getGridKey(x, y + gridCellSize),
-          getGridKey(x - gridCellSize, y - gridCellSize),
-          getGridKey(x + gridCellSize, y - gridCellSize),
-          getGridKey(x - gridCellSize, y + gridCellSize),
-          getGridKey(x + gridCellSize, y + gridCellSize)
-        ];
-        
-        for (const key of neighbors) {
-          const items = spatialGrid.get(key) || [];
-          for (const item of items) {
-            if (item.index === excludeIndex) continue;
-            
-            // Rectangle collision detection with proper spacing
-            const dx = Math.abs(x - item.x);
-            const dy = Math.abs(y - item.y);
-            const minDx = (checkWidth + (item.width || cardWidth)) / 2 + minSpacing;
-            const minDy = (checkHeight + (item.height || cardHeight)) / 2 + minSpacing;
-            
-            if (dx < minDx && dy < minDy) {
-              return true;
-            }
-          }
-        }
-        return false;
-      };
-      
-      // Sort by visibility score (most visible first get priority placement)
-      uniqueRoutes.sort((a, b) => b.visibility - a.visibility);
       
       // Process resources with same advanced logic, continuing from routes' spatial grid
       const resourceStartIndex = uniqueRoutes.length;
