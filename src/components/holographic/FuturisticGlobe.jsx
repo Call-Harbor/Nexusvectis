@@ -982,17 +982,8 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
         newVisibleVehicles.push({ vehicle, x, y, index, visibility, worldPos: markerWorldPos.clone(), depth });
       });
       
-      const uniqueVehicles = [];
-      const finalSeenVehicleIds = new Set();
-      newVisibleVehicles.forEach(data => {
-        if (!finalSeenVehicleIds.has(data.vehicle.id)) {
-          finalSeenVehicleIds.add(data.vehicle.id);
-          uniqueVehicles.push(data);
-        }
-      });
-      
       // Process vehicles with same advanced logic
-      const vehicleStartIndex = resourceStartIndex + uniqueResources.length;
+      const vehicleStartIndex = resourceStartIndex + updatedResources.length;
       uniqueVehicles.sort((a, b) => b.visibility - a.visibility);
       
       uniqueVehicles.forEach((vehA, i) => {
