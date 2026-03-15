@@ -211,7 +211,7 @@ function AlternativeRouteCard({ alt, onSelect, isSelected }) {
           </p>
         </div>
         <div className="text-center">
-          <p className="text-[8px] text-slate-500">Temps</p>
+          <p className="text-[8px] text-slate-500">Time</p>
           <p className="text-[10px] font-bold text-cyan-300">{alt.durationH}h</p>
           <p className={`text-[8px] ${alt.extraTimeH < 0 ? 'text-emerald-400' : 'text-slate-400'}`}>
             {alt.extraTimeH < 0 ? `${Math.abs(alt.extraTimeH)}h faster` : `+${alt.extraTimeH}h`}
