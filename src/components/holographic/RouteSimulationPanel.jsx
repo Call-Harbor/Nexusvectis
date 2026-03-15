@@ -307,7 +307,7 @@ Give a 2-sentence expert logistics recommendation to reduce fuel and CO₂. Be c
       animate={{ opacity: 1, x: 0, scale: 1 }}
       exit={{ opacity: 0, x: 40, scale: 0.95 }}
       transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-      className="fixed top-4 right-4 z-50 w-[340px] max-h-[92vh] flex flex-col"
+      className="fixed top-4 right-4 z-50 w-[340px] max-h-[95vh] flex flex-col"
       style={{ pointerEvents: 'auto' }}
     >
       {/* Glow */}
