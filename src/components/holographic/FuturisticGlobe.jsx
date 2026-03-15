@@ -51,6 +51,7 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
   const lastVisibleCountRef = useRef(0);
   const lastVisibleResourcesCountRef = useRef(0);
   const lastVisibleVehiclesCountRef = useRef(0);
+  const [simulatingRoute, setSimulatingRoute] = useState(null);
 
   useEffect(() => {
     const el = mountRef.current;
