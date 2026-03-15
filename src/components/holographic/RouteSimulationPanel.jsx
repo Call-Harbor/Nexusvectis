@@ -442,7 +442,7 @@ Give a 2-sentence expert logistics recommendation to reduce fuel and CO₂. Be c
                     {/* Efficiency bar */}
                     <div>
                       <div className="flex items-center justify-between text-[9px] text-slate-400 mb-1">
-                        <span className="font-mono uppercase">Efficacité globale</span>
+                        <span className="font-mono uppercase">Overall Efficiency</span>
                         <span className={`font-black ${metrics.efficiency >= 70 ? 'text-emerald-400' : metrics.efficiency >= 40 ? 'text-amber-400' : 'text-red-400'}`}>
                           {metrics.efficiency}%
                         </span>
