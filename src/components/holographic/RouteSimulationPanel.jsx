@@ -91,8 +91,8 @@ function calcMetrics(route, weatherData, trafficData) {
 function generateAlternatives(route, baseMetrics) {
   return [
     {
-      label: 'Économique',
-      description: 'Évite les axes à fort trafic, favorise vitesse constante',
+      label: 'Eco',
+      description: 'Avoids high-traffic corridors, maintains steady speed',
       fuelSavingPct: 8,
       co2SavingPct: 8,
       extraTimeH: 0.5,
@@ -100,8 +100,8 @@ function generateAlternatives(route, baseMetrics) {
       color: '#10b981',
     },
     {
-      label: 'Rapide',
-      description: 'Autoroutes prioritaires, temps réduit',
+      label: 'Fast',
+      description: 'Priority motorways, minimised travel time',
       fuelSavingPct: -5,
       co2SavingPct: -5,
       extraTimeH: -0.8,
@@ -109,8 +109,8 @@ function generateAlternatives(route, baseMetrics) {
       color: '#06b6d4',
     },
     {
-      label: 'Vert',
-      description: 'Maximise réduction CO₂, vitesse réduite',
+      label: 'Green',
+      description: 'Maximises CO₂ reduction, reduced speed',
       fuelSavingPct: 18,
       co2SavingPct: 20,
       extraTimeH: 1.2,
