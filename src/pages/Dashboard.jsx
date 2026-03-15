@@ -22,8 +22,6 @@ export default function Dashboard() {
   const [orgId, setOrgId] = useState(null);
   const navigate = useNavigate();
 
-  const [retrainResults, setRetrainResults] = useState(null);
-
   const AI_LEARNING_PHASES = [
     'Ingesting fleet telemetry…',
     'Running predictive maintenance scoring…',
