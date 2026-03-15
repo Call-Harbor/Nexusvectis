@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
-import FuturisticGlobe from "@/components/holographic/FuturisticGlobe";
+import DashboardGlobeFrame from "@/components/holographic/DashboardGlobeFrame";
 import AIInsightWidget from "@/components/ai/AIInsightWidget";
 
 export default function Dashboard() {
