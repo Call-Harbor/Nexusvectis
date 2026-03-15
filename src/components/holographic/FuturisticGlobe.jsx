@@ -872,6 +872,16 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
         className="w-full h-full bg-black" 
         style={{ cursor: 'grab' }}
       />
+
+      {/* Route simulation hint */}
+      {routes.some(r => (r.waypoints || []).length >= 2) && !simulatingRoute && (
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 pointer-events-none">
+          <div className="px-3 py-1.5 rounded-full bg-slate-900/80 border border-cyan-400/20 text-[9px] text-cyan-300 font-mono tracking-wider flex items-center gap-1.5 backdrop-blur-sm">
+            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+            Cliquez sur une route pour lancer la simulation 3D
+          </div>
+        </div>
+      )}
       
       {/* Floating Holograms - Always Combined */}
       <AnimatePresence mode="popLayout">
@@ -890,6 +900,17 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
             />
           );
         })}
+      </AnimatePresence>
+
+      {/* Route Simulation Panel */}
+      <AnimatePresence>
+        {simulatingRoute && (
+          <RouteSimulationPanel
+            key={simulatingRoute.id}
+            route={simulatingRoute}
+            onClose={() => setSimulatingRoute(null)}
+          />
+        )}
       </AnimatePresence>
     </div>
   );
