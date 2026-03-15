@@ -22,13 +22,16 @@ export default function Dashboard() {
   const [orgId, setOrgId] = useState(null);
   const navigate = useNavigate();
 
+  const [retrainResults, setRetrainResults] = useState(null);
+
   const AI_LEARNING_PHASES = [
     'Ingesting fleet telemetry…',
-    'Training route optimization model…',
-    'Calibrating predictive maintenance…',
-    'Updating anomaly detection weights…',
-    'Synchronising digital twin federation…',
-    'Finalising neural cluster analysis…',
+    'Running predictive maintenance scoring…',
+    'Executing ACO swarm optimization…',
+    'Running PSO particle convergence…',
+    'Marking AI-optimized routes…',
+    'Detecting statistical anomalies…',
+    'Generating strategic AI briefing…',
   ];
 
   // Auto-close holograms when scrolling out of view
