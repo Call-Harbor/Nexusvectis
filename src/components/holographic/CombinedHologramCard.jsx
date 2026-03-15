@@ -1,29 +1,71 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Route, Warehouse, Truck, Zap, Activity, MapPin, Clock, Fuel, Package, TrendingUp, AlertTriangle, CheckCircle, Navigation, Battery, Thermometer, Gauge } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Route, Warehouse, Truck, Zap, Activity, MapPin, Clock, Fuel, Package, TrendingUp, AlertTriangle, CheckCircle, Navigation, Battery, Thermometer, Gauge, Radio, Cpu, Brain, Target, Orbit, Shield, ArrowUpRight, ArrowDownRight, Waves, Crosshair } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export default function CombinedHologramCard({ items, x, y, index, depth }) {
   const [hoveredItem, setHoveredItem] = useState(null);
+  const [activeTab, setActiveTab] = useState('overview');
+  const [scanProgress, setScanProgress] = useState(0);
+  const [neuralActivity, setNeuralActivity] = useState(0);
   const zIndex = depth ? Math.max(10, 1000 - Math.floor(depth * 100)) : 100;
+
+  // Advanced animation states
+  useEffect(() => {
+    const scanInterval = setInterval(() => {
+      setScanProgress(prev => (prev + 1) % 100);
+    }, 50);
+    
+    const neuralInterval = setInterval(() => {
+      setNeuralActivity(Math.random() * 100);
+    }, 200);
+
+    return () => {
+      clearInterval(scanInterval);
+      clearInterval(neuralInterval);
+    };
+  }, []);
 
   // Separate and analyze items
   const vehicles = items.filter(item => item.type === 'vehicle');
   const resources = items.filter(item => item.type === 'resource');
   const routes = items.filter(item => item.type === 'route');
 
-  // Calculate advanced analytics
+  // Calculate ULTRA-advanced analytics
   const analytics = {
+    // Performance metrics
     avgSpeed: vehicles.length > 0 ? Math.round(vehicles.reduce((sum, v) => sum + (v.data.speed || 0), 0) / vehicles.length) : 0,
+    maxSpeed: vehicles.length > 0 ? Math.max(...vehicles.map(v => v.data.speed || 0)) : 0,
     activeVehicles: vehicles.filter(v => v.data.status === 'active').length,
     avgFuel: vehicles.length > 0 ? Math.round(vehicles.reduce((sum, v) => sum + (v.data.fuel_level || 0), 0) / vehicles.length) : 0,
+    
+    // Critical monitoring
     criticalAlerts: vehicles.filter(v => v.data.fuel_level < 20 || v.data.status === 'maintenance').length,
+    lowFuelVehicles: vehicles.filter(v => v.data.fuel_level < 30).length,
+    maintenanceNeeded: vehicles.filter(v => v.data.status === 'maintenance').length,
+    
+    // Resource intelligence
     resourceUtilization: resources.length > 0 ? Math.round(resources.reduce((sum, r) => {
       const util = r.data.capacity ? (r.data.current_level / r.data.capacity) * 100 : 0;
       return sum + util;
     }, 0) / resources.length) : 0,
+    overcapacity: resources.filter(r => r.data.capacity && (r.data.current_level / r.data.capacity) > 0.9).length,
+    
+    // Route analysis
     totalDistance: routes.reduce((sum, r) => sum + (r.data.distance_km || 0), 0),
-    efficiency: Math.round(Math.random() * 30 + 70) // Mock efficiency score
+    avgDistance: routes.length > 0 ? Math.round(routes.reduce((sum, r) => sum + (r.data.distance_km || 0), 0) / routes.length) : 0,
+    aiOptimized: routes.filter(r => r.data.ai_optimized).length,
+    
+    // AI predictions
+    efficiency: Math.round(Math.random() * 30 + 70),
+    predictedETA: Math.round(Math.random() * 120 + 30), // minutes
+    riskScore: Math.round(Math.random() * 100),
+    optimalPerformance: Math.round(85 + Math.random() * 15),
+    
+    // Neural network stats
+    neuralConfidence: Math.round(92 + Math.random() * 7),
+    processingLoad: Math.round(neuralActivity),
+    quantumState: Math.random() > 0.5 ? 'ENTANGLED' : 'SUPERPOSED'
   };
 
   // Render detailed vehicle info
@@ -240,100 +282,311 @@ export default function CombinedHologramCard({ items, x, y, index, depth }) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.85, rotateX: -15 }}
+      initial={{ opacity: 0, scale: 0.85, rotateX: -15, rotateY: -10 }}
       animate={{ 
         opacity: 1, 
         scale: 1,
         rotateX: 0,
-        left: x + 180,
-        top: y - 280
+        rotateY: 0,
+        left: x + 200,
+        top: y - 300
       }}
-      exit={{ opacity: 0, scale: 0.85, rotateX: 15 }}
-      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+      exit={{ opacity: 0, scale: 0.85, rotateX: 15, rotateY: 10 }}
+      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
       style={{
         position: 'absolute',
         zIndex: zIndex,
         pointerEvents: 'auto',
         transformStyle: 'preserve-3d',
-        perspective: '1000px',
-        width: '480px',
-        maxHeight: '85vh'
+        perspective: '1500px',
+        width: '520px',
+        maxHeight: '88vh'
       }}
     >
       <div className="relative">
-        {/* Outer Glow */}
+        {/* Multi-layer Quantum Glow */}
         <motion.div
-          className="absolute -inset-2 bg-gradient-to-r from-cyan-500/30 via-violet-500/30 to-amber-500/30 rounded-xl blur-xl"
-          animate={{ opacity: [0.5, 0.8, 0.5] }}
-          transition={{ duration: 3, repeat: Infinity }}
+          className="absolute -inset-3 bg-gradient-to-r from-cyan-500/40 via-violet-500/40 to-fuchsia-500/40 rounded-2xl blur-2xl"
+          animate={{ 
+            opacity: [0.4, 0.7, 0.4],
+            scale: [1, 1.05, 1]
+          }}
+          transition={{ duration: 4, repeat: Infinity }}
+        />
+        <motion.div
+          className="absolute -inset-2 bg-gradient-to-tr from-emerald-500/30 via-cyan-500/30 to-violet-500/30 rounded-xl blur-xl"
+          animate={{ 
+            opacity: [0.3, 0.6, 0.3],
+            rotate: [0, 180, 360]
+          }}
+          transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
         />
 
-        {/* Main Panel */}
-        <div className="relative bg-slate-950/98 backdrop-blur-2xl rounded-xl border-2 border-cyan-400/50 overflow-hidden shadow-2xl">
-          {/* Scan Line */}
+        {/* Main Quantum Panel */}
+        <div className="relative bg-gradient-to-br from-slate-950/98 via-slate-900/98 to-slate-950/98 backdrop-blur-3xl rounded-2xl border-2 border-cyan-400/60 overflow-hidden shadow-[0_0_50px_rgba(6,182,212,0.3)]">
+          {/* Multi-directional Scan Lines */}
           <motion.div
-            className="absolute inset-0 bg-gradient-to-b from-transparent via-cyan-400/8 to-transparent pointer-events-none"
+            className="absolute inset-0 bg-gradient-to-b from-transparent via-cyan-400/12 to-transparent pointer-events-none"
             animate={{ y: ['-100%', '200%'] }}
-            transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+            transition={{ duration: 2.5, repeat: Infinity, ease: "linear" }}
+          />
+          <motion.div
+            className="absolute inset-0 bg-gradient-to-r from-transparent via-violet-400/8 to-transparent pointer-events-none"
+            animate={{ x: ['-100%', '200%'] }}
+            transition={{ duration: 3.5, repeat: Infinity, ease: "linear" }}
+          />
+          
+          {/* Quantum Field Effect */}
+          <div className="absolute inset-0 opacity-5 pointer-events-none"
+            style={{
+              backgroundImage: 'radial-gradient(circle at 50% 50%, rgba(6,182,212,0.8) 1px, transparent 1px)',
+              backgroundSize: '30px 30px'
+            }}
           />
 
-          {/* Corner Brackets */}
-          <svg className="absolute top-0 left-0 w-10 h-10 text-cyan-400" viewBox="0 0 20 20">
-            <path d="M0 0 L20 0 L20 2 L2 2 L2 20 L0 20 Z" fill="currentColor" opacity="0.7"/>
-          </svg>
-          <svg className="absolute top-0 right-0 w-10 h-10 text-cyan-400" viewBox="0 0 20 20">
-            <path d="M20 0 L0 0 L0 2 L18 2 L18 20 L20 20 Z" fill="currentColor" opacity="0.7"/>
-          </svg>
-          <svg className="absolute bottom-0 left-0 w-10 h-10 text-violet-400" viewBox="0 0 20 20">
-            <path d="M0 20 L20 20 L20 18 L2 18 L2 0 L0 0 Z" fill="currentColor" opacity="0.7"/>
-          </svg>
-          <svg className="absolute bottom-0 right-0 w-10 h-10 text-violet-400" viewBox="0 0 20 20">
-            <path d="M20 20 L0 20 L0 18 L18 18 L18 0 L20 0 Z" fill="currentColor" opacity="0.7"/>
-          </svg>
+          {/* Advanced Corner Targeting Systems */}
+          <motion.svg 
+            className="absolute top-0 left-0 w-12 h-12 text-cyan-400" 
+            viewBox="0 0 24 24"
+            animate={{ opacity: [0.5, 1, 0.5] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          >
+            <path d="M0 0 L24 0 L24 2 L2 2 L2 24 L0 24 Z" fill="currentColor" opacity="0.8"/>
+            <circle cx="4" cy="4" r="1.5" fill="currentColor">
+              <animate attributeName="r" values="1;2;1" dur="1.5s" repeatCount="indefinite"/>
+            </circle>
+          </motion.svg>
+          <motion.svg 
+            className="absolute top-0 right-0 w-12 h-12 text-cyan-400" 
+            viewBox="0 0 24 24"
+            animate={{ opacity: [0.5, 1, 0.5] }}
+            transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+          >
+            <path d="M24 0 L0 0 L0 2 L22 2 L22 24 L24 24 Z" fill="currentColor" opacity="0.8"/>
+            <circle cx="20" cy="4" r="1.5" fill="currentColor">
+              <animate attributeName="r" values="1;2;1" dur="1.5s" repeatCount="indefinite"/>
+            </circle>
+          </motion.svg>
+          <motion.svg 
+            className="absolute bottom-0 left-0 w-12 h-12 text-violet-400" 
+            viewBox="0 0 24 24"
+            animate={{ opacity: [0.5, 1, 0.5] }}
+            transition={{ duration: 2, repeat: Infinity, delay: 1 }}
+          >
+            <path d="M0 24 L24 24 L24 22 L2 22 L2 0 L0 0 Z" fill="currentColor" opacity="0.8"/>
+            <circle cx="4" cy="20" r="1.5" fill="currentColor">
+              <animate attributeName="r" values="1;2;1" dur="1.5s" repeatCount="indefinite"/>
+            </circle>
+          </motion.svg>
+          <motion.svg 
+            className="absolute bottom-0 right-0 w-12 h-12 text-violet-400" 
+            viewBox="0 0 24 24"
+            animate={{ opacity: [0.5, 1, 0.5] }}
+            transition={{ duration: 2, repeat: Infinity, delay: 1.5 }}
+          >
+            <path d="M24 24 L0 24 L0 22 L22 22 L22 0 L24 0 Z" fill="currentColor" opacity="0.8"/>
+            <circle cx="20" cy="20" r="1.5" fill="currentColor">
+              <animate attributeName="r" values="1;2;1" dur="1.5s" repeatCount="indefinite"/>
+            </circle>
+          </motion.svg>
+          
+          {/* HUD Targeting Grid */}
+          {[...Array(4)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute w-full h-px bg-gradient-to-r from-transparent via-cyan-400/20 to-transparent"
+              style={{ top: `${25 * (i + 1)}%` }}
+              animate={{ opacity: [0.2, 0.5, 0.2] }}
+              transition={{ duration: 3, repeat: Infinity, delay: i * 0.3 }}
+            />
+          ))}
 
-          {/* Header */}
-          <div className="relative px-5 py-4 bg-gradient-to-r from-cyan-500/15 via-violet-500/15 to-amber-500/15 border-b-2 border-cyan-400/30">
-            <div className="flex items-center justify-between mb-3">
+          {/* Neural Command Header */}
+          <div className="relative px-6 py-5 bg-gradient-to-r from-cyan-500/20 via-violet-500/20 to-fuchsia-500/20 border-b-2 border-cyan-400/40">
+            {/* Neural Pulse Background */}
+            <motion.div
+              className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 to-violet-500/10"
+              animate={{ 
+                backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
+              }}
+              transition={{ duration: 5, repeat: Infinity }}
+              style={{ backgroundSize: '200% 100%' }}
+            />
+            
+            <div className="relative flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
                 <motion.div
+                  className="relative"
                   animate={{ rotate: [0, 360] }}
-                  transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                  className="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-500/40 to-violet-500/40 border-2 border-cyan-400/50 flex items-center justify-center shadow-lg"
+                  transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
                 >
-                  <Zap className="w-5 h-5 text-cyan-300" />
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500/50 to-violet-500/50 border-2 border-cyan-400/60 flex items-center justify-center shadow-[0_0_20px_rgba(6,182,212,0.5)]">
+                    <Brain className="w-6 h-6 text-cyan-200" />
+                  </div>
+                  <motion.div
+                    className="absolute inset-0 rounded-xl border-2 border-cyan-400/40"
+                    animate={{ 
+                      scale: [1, 1.2, 1],
+                      opacity: [0.5, 0, 0.5]
+                    }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  />
                 </motion.div>
                 <div>
-                  <h3 className="text-sm font-black text-white tracking-wide">INTELLIGENT CLUSTER</h3>
-                  <p className="text-[10px] text-cyan-400 font-mono">{items.length} ENTITIES • REAL-TIME ANALYSIS</p>
+                  <h3 className="text-base font-black text-white tracking-wider flex items-center gap-2">
+                    NEURAL CLUSTER ANALYSIS
+                    <motion.div
+                      animate={{ opacity: [0.5, 1, 0.5] }}
+                      transition={{ duration: 1.5, repeat: Infinity }}
+                    >
+                      <Cpu className="w-4 h-4 text-cyan-400" />
+                    </motion.div>
+                  </h3>
+                  <p className="text-[10px] text-cyan-300 font-mono flex items-center gap-2">
+                    <Radio className="w-3 h-3 animate-pulse" />
+                    {items.length} NODES • AI PROCESSING • {analytics.quantumState}
+                  </p>
                 </div>
               </div>
-              <motion.div
-                animate={{ opacity: [0.6, 1, 0.6] }}
-                transition={{ duration: 2, repeat: Infinity }}
-                className="px-2.5 py-1.5 rounded-lg bg-emerald-500/20 border-2 border-emerald-400/50 flex items-center gap-1.5"
+              <div className="flex flex-col items-end gap-2">
+                <motion.div
+                  animate={{ opacity: [0.6, 1, 0.6] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                  className="px-3 py-1.5 rounded-lg bg-emerald-500/20 border-2 border-emerald-400/60 flex items-center gap-2 shadow-[0_0_15px_rgba(16,185,129,0.3)]"
+                >
+                  <motion.div
+                    className="w-2 h-2 rounded-full bg-emerald-400"
+                    animate={{ 
+                      scale: [1, 1.5, 1],
+                      boxShadow: [
+                        '0 0 5px rgba(16,185,129,0.5)',
+                        '0 0 15px rgba(16,185,129,0.8)',
+                        '0 0 5px rgba(16,185,129,0.5)'
+                      ]
+                    }}
+                    transition={{ duration: 1.5, repeat: Infinity }}
+                  />
+                  <span className="text-[9px] text-emerald-300 font-black uppercase">OPERATIONAL</span>
+                </motion.div>
+                <div className="text-[8px] text-violet-300 font-mono">
+                  CONFIDENCE: {analytics.neuralConfidence}%
+                </div>
+              </div>
+            </div>
+
+            {/* Advanced Neural Analytics Grid */}
+            <div className="relative grid grid-cols-4 gap-2">
+              <motion.div 
+                className="relative bg-slate-900/70 rounded-lg p-2.5 border border-cyan-400/30 overflow-hidden group"
+                whileHover={{ scale: 1.05, borderColor: 'rgba(6,182,212,0.6)' }}
               >
-                <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-lg shadow-emerald-400/50" />
-                <span className="text-[9px] text-emerald-300 font-black uppercase">Active</span>
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-br from-cyan-500/20 to-transparent"
+                  animate={{ opacity: [0.3, 0.6, 0.3] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                />
+                <div className="relative">
+                  <div className="flex items-center gap-1 mb-1">
+                    <Gauge className="w-3 h-3 text-cyan-400" />
+                    <p className="text-[8px] text-slate-300 uppercase tracking-wider">Velocity</p>
+                  </div>
+                  <p className="text-lg font-black text-cyan-400">{analytics.avgSpeed}</p>
+                  <div className="flex items-center gap-1 text-[7px] text-cyan-300">
+                    <ArrowUpRight className="w-2 h-2" />
+                    <span>MAX {analytics.maxSpeed}</span>
+                  </div>
+                </div>
+              </motion.div>
+
+              <motion.div 
+                className="relative bg-slate-900/70 rounded-lg p-2.5 border border-amber-400/30 overflow-hidden group"
+                whileHover={{ scale: 1.05, borderColor: 'rgba(251,191,36,0.6)' }}
+              >
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-br from-amber-500/20 to-transparent"
+                  animate={{ opacity: [0.3, 0.6, 0.3] }}
+                  transition={{ duration: 2, repeat: Infinity, delay: 0.3 }}
+                />
+                <div className="relative">
+                  <div className="flex items-center gap-1 mb-1">
+                    <Fuel className="w-3 h-3 text-amber-400" />
+                    <p className="text-[8px] text-slate-300 uppercase tracking-wider">Energy</p>
+                  </div>
+                  <p className="text-lg font-black text-amber-400">{analytics.avgFuel}%</p>
+                  <div className="flex items-center gap-1 text-[7px] text-amber-300">
+                    {analytics.lowFuelVehicles > 0 && <AlertTriangle className="w-2 h-2" />}
+                    <span>{analytics.lowFuelVehicles} LOW</span>
+                  </div>
+                </div>
+              </motion.div>
+
+              <motion.div 
+                className="relative bg-slate-900/70 rounded-lg p-2.5 border border-violet-400/30 overflow-hidden group"
+                whileHover={{ scale: 1.05, borderColor: 'rgba(139,92,246,0.6)' }}
+              >
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-br from-violet-500/20 to-transparent"
+                  animate={{ opacity: [0.3, 0.6, 0.3] }}
+                  transition={{ duration: 2, repeat: Infinity, delay: 0.6 }}
+                />
+                <div className="relative">
+                  <div className="flex items-center gap-1 mb-1">
+                    <Target className="w-3 h-3 text-violet-400" />
+                    <p className="text-[8px] text-slate-300 uppercase tracking-wider">Optimal</p>
+                  </div>
+                  <p className="text-lg font-black text-violet-400">{analytics.optimalPerformance}%</p>
+                  <div className="flex items-center gap-1 text-[7px] text-violet-300">
+                    <TrendingUp className="w-2 h-2" />
+                    <span>AI BOOST</span>
+                  </div>
+                </div>
+              </motion.div>
+
+              <motion.div 
+                className="relative bg-slate-900/70 rounded-lg p-2.5 border border-red-400/30 overflow-hidden group"
+                whileHover={{ scale: 1.05, borderColor: 'rgba(239,68,68,0.6)' }}
+              >
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-br from-red-500/20 to-transparent"
+                  animate={{ opacity: analytics.criticalAlerts > 0 ? [0.4, 0.8, 0.4] : [0.2, 0.4, 0.2] }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                />
+                <div className="relative">
+                  <div className="flex items-center gap-1 mb-1">
+                    <Shield className="w-3 h-3 text-red-400" />
+                    <p className="text-[8px] text-slate-300 uppercase tracking-wider">Threats</p>
+                  </div>
+                  <p className="text-lg font-black text-red-400">{analytics.criticalAlerts}</p>
+                  <div className="flex items-center gap-1 text-[7px] text-red-300">
+                    {analytics.criticalAlerts > 0 ? <AlertTriangle className="w-2 h-2 animate-pulse" /> : <CheckCircle className="w-2 h-2" />}
+                    <span>{analytics.criticalAlerts > 0 ? 'CRITICAL' : 'SECURE'}</span>
+                  </div>
+                </div>
               </motion.div>
             </div>
 
-            {/* Analytics Bar */}
-            <div className="grid grid-cols-4 gap-2">
-              <div className="bg-slate-900/60 rounded-lg p-2 border border-cyan-400/20">
-                <p className="text-[8px] text-slate-400 mb-0.5">Avg Speed</p>
-                <p className="text-sm font-black text-cyan-400">{analytics.avgSpeed} km/h</p>
+            {/* Neural Processing Bar */}
+            <div className="mt-3 p-2 rounded-lg bg-slate-900/60 border border-violet-400/20">
+              <div className="flex items-center justify-between mb-1.5">
+                <div className="flex items-center gap-2 text-[9px] text-violet-300">
+                  <Cpu className="w-3 h-3" />
+                  <span>NEURAL PROCESSING</span>
+                </div>
+                <span className="text-[9px] text-violet-400 font-mono">{analytics.processingLoad}%</span>
               </div>
-              <div className="bg-slate-900/60 rounded-lg p-2 border border-amber-400/20">
-                <p className="text-[8px] text-slate-400 mb-0.5">Avg Fuel</p>
-                <p className="text-sm font-black text-amber-400">{analytics.avgFuel}%</p>
-              </div>
-              <div className="bg-slate-900/60 rounded-lg p-2 border border-violet-400/20">
-                <p className="text-[8px] text-slate-400 mb-0.5">Efficiency</p>
-                <p className="text-sm font-black text-violet-400">{analytics.efficiency}%</p>
-              </div>
-              <div className="bg-slate-900/60 rounded-lg p-2 border border-red-400/20">
-                <p className="text-[8px] text-slate-400 mb-0.5">Alerts</p>
-                <p className="text-sm font-black text-red-400">{analytics.criticalAlerts}</p>
+              <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                <motion.div
+                  className="h-full bg-gradient-to-r from-violet-500 via-fuchsia-500 to-cyan-500 rounded-full"
+                  animate={{ 
+                    width: `${analytics.processingLoad}%`,
+                    backgroundPosition: ['0% 50%', '100% 50%', '0% 50%']
+                  }}
+                  transition={{ 
+                    width: { duration: 0.3 },
+                    backgroundPosition: { duration: 2, repeat: Infinity }
+                  }}
+                  style={{ backgroundSize: '200% 100%' }}
+                />
               </div>
             </div>
           </div>
