@@ -477,12 +477,12 @@ Give a 2-sentence expert logistics recommendation to reduce fuel and CO₂. Be c
                     {/* AI Insight */}
                     <div className="p-3 rounded-xl border border-cyan-400/20 bg-cyan-500/5">
                       <p className="text-[9px] font-black text-cyan-300 uppercase tracking-wider mb-1.5 flex items-center gap-1">
-                        <Zap className="w-3 h-3" /> Recommandation IA
+                        <Zap className="w-3 h-3" /> AI Recommendation
                       </p>
                       {aiLoading ? (
                         <div className="flex items-center gap-2">
                           <div className="w-3 h-3 border border-cyan-400/50 border-t-cyan-400 rounded-full animate-spin" />
-                          <p className="text-[9px] text-slate-400 italic">Analyse en cours…</p>
+                          <p className="text-[9px] text-slate-400 italic">Analysing…</p>
                         </div>
                       ) : (
                         <p className="text-[10px] text-slate-200 leading-relaxed">{aiInsight}</p>
