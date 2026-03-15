@@ -369,7 +369,7 @@ Give a 2-sentence expert logistics recommendation to reduce fuel and CO₂. Be c
                   <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                     <div className="space-y-2">
                       <div className="flex items-center justify-between text-[9px] font-mono text-cyan-300">
-                        <span>Calcul en cours…</span>
+                        <span>Computing…</span>
                         <span>{progress}%</span>
                       </div>
                       <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
