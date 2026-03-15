@@ -314,7 +314,7 @@ Give a 2-sentence expert logistics recommendation to reduce fuel and CO₂. Be c
       {/* Glow */}
       <div className="absolute -inset-2 bg-gradient-to-br from-cyan-500/20 via-violet-500/20 to-emerald-500/20 rounded-2xl blur-xl pointer-events-none" />
 
-      <div className="relative flex flex-col bg-slate-950/97 border border-cyan-400/40 rounded-2xl overflow-hidden shadow-[0_0_40px_rgba(6,182,212,0.15)] max-h-[95vh]">
+      <div className="relative flex flex-col bg-slate-950/97 border border-cyan-400/40 rounded-2xl overflow-hidden shadow-[0_0_40px_rgba(6,182,212,0.15)] min-h-0 flex-1">
         {/* Scan line */}
         <motion.div
           className="absolute inset-0 bg-gradient-to-b from-transparent via-cyan-400/6 to-transparent pointer-events-none"
