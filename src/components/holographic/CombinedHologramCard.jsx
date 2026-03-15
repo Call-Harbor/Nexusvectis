@@ -56,16 +56,29 @@ export default function CombinedHologramCard({ items, x, y, index, depth }) {
     avgDistance: routes.length > 0 ? Math.round(routes.reduce((sum, r) => sum + (r.data.distance_km || 0), 0) / routes.length) : 0,
     aiOptimized: routes.filter(r => r.data.ai_optimized).length,
     
-    // AI predictions
-    efficiency: Math.round(Math.random() * 30 + 70),
-    predictedETA: Math.round(Math.random() * 120 + 30), // minutes
-    riskScore: Math.round(Math.random() * 100),
-    optimalPerformance: Math.round(85 + Math.random() * 15),
-    
-    // Neural network stats
-    neuralConfidence: Math.round(92 + Math.random() * 7),
+    // AI predictions — derived from real data
+    efficiency: vehicles.length > 0
+      ? Math.round(vehicles.reduce((sum, v) => sum + (v.data.efficiency_score || 0), 0) / vehicles.length)
+      : (routes.length > 0 ? Math.round(routes.filter(r => r.data.status === 'active').length / routes.length * 100) : 0),
+    predictedETA: vehicles.length > 0
+      ? Math.round(vehicles.filter(v => v.data.eta).reduce((sum, v) => {
+          const mins = (new Date(v.data.eta) - Date.now()) / 60000;
+          return sum + Math.max(0, mins);
+        }, 0) / Math.max(1, vehicles.filter(v => v.data.eta).length))
+      : 0,
+    riskScore: vehicles.length > 0
+      ? Math.round((vehicles.filter(v => v.data.status === 'maintenance' || v.data.fuel_level < 20).length / vehicles.length) * 100)
+      : 0,
+    optimalPerformance: vehicles.length > 0
+      ? Math.round(vehicles.reduce((sum, v) => sum + (v.data.efficiency_score || 0), 0) / vehicles.length)
+      : (routes.length > 0 ? Math.round(routes.filter(r => r.data.ai_optimized).length / routes.length * 100) : 0),
+
+    // Neural network stats — real signal quality
+    neuralConfidence: vehicles.length > 0
+      ? Math.round(vehicles.reduce((sum, v) => sum + (v.data.signal_strength || 80), 0) / vehicles.length)
+      : 95,
     processingLoad: Math.round(neuralActivity),
-    quantumState: Math.random() > 0.5 ? 'ENTANGLED' : 'SUPERPOSED'
+    quantumState: routes.filter(r => r.data.ai_optimized).length > 0 ? 'AI-OPTIMIZED' : 'STANDARD'
   };
 
   // Render detailed vehicle info
