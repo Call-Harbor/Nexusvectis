@@ -5,7 +5,7 @@ import DashboardGlobeFrame from "@/components/holographic/DashboardGlobeFrame";
 
 // Wrapper that delegates to FuturisticGlobe so both Dashboard and IntellectMode
 // show the same globe with CombinedHologramCard holograms.
-export default function FleetGlobe3D({ vehicles = [], routes = [], resources = [], digitalTwins = [], onClose, onMinimize }) {
+export default function FleetGlobe3D({ vehicles = [], routes = [], resources = [], digitalTwins = [], orgId, onClose, onMinimize }) {
   const [isMinimized, setIsMinimized] = useState(false);
 
   return (
