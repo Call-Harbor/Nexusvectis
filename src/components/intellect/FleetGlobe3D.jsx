@@ -61,6 +61,7 @@ export default function FleetGlobe3D({ vehicles = [], routes = [], resources = [
               routes={routes}
               resources={resources}
               digitalTwins={digitalTwins}
+              orgId={orgId}
               onSelectVehicle={() => {}}
               onSelectResource={() => {}}
               className="w-full h-full"
