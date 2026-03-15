@@ -56,14 +56,14 @@ export default function FleetGlobe3D({ vehicles = [], routes = [], resources = [
               </div>
             </div>
 
-            {/* FuturisticGlobe — same as Dashboard */}
-            <FuturisticGlobe
+            <DashboardGlobeFrame
               vehicles={vehicles}
               routes={routes}
               resources={resources}
               digitalTwins={digitalTwins}
               onSelectVehicle={() => {}}
               onSelectResource={() => {}}
+              className="w-full h-full"
             />
           </div>
         </div>
