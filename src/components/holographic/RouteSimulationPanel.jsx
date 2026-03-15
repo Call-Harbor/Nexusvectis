@@ -359,7 +359,7 @@ Give a 2-sentence expert logistics recommendation to reduce fuel and CO₂. Be c
                   onClick={runSimulation}
                   className="w-full py-2.5 rounded-xl bg-gradient-to-r from-cyan-500/20 to-violet-500/20 border border-cyan-400/40 text-cyan-300 text-xs font-black tracking-wider uppercase flex items-center justify-center gap-2 hover:from-cyan-500/30 hover:to-violet-500/30 transition-all"
                 >
-                  <Play className="w-4 h-4" /> Lancer la simulation
+                  <Play className="w-4 h-4" /> Run Simulation
                 </button>
               )}
 
