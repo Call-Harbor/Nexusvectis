@@ -57,42 +57,42 @@ export default function Dashboard() {
     queryKey: ['vehicles', orgId],
     queryFn: () => base44.entities.Vehicle.filter({ organization_id: orgId }),
     enabled: !!orgId,
-    refetchInterval: isLearning ? false : 10000,
+    refetchInterval: 10000,
   });
 
   const { data: routes = [] } = useQuery({
     queryKey: ['routes', orgId],
     queryFn: () => base44.entities.Route.filter({ organization_id: orgId }),
     enabled: !!orgId,
-    refetchInterval: isLearning ? false : 15000,
+    refetchInterval: 15000,
   });
 
   const { data: resources = [] } = useQuery({
     queryKey: ['resources', orgId],
     queryFn: () => base44.entities.Resource.filter({ organization_id: orgId }),
     enabled: !!orgId,
-    refetchInterval: isLearning ? false : 20000,
+    refetchInterval: 20000,
   });
 
   const { data: digitalTwins = [] } = useQuery({
     queryKey: ['digitalTwins', orgId],
     queryFn: () => base44.entities.DigitalTwin.filter({ organization_id: orgId }),
     enabled: !!orgId,
-    refetchInterval: isLearning ? false : 20000,
+    refetchInterval: 20000,
   });
 
   const { data: alerts = [] } = useQuery({
     queryKey: ['alerts', orgId],
     queryFn: () => base44.entities.Alert.filter({ organization_id: orgId }, '-created_date', 10),
     enabled: !!orgId,
-    refetchInterval: isLearning ? false : 15000,
+    refetchInterval: 15000,
   });
 
   const { data: exceptions = [] } = useQuery({
     queryKey: ['exceptions', orgId],
     queryFn: () => base44.entities.Exception.filter({ organization_id: orgId, status: { $ne: 'resolved' } }, '-created_date', 5),
     enabled: !!orgId,
-    refetchInterval: isLearning ? false : 15000,
+    refetchInterval: 15000,
   });
 
   // Advanced Analytics
