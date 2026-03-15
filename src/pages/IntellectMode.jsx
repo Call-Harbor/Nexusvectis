@@ -977,13 +977,15 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
                   Close 3D View
                 </button>
               </div>
-              <FuturisticGlobe 
-                vehicles={show3DVisualization.vehicles || vehicles} 
+              <DashboardGlobeFrame
+                vehicles={show3DVisualization.vehicles || vehicles}
                 routes={show3DVisualization.routes || routes}
                 resources={show3DVisualization.resources || resources}
                 digitalTwins={[]}
-                onSelectVehicle={(v) => {}}
-                onSelectResource={(r) => {}}
+                orgId={orgId}
+                onSelectVehicle={() => {}}
+                onSelectResource={() => {}}
+                className="w-full h-full"
               />
             </motion.div>
           )}
