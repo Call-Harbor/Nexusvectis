@@ -184,37 +184,7 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
-                <motion.button
-                  onClick={() => !isLearning && setAiMode('learning')}
-                  whileHover={!isLearning ? { scale: 1.05 } : {}}
-                  whileTap={!isLearning ? { scale: 0.95 } : {}}
-                  className={`relative px-3 sm:px-4 py-2 rounded-xl font-medium text-xs sm:text-sm transition-all flex-1 sm:flex-none overflow-hidden ${
-                    isLearning
-                      ? 'bg-gradient-to-r from-violet-600/40 to-pink-600/40 text-violet-300 border border-violet-400/60 cursor-not-allowed'
-                      : 'bg-gradient-to-r from-cyan-500/30 to-violet-500/30 text-cyan-400 border border-cyan-400/50 cursor-pointer'
-                  }`}
-                >
-                  {isLearning && (
-                    <motion.div
-                      className="absolute inset-0 bg-gradient-to-r from-violet-500/20 via-pink-500/20 to-violet-500/20"
-                      animate={{ x: ['-100%', '100%'] }}
-                      transition={{ duration: 1.2, repeat: Infinity, ease: 'linear' }}
-                    />
-                  )}
-                  <div className="relative flex items-center justify-center gap-2">
-                    {isLearning ? (
-                      <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}>
-                        <Brain className="w-3 h-3 sm:w-4 sm:h-4 text-violet-300" />
-                      </motion.div>
-                    ) : (
-                      <Sparkles className="w-3 h-3 sm:w-4 sm:h-4" />
-                    )}
-                    <span className="hidden sm:inline">{isLearning ? `Training… ${Math.round(aiLearningProgress)}%` : 'Retrain AI'}</span>
-                    <span className="sm:hidden">{isLearning ? `${Math.round(aiLearningProgress)}%` : 'Retrain'}</span>
-                  </div>
-                </motion.button>
-              </div>
+
             </div>
 
             {/* Neural Status Grid */}
