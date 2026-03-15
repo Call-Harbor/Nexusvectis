@@ -410,11 +410,11 @@ Give a 2-sentence expert logistics recommendation to reduce fuel and CO₂. Be c
 
                     {/* Key metrics */}
                     <div className="grid grid-cols-2 gap-2">
-                      <MetricCard icon={Fuel} label="Carburant" value={displayMetrics.fuelL} unit="L" color="amber"
+                      <MetricCard icon={Fuel} label="Fuel" value={displayMetrics.fuelL} unit="L" color="amber"
                         delta={selectedAlt ? -selectedAlt.fuelSavingPct : undefined} />
                       <MetricCard icon={Leaf} label="CO₂" value={displayMetrics.co2Kg} unit="kg" color="emerald"
                         delta={selectedAlt ? -selectedAlt.co2SavingPct : undefined} />
-                      <MetricCard icon={Clock} label="Durée est." value={displayMetrics.durationH} unit="h" color="cyan" />
+                      <MetricCard icon={Clock} label="Est. Duration" value={displayMetrics.durationH} unit="h" color="cyan" />
                       <MetricCard icon={Route} label="Distance" value={displayMetrics.distanceKm} unit="km" color="violet" />
                     </div>
 
