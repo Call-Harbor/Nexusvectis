@@ -460,7 +460,7 @@ Give a 2-sentence expert logistics recommendation to reduce fuel and CO₂. Be c
                     {/* Alternative routes */}
                     <div>
                       <p className="text-[9px] font-black text-violet-300 uppercase tracking-wider mb-2 flex items-center gap-1">
-                        <Zap className="w-3 h-3" /> Alternatives IA
+                        <Zap className="w-3 h-3" /> AI Alternatives
                       </p>
                       <div className="space-y-2">
                         {alternatives.map((alt) => (
