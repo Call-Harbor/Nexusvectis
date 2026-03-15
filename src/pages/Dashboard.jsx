@@ -101,8 +101,12 @@ export default function Dashboard() {
   const criticalAlerts = alerts.filter(a => a.type === 'critical' && !a.is_resolved).length;
   const criticalExceptions = exceptions.filter(e => e.severity === 'critical').length;
   const aiOptimizedRoutes = routes.filter(r => r.ai_optimized).length;
-  const predictiveScore = Math.round(85 + Math.random() * 10);
-  const networkHealth = Math.round(92 + Math.random() * 7);
+  const predictiveScore = vehicles.length > 0
+    ? Math.round(vehicles.reduce((sum, v) => sum + (v.efficiency_score || 0), 0) / vehicles.length)
+    : 0;
+  const networkHealth = vehicles.length > 0
+    ? Math.round(vehicles.filter(v => v.status === 'active' || v.status === 'idle').length / vehicles.length * 100)
+    : 0;
 
   return (
     <div className="fixed inset-0 bg-black overflow-hidden">
