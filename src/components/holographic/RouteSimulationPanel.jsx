@@ -57,8 +57,9 @@ const FUEL_LPH   = { truck: 35, ship: 1800, aircraft: 3500, train: 200, drone: 4
 
 function calcMetrics(route, weatherData, trafficData) {
   const waypoints = (route.waypoints || []).filter(w => w.lat && w.lng);
-  let totalKm = route.distance_km || 0;
 
+  // Use stored distance_km from DB, or compute from waypoints
+  let totalKm = route.distance_km || 0;
   if (!totalKm && waypoints.length >= 2) {
     for (let i = 0; i < waypoints.length - 1; i++) {
       totalKm += haversineKm(waypoints[i].lat, waypoints[i].lng, waypoints[i + 1].lat, waypoints[i + 1].lng);
@@ -66,23 +67,30 @@ function calcMetrics(route, weatherData, trafficData) {
   }
 
   const type = route.transport_type || 'truck';
-  const avgSpeedBase = { truck: 80, ship: 35, aircraft: 800, train: 120, drone: 60 }[type] || 80;
   const wMult = weatherData ? weatherMultiplier(weatherData) : 1.0;
   const tDelay = trafficData ? trafficData.congestion : 0;
+
+  // Use stored estimated_duration_hours from DB if available
+  const avgSpeedBase = { truck: 80, ship: 35, aircraft: 800, train: 120, drone: 60 }[type] || 80;
   const effectiveSpeed = avgSpeedBase * (1 - tDelay * 0.4);
-  const durationH = totalKm / effectiveSpeed;
+  const durationH = route.estimated_duration_hours
+    ? parseFloat((route.estimated_duration_hours * (1 + tDelay * 0.4) * wMult).toFixed(1))
+    : parseFloat((totalKm / effectiveSpeed).toFixed(1));
 
   const fuelLph = FUEL_LPH[type] || 35;
-  const baseFuel = fuelLph * durationH * wMult;
+  const baseFuel = Math.round(fuelLph * durationH * wMult);
+
+  // Use stored co2_estimate from DB if available, else calculate
   const co2Factor = CO2_FACTOR[type] || 62;
-  // Assume avg cargo 20 tons
-  const co2Kg = (co2Factor * totalKm * 20) / 1000 * wMult;
+  const co2Kg = route.co2_estimate
+    ? Math.round(route.co2_estimate * wMult)
+    : Math.round((co2Factor * totalKm * 20) / 1000 * wMult);
 
   return {
     distanceKm: Math.round(totalKm),
-    durationH: parseFloat(durationH.toFixed(1)),
-    fuelL: Math.round(baseFuel),
-    co2Kg: Math.round(co2Kg),
+    durationH,
+    fuelL: baseFuel,
+    co2Kg,
     efficiency: Math.round(100 - tDelay * 60 - (wMult - 1) * 80),
   };
 }
