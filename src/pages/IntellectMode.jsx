@@ -26,7 +26,7 @@ import { getWindowMeta } from "@/components/intellect/WindowRegistry";
 import CircularBrainMenu from "@/components/intellect/CircularBrainMenu";
 import IntellectHeader from "@/components/intellect/IntellectHeader";
 import IntellectCommandBar from "@/components/intellect/IntellectCommandBar";
-import FuturisticGlobe from "@/components/holographic/FuturisticGlobe";
+import DashboardGlobeFrame from "@/components/holographic/DashboardGlobeFrame";
 import ThinkingTerminalVisual from "@/components/intellect/ThinkingTerminalVisual";
 import CompanyAnalysisHologram from "@/components/intellect/CompanyAnalysisHologram";
 import ProfileSearch from "@/components/intellect/ProfileSearch";
