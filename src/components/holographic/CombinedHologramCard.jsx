@@ -1,315 +1,269 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Route, Warehouse, Truck, Zap, TrendingUp, Activity, MapPin, Clock, Fuel, Package } from 'lucide-react';
+import { Route, Warehouse, Truck, Zap, Activity, MapPin, Clock, Fuel, Package, TrendingUp, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import RouteHologramCard from './RouteHologramCard';
-import ResourceHologramCard from './ResourceHologramCard';
-import VehicleHologramCard from './VehicleHologramCard';
 
 export default function CombinedHologramCard({ items, x, y, index, depth }) {
-  const [selectedItem, setSelectedItem] = useState(null);
-  const [hoveredIndex, setHoveredIndex] = useState(null);
-  const [autoRotateIndex, setAutoRotateIndex] = useState(0);
-
-  // Auto-rotate through items every 3 seconds
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setAutoRotateIndex((prev) => (prev + 1) % items.length);
-    }, 3000);
-    return () => clearInterval(interval);
-  }, [items.length]);
-
-  // If item is selected, show full detail card
-  if (selectedItem) {
-    const props = { x, y, index, depth, onClose: () => setSelectedItem(null) };
-    
-    if (selectedItem.type === 'route') {
-      return <RouteHologramCard route={selectedItem.data} {...props} />;
-    } else if (selectedItem.type === 'resource') {
-      return <ResourceHologramCard resource={selectedItem.data} {...props} />;
-    } else {
-      return <VehicleHologramCard vehicle={selectedItem.data} {...props} />;
-    }
-  }
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [hoveredItem, setHoveredItem] = useState(null);
 
   const zIndex = depth ? Math.max(10, 1000 - Math.floor(depth * 100)) : 100;
-  const displayIndex = hoveredIndex !== null ? hoveredIndex : autoRotateIndex;
-  const activeItem = items[displayIndex];
 
-  // Get intelligent data based on item type
-  const getIntelligentData = (item) => {
-    if (item.type === 'vehicle') {
-      const data = item.data;
-      return {
-        icon: Truck,
-        title: data.name,
-        subtitle: data.type?.toUpperCase() || 'VEHICLE',
-        status: data.status,
-        statusColor: data.status === 'active' ? 'text-emerald-400' : data.status === 'idle' ? 'text-amber-400' : 'text-red-400',
-        metrics: [
-          { icon: Activity, label: 'Speed', value: `${data.speed || 0} km/h`, color: 'text-cyan-400' },
-          { icon: Fuel, label: 'Fuel', value: `${data.fuel_level || 0}%`, color: 'text-amber-400' },
-          { icon: MapPin, label: 'Destination', value: data.destination || 'N/A', color: 'text-violet-400' },
-          { icon: Clock, label: 'ETA', value: data.eta ? new Date(data.eta).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : 'N/A', color: 'text-emerald-400' }
-        ]
-      };
-    } else if (item.type === 'resource') {
-      const data = item.data;
-      const utilization = data.capacity ? Math.round((data.current_level / data.capacity) * 100) : 0;
-      return {
-        icon: Warehouse,
-        title: data.name,
-        subtitle: data.type?.replace(/_/g, ' ').toUpperCase() || 'RESOURCE',
-        status: data.status,
-        statusColor: data.status === 'operational' ? 'text-emerald-400' : 'text-amber-400',
-        metrics: [
-          { icon: Package, label: 'Capacity', value: `${data.current_level || 0}/${data.capacity || 0}`, color: 'text-cyan-400' },
-          { icon: TrendingUp, label: 'Utilization', value: `${utilization}%`, color: 'text-violet-400' },
-          { icon: MapPin, label: 'Location', value: data.location || 'Unknown', color: 'text-amber-400' }
-        ]
-      };
-    } else {
-      const data = item.data;
-      return {
-        icon: Route,
-        title: data.name,
-        subtitle: 'ROUTE',
-        status: data.status,
-        statusColor: data.status === 'active' ? 'text-emerald-400' : data.status === 'planned' ? 'text-cyan-400' : 'text-slate-400',
-        metrics: [
-          { icon: MapPin, label: 'Origin', value: data.origin || 'N/A', color: 'text-cyan-400' },
-          { icon: MapPin, label: 'Destination', value: data.destination || 'N/A', color: 'text-violet-400' },
-          { icon: Activity, label: 'Distance', value: `${data.distance_km || 0} km`, color: 'text-amber-400' },
-          { icon: Truck, label: 'Transport', value: data.transport_type || 'N/A', color: 'text-emerald-400' }
-        ]
-      };
+  // Separate items by type
+  const vehicles = items.filter(item => item.type === 'vehicle');
+  const resources = items.filter(item => item.type === 'resource');
+  const routes = items.filter(item => item.type === 'route');
+
+  // Get icon and color based on type
+  const getTypeConfig = (type) => {
+    switch(type) {
+      case 'vehicle':
+        return { icon: Truck, color: 'text-cyan-400', bg: 'bg-cyan-500/10', border: 'border-cyan-400/30' };
+      case 'resource':
+        return { icon: Warehouse, color: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-400/30' };
+      case 'route':
+        return { icon: Route, color: 'text-violet-400', bg: 'bg-violet-500/10', border: 'border-violet-400/30' };
+      default:
+        return { icon: Zap, color: 'text-cyan-400', bg: 'bg-cyan-500/10', border: 'border-cyan-400/30' };
     }
   };
 
-  const intelligentData = getIntelligentData(activeItem);
-  const Icon = intelligentData.icon;
+  // Render compact item
+  const renderCompactItem = (item, idx) => {
+    const config = getTypeConfig(item.type);
+    const Icon = config.icon;
+    const data = item.data;
+    const isHovered = hoveredItem === `${item.type}-${idx}`;
+
+    let title = '';
+    let status = '';
+    let metric = '';
+
+    if (item.type === 'vehicle') {
+      title = data.name;
+      status = data.status;
+      metric = `${data.speed || 0} km/h`;
+    } else if (item.type === 'resource') {
+      title = data.name;
+      status = data.status;
+      metric = `${data.current_level || 0}/${data.capacity || 0}`;
+    } else {
+      title = data.name;
+      status = data.status;
+      metric = `${data.distance_km || 0} km`;
+    }
+
+    return (
+      <motion.div
+        key={`${item.type}-${idx}`}
+        initial={{ opacity: 0, x: -10 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: idx * 0.03 }}
+        onMouseEnter={() => setHoveredItem(`${item.type}-${idx}`)}
+        onMouseLeave={() => setHoveredItem(null)}
+        className={cn(
+          "relative flex items-center gap-2 p-2 rounded-lg border transition-all cursor-pointer",
+          config.bg,
+          isHovered ? config.border : 'border-slate-700/30'
+        )}
+      >
+        <Icon className={cn("w-3.5 h-3.5 flex-shrink-0", config.color)} />
+        <div className="flex-1 min-w-0">
+          <p className="text-[10px] text-white font-medium truncate">{title}</p>
+          <div className="flex items-center gap-1.5">
+            <span className={cn("text-[8px] uppercase font-bold", config.color)}>{status}</span>
+            <span className="text-[8px] text-slate-500">•</span>
+            <span className="text-[8px] text-slate-400">{metric}</span>
+          </div>
+        </div>
+        {isHovered && (
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            className="absolute -inset-0.5 bg-gradient-to-r from-cyan-400/20 to-violet-400/20 rounded-lg blur -z-10"
+          />
+        )}
+      </motion.div>
+    );
+  };
 
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.8, rotateX: -20 }}
+      initial={{ opacity: 0, scale: 0.85, rotateX: -15 }}
       animate={{ 
         opacity: 1, 
         scale: 1,
         rotateX: 0,
         left: x + 180,
-        top: y - 200
+        top: y - 220
       }}
-      exit={{ opacity: 0, scale: 0.8, rotateX: 20 }}
+      exit={{ opacity: 0, scale: 0.85, rotateX: 15 }}
       transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
       style={{
         position: 'absolute',
         zIndex: zIndex,
         pointerEvents: 'auto',
         transformStyle: 'preserve-3d',
-        perspective: '1000px'
+        perspective: '1000px',
+        width: isExpanded ? '420px' : '360px'
       }}
-      className="w-80"
     >
-      {/* JARVIS-style HUD Container */}
+      {/* JARVIS HUD Container */}
       <div className="relative">
-        {/* Holographic Frame */}
+        {/* Outer Glow */}
         <motion.div
-          className="absolute -inset-1 bg-gradient-to-r from-cyan-500/20 via-violet-500/20 to-cyan-500/20 rounded-lg blur-md"
-          animate={{
-            opacity: [0.3, 0.6, 0.3]
-          }}
-          transition={{ duration: 2, repeat: Infinity }}
+          className="absolute -inset-2 bg-gradient-to-r from-cyan-500/20 via-violet-500/20 to-amber-500/20 rounded-xl blur-lg"
+          animate={{ opacity: [0.4, 0.7, 0.4] }}
+          transition={{ duration: 3, repeat: Infinity }}
         />
 
         {/* Main Panel */}
-        <div className="relative bg-slate-950/90 backdrop-blur-2xl rounded-lg border border-cyan-400/30 overflow-hidden">
+        <div className="relative bg-slate-950/95 backdrop-blur-2xl rounded-xl border border-cyan-400/40 overflow-hidden shadow-2xl">
           {/* Animated Scan Lines */}
           <motion.div
-            className="absolute inset-0 bg-gradient-to-b from-transparent via-cyan-400/5 to-transparent"
+            className="absolute inset-0 bg-gradient-to-b from-transparent via-cyan-400/5 to-transparent pointer-events-none"
             animate={{ y: ['-100%', '200%'] }}
-            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-            style={{ pointerEvents: 'none' }}
+            transition={{ duration: 2.5, repeat: Infinity, ease: "linear" }}
           />
 
-          {/* Corner HUD Elements */}
-          <div className="absolute top-0 left-0 w-8 h-8">
-            <motion.div 
-              className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-cyan-400 to-transparent"
-              animate={{ scaleX: [0, 1] }}
-              transition={{ duration: 0.5 }}
-            />
-            <motion.div 
-              className="absolute top-0 left-0 w-0.5 h-full bg-gradient-to-b from-cyan-400 to-transparent"
-              animate={{ scaleY: [0, 1] }}
-              transition={{ duration: 0.5 }}
-            />
-          </div>
-          <div className="absolute top-0 right-0 w-8 h-8">
-            <motion.div 
-              className="absolute top-0 right-0 w-full h-0.5 bg-gradient-to-l from-cyan-400 to-transparent"
-              animate={{ scaleX: [0, 1] }}
-              transition={{ duration: 0.5 }}
-            />
-            <motion.div 
-              className="absolute top-0 right-0 w-0.5 h-full bg-gradient-to-b from-cyan-400 to-transparent"
-              animate={{ scaleY: [0, 1] }}
-              transition={{ duration: 0.5 }}
-            />
-          </div>
-          <div className="absolute bottom-0 left-0 w-8 h-8">
-            <motion.div 
-              className="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-cyan-400 to-transparent"
-              animate={{ scaleX: [0, 1] }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-            />
-            <motion.div 
-              className="absolute bottom-0 left-0 w-0.5 h-full bg-gradient-to-t from-cyan-400 to-transparent"
-              animate={{ scaleY: [0, 1] }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-            />
-          </div>
-          <div className="absolute bottom-0 right-0 w-8 h-8">
-            <motion.div 
-              className="absolute bottom-0 right-0 w-full h-0.5 bg-gradient-to-l from-cyan-400 to-transparent"
-              animate={{ scaleX: [0, 1] }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-            />
-            <motion.div 
-              className="absolute bottom-0 right-0 w-0.5 h-full bg-gradient-to-t from-cyan-400 to-transparent"
-              animate={{ scaleY: [0, 1] }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-            />
-          </div>
+          {/* Corner Brackets */}
+          <svg className="absolute top-0 left-0 w-8 h-8 text-cyan-400" viewBox="0 0 20 20">
+            <path d="M0 0 L20 0 L20 2 L2 2 L2 20 L0 20 Z" fill="currentColor" opacity="0.6"/>
+          </svg>
+          <svg className="absolute top-0 right-0 w-8 h-8 text-cyan-400" viewBox="0 0 20 20">
+            <path d="M20 0 L0 0 L0 2 L18 2 L18 20 L20 20 Z" fill="currentColor" opacity="0.6"/>
+          </svg>
+          <svg className="absolute bottom-0 left-0 w-8 h-8 text-violet-400" viewBox="0 0 20 20">
+            <path d="M0 20 L20 20 L20 18 L2 18 L2 0 L0 0 Z" fill="currentColor" opacity="0.6"/>
+          </svg>
+          <svg className="absolute bottom-0 right-0 w-8 h-8 text-violet-400" viewBox="0 0 20 20">
+            <path d="M20 20 L0 20 L0 18 L18 18 L18 0 L20 0 Z" fill="currentColor" opacity="0.6"/>
+          </svg>
 
           {/* Header */}
-          <div className="relative px-4 py-3 border-b border-cyan-400/20 bg-gradient-to-r from-cyan-500/10 to-violet-500/10">
+          <div className="relative px-4 py-3 bg-gradient-to-r from-cyan-500/10 via-violet-500/10 to-amber-500/10 border-b border-cyan-400/20">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2.5">
                 <motion.div
                   animate={{ rotate: [0, 360] }}
                   transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                  className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500/20 to-violet-500/20 border border-cyan-400/30 flex items-center justify-center"
+                  className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500/30 to-violet-500/30 border border-cyan-400/40 flex items-center justify-center"
                 >
-                  <Icon className="w-5 h-5 text-cyan-400" />
+                  <Zap className="w-4 h-4 text-cyan-400" />
                 </motion.div>
                 <div>
-                  <motion.h3 
-                    key={activeItem.data.id}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    className="text-sm font-bold text-white tracking-wide"
-                  >
-                    {intelligentData.title}
-                  </motion.h3>
-                  <p className="text-[9px] text-cyan-400 font-mono">{intelligentData.subtitle}</p>
+                  <h3 className="text-xs font-bold text-white tracking-wide">CLUSTER ANALYSIS</h3>
+                  <p className="text-[9px] text-cyan-400 font-mono">{items.length} ENTITIES DETECTED</p>
                 </div>
               </div>
               <motion.div
                 animate={{ opacity: [0.5, 1, 0.5] }}
                 transition={{ duration: 2, repeat: Infinity }}
-                className={cn("px-2 py-0.5 rounded-full border text-[9px] font-bold uppercase", intelligentData.statusColor, "border-current")}
+                className="px-2 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/40 flex items-center gap-1"
               >
-                {intelligentData.status}
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="text-[8px] text-emerald-400 font-bold uppercase">Live</span>
               </motion.div>
             </div>
           </div>
 
-          {/* Metrics Grid */}
-          <div className="relative p-4">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={displayIndex}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.3 }}
-                className="grid grid-cols-2 gap-2"
-              >
-                {intelligentData.metrics.map((metric, idx) => {
-                  const MetricIcon = metric.icon;
-                  return (
-                    <motion.div
-                      key={idx}
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: idx * 0.05 }}
-                      className="relative group"
-                    >
-                      <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-violet-500/5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity" />
-                      <div className="relative bg-slate-900/60 backdrop-blur-sm rounded-lg p-2.5 border border-slate-700/40 group-hover:border-cyan-400/30 transition-colors">
-                        <div className="flex items-center gap-1.5 mb-1">
-                          <MetricIcon className={cn("w-3 h-3", metric.color)} />
-                          <span className="text-[9px] text-slate-400 uppercase tracking-wide">{metric.label}</span>
-                        </div>
-                        <p className={cn("text-xs font-bold truncate", metric.color)}>{metric.value}</p>
-                      </div>
-                    </motion.div>
-                  );
-                })}
-              </motion.div>
-            </AnimatePresence>
-
-            {/* Navigation Indicator */}
-            <div className="flex items-center justify-center gap-1.5 mt-3 pt-3 border-t border-cyan-400/10">
-              {items.map((_, idx) => (
-                <motion.button
-                  key={idx}
-                  onClick={() => setHoveredIndex(idx)}
-                  onMouseEnter={() => setHoveredIndex(idx)}
-                  onMouseLeave={() => setHoveredIndex(null)}
-                  className={cn(
-                    "w-1.5 h-1.5 rounded-full transition-all",
-                    displayIndex === idx ? "bg-cyan-400 w-4" : "bg-slate-600 hover:bg-slate-500"
-                  )}
-                  whileHover={{ scale: 1.2 }}
-                />
-              ))}
-            </div>
-
-            {/* Access Full Data */}
-            <motion.button
-              onClick={() => setSelectedItem(activeItem)}
-              className="w-full mt-3 py-2 text-[10px] font-bold text-cyan-400 border border-cyan-400/30 rounded-lg hover:bg-cyan-400/10 transition-colors uppercase tracking-wider"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <div className="flex items-center justify-center gap-1.5">
-                <Zap className="w-3 h-3" />
-                Access Full Data
+          {/* Content */}
+          <div className="relative p-4 max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-cyan-500/20 scrollbar-track-transparent">
+            {/* Vehicles Section */}
+            {vehicles.length > 0 && (
+              <div className="mb-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Truck className="w-3.5 h-3.5 text-cyan-400" />
+                  <span className="text-[10px] text-cyan-400 font-bold uppercase tracking-wider">
+                    Vehicles ({vehicles.length})
+                  </span>
+                  <div className="flex-1 h-px bg-gradient-to-r from-cyan-400/40 to-transparent" />
+                </div>
+                <div className="space-y-1.5">
+                  {vehicles.map((item, idx) => renderCompactItem(item, idx))}
+                </div>
               </div>
-            </motion.button>
+            )}
+
+            {/* Resources Section */}
+            {resources.length > 0 && (
+              <div className="mb-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Warehouse className="w-3.5 h-3.5 text-amber-400" />
+                  <span className="text-[10px] text-amber-400 font-bold uppercase tracking-wider">
+                    Resources ({resources.length})
+                  </span>
+                  <div className="flex-1 h-px bg-gradient-to-r from-amber-400/40 to-transparent" />
+                </div>
+                <div className="space-y-1.5">
+                  {resources.map((item, idx) => renderCompactItem(item, idx))}
+                </div>
+              </div>
+            )}
+
+            {/* Routes Section */}
+            {routes.length > 0 && (
+              <div className="mb-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Route className="w-3.5 h-3.5 text-violet-400" />
+                  <span className="text-[10px] text-violet-400 font-bold uppercase tracking-wider">
+                    Routes ({routes.length})
+                  </span>
+                  <div className="flex-1 h-px bg-gradient-to-r from-violet-400/40 to-transparent" />
+                </div>
+                <div className="space-y-1.5">
+                  {routes.map((item, idx) => renderCompactItem(item, idx))}
+                </div>
+              </div>
+            )}
+
+            {/* Stats Grid */}
+            <div className="grid grid-cols-3 gap-2 mt-4 pt-4 border-t border-slate-700/40">
+              <div className="text-center p-2 rounded bg-cyan-500/10 border border-cyan-400/20">
+                <div className="text-lg font-black text-cyan-400">{vehicles.length}</div>
+                <div className="text-[8px] text-slate-400 uppercase">Vehicles</div>
+              </div>
+              <div className="text-center p-2 rounded bg-amber-500/10 border border-amber-400/20">
+                <div className="text-lg font-black text-amber-400">{resources.length}</div>
+                <div className="text-[8px] text-slate-400 uppercase">Resources</div>
+              </div>
+              <div className="text-center p-2 rounded bg-violet-500/10 border border-violet-400/20">
+                <div className="text-lg font-black text-violet-400">{routes.length}</div>
+                <div className="text-[8px] text-slate-400 uppercase">Routes</div>
+              </div>
+            </div>
           </div>
 
-          {/* Data Stream Effect */}
-          <div className="absolute top-0 right-0 w-32 h-full overflow-hidden opacity-10 pointer-events-none">
+          {/* Data Stream Background */}
+          <div className="absolute top-0 right-0 w-24 h-full overflow-hidden opacity-5 pointer-events-none">
             <motion.div
               animate={{ y: ['-100%', '100%'] }}
-              transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+              transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
               className="text-[6px] text-cyan-400 font-mono leading-tight break-all"
             >
-              {Array(100).fill('01').join('')}
+              {Array(150).fill('01').join('')}
             </motion.div>
           </div>
         </div>
 
-        {/* Holographic Particles */}
-        {[...Array(6)].map((_, i) => (
+        {/* Floating Particles */}
+        {[...Array(8)].map((_, i) => (
           <motion.div
             key={i}
             className="absolute w-1 h-1 bg-cyan-400 rounded-full"
             style={{
-              left: `${20 + i * 15}%`,
+              left: `${15 + i * 12}%`,
               top: '50%'
             }}
             animate={{
-              y: [-30, -60, -30],
-              opacity: [0, 0.6, 0],
-              scale: [0, 1.5, 0]
+              y: [-20, -50, -20],
+              opacity: [0, 0.7, 0],
+              scale: [0, 1.2, 0]
             }}
             transition={{
-              duration: 3,
+              duration: 2.5,
               repeat: Infinity,
-              delay: i * 0.4,
+              delay: i * 0.3,
               ease: "easeInOut"
             }}
           />
