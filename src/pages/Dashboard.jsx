@@ -17,6 +17,7 @@ export default function Dashboard() {
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [selectedResource, setSelectedResource] = useState(null);
   const [aiMode, setAiMode] = useState('active');
+  const [orgId, setOrgId] = useState(null);
   const navigate = useNavigate();
 
   // Auto-close holograms when scrolling out of view
@@ -28,25 +29,21 @@ export default function Dashboard() {
         setSelectedResource(null);
       }
     };
-
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Single auth check — cache orgId
   useEffect(() => {
     const checkAuth = async () => {
       try {
         const isAuth = await base44.auth.isAuthenticated();
-        if (!isAuth) {
-          navigate(createPageUrl("Landing"));
-          return;
-        }
+        if (!isAuth) { navigate(createPageUrl("Landing")); return; }
         const user = await base44.auth.me();
-        const orgId = user?.organization_id || user?.data?.organization_id;
-        if (!orgId) {
-          navigate(createPageUrl("OrganizationSetup"));
-        }
-      } catch (error) {
+        const id = user?.organization_id || user?.data?.organization_id;
+        if (!id) { navigate(createPageUrl("OrganizationSetup")); return; }
+        setOrgId(id);
+      } catch {
         navigate(createPageUrl("Landing"));
       }
     };
@@ -54,72 +51,45 @@ export default function Dashboard() {
   }, [navigate]);
 
   const { data: vehicles = [] } = useQuery({
-    queryKey: ['vehicles'],
-    queryFn: async () => {
-      const user = await base44.auth.me();
-      const orgId = user?.organization_id || user?.data?.organization_id;
-      if (!orgId) return [];
-      return await base44.entities.Vehicle.filter({ organization_id: orgId });
-    },
-    refetchInterval: 3000,
-  });
-
-  const { data: routes = [] } = useQuery({
-    queryKey: ['routes'],
-    queryFn: async () => {
-      const user = await base44.auth.me();
-      const orgId = user?.organization_id || user?.data?.organization_id;
-      if (!orgId) return [];
-      return await base44.entities.Route.filter({ organization_id: orgId });
-    },
-    refetchInterval: 5000,
-  });
-
-  const { data: resources = [] } = useQuery({
-    queryKey: ['resources'],
-    queryFn: async () => {
-      const user = await base44.auth.me();
-      const orgId = user?.organization_id || user?.data?.organization_id;
-      if (!orgId) return [];
-      return await base44.entities.Resource.filter({ organization_id: orgId });
-    },
+    queryKey: ['vehicles', orgId],
+    queryFn: () => base44.entities.Vehicle.filter({ organization_id: orgId }),
+    enabled: !!orgId,
     refetchInterval: 10000,
   });
 
+  const { data: routes = [] } = useQuery({
+    queryKey: ['routes', orgId],
+    queryFn: () => base44.entities.Route.filter({ organization_id: orgId }),
+    enabled: !!orgId,
+    refetchInterval: 15000,
+  });
+
+  const { data: resources = [] } = useQuery({
+    queryKey: ['resources', orgId],
+    queryFn: () => base44.entities.Resource.filter({ organization_id: orgId }),
+    enabled: !!orgId,
+    refetchInterval: 20000,
+  });
+
   const { data: digitalTwins = [] } = useQuery({
-    queryKey: ['digitalTwins'],
-    queryFn: async () => {
-      const user = await base44.auth.me();
-      const orgId = user?.organization_id || user?.data?.organization_id;
-      if (!orgId) return [];
-      return await base44.entities.DigitalTwin.filter({ organization_id: orgId });
-    },
-    refetchInterval: 5000,
+    queryKey: ['digitalTwins', orgId],
+    queryFn: () => base44.entities.DigitalTwin.filter({ organization_id: orgId }),
+    enabled: !!orgId,
+    refetchInterval: 20000,
   });
 
   const { data: alerts = [] } = useQuery({
-    queryKey: ['alerts'],
-    queryFn: async () => {
-      const user = await base44.auth.me();
-      const orgId = user?.organization_id || user?.data?.organization_id;
-      if (!orgId) return [];
-      return await base44.entities.Alert.filter({ organization_id: orgId }, '-created_date', 10);
-    },
-    refetchInterval: 5000,
+    queryKey: ['alerts', orgId],
+    queryFn: () => base44.entities.Alert.filter({ organization_id: orgId }, '-created_date', 10),
+    enabled: !!orgId,
+    refetchInterval: 15000,
   });
 
   const { data: exceptions = [] } = useQuery({
-    queryKey: ['exceptions'],
-    queryFn: async () => {
-      const user = await base44.auth.me();
-      const orgId = user?.organization_id || user?.data?.organization_id;
-      if (!orgId) return [];
-      return await base44.entities.Exception.filter({ 
-        organization_id: orgId,
-        status: { $ne: 'resolved' }
-      }, '-created_date', 5);
-    },
-    refetchInterval: 5000,
+    queryKey: ['exceptions', orgId],
+    queryFn: () => base44.entities.Exception.filter({ organization_id: orgId, status: { $ne: 'resolved' } }, '-created_date', 5),
+    enabled: !!orgId,
+    refetchInterval: 15000,
   });
 
   // Advanced Analytics
