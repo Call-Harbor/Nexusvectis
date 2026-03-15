@@ -494,6 +494,14 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
         onSelectResource?.(resource);
         return;
       }
+
+      // Check route arc clicks — open simulation panel
+      const routeIntersects = raycaster.intersectObjects(routeArcs);
+      if (routeIntersects.length > 0) {
+        const route = routeIntersects[0].object.userData.route;
+        if (route) setSimulatingRoute(route);
+        return;
+      }
     };
 
     // ══════════════════════════════════════════════════════════════
