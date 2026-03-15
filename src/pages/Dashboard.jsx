@@ -538,7 +538,51 @@ export default function Dashboard() {
                   </div>
                   <p className="text-violet-400 text-xs font-mono mt-2">{Math.round(aiLearningProgress)}%</p>
 
-                  <p className="text-[10px] text-slate-500 mt-4 font-mono">Live data polling paused</p>
+                  <p className="text-[10px] text-slate-500 mt-4 font-mono">Live data polling paused · Writing to database…</p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Retrain Results Banner */}
+            <AnimatePresence>
+              {retrainResults && aiMode === 'active' && (
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 20 }}
+                  transition={{ duration: 0.5 }}
+                  className="absolute bottom-0 left-0 right-0 z-30 p-3 bg-black/90 border-t border-violet-500/40 backdrop-blur-sm"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                        <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest">Neural Retrain Complete</span>
+                        <span className="text-[9px] text-slate-500 font-mono">{retrainResults.duration_ms}ms</span>
+                      </div>
+                      <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5 mb-2">
+                        {[
+                          { label: 'Health', value: `${retrainResults.fleet_health_score}/100`, color: 'text-cyan-400' },
+                          { label: 'Maint.', value: retrainResults.summary?.maintenance_orders_created, color: 'text-amber-400' },
+                          { label: 'Eff. ↑', value: retrainResults.summary?.efficiency_updates, color: 'text-violet-400' },
+                          { label: 'Routes', value: retrainResults.summary?.routes_optimized, color: 'text-emerald-400' },
+                          { label: 'CO₂ -kg', value: retrainResults.summary?.co2_saved_kg, color: 'text-green-400' },
+                          { label: 'Anomalies', value: retrainResults.summary?.anomalies_detected, color: 'text-pink-400' },
+                        ].map(item => (
+                          <div key={item.label} className="text-center p-1.5 rounded bg-slate-900/60 border border-slate-700/40">
+                            <p className={`text-sm font-black ${item.color}`}>{item.value ?? '—'}</p>
+                            <p className="text-[8px] text-slate-500 uppercase">{item.label}</p>
+                          </div>
+                        ))}
+                      </div>
+                      {retrainResults.summary?.ai_summary && (
+                        <p className="text-[9px] text-slate-300 italic leading-relaxed line-clamp-2">
+                          {retrainResults.summary.ai_summary}
+                        </p>
+                      )}
+                    </div>
+                    <button onClick={() => setRetrainResults(null)} className="text-slate-500 hover:text-slate-300 text-xs p-1">✕</button>
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
