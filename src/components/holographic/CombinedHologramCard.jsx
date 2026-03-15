@@ -7,23 +7,13 @@ export default function CombinedHologramCard({ items, x, y, index, depth }) {
   const [hoveredItem, setHoveredItem] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
   const [scanProgress, setScanProgress] = useState(0);
-  const [neuralActivity, setNeuralActivity] = useState(0);
   const zIndex = depth ? Math.max(10, 1000 - Math.floor(depth * 100)) : 100;
 
-  // Advanced animation states
   useEffect(() => {
     const scanInterval = setInterval(() => {
       setScanProgress(prev => (prev + 1) % 100);
     }, 50);
-    
-    const neuralInterval = setInterval(() => {
-      setNeuralActivity(Math.random() * 100);
-    }, 200);
-
-    return () => {
-      clearInterval(scanInterval);
-      clearInterval(neuralInterval);
-    };
+    return () => clearInterval(scanInterval);
   }, []);
 
   // Separate and analyze items
