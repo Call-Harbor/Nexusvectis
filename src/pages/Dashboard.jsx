@@ -449,106 +449,18 @@ export default function Dashboard() {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="flex-1 rounded-2xl overflow-hidden border border-cyan-500/30 bg-black/50 backdrop-blur-xl shadow-2xl shadow-cyan-500/20 h-[55vw] min-h-[320px] max-h-[600px] lg:h-auto lg:max-h-none lg:min-h-[500px] relative"
+            className="flex-1 rounded-2xl overflow-hidden border border-cyan-500/30 bg-black/50 backdrop-blur-xl shadow-2xl shadow-cyan-500/20 h-[55vw] min-h-[320px] max-h-[600px] lg:h-auto lg:max-h-none lg:min-h-[500px]"
           >
-            <FuturisticGlobe 
+            <DashboardGlobeFrame
               vehicles={vehicles}
               routes={routes}
               resources={resources}
               digitalTwins={digitalTwins}
+              orgId={orgId}
               onSelectVehicle={setSelectedVehicle}
               onSelectResource={setSelectedResource}
+              className="w-full h-full"
             />
-
-            {/* Learning Mode Overlay */}
-            <AnimatePresence>
-              {isLearning && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="absolute inset-0 bg-black/70 backdrop-blur-sm flex flex-col items-center justify-center z-20 pointer-events-none"
-                >
-                  {/* Animated rings */}
-                  {[0, 1, 2].map(i => (
-                    <motion.div
-                      key={i}
-                      className="absolute rounded-full border border-violet-500/30"
-                      style={{ width: 120 + i * 80, height: 120 + i * 80 }}
-                      animate={{ scale: [1, 1.15, 1], opacity: [0.3, 0.7, 0.3] }}
-                      transition={{ duration: 2, repeat: Infinity, delay: i * 0.4 }}
-                    />
-                  ))}
-
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
-                    className="w-16 h-16 rounded-full border-2 border-t-violet-400 border-violet-500/30 mb-6"
-                  />
-
-                  <p className="text-violet-300 font-bold text-sm tracking-widest uppercase mb-1">Neural Retraining</p>
-                  <p className="text-slate-400 text-xs font-mono mb-4 min-h-[16px]">
-                    {AI_LEARNING_PHASES[Math.min(aiLearningPhase, AI_LEARNING_PHASES.length - 1)]}
-                  </p>
-
-                  {/* Progress bar */}
-                  <div className="w-56 h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                    <motion.div
-                      className="h-full bg-gradient-to-r from-violet-500 via-pink-400 to-violet-500 rounded-full"
-                      animate={{ width: `${aiLearningProgress}%` }}
-                      transition={{ duration: 0.1 }}
-                    />
-                  </div>
-                  <p className="text-violet-400 text-xs font-mono mt-2">{Math.round(aiLearningProgress)}%</p>
-
-                  <p className="text-[10px] text-slate-500 mt-4 font-mono">Live data polling paused · Writing to database…</p>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Retrain Results Banner */}
-            <AnimatePresence>
-              {retrainResults && aiMode === 'active' && (
-                <motion.div
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 20 }}
-                  transition={{ duration: 0.5 }}
-                  className="absolute bottom-0 left-0 right-0 z-30 p-3 bg-black/90 border-t border-violet-500/40 backdrop-blur-sm"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-2">
-                        <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                        <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest">Neural Retrain Complete</span>
-                        <span className="text-[9px] text-slate-500 font-mono">{retrainResults.duration_ms}ms</span>
-                      </div>
-                      <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5 mb-2">
-                        {[
-                          { label: 'Health', value: `${retrainResults.fleet_health_score}/100`, color: 'text-cyan-400' },
-                          { label: 'Maint.', value: retrainResults.summary?.maintenance_orders_created, color: 'text-amber-400' },
-                          { label: 'Eff. ↑', value: retrainResults.summary?.efficiency_updates, color: 'text-violet-400' },
-                          { label: 'Routes', value: retrainResults.summary?.routes_optimized, color: 'text-emerald-400' },
-                          { label: 'CO₂ -kg', value: retrainResults.summary?.co2_saved_kg, color: 'text-green-400' },
-                          { label: 'Anomalies', value: retrainResults.summary?.anomalies_detected, color: 'text-pink-400' },
-                        ].map(item => (
-                          <div key={item.label} className="text-center p-1.5 rounded bg-slate-900/60 border border-slate-700/40">
-                            <p className={`text-sm font-black ${item.color}`}>{item.value ?? '—'}</p>
-                            <p className="text-[8px] text-slate-500 uppercase">{item.label}</p>
-                          </div>
-                        ))}
-                      </div>
-                      {retrainResults.summary?.ai_summary && (
-                        <p className="text-[9px] text-slate-300 italic leading-relaxed line-clamp-2">
-                          {retrainResults.summary.ai_summary}
-                        </p>
-                      )}
-                    </div>
-                    <button onClick={() => setRetrainResults(null)} className="text-slate-500 hover:text-slate-300 text-xs p-1">✕</button>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
           </motion.div>
         </div>
       </div>
