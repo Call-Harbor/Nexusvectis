@@ -494,7 +494,7 @@ Give a 2-sentence expert logistics recommendation to reduce fuel and CO₂. Be c
                       onClick={runSimulation}
                       className="w-full py-2 rounded-lg border border-slate-700/40 text-slate-400 text-[9px] font-mono uppercase flex items-center justify-center gap-1.5 hover:border-cyan-400/30 hover:text-cyan-400 transition-all"
                     >
-                      <RefreshCw className="w-3 h-3" /> Re-simuler
+                      <RefreshCw className="w-3 h-3" /> Re-simulate
                     </button>
                   </motion.div>
                 )}
