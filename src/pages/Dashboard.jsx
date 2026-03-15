@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "../utils";
 import { 
-  Globe, Sparkles, Activity, Brain, Zap, TrendingUp, AlertTriangle, 
+  Globe, Activity, Brain, TrendingUp, AlertTriangle, 
   Radio, Cpu, Shield, Target, Orbit, Network
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -51,7 +51,7 @@ export default function Dashboard() {
 
 
 
-  const isLearning = aiMode === 'learning';
+
 
   const { data: vehicles = [] } = useQuery({
     queryKey: ['vehicles', orgId],

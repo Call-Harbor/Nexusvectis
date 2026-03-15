@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { X, Minimize2 } from 'lucide-react';
-import FuturisticGlobe from "@/components/holographic/FuturisticGlobe";
+import DashboardGlobeFrame from "@/components/holographic/DashboardGlobeFrame";
 
 // Wrapper that delegates to FuturisticGlobe so both Dashboard and IntellectMode
 // show the same globe with CombinedHologramCard holograms.
