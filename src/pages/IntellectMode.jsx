@@ -968,7 +968,7 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
               exit={{ opacity: 0, scale: 0.95 }}
               className="fixed inset-0 z-50 bg-black/95 backdrop-blur-sm"
             >
-              <div className="absolute top-4 right-4 z-50 flex gap-2">
+              <div className="absolute top-4 left-4 z-50 flex gap-2">
                 <button
                   onClick={() => setShow3DVisualization(null)}
                   className="px-4 py-2 rounded-xl bg-slate-900/90 backdrop-blur-xl border border-red-500/50 text-red-400 hover:bg-red-500/20 transition-all font-semibold flex items-center gap-2"
