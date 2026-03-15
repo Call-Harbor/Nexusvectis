@@ -445,16 +445,31 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
     // ROUTE ARCS - HOLOGRAPHIC PATHS
     // ══════════════════════════════════════════════════════════════
     const routeArcs = [];
-    routes.forEach(route => {
+    const routeColors = [0x00ffff, 0x8b5cf6, 0x10b981, 0xf59e0b, 0xf43f5e];
+    routes.forEach((route, rIdx) => {
       const waypoints = (route.waypoints || []).filter(w => w.lat && w.lng);
+      const arcColor = routeColors[rIdx % routeColors.length];
       for (let i = 0; i < waypoints.length - 1; i++) {
         const arc = createHolographicArc(
           waypoints[i].lat,
           waypoints[i].lng,
           waypoints[i + 1].lat,
           waypoints[i + 1].lng,
-          0x00ffff
+          arcColor
         );
+        // Thicker invisible mesh for easier clicking
+        const hitGeometry = new THREE.TubeGeometry(
+          new THREE.QuadraticBezierCurve3(
+            latLngToVec3(waypoints[i].lat, waypoints[i].lng, 1.03),
+            latLngToVec3(waypoints[i].lat, waypoints[i].lng, 1.03).clone().add(latLngToVec3(waypoints[i+1].lat, waypoints[i+1].lng, 1.03)).normalize().multiplyScalar(1.23),
+            latLngToVec3(waypoints[i+1].lat, waypoints[i+1].lng, 1.03)
+          ), 20, 0.015, 4, false
+        );
+        const hitMesh = new THREE.Mesh(hitGeometry, new THREE.MeshBasicMaterial({ visible: false }));
+        hitMesh.userData = { routeId: route.id, route, isFirstSegment: i === 0 };
+        globe.add(hitMesh);
+        routeArcs.push(hitMesh);
+
         // Only mark first arc segment for hologram display
         arc.userData = { 
           routeId: route.id, 
@@ -462,7 +477,6 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
           isFirstSegment: i === 0
         };
         globe.add(arc);
-        routeArcs.push(arc);
       }
     });
 
