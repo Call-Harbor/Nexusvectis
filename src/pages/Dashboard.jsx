@@ -64,21 +64,42 @@ export default function Dashboard() {
     checkAuth();
   }, [navigate]);
 
-  // Learning mode: animated progress through phases, then snap back to active
+  // Learning mode: call real backend + animate progress
   useEffect(() => {
     if (aiMode !== 'learning') { setAiLearningProgress(0); setAiLearningPhase(0); return; }
+    if (!orgId) return;
+
+    setRetrainResults(null);
     let progress = 0;
+    let done = false;
+
+    // Animate UI progress independently
     const interval = setInterval(() => {
-      progress += 0.6;
-      setAiLearningProgress(Math.min(progress, 100));
+      if (done) return;
+      progress = Math.min(progress + 0.5, 92); // hold at 92% until real response
+      setAiLearningProgress(progress);
       setAiLearningPhase(Math.floor((progress / 100) * AI_LEARNING_PHASES.length));
-      if (progress >= 100) {
-        clearInterval(interval);
-        setTimeout(() => setAiMode('active'), 1200);
-      }
     }, 80);
+
+    // Actually call the backend
+    base44.functions.invoke('neuralRetrainEngine', { organization_id: orgId })
+      .then(res => {
+        done = true;
+        clearInterval(interval);
+        setAiLearningProgress(100);
+        setAiLearningPhase(AI_LEARNING_PHASES.length - 1);
+        setRetrainResults(res.data);
+        setTimeout(() => setAiMode('active'), 1800);
+      })
+      .catch(() => {
+        done = true;
+        clearInterval(interval);
+        setAiLearningProgress(100);
+        setTimeout(() => setAiMode('active'), 1000);
+      });
+
     return () => clearInterval(interval);
-  }, [aiMode]);
+  }, [aiMode, orgId]);
 
   const isLearning = aiMode === 'learning';
 
