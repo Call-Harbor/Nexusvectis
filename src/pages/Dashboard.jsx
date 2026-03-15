@@ -16,9 +16,6 @@ import AIInsightWidget from "@/components/ai/AIInsightWidget";
 export default function Dashboard() {
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [selectedResource, setSelectedResource] = useState(null);
-  const [aiMode, setAiMode] = useState('active');
-  const [aiLearningProgress, setAiLearningProgress] = useState(0);
-  const [aiLearningPhase, setAiLearningPhase] = useState(0);
   const [orgId, setOrgId] = useState(null);
   const navigate = useNavigate();
 
