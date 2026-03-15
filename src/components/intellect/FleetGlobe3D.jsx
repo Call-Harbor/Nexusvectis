@@ -42,16 +42,16 @@ export default function FleetGlobe3D({ vehicles = [], routes = [], resources = [
               </div>
               <div className="flex items-center gap-2">
                 <button
+                  onClick={onClose}
+                  className="p-2 rounded-lg hover:bg-red-500/20 text-slate-400 hover:text-red-400 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+                <button
                   onClick={() => setIsMinimized(true)}
                   className="p-2 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-colors"
                 >
                   <Minimize2 className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={onClose}
-                  className="p-2 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-colors"
-                >
-                  <X className="w-4 h-4" />
                 </button>
               </div>
             </div>
