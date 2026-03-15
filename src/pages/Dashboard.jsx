@@ -17,8 +17,19 @@ export default function Dashboard() {
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [selectedResource, setSelectedResource] = useState(null);
   const [aiMode, setAiMode] = useState('active');
+  const [aiLearningProgress, setAiLearningProgress] = useState(0);
+  const [aiLearningPhase, setAiLearningPhase] = useState(0);
   const [orgId, setOrgId] = useState(null);
   const navigate = useNavigate();
+
+  const AI_LEARNING_PHASES = [
+    'Ingesting fleet telemetry…',
+    'Training route optimization model…',
+    'Calibrating predictive maintenance…',
+    'Updating anomaly detection weights…',
+    'Synchronising digital twin federation…',
+    'Finalising neural cluster analysis…',
+  ];
 
   // Auto-close holograms when scrolling out of view
   useEffect(() => {
