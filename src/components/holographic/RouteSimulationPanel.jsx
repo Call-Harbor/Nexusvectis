@@ -423,7 +423,7 @@ Give a 2-sentence expert logistics recommendation to reduce fuel and CO₂. Be c
                       <div className="grid grid-cols-3 gap-1.5 p-3 rounded-xl border border-slate-700/40 bg-slate-900/30">
                         <div className="text-center">
                           <Wind className="w-3 h-3 text-violet-400 mx-auto mb-0.5" />
-                          <p className="text-[8px] text-slate-500">Vent</p>
+                          <p className="text-[8px] text-slate-500">Wind</p>
                           <p className="text-[10px] text-white font-bold">{weather.windSpeed} km/h</p>
                         </div>
                         <div className="text-center">
@@ -433,7 +433,7 @@ Give a 2-sentence expert logistics recommendation to reduce fuel and CO₂. Be c
                         </div>
                         <div className="text-center">
                           <CloudRain className="w-3 h-3 text-blue-400 mx-auto mb-0.5" />
-                          <p className="text-[8px] text-slate-500">Précip.</p>
+                          <p className="text-[8px] text-slate-500">Precip.</p>
                           <p className="text-[10px] text-white font-bold">{weather.rainProb}%</p>
                         </div>
                       </div>
