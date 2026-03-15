@@ -67,7 +67,17 @@ export default function CombinedHologramCard({ items, x, y, index, depth }) {
     neuralConfidence: vehicles.length > 0
       ? Math.round(vehicles.reduce((sum, v) => sum + (v.data.signal_strength || 80), 0) / vehicles.length)
       : 95,
-    processingLoad: Math.round(neuralActivity),
+    // processingLoad = avg cargo utilization across vehicles (real data)
+    processingLoad: vehicles.length > 0
+      ? Math.round(vehicles.reduce((sum, v) => {
+          const util = v.data.cargo_capacity ? (v.data.cargo_used || 0) / v.data.cargo_capacity * 100 : 0;
+          return sum + util;
+        }, 0) / vehicles.length)
+      : (resources.length > 0
+          ? Math.round(resources.reduce((sum, r) => {
+              return sum + (r.data.capacity ? (r.data.current_level || 0) / r.data.capacity * 100 : 0);
+            }, 0) / resources.length)
+          : 0),
     quantumState: routes.filter(r => r.data.ai_optimized).length > 0 ? 'AI-OPTIMIZED' : 'STANDARD'
   };
 
