@@ -198,7 +198,7 @@ function AlternativeRouteCard({ alt, onSelect, isSelected }) {
       <div className="grid grid-cols-3 gap-1">
         <div className="text-center">
           <p className="text-[8px] text-slate-500">Fuel</p>
-          <p className="text-[10px] font-bold text-amber-300">{alt.fuelL}L</p>
+          <p className="text-[10px] font-bold text-amber-300">{alt.fuelL} L</p>
           <p className={`text-[8px] ${alt.fuelSavingPct > 0 ? 'text-emerald-400' : 'text-red-400'}`}>
             {alt.fuelSavingPct > 0 ? '-' : '+'}{Math.abs(alt.fuelSavingPct)}%
           </p>
