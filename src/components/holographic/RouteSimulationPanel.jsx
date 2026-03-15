@@ -24,7 +24,7 @@ function simulateWeather(lat, lng) {
   const hour = new Date().getHours();
   const seed = Math.abs(Math.sin(lat * 12.9898 + lng * 78.233 + hour * 0.5) * 43758.5453);
   const frac = seed - Math.floor(seed);
-  const conditions = ['Clear', 'Partly Cloudy', 'Overcast', 'Light Rain', 'Strong Wind', 'Fog'];
+  const conditions = ['Klart', 'Delvist skyet', 'Overskyet', 'Let regn', 'Kraftig vind', 'Tåge'];
   const condition = conditions[Math.floor(frac * conditions.length)];
   const windSpeed = 5 + Math.floor(frac * 60); // km/h
   const temp = Math.round(-5 + frac * 40); // °C
