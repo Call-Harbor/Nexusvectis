@@ -379,9 +379,9 @@ Give a 2-sentence expert logistics recommendation to reduce fuel and CO₂. Be c
                           transition={{ duration: 0.2 }}
                         />
                       </div>
-                      {['🌦️ Données météo…', '🚦 Analyse trafic…', '⚡ Calcul carburant…', '🌿 Estimation CO₂…'][Math.floor(progress / 26)] && (
+                      {['🌦️ Loading weather data…', '🚦 Analysing traffic patterns…', '⚡ Calculating fuel consumption…', '🌿 Estimating CO₂ impact…'][Math.floor(progress / 26)] && (
                         <p className="text-[9px] text-slate-400 font-mono animate-pulse">
-                          {['🌦️ Données météo…', '🚦 Analyse trafic…', '⚡ Calcul carburant…', '🌿 Estimation CO₂…'][Math.floor(progress / 26)]}
+                          {['🌦️ Loading weather data…', '🚦 Analysing traffic patterns…', '⚡ Calculating fuel consumption…', '🌿 Estimating CO₂ impact…'][Math.floor(progress / 26)]}
                         </p>
                       )}
                     </div>
