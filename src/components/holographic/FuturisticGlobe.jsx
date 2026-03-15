@@ -1,7 +1,8 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import * as THREE from "three";
 import { AnimatePresence } from "framer-motion";
 import CombinedHologramCard from "./CombinedHologramCard";
+import RouteSimulationPanel from "./RouteSimulationPanel";
 
 const STATUS_COLORS = {
   active:      { int: 0x00ffff, hex: "#00ffff", glow: 0x00ccff },
