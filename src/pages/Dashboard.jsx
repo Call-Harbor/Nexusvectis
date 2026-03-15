@@ -462,7 +462,7 @@ export default function Dashboard() {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="flex-1 rounded-2xl overflow-hidden border border-cyan-500/30 bg-black/50 backdrop-blur-xl shadow-2xl shadow-cyan-500/20 h-[55vw] min-h-[320px] max-h-[600px] lg:h-auto lg:max-h-none lg:min-h-[500px]"
+            className="flex-1 rounded-2xl overflow-hidden border border-cyan-500/30 bg-black/50 backdrop-blur-xl shadow-2xl shadow-cyan-500/20 h-[55vw] min-h-[320px] max-h-[600px] lg:h-auto lg:max-h-none lg:min-h-[500px] relative"
           >
             <FuturisticGlobe 
               vehicles={vehicles}
@@ -472,6 +472,52 @@ export default function Dashboard() {
               onSelectVehicle={setSelectedVehicle}
               onSelectResource={setSelectedResource}
             />
+
+            {/* Learning Mode Overlay */}
+            <AnimatePresence>
+              {isLearning && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="absolute inset-0 bg-black/70 backdrop-blur-sm flex flex-col items-center justify-center z-20 pointer-events-none"
+                >
+                  {/* Animated rings */}
+                  {[0, 1, 2].map(i => (
+                    <motion.div
+                      key={i}
+                      className="absolute rounded-full border border-violet-500/30"
+                      style={{ width: 120 + i * 80, height: 120 + i * 80 }}
+                      animate={{ scale: [1, 1.15, 1], opacity: [0.3, 0.7, 0.3] }}
+                      transition={{ duration: 2, repeat: Infinity, delay: i * 0.4 }}
+                    />
+                  ))}
+
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+                    className="w-16 h-16 rounded-full border-2 border-t-violet-400 border-violet-500/30 mb-6"
+                  />
+
+                  <p className="text-violet-300 font-bold text-sm tracking-widest uppercase mb-1">Neural Retraining</p>
+                  <p className="text-slate-400 text-xs font-mono mb-4 min-h-[16px]">
+                    {AI_LEARNING_PHASES[Math.min(aiLearningPhase, AI_LEARNING_PHASES.length - 1)]}
+                  </p>
+
+                  {/* Progress bar */}
+                  <div className="w-56 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                    <motion.div
+                      className="h-full bg-gradient-to-r from-violet-500 via-pink-400 to-violet-500 rounded-full"
+                      animate={{ width: `${aiLearningProgress}%` }}
+                      transition={{ duration: 0.1 }}
+                    />
+                  </div>
+                  <p className="text-violet-400 text-xs font-mono mt-2">{Math.round(aiLearningProgress)}%</p>
+
+                  <p className="text-[10px] text-slate-500 mt-4 font-mono">Live data polling paused</p>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
         </div>
       </div>
