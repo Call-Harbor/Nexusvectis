@@ -343,7 +343,7 @@ Give a 2-sentence expert logistics recommendation to reduce fuel and CO₂. Be c
         </div>
 
         {!collapsed && (
-          <div className="overflow-y-auto flex-1 min-h-0">
+          <div className="overflow-y-auto flex-1 min-h-0 scrollbar-thin scrollbar-thumb-cyan-500/30 scrollbar-track-transparent">
             <div className="p-4 space-y-4">
 
               {/* Route meta */}
