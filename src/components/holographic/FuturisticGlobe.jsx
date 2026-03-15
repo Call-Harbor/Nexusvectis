@@ -1,9 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { AnimatePresence } from "framer-motion";
-import RouteHologramCard from "./RouteHologramCard";
-import ResourceHologramCard from "./ResourceHologramCard";
-import VehicleHologramCard from "./VehicleHologramCard";
 import CombinedHologramCard from "./CombinedHologramCard";
 
 const STATUS_COLORS = {
@@ -866,59 +863,22 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
         style={{ cursor: 'grab' }}
       />
       
-      {/* Floating Holograms (Single or Combined) */}
+      {/* Floating Holograms - Always Combined */}
       <AnimatePresence mode="popLayout">
         {[...visibleRoutes, ...visibleResources, ...visibleVehicles].map((hologramData, idx) => {
-          if (hologramData.items) {
-            // Combined hologram
-            return (
-              <CombinedHologramCard
-                key={`combined-hologram-${idx}`}
-                items={hologramData.items}
-                x={hologramData.x}
-                y={hologramData.y}
-                index={idx}
-                depth={hologramData.depth}
-              />
-            );
-          } else {
-            // Single item hologram
-            if (hologramData.type === 'route') {
-              return (
-                <RouteHologramCard
-                  key={`route-hologram-${hologramData.data.id}`}
-                  route={hologramData.data}
-                  x={hologramData.x}
-                  y={hologramData.y}
-                  index={idx}
-                  depth={hologramData.depth}
-                />
-              );
-            } else if (hologramData.type === 'resource') {
-              return (
-                <ResourceHologramCard
-                  key={`resource-hologram-${hologramData.data.id}`}
-                  resource={hologramData.data}
-                  x={hologramData.x}
-                  y={hologramData.y}
-                  index={idx}
-                  depth={hologramData.depth}
-                />
-              );
-            } else if (hologramData.type === 'vehicle') {
-              return (
-                <VehicleHologramCard
-                  key={`vehicle-hologram-${hologramData.data.id}`}
-                  vehicle={hologramData.data}
-                  x={hologramData.x}
-                  y={hologramData.y}
-                  index={idx}
-                  depth={hologramData.depth}
-                />
-              );
-            }
-          }
-          return null;
+          // Always use CombinedHologramCard - convert single items to array
+          const items = hologramData.items || [hologramData];
+          
+          return (
+            <CombinedHologramCard
+              key={`hologram-${idx}`}
+              items={items}
+              x={hologramData.x}
+              y={hologramData.y}
+              index={idx}
+              depth={hologramData.depth}
+            />
+          );
         })}
       </AnimatePresence>
     </div>
