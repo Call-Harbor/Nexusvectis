@@ -308,8 +308,7 @@ Give a 2-sentence expert logistics recommendation to reduce fuel and CO₂. Be c
       exit={{ opacity: 0, x: 40, scale: 0.95 }}
       transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
       className="fixed top-4 right-4 z-50 w-[340px] flex flex-col"
-      style={{ maxHeight: '90%', top: '5%' }}
-      style={{ pointerEvents: 'auto' }}
+      style={{ maxHeight: '90%', top: '5%', pointerEvents: 'auto' }}
     >
       {/* Glow */}
       <div className="absolute -inset-2 bg-gradient-to-br from-cyan-500/20 via-violet-500/20 to-emerald-500/20 rounded-2xl blur-xl pointer-events-none" />
