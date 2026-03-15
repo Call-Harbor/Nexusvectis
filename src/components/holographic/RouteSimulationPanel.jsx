@@ -34,7 +34,7 @@ function simulateWeather(lat, lng) {
 
 function weatherMultiplier(weather) {
   let m = 1.0;
-  if (weather.condition.includes('Rain')) m += 0.12;
+  if (weather.condition === 'Light Rain') m += 0.12;
   if (weather.condition === 'Fog') m += 0.08;
   if (weather.condition === 'Strong Wind') m += 0.15;
   if (weather.windSpeed > 50) m += 0.1;
