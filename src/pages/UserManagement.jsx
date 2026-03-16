@@ -65,24 +65,21 @@ export default function UserManagement() {
 
   // List users from same organization
   const { data: users = [], isLoading } = useQuery({
-    queryKey: ['users', members],
+    queryKey: ['users', members, currentUser?.id],
     queryFn: async () => {
-      if (members.length === 0) return [currentUser] || [];
-
       const allUsers = await base44.entities.User.list();
 
-      // Get active members' user data
-      const activeMembers = members.filter(m => m.status !== 'removed');
-      const memberEmails = activeMembers.map(m => m.user_email);
+      // Build list of emails to show: current user + all org members
+      const memberEmails = members
+        .filter(m => m.status !== 'removed')
+        .map(m => m.user_email);
 
-      const filteredUsers = allUsers.filter(u => memberEmails.includes(u.email));
-
-      // Always ensure current user is in the list
-      if (!filteredUsers.find(u => u.id === currentUser?.id) && currentUser) {
-        return [currentUser, ...filteredUsers];
+      // Always include current user's email
+      if (currentUser?.email && !memberEmails.includes(currentUser.email)) {
+        memberEmails.push(currentUser.email);
       }
 
-      return filteredUsers || [];
+      return allUsers.filter(u => memberEmails.includes(u.email));
     },
     enabled: !!currentUser,
     staleTime: 0,
