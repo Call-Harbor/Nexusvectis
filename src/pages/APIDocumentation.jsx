@@ -768,6 +768,20 @@ fetch("https://api.nexusvectis.com${endpoint.endpoint}", {
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
+              {/* Premium billing banner */}
+              {selected.id === "harbor-intelligence" && (
+                <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-500/10 border border-amber-500/40">
+                  <Brain className="w-5 h-5 text-amber-400 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-sm font-semibold text-amber-300">Harbor Core Intelligence — Premium Endpoint</p>
+                    <p className="text-xs text-amber-200/70 mt-1">
+                      Billed at <strong className="text-amber-300">€0.25 per API call</strong> — 5× the standard rate (€0.05/call).
+                      Each call automatically enriches your prompt with live fleet data (vehicles, routes, shipments, alerts) and uses <strong className="text-amber-300">mistral-large-latest</strong> for maximum accuracy.
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {/* Endpoint */}
               <div>
                 <label className="text-sm font-semibold text-slate-300 mb-2 block">Endpoint</label>
