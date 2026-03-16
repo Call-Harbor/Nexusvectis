@@ -141,10 +141,14 @@ export default function UserManagement() {
     inviteMutation.mutate({ email: inviteEmail, role: inviteRole });
   };
 
+  const isCurrentUserAlpha = users.find(u => u.email === currentUser?.email)?.isAlpha;
+  const isCurrentUserAdmin = users.find(u => u.email === currentUser?.email)?.memberRole === 'admin';
+  const canChangeRoles = isCurrentUserAlpha || isCurrentUserAdmin;
+
   // memberRole and memberStatus already come from the backend function
   const usersWithOrgs = users.map(user => ({
     ...user,
-    isAdmin: user.memberRole === 'admin',
+    isAdmin: user.memberRole === 'admin' || user.memberRole === 'alpha',
     memberStatus: user.memberStatus || 'active',
   }));
 
