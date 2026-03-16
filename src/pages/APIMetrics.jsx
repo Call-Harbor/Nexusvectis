@@ -74,10 +74,24 @@ export default function APIMetrics() {
       }
     });
 
+    // Timeline — split standard vs harbor
+    const harborTimelineMap = {};
+    apiUsage.forEach(call => {
+      if (!call.endpoint?.includes('/harbor/intelligence')) return;
+      const date = new Date(call.created_date);
+      let key;
+      if (timeRange === 'daily') key = date.toISOString().split('T')[0];
+      else if (timeRange === 'weekly') {
+        const ws = new Date(date); ws.setDate(date.getDate() - date.getDay());
+        key = ws.toISOString().split('T')[0];
+      } else key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      harborTimelineMap[key] = (harborTimelineMap[key] || 0) + 1;
+    });
+
     const timeline = Object.entries(timelineMap)
       .sort(([a], [b]) => a.localeCompare(b))
       .slice(-30)
-      .map(([date, count]) => ({ date, calls: count }));
+      .map(([date, count]) => ({ date, calls: count, harbor: harborTimelineMap[date] || 0, standard: count - (harborTimelineMap[date] || 0) }));
 
     const endpoints = Object.entries(endpointMap)
       .sort(([, a], [, b]) => b - a)
