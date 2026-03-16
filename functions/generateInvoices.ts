@@ -198,6 +198,8 @@ Deno.serve(async (req) => {
         fleetai_price_per_100: fleetAIPricePer100,
         api_calls: apiCalls,
         api_price_per_100: apiPricePer100,
+        harbor_intelligence_calls: harborCalls,
+        harbor_intelligence_price_per_call: harborPricePerCall,
         subtotal: subtotal,
         vat_rate: vatRate,
         vat_amount: vatAmount,
