@@ -198,13 +198,13 @@ export default function CircularNav({ currentPageName, user }) {
               const activeMenu = menuCategories.find(c => c.name === activeCategory);
               const categoryIndex = menuCategories.findIndex(c => c.name === activeCategory);
               const categoryAngle = (categoryIndex / menuCategories.length) * Math.PI - Math.PI / 2;
-              const spreadAngle = Math.PI / 4;
-              const startAngle = categoryAngle - spreadAngle / 2;
               const totalItems = activeMenu?.items.length || 1;
+              const spreadAngle = Math.max(Math.PI / 4, (totalItems - 1) * 0.28);
+              const startAngle = categoryAngle - spreadAngle / 2;
 
               return activeMenu?.items.map((item, index) => {
                 const itemAngle = startAngle + (index / (totalItems - 1 || 1)) * spreadAngle;
-                const radius = 240;
+                const radius = totalItems > 3 ? 280 : 240;
                 const x = Math.cos(itemAngle) * radius;
                 const y = Math.sin(itemAngle) * radius;
                 const isActive = currentPageName === item.page;
