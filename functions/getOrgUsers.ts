@@ -23,6 +23,11 @@ Deno.serve(async (req) => {
         const memberEmails = activeMembers.map(m => m.user_email);
         const matchedUsers = allUsers.filter(u => memberEmails.includes(u.email));
 
+        // Get organization to find creator (alpha)
+        const orgs = await base44.asServiceRole.entities.Organization.filter({ id: orgId });
+        const org = orgs[0];
+        const alphaEmail = org?.admin_email;
+
         // Build result: matched users + members without a user record yet (invited)
         const matchedEmails = matchedUsers.map(u => u.email);
         const pendingMembers = activeMembers
@@ -33,16 +38,21 @@ Deno.serve(async (req) => {
                 full_name: m.user_email,
                 created_date: m.created_date,
                 memberStatus: m.status,
-                memberRole: m.role,
+                memberRole: m.user_email === alphaEmail ? 'alpha' : (m.role || 'user'),
+                memberId: m.id,
+                isAlpha: m.user_email === alphaEmail,
             }));
 
         const result = [
             ...matchedUsers.map(u => {
                 const member = activeMembers.find(m => m.user_email === u.email);
+                const isAlpha = u.email === alphaEmail;
                 return {
                     ...u,
                     memberStatus: member?.status || 'active',
-                    memberRole: member?.role || 'user',
+                    memberRole: isAlpha ? 'alpha' : (member?.role || 'user'),
+                    memberId: member?.id,
+                    isAlpha,
                 };
             }),
             ...pendingMembers,
