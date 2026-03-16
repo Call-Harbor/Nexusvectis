@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Copy, Key, Zap, TrendingUp, CheckCircle2, AlertCircle, MessageSquare, Building2, Users } from "lucide-react";
+import { Copy, Key, Zap, TrendingUp, CheckCircle2, AlertCircle, MessageSquare, Building2, Users, Brain } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
