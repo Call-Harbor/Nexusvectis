@@ -288,6 +288,14 @@ Deno.serve(async (req) => {
                     <td style="padding: 10px; text-align: right; border-bottom: 1px solid #e2e8f0;">€${apiTotal.toFixed(2)}</td>
                   </tr>
                   ` : ''}
+                  ${harborCalls > 0 ? `
+                  <tr>
+                    <td style="padding: 10px; border-bottom: 1px solid #e2e8f0;">Harbor Core Intelligence API (${harborCalls} calls) <span style="background:#fef3c7;color:#92400e;font-size:11px;padding:2px 6px;border-radius:4px;font-weight:bold;">PREMIUM</span></td>
+                    <td style="padding: 10px; text-align: right; border-bottom: 1px solid #e2e8f0;">${harborCalls}</td>
+                    <td style="padding: 10px; text-align: right; border-bottom: 1px solid #e2e8f0;">€${harborPricePerCall}</td>
+                    <td style="padding: 10px; text-align: right; border-bottom: 1px solid #e2e8f0;">€${harborTotal.toFixed(2)}</td>
+                  </tr>
+                  ` : ''}
                 </tbody>
               </table>
               
