@@ -202,6 +202,16 @@ export default function APIMetrics() {
               </CardContent>
             </Card>
           )}
+          <Card className="bg-gradient-to-br from-amber-500/10 to-orange-500/10 border-amber-500/40 backdrop-blur-xl">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-amber-300">Harbor Intelligence</CardTitle>
+              <Brain className="w-4 h-4 text-amber-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-white">{stats.harborCalls.toLocaleString()}</div>
+              <p className="text-xs text-amber-300/70 mt-1">€{stats.harborRevenue} premium revenue</p>
+            </CardContent>
+          </Card>
         </div>
 
         {/* API Calls Timeline */}
