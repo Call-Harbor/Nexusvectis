@@ -399,7 +399,7 @@ export default function UserManagement() {
                 {adminUsers.map((user) => (
                   <div
                     key={user.id}
-                    className="flex items-center justify-between p-4 rounded-lg bg-slate-900/50 border border-slate-700/30 hover:border-cyan-500/50 transition-colors"
+                    className="flex items-center justify-between p-4 rounded-lg bg-slate-900/50 border border-slate-700/30 hover:border-violet-500/30 transition-colors"
                   >
                     <div className="flex items-center gap-3 flex-1">
                       <div className="p-2 rounded-full bg-violet-500/20">
@@ -408,17 +408,23 @@ export default function UserManagement() {
                       <div className="flex-1">
                         <p className="text-white font-medium">{user.full_name || 'No name'}</p>
                         <p className="text-sm text-slate-400">{user.email}</p>
-                        {user.created_date && (
-                          <p className="text-xs text-slate-500 mt-1 flex items-center gap-1">
-                            <Calendar className="w-3 h-3" />
-                            Joined {moment(user.created_date).format('MMM DD, YYYY')}
-                          </p>
-                        )}
+                        <div className="flex items-center gap-2 mt-1 flex-wrap">
+                          {user.created_date && (
+                            <p className="text-xs text-slate-500 flex items-center gap-1">
+                              <Calendar className="w-3 h-3" />
+                              Joined {moment(user.created_date).format('MMM DD, YYYY')}
+                            </p>
+                          )}
+                          {user.memberStatus === 'invited' && (
+                            <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[10px]">⏳ Invitation pending</Badge>
+                          )}
+                        </div>
                       </div>
                     </div>
-                    <Badge className="bg-violet-500/20 text-violet-400 border-violet-500/30">
-                      Admin
-                    </Badge>
+                    <div className="flex flex-col items-end gap-1">
+                      <Badge className="bg-violet-500/20 text-violet-400 border-violet-500/30">Admin</Badge>
+                      <span className="text-[10px] text-slate-500">Full access</span>
+                    </div>
                   </div>
                 ))}
               </CardContent>
