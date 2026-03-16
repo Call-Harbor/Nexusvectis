@@ -68,6 +68,8 @@ const menuCategories = [
       { name: "Users", icon: Users, page: "UserManagement" },
       { name: "Security", icon: Shield, page: "Security" },
       { name: "Settings", icon: Settings, page: "Settings" },
+      { name: "API Docs", icon: FileText, page: "APIDocumentation" },
+      { name: "API Metrics", icon: Zap, page: "APIMetrics" },
     ]
   },
 ];
