@@ -111,9 +111,11 @@ export default function APIMetrics() {
       .slice(0, 10)
       .map(([orgId, count]) => {
         const org = organizations.find(o => o.id === orgId);
+        const harborCount = apiUsage.filter(u => u.organization_id === orgId && u.endpoint?.includes('/harbor/intelligence') && u.status_code < 400).length;
         return {
           name: org?.name || orgId.slice(0, 8),
-          calls: count
+          calls: count - harborCount,
+          harbor: harborCount
         };
       });
 
