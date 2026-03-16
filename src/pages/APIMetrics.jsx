@@ -242,7 +242,8 @@ export default function APIMetrics() {
                   labelStyle={{ color: '#e2e8f0' }}
                 />
                 <Legend />
-                <Line type="monotone" dataKey="calls" stroke="#06b6d4" strokeWidth={2} dot={{ fill: '#06b6d4' }} />
+                <Line type="monotone" dataKey="standard" stroke="#06b6d4" strokeWidth={2} dot={false} name="Standard" />
+                <Line type="monotone" dataKey="harbor" stroke="#f59e0b" strokeWidth={2} dot={false} name="Harbor Premium" />
               </LineChart>
             </ResponsiveContainer>
           </CardContent>
