@@ -424,6 +424,40 @@ export default function APIDocumentation() {
         status: "active",
       },
     },
+    // Harbor Core Intelligence (Premium)
+    {
+      id: "harbor-intelligence",
+      name: "Harbor Core Intelligence",
+      method: "POST",
+      endpoint: "/api/v1/harbor/intelligence",
+      premium: true,
+      description: "Advanced AI analysis with real-time fleet data enrichment. Uses Harbor's most powerful model for strategic logistics intelligence, anomaly detection, predictive insights and natural language fleet commands.",
+      params: {
+        command: "Analyze my fleet's current risk exposure and recommend immediate actions",
+        mode: "analyze",
+        context: {
+          focus_area: "maintenance_risk",
+          time_horizon_days: 30,
+        },
+      },
+      response: {
+        success: true,
+        reply: "Based on your fleet of 45 vehicles (38 active), I've identified 3 high-priority risk factors: (1) TRUCK-004 shows vibration anomalies suggesting brake wear — 73% failure probability within 800km. Recommend immediate inspection. (2) 4 vehicles have overdue oil changes increasing engine wear risk by 2.3x. (3) Route CPH→HAM has a 31% delay probability due to weather patterns this week. Estimated cost exposure: €18,400 if unaddressed.",
+        model: "harbor-core-intelligence-v1",
+        engine: "mistral-large-latest",
+        fleet_context: {
+          vehicles: { total: 45, active: 38 },
+          alerts: { critical: 2, unresolved: 5 },
+        },
+        billing: {
+          cost_per_call_eur: 0.25,
+          model_tier: "harbor_premium",
+          note: "Harbor Core Intelligence is billed at €0.25/call (5x standard rate)",
+        },
+        usage: { prompt_tokens: 842, completion_tokens: 218, total_tokens: 1060 },
+        timestamp: "2026-03-16T09:00:00Z",
+      },
+    },
     // Data Export
     {
       id: "export-data",
