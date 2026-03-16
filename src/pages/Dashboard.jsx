@@ -124,8 +124,16 @@ export default function Dashboard() {
         const isAuth = await base44.auth.isAuthenticated();
         if (!isAuth) { navigate(createPageUrl("Landing")); return; }
         const user = await base44.auth.me();
-        const id = user?.organization_id || user?.data?.organization_id;
-        if (!id) { navigate(createPageUrl("OrganizationSetup")); return; }
+        let id = user?.organization_id || user?.data?.organization_id;
+        if (!id) {
+          // Try to auto-assign org from invite
+          const result = await base44.functions.invoke('assignOrganizationOnFirstLogin', {});
+          if (result?.data?.needsOrganization === false && result?.data?.organization_id) {
+            id = result.data.organization_id;
+          } else {
+            navigate(createPageUrl("OrganizationSetup")); return;
+          }
+        }
         setOrgId(id);
       } catch { navigate(createPageUrl("Landing")); }
     };
