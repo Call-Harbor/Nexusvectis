@@ -39,84 +39,33 @@ export default function UserManagement() {
 
   // Get organization
   const { data: organization } = useQuery({
-    queryKey: ['organization', currentUser?.organization_id, currentUser?.data?.organization_id],
+    queryKey: ['organization', currentUser?.organization_id],
     queryFn: async () => {
-      const orgId = currentUser?.organization_id || currentUser?.data?.organization_id;
+      const orgId = currentUser?.organization_id;
       if (!orgId) return null;
       const orgs = await base44.entities.Organization.filter({ id: orgId });
       return orgs[0] || null;
     },
-    enabled: !!(currentUser?.organization_id || currentUser?.data?.organization_id),
+    enabled: !!currentUser?.organization_id,
   });
 
-  // List organization members
-  const { data: members = [] } = useQuery({
-    queryKey: ['orgMembers', currentUser?.organization_id, currentUser?.data?.organization_id],
-    queryFn: async () => {
-      const orgId = currentUser?.organization_id || currentUser?.data?.organization_id;
-      if (!orgId) return [];
-
-      const orgMembers = await base44.entities.OrganizationMember.filter({ organization_id: orgId });
-      return orgMembers;
-    },
-    enabled: !!(currentUser?.organization_id || currentUser?.data?.organization_id),
-    staleTime: 0,
-  });
-
-  // Build user list directly from OrganizationMember records + current user
+  // Fetch org users via backend function (uses service role to bypass permission limits)
   const { data: users = [], isLoading } = useQuery({
-    queryKey: ['users', members, currentUser?.id],
+    queryKey: ['orgUsers', currentUser?.id],
     queryFn: async () => {
-      const activeMembers = members.filter(m => m.status !== 'removed');
-
-      // Build synthetic user objects from member records
-      const memberUsers = activeMembers.map(m => ({
-        id: m.id,
-        email: m.user_email,
-        full_name: m.user_email, // fallback til email som navn
-        created_date: m.created_date,
-        _fromMember: true,
-      }));
-
-      // Always include current user (with real data)
-      const allUsers = [currentUser, ...memberUsers];
-
-      // Deduplicate by email
-      const seen = new Set();
-      return allUsers.filter(u => {
-        if (!u?.email || seen.has(u.email)) return false;
-        seen.add(u.email);
-        return true;
-      });
+      const res = await base44.functions.invoke('getOrgUsers', {});
+      return res.data?.users || [];
     },
     enabled: !!currentUser,
     staleTime: 0,
   });
 
-  // Ensure current admin always has a member record
-  useQuery({
-    queryKey: ['ensureAdminMember', currentUser?.id],
-    queryFn: async () => {
-      const orgId = currentUser?.organization_id || currentUser?.data?.organization_id;
-      if (!orgId || !currentUser?.email) return null;
-      const existing = await base44.entities.OrganizationMember.filter({
-        organization_id: orgId,
-        user_email: currentUser.email
-      });
-      if (existing.length === 0) {
-        await base44.entities.OrganizationMember.create({
-          organization_id: orgId,
-          user_email: currentUser.email,
-          role: currentUser.role === 'admin' ? 'admin' : 'user',
-          status: 'active'
-        });
-        queryClient.invalidateQueries({ queryKey: ['orgMembers'] });
-      }
-      return true;
-    },
-    enabled: !!(currentUser?.organization_id || currentUser?.data?.organization_id),
-    staleTime: Infinity,
-  });
+  // members is derived from users for role/status lookup
+  const members = users.map(u => ({
+    user_email: u.email,
+    role: u.memberRole,
+    status: u.memberStatus,
+  }));
 
   // Invite user mutation
   const inviteMutation = useMutation({
