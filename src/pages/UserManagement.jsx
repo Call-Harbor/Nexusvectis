@@ -104,8 +104,7 @@ export default function UserManagement() {
       setShowInviteDialog(false);
       setInviteEmail("");
       setInviteRole("user");
-      queryClient.invalidateQueries({ queryKey: ['users'] });
-      queryClient.invalidateQueries({ queryKey: ['orgMembers'] });
+      queryClient.invalidateQueries({ queryKey: ['orgUsers'] });
     },
     onError: (error) => {
       toast.error(error.message || "Kunne ikke tilføje bruger");
