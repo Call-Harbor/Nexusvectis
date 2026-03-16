@@ -718,6 +718,8 @@ fetch("https://api.nexusvectis.com${endpoint.endpoint}", {
                     ? "bg-gradient-to-br from-emerald-500/10 to-teal-500/10 border-emerald-500/40 hover:border-emerald-400"
                     : ["people-search", "people-profile"].includes(endpoint.id)
                     ? "bg-gradient-to-br from-sky-500/10 to-blue-500/10 border-sky-500/40 hover:border-sky-400"
+                    : endpoint.id === "harbor-intelligence"
+                    ? "bg-gradient-to-br from-amber-500/15 to-orange-500/10 border-amber-500/60 hover:border-amber-400"
                     : "bg-slate-800/50 border-slate-700 hover:border-cyan-500/50"
                 }`}
               >
