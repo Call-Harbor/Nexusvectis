@@ -387,14 +387,21 @@ export default function UserManagement() {
                 {adminUsers.map((user) => (
                   <div
                     key={user.id}
-                    className="flex items-center justify-between p-4 rounded-lg bg-slate-900/50 border border-slate-700/30 hover:border-violet-500/30 transition-colors"
+                    className={`flex items-center justify-between p-4 rounded-lg border transition-colors ${
+                      user.isAlpha
+                        ? 'bg-amber-500/5 border-amber-500/30 hover:border-amber-500/50'
+                        : 'bg-slate-900/50 border-slate-700/30 hover:border-violet-500/30'
+                    }`}
                   >
                     <div className="flex items-center gap-3 flex-1">
-                      <div className="p-2 rounded-full bg-violet-500/20">
-                        <Shield className="w-4 h-4 text-violet-400" />
+                      <div className={`p-2 rounded-full ${user.isAlpha ? 'bg-amber-500/20' : 'bg-violet-500/20'}`}>
+                        <Shield className={`w-4 h-4 ${user.isAlpha ? 'text-amber-400' : 'text-violet-400'}`} />
                       </div>
                       <div className="flex-1">
-                        <p className="text-white font-medium">{user.full_name || 'No name'}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="text-white font-medium">{user.full_name || 'No name'}</p>
+                          {user.isAlpha && <span className="text-[10px] text-amber-400 font-bold bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/30">👑 ALPHA</span>}
+                        </div>
                         <p className="text-sm text-slate-400">{user.email}</p>
                         <div className="flex items-center gap-2 mt-1 flex-wrap">
                           {user.created_date && (
@@ -409,9 +416,27 @@ export default function UserManagement() {
                         </div>
                       </div>
                     </div>
-                    <div className="flex flex-col items-end gap-1">
-                      <Badge className="bg-violet-500/20 text-violet-400 border-violet-500/30">Admin</Badge>
-                      <span className="text-[10px] text-slate-500">Full access</span>
+                    <div className="flex flex-col items-end gap-2">
+                      {user.isAlpha ? (
+                        <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30">👑 Alpha Owner</Badge>
+                      ) : (
+                        canChangeRoles && !user.isAlpha ? (
+                          <Select
+                            value={user.memberRole}
+                            onValueChange={(val) => changeRoleMutation.mutate({ memberId: user.memberId, newRole: val })}
+                          >
+                            <SelectTrigger className="bg-slate-800 border-slate-600 text-white h-8 text-xs w-28">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="admin">Admin</SelectItem>
+                              <SelectItem value="user">User</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        ) : (
+                          <Badge className="bg-violet-500/20 text-violet-400 border-violet-500/30">Admin</Badge>
+                        )
+                      )}
                     </div>
                   </div>
                 ))}
