@@ -531,8 +531,8 @@ export default function UserManagement() {
               </Select>
               <p className="text-xs text-slate-500 mt-2">
                 {inviteRole === "admin" 
-                  ? "Admins have full access to all features and can invite other users."
-                  : "Regular users have limited access to the platform."}
+                  ? "Admins have full access to all features within your organization and can invite other users."
+                  : "Users have access to your organization's data but cannot manage settings or invite others."}
               </p>
             </div>
 
