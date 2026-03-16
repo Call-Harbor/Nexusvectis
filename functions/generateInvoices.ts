@@ -92,18 +92,20 @@ Deno.serve(async (req) => {
       const resourcePriceEuro = 40;
       const fleetAIPricePer100 = 5;
       const apiPricePer100 = 5;
+      const harborPricePerCall = 0.25;
       
       const vehicleTotal = vehicleCount * vehiclePriceEuro;
       const resourceTotal = resourceCount * resourcePriceEuro;
       const fleetAITotal = Math.ceil(fleetAICommands / 100) * fleetAIPricePer100;
       const apiTotal = Math.ceil(apiCalls / 100) * apiPricePer100;
+      const harborTotal = harborCalls * harborPricePerCall;
       
       // Determine tax rules based on buyer country
       const buyerCountry = org.headquarters_country || 'Denmark';
       const taxRules = TAX_RULES[buyerCountry] || TAX_RULES['Denmark'];
 
       // Calculate VAT
-      const subtotal = vehicleTotal + resourceTotal + fleetAITotal + apiTotal;
+      const subtotal = vehicleTotal + resourceTotal + fleetAITotal + apiTotal + harborTotal;
       const isEUCrossBorder = buyerCountry !== 'Denmark' && taxRules.requires_vat_id;
       const reverseCharge = isEUCrossBorder; // EU B2B reverse charge
       const vatRate = reverseCharge ? 0 : taxRules.vat_rate;
