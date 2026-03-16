@@ -129,12 +129,16 @@ export default function APIMetrics() {
       ? (apiUsage.reduce((sum, c) => sum + (c.response_time_ms || 0), 0) / apiUsage.length).toFixed(0)
       : 0;
     const uniqueOrgs = new Set(apiUsage.map(c => c.organization_id)).size;
+    const harborCalls = apiUsage.filter(c => c.endpoint?.includes('/harbor/intelligence') && c.status_code < 400).length;
+    const harborRevenue = (harborCalls * 0.25).toFixed(2);
 
     return {
       total,
       successRate: total > 0 ? ((success / total) * 100).toFixed(1) : 0,
       avgResponseTime,
-      uniqueOrgs
+      uniqueOrgs,
+      harborCalls,
+      harborRevenue
     };
   }, [apiUsage]);
 
