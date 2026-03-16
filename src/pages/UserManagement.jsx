@@ -93,9 +93,8 @@ export default function UserManagement() {
     mutationFn: async ({ email, role }) => {
       const orgId = currentUser?.organization_id || currentUser?.data?.organization_id;
 
-      // Invite user globally (creates user account if doesn't exist)
-      // Use 'admin' role if inviting an admin, otherwise 'user'
-      await base44.users.inviteUser(email, role === 'admin' ? 'admin' : 'user');
+      // Always invite as 'user' at platform level — org role is managed via OrganizationMember
+      await base44.users.inviteUser(email, 'user');
 
       // Create organization member record with specific role (only if org exists)
       if (orgId) {
