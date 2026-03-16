@@ -486,9 +486,23 @@ export default function UserManagement() {
                         </div>
                       </div>
                     </div>
-                    <div className="flex flex-col items-end gap-1">
-                      <Badge className="bg-slate-700/50 text-slate-300 border-slate-600/50">User</Badge>
-                      <span className="text-[10px] text-slate-500">Limited access</span>
+                    <div className="flex flex-col items-end gap-2">
+                      {canChangeRoles ? (
+                        <Select
+                          value={user.memberRole || 'user'}
+                          onValueChange={(val) => changeRoleMutation.mutate({ memberId: user.memberId, newRole: val })}
+                        >
+                          <SelectTrigger className="bg-slate-800 border-slate-600 text-white h-8 text-xs w-28">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="admin">Admin</SelectItem>
+                            <SelectItem value="user">User</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <Badge className="bg-slate-700/50 text-slate-300 border-slate-600/50">User</Badge>
+                      )}
                     </div>
                   </div>
                 ))}
