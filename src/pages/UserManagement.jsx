@@ -444,26 +444,39 @@ export default function UserManagement() {
                 {regularUsers.map((user) => (
                   <div
                     key={user.id}
-                    className="flex items-center justify-between p-4 rounded-lg bg-slate-900/50 border border-slate-700/30 hover:border-cyan-500/50 transition-colors"
+                    className={`flex items-center justify-between p-4 rounded-lg border transition-colors ${
+                      user.memberStatus === 'invited'
+                        ? 'bg-amber-500/5 border-amber-500/20 hover:border-amber-500/40'
+                        : 'bg-slate-900/50 border-slate-700/30 hover:border-cyan-500/30'
+                    }`}
                   >
                     <div className="flex items-center gap-3 flex-1">
-                      <div className="p-2 rounded-full bg-cyan-500/20">
-                        <User className="w-4 h-4 text-cyan-400" />
+                      <div className={`p-2 rounded-full ${user.memberStatus === 'invited' ? 'bg-amber-500/15' : 'bg-cyan-500/20'}`}>
+                        <User className={`w-4 h-4 ${user.memberStatus === 'invited' ? 'text-amber-400' : 'text-cyan-400'}`} />
                       </div>
                       <div className="flex-1">
-                        <p className="text-white font-medium">{user.full_name || 'No name'}</p>
+                        <p className="text-white font-medium">{user.full_name || user.email}</p>
                         <p className="text-sm text-slate-400">{user.email}</p>
-                        {user.created_date && (
-                          <p className="text-xs text-slate-500 mt-1 flex items-center gap-1">
-                            <Calendar className="w-3 h-3" />
-                            Joined {moment(user.created_date).format('MMM DD, YYYY')}
-                          </p>
-                        )}
+                        <div className="flex items-center gap-2 mt-1 flex-wrap">
+                          {user.created_date && user.memberStatus !== 'invited' && (
+                            <p className="text-xs text-slate-500 flex items-center gap-1">
+                              <Calendar className="w-3 h-3" />
+                              Joined {moment(user.created_date).format('MMM DD, YYYY')}
+                            </p>
+                          )}
+                          {user.memberStatus === 'invited' && (
+                            <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[10px]">⏳ Invitation sent — not yet accepted</Badge>
+                          )}
+                          {user.memberStatus === 'active' && (
+                            <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 text-[10px]">✓ Active member</Badge>
+                          )}
+                        </div>
                       </div>
                     </div>
-                    <Badge className="bg-slate-700/50 text-slate-300 border-slate-600/50">
-                      User
-                    </Badge>
+                    <div className="flex flex-col items-end gap-1">
+                      <Badge className="bg-slate-700/50 text-slate-300 border-slate-600/50">User</Badge>
+                      <span className="text-[10px] text-slate-500">Limited access</span>
+                    </div>
                   </div>
                 ))}
               </CardContent>
