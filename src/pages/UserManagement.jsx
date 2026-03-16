@@ -63,23 +63,31 @@ export default function UserManagement() {
     staleTime: 0,
   });
 
-  // List users from same organization
+  // Build user list directly from OrganizationMember records + current user
   const { data: users = [], isLoading } = useQuery({
     queryKey: ['users', members, currentUser?.id],
     queryFn: async () => {
-      const allUsers = await base44.entities.User.list();
+      const activeMembers = members.filter(m => m.status !== 'removed');
 
-      // Build list of emails to show: current user + all org members
-      const memberEmails = members
-        .filter(m => m.status !== 'removed')
-        .map(m => m.user_email);
+      // Build synthetic user objects from member records
+      const memberUsers = activeMembers.map(m => ({
+        id: m.id,
+        email: m.user_email,
+        full_name: m.user_email, // fallback til email som navn
+        created_date: m.created_date,
+        _fromMember: true,
+      }));
 
-      // Always include current user's email
-      if (currentUser?.email && !memberEmails.includes(currentUser.email)) {
-        memberEmails.push(currentUser.email);
-      }
+      // Always include current user (with real data)
+      const allUsers = [currentUser, ...memberUsers];
 
-      return allUsers.filter(u => memberEmails.includes(u.email));
+      // Deduplicate by email
+      const seen = new Set();
+      return allUsers.filter(u => {
+        if (!u?.email || seen.has(u.email)) return false;
+        seen.add(u.email);
+        return true;
+      });
     },
     enabled: !!currentUser,
     staleTime: 0,
