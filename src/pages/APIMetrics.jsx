@@ -331,7 +331,8 @@ export default function APIMetrics() {
                     contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '8px' }}
                     labelStyle={{ color: '#e2e8f0' }}
                   />
-                  <Bar dataKey="calls" fill="#06b6d4" />
+                  <Bar dataKey="calls" fill="#06b6d4" name="Standard" stackId="a" />
+                  <Bar dataKey="harbor" fill="#f59e0b" name="Harbor Premium" stackId="a" />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
