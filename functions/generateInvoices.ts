@@ -74,14 +74,16 @@ Deno.serve(async (req) => {
         return usageDate >= periodStart && usageDate < periodEnd && usage.success;
       }).length;
 
-      // Count API calls for current period
+      // Count API calls for current period (split standard vs Harbor premium)
       const allAPIUsage = await base44.asServiceRole.entities.APIUsage.filter({ 
         organization_id: org.id 
       });
-      const apiCalls = allAPIUsage.filter(usage => {
+      const periodAPIUsage = allAPIUsage.filter(usage => {
         const usageDate = new Date(usage.created_date);
         return usageDate >= periodStart && usageDate < periodEnd && usage.status_code < 400;
-      }).length;
+      });
+      const harborCalls = periodAPIUsage.filter(u => u.endpoint && u.endpoint.includes('/harbor/intelligence')).length;
+      const apiCalls = periodAPIUsage.filter(u => !u.endpoint || !u.endpoint.includes('/harbor/intelligence')).length;
 
       const vehicleCount = vehicles.length;
       const resourceCount = resources.length;
