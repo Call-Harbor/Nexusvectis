@@ -93,48 +93,43 @@ export default function UserManagement() {
     mutationFn: async ({ email, role }) => {
       const orgId = currentUser?.organization_id || currentUser?.data?.organization_id;
 
-      // Always invite as 'user' at platform level — org role is managed via OrganizationMember
-      await base44.users.inviteUser(email, 'user');
-
-      // Create organization member record with specific role (only if org exists)
-      if (orgId) {
-        await base44.entities.OrganizationMember.create({
-          organization_id: orgId,
-          user_email: email,
-          role: role,
-          status: 'invited'
-        });
+      // Try to invite — if they already exist in the system, this may fail, which is fine
+      try {
+        await base44.users.inviteUser(email, 'user');
+      } catch (e) {
+        // User likely already exists — we can still add them to the org
+        console.log('inviteUser failed (user may already exist):', e.message);
       }
 
-      // Log security audit
-      await base44.functions.invoke('auditLog', {
-        action: 'user_invited',
-        resource_type: 'user',
-        resource_id: email,
-        status: 'success',
-        details: `Invited user with role: ${role}${orgId ? ` to organization ${orgId}` : ''}`,
-        severity: 'medium'
-      }).catch(() => {}); // Don't fail if audit log fails
+      // Always create the OrganizationMember record
+      if (orgId) {
+        // Check if member already exists
+        const existing = await base44.entities.OrganizationMember.filter({
+          organization_id: orgId,
+          user_email: email
+        });
+        if (existing.length === 0) {
+          await base44.entities.OrganizationMember.create({
+            organization_id: orgId,
+            user_email: email,
+            role: role,
+            status: 'invited'
+          });
+        } else {
+          throw new Error(`${email} er allerede medlem af din organisation.`);
+        }
+      }
     },
     onSuccess: () => {
-      toast.success("Invitation sent!");
+      toast.success("Bruger tilføjet til organisationen!");
       setShowInviteDialog(false);
       setInviteEmail("");
       setInviteRole("user");
       queryClient.invalidateQueries({ queryKey: ['users'] });
+      queryClient.invalidateQueries({ queryKey: ['orgMembers'] });
     },
     onError: (error) => {
-      toast.error(error.message || "Failed to send invitation");
-
-      // Log failed attempt
-      base44.functions.invoke('auditLog', {
-        action: 'user_invite_failed',
-        resource_type: 'user',
-        resource_id: inviteEmail,
-        status: 'failed',
-        details: error.message,
-        severity: 'high'
-      }).catch(() => {});
+      toast.error(error.message || "Kunne ikke tilføje bruger");
     },
   });
 
