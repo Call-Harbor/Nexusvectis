@@ -60,6 +60,21 @@ export default function UserManagement() {
     staleTime: 0,
   });
 
+  // Change role mutation
+  const changeRoleMutation = useMutation({
+    mutationFn: async ({ memberId, newRole }) => {
+      const res = await base44.functions.invoke('updateMemberRole', { memberId, newRole });
+      if (res.data?.error) throw new Error(res.data.error);
+    },
+    onSuccess: () => {
+      toast.success("Rolle opdateret!");
+      queryClient.invalidateQueries({ queryKey: ['orgUsers'] });
+    },
+    onError: (error) => {
+      toast.error(error.message || "Kunne ikke ændre rolle");
+    },
+  });
+
   // members is derived from users for role/status lookup
   const members = users.map(u => ({
     user_email: u.email,
