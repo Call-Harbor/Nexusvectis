@@ -93,6 +93,31 @@ export default function UserManagement() {
     staleTime: 0,
   });
 
+  // Ensure current admin always has a member record
+  useQuery({
+    queryKey: ['ensureAdminMember', currentUser?.id],
+    queryFn: async () => {
+      const orgId = currentUser?.organization_id || currentUser?.data?.organization_id;
+      if (!orgId || !currentUser?.email) return null;
+      const existing = await base44.entities.OrganizationMember.filter({
+        organization_id: orgId,
+        user_email: currentUser.email
+      });
+      if (existing.length === 0) {
+        await base44.entities.OrganizationMember.create({
+          organization_id: orgId,
+          user_email: currentUser.email,
+          role: currentUser.role === 'admin' ? 'admin' : 'user',
+          status: 'active'
+        });
+        queryClient.invalidateQueries({ queryKey: ['orgMembers'] });
+      }
+      return true;
+    },
+    enabled: !!(currentUser?.organization_id || currentUser?.data?.organization_id),
+    staleTime: Infinity,
+  });
+
   // Invite user mutation
   const inviteMutation = useMutation({
     mutationFn: async ({ email, role }) => {
