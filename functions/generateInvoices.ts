@@ -151,6 +151,14 @@ Deno.serve(async (req) => {
           total: apiTotal
         });
       }
+      if (harborCalls > 0) {
+        lineItems.push({
+          description: `Harbor Core Intelligence API (${harborCalls} calls @ €${harborPricePerCall}/call)`,
+          quantity: harborCalls,
+          unit_price: harborPricePerCall,
+          total: harborTotal
+        });
+      }
       
       // Legal notes based on country
       let legalNotes = '';
