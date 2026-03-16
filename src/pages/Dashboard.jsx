@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
@@ -6,33 +6,118 @@ import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "../utils";
 import { 
   Globe, Activity, Brain, Sparkles, TrendingUp, AlertTriangle, 
-  Radio, Cpu, Shield, Target, Orbit, Network
+  Radio, Cpu, Shield, Target, Orbit, Network, Zap, Eye, Layers,
+  ChevronRight, Satellite
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-
 import DashboardGlobeFrame from "@/components/holographic/DashboardGlobeFrame";
 import AIInsightWidget from "@/components/ai/AIInsightWidget";
+
+// Floating particle component
+function Particle({ delay, duration, x, size, color }) {
+  return (
+    <motion.div
+      className="absolute rounded-full pointer-events-none"
+      style={{
+        width: size, height: size,
+        left: `${x}%`,
+        bottom: '-10px',
+        background: color,
+        boxShadow: `0 0 ${size * 3}px ${color}`,
+      }}
+      animate={{
+        y: [0, -window.innerHeight - 50],
+        opacity: [0, 0.8, 0.8, 0],
+        x: [0, (Math.random() - 0.5) * 100],
+      }}
+      transition={{ duration, delay, repeat: Infinity, ease: "linear" }}
+    />
+  );
+}
+
+// Animated number counter
+function AnimatedNumber({ value, suffix = "" }) {
+  const [display, setDisplay] = useState(0);
+  useEffect(() => {
+    let start = 0;
+    const end = parseInt(value) || 0;
+    if (start === end) { setDisplay(end); return; }
+    const step = Math.max(1, Math.floor(end / 20));
+    const timer = setInterval(() => {
+      start = Math.min(start + step, end);
+      setDisplay(start);
+      if (start >= end) clearInterval(timer);
+    }, 40);
+    return () => clearInterval(timer);
+  }, [value]);
+  return <>{display}{suffix}</>;
+}
+
+// Stat Card
+function StatCard({ icon: Icon, label, value, suffix = "", color, delay = 0, sub }) {
+  const colorMap = {
+    cyan: { border: 'border-cyan-500/40', bg: 'from-cyan-500/10', icon: 'text-cyan-400', glow: 'shadow-cyan-500/20', bar: 'from-cyan-500 to-cyan-300', sweep: 'via-cyan-400/30' },
+    violet: { border: 'border-violet-500/40', bg: 'from-violet-500/10', icon: 'text-violet-400', glow: 'shadow-violet-500/20', bar: 'from-violet-500 to-violet-300', sweep: 'via-violet-400/30' },
+    emerald: { border: 'border-emerald-500/40', bg: 'from-emerald-500/10', icon: 'text-emerald-400', glow: 'shadow-emerald-500/20', bar: 'from-emerald-500 to-emerald-300', sweep: 'via-emerald-400/30' },
+    amber: { border: 'border-amber-500/40', bg: 'from-amber-500/10', icon: 'text-amber-400', glow: 'shadow-amber-500/20', bar: 'from-amber-500 to-amber-300', sweep: 'via-amber-400/30' },
+    pink: { border: 'border-pink-500/40', bg: 'from-pink-500/10', icon: 'text-pink-400', glow: 'shadow-pink-500/20', bar: 'from-pink-500 to-pink-300', sweep: 'via-pink-400/30' },
+    red: { border: 'border-red-500/50', bg: 'from-red-500/15', icon: 'text-red-400', glow: 'shadow-red-500/20', bar: 'from-red-500 to-red-300', sweep: 'via-red-400/30' },
+  };
+  const c = colorMap[color] || colorMap.cyan;
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay, duration: 0.5 }}
+      whileHover={{ scale: 1.04, y: -3 }}
+      className={`relative p-3 rounded-xl bg-gradient-to-br ${c.bg} to-transparent backdrop-blur-xl border ${c.border} overflow-hidden shadow-lg ${c.glow} cursor-default`}
+    >
+      {/* Sweep animation */}
+      <motion.div
+        className={`absolute inset-0 bg-gradient-to-r from-transparent ${c.sweep} to-transparent`}
+        animate={{ x: ['-100%', '200%'] }}
+        transition={{ duration: 3, repeat: Infinity, ease: "linear", delay }}
+      />
+      {/* Corner accent */}
+      <div className={`absolute top-0 right-0 w-8 h-8 bg-gradient-to-bl ${c.bar} opacity-20 rounded-bl-2xl`} />
+      
+      <div className="relative z-10">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-[9px] text-slate-400 uppercase tracking-widest font-semibold">{label}</span>
+          <Icon className={`w-3.5 h-3.5 ${c.icon}`} />
+        </div>
+        <p className={`text-2xl font-black ${c.icon} tabular-nums`}>
+          <AnimatedNumber value={value} suffix={suffix} />
+        </p>
+        {sub && <p className="text-[10px] text-slate-500 mt-0.5 truncate">{sub}</p>}
+      </div>
+    </motion.div>
+  );
+}
 
 export default function Dashboard() {
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [selectedResource, setSelectedResource] = useState(null);
   const [orgId, setOrgId] = useState(null);
+  const [tick, setTick] = useState(0);
   const navigate = useNavigate();
 
-  // Auto-close holograms when scrolling out of view
+  // Live ticker
+  useEffect(() => {
+    const t = setInterval(() => setTick(p => p + 1), 1000);
+    return () => clearInterval(t);
+  }, []);
+
   useEffect(() => {
     const handleScroll = () => {
-      const scrollTop = window.scrollY || document.documentElement.scrollTop;
-      if (scrollTop > 300) {
-        setSelectedVehicle(null);
-        setSelectedResource(null);
+      if ((window.scrollY || document.documentElement.scrollTop) > 300) {
+        setSelectedVehicle(null); setSelectedResource(null);
       }
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Single auth check — cache orgId
   useEffect(() => {
     const checkAuth = async () => {
       try {
@@ -42,544 +127,520 @@ export default function Dashboard() {
         const id = user?.organization_id || user?.data?.organization_id;
         if (!id) { navigate(createPageUrl("OrganizationSetup")); return; }
         setOrgId(id);
-      } catch {
-        navigate(createPageUrl("Landing"));
-      }
+      } catch { navigate(createPageUrl("Landing")); }
     };
     checkAuth();
   }, [navigate]);
 
-
-
-
-
   const { data: vehicles = [] } = useQuery({
-    queryKey: ['vehicles', orgId],
-    queryFn: () => base44.entities.Vehicle.filter({ organization_id: orgId }),
-    enabled: !!orgId,
-    refetchInterval: 10000,
+    queryKey: ['vehicles', orgId], queryFn: () => base44.entities.Vehicle.filter({ organization_id: orgId }),
+    enabled: !!orgId, refetchInterval: 10000,
   });
-
   const { data: routes = [] } = useQuery({
-    queryKey: ['routes', orgId],
-    queryFn: () => base44.entities.Route.filter({ organization_id: orgId }),
-    enabled: !!orgId,
-    refetchInterval: 15000,
+    queryKey: ['routes', orgId], queryFn: () => base44.entities.Route.filter({ organization_id: orgId }),
+    enabled: !!orgId, refetchInterval: 15000,
   });
-
   const { data: resources = [] } = useQuery({
-    queryKey: ['resources', orgId],
-    queryFn: () => base44.entities.Resource.filter({ organization_id: orgId }),
-    enabled: !!orgId,
-    refetchInterval: 20000,
+    queryKey: ['resources', orgId], queryFn: () => base44.entities.Resource.filter({ organization_id: orgId }),
+    enabled: !!orgId, refetchInterval: 20000,
   });
-
   const { data: digitalTwins = [] } = useQuery({
-    queryKey: ['digitalTwins', orgId],
-    queryFn: () => base44.entities.DigitalTwin.filter({ organization_id: orgId }),
-    enabled: !!orgId,
-    refetchInterval: 20000,
+    queryKey: ['digitalTwins', orgId], queryFn: () => base44.entities.DigitalTwin.filter({ organization_id: orgId }),
+    enabled: !!orgId, refetchInterval: 20000,
   });
-
   const { data: alerts = [] } = useQuery({
-    queryKey: ['alerts', orgId],
-    queryFn: () => base44.entities.Alert.filter({ organization_id: orgId }, '-created_date', 10),
-    enabled: !!orgId,
-    refetchInterval: 15000,
+    queryKey: ['alerts', orgId], queryFn: () => base44.entities.Alert.filter({ organization_id: orgId }, '-created_date', 10),
+    enabled: !!orgId, refetchInterval: 15000,
   });
-
   const { data: exceptions = [] } = useQuery({
-    queryKey: ['exceptions', orgId],
-    queryFn: () => base44.entities.Exception.filter({ organization_id: orgId, status: { $ne: 'resolved' } }, '-created_date', 5),
-    enabled: !!orgId,
-    refetchInterval: 15000,
+    queryKey: ['exceptions', orgId], queryFn: () => base44.entities.Exception.filter({ organization_id: orgId, status: { $ne: 'resolved' } }, '-created_date', 5),
+    enabled: !!orgId, refetchInterval: 15000,
   });
 
-  // Advanced Analytics
   const activeVehicles = vehicles.filter(v => v.status === 'active').length;
   const activeRoutes = routes.filter(r => r.status === 'active').length;
   const avgEfficiency = vehicles.length > 0 
-    ? Math.round(vehicles.reduce((acc, v) => acc + (v.efficiency_score || 0), 0) / vehicles.length)
-    : 0;
+    ? Math.round(vehicles.reduce((acc, v) => acc + (v.efficiency_score || 0), 0) / vehicles.length) : 0;
   const criticalAlerts = alerts.filter(a => a.type === 'critical' && !a.is_resolved).length;
   const criticalExceptions = exceptions.filter(e => e.severity === 'critical').length;
   const aiOptimizedRoutes = routes.filter(r => r.ai_optimized).length;
-  const predictiveScore = vehicles.length > 0
-    ? Math.round(vehicles.reduce((sum, v) => sum + (v.efficiency_score || 0), 0) / vehicles.length)
-    : 0;
   const networkHealth = vehicles.length > 0
-    ? Math.round(vehicles.filter(v => v.status === 'active' || v.status === 'idle').length / vehicles.length * 100)
-    : 0;
+    ? Math.round(vehicles.filter(v => v.status === 'active' || v.status === 'idle').length / vehicles.length * 100) : 0;
+
+  // Particles config
+  const particles = [
+    { delay: 0, duration: 8, x: 10, size: 3, color: 'rgba(6,182,212,0.7)' },
+    { delay: 1.5, duration: 11, x: 25, size: 2, color: 'rgba(139,92,246,0.6)' },
+    { delay: 3, duration: 9, x: 40, size: 4, color: 'rgba(6,182,212,0.5)' },
+    { delay: 0.5, duration: 13, x: 55, size: 2, color: 'rgba(236,72,153,0.5)' },
+    { delay: 2, duration: 10, x: 70, size: 3, color: 'rgba(139,92,246,0.7)' },
+    { delay: 4, duration: 12, x: 85, size: 2, color: 'rgba(6,182,212,0.6)' },
+    { delay: 1, duration: 7, x: 92, size: 3, color: 'rgba(16,185,129,0.5)' },
+    { delay: 3.5, duration: 14, x: 5, size: 2, color: 'rgba(245,158,11,0.4)' },
+  ];
+
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 
   return (
     <div className="fixed inset-0 bg-black overflow-hidden">
-      {/* Quantum Field Background */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-cyan-950/20 via-violet-950/20 to-black" />
-        <motion.div
-          animate={{
-            background: [
-              'radial-gradient(circle at 20% 20%, rgba(6, 182, 212, 0.1) 0%, transparent 50%)',
-              'radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 50%)',
-              'radial-gradient(circle at 20% 20%, rgba(6, 182, 212, 0.1) 0%, transparent 50%)',
-            ]
-          }}
-          transition={{ duration: 10, repeat: Infinity }}
-          className="absolute inset-0"
-        />
-      </div>
 
-      {/* Holographic Grid Overlay */}
-      <div className="absolute inset-0 opacity-10 pointer-events-none" style={{
-        backgroundImage: 'linear-gradient(rgba(6, 182, 212, 0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(6, 182, 212, 0.5) 1px, transparent 1px)',
-        backgroundSize: '50px 50px'
+      {/* === BACKGROUND LAYERS === */}
+      {/* Deep space gradient */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[#020818] via-[#050d1a] to-black" />
+      
+      {/* Animated aurora */}
+      <motion.div
+        className="absolute inset-0 opacity-30 pointer-events-none"
+        animate={{
+          background: [
+            'radial-gradient(ellipse 80% 50% at 20% 10%, rgba(6,182,212,0.15) 0%, transparent 60%), radial-gradient(ellipse 60% 40% at 80% 80%, rgba(139,92,246,0.12) 0%, transparent 60%)',
+            'radial-gradient(ellipse 80% 50% at 70% 20%, rgba(139,92,246,0.15) 0%, transparent 60%), radial-gradient(ellipse 60% 40% at 20% 70%, rgba(6,182,212,0.12) 0%, transparent 60%)',
+            'radial-gradient(ellipse 80% 50% at 20% 10%, rgba(6,182,212,0.15) 0%, transparent 60%), radial-gradient(ellipse 60% 40% at 80% 80%, rgba(139,92,246,0.12) 0%, transparent 60%)',
+          ]
+        }}
+        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+      />
+
+      {/* Holographic grid */}
+      <div className="absolute inset-0 pointer-events-none" style={{
+        backgroundImage: 'linear-gradient(rgba(6,182,212,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(6,182,212,0.07) 1px, transparent 1px)',
+        backgroundSize: '60px 60px'
       }} />
 
-      {/* Neural Network Header */}
-      <motion.div 
-        initial={{ opacity: 0, y: -20 }}
+      {/* Scan line sweep */}
+      <motion.div
+        className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-400/20 to-transparent pointer-events-none"
+        animate={{ top: ['-2px', '100vh'] }}
+        transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
+      />
+
+      {/* Floating particles */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {particles.map((p, i) => <Particle key={i} {...p} />)}
+      </div>
+
+      {/* === HEADER === */}
+      <motion.div
+        initial={{ opacity: 0, y: -30 }}
         animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
         className="absolute top-0 left-0 right-0 z-50"
       >
-        <div className="bg-gradient-to-b from-black/95 via-black/80 to-transparent backdrop-blur-xl border-b border-cyan-500/20">
-          <div className="p-4 sm:p-6">
-            {/* Top Bar */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-4">
+        <div className="relative bg-gradient-to-b from-black/98 via-black/85 to-transparent backdrop-blur-2xl border-b border-cyan-500/20">
+          {/* Top accent line */}
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-400/60 to-transparent" />
+          
+          <div className="px-4 sm:px-6 py-3">
+            {/* Main header row */}
+            <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-3 sm:gap-4">
-                <motion.div 
-                  className="relative"
-                  animate={{ 
-                    boxShadow: [
-                      '0 0 20px rgba(6, 182, 212, 0.4)',
-                      '0 0 40px rgba(139, 92, 246, 0.6)',
-                      '0 0 20px rgba(6, 182, 212, 0.4)'
-                    ]
-                  }}
+                {/* Logo */}
+                <motion.div className="relative flex-shrink-0"
+                  animate={{ boxShadow: ['0 0 15px rgba(6,182,212,0.3)', '0 0 30px rgba(139,92,246,0.5)', '0 0 15px rgba(6,182,212,0.3)'] }}
                   transition={{ duration: 3, repeat: Infinity }}
                 >
-                  <div className="p-3 rounded-2xl bg-gradient-to-br from-cyan-500/30 to-violet-500/30 border border-cyan-400/50 backdrop-blur-xl">
-                    <Globe className="w-8 h-8 text-cyan-400" />
+                  <div className="p-2.5 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-violet-500/20 border border-cyan-400/40">
+                    <Globe className="w-7 h-7 text-cyan-400" />
                   </div>
-                  <motion.div
-                    className="absolute -inset-1 rounded-2xl border-2 border-cyan-400/30"
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                  <motion.div className="absolute -inset-1 rounded-2xl border border-cyan-400/20"
+                    animate={{ rotate: 360 }} transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                  />
+                  <motion.div className="absolute -inset-2 rounded-2xl border border-violet-400/10"
+                    animate={{ rotate: -360 }} transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
                   />
                 </motion.div>
-                
+
                 <div>
-                  <div className="flex items-center gap-2 sm:gap-3">
-                    <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-cyan-400 via-violet-400 to-cyan-400 bg-clip-text text-transparent">
+                  <div className="flex items-center gap-2">
+                    <motion.h1
+                      className="text-xl sm:text-2xl font-black tracking-tight"
+                      style={{ background: 'linear-gradient(90deg, #22d3ee, #a78bfa, #22d3ee)', backgroundSize: '200%', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}
+                      animate={{ backgroundPosition: ['0%', '200%'] }}
+                      transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                    >
                       NexusVectis
-                    </h1>
-                    <Badge className="bg-gradient-to-r from-cyan-500/20 to-violet-500/20 text-cyan-400 border-cyan-400/30 animate-pulse text-[10px] sm:text-xs">
-                      NEXUS
+                    </motion.h1>
+                    <Badge className="bg-cyan-500/15 text-cyan-400 border-cyan-400/30 text-[9px] px-1.5 py-0.5 animate-pulse">
+                      LIVE
                     </Badge>
                   </div>
-                  <p className="text-xs sm:text-sm text-slate-400 flex items-center gap-2 mt-1">
+                  <p className="text-[10px] text-slate-500 flex items-center gap-1.5 mt-0.5">
                     <Brain className="w-3 h-3 text-violet-400" />
-                    <span className="hidden sm:inline">Neural Fleet Intelligence • Real-time AI Analytics</span>
-                    <span className="sm:hidden">Neural Fleet AI</span>
+                    Neural Fleet Intelligence · AI-Powered Operations
                   </p>
                 </div>
               </div>
 
+              {/* Right: clock + status */}
+              <div className="flex items-center gap-3">
+                {/* Live clock */}
+                <div className="hidden sm:block text-right">
+                  <motion.p className="text-sm font-mono font-bold text-cyan-400 tabular-nums" key={tick}>
+                    {timeStr}
+                  </motion.p>
+                  <p className="text-[10px] text-slate-500 font-mono">{dateStr}</p>
+                </div>
 
+                {/* System status pill */}
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30">
+                  <motion.div className="w-2 h-2 rounded-full bg-emerald-400"
+                    animate={{ scale: [1, 1.4, 1], opacity: [0.6, 1, 0.6] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  />
+                  <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider hidden sm:block">All Systems Go</span>
+                  <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider sm:hidden">Online</span>
+                </div>
+              </div>
             </div>
 
-            {/* Neural Status Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-2">
-              <motion.div
-                whileHover={{ scale: 1.02, y: -2 }}
-                className="p-3 rounded-xl bg-slate-900/60 backdrop-blur-xl border border-cyan-500/30 relative overflow-hidden group"
-              >
-                <motion.div 
-                  className="absolute inset-0 bg-gradient-to-r from-cyan-500/0 via-cyan-500/20 to-cyan-500/0"
-                  animate={{ x: ['-100%', '200%'] }}
-                  transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                />
-                <div className="relative z-10">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Activity className="w-3 h-3 text-cyan-400" />
-                    <span className="text-[10px] text-slate-400 uppercase tracking-wider">Fleet</span>
-                  </div>
-                  <p className="text-lg font-bold text-white">
-                    {activeVehicles}<span className="text-xs text-slate-500">/{vehicles.length}</span>
-                  </p>
-                </div>
-              </motion.div>
-
-              <motion.div
-                whileHover={{ scale: 1.02, y: -2 }}
-                className="p-3 rounded-xl bg-slate-900/60 backdrop-blur-xl border border-violet-500/30 relative overflow-hidden group"
-              >
-                <motion.div 
-                  className="absolute inset-0 bg-gradient-to-r from-violet-500/0 via-violet-500/20 to-violet-500/0"
-                  animate={{ x: ['-100%', '200%'] }}
-                  transition={{ duration: 3, repeat: Infinity, ease: "linear", delay: 0.5 }}
-                />
-                <div className="relative z-10">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Network className="w-3 h-3 text-violet-400" />
-                    <span className="text-[10px] text-slate-400 uppercase tracking-wider">Routes</span>
-                  </div>
-                  <p className="text-lg font-bold text-white">
-                    {activeRoutes}<span className="text-xs text-slate-500">/{routes.length}</span>
-                  </p>
-                </div>
-              </motion.div>
-
-              <motion.div
-                whileHover={{ scale: 1.02, y: -2 }}
-                className="p-3 rounded-xl bg-slate-900/60 backdrop-blur-xl border border-emerald-500/30 relative overflow-hidden"
-              >
-                <div className="flex items-center gap-2 mb-1">
-                  <Target className="w-3 h-3 text-emerald-400" />
-                  <span className="text-[10px] text-slate-400 uppercase tracking-wider">Efficiency</span>
-                </div>
-                <p className="text-lg font-bold text-white">{avgEfficiency}%</p>
-              </motion.div>
-
-              <motion.div
-                whileHover={{ scale: 1.02, y: -2 }}
-                className="p-3 rounded-xl bg-slate-900/60 backdrop-blur-xl border border-amber-500/30 relative overflow-hidden"
-              >
-                <div className="flex items-center gap-2 mb-1">
-                  <Brain className="w-3 h-3 text-amber-400" />
-                  <span className="text-[10px] text-slate-400 uppercase tracking-wider">AI Opt</span>
-                </div>
-                <p className="text-lg font-bold text-white">{aiOptimizedRoutes}</p>
-              </motion.div>
-
-              <motion.div
-                whileHover={{ scale: 1.02, y: -2 }}
-                className="p-3 rounded-xl bg-slate-900/60 backdrop-blur-xl border border-pink-500/30 relative overflow-hidden"
-              >
-                <div className="flex items-center gap-2 mb-1">
-                  <Sparkles className="w-3 h-3 text-pink-400" />
-                  <span className="text-[10px] text-slate-400 uppercase tracking-wider">Twins</span>
-                </div>
-                <p className="text-lg font-bold text-white">{digitalTwins.length}</p>
-              </motion.div>
-
-              <motion.div
-                whileHover={{ scale: 1.02, y: -2 }}
-                className="p-3 rounded-xl bg-slate-900/60 backdrop-blur-xl border border-cyan-500/30 relative overflow-hidden"
-              >
-                <div className="flex items-center gap-2 mb-1">
-                  <Orbit className="w-3 h-3 text-cyan-400" />
-                  <span className="text-[10px] text-slate-400 uppercase tracking-wider">Resources</span>
-                </div>
-                <p className="text-lg font-bold text-white">{resources.length}</p>
-              </motion.div>
-
-              <motion.div
-                whileHover={{ scale: 1.02, y: -2 }}
-                className={`p-3 rounded-xl bg-slate-900/60 backdrop-blur-xl border relative overflow-hidden ${
-                  criticalAlerts > 0 ? 'border-red-500/50' : 'border-emerald-500/30'
-                }`}
-              >
-                <div className="flex items-center gap-2 mb-1">
-                  <AlertTriangle className={`w-3 h-3 ${criticalAlerts > 0 ? 'text-red-400' : 'text-emerald-400'}`} />
-                  <span className="text-[10px] text-slate-400 uppercase tracking-wider">Alerts</span>
-                </div>
-                <p className="text-lg font-bold text-white">{criticalAlerts}</p>
-                {criticalAlerts > 0 && (
-                  <motion.div
-                    animate={{ opacity: [0.3, 1, 0.3] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                    className="absolute top-2 right-2 w-2 h-2 rounded-full bg-red-500"
-                  />
-                )}
-              </motion.div>
-
-              <motion.div
-                whileHover={{ scale: 1.02, y: -2 }}
-                className="p-3 rounded-xl bg-slate-900/60 backdrop-blur-xl border border-violet-500/30 relative overflow-hidden"
-              >
-                <div className="flex items-center gap-2 mb-1">
-                  <Shield className="w-3 h-3 text-violet-400" />
-                  <span className="text-[10px] text-slate-400 uppercase tracking-wider">Health</span>
-                </div>
-                <p className="text-lg font-bold text-white">{networkHealth}%</p>
-              </motion.div>
+            {/* Stats Grid */}
+            <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-8 gap-2">
+              <StatCard icon={Activity} label="Active Fleet" value={activeVehicles} sub={`of ${vehicles.length} total`} color="cyan" delay={0.1} />
+              <StatCard icon={Network} label="Live Routes" value={activeRoutes} sub={`of ${routes.length} total`} color="violet" delay={0.15} />
+              <StatCard icon={Target} label="Efficiency" value={avgEfficiency} suffix="%" sub="Fleet average" color="emerald" delay={0.2} />
+              <StatCard icon={Brain} label="AI Routes" value={aiOptimizedRoutes} sub="Optimized" color="amber" delay={0.25} />
+              <StatCard icon={Sparkles} label="Digital Twins" value={digitalTwins.length} sub="Active models" color="pink" delay={0.3} />
+              <StatCard icon={Orbit} label="Resources" value={resources.length} sub="Operational" color="cyan" delay={0.35} />
+              <StatCard icon={AlertTriangle} label="Critical" value={criticalAlerts} sub={criticalAlerts > 0 ? "Needs attention" : "All clear"} color={criticalAlerts > 0 ? "red" : "emerald"} delay={0.4} />
+              <StatCard icon={Shield} label="Net Health" value={networkHealth} suffix="%" sub="System vitals" color="violet" delay={0.45} />
             </div>
           </div>
         </div>
       </motion.div>
 
-      {/* Main Content Grid */}
-      <div className="absolute top-[220px] sm:top-[200px] lg:top-[185px] left-0 right-0 bottom-0 px-3 sm:px-4 lg:px-6 overflow-y-auto">
-        <div className="flex flex-col lg:flex-row gap-4 min-h-full pb-4">
-          {/* Left Panel - AI Insights */}
+      {/* === MAIN CONTENT === */}
+      <div className="absolute top-[195px] sm:top-[190px] md:top-[175px] left-0 right-0 bottom-0 px-3 sm:px-4 lg:px-6 overflow-y-auto">
+        <div className="flex flex-col lg:flex-row gap-4 h-full pb-4">
+
+          {/* Left Panel */}
           <motion.div
-            initial={{ opacity: 0, x: -20 }}
+            initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
-            className="w-full lg:w-72 flex-shrink-0 space-y-4"
+            transition={{ delay: 0.3 }}
+            className="w-full lg:w-72 flex-shrink-0 space-y-3"
           >
-          {/* Predictive Analytics */}
-          <div className="bg-slate-900/95 backdrop-blur-xl rounded-xl lg:rounded-2xl border border-cyan-500/40 p-3 lg:p-4 shadow-lg">
-            <div className="flex items-center gap-2 lg:gap-3 mb-3 lg:mb-4">
-              <div className="p-1.5 lg:p-2 rounded-lg bg-gradient-to-br from-cyan-500/30 to-violet-500/30">
-                <TrendingUp className="w-4 h-4 lg:w-5 lg:h-5 text-cyan-400" />
-              </div>
-              <div>
-                <h3 className="text-sm lg:text-base font-bold text-white">Predictive Intelligence</h3>
-                <p className="text-[10px] lg:text-xs text-cyan-300">AI-Powered Forecasting</p>
-              </div>
-            </div>
-            
-            <div className="space-y-2 lg:space-y-3">
-              <div className="p-2 lg:p-3 rounded-lg lg:rounded-xl bg-slate-800/80 border border-cyan-500/30">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[10px] lg:text-xs text-cyan-200 font-medium">Accuracy Score</span>
-                  <span className="text-xl lg:text-2xl font-bold text-cyan-400">{predictiveScore}%</span>
+            {/* Predictive Intelligence */}
+            <div className="bg-black/70 backdrop-blur-xl rounded-2xl border border-cyan-500/30 p-4 shadow-xl shadow-cyan-500/5 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/5 rounded-full blur-2xl pointer-events-none" />
+              <div className="flex items-center gap-2 mb-3">
+                <div className="p-1.5 rounded-lg bg-gradient-to-br from-cyan-500/30 to-violet-500/30 border border-cyan-400/20">
+                  <Cpu className="w-4 h-4 text-cyan-400" />
                 </div>
-                <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
+                <div>
+                  <h3 className="text-sm font-bold text-white">Predictive Intelligence</h3>
+                  <p className="text-[10px] text-cyan-400/60">Neural Engine Active</p>
+                </div>
+                <motion.div className="ml-auto w-2 h-2 rounded-full bg-cyan-400"
+                  animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 1.5, repeat: Infinity }}
+                />
+              </div>
+
+              {/* Accuracy gauge */}
+              <div className="p-3 rounded-xl bg-gradient-to-br from-cyan-500/10 to-transparent border border-cyan-500/20 mb-3">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[10px] text-slate-400 uppercase tracking-wider">Model Accuracy</span>
+                  <motion.span className="text-2xl font-black text-cyan-400"
+                    animate={{ textShadow: ['0 0 10px rgba(6,182,212,0)', '0 0 20px rgba(6,182,212,0.8)', '0 0 10px rgba(6,182,212,0)'] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  >
+                    {avgEfficiency}%
+                  </motion.span>
+                </div>
+                <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
                   <motion.div
                     initial={{ width: 0 }}
-                    animate={{ width: `${predictiveScore}%` }}
-                    transition={{ duration: 1.5, delay: 0.5 }}
-                    className="h-full bg-gradient-to-r from-cyan-500 to-violet-500"
-                  />
-                </div>
-              </div>
-
-              <div className="p-2 lg:p-3 rounded-lg lg:rounded-xl bg-slate-800/80 border border-violet-500/30">
-                <div className="flex items-center gap-2 mb-2">
-                  <Cpu className="w-3 h-3 lg:w-4 lg:h-4 text-violet-400" />
-                  <span className="text-[10px] lg:text-xs text-violet-300 font-medium">Neural Processing</span>
-                </div>
-                <div className="space-y-0.5 lg:space-y-1 text-[10px] lg:text-xs text-white">
-                  <p>• Route optimization <span className="hidden lg:inline">algorithms </span>active</p>
-                  <p>• Real-time traffic analysis<span className="hidden lg:inline"> running</span></p>
-                  <p>• Predictive maintenance<span className="hidden lg:inline"> models trained</span></p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Critical Exceptions */}
-          {criticalExceptions > 0 && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="bg-slate-900/80 backdrop-blur-xl rounded-xl lg:rounded-2xl border border-red-500/50 p-3 lg:p-4"
-            >
-              <div className="flex items-center gap-2 lg:gap-3 mb-3">
-                <motion.div 
-                  animate={{ scale: [1, 1.2, 1] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                  className="p-1.5 lg:p-2 rounded-lg bg-red-500/20"
-                >
-                  <AlertTriangle className="w-4 h-4 lg:w-5 lg:h-5 text-red-400" />
-                </motion.div>
-                <div>
-                  <h3 className="text-xs lg:text-sm font-bold text-white">Critical Exceptions</h3>
-                  <p className="text-[10px] lg:text-xs text-red-400"><span className="hidden sm:inline">Immediate attention required</span><span className="sm:hidden">Urgent</span></p>
-                </div>
-              </div>
-              
-              <div className="space-y-1.5 lg:space-y-2">
-                {exceptions.slice(0, 3).map((exception) => (
-                  <motion.div
-                    key={exception.id}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    className="p-2 lg:p-3 rounded-lg bg-red-500/20 border border-red-500/40"
+                    animate={{ width: `${avgEfficiency}%` }}
+                    transition={{ duration: 1.5, delay: 0.8, ease: "easeOut" }}
+                    className="h-full bg-gradient-to-r from-cyan-500 via-violet-500 to-cyan-400 rounded-full relative"
                   >
-                    <p className="text-xs lg:text-sm font-bold text-white line-clamp-1">{exception.title}</p>
-                    <p className="text-[10px] lg:text-xs text-red-200 mt-0.5 lg:mt-1 uppercase tracking-wide">{exception.type}</p>
+                    <motion.div className="absolute right-0 top-0 bottom-0 w-3 bg-white/50 blur-sm"
+                      animate={{ opacity: [0, 1, 0] }} transition={{ duration: 1, repeat: Infinity }}
+                    />
+                  </motion.div>
+                </div>
+              </div>
+
+              {/* Status list */}
+              <div className="space-y-1.5">
+                {[
+                  { label: 'Route optimization', active: true, color: 'cyan' },
+                  { label: 'Traffic analysis', active: true, color: 'violet' },
+                  { label: 'Maintenance predict', active: true, color: 'emerald' },
+                  { label: 'ETA engine', active: aiOptimizedRoutes > 0, color: 'amber' },
+                ].map((item, i) => (
+                  <motion.div key={i} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.6 + i * 0.1 }}
+                    className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-slate-900/60"
+                  >
+                    <div className="flex items-center gap-2">
+                      <motion.div className={`w-1.5 h-1.5 rounded-full ${item.active ? 'bg-emerald-400' : 'bg-slate-600'}`}
+                        animate={item.active ? { opacity: [0.4, 1, 0.4] } : {}} transition={{ duration: 2, repeat: Infinity, delay: i * 0.3 }}
+                      />
+                      <span className="text-[11px] text-slate-300">{item.label}</span>
+                    </div>
+                    <span className={`text-[9px] font-bold uppercase ${item.active ? 'text-emerald-400' : 'text-slate-600'}`}>
+                      {item.active ? 'ACTIVE' : 'IDLE'}
+                    </span>
                   </motion.div>
                 ))}
               </div>
-            </motion.div>
-          )}
+            </div>
 
-          {/* Real-time AI Widget */}
-          <div className="lg:block">
-            <AIInsightWidget entity_type="fleet" entity_id="all" compact />
-          </div>
+            {/* Network vitals */}
+            <div className="bg-black/70 backdrop-blur-xl rounded-2xl border border-violet-500/30 p-4 shadow-xl shadow-violet-500/5 relative overflow-hidden">
+              <div className="absolute bottom-0 left-0 w-32 h-32 bg-violet-500/5 rounded-full blur-2xl pointer-events-none" />
+              <div className="flex items-center gap-2 mb-3">
+                <div className="p-1.5 rounded-lg bg-violet-500/20 border border-violet-400/20">
+                  <Satellite className="w-4 h-4 text-violet-400" />
+                </div>
+                <h3 className="text-sm font-bold text-white">Network Vitals</h3>
+              </div>
+              
+              {[
+                { label: 'Fleet Coverage', value: networkHealth, color: 'bg-violet-500' },
+                { label: 'Signal Quality', value: 94, color: 'bg-cyan-500' },
+                { label: 'Data Sync', value: 99, color: 'bg-emerald-500' },
+              ].map((v, i) => (
+                <div key={i} className="mb-3 last:mb-0">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[10px] text-slate-400">{v.label}</span>
+                    <span className="text-[10px] font-bold text-white tabular-nums">{v.value}%</span>
+                  </div>
+                  <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                    <motion.div className={`h-full ${v.color} rounded-full`}
+                      initial={{ width: 0 }} animate={{ width: `${v.value}%` }}
+                      transition={{ duration: 1.2, delay: 0.5 + i * 0.2, ease: "easeOut" }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Critical Exceptions */}
+            <AnimatePresence>
+              {criticalExceptions > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9, height: 0 }}
+                  animate={{ opacity: 1, scale: 1, height: 'auto' }}
+                  exit={{ opacity: 0, scale: 0.9, height: 0 }}
+                  className="bg-black/80 backdrop-blur-xl rounded-2xl border border-red-500/50 p-4 shadow-xl shadow-red-500/10 relative overflow-hidden"
+                >
+                  <motion.div className="absolute inset-0 bg-red-500/5 pointer-events-none"
+                    animate={{ opacity: [0.3, 0.8, 0.3] }} transition={{ duration: 2, repeat: Infinity }}
+                  />
+                  <div className="flex items-center gap-2 mb-3">
+                    <motion.div className="p-1.5 rounded-lg bg-red-500/20"
+                      animate={{ scale: [1, 1.15, 1] }} transition={{ duration: 1.5, repeat: Infinity }}
+                    >
+                      <AlertTriangle className="w-4 h-4 text-red-400" />
+                    </motion.div>
+                    <div>
+                      <h3 className="text-sm font-bold text-white">Critical Exceptions</h3>
+                      <p className="text-[10px] text-red-400">Immediate attention required</p>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    {exceptions.slice(0, 3).map((exc, i) => (
+                      <motion.div key={exc.id}
+                        initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.1 }}
+                        className="flex items-center justify-between p-2.5 rounded-xl bg-red-500/15 border border-red-500/30"
+                      >
+                        <div>
+                          <p className="text-xs font-bold text-white line-clamp-1">{exc.title}</p>
+                          <p className="text-[9px] text-red-300 uppercase tracking-wide">{exc.type}</p>
+                        </div>
+                        <ChevronRight className="w-3 h-3 text-red-400 flex-shrink-0" />
+                      </motion.div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* AI Insight */}
+            <div>
+              <AIInsightWidget entity_type="fleet" entity_id="all" compact />
+            </div>
           </motion.div>
 
-          {/* Center - 3D Globe */}
+          {/* Center - Globe */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
+            initial={{ opacity: 0, scale: 0.92 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="flex-1 rounded-2xl overflow-hidden border border-cyan-500/30 bg-black/50 backdrop-blur-xl shadow-2xl shadow-cyan-500/20 h-[55vw] min-h-[320px] max-h-[600px] lg:h-auto lg:max-h-none lg:min-h-[500px]"
+            transition={{ delay: 0.2, duration: 0.7 }}
+            className="flex-1 relative rounded-2xl overflow-hidden border border-cyan-500/25 bg-black/60 backdrop-blur-xl shadow-2xl shadow-cyan-500/10 h-[55vw] min-h-[320px] max-h-[600px] lg:h-auto lg:max-h-none lg:min-h-[500px]"
           >
+            {/* Globe frame glow */}
+            <div className="absolute inset-0 rounded-2xl pointer-events-none" style={{
+              boxShadow: 'inset 0 0 60px rgba(6,182,212,0.05), inset 0 0 120px rgba(139,92,246,0.03)'
+            }} />
+            {/* Corner brackets */}
+            {[
+              'top-2 left-2 border-t border-l',
+              'top-2 right-2 border-t border-r',
+              'bottom-2 left-2 border-b border-l',
+              'bottom-2 right-2 border-b border-r',
+            ].map((cls, i) => (
+              <div key={i} className={`absolute w-5 h-5 ${cls} border-cyan-400/50 pointer-events-none`} />
+            ))}
+            
             <DashboardGlobeFrame
-              vehicles={vehicles}
-              routes={routes}
-              resources={resources}
-              digitalTwins={digitalTwins}
-              orgId={orgId}
-              onSelectVehicle={setSelectedVehicle}
-              onSelectResource={setSelectedResource}
+              vehicles={vehicles} routes={routes} resources={resources}
+              digitalTwins={digitalTwins} orgId={orgId}
+              onSelectVehicle={setSelectedVehicle} onSelectResource={setSelectedResource}
               className="w-full h-full"
             />
+
+            {/* Bottom data tape */}
+            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent px-4 py-3 pointer-events-none">
+              <div className="flex items-center gap-4 overflow-hidden">
+                <motion.div className="flex items-center gap-6 text-[10px] font-mono text-slate-400"
+                  animate={{ x: ['0%', '-50%'] }} transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                >
+                  {[
+                    `FLEET: ${vehicles.length} UNITS`,
+                    `ACTIVE: ${activeVehicles}`,
+                    `ROUTES: ${routes.length}`,
+                    `EFFICIENCY: ${avgEfficiency}%`,
+                    `HEALTH: ${networkHealth}%`,
+                    `AI ROUTES: ${aiOptimizedRoutes}`,
+                    `TWINS: ${digitalTwins.length}`,
+                    `FLEET: ${vehicles.length} UNITS`,
+                    `ACTIVE: ${activeVehicles}`,
+                    `ROUTES: ${routes.length}`,
+                    `EFFICIENCY: ${avgEfficiency}%`,
+                    `HEALTH: ${networkHealth}%`,
+                    `AI ROUTES: ${aiOptimizedRoutes}`,
+                    `TWINS: ${digitalTwins.length}`,
+                  ].map((item, i) => (
+                    <span key={i} className="whitespace-nowrap">
+                      <span className="text-cyan-500/50 mr-1">◆</span>
+                      <span>{item}</span>
+                    </span>
+                  ))}
+                </motion.div>
+              </div>
+            </div>
           </motion.div>
         </div>
       </div>
 
-      {/* Selected Vehicle Hologram */}
+      {/* === VEHICLE HOLOGRAM === */}
       <AnimatePresence>
         {selectedVehicle && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.8, rotateY: -30 }}
-            animate={{ opacity: 1, scale: 1, rotateY: 0 }}
-            exit={{ opacity: 0, scale: 0.8, rotateY: 30 }}
-            className="fixed bottom-4 sm:bottom-6 right-4 sm:right-6 w-[calc(100vw-2rem)] sm:w-80 lg:w-96 z-50 max-w-md"
-            style={{ transformStyle: 'preserve-3d' }}
+            initial={{ opacity: 0, scale: 0.85, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.85, y: 20 }}
+            className="fixed bottom-6 right-6 w-80 z-50"
           >
-            <div className="relative bg-slate-900/95 backdrop-blur-2xl rounded-xl lg:rounded-2xl border-2 border-cyan-400/50 p-4 lg:p-5 shadow-2xl shadow-cyan-500/30">
-              {/* Holographic scan line */}
-              <motion.div
-                animate={{ y: ['0%', '100%'] }}
-                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-50"
+            <div className="relative bg-black/95 backdrop-blur-2xl rounded-2xl border border-cyan-400/40 p-5 shadow-2xl shadow-cyan-500/20 overflow-hidden">
+              {/* Header accent */}
+              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-400/70 to-transparent" />
+              {/* Scan line */}
+              <motion.div className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-400/30 to-transparent"
+                animate={{ top: ['0%', '100%'] }} transition={{ duration: 2.5, repeat: Infinity, ease: "linear" }}
               />
-              
-              <div className="flex items-center justify-between mb-3 lg:mb-4">
-                <div className="flex items-center gap-2 lg:gap-3">
-                  <motion.div 
-                    className={`w-2 h-2 lg:w-3 lg:h-3 rounded-full ${
-                      selectedVehicle.status === 'active' ? 'bg-emerald-400' :
-                      selectedVehicle.status === 'idle' ? 'bg-amber-400' :
-                      'bg-slate-400'
-                    }`}
-                    animate={{ 
-                      scale: selectedVehicle.status === 'active' ? [1, 1.3, 1] : 1,
-                      opacity: selectedVehicle.status === 'active' ? [0.6, 1, 0.6] : 1
-                    }}
+              {/* Corner brackets */}
+              <div className="absolute top-2 left-2 w-4 h-4 border-t border-l border-cyan-400/50" />
+              <div className="absolute top-2 right-2 w-4 h-4 border-t border-r border-cyan-400/50" />
+              <div className="absolute bottom-2 left-2 w-4 h-4 border-b border-l border-cyan-400/50" />
+              <div className="absolute bottom-2 right-2 w-4 h-4 border-b border-r border-cyan-400/50" />
+
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <motion.div className={`w-2.5 h-2.5 rounded-full ${selectedVehicle.status === 'active' ? 'bg-emerald-400' : selectedVehicle.status === 'idle' ? 'bg-amber-400' : 'bg-slate-400'}`}
+                    animate={{ scale: selectedVehicle.status === 'active' ? [1, 1.4, 1] : 1, opacity: selectedVehicle.status === 'active' ? [0.5, 1, 0.5] : 1 }}
                     transition={{ duration: 1.5, repeat: Infinity }}
                   />
-                  <h3 className="text-base lg:text-lg font-bold text-white truncate">{selectedVehicle.name}</h3>
+                  <h3 className="font-black text-white">{selectedVehicle.name}</h3>
                 </div>
-                <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
+                <motion.button whileHover={{ scale: 1.1, rotate: 90 }} whileTap={{ scale: 0.9 }}
                   onClick={() => setSelectedVehicle(null)}
-                  className="p-2 rounded-lg hover:bg-slate-800/50 text-slate-400 hover:text-white transition-colors"
-                >
-                  ✕
-                </motion.button>
+                  className="w-7 h-7 rounded-lg bg-slate-800/80 hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-white text-xs transition-colors"
+                >✕</motion.button>
               </div>
-              
-              <div className="grid grid-cols-2 gap-2 lg:gap-3 mb-3 lg:mb-4">
-                <div className="p-2 lg:p-3 rounded-lg lg:rounded-xl bg-cyan-500/10 border border-cyan-500/30">
-                  <p className="text-[10px] lg:text-xs text-cyan-400 mb-0.5 lg:mb-1">Speed</p>
-                  <p className="text-xl lg:text-2xl font-bold text-white">{selectedVehicle.speed || 0}</p>
-                  <p className="text-[10px] lg:text-xs text-slate-400">km/h</p>
+
+              <div className="grid grid-cols-2 gap-2 mb-3">
+                <div className="p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/25 text-center">
+                  <p className="text-[9px] text-cyan-400 uppercase tracking-wider mb-1">Speed</p>
+                  <p className="text-2xl font-black text-white">{selectedVehicle.speed || 0}</p>
+                  <p className="text-[9px] text-slate-500">km/h</p>
                 </div>
-                <div className="p-2 lg:p-3 rounded-lg lg:rounded-xl bg-violet-500/10 border border-violet-500/30">
-                  <p className="text-[10px] lg:text-xs text-violet-400 mb-0.5 lg:mb-1">Fuel</p>
-                  <p className="text-xl lg:text-2xl font-bold text-white">{selectedVehicle.fuel_level || 0}%</p>
-                  <div className="mt-1 h-1 bg-slate-700 rounded-full overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${selectedVehicle.fuel_level || 0}%` }}
+                <div className="p-3 rounded-xl bg-violet-500/10 border border-violet-500/25 text-center">
+                  <p className="text-[9px] text-violet-400 uppercase tracking-wider mb-1">Fuel</p>
+                  <p className="text-2xl font-black text-white">{selectedVehicle.fuel_level || 0}%</p>
+                  <div className="mt-1.5 h-1 bg-slate-800 rounded-full overflow-hidden">
+                    <motion.div initial={{ width: 0 }} animate={{ width: `${selectedVehicle.fuel_level || 0}%` }}
                       className="h-full bg-gradient-to-r from-violet-500 to-pink-500"
                     />
                   </div>
                 </div>
               </div>
 
-              <div className="space-y-1.5 lg:space-y-2 text-[10px] lg:text-xs">
-                <div className="flex items-center justify-between p-1.5 lg:p-2 rounded-lg bg-slate-800/50">
-                  <span className="text-slate-400">Type</span>
-                  <span className="text-white font-bold uppercase">{selectedVehicle.type}</span>
-                </div>
-                <div className="flex items-center justify-between p-1.5 lg:p-2 rounded-lg bg-slate-800/50">
-                  <span className="text-slate-400">Efficiency</span>
-                  <span className="text-emerald-400 font-bold">{selectedVehicle.efficiency_score || 0}%</span>
-                </div>
-                {selectedVehicle.destination && (
-                  <div className="p-1.5 lg:p-2 rounded-lg bg-slate-800/50">
-                    <span className="text-slate-400 block mb-0.5 lg:mb-1">Destination</span>
-                    <span className="text-white font-medium truncate block">{selectedVehicle.destination}</span>
+              <div className="space-y-1.5 text-xs">
+                {[
+                  { label: 'Type', value: selectedVehicle.type?.toUpperCase(), valueClass: 'text-white font-bold' },
+                  { label: 'Efficiency', value: `${selectedVehicle.efficiency_score || 0}%`, valueClass: 'text-emerald-400 font-bold' },
+                  selectedVehicle.destination && { label: 'Destination', value: selectedVehicle.destination, valueClass: 'text-white' },
+                  selectedVehicle.driver && { label: 'Driver', value: selectedVehicle.driver, valueClass: 'text-white' },
+                  selectedVehicle.signal_type && { label: 'Signal', value: selectedVehicle.signal_type, valueClass: 'text-cyan-400 font-bold' },
+                ].filter(Boolean).map((row, i) => (
+                  <div key={i} className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-slate-900/60">
+                    <span className="text-slate-500">{row.label}</span>
+                    <span className={`${row.valueClass} truncate ml-2 max-w-32`}>{row.value}</span>
                   </div>
-                )}
-                {selectedVehicle.driver && (
-                  <div className="p-1.5 lg:p-2 rounded-lg bg-slate-800/50">
-                    <span className="text-slate-400 block mb-0.5 lg:mb-1">Driver</span>
-                    <span className="text-white font-medium truncate block">{selectedVehicle.driver}</span>
-                  </div>
-                )}
-                {selectedVehicle.signal_type && (
-                  <div className="flex items-center justify-between p-1.5 lg:p-2 rounded-lg bg-slate-800/50">
-                    <span className="text-slate-400">Signal</span>
-                    <span className="text-cyan-400 font-bold">{selectedVehicle.signal_type}</span>
-                  </div>
-                )}
-                {selectedVehicle.co2_emissions && (
-                  <div className="flex items-center justify-between p-1.5 lg:p-2 rounded-lg bg-slate-800/50">
-                    <span className="text-slate-400">CO₂ Emissions</span>
-                    <span className="text-amber-400 font-bold">{selectedVehicle.co2_emissions} kg</span>
-                  </div>
-                )}
+                ))}
               </div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Selected Resource Hologram */}
+      {/* === RESOURCE HOLOGRAM === */}
       <AnimatePresence>
         {selectedResource && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.8, rotateY: 30 }}
-            animate={{ opacity: 1, scale: 1, rotateY: 0 }}
-            exit={{ opacity: 0, scale: 0.8, rotateY: -30 }}
-            className="fixed bottom-4 sm:bottom-6 left-4 sm:left-6 w-[calc(100vw-2rem)] sm:w-80 lg:w-96 z-50 max-w-md"
-            style={{ transformStyle: 'preserve-3d' }}
+            initial={{ opacity: 0, scale: 0.85, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.85, y: 20 }}
+            className="fixed bottom-6 left-6 w-80 z-50"
           >
-            <div className="relative bg-slate-900/95 backdrop-blur-2xl rounded-xl lg:rounded-2xl border-2 border-violet-400/50 p-4 lg:p-5 shadow-2xl shadow-violet-500/30">
-              {/* Holographic scan line */}
-              <motion.div
-                animate={{ y: ['0%', '100%'] }}
-                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-violet-400 to-transparent opacity-50"
+            <div className="relative bg-black/95 backdrop-blur-2xl rounded-2xl border border-violet-400/40 p-5 shadow-2xl shadow-violet-500/20 overflow-hidden">
+              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-violet-400/70 to-transparent" />
+              <motion.div className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-violet-400/30 to-transparent"
+                animate={{ top: ['0%', '100%'] }} transition={{ duration: 2.5, repeat: Infinity, ease: "linear" }}
               />
-              
-              <div className="flex items-center justify-between mb-3 lg:mb-4">
-                <div className="flex items-center gap-2 lg:gap-3">
-                  <motion.div 
-                    className={`w-2 h-2 lg:w-3 lg:h-3 rounded-full ${
-                      selectedResource.status === 'operational' ? 'bg-emerald-400' :
-                      selectedResource.status === 'limited' ? 'bg-amber-400' :
-                      'bg-red-400'
-                    }`}
-                    animate={{ 
-                      scale: selectedResource.status === 'operational' ? [1, 1.3, 1] : 1,
-                      opacity: selectedResource.status === 'operational' ? [0.6, 1, 0.6] : 1
-                    }}
-                    transition={{ duration: 1.5, repeat: Infinity }}
+              <div className="absolute top-2 left-2 w-4 h-4 border-t border-l border-violet-400/50" />
+              <div className="absolute top-2 right-2 w-4 h-4 border-t border-r border-violet-400/50" />
+              <div className="absolute bottom-2 left-2 w-4 h-4 border-b border-l border-violet-400/50" />
+              <div className="absolute bottom-2 right-2 w-4 h-4 border-b border-r border-violet-400/50" />
+
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <motion.div className={`w-2.5 h-2.5 rounded-full ${selectedResource.status === 'operational' ? 'bg-emerald-400' : selectedResource.status === 'limited' ? 'bg-amber-400' : 'bg-red-400'}`}
+                    animate={{ scale: [1, 1.4, 1] }} transition={{ duration: 1.5, repeat: Infinity }}
                   />
-                  <h3 className="text-base lg:text-lg font-bold text-white truncate">{selectedResource.name}</h3>
+                  <h3 className="font-black text-white">{selectedResource.name}</h3>
                 </div>
-                <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
+                <motion.button whileHover={{ scale: 1.1, rotate: 90 }} whileTap={{ scale: 0.9 }}
                   onClick={() => setSelectedResource(null)}
-                  className="p-2 rounded-lg hover:bg-slate-800/50 text-slate-400 hover:text-white transition-colors"
-                >
-                  ✕
-                </motion.button>
+                  className="w-7 h-7 rounded-lg bg-slate-800/80 hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-white text-xs transition-colors"
+                >✕</motion.button>
               </div>
-              
-              <div className="grid grid-cols-2 gap-2 lg:gap-3 mb-3 lg:mb-4">
-                <div className="p-2 lg:p-3 rounded-lg lg:rounded-xl bg-violet-500/10 border border-violet-500/30">
-                  <p className="text-[10px] lg:text-xs text-violet-400 mb-0.5 lg:mb-1">Capacity</p>
-                  <p className="text-xl lg:text-2xl font-bold text-white">{selectedResource.capacity || 0}</p>
-                  <p className="text-[10px] lg:text-xs text-slate-400">units</p>
+
+              <div className="grid grid-cols-2 gap-2 mb-3">
+                <div className="p-3 rounded-xl bg-violet-500/10 border border-violet-500/25 text-center">
+                  <p className="text-[9px] text-violet-400 uppercase tracking-wider mb-1">Capacity</p>
+                  <p className="text-2xl font-black text-white">{selectedResource.capacity || 0}</p>
+                  <p className="text-[9px] text-slate-500">units</p>
                 </div>
-                <div className="p-2 lg:p-3 rounded-lg lg:rounded-xl bg-cyan-500/10 border border-cyan-500/30">
-                  <p className="text-[10px] lg:text-xs text-cyan-400 mb-0.5 lg:mb-1">Current</p>
-                  <p className="text-xl lg:text-2xl font-bold text-white">{selectedResource.current_level || 0}</p>
-                  <div className="mt-1 h-1 bg-slate-700 rounded-full overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
+                <div className="p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/25 text-center">
+                  <p className="text-[9px] text-cyan-400 uppercase tracking-wider mb-1">In Use</p>
+                  <p className="text-2xl font-black text-white">{selectedResource.current_level || 0}</p>
+                  <div className="mt-1.5 h-1 bg-slate-800 rounded-full overflow-hidden">
+                    <motion.div initial={{ width: 0 }}
                       animate={{ width: `${((selectedResource.current_level || 0) / (selectedResource.capacity || 1)) * 100}%` }}
                       className="h-full bg-gradient-to-r from-cyan-500 to-violet-500"
                     />
@@ -587,62 +648,39 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              <div className="space-y-1.5 lg:space-y-2 text-[10px] lg:text-xs">
-                <div className="flex items-center justify-between p-1.5 lg:p-2 rounded-lg bg-slate-800/50">
-                  <span className="text-slate-400">Type</span>
-                  <span className="text-white font-bold uppercase">{selectedResource.type?.replace('_', ' ')}</span>
-                </div>
-                <div className="flex items-center justify-between p-1.5 lg:p-2 rounded-lg bg-slate-800/50">
-                  <span className="text-slate-400">Status</span>
-                  <span className={`font-bold uppercase ${
-                    selectedResource.status === 'operational' ? 'text-emerald-400' :
-                    selectedResource.status === 'limited' ? 'text-amber-400' :
-                    'text-red-400'
-                  }`}>{selectedResource.status}</span>
-                </div>
-                {selectedResource.location && (
-                  <div className="p-1.5 lg:p-2 rounded-lg bg-slate-800/50">
-                    <span className="text-slate-400 block mb-0.5 lg:mb-1">Location</span>
-                    <span className="text-white font-medium truncate block">{selectedResource.location}</span>
+              <div className="space-y-1.5 text-xs">
+                {[
+                  { label: 'Type', value: selectedResource.type?.replace('_', ' ').toUpperCase(), valueClass: 'text-white font-bold' },
+                  { label: 'Status', value: selectedResource.status?.toUpperCase(), valueClass: selectedResource.status === 'operational' ? 'text-emerald-400 font-bold' : selectedResource.status === 'limited' ? 'text-amber-400 font-bold' : 'text-red-400 font-bold' },
+                  { label: 'Utilization', value: `${Math.round(((selectedResource.current_level || 0) / (selectedResource.capacity || 1)) * 100)}%`, valueClass: 'text-violet-400 font-bold' },
+                  selectedResource.location && { label: 'Location', value: selectedResource.location, valueClass: 'text-white' },
+                ].filter(Boolean).map((row, i) => (
+                  <div key={i} className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-slate-900/60">
+                    <span className="text-slate-500">{row.label}</span>
+                    <span className={`${row.valueClass} truncate ml-2 max-w-32`}>{row.value}</span>
                   </div>
-                )}
-                <div className="flex items-center justify-between p-1.5 lg:p-2 rounded-lg bg-slate-800/50">
-                  <span className="text-slate-400">Utilization</span>
-                  <span className="text-violet-400 font-bold">
-                    {Math.round(((selectedResource.current_level || 0) / (selectedResource.capacity || 1)) * 100)}%
-                  </span>
-                </div>
+                ))}
               </div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Floating Status Indicator */}
+      {/* === BOTTOM STATUS BAR === */}
       <motion.div
-        initial={{ opacity: 0, scale: 0 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 1 }}
-        className="fixed bottom-4 sm:bottom-6 left-4 sm:left-6 z-40"
+        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.2 }}
+        className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 hidden sm:block"
       >
-        <div className="bg-slate-900/90 backdrop-blur-xl rounded-lg lg:rounded-xl border border-emerald-500/30 p-2 lg:p-3 shadow-xl">
-          <div className="flex items-center gap-2 lg:gap-3">
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-            >
-              <Radio className="w-4 h-4 lg:w-5 lg:h-5 text-emerald-400" />
-            </motion.div>
-            <div>
-              <p className="text-[10px] lg:text-xs font-bold text-emerald-400">SYSTEM <span className="hidden sm:inline">OPERATIONAL</span></p>
-              <p className="text-[9px] lg:text-[10px] text-slate-400 hidden sm:block">All systems nominal</p>
-            </div>
-            <motion.div
-              animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
-              transition={{ duration: 2, repeat: Infinity }}
-              className="w-1.5 h-1.5 lg:w-2 lg:h-2 rounded-full bg-emerald-400"
-            />
-          </div>
+        <div className="flex items-center gap-3 px-4 py-2 rounded-full bg-black/80 backdrop-blur-xl border border-emerald-500/25 shadow-xl shadow-emerald-500/10">
+          <motion.div animate={{ rotate: 360 }} transition={{ duration: 2.5, repeat: Infinity, ease: "linear" }}>
+            <Radio className="w-4 h-4 text-emerald-400" />
+          </motion.div>
+          <span className="text-[11px] font-bold text-emerald-400 uppercase tracking-widest">System Operational</span>
+          <div className="w-px h-3 bg-slate-700" />
+          <span className="text-[11px] text-slate-500 font-mono tabular-nums">{tick}s uptime</span>
+          <motion.div className="w-2 h-2 rounded-full bg-emerald-400"
+            animate={{ scale: [1, 1.4, 1], opacity: [0.5, 1, 0.5] }} transition={{ duration: 2, repeat: Infinity }}
+          />
         </div>
       </motion.div>
     </div>
