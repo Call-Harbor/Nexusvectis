@@ -298,20 +298,27 @@ export default function Home() {
               transition={{ delay: 0.3 }}
               className="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-black text-white mb-8 leading-[1.1] tracking-tight"
             >
-              AI-Powered Fleet Management
-              <br />
-              <span className="relative inline-block mt-2">
-                <span className="bg-gradient-to-r from-cyan-400 via-violet-400 to-fuchsia-400 bg-clip-text text-transparent animate-gradient">
-                  & Logistics Intelligence
-                </span>
-                <motion.div
-                  className="absolute -inset-2 bg-gradient-to-r from-cyan-500/20 to-violet-500/20 blur-2xl -z-10"
-                  animate={{
-                    opacity: [0.5, 0.8, 0.5],
-                  }}
-                  transition={{ duration: 3, repeat: Infinity }}
-                />
-              </span>
+              {abVariants.hero_headline ? (
+                abVariants.hero_headline
+              ) : (
+                <>
+                  AI-Powered Fleet Management
+                  <br />
+                  <span className="relative inline-block mt-2">
+                    <span className="bg-gradient-to-r from-cyan-400 via-violet-400 to-fuchsia-400 bg-clip-text text-transparent animate-gradient">
+                      & Logistics Intelligence
+                    </span>
+                  </span>
+                </>
+              )}
+              {abVariants.hero_headline && (
+                <span className="block mt-2 bg-gradient-to-r from-cyan-400 via-violet-400 to-fuchsia-400 bg-clip-text text-transparent" />
+              )}
+              <motion.div
+                className="absolute -inset-2 bg-gradient-to-r from-cyan-500/20 to-violet-500/20 blur-2xl -z-10"
+                animate={{ opacity: [0.5, 0.8, 0.5] }}
+                transition={{ duration: 3, repeat: Infinity }}
+              />
             </motion.h1>
             
             <motion.p 
@@ -320,7 +327,10 @@ export default function Home() {
               transition={{ delay: 0.5 }}
               className="text-base sm:text-lg md:text-xl lg:text-2xl text-slate-300 mb-8 sm:mb-12 max-w-3xl mx-auto leading-relaxed font-light px-2"
             >
-              NexusVectis is the next-generation <strong className="text-white font-semibold">fleet management and logistics platform</strong> powered by AI. Control your entire fleet, optimize routes, predict maintenance, and automate your supply chain through natural language with <span className="text-cyan-400 font-semibold">FLEET AI</span> — no complex interfaces required.
+              {abVariants.hero_subline
+                ? abVariants.hero_subline
+                : <>NexusVectis is the next-generation <strong className="text-white font-semibold">fleet management and logistics platform</strong> powered by AI. Control your entire fleet, optimize routes, predict maintenance, and automate your supply chain through natural language with <span className="text-cyan-400 font-semibold">FLEET AI</span> — no complex interfaces required.</>
+              }
             </motion.p>
 
             <motion.div 
@@ -334,7 +344,7 @@ export default function Home() {
                 className="bg-gradient-to-r from-cyan-500 via-violet-500 to-fuchsia-500 text-white text-lg px-10 py-6 rounded-2xl font-semibold group transition-transform hover:scale-105 flex items-center gap-3"
               >
                 <Sparkles className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                Try FLEET AI
+                {abVariants.cta_text || 'Try FLEET AI'}
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
               </button>
             </motion.div>
