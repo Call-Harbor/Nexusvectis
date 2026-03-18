@@ -11,10 +11,12 @@ export default function Blog() {
     window.scrollTo(0, 0);
   }, []);
 
-  const { data: posts = [] } = useQuery({
+  const { data: rawPosts = [] } = useQuery({
     queryKey: ['blogPosts'],
-    queryFn: () => base44.entities.BlogPost.filter({ status: 'published' }, '-published_at', 50),
+    queryFn: () => base44.entities.BlogPost.filter({ status: 'published' }, '-created_date', 50),
   });
+
+  const posts = [...rawPosts].sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
 
 
 
