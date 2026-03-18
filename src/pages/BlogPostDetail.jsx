@@ -115,7 +115,7 @@ export default function BlogPostDetail() {
               {post.read_time_minutes && (
                 <span className="flex items-center gap-2">
                   <Clock className="w-4 h-4" />
-                  {post.read_time_minutes} min læsetid
+                  {post.read_time_minutes} min read
                 </span>
               )}
               {post.word_count && (
