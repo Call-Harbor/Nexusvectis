@@ -64,6 +64,8 @@ function Section({ title, icon: Icon, color = "cyan", children, defaultOpen = tr
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function CEODashboard() {
   const [abTab, setAbTab] = useState("hero_headline");
+  const [runningEngine, setRunningEngine] = useState(false);
+  const [reoptimizing, setReoptimizing] = useState(false);
 
   // Auth guard — admin only
   const { data: user, isLoading: loadingUser } = useQuery({
