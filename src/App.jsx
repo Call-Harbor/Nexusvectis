@@ -10,6 +10,7 @@ import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import HolographicInterface from './pages/HolographicInterface';
 import SEODashboard from './pages/SEODashboard';
 import BlogPostDetail from './pages/BlogPostDetail';
+import CEODashboard from './pages/CEODashboard';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
