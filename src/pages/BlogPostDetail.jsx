@@ -119,10 +119,7 @@ export default function BlogPostDetail() {
                 </span>
               )}
               {post.word_count && (
-                <span>{post.word_count} ord</span>
-              )}
-              {post.seo_score && (
-                <span className="text-emerald-400">SEO score: {post.seo_score}/100</span>
+                <span>{post.word_count} words</span>
               )}
             </div>
           </motion.div>
