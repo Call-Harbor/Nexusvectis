@@ -8,7 +8,7 @@ import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import HolographicInterface from './pages/HolographicInterface';
-import SEODashboard from './pages/SEODashboard';
+
 import BlogPostDetail from './pages/BlogPostDetail';
 import CEODashboard from './pages/CEODashboard';
 
