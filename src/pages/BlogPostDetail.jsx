@@ -59,7 +59,7 @@ export default function BlogPostDetail() {
         <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link to="/Blog" className="flex items-center gap-2 text-slate-400 hover:text-cyan-400 transition-colors">
             <ArrowLeft className="w-4 h-4" />
-            Tilbage til Blog
+            Back to Blog
           </Link>
           <Link to={createPageUrl("Home")}>
             <img
