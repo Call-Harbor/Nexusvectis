@@ -6,10 +6,13 @@ Deno.serve(async (req) => {
         const base44 = createClientFromRequest(req);
         
         // Get all organizations (service role)
-        const vehicles = await base44.asServiceRole.entities.Vehicle.list();
-        const shipments = await base44.asServiceRole.entities.Shipment.list();
-        const maintenance = await base44.asServiceRole.entities.Maintenance.list();
-        const alerts = await base44.asServiceRole.entities.Alert.list();
+        const toArray = (r) => Array.isArray(r) ? r : (r?.data ?? []);
+        const [vehicles, shipments, maintenance, alerts] = (await Promise.all([
+            base44.asServiceRole.entities.Vehicle.list(),
+            base44.asServiceRole.entities.Shipment.list(),
+            base44.asServiceRole.entities.Maintenance.list(),
+            base44.asServiceRole.entities.Alert.list(),
+        ])).map(toArray);
         
         let updates = {
             vehicles_updated: 0,
