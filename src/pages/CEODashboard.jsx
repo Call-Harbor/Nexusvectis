@@ -89,26 +89,6 @@ export default function CEODashboard() {
     enabled: user?.role === "admin",
   });
 
-  if (loadingUser) {
-    return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-cyan-500/30 border-t-cyan-400 rounded-full animate-spin" />
-      </div>
-    );
-  }
-
-  if (!user || user.role !== "admin") {
-    return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <div className="text-center">
-          <Shield className="w-16 h-16 text-red-400 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-white mb-2">Access Denied</h1>
-          <p className="text-slate-400">This page is restricted to platform admins.</p>
-        </div>
-      </div>
-    );
-  }
-
   const latest = metricsList[0] || null;
 
   // ── A/B Stats ──────────────────────────────────────────────────────────────
