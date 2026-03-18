@@ -1500,7 +1500,7 @@ export default function Home() {
               },
               {
                 q: "What is the pricing model?",
-                a: "NexusVectis uses transparent, usage-based pricing. You pay €15/month per vehicle, €40/month per resource (warehouse, fuel depot, port), €5 per 100 FLEET AI commands, and €5 per 100 direct API calls. No setup fees, no hidden costs — cancel anytime."
+                a: "NexusVectis uses transparent, usage-based pricing: EUR 15/month per vehicle, EUR 40/month per resource (warehouse, fuel depot, port), EUR 5 per 100 FLEET AI commands, and EUR 5 per 100 direct API calls. No setup fees, no hidden costs - cancel anytime."
               },
               {
                 q: "Is NexusVectis suitable for small fleets?",
