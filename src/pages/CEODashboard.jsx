@@ -137,9 +137,9 @@ export default function CEODashboard() {
               <div className="p-2 rounded-xl bg-gradient-to-br from-cyan-500/20 to-violet-500/20 border border-cyan-500/30">
                 <Brain className="w-6 h-6 text-cyan-400" />
               </div>
-              <h1 className="text-3xl font-black text-white">CEO Intelligence Dashboard</h1>
-            </div>
-            <p className="text-slate-400 ml-14">Real-time view of what the SEO engine collects, decides and generates</p>
+              <h1 className="text-3xl font-black text-white">Intelligence Dashboard</h1>
+              </div>
+              <p className="text-slate-400 ml-14">SEO, A/B testing & AI-driven insights</p>
           </div>
           <button
             onClick={() => refetch()}
