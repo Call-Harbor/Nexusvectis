@@ -26,6 +26,8 @@ Deno.serve(async (req) => {
             alerts_created: 0
         };
         
+        const current_time = new Date();
+
         // Process each vehicle
         for (const vehicle of vehicles) {
             const updates_vehicle = {};
