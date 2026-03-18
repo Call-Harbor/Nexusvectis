@@ -44,6 +44,7 @@ Your task:
 
 Search the web for current trends related to: "${post.primary_keyword}"`,
       add_context_from_internet: true,
+      model: "gemini_3_flash",
       response_json_schema: {
         type: "object",
         properties: {
@@ -102,7 +103,7 @@ Search the web for current trends related to: "${post.primary_keyword}"`,
   );
 
   let bonusPost = null;
-  if (latestMetrics[0]?.recommended_blog_topics?.length > 1) {
+  if (latestMetrics[0]?.recommended_blog_topics?.length >= 1) {
     const topics = latestMetrics[0].recommended_blog_topics;
     const topic = topics.sort((a, b) => (b.priority_score || 0) - (a.priority_score || 0))[1];
 

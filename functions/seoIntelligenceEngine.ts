@@ -45,6 +45,7 @@ Analyze and return:
 
 Be extremely specific, data-driven, and forward-looking for 2026 logistics technology trends.`,
     add_context_from_internet: true,
+    model: "gemini_3_flash",
     response_json_schema: {
       type: "object",
       properties: {
