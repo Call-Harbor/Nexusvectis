@@ -134,12 +134,22 @@ export default function BlogPostDetail() {
             transition={{ delay: 0.15 }}
             className="prose-content rounded-3xl bg-white/[0.03] border border-white/10 p-8 sm:p-12"
           >
+            <style>{`
+              .blog-content h1 { color: white; font-size: 1.75rem; font-weight: 800; margin: 2rem 0 1rem; line-height: 1.3; }
+              .blog-content h2 { color: white; font-size: 1.4rem; font-weight: 700; margin: 1.75rem 0 0.75rem; line-height: 1.35; }
+              .blog-content h3 { color: #e2e8f0; font-size: 1.15rem; font-weight: 600; margin: 1.5rem 0 0.5rem; }
+              .blog-content p { margin: 0.9rem 0; color: #cbd5e1; }
+              .blog-content ul, .blog-content ol { margin: 1rem 0 1rem 1.5rem; color: #cbd5e1; }
+              .blog-content li { margin: 0.4rem 0; }
+              .blog-content strong { color: white; font-weight: 600; }
+              .blog-content a { color: #22d3ee; text-decoration: underline; }
+              .blog-content blockquote { border-left: 3px solid #22d3ee; padding-left: 1rem; margin: 1.5rem 0; color: #94a3b8; font-style: italic; }
+              .blog-content code { background: rgba(255,255,255,0.08); padding: 0.15rem 0.4rem; border-radius: 0.3rem; font-size: 0.9em; color: #67e8f9; }
+              .blog-content pre { background: rgba(255,255,255,0.05); padding: 1.25rem; border-radius: 0.75rem; overflow-x: auto; margin: 1.25rem 0; }
+            `}</style>
             <div
-              className="text-slate-300 leading-relaxed"
-              style={{
-                fontSize: '1.05rem',
-                lineHeight: '1.85',
-              }}
+              className="blog-content"
+              style={{ fontSize: '1.05rem', lineHeight: '1.85' }}
               dangerouslySetInnerHTML={{ __html: post.content }}
             />
           </motion.div>
