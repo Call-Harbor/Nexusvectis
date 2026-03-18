@@ -1378,34 +1378,34 @@ export default function Home() {
           </motion.div>
 
           <div className="grid md:grid-cols-3 gap-8 mb-10">
-            {[
+            {(aiBlogPosts.length > 0 ? aiBlogPosts : [
               {
                 category: "AI Fleet Management",
                 title: "How AI Route Optimization Reduces Fuel Costs by 35%",
                 excerpt: "Discover how modern fleet management platforms use machine learning to optimize delivery routes, minimize fuel consumption, and cut CO₂ emissions in real-time.",
-                readTime: "5 min read",
-                date: "March 14, 2026",
-                color: "cyan"
+                read_time_minutes: 5,
+                published_at: "2026-03-14",
               },
               {
                 category: "Predictive Maintenance",
                 title: "Predictive vs. Preventive Maintenance: Which Saves More?",
                 excerpt: "An in-depth comparison of predictive maintenance powered by AI anomaly detection vs. traditional scheduled maintenance — with real ROI data from logistics fleets.",
-                readTime: "7 min read",
-                date: "March 9, 2026",
-                color: "violet"
+                read_time_minutes: 7,
+                published_at: "2026-03-09",
               },
               {
                 category: "Supply Chain",
                 title: "Real-Time Shipment Tracking: The Complete Guide for 2026",
                 excerpt: "Everything you need to know about GPS, AIS, and ADS-B tracking technology for multimodal fleets — trucks, ships, drones and aircraft — in one unified platform.",
-                readTime: "6 min read",
-                date: "March 3, 2026",
-                color: "fuchsia"
+                read_time_minutes: 6,
+                published_at: "2026-03-03",
               }
-            ].map((post, idx) => (
+            ]).map((post, idx) => {
+              const colors = ["cyan", "violet", "fuchsia"];
+              const color = colors[idx % colors.length];
+              return (
               <motion.div
-                key={idx}
+                key={post.id || idx}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -1413,25 +1413,33 @@ export default function Home() {
                 whileHover={{ scale: 1.03, y: -5 }}
                 className="group cursor-pointer"
               >
-                <Link to="/Blog" className="block">
-                  <div className={`p-8 rounded-3xl bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl border border-white/10 hover:border-${post.color}-500/40 transition-all h-full`}>
-                    <span className={`inline-block text-xs font-bold text-${post.color}-400 bg-${post.color}-500/10 border border-${post.color}-500/20 px-3 py-1 rounded-full mb-4 uppercase tracking-wider`}>
-                      {post.category}
-                    </span>
-                    <h3 className={`text-xl font-bold text-white mb-3 leading-snug group-hover:text-${post.color}-400 transition-colors`}>
+                <Link to="/Blog" className="block h-full">
+                  <div className={`p-8 rounded-3xl bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl border border-white/10 hover:border-${color}-500/40 transition-all h-full flex flex-col`}>
+                    <div className="flex items-center gap-2 mb-4 flex-wrap">
+                      <span className={`inline-block text-xs font-bold text-${color}-400 bg-${color}-500/10 border border-${color}-500/20 px-3 py-1 rounded-full uppercase tracking-wider`}>
+                        {post.category || 'Fleet Intelligence'}
+                      </span>
+                      {post.ai_generated && (
+                        <span className="text-[10px] text-cyan-400/70 border border-cyan-500/20 px-2 py-0.5 rounded-full bg-cyan-500/5">
+                          ✦ AI Generated
+                        </span>
+                      )}
+                    </div>
+                    <h3 className={`text-xl font-bold text-white mb-3 leading-snug group-hover:text-${color}-400 transition-colors flex-1`}>
                       {post.title}
                     </h3>
                     <p className="text-slate-400 text-sm leading-relaxed mb-6">{post.excerpt}</p>
                     <div className="flex items-center justify-between text-xs text-slate-500 border-t border-white/5 pt-4">
-                      <span>{post.date}</span>
-                      <span className={`text-${post.color}-400 font-medium flex items-center gap-1`}>
-                        {post.readTime} <ArrowRight className="w-3 h-3" />
+                      <span>{post.published_at ? new Date(post.published_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}</span>
+                      <span className={`text-${color}-400 font-medium flex items-center gap-1`}>
+                        {post.read_time_minutes} min read <ArrowRight className="w-3 h-3" />
                       </span>
                     </div>
                   </div>
                 </Link>
               </motion.div>
-            ))}
+              );
+            })
           </div>
 
           <motion.div
