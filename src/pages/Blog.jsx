@@ -124,6 +124,7 @@ export default function Blog() {
                         </span>
                       </div>
                     </div>
+                    </Link>
                   </motion.div>
                 );
               })}
