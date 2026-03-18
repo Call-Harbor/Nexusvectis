@@ -7,8 +7,34 @@ import {
   Network, Cpu, Wifi, GitBranch, Dna, Bug, AlertCircle, Warehouse
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
+
+// --- A/B Test Helpers ---
+function getOrCreateAnonymousId() {
+  const key = 'nv_anon_id';
+  let id = localStorage.getItem(key);
+  if (!id) {
+    id = 'anon_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+    localStorage.setItem(key, id);
+  }
+  return id;
+}
+
+function pickVariant(variants, variantType) {
+  if (!variants || variants.length === 0) return null;
+  const storedKey = `nv_ab_${variantType}`;
+  const stored = localStorage.getItem(storedKey);
+  if (stored) {
+    try {
+      return JSON.parse(stored);
+    } catch (_) {}
+  }
+  const index = Math.floor(Math.random() * variants.length);
+  const chosen = { index, value: variants[index] };
+  localStorage.setItem(storedKey, JSON.stringify(chosen));
+  return chosen;
+}
 
 export default function Home() {
   const { scrollY } = useScroll();
@@ -17,13 +43,85 @@ export default function Home() {
   const opacity = useTransform(scrollY, [0, 200], [1, 0]);
   
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const abTracked = useRef(false);
+
+  // Fetch latest SEOMetrics for A/B variants
+  const { data: seoMetricsList = [] } = useQuery({
+    queryKey: ['latestSEOMetrics'],
+    queryFn: () => base44.entities.SEOMetrics.list('-created_date', 1),
+    staleTime: 1000 * 60 * 30,
+  });
+  const latestSEO = seoMetricsList[0] || null;
 
   // Live AI-generated blog posts from SEO engine
   const { data: aiBlogPosts = [] } = useQuery({
     queryKey: ['homeBlogPosts'],
     queryFn: () => base44.entities.BlogPost.filter({ status: 'published' }, '-published_at', 3),
-    staleTime: 1000 * 60 * 10, // 10 min cache
+    staleTime: 1000 * 60 * 10,
   });
+
+  // Run A/B test impression tracking once SEOMetrics are loaded
+  useEffect(() => {
+    if (!latestSEO || abTracked.current) return;
+    abTracked.current = true;
+
+    const anonymousId = getOrCreateAnonymousId();
+    const variantsToTest = [
+      { type: 'title', variants: latestSEO.title_tag_variants },
+      { type: 'meta_description', variants: latestSEO.meta_description_variants },
+    ];
+
+    // Update document title and meta description dynamically
+    variantsToTest.forEach(({ type, variants }) => {
+      if (!variants || variants.length === 0) return;
+      const chosen = pickVariant(variants, type);
+      if (!chosen) return;
+
+      // Apply to document head
+      if (type === 'title') {
+        document.title = chosen.value;
+      } else if (type === 'meta_description') {
+        let metaDesc = document.querySelector('meta[name="description"]');
+        if (!metaDesc) {
+          metaDesc = document.createElement('meta');
+          metaDesc.setAttribute('name', 'description');
+          document.head.appendChild(metaDesc);
+        }
+        metaDesc.setAttribute('content', chosen.value);
+      }
+
+      // Record impression in background (fire-and-forget)
+      base44.functions.invoke('abTestTracker', {
+        action: 'record_impression',
+        anonymous_id: anonymousId,
+        variant_type: type,
+        variant_index: chosen.index,
+        variant_value: chosen.value,
+        seo_metrics_id: latestSEO.id,
+      }).catch(() => {});
+    });
+  }, [latestSEO]);
+
+  // When user logs in / registers, record conversion
+  useEffect(() => {
+    const checkConversion = async () => {
+      try {
+        const user = await base44.auth.me();
+        if (!user) return;
+        const anonymousId = localStorage.getItem('nv_anon_id');
+        if (!anonymousId) return;
+        const conversionKey = `nv_converted_${user.email}`;
+        if (localStorage.getItem(conversionKey)) return; // already recorded
+        await base44.functions.invoke('abTestTracker', {
+          action: 'record_conversion',
+          anonymous_id: anonymousId,
+          user_email: user.email,
+        });
+        localStorage.setItem(conversionKey, '1');
+      } catch (_) {}
+    };
+    checkConversion();
+  }, []);
 
   useEffect(() => {
     const handleMouseMove = (e) => {
