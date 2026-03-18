@@ -11,8 +11,7 @@ const adminNavItems = [
   { name: "Invoices", icon: FileText, page: "AdminInvoices" },
   { name: "Messages", icon: Mail, page: "AdminMessages" },
   { name: "Monitor", icon: Globe, page: "AdminMonitor" },
-  { name: "SEO Dashboard", icon: Sparkles, page: "SEODashboard" },
-  { name: "CEO Dashboard", icon: Brain, page: "CEODashboard" },
+  { name: "Intelligence", icon: Brain, page: "CEODashboard" },
 ];
 
 export default function AdminLayout({ children, currentPage }) {
