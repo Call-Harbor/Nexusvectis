@@ -93,6 +93,34 @@ export default function CEODashboard() {
 
   const latest = metricsList[0] || null;
 
+  const handleRunEngine = async () => {
+    setRunningEngine(true);
+    try {
+      const response = await base44.functions.invoke('seoIntelligenceEngine', {});
+      if (response.data?.success) {
+        refetch();
+      }
+    } catch (error) {
+      console.error('Engine error:', error);
+    } finally {
+      setRunningEngine(false);
+    }
+  };
+
+  const handleReoptimizeBlog = async () => {
+    setReoptimizing(true);
+    try {
+      const response = await base44.functions.invoke('seoPostReoptimizer', {});
+      if (response.data?.success) {
+        // Refresh blog posts
+      }
+    } catch (error) {
+      console.error('Reoptimize error:', error);
+    } finally {
+      setReoptimizing(false);
+    }
+  };
+
   // ── A/B Stats ──────────────────────────────────────────────────────────────
   const abByType = {};
   for (const r of abRecords) {
