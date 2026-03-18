@@ -23,16 +23,27 @@ Deno.serve(async (req) => {
       const overdueInvoices = await base44.asServiceRole.entities.Invoice.filter({ status: 'overdue' });
       const toRemind = overdueInvoices.filter(inv => inv.due_date && inv.due_date < cutoff);
 
-      const results = [];
-      for (const inv of toRemind) {
-        const orgs = await base44.asServiceRole.entities.Organization.filter({ id: inv.organization_id });
-        if (!orgs || orgs.length === 0) continue;
-        const org = orgs[0];
+      if (toRemind.length === 0) {
+        return Response.json({ success: true, mode: 'scheduled', processed: 0, reminders_sent: [] });
+      }
 
-        // Skip suspended orgs — they already got a harder notice
-        if (org.settings?.suspended) continue;
+      // Fetch all unique orgs in parallel
+      const uniqueOrgIds = [...new Set(toRemind.map(inv => inv.organization_id))];
+      const orgResults = await Promise.all(
+        uniqueOrgIds.map(id => base44.asServiceRole.entities.Organization.filter({ id }))
+      );
+      const orgMap = {};
+      for (const orgs of orgResults) {
+        if (orgs && orgs.length > 0) orgMap[orgs[0].id] = orgs[0];
+      }
 
-        const daysOverdue = Math.max(0, Math.floor((new Date() - new Date(inv.due_date)) / (1000 * 60 * 60 * 24)));
+      // Send all emails in parallel
+      const now = new Date();
+      const emailPromises = toRemind.map(async (inv) => {
+        const org = orgMap[inv.organization_id];
+        if (!org || org.settings?.suspended) return null;
+
+        const daysOverdue = Math.max(0, Math.floor((now - new Date(inv.due_date)) / (1000 * 60 * 60 * 24)));
 
         await base44.asServiceRole.integrations.Core.SendEmail({
           to: org.admin_email,
@@ -40,8 +51,10 @@ Deno.serve(async (req) => {
           body: buildEmailBody(org, inv, daysOverdue)
         });
 
-        results.push({ organization_id: org.id, invoice_number: inv.invoice_number, days_overdue: daysOverdue });
-      }
+        return { organization_id: org.id, invoice_number: inv.invoice_number, days_overdue: daysOverdue };
+      });
+
+      const results = (await Promise.all(emailPromises)).filter(Boolean);
 
       return Response.json({
         success: true,
