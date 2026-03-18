@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
-import { LayoutDashboard, FileText, Mail, Globe, Loader2, ShieldAlert, Brain } from "lucide-react";
+import { LayoutDashboard, FileText, Mail, Globe, Loader2, ShieldAlert, Brain, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const adminNavItems = [
