@@ -360,5 +360,6 @@ export default function SEODashboard() {
         </div>
       </div>
     </div>
+    </AdminLayout>
   );
 }
