@@ -9,6 +9,7 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import HolographicInterface from './pages/HolographicInterface';
 import SEODashboard from './pages/SEODashboard';
+import BlogPostDetail from './pages/BlogPostDetail';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -73,6 +74,14 @@ const AuthenticatedApp = () => {
         element={
           <LayoutWrapper currentPageName="SEODashboard">
             <SEODashboard />
+          </LayoutWrapper>
+        } 
+      />
+      <Route 
+        path="/BlogPostDetail" 
+        element={
+          <LayoutWrapper currentPageName="BlogPostDetail">
+            <BlogPostDetail />
           </LayoutWrapper>
         } 
       />
