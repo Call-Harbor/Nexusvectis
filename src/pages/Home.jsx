@@ -60,6 +60,8 @@ export default function Home() {
     staleTime: 1000 * 60 * 10,
   });
 
+  const [abVariants, setAbVariants] = useState({});
+
   // Run A/B test impression tracking once SEOMetrics are loaded
   useEffect(() => {
     if (!latestSEO || abTracked.current) return;
@@ -69,17 +71,21 @@ export default function Home() {
     const variantsToTest = [
       { type: 'title', variants: latestSEO.title_tag_variants },
       { type: 'meta_description', variants: latestSEO.meta_description_variants },
+      { type: 'hero_headline', variants: latestSEO.hero_headline_variants },
+      { type: 'hero_subline', variants: latestSEO.hero_subline_variants },
+      { type: 'cta_text', variants: latestSEO.cta_text_variants },
     ];
 
-    // Update document title and meta description dynamically
+    const chosen = {};
     variantsToTest.forEach(({ type, variants }) => {
       if (!variants || variants.length === 0) return;
-      const chosen = pickVariant(variants, type);
-      if (!chosen) return;
+      const pick = pickVariant(variants, type);
+      if (!pick) return;
+      chosen[type] = pick.value;
 
-      // Apply to document head
+      // Apply head tags
       if (type === 'title') {
-        document.title = chosen.value;
+        document.title = pick.value;
       } else if (type === 'meta_description') {
         let metaDesc = document.querySelector('meta[name="description"]');
         if (!metaDesc) {
@@ -87,19 +93,21 @@ export default function Home() {
           metaDesc.setAttribute('name', 'description');
           document.head.appendChild(metaDesc);
         }
-        metaDesc.setAttribute('content', chosen.value);
+        metaDesc.setAttribute('content', pick.value);
       }
 
-      // Record impression in background (fire-and-forget)
+      // Record impression (fire-and-forget)
       base44.functions.invoke('abTestTracker', {
         action: 'record_impression',
         anonymous_id: anonymousId,
         variant_type: type,
-        variant_index: chosen.index,
-        variant_value: chosen.value,
+        variant_index: pick.index,
+        variant_value: pick.value,
         seo_metrics_id: latestSEO.id,
       }).catch(() => {});
     });
+
+    setAbVariants(chosen);
   }, [latestSEO]);
 
   // When user logs in / registers, record conversion
