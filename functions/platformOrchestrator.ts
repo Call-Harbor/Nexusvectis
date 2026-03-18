@@ -10,6 +10,12 @@ Deno.serve(async (req) => {
             if (Array.isArray(r)) return r;
             if (r && Array.isArray(r.data)) return r.data;
             if (r && Array.isArray(r.results)) return r.results;
+            if (r && typeof r === 'object') {
+                // Handle any other paginated wrapper shape
+                const vals = Object.values(r);
+                const arr = vals.find(v => Array.isArray(v));
+                if (arr) return arr;
+            }
             return [];
         };
         const [vehicles, shipments, maintenance, alerts] = await Promise.all([
