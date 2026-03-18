@@ -120,7 +120,7 @@ export default function CEODashboard() {
     : 0;
 
   return (
-    <AdminLayout currentPage="CEODashboard">
+    <AdminLayout currentPage="Intelligence">
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 pb-32">
       {/* Ambient */}
       <div className="fixed inset-0 pointer-events-none">
