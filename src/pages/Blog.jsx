@@ -11,6 +11,11 @@ export default function Blog() {
     window.scrollTo(0, 0);
   }, []);
 
+  const { data: posts = [] } = useQuery({
+    queryKey: ['blogPosts'],
+    queryFn: () => base44.entities.BlogPost.filter({ status: 'published' }, '-published_at', 50),
+  });
+
 
 
   return (
