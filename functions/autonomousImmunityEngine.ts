@@ -89,7 +89,7 @@ async function runImmunityProtocol(base44, orgId, mistralApiKey, now, immunityLo
   };
 
   // ── FETCH ALL DATA IN PARALLEL ──────────────────────────────────────────
-  const [vehicles, routes, alerts, maintenance, exceptions, shipments, securityAudits, apiUsage, swarmCycles] = await Promise.all([
+  const [vehicles, routes, alerts, maintenance, exceptions, shipments, securityAudits, apiUsage, swarmCycles] = (await Promise.all([
     base44.asServiceRole.entities.Vehicle.filter({ organization_id: orgId }),
     base44.asServiceRole.entities.Route.filter({ organization_id: orgId }),
     base44.asServiceRole.entities.Alert.filter({ organization_id: orgId, is_resolved: false }),
@@ -99,7 +99,7 @@ async function runImmunityProtocol(base44, orgId, mistralApiKey, now, immunityLo
     base44.asServiceRole.entities.SecurityAudit.filter({ organization_id: orgId }),
     base44.asServiceRole.entities.APIUsage.filter({ organization_id: orgId }),
     base44.asServiceRole.entities.SwarmCoordination.filter({ organization_id: orgId }),
-  ]);
+  ])).map(r => Array.isArray(r) ? r : (r?.data ?? []));
 
   const cyberThreats = [];
   const recentHour = new Date(nowDate.getTime() - 60 * 60 * 1000);
