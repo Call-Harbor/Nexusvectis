@@ -70,14 +70,7 @@ const AuthenticatedApp = () => {
           </LayoutWrapper>
         } 
       />
-      <Route 
-        path="/SEODashboard" 
-        element={
-          <LayoutWrapper currentPageName="SEODashboard">
-            <SEODashboard />
-          </LayoutWrapper>
-        } 
-      />
+
       <Route 
         path="/BlogPostDetail" 
         element={
