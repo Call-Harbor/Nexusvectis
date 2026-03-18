@@ -55,7 +55,6 @@ Deno.serve(async (req) => {
             }
             
             // 3. Auto-update status based on fuel and signal
-            const current_time = new Date();
             if (vehicle.status === 'active') {
                 if (vehicle.fuel_level < 10) {
                     updates_vehicle.status = 'idle';
