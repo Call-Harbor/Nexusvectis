@@ -35,8 +35,8 @@ export default function BlogPostDetail() {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
-          <p className="text-white text-2xl mb-4">Indlæg ikke fundet</p>
-          <Link to="/Blog" className="text-cyan-400 hover:text-cyan-300">← Tilbage til blog</Link>
+          <p className="text-white text-2xl mb-4">Post not found</p>
+          <Link to="/Blog" className="text-cyan-400 hover:text-cyan-300">← Back to blog</Link>
         </div>
       </div>
     );
