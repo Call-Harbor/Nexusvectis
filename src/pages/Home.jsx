@@ -18,6 +18,13 @@ export default function Home() {
   
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
+  // Live AI-generated blog posts from SEO engine
+  const { data: aiBlogPosts = [] } = useQuery({
+    queryKey: ['homeBlogPosts'],
+    queryFn: () => base44.entities.BlogPost.filter({ status: 'published' }, '-published_at', 3),
+    staleTime: 1000 * 60 * 10, // 10 min cache
+  });
+
   useEffect(() => {
     const handleMouseMove = (e) => {
       setMousePosition({ x: e.clientX, y: e.clientY });
