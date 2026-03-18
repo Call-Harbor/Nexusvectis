@@ -179,7 +179,7 @@ export default function BlogPostDetail() {
               className="inline-flex items-center gap-2 text-cyan-400 hover:text-cyan-300 border border-cyan-500/30 hover:border-cyan-400/50 px-6 py-3 rounded-xl transition-all hover:bg-cyan-500/5"
             >
               <ArrowLeft className="w-4 h-4" />
-              Alle artikler
+              All articles
             </Link>
           </motion.div>
         </div>
