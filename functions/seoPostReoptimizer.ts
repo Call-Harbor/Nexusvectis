@@ -23,7 +23,6 @@ Deno.serve(async (req) => {
   const results = [];
 
   for (const post of stalePosts) {
-    // Get latest SEO trends for this post's keyword
     const reoptResult = await base44.asServiceRole.integrations.Core.InvokeLLM({
       prompt: `You are an expert SEO content optimizer for a B2B logistics platform called NexusVectis.
 
@@ -60,7 +59,6 @@ Search the web for current trends related to: "${post.primary_keyword}"`,
       }
     });
 
-    // Update the post with improved content
     const updatedHistory = [
       ...(post.optimization_history || []),
       {
@@ -79,7 +77,7 @@ Search the web for current trends related to: "${post.primary_keyword}"`,
       secondary_keywords: [
         ...(post.secondary_keywords || []),
         ...(reoptResult.new_secondary_keywords || [])
-      ].slice(0, 10), // Cap at 10
+      ].slice(0, 10),
       seo_score: reoptResult.new_seo_score || post.seo_score,
       status: 'published',
       last_optimized_at: new Date().toISOString(),
@@ -106,7 +104,6 @@ Search the web for current trends related to: "${post.primary_keyword}"`,
   let bonusPost = null;
   if (latestMetrics[0]?.recommended_blog_topics?.length > 1) {
     const topics = latestMetrics[0].recommended_blog_topics;
-    // Pick the 2nd priority topic (1st was already used by seoIntelligenceEngine)
     const topic = topics.sort((a, b) => (b.priority_score || 0) - (a.priority_score || 0))[1];
 
     if (topic) {
