@@ -171,13 +171,31 @@ export default function CEODashboard() {
               </div>
               <p className="text-slate-400 ml-14">SEO, A/B testing & AI-driven insights</p>
           </div>
-          <button
-            onClick={() => refetch()}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800/60 border border-slate-700/50 text-slate-300 hover:text-white hover:border-slate-600 transition-all text-sm"
-          >
-            <RefreshCw className="w-4 h-4" />
-            Refresh
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleRunEngine}
+              disabled={runningEngine}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 hover:text-cyan-200 hover:border-cyan-500/60 disabled:opacity-50 transition-all text-sm"
+            >
+              <Sparkles className="w-4 h-4" />
+              {runningEngine ? "Running..." : "Run SEO Engine"}
+            </button>
+            <button
+              onClick={handleReoptimizeBlog}
+              disabled={reoptimizing}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-violet-500/20 border border-violet-500/40 text-violet-300 hover:text-violet-200 hover:border-violet-500/60 disabled:opacity-50 transition-all text-sm"
+            >
+              <Zap className="w-4 h-4" />
+              {reoptimizing ? "Optimizing..." : "Re-optimize Posts"}
+            </button>
+            <button
+              onClick={() => refetch()}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800/60 border border-slate-700/50 text-slate-300 hover:text-white hover:border-slate-600 transition-all text-sm"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Refresh
+            </button>
+          </div>
         </div>
 
         {/* Top KPI Row */}
