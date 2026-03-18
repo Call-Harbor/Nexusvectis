@@ -79,15 +79,6 @@ const menuCategories = [
       { name: "API Metrics", icon: BarChart2, page: "APIMetrics" },
     ]
   },
-  {
-    name: "Admin",
-    icon: Shield,
-    color: "amber",
-    items: [
-      { name: "CEO Dashboard", icon: BarChart2, page: "CEODashboard", badge: "ADMIN" },
-      { name: "SEO Dashboard", icon: Brain, page: "SEODashboard", badge: "ADMIN" },
-    ]
-  },
 ];
 
 export default function CircularNav({ currentPageName, user }) {
