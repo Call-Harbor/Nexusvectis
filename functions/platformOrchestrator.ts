@@ -19,10 +19,10 @@ Deno.serve(async (req) => {
             return [];
         };
         const [vehicles, shipments, maintenance, alerts] = await Promise.all([
-            base44.asServiceRole.entities.Vehicle.list().then(toArray),
-            base44.asServiceRole.entities.Shipment.list().then(toArray),
-            base44.asServiceRole.entities.Maintenance.list().then(toArray),
-            base44.asServiceRole.entities.Alert.list().then(toArray),
+            base44.asServiceRole.entities.Vehicle.list().then(toArray).catch(() => []),
+            base44.asServiceRole.entities.Shipment.list().then(toArray).catch(() => []),
+            base44.asServiceRole.entities.Maintenance.list().then(toArray).catch(() => []),
+            base44.asServiceRole.entities.Alert.filter({ is_resolved: false }).then(toArray).catch(() => []),
         ]);
         
         let updates = {
