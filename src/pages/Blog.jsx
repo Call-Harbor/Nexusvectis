@@ -67,18 +67,66 @@ export default function Blog() {
             </p>
           </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="flex justify-center mt-8"
-          >
-            <div className="rounded-3xl bg-white/5 border border-white/10 px-16 py-20 text-center max-w-xl">
-              <FileText className="w-14 h-14 text-cyan-400 mx-auto mb-6 opacity-60" />
-              <h2 className="text-2xl font-bold text-white mb-3">No posts yet</h2>
-              <p className="text-slate-400">We're working on great content. Subscribe to the newsletter below to be the first to know.</p>
-            </div>
-          </motion.div>
+          {posts.length === 0 ? (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="flex justify-center mt-8"
+            >
+              <div className="rounded-3xl bg-white/5 border border-white/10 px-16 py-20 text-center max-w-xl">
+                <FileText className="w-14 h-14 text-cyan-400 mx-auto mb-6 opacity-60" />
+                <h2 className="text-2xl font-bold text-white mb-3">No posts yet</h2>
+                <p className="text-slate-400">We're working on great content. Subscribe to the newsletter below to be the first to know.</p>
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mt-8"
+            >
+              {posts.map((post, idx) => {
+                const colors = ["cyan", "violet", "fuchsia"];
+                const color = colors[idx % colors.length];
+                return (
+                  <motion.div
+                    key={post.id}
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: idx * 0.1 }}
+                    whileHover={{ scale: 1.03, y: -5 }}
+                    className="group cursor-pointer"
+                  >
+                    <div className={`p-8 rounded-3xl bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl border border-white/10 hover:border-${color}-500/40 transition-all h-full flex flex-col`}>
+                      <div className="flex items-center gap-2 mb-4 flex-wrap">
+                        <span className={`inline-block text-xs font-bold text-${color}-400 bg-${color}-500/10 border border-${color}-500/20 px-3 py-1 rounded-full uppercase tracking-wider`}>
+                          {post.category || 'Fleet Intelligence'}
+                        </span>
+                        {post.ai_generated && (
+                          <span className="text-[10px] text-cyan-400/70 border border-cyan-500/20 px-2 py-0.5 rounded-full bg-cyan-500/5">
+                            ✦ AI Generated
+                          </span>
+                        )}
+                      </div>
+                      <h3 className={`text-xl font-bold text-white mb-3 leading-snug group-hover:text-${color}-400 transition-colors flex-1`}>
+                        {post.title}
+                      </h3>
+                      <p className="text-slate-400 text-sm leading-relaxed mb-6">{post.excerpt}</p>
+                      <div className="flex items-center justify-between text-xs text-slate-500 border-t border-white/5 pt-4">
+                        <span>{post.published_at ? new Date(post.published_at).toLocaleDateString('da-DK', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}</span>
+                        <span className={`text-${color}-400 font-medium flex items-center gap-1`}>
+                          <Clock className="w-3 h-3" />
+                          {post.read_time_minutes || '?'} min <ArrowRight className="w-3 h-3" />
+                        </span>
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </motion.div>
+          )}
         </div>
       </section>
 
