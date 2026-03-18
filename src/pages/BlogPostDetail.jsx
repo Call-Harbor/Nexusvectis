@@ -109,7 +109,7 @@ export default function BlogPostDetail() {
               {post.published_at && (
                 <span className="flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
-                  {new Date(post.published_at).toLocaleDateString('da-DK', { day: 'numeric', month: 'long', year: 'numeric' })}
+                  {new Date(post.published_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
                 </span>
               )}
               {post.read_time_minutes && (
