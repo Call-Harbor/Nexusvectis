@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 
 export default function Home() {
   const { scrollY } = useScroll();
