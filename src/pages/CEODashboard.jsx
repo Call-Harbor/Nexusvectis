@@ -451,5 +451,6 @@ export default function CEODashboard() {
         </Section>
       </div>
     </div>
+    </AdminLayout>
   );
 }
