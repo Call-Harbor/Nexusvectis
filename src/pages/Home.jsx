@@ -1277,6 +1277,243 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Testimonials Section */}
+      <section className="relative py-20 sm:py-32 px-4 sm:px-6 z-10">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-6 px-2">
+              Trusted by Logistics
+              <br />
+              <span className="bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent">
+                Teams Worldwide
+              </span>
+            </h2>
+            <p className="text-base sm:text-lg text-slate-400 max-w-2xl mx-auto">
+              See what fleet managers and logistics professionals say about NexusVectis
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              {
+                quote: "NexusVectis transformed how we manage our 200+ vehicle fleet. FLEET AI saves us hours of manual work every single day. Route optimization alone reduced our fuel costs by 30%.",
+                name: "Marcus Jensen",
+                title: "Head of Fleet Operations",
+                company: "Nordic Transport Group",
+                rating: 5
+              },
+              {
+                quote: "The predictive maintenance engine is incredible. We've had zero unexpected breakdowns in 6 months since deploying NexusVectis — that's unheard of in our industry.",
+                name: "Sophie Andersen",
+                title: "Logistics Director",
+                company: "EuroFreight Solutions",
+                rating: 5
+              },
+              {
+                quote: "Real-time shipment tracking with AI-powered ETA predictions has made our customers extremely happy. Late deliveries are down 85% and customer satisfaction is at an all-time high.",
+                name: "Lars Eriksson",
+                title: "Supply Chain Manager",
+                company: "ScandinavianLogistics AB",
+                rating: 5
+              }
+            ].map((t, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.15 }}
+                whileHover={{ scale: 1.03, y: -5 }}
+                className="p-8 rounded-3xl bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl border border-white/10 hover:border-cyan-500/40 transition-all"
+              >
+                <div className="flex mb-4">
+                  {[...Array(t.rating)].map((_, i) => (
+                    <span key={i} className="text-amber-400 text-lg">★</span>
+                  ))}
+                </div>
+                <p className="text-slate-300 leading-relaxed mb-6 italic">"{t.quote}"</p>
+                <div className="border-t border-white/10 pt-4">
+                  <p className="text-white font-semibold">{t.name}</p>
+                  <p className="text-slate-400 text-sm">{t.title}</p>
+                  <p className="text-cyan-400 text-sm font-medium">{t.company}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Latest Blog Posts Section */}
+      <section className="relative py-20 sm:py-32 px-4 sm:px-6 z-10">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-6 px-2">
+              Insights &
+              <br />
+              <span className="bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent">
+                Industry Knowledge
+              </span>
+            </h2>
+            <p className="text-base sm:text-lg text-slate-400 max-w-2xl mx-auto">
+              Expert guides on fleet management, AI logistics, route optimization and supply chain automation
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-3 gap-8 mb-10">
+            {[
+              {
+                category: "AI Fleet Management",
+                title: "How AI Route Optimization Reduces Fuel Costs by 35%",
+                excerpt: "Discover how modern fleet management platforms use machine learning to optimize delivery routes, minimize fuel consumption, and cut CO₂ emissions in real-time.",
+                readTime: "5 min read",
+                date: "March 14, 2026",
+                color: "cyan"
+              },
+              {
+                category: "Predictive Maintenance",
+                title: "Predictive vs. Preventive Maintenance: Which Saves More?",
+                excerpt: "An in-depth comparison of predictive maintenance powered by AI anomaly detection vs. traditional scheduled maintenance — with real ROI data from logistics fleets.",
+                readTime: "7 min read",
+                date: "March 9, 2026",
+                color: "violet"
+              },
+              {
+                category: "Supply Chain",
+                title: "Real-Time Shipment Tracking: The Complete Guide for 2026",
+                excerpt: "Everything you need to know about GPS, AIS, and ADS-B tracking technology for multimodal fleets — trucks, ships, drones and aircraft — in one unified platform.",
+                readTime: "6 min read",
+                date: "March 3, 2026",
+                color: "fuchsia"
+              }
+            ].map((post, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.15 }}
+                whileHover={{ scale: 1.03, y: -5 }}
+                className="group cursor-pointer"
+              >
+                <Link to="/Blog" className="block">
+                  <div className={`p-8 rounded-3xl bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl border border-white/10 hover:border-${post.color}-500/40 transition-all h-full`}>
+                    <span className={`inline-block text-xs font-bold text-${post.color}-400 bg-${post.color}-500/10 border border-${post.color}-500/20 px-3 py-1 rounded-full mb-4 uppercase tracking-wider`}>
+                      {post.category}
+                    </span>
+                    <h3 className={`text-xl font-bold text-white mb-3 leading-snug group-hover:text-${post.color}-400 transition-colors`}>
+                      {post.title}
+                    </h3>
+                    <p className="text-slate-400 text-sm leading-relaxed mb-6">{post.excerpt}</p>
+                    <div className="flex items-center justify-between text-xs text-slate-500 border-t border-white/5 pt-4">
+                      <span>{post.date}</span>
+                      <span className={`text-${post.color}-400 font-medium flex items-center gap-1`}>
+                        {post.readTime} <ArrowRight className="w-3 h-3" />
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="text-center"
+          >
+            <Link
+              to="/Blog"
+              className="inline-flex items-center gap-2 text-cyan-400 hover:text-cyan-300 border border-cyan-500/30 hover:border-cyan-400/50 px-6 py-3 rounded-xl transition-all hover:bg-cyan-500/5"
+            >
+              View all articles
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="relative py-20 sm:py-32 px-4 sm:px-6 z-10">
+        <div className="max-w-4xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-6 px-2">
+              Frequently Asked
+              <br />
+              <span className="bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent">
+                Questions
+              </span>
+            </h2>
+            <p className="text-base sm:text-lg text-slate-400 max-w-2xl mx-auto">
+              Everything you need to know about NexusVectis fleet management platform
+            </p>
+          </motion.div>
+
+          <div className="space-y-4">
+            {[
+              {
+                q: "What is NexusVectis and what does it do?",
+                a: "NexusVectis is an AI-powered fleet management and logistics intelligence platform. It provides real-time tracking of vehicles, ships, drones and aircraft, AI-driven route optimization, predictive maintenance, shipment management, and natural language fleet control through our FLEET AI system."
+              },
+              {
+                q: "How does FLEET AI route optimization work?",
+                a: "FLEET AI uses advanced machine learning algorithms to analyze traffic patterns, weather data, fuel costs, and delivery windows in real-time. It continuously recalculates optimal routes for your entire fleet simultaneously, reducing fuel consumption by up to 35% and improving on-time delivery rates."
+              },
+              {
+                q: "What types of vehicles and transport modes does NexusVectis support?",
+                a: "NexusVectis supports all major transport modes: trucks (GPS tracking), ships (AIS signals), aircraft (ADS-B), drones (LoRa), and trains. Our multi-signal tracking platform integrates all transport types into a single unified dashboard."
+              },
+              {
+                q: "How does predictive maintenance work?",
+                a: "Our AI continuously monitors vehicle sensor data and compares it against learned failure patterns. Using anomaly detection and machine learning models, NexusVectis predicts component failures days or weeks before they happen, allowing you to schedule maintenance proactively and avoid costly breakdowns."
+              },
+              {
+                q: "What is the pricing model?",
+                a: "NexusVectis uses transparent, usage-based pricing. You pay €15/month per vehicle, €40/month per resource (warehouse, fuel depot, port), €5 per 100 FLEET AI commands, and €5 per 100 direct API calls. No setup fees, no hidden costs — cancel anytime."
+              },
+              {
+                q: "Is NexusVectis suitable for small fleets?",
+                a: "Yes. NexusVectis scales from single-vehicle operators to global enterprise fleets with thousands of assets. Our usage-based pricing means small fleets only pay for what they use — a 5-vehicle fleet with one warehouse costs as little as €115/month."
+              },
+              {
+                q: "How secure is the platform?",
+                a: "NexusVectis uses bank-level security with SOC 2 compliance, ISO 27001 standards, full audit logging, and our unique Digital Twin Federation technology that detects GPS spoofing, cyber attacks, and unauthorized rerouting in real-time."
+              }
+            ].map((item, idx) => (
+              <motion.details
+                key={idx}
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.05 }}
+                className="group p-6 rounded-2xl bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 hover:border-cyan-500/30 transition-all cursor-pointer"
+              >
+                <summary className="flex items-center justify-between text-white font-semibold text-lg list-none">
+                  <span>{item.q}</span>
+                  <span className="text-cyan-400 ml-4 flex-shrink-0 text-2xl leading-none group-open:rotate-45 transition-transform">+</span>
+                </summary>
+                <p className="mt-4 text-slate-400 leading-relaxed">{item.a}</p>
+              </motion.details>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="relative py-20 sm:py-32 px-4 sm:px-6 z-10">
         <div className="max-w-7xl mx-auto">
