@@ -1504,7 +1504,7 @@ export default function Home() {
               },
               {
                 q: "Is NexusVectis suitable for small fleets?",
-                a: "Yes. NexusVectis scales from single-vehicle operators to global enterprise fleets with thousands of assets. Our usage-based pricing means small fleets only pay for what they use — a 5-vehicle fleet with one warehouse costs as little as €115/month."
+                a: "Yes. NexusVectis scales from single-vehicle operators to global enterprise fleets with thousands of assets. Our usage-based pricing means small fleets only pay for what they use - a 5-vehicle fleet with one warehouse costs as little as EUR 115/month."
               },
               {
                 q: "How secure is the platform?",
