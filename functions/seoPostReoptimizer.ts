@@ -20,33 +20,41 @@ Deno.serve(async (req) => {
 
   const results = [];
 
+  // Build a compact list of OTHER published posts to avoid overlap
+  const allPublished = await base44.asServiceRole.entities.BlogPost.filter(
+    { status: 'published' }, '-created_date', 50
+  );
+  const otherTitles = allPublished
+    .filter(p => p.id !== post.id)
+    .map(p => `"${p.title}" [${p.primary_keyword}]`)
+    .join('\n');
+
   for (const post of stalePosts) {
     const rewritten = await base44.asServiceRole.integrations.Core.InvokeLLM({
       prompt: `You are a world-class B2B content writer for NexusVectis — an AI-powered fleet management and logistics intelligence platform (nexusvectis.com).
 
-Completely rewrite and upgrade the following blog post to HIGH QUALITY standard.
+Completely rewrite this blog post so it is genuinely useful, unique, and earns its place as the single best resource on this topic.
 
-Current Title: "${post.title}"
+Title: "${post.title}"
 Primary Keyword: "${post.primary_keyword}"
 Secondary Keywords: ${(post.secondary_keywords || []).join(', ')}
 Current excerpt: "${post.excerpt}"
-Current content preview: ${(post.content || '').replace(/<[^>]+>/g, '').slice(0, 300)}...
+Current content preview: ${(post.content || '').replace(/<[^>]+>/g, '').slice(0, 400)}...
 
-QUALITY REQUIREMENTS:
-- 1800–2500 words — in-depth, authoritative
-- Semantic HTML: H1, H2, H3 tags
-- Primary keyword in first 100 words, in H1, and in 3+ H2s
-- Include 2025/2026 statistics with source hints
-- At least one comparison table (<table>)
-- At least one numbered or bulleted list per major section
-- Section: "How NexusVectis Solves This" — describe FLEET AI, HARBOR Core, real-time tracking
-- FAQ section (4 questions) structured for Google featured snippets
-- Strong E-E-A-T signals: cite specific expertise, real-world scenarios
-- Internal links to: /FleetAIPage, /LiveTrackingPage, /AnalyticsPage, /HarborInfo, /Blog
-- Closing CTA: "Book a free demo of NexusVectis FLEET AI today"
-- Tone: authoritative, professional, data-driven
+OTHER POSTS ALREADY ON THE BLOG (do NOT overlap with these):
+${otherTitles}
 
-Return full semantic HTML in content_html. No markdown.`,
+RULES:
+- Find a specific angle or depth that NONE of the other posts cover
+- 1800–2500 words — every paragraph must add new, concrete information
+- NO filler, NO generic advice, NO restating the same point
+- Use real operator scenarios, specific numbers, 2025/2026 data with source hints
+- Comparison table (<table>) with concrete data
+- FAQ section (4 questions, direct answers for featured snippets)
+- Section: "How NexusVectis Addresses This" — specific platform capabilities, not vague claims
+- Internal links naturally to: /FleetAIPage, /LiveTrackingPage, /AnalyticsPage, /HarborInfo
+- Closing CTA: "See it in action — book a free NexusVectis demo"
+- Semantic HTML only (H1, H2, H3, p, ul, ol, table). No markdown.`,
       model: "gemini_3_flash",
       response_json_schema: {
         type: "object",
