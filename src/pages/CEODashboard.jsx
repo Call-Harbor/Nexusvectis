@@ -410,8 +410,15 @@ export default function CEODashboard() {
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {(latest?.competitor_analysis?.competitors || []).map((comp, i) => (
                 <div key={i} className="p-4 rounded-xl bg-slate-900/50 border border-slate-700/30">
-                  <p className="text-white font-bold text-sm mb-3">{comp.name}</p>
-                  <div className="space-y-2">
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-white font-bold text-sm">{comp.name}</p>
+                    {comp.estimated_monthly_traffic && (
+                      <Badge className="bg-slate-700/50 text-slate-300 border-slate-600/30 text-[10px]">
+                        ~{comp.estimated_monthly_traffic.toLocaleString()} visits/mo
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="space-y-2.5">
                     <div>
                       <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Top Keywords</p>
                       <div className="flex flex-wrap gap-1">
@@ -420,6 +427,25 @@ export default function CEODashboard() {
                         ))}
                       </div>
                     </div>
+                    {comp.backlink_profile && (
+                      <div>
+                        <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Backlink Profile</p>
+                        <p className="text-[11px] text-slate-400">~{comp.backlink_profile.estimated_backlinks?.toLocaleString()} backlinks</p>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {(comp.backlink_profile.top_referring_domains || []).map((d, j) => (
+                            <Badge key={j} className="bg-blue-500/10 text-blue-400 border-blue-500/20 text-[10px]">{d}</Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {comp.technical_seo_notes && (
+                      <div className="flex items-center gap-2 text-[10px]">
+                        <span className="text-slate-500">Speed:</span>
+                        <Badge className={`text-[10px] ${comp.technical_seo_notes.page_speed === "fast" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : "bg-amber-500/10 text-amber-400 border-amber-500/20"}`}>{comp.technical_seo_notes.page_speed}</Badge>
+                        <span className="text-slate-500">Mobile:</span>
+                        <span className="text-slate-300">{comp.technical_seo_notes.mobile_score}</span>
+                      </div>
+                    )}
                     <div>
                       <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Exploitable Gaps</p>
                       <div className="space-y-1">
