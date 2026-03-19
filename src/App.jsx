@@ -80,6 +80,14 @@ const AuthenticatedApp = () => {
         } 
       />
       <Route 
+        path="/BlogAIAnalysis" 
+        element={
+          <LayoutWrapper currentPageName="BlogAIAnalysis">
+            <BlogAIAnalysis />
+          </LayoutWrapper>
+        } 
+      />
+      <Route 
         path="/CEODashboard" 
         element={
           <LayoutWrapper currentPageName="CEODashboard">

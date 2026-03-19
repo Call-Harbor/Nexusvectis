@@ -249,6 +249,36 @@ export default function BlogPostDetail() {
             <div className="h-px w-full bg-gradient-to-r from-transparent via-violet-500/30 to-transparent" />
           </motion.div>
 
+          {/* AI Analysis CTA */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25 }}
+            className="mt-8 relative rounded-2xl overflow-hidden"
+            style={{ background: 'linear-gradient(135deg, rgba(139,92,246,0.08) 0%, rgba(6,182,212,0.05) 100%)', border: '1px solid rgba(139,92,246,0.2)' }}
+          >
+            <div className="absolute top-0 left-0 right-0 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(139,92,246,0.5), transparent)' }} />
+            <div className="p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex items-start gap-3">
+                <div className="p-2 rounded-xl bg-violet-500/10 border border-violet-500/20 flex-shrink-0">
+                  <Brain className="w-5 h-5 text-violet-400" />
+                </div>
+                <div>
+                  <p className="text-violet-300 font-semibold text-sm">Dybdegående AI-analyse</p>
+                  <p className="text-slate-500 text-xs mt-0.5 leading-relaxed">Se den fulde tekniske SEO-analyse, keyword intelligence, indholdsstruktur, semantisk profil og optimeringshistorik for dette indlæg.</p>
+                </div>
+              </div>
+              <Link
+                to={`/BlogAIAnalysis?id=${postId}`}
+                className="flex-shrink-0 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold tracking-wider transition-all hover:opacity-90"
+                style={{ background: 'linear-gradient(135deg, rgba(139,92,246,0.3), rgba(6,182,212,0.2))', border: '1px solid rgba(139,92,246,0.3)', color: '#c4b5fd' }}
+              >
+                <Brain className="w-4 h-4" />
+                Se AI-analyse
+              </Link>
+            </div>
+          </motion.div>
+
           {/* Tags */}
           {post.tags && post.tags.length > 0 && (
             <motion.div
