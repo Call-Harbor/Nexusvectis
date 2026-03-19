@@ -116,7 +116,12 @@ Be extremely specific and date-accurate. If no major update in last 60 days, say
     }
   });
 
-  // ─── STEP 1: Deep SEO Intelligence (algorithm-context injected) (internet-connected) ───────────────────
+  // Inject algorithm context into the main analysis prompt
+  const algoContext = algorithmMonitor.latest_updates?.length
+    ? `IMPORTANT ALGORITHM CONTEXT (adapt your recommendations accordingly):\n${algorithmMonitor.latest_updates.map(u => `- ${u.update_name} (${u.date_announced}): ${u.summary}. NexusVectis impact: ${u.nexusvectis_impact}`).join('\n')}\nAdaptation priorities: ${(algorithmMonitor.adaptation_plan?.immediate_actions || []).join('; ')}`
+    : '';
+
+  // ─── STEP 1: Deep SEO Intelligence (internet-connected) ───────────────────
   const trendAnalysis = await base44.asServiceRole.integrations.Core.InvokeLLM({
     prompt: `You are a world-class SEO strategist specializing in B2B SaaS logistics, fleet management, and supply chain AI.
 
