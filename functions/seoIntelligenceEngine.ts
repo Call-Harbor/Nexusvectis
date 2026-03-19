@@ -30,7 +30,96 @@ Deno.serve(async (req) => {
 
   const today = new Date().toISOString().split('T')[0];
 
-  // ─── STEP 1: Deep SEO Intelligence (internet-connected) ───────────────────
+  // ─── STEP 0: Google Algorithm Monitor (runs in parallel with main analysis) ─
+  const [algorithmMonitor, trendAnalysisRaw] = await Promise.all([
+
+    // --- 0a: Detect latest Google algorithm changes ---
+    base44.asServiceRole.integrations.Core.InvokeLLM({
+      prompt: `You are a Google algorithm expert and SEO news tracker.
+
+Today is ${today}. Search the web RIGHT NOW for:
+1. Any Google core algorithm updates, broad core updates, spam updates, helpful content updates, or SERP changes announced or rolled out in the LAST 60 DAYS (before ${today}).
+2. Any confirmed or unconfirmed Google ranking factor changes in the last 60 days.
+3. Any major SEO industry signals from Google's Search Central blog, Search Engine Land, Search Engine Journal, or Semrush/Ahrefs blogs in the last 60 days.
+
+For each update found, determine:
+- What changed in Google's ranking algorithm
+- Which types of content/sites were winners vs losers
+- Specific adaptation actions for a B2B SaaS logistics platform (NexusVectis)
+
+Then produce an adaptation_plan specifically for nexusvectis.com.
+
+Be extremely specific and date-accurate. If no major update in last 60 days, say so and look further back to the most recent one.`,
+      add_context_from_internet: true,
+      model: "gemini_3_flash",
+      response_json_schema: {
+        type: "object",
+        properties: {
+          latest_updates: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                update_name: { type: "string" },
+                date_announced: { type: "string" },
+                date_rollout_complete: { type: "string" },
+                update_type: { type: "string" },
+                summary: { type: "string" },
+                winners: { type: "array", items: { type: "string" } },
+                losers: { type: "array", items: { type: "string" } },
+                impact_level: { type: "string" },
+                nexusvectis_impact: { type: "string" }
+              }
+            }
+          },
+          ranking_factor_changes: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                factor: { type: "string" },
+                change: { type: "string" },
+                importance_now: { type: "string" }
+              }
+            }
+          },
+          adaptation_plan: {
+            type: "object",
+            properties: {
+              immediate_actions: { type: "array", items: { type: "string" } },
+              content_strategy_adjustments: { type: "array", items: { type: "string" } },
+              technical_adjustments: { type: "array", items: { type: "string" } },
+              what_to_avoid: { type: "array", items: { type: "string" } },
+              opportunity_windows: { type: "array", items: { type: "string" } },
+              algorithm_readiness_score: { type: "number" },
+              summary: { type: "string" }
+            }
+          },
+          eeat_assessment: {
+            type: "object",
+            properties: {
+              current_score: { type: "number" },
+              experience_gaps: { type: "array", items: { type: "string" } },
+              expertise_gaps: { type: "array", items: { type: "string" } },
+              authoritativeness_gaps: { type: "array", items: { type: "string" } },
+              trustworthiness_gaps: { type: "array", items: { type: "string" } },
+              recommendations: { type: "array", items: { type: "string" } }
+            }
+          },
+          ai_overview_strategy: {
+            type: "object",
+            properties: {
+              is_ai_overviews_active: { type: "boolean" },
+              how_to_appear_in_ai_overviews: { type: "array", items: { type: "string" } },
+              content_formats_favored: { type: "array", items: { type: "string" } }
+            }
+          }
+        }
+      }
+    }),
+
+    // ─── STEP 1: Deep SEO Intelligence (internet-connected) — runs in parallel ─
+
   const trendAnalysis = await base44.asServiceRole.integrations.Core.InvokeLLM({
     prompt: `You are a world-class SEO strategist specializing in B2B SaaS logistics, fleet management, and supply chain AI.
 
