@@ -30,11 +30,8 @@ Deno.serve(async (req) => {
 
   const today = new Date().toISOString().split('T')[0];
 
-  // ─── STEP 0: Google Algorithm Monitor (runs in parallel with main analysis) ─
-  const [algorithmMonitor, trendAnalysisRaw] = await Promise.all([
-
-    // --- 0a: Detect latest Google algorithm changes ---
-    base44.asServiceRole.integrations.Core.InvokeLLM({
+  // ─── STEP 0: Google Algorithm Monitor ────────────────────────────────────
+  const algorithmMonitor = await base44.asServiceRole.integrations.Core.InvokeLLM({
       prompt: `You are a Google algorithm expert and SEO news tracker.
 
 Today is ${today}. Search the web RIGHT NOW for:
