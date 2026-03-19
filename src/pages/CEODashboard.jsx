@@ -8,7 +8,8 @@ import {
   Search, AlertCircle, CheckCircle2, Zap, Sparkles, ArrowRight,
   Shield, Users, DollarSign, Eye, MousePointer, RefreshCw,
   ChevronDown, ChevronRight, Star, Tag, Clock, Award,
-  Activity, Layers, Link2, Hash, BookOpen, Crosshair
+  Activity, Layers, Link2, Hash, BookOpen, Crosshair,
+  Gauge, Smartphone, Code2, FlaskConical, Mail, FileEdit
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
