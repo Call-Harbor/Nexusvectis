@@ -495,6 +495,88 @@ export default function CEODashboard() {
           </Section>
         </div>
 
+        {/* ── Google Algorithm Monitor ──────────────────────────────────────── */}
+        {latest?.algorithm_monitor && (
+          <div className="mb-6">
+            <Section title={`Google Algorithm Monitor — Readiness: ${latest.algorithm_monitor.adaptation_plan?.algorithm_readiness_score ?? "—"}/100`} icon={Shield} color="red" defaultOpen>
+              {/* Latest Updates */}
+              {(latest.algorithm_monitor.latest_updates || []).length > 0 && (
+                <div className="mb-4">
+                  <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-2">Seneste Google Opdateringer</p>
+                  <div className="space-y-2">
+                    {latest.algorithm_monitor.latest_updates.map((upd, i) => (
+                      <div key={i} className={`p-3 rounded-lg border ${upd.impact_level === "high" ? "bg-red-500/10 border-red-500/30" : "bg-slate-900/40 border-slate-700/30"}`}>
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-white text-xs font-semibold">{upd.update_name}</span>
+                          <div className="flex items-center gap-2">
+                            <Badge className="bg-slate-700/50 text-slate-400 border-slate-600/30 text-[10px]">{upd.date_announced}</Badge>
+                            <Badge className={`text-[10px] ${upd.impact_level === "high" ? "bg-red-500/20 text-red-400 border-red-500/30" : "bg-amber-500/10 text-amber-400 border-amber-500/20"}`}>{upd.impact_level} impact</Badge>
+                          </div>
+                        </div>
+                        <p className="text-slate-400 text-xs mb-1">{upd.summary}</p>
+                        <p className="text-cyan-300 text-xs"><span className="text-slate-500">NexusVectis:</span> {upd.nexusvectis_impact}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="grid sm:grid-cols-2 gap-4">
+                {/* Immediate Actions */}
+                {(latest.algorithm_monitor.adaptation_plan?.immediate_actions || []).length > 0 && (
+                  <div className="p-3 rounded-lg bg-emerald-500/5 border border-emerald-500/20">
+                    <p className="text-emerald-400 text-xs font-semibold mb-2">⚡ Øjeblikkelige Handlinger</p>
+                    {latest.algorithm_monitor.adaptation_plan.immediate_actions.map((a, i) => (
+                      <div key={i} className="flex items-start gap-1.5 text-xs text-slate-300 mb-1">
+                        <span className="text-emerald-400 font-bold flex-shrink-0">{i + 1}.</span>{a}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {/* What to Avoid */}
+                {(latest.algorithm_monitor.adaptation_plan?.what_to_avoid || []).length > 0 && (
+                  <div className="p-3 rounded-lg bg-red-500/5 border border-red-500/20">
+                    <p className="text-red-400 text-xs font-semibold mb-2">🚫 Undgå Dette</p>
+                    {latest.algorithm_monitor.adaptation_plan.what_to_avoid.map((a, i) => (
+                      <div key={i} className="flex items-start gap-1.5 text-xs text-slate-300 mb-1">
+                        <span className="text-red-400 flex-shrink-0">✕</span>{a}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* E-E-A-T */}
+              {latest.algorithm_monitor.eeat_assessment && (
+                <div className="mt-4 p-3 rounded-lg bg-violet-500/5 border border-violet-500/20">
+                  <p className="text-violet-400 text-xs font-semibold mb-2">E-E-A-T Score: {latest.algorithm_monitor.eeat_assessment.current_score}/100</p>
+                  <div className="grid sm:grid-cols-2 gap-2">
+                    {(latest.algorithm_monitor.eeat_assessment.recommendations || []).map((r, i) => (
+                      <div key={i} className="flex items-start gap-1.5 text-xs text-slate-400">
+                        <span className="text-violet-400 flex-shrink-0">→</span>{r}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* AI Overviews */}
+              {latest.algorithm_monitor.ai_overview_strategy && (
+                <div className="mt-3 p-3 rounded-lg bg-cyan-500/5 border border-cyan-500/20">
+                  <p className="text-cyan-400 text-xs font-semibold mb-2">🤖 Google AI Overviews Strategi</p>
+                  <div className="space-y-1">
+                    {(latest.algorithm_monitor.ai_overview_strategy.how_to_appear_in_ai_overviews || []).map((tip, i) => (
+                      <div key={i} className="flex items-start gap-1.5 text-xs text-slate-400">
+                        <span className="text-cyan-400 flex-shrink-0">→</span>{tip}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </Section>
+          </div>
+        )}
+
         {/* ── Technical SEO Audit ──────────────────────────────────────────── */}
         {latest?.technical_seo_audit && (
           <div className="mb-6">
