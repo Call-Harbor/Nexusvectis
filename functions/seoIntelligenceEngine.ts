@@ -1,23 +1,23 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
 
 /**
- * ADVANCED SEO INTELLIGENCE ENGINE v2
+ * ADVANCED SEO INTELLIGENCE ENGINE v3
  *
  * Full pipeline:
- * 1. Deep trend + competitor intelligence (with internet context)
- * 2. SERP features + backlink opportunities
- * 3. Semantic topic cluster strategy
- * 4. Full A/B variant generation (title, meta, hero H1, subline, CTA)
- * 5. CRO suggestions from intent analysis
- * 6. Blog post lifecycle management
- * 7. Auto-generate top-priority blog post
- * 8. Inject A/B winner data from ABTestConversion
+ * 1. Deep trend + competitor intelligence (backlink profiles, technical SEO, content depth)
+ * 2. SERP features + smart linkbuilding with outreach templates
+ * 3. Semantic topic cluster strategy + proactive content drafts
+ * 4. Full A/B variant generation (title, meta, hero H1, subline, CTA + extended UI tests)
+ * 5. Technical SEO audit (Core Web Vitals, mobile, canonicals, broken links)
+ * 6. CRO suggestions from intent analysis
+ * 7. Blog post lifecycle management
+ * 8. Auto-generate top-priority blog post (full draft)
+ * 9. Inject A/B winner data from ABTestConversion
  */
 
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
 
-  // Allow scheduled + admin manual trigger
   try {
     const user = await base44.auth.me();
     if (user && user.role !== 'admin') {
@@ -35,40 +35,89 @@ Deno.serve(async (req) => {
 
 Today: ${today}. Platform: NexusVectis — AI-powered fleet management & logistics intelligence (nexusvectis.com).
 
-Perform a DEEP, ADVANCED SEO intelligence analysis. Return:
+Perform a COMPREHENSIVE SEO intelligence analysis covering ALL of the following sections:
 
-1. TOP 20 trending keywords (fleet management AI, logistics software, route optimization, predictive maintenance, TMS, shipment tracking, supply chain automation, ETA prediction, cold chain, swarm intelligence logistics) — with monthly_searches, difficulty (1-10), cpc_eur, trend (rising/stable/declining), intent, and a short "why_trending" note.
+=== SECTION 1: KEYWORD INTELLIGENCE ===
+TOP 20 trending keywords (fleet management AI, logistics software, route optimization, predictive maintenance, TMS, shipment tracking, supply chain automation, ETA prediction, cold chain, swarm intelligence logistics) — each with: keyword, monthly_searches, difficulty (1-10), cpc_eur, trend (rising/stable/declining), intent, why_trending.
 
-2. COMPETITOR ANALYSIS: Analyze top 5 competitors (Samsara, Geotab, Trimble, Oracle TMS, SAP TM). For each: name, their top 3 ranking keywords, content strengths, and 2 gaps we can exploit.
+=== SECTION 2: DEEP COMPETITOR ANALYSIS ===
+Analyze top 5 competitors: Samsara, Geotab, Trimble, Oracle TMS, SAP TM.
+For each competitor provide:
+- name
+- top_keywords (their 5 best ranking terms)
+- estimated_monthly_traffic (organic estimate)
+- content_strengths (what they do well — 3 items)
+- content_weaknesses (what they do poorly — 3 items)
+- backlink_profile: { estimated_backlinks, top_referring_domains (3 domains), anchor_text_strategy }
+- technical_seo_notes: mobile score estimate, page speed (fast/medium/slow), schema usage
+- exploitable_gaps (3 specific topics/angles we can outrank them on)
+- content_depth_analysis: average word count, content formats they use (video/infographic/whitepaper)
 
-3. CONTENT GAPS: 10 high-value topics competitors rank for that NexusVectis likely doesn't.
+=== SECTION 3: CONTENT GAPS ===
+10 high-value topics competitors rank for that NexusVectis likely doesn't — be very specific.
 
-4. SERP FEATURE OPPORTUNITIES: 5 keywords where we can win featured snippets, People Also Ask boxes, or rich results. For each: keyword, serp_feature (featured_snippet/paa/rich_result), content_format (how-to/list/table/faq), suggested_title.
+=== SECTION 4: SERP FEATURE OPPORTUNITIES ===
+8 keywords where we can win featured snippets, People Also Ask, or rich results. For each: keyword, serp_feature, content_format, suggested_title, estimated_clicks_per_month.
 
-5. BACKLINK OPPORTUNITIES: 5 high-authority domains in logistics/tech that accept guest posts or have resource pages we could get links from. For each: domain, da_estimate, link_type (guest_post/resource_page/mention), approach.
+=== SECTION 5: SMART LINKBUILDING OPPORTUNITIES ===
+8 high-authority backlink targets. For each:
+- domain
+- da_estimate (Domain Authority 1-100)
+- link_type (guest_post/resource_page/mention/partnership)
+- approach (specific strategy)
+- outreach_subject (email subject line to use)
+- pitch_angle (1-sentence pitch)
+- contact_page_url (if known)
+- estimated_link_value (high/medium/low)
 
-6. SEMANTIC TOPIC CLUSTERS: 3 pillar content clusters (e.g. "Fleet AI", "Predictive Maintenance", "Route Optimization"). Each cluster: pillar_title, pillar_keyword, 4 cluster_posts (title + keyword).
+=== SECTION 6: SEMANTIC TOPIC CLUSTERS ===
+4 pillar content clusters. Each cluster: pillar_title, pillar_keyword, 5 cluster_posts (title + keyword + word_count_target + search_intent).
 
-7. A/B VARIANTS (5 each):
-   - title_tag_variants: 5 homepage title tags (50-60 chars)
-   - meta_description_variants: 5 meta descriptions (max 155 chars)
-   - hero_headline_variants: 5 powerful H1 headlines for the hero section
-   - hero_subline_variants: 5 compelling sublines/descriptions (max 25 words)
-   - cta_text_variants: 5 CTA button texts (max 4 words)
+=== SECTION 7: A/B TEST VARIANTS ===
+Generate 6 variants for each:
+- title_tag_variants (50-60 chars each)
+- meta_description_variants (max 155 chars each)
+- hero_headline_variants (powerful H1 headlines)
+- hero_subline_variants (max 25 words each)
+- cta_text_variants (max 4 words each)
 
-8. FAQ SUGGESTIONS: 5 questions people actively search for + detailed answers.
+Extended A/B test suggestions (ab_extended_suggestions): 5 ideas for testing other page elements:
+Each with: element (e.g. "hero background image"), hypothesis, variant_a_description, variant_b_description, success_metric.
 
-9. CRO SUGGESTIONS: 5 conversion rate optimization tips derived from keyword intent analysis.
+=== SECTION 8: TECHNICAL SEO AUDIT ===
+technical_seo_audit object with:
+- overall_score (0-100)
+- core_web_vitals: { lcp_status, fid_status, cls_status, recommendations (3 items) }
+- mobile_optimization: { score (0-100), issues (array of strings), recommendations (array) }
+- indexability: { canonical_issues (array), duplicate_content_risks (array), recommendations (array) }
+- structured_data: { missing_schemas (array of schema types we should add), priority_schemas (top 3) }
+- internal_linking: { issues (array), opportunities (array of objects with from_page, to_page, anchor_text) }
+- broken_link_risks: (array of strings — common broken link patterns in React SPAs)
+- critical_fixes: (array of strings — must-do fixes ordered by impact)
 
-10. PROJECTED TRAFFIC: Estimate monthly organic traffic gain if top 5 recommendations are implemented.
+=== SECTION 9: PROACTIVE CONTENT DRAFTS ===
+For the top 3 priority blog topics, generate proactive_content_drafts:
+Each with:
+- topic_title
+- primary_keyword
+- target_word_count
+- outline: array of { heading (H2/H3), description, estimated_words }
+- hook_paragraph (first 50 words of the post)
+- meta_title
+- meta_description
+- internal_links_to_include (array)
+- estimated_ranking_time_months
 
-11. PAGE SPEED SUGGESTIONS: 3 Core Web Vitals improvements for a React SPA.
+=== SECTION 10: MISC ===
+- faq_suggestions: 6 questions people search + answers
+- conversion_rate_suggestions: 6 CRO tips from intent analysis
+- projected_organic_traffic (monthly gain if top 5 recommendations implemented)
+- page_speed_suggestions: 5 Core Web Vitals improvements for React SPA
+- seo_health_score (0-100)
+- action_items: 10 prioritized action items ordered by impact
+- ai_summary: 4-paragraph narrative (current status, competitor landscape, 90-day strategy, risk factors)
 
-12. SEO HEALTH SCORE (0-100) + 8 prioritized action items.
-
-13. AI SUMMARY: 3-paragraph narrative of current SEO status and 90-day strategy.
-
-Be extremely specific, data-driven, and actionable for 2026.`,
+Be extremely specific, data-driven, and actionable for 2026. Use real domain names, real tools, real statistics.`,
     add_context_from_internet: true,
     model: "gemini_3_flash",
     response_json_schema: {
@@ -99,8 +148,33 @@ Be extremely specific, data-driven, and actionable for 2026.`,
                 properties: {
                   name: { type: "string" },
                   top_keywords: { type: "array", items: { type: "string" } },
+                  estimated_monthly_traffic: { type: "number" },
                   content_strengths: { type: "array", items: { type: "string" } },
-                  exploitable_gaps: { type: "array", items: { type: "string" } }
+                  content_weaknesses: { type: "array", items: { type: "string" } },
+                  backlink_profile: {
+                    type: "object",
+                    properties: {
+                      estimated_backlinks: { type: "number" },
+                      top_referring_domains: { type: "array", items: { type: "string" } },
+                      anchor_text_strategy: { type: "string" }
+                    }
+                  },
+                  technical_seo_notes: {
+                    type: "object",
+                    properties: {
+                      mobile_score: { type: "string" },
+                      page_speed: { type: "string" },
+                      schema_usage: { type: "string" }
+                    }
+                  },
+                  exploitable_gaps: { type: "array", items: { type: "string" } },
+                  content_depth_analysis: {
+                    type: "object",
+                    properties: {
+                      average_word_count: { type: "number" },
+                      content_formats: { type: "array", items: { type: "string" } }
+                    }
+                  }
                 }
               }
             }
@@ -115,7 +189,8 @@ Be extremely specific, data-driven, and actionable for 2026.`,
               keyword: { type: "string" },
               serp_feature: { type: "string" },
               content_format: { type: "string" },
-              suggested_title: { type: "string" }
+              suggested_title: { type: "string" },
+              estimated_clicks_per_month: { type: "number" }
             }
           }
         },
@@ -127,7 +202,23 @@ Be extremely specific, data-driven, and actionable for 2026.`,
               domain: { type: "string" },
               da_estimate: { type: "number" },
               link_type: { type: "string" },
-              approach: { type: "string" }
+              approach: { type: "string" },
+              outreach_subject: { type: "string" },
+              pitch_angle: { type: "string" },
+              contact_page_url: { type: "string" },
+              estimated_link_value: { type: "string" }
+            }
+          }
+        },
+        linkbuilding_outreach: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              domain: { type: "string" },
+              outreach_subject: { type: "string" },
+              pitch_angle: { type: "string" },
+              estimated_link_value: { type: "string" }
             }
           }
         },
@@ -144,7 +235,9 @@ Be extremely specific, data-driven, and actionable for 2026.`,
                   type: "object",
                   properties: {
                     title: { type: "string" },
-                    keyword: { type: "string" }
+                    keyword: { type: "string" },
+                    word_count_target: { type: "number" },
+                    search_intent: { type: "string" }
                   }
                 }
               }
@@ -156,6 +249,103 @@ Be extremely specific, data-driven, and actionable for 2026.`,
         hero_headline_variants: { type: "array", items: { type: "string" } },
         hero_subline_variants: { type: "array", items: { type: "string" } },
         cta_text_variants: { type: "array", items: { type: "string" } },
+        ab_extended_suggestions: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              element: { type: "string" },
+              hypothesis: { type: "string" },
+              variant_a_description: { type: "string" },
+              variant_b_description: { type: "string" },
+              success_metric: { type: "string" }
+            }
+          }
+        },
+        technical_seo_audit: {
+          type: "object",
+          properties: {
+            overall_score: { type: "number" },
+            core_web_vitals: {
+              type: "object",
+              properties: {
+                lcp_status: { type: "string" },
+                fid_status: { type: "string" },
+                cls_status: { type: "string" },
+                recommendations: { type: "array", items: { type: "string" } }
+              }
+            },
+            mobile_optimization: {
+              type: "object",
+              properties: {
+                score: { type: "number" },
+                issues: { type: "array", items: { type: "string" } },
+                recommendations: { type: "array", items: { type: "string" } }
+              }
+            },
+            indexability: {
+              type: "object",
+              properties: {
+                canonical_issues: { type: "array", items: { type: "string" } },
+                duplicate_content_risks: { type: "array", items: { type: "string" } },
+                recommendations: { type: "array", items: { type: "string" } }
+              }
+            },
+            structured_data: {
+              type: "object",
+              properties: {
+                missing_schemas: { type: "array", items: { type: "string" } },
+                priority_schemas: { type: "array", items: { type: "string" } }
+              }
+            },
+            internal_linking: {
+              type: "object",
+              properties: {
+                issues: { type: "array", items: { type: "string" } },
+                opportunities: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      from_page: { type: "string" },
+                      to_page: { type: "string" },
+                      anchor_text: { type: "string" }
+                    }
+                  }
+                }
+              }
+            },
+            broken_link_risks: { type: "array", items: { type: "string" } },
+            critical_fixes: { type: "array", items: { type: "string" } }
+          }
+        },
+        proactive_content_drafts: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              topic_title: { type: "string" },
+              primary_keyword: { type: "string" },
+              target_word_count: { type: "number" },
+              outline: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    heading: { type: "string" },
+                    description: { type: "string" },
+                    estimated_words: { type: "number" }
+                  }
+                }
+              },
+              hook_paragraph: { type: "string" },
+              meta_title: { type: "string" },
+              meta_description: { type: "string" },
+              internal_links_to_include: { type: "array", items: { type: "string" } },
+              estimated_ranking_time_months: { type: "number" }
+            }
+          }
+        },
         faq_suggestions: {
           type: "array",
           items: {
@@ -193,7 +383,7 @@ Be extremely specific, data-driven, and actionable for 2026.`,
   });
 
   // ─── STEP 2: Fetch current A/B winner data from conversion records ─────────
-  const abRecords = await base44.asServiceRole.entities.ABTestConversion.list('-created_date', 500).catch(() => []);
+  const abRecords = await base44.asServiceRole.entities.ABTestConversion.list('-created_date', 1000).catch(() => []);
   const abWinners = {};
 
   if (abRecords && abRecords.length > 0) {
@@ -213,7 +403,12 @@ Be extremely specific, data-driven, and actionable for 2026.`,
         (v.conversions / v.impressions) > (best.conversions / best.impressions) ? v : best,
         qualified[0][1]
       );
-      abWinners[type] = { value: winner.value, conversion_rate: ((winner.conversions / winner.impressions) * 100).toFixed(1) + '%' };
+      abWinners[type] = {
+        value: winner.value,
+        conversion_rate: ((winner.conversions / winner.impressions) * 100).toFixed(1) + '%',
+        impressions: winner.impressions,
+        conversions: winner.conversions
+      };
     }
   }
 
@@ -248,8 +443,8 @@ Be extremely specific, data-driven, and actionable for 2026.`,
     cta_text_variants: trendAnalysis.cta_text_variants || [],
     recommended_blog_topics: trendAnalysis.recommended_topics || [],
     competitor_analysis: trendAnalysis.competitor_analysis || {},
-    internal_linking_suggestions: [],
-    schema_markup_suggestions: [],
+    internal_linking_suggestions: trendAnalysis.technical_seo_audit?.internal_linking?.opportunities || [],
+    schema_markup_suggestions: trendAnalysis.technical_seo_audit?.structured_data?.priority_schemas || [],
     serp_features_opportunities: trendAnalysis.serp_features_opportunities || [],
     backlink_opportunities: trendAnalysis.backlink_opportunities || [],
     page_speed_suggestions: trendAnalysis.page_speed_suggestions || [],
@@ -257,19 +452,30 @@ Be extremely specific, data-driven, and actionable for 2026.`,
     conversion_rate_suggestions: trendAnalysis.conversion_rate_suggestions || [],
     projected_organic_traffic: trendAnalysis.projected_organic_traffic || 0,
     ab_test_winner: abWinners,
+    ab_extended_suggestions: trendAnalysis.ab_extended_suggestions || [],
+    technical_seo_audit: trendAnalysis.technical_seo_audit || {},
+    linkbuilding_outreach: trendAnalysis.linkbuilding_outreach || trendAnalysis.backlink_opportunities || [],
+    proactive_content_drafts: trendAnalysis.proactive_content_drafts || [],
     ai_summary: trendAnalysis.ai_summary || '',
   });
 
-  // ─── STEP 5: Auto-generate top-priority blog post ─────────────────────────
+  // ─── STEP 5: Auto-generate top-priority blog post (full draft) ─────────────
   const topTopic = (trendAnalysis.recommended_topics || [])
     .sort((a, b) => (b.priority_score || 0) - (a.priority_score || 0))[0];
 
+  // Also use proactive draft outline if available
+  const topDraft = (trendAnalysis.proactive_content_drafts || [])[0];
+
   let generatedPost = null;
   if (topTopic) {
+    const outlineContext = topDraft
+      ? `Use this pre-planned outline:\n${topDraft.outline?.map(s => `- ${s.heading}: ${s.description}`).join('\n')}\n\nOpening hook: "${topDraft.hook_paragraph}"`
+      : '';
+
     const postContent = await base44.asServiceRole.integrations.Core.InvokeLLM({
       prompt: `You are an expert content writer for B2B logistics and fleet management.
 
-Write a comprehensive, SEO-optimized blog post for NexusVectis (AI-powered fleet management platform).
+Write a COMPREHENSIVE, PUBLICATION-READY, SEO-optimized blog post for NexusVectis (AI-powered fleet management platform at nexusvectis.com).
 
 Topic: "${topTopic.title}"
 Primary Keyword: "${topTopic.primary_keyword}"
@@ -277,15 +483,20 @@ Secondary Keywords: ${(topTopic.secondary_keywords || []).join(', ')}
 Search Intent: ${topTopic.search_intent}
 Why now: ${topTopic.why_now}
 
+${outlineContext}
+
 Requirements:
-- 1400-2000 words
+- 1600-2200 words (comprehensive, ranks well)
 - Proper H1, H2, H3 structure with keywords naturally placed
-- Primary keyword in first 100 words and in at least 3 headings
-- Include real 2026 statistics and data points
-- Dedicated section: "How NexusVectis Solves This"
-- End with CTA: "Start with FLEET AI"
-- Professional but accessible English
-- Natural internal links to: /FleetAIPage, /LiveTrackingPage, /AnalyticsPage, /HarborInfo
+- Primary keyword in first 100 words and in at least 4 headings
+- Include real 2026 statistics and data points (cite sources in-text)
+- Comparison tables where relevant
+- Dedicated section: "How NexusVectis Solves This" (specific product benefits)
+- FAQ section at the end (3 questions)
+- CTA at the end: "Start with FLEET AI today — book a free demo"
+- Professional, authoritative but accessible tone
+- Natural internal links to: /FleetAIPage, /LiveTrackingPage, /AnalyticsPage, /HarborInfo, /Blog
+- Schema-friendly structure (FAQ, HowTo, or Article schema)
 
 Return full HTML with semantic tags.`,
       model: "gemini_3_flash",
@@ -316,10 +527,10 @@ Return full HTML with semantic tags.`,
       tags: [topTopic.primary_keyword, ...(topTopic.secondary_keywords || [])],
       primary_keyword: topTopic.primary_keyword,
       secondary_keywords: topTopic.secondary_keywords || [],
-      seo_score: postContent.seo_score || 82,
+      seo_score: postContent.seo_score || 85,
       readability_score: postContent.readability_score || 72,
-      read_time_minutes: postContent.read_time_minutes || 7,
-      word_count: postContent.word_count || 1600,
+      read_time_minutes: postContent.read_time_minutes || 8,
+      word_count: postContent.word_count || 1800,
       search_intent: topTopic.search_intent || 'informational',
       competitor_gap: true,
       status: 'published',
@@ -328,7 +539,7 @@ Return full HTML with semantic tags.`,
       published_at: new Date().toISOString(),
       internal_links: postContent.internal_links || [],
       last_optimized_at: new Date().toISOString(),
-      optimization_history: [{ date: today, action: 'initial_generation', seo_score: postContent.seo_score || 82 }]
+      optimization_history: [{ date: today, action: 'initial_generation_v3', seo_score: postContent.seo_score || 85 }]
     });
   }
 
@@ -337,12 +548,16 @@ Return full HTML with semantic tags.`,
     date: today,
     metrics_id: metricsRecord.id,
     seo_health_score: trendAnalysis.seo_health_score,
+    technical_seo_score: trendAnalysis.technical_seo_audit?.overall_score,
     trending_keywords_found: (trendAnalysis.trending_keywords || []).length,
     content_gaps_found: (trendAnalysis.content_gaps || []).length,
     serp_opportunities: (trendAnalysis.serp_features_opportunities || []).length,
     backlink_opportunities: (trendAnalysis.backlink_opportunities || []).length,
+    linkbuilding_outreach_targets: (trendAnalysis.linkbuilding_outreach || []).length,
     semantic_clusters: (trendAnalysis.semantic_clusters || []).length,
+    proactive_drafts: (trendAnalysis.proactive_content_drafts || []).length,
     ab_winners_detected: Object.keys(abWinners).length,
+    ab_extended_suggestions: (trendAnalysis.ab_extended_suggestions || []).length,
     posts_flagged_for_update: postsNeedingUpdate.length,
     new_post_generated: generatedPost?.title || null,
     new_post_id: generatedPost?.id || null,
