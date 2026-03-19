@@ -1,17 +1,18 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
 
 /**
- * ADVANCED SEO INTELLIGENCE ENGINE v3
+ * ADVANCED SEO INTELLIGENCE ENGINE v4
  *
  * Full pipeline:
+ * 0. Google Algorithm Monitor — detect recent core updates & adapt strategy in real-time
  * 1. Deep trend + competitor intelligence (backlink profiles, technical SEO, content depth)
  * 2. SERP features + smart linkbuilding with outreach templates
  * 3. Semantic topic cluster strategy + proactive content drafts
  * 4. Full A/B variant generation (title, meta, hero H1, subline, CTA + extended UI tests)
  * 5. Technical SEO audit (Core Web Vitals, mobile, canonicals, broken links)
  * 6. CRO suggestions from intent analysis
- * 7. Blog post lifecycle management
- * 8. Auto-generate top-priority blog post (full draft)
+ * 7. Blog post lifecycle management + algorithm-aware re-scoring
+ * 8. Auto-generate top-priority blog post (full draft, algorithm-aligned)
  * 9. Inject A/B winner data from ABTestConversion
  */
 
