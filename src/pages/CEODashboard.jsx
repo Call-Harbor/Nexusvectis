@@ -466,6 +466,11 @@ export default function CEODashboard() {
           </Section>
         </div>
 
+        {/* ── Weekly Blog Improvement Suggestions ──────────────────────────── */}
+        <div className="mb-6">
+          <BlogImprovementSuggestions />
+        </div>
+
         {/* ── AI Generated Blog Posts ───────────────────────────────────────── */}
         <div className="mb-6">
           <Section title={`AI-Generated Blog Posts (${posts.length} total · ${needsUpdate.length} need update)`} icon={BookOpen} color="emerald" defaultOpen>
