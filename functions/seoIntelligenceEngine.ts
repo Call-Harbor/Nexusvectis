@@ -113,10 +113,11 @@ Be extremely specific and date-accurate. If no major update in last 60 days, say
           }
         }
       }
-    }),
+    }
+  });
 
-    // ─── STEP 1: Deep SEO Intelligence (internet-connected) — runs in parallel ─
-    base44.asServiceRole.integrations.Core.InvokeLLM({
+  // ─── STEP 1: Deep SEO Intelligence (internet-connected) ───────────────────
+  const trendAnalysis = await base44.asServiceRole.integrations.Core.InvokeLLM({
     prompt: `You are a world-class SEO strategist specializing in B2B SaaS logistics, fleet management, and supply chain AI.
 
 Today: ${today}. Platform: NexusVectis — AI-powered fleet management & logistics intelligence (nexusvectis.com).
