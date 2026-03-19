@@ -1458,7 +1458,7 @@ export default function Home() {
                 whileHover={{ scale: 1.03, y: -5 }}
                 className="group cursor-pointer"
               >
-                <Link to="/Blog" className="block h-full">
+                <Link to={post.id ? `/BlogPostDetail?id=${post.id}` : "/Blog"} className="block h-full">
                   <div className={`p-8 rounded-3xl bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl border border-white/10 hover:border-${color}-500/40 transition-all h-full flex flex-col`}>
                     <div className="flex items-center gap-2 mb-4 flex-wrap">
                       <span className={`inline-block text-xs font-bold text-${color}-400 bg-${color}-500/10 border border-${color}-500/20 px-3 py-1 rounded-full uppercase tracking-wider`}>
