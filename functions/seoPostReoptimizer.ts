@@ -20,16 +20,16 @@ Deno.serve(async (req) => {
 
   const results = [];
 
-  // Build a compact list of OTHER published posts to avoid overlap
+  // Load published posts once — used inside loop to avoid overlap
   const allPublished = await base44.asServiceRole.entities.BlogPost.filter(
     { status: 'published' }, '-created_date', 50
   );
-  const otherTitles = allPublished
-    .filter(p => p.id !== post.id)
-    .map(p => `"${p.title}" [${p.primary_keyword}]`)
-    .join('\n');
 
   for (const post of stalePosts) {
+    const otherTitles = allPublished
+      .filter(p => p.id !== post.id)
+      .map(p => `"${p.title}" [${p.primary_keyword}]`)
+      .join('\n');
     const rewritten = await base44.asServiceRole.integrations.Core.InvokeLLM({
       prompt: `You are a world-class B2B content writer for NexusVectis — an AI-powered fleet management and logistics intelligence platform (nexusvectis.com).
 
