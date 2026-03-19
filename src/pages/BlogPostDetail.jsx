@@ -157,9 +157,7 @@ export default function BlogPostDetail() {
               {post.word_count && (
                 <span>{post.word_count.toLocaleString()} words</span>
               )}
-              {post.seo_score && (
-                <span className="text-emerald-400/60">SEO {post.seo_score}/100</span>
-              )}
+
             </div>
           </motion.div>
 
