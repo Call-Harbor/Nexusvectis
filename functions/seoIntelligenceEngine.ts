@@ -2,18 +2,12 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
 
 /**
  * ADVANCED SEO INTELLIGENCE ENGINE v4
- *
- * Full pipeline:
  * 0. Google Algorithm Monitor — detect recent core updates & adapt strategy in real-time
- * 1. Deep trend + competitor intelligence (backlink profiles, technical SEO, content depth)
- * 2. SERP features + smart linkbuilding with outreach templates
- * 3. Semantic topic cluster strategy + proactive content drafts
- * 4. Full A/B variant generation (title, meta, hero H1, subline, CTA + extended UI tests)
- * 5. Technical SEO audit (Core Web Vitals, mobile, canonicals, broken links)
- * 6. CRO suggestions from intent analysis
- * 7. Blog post lifecycle management + algorithm-aware re-scoring
- * 8. Auto-generate top-priority blog post (full draft, algorithm-aligned)
- * 9. Inject A/B winner data from ABTestConversion
+ * 1. Deep SEO Intelligence with algorithm-aware context
+ * 2. A/B winner analysis
+ * 3. Blog post lifecycle management
+ * 4. Save enriched SEO Metrics
+ * 5. Auto-generate top-priority blog post
  */
 
 Deno.serve(async (req) => {
@@ -30,186 +24,132 @@ Deno.serve(async (req) => {
 
   const today = new Date().toISOString().split('T')[0];
 
-  // ─── STEP 0: Google Algorithm Monitor ────────────────────────────────────
+  // ─── STEP 0: Google Algorithm Monitor ─────────────────────────────────────
   const algorithmMonitor = await base44.asServiceRole.integrations.Core.InvokeLLM({
-      prompt: `You are a Google algorithm expert and SEO news tracker.
+    prompt: `You are a Google algorithm expert and SEO news tracker. Today is ${today}.
 
-Today is ${today}. Search the web RIGHT NOW for:
-1. Any Google core algorithm updates, broad core updates, spam updates, helpful content updates, or SERP changes announced or rolled out in the LAST 60 DAYS (before ${today}).
-2. Any confirmed or unconfirmed Google ranking factor changes in the last 60 days.
-3. Any major SEO industry signals from Google's Search Central blog, Search Engine Land, Search Engine Journal, or Semrush/Ahrefs blogs in the last 60 days.
+Search the web RIGHT NOW for:
+1. Any Google core algorithm updates, broad core updates, spam updates, helpful content updates, or SERP changes in the LAST 60 DAYS.
+2. Any confirmed Google ranking factor changes in the last 60 days.
+3. Major SEO signals from Google Search Central blog, Search Engine Land, Search Engine Journal, Semrush/Ahrefs blogs.
 
-For each update found, determine:
-- What changed in Google's ranking algorithm
-- Which types of content/sites were winners vs losers
-- Specific adaptation actions for a B2B SaaS logistics platform (NexusVectis)
+For each update: what changed, winners vs losers, specific adaptation for NexusVectis (B2B SaaS logistics platform).
 
-Then produce an adaptation_plan specifically for nexusvectis.com.
-
-Be extremely specific and date-accurate. If no major update in last 60 days, say so and look further back to the most recent one.`,
-      add_context_from_internet: true,
-      model: "gemini_3_flash",
-      response_json_schema: {
-        type: "object",
-        properties: {
-          latest_updates: {
-            type: "array",
-            items: {
-              type: "object",
-              properties: {
-                update_name: { type: "string" },
-                date_announced: { type: "string" },
-                date_rollout_complete: { type: "string" },
-                update_type: { type: "string" },
-                summary: { type: "string" },
-                winners: { type: "array", items: { type: "string" } },
-                losers: { type: "array", items: { type: "string" } },
-                impact_level: { type: "string" },
-                nexusvectis_impact: { type: "string" }
-              }
-            }
-          },
-          ranking_factor_changes: {
-            type: "array",
-            items: {
-              type: "object",
-              properties: {
-                factor: { type: "string" },
-                change: { type: "string" },
-                importance_now: { type: "string" }
-              }
-            }
-          },
-          adaptation_plan: {
+Also assess E-E-A-T status for nexusvectis.com and how to appear in Google AI Overviews.`,
+    add_context_from_internet: true,
+    model: "gemini_3_flash",
+    response_json_schema: {
+      type: "object",
+      properties: {
+        latest_updates: {
+          type: "array",
+          items: {
             type: "object",
             properties: {
-              immediate_actions: { type: "array", items: { type: "string" } },
-              content_strategy_adjustments: { type: "array", items: { type: "string" } },
-              technical_adjustments: { type: "array", items: { type: "string" } },
-              what_to_avoid: { type: "array", items: { type: "string" } },
-              opportunity_windows: { type: "array", items: { type: "string" } },
-              algorithm_readiness_score: { type: "number" },
-              summary: { type: "string" }
+              update_name: { type: "string" },
+              date_announced: { type: "string" },
+              update_type: { type: "string" },
+              summary: { type: "string" },
+              winners: { type: "array", items: { type: "string" } },
+              losers: { type: "array", items: { type: "string" } },
+              impact_level: { type: "string" },
+              nexusvectis_impact: { type: "string" }
             }
-          },
-          eeat_assessment: {
+          }
+        },
+        ranking_factor_changes: {
+          type: "array",
+          items: {
             type: "object",
             properties: {
-              current_score: { type: "number" },
-              experience_gaps: { type: "array", items: { type: "string" } },
-              expertise_gaps: { type: "array", items: { type: "string" } },
-              authoritativeness_gaps: { type: "array", items: { type: "string" } },
-              trustworthiness_gaps: { type: "array", items: { type: "string" } },
-              recommendations: { type: "array", items: { type: "string" } }
+              factor: { type: "string" },
+              change: { type: "string" },
+              importance_now: { type: "string" }
             }
-          },
-          ai_overview_strategy: {
-            type: "object",
-            properties: {
-              is_ai_overviews_active: { type: "boolean" },
-              how_to_appear_in_ai_overviews: { type: "array", items: { type: "string" } },
-              content_formats_favored: { type: "array", items: { type: "string" } }
-            }
+          }
+        },
+        adaptation_plan: {
+          type: "object",
+          properties: {
+            immediate_actions: { type: "array", items: { type: "string" } },
+            content_strategy_adjustments: { type: "array", items: { type: "string" } },
+            technical_adjustments: { type: "array", items: { type: "string" } },
+            what_to_avoid: { type: "array", items: { type: "string" } },
+            opportunity_windows: { type: "array", items: { type: "string" } },
+            algorithm_readiness_score: { type: "number" },
+            summary: { type: "string" }
+          }
+        },
+        eeat_assessment: {
+          type: "object",
+          properties: {
+            current_score: { type: "number" },
+            experience_gaps: { type: "array", items: { type: "string" } },
+            expertise_gaps: { type: "array", items: { type: "string" } },
+            authoritativeness_gaps: { type: "array", items: { type: "string" } },
+            trustworthiness_gaps: { type: "array", items: { type: "string" } },
+            recommendations: { type: "array", items: { type: "string" } }
+          }
+        },
+        ai_overview_strategy: {
+          type: "object",
+          properties: {
+            is_ai_overviews_active: { type: "boolean" },
+            how_to_appear_in_ai_overviews: { type: "array", items: { type: "string" } },
+            content_formats_favored: { type: "array", items: { type: "string" } }
           }
         }
       }
     }
   });
 
-  // Inject algorithm context into the main analysis prompt
-  const algoContext = algorithmMonitor.latest_updates?.length
-    ? `IMPORTANT ALGORITHM CONTEXT (adapt your recommendations accordingly):\n${algorithmMonitor.latest_updates.map(u => `- ${u.update_name} (${u.date_announced}): ${u.summary}. NexusVectis impact: ${u.nexusvectis_impact}`).join('\n')}\nAdaptation priorities: ${(algorithmMonitor.adaptation_plan?.immediate_actions || []).join('; ')}`
+  // Build algorithm context to inject into main analysis
+  const algoContext = (algorithmMonitor.latest_updates || []).length > 0
+    ? `\nIMPORTANT — ADAPT ALL RECOMMENDATIONS TO THESE RECENT GOOGLE ALGORITHM CHANGES:\n${algorithmMonitor.latest_updates.map(u => `- ${u.update_name} (${u.date_announced}): ${u.summary}. NexusVectis impact: ${u.nexusvectis_impact}`).join('\n')}\nImmediate priorities: ${(algorithmMonitor.adaptation_plan?.immediate_actions || []).join('; ')}\nAvoid: ${(algorithmMonitor.adaptation_plan?.what_to_avoid || []).join('; ')}`
     : '';
 
-  // ─── STEP 1: Deep SEO Intelligence (internet-connected) ───────────────────
+  // ─── STEP 1: Deep SEO Intelligence (internet-connected, algorithm-aware) ───
   const trendAnalysis = await base44.asServiceRole.integrations.Core.InvokeLLM({
     prompt: `You are a world-class SEO strategist specializing in B2B SaaS logistics, fleet management, and supply chain AI.
 
 Today: ${today}. Platform: NexusVectis — AI-powered fleet management & logistics intelligence (nexusvectis.com).
+${algoContext}
 
-Perform a COMPREHENSIVE SEO intelligence analysis covering ALL of the following sections:
+Perform a COMPREHENSIVE SEO intelligence analysis covering ALL sections:
 
-=== SECTION 1: KEYWORD INTELLIGENCE ===
+=== KEYWORDS ===
 TOP 20 trending keywords (fleet management AI, logistics software, route optimization, predictive maintenance, TMS, shipment tracking, supply chain automation, ETA prediction, cold chain, swarm intelligence logistics) — each with: keyword, monthly_searches, difficulty (1-10), cpc_eur, trend (rising/stable/declining), intent, why_trending.
 
-=== SECTION 2: DEEP COMPETITOR ANALYSIS ===
-Analyze top 5 competitors: Samsara, Geotab, Trimble, Oracle TMS, SAP TM.
-For each competitor provide:
-- name
-- top_keywords (their 5 best ranking terms)
-- estimated_monthly_traffic (organic estimate)
-- content_strengths (what they do well — 3 items)
-- content_weaknesses (what they do poorly — 3 items)
-- backlink_profile: { estimated_backlinks, top_referring_domains (3 domains), anchor_text_strategy }
-- technical_seo_notes: mobile score estimate, page speed (fast/medium/slow), schema usage
-- exploitable_gaps (3 specific topics/angles we can outrank them on)
-- content_depth_analysis: average word count, content formats they use (video/infographic/whitepaper)
+=== DEEP COMPETITOR ANALYSIS ===
+Analyze: Samsara, Geotab, Trimble, Oracle TMS, SAP TM.
+For each: name, top_keywords (5), estimated_monthly_traffic, content_strengths (3), content_weaknesses (3), backlink_profile (estimated_backlinks, top_referring_domains, anchor_text_strategy), technical_seo_notes (mobile_score, page_speed, schema_usage), exploitable_gaps (3), content_depth_analysis (average_word_count, content_formats).
 
-=== SECTION 3: CONTENT GAPS ===
-10 high-value topics competitors rank for that NexusVectis likely doesn't — be very specific.
+=== CONTENT GAPS ===
+10 high-value topics competitors rank for that NexusVectis likely doesn't.
 
-=== SECTION 4: SERP FEATURE OPPORTUNITIES ===
-8 keywords where we can win featured snippets, People Also Ask, or rich results. For each: keyword, serp_feature, content_format, suggested_title, estimated_clicks_per_month.
+=== SERP FEATURES ===
+8 keywords for featured snippets/PAA/rich results: keyword, serp_feature, content_format, suggested_title, estimated_clicks_per_month.
 
-=== SECTION 5: SMART LINKBUILDING OPPORTUNITIES ===
-8 high-authority backlink targets. For each:
-- domain
-- da_estimate (Domain Authority 1-100)
-- link_type (guest_post/resource_page/mention/partnership)
-- approach (specific strategy)
-- outreach_subject (email subject line to use)
-- pitch_angle (1-sentence pitch)
-- contact_page_url (if known)
-- estimated_link_value (high/medium/low)
+=== LINKBUILDING ===
+8 high-authority backlink targets: domain, da_estimate, link_type, approach, outreach_subject, pitch_angle, contact_page_url, estimated_link_value.
 
-=== SECTION 6: SEMANTIC TOPIC CLUSTERS ===
-4 pillar content clusters. Each cluster: pillar_title, pillar_keyword, 5 cluster_posts (title + keyword + word_count_target + search_intent).
+=== SEMANTIC CLUSTERS ===
+4 pillar clusters: pillar_title, pillar_keyword, 5 cluster_posts (title, keyword, word_count_target, search_intent).
 
-=== SECTION 7: A/B TEST VARIANTS ===
-Generate 6 variants for each:
-- title_tag_variants (50-60 chars each)
-- meta_description_variants (max 155 chars each)
-- hero_headline_variants (powerful H1 headlines)
-- hero_subline_variants (max 25 words each)
-- cta_text_variants (max 4 words each)
+=== A/B VARIANTS ===
+6 variants each for: title_tag_variants, meta_description_variants, hero_headline_variants, hero_subline_variants, cta_text_variants.
+5 ab_extended_suggestions: element, hypothesis, variant_a_description, variant_b_description, success_metric.
 
-Extended A/B test suggestions (ab_extended_suggestions): 5 ideas for testing other page elements:
-Each with: element (e.g. "hero background image"), hypothesis, variant_a_description, variant_b_description, success_metric.
+=== TECHNICAL SEO AUDIT ===
+overall_score, core_web_vitals (lcp_status, fid_status, cls_status, recommendations), mobile_optimization (score, issues, recommendations), indexability (canonical_issues, duplicate_content_risks, recommendations), structured_data (missing_schemas, priority_schemas), internal_linking (issues, opportunities with from_page/to_page/anchor_text), broken_link_risks, critical_fixes.
 
-=== SECTION 8: TECHNICAL SEO AUDIT ===
-technical_seo_audit object with:
-- overall_score (0-100)
-- core_web_vitals: { lcp_status, fid_status, cls_status, recommendations (3 items) }
-- mobile_optimization: { score (0-100), issues (array of strings), recommendations (array) }
-- indexability: { canonical_issues (array), duplicate_content_risks (array), recommendations (array) }
-- structured_data: { missing_schemas (array of schema types we should add), priority_schemas (top 3) }
-- internal_linking: { issues (array), opportunities (array of objects with from_page, to_page, anchor_text) }
-- broken_link_risks: (array of strings — common broken link patterns in React SPAs)
-- critical_fixes: (array of strings — must-do fixes ordered by impact)
+=== PROACTIVE CONTENT DRAFTS ===
+Top 3 priority topics: topic_title, primary_keyword, target_word_count, outline (heading, description, estimated_words), hook_paragraph, meta_title, meta_description, internal_links_to_include, estimated_ranking_time_months.
 
-=== SECTION 9: PROACTIVE CONTENT DRAFTS ===
-For the top 3 priority blog topics, generate proactive_content_drafts:
-Each with:
-- topic_title
-- primary_keyword
-- target_word_count
-- outline: array of { heading (H2/H3), description, estimated_words }
-- hook_paragraph (first 50 words of the post)
-- meta_title
-- meta_description
-- internal_links_to_include (array)
-- estimated_ranking_time_months
+=== MISC ===
+faq_suggestions (6), conversion_rate_suggestions (6), projected_organic_traffic, page_speed_suggestions (5), recommended_topics (10, with priority_score), seo_health_score, action_items (10), ai_summary (4 paragraphs: status, competitors, 90-day strategy, risks).
 
-=== SECTION 10: MISC ===
-- faq_suggestions: 6 questions people search + answers
-- conversion_rate_suggestions: 6 CRO tips from intent analysis
-- projected_organic_traffic (monthly gain if top 5 recommendations implemented)
-- page_speed_suggestions: 5 Core Web Vitals improvements for React SPA
-- seo_health_score (0-100)
-- action_items: 10 prioritized action items ordered by impact
-- ai_summary: 4-paragraph narrative (current status, competitor landscape, 90-day strategy, risk factors)
-
-Be extremely specific, data-driven, and actionable for 2026. Use real domain names, real tools, real statistics.`,
+Be specific, data-driven, actionable for 2026. Adapt all strategies to any recent algorithm changes provided above.`,
     add_context_from_internet: true,
     model: "gemini_3_flash",
     response_json_schema: {
@@ -474,7 +414,7 @@ Be extremely specific, data-driven, and actionable for 2026. Use real domain nam
     }
   });
 
-  // ─── STEP 2: Fetch current A/B winner data from conversion records ─────────
+  // ─── STEP 2: Fetch A/B winner data ────────────────────────────────────────
   const abRecords = await base44.asServiceRole.entities.ABTestConversion.list('-created_date', 1000).catch(() => []);
   const abWinners = {};
 
@@ -548,14 +488,14 @@ Be extremely specific, data-driven, and actionable for 2026. Use real domain nam
     technical_seo_audit: trendAnalysis.technical_seo_audit || {},
     linkbuilding_outreach: trendAnalysis.linkbuilding_outreach || trendAnalysis.backlink_opportunities || [],
     proactive_content_drafts: trendAnalysis.proactive_content_drafts || [],
+    algorithm_monitor: algorithmMonitor,
     ai_summary: trendAnalysis.ai_summary || '',
   });
 
-  // ─── STEP 5: Auto-generate top-priority blog post (full draft) ─────────────
+  // ─── STEP 5: Auto-generate algorithm-aligned blog post ─────────────────────
   const topTopic = (trendAnalysis.recommended_topics || [])
     .sort((a, b) => (b.priority_score || 0) - (a.priority_score || 0))[0];
 
-  // Also use proactive draft outline if available
   const topDraft = (trendAnalysis.proactive_content_drafts || [])[0];
 
   let generatedPost = null;
@@ -564,31 +504,34 @@ Be extremely specific, data-driven, and actionable for 2026. Use real domain nam
       ? `Use this pre-planned outline:\n${topDraft.outline?.map(s => `- ${s.heading}: ${s.description}`).join('\n')}\n\nOpening hook: "${topDraft.hook_paragraph}"`
       : '';
 
+    const algoWritingContext = (algorithmMonitor.adaptation_plan?.content_strategy_adjustments || []).length > 0
+      ? `\nAlgorithm-aligned writing requirements: ${algorithmMonitor.adaptation_plan.content_strategy_adjustments.join('; ')}`
+      : '';
+
     const postContent = await base44.asServiceRole.integrations.Core.InvokeLLM({
       prompt: `You are an expert content writer for B2B logistics and fleet management.
 
-Write a COMPREHENSIVE, PUBLICATION-READY, SEO-optimized blog post for NexusVectis (AI-powered fleet management platform at nexusvectis.com).
+Write a COMPREHENSIVE, PUBLICATION-READY, SEO-optimized blog post for NexusVectis (nexusvectis.com).
 
 Topic: "${topTopic.title}"
 Primary Keyword: "${topTopic.primary_keyword}"
 Secondary Keywords: ${(topTopic.secondary_keywords || []).join(', ')}
 Search Intent: ${topTopic.search_intent}
 Why now: ${topTopic.why_now}
-
+${algoWritingContext}
 ${outlineContext}
 
 Requirements:
-- 1600-2200 words (comprehensive, ranks well)
-- Proper H1, H2, H3 structure with keywords naturally placed
-- Primary keyword in first 100 words and in at least 4 headings
-- Include real 2026 statistics and data points (cite sources in-text)
+- 1600-2200 words
+- Proper H1, H2, H3 with keywords naturally placed
+- Primary keyword in first 100 words and in 4+ headings
+- Real 2026 statistics with source citations
 - Comparison tables where relevant
-- Dedicated section: "How NexusVectis Solves This" (specific product benefits)
-- FAQ section at the end (3 questions)
-- CTA at the end: "Start with FLEET AI today — book a free demo"
-- Professional, authoritative but accessible tone
-- Natural internal links to: /FleetAIPage, /LiveTrackingPage, /AnalyticsPage, /HarborInfo, /Blog
-- Schema-friendly structure (FAQ, HowTo, or Article schema)
+- Section: "How NexusVectis Solves This"
+- FAQ section (3 questions) for featured snippet eligibility
+- CTA: "Start with FLEET AI today — book a free demo"
+- Internal links: /FleetAIPage, /LiveTrackingPage, /AnalyticsPage, /HarborInfo, /Blog
+- Strong E-E-A-T signals (cite author expertise, real case examples)
 
 Return full HTML with semantic tags.`,
       model: "gemini_3_flash",
@@ -631,7 +574,7 @@ Return full HTML with semantic tags.`,
       published_at: new Date().toISOString(),
       internal_links: postContent.internal_links || [],
       last_optimized_at: new Date().toISOString(),
-      optimization_history: [{ date: today, action: 'initial_generation_v3', seo_score: postContent.seo_score || 85 }]
+      optimization_history: [{ date: today, action: 'initial_generation_v4_algo_aware', seo_score: postContent.seo_score || 85 }]
     });
   }
 
@@ -641,20 +584,22 @@ Return full HTML with semantic tags.`,
     metrics_id: metricsRecord.id,
     seo_health_score: trendAnalysis.seo_health_score,
     technical_seo_score: trendAnalysis.technical_seo_audit?.overall_score,
+    algorithm_readiness_score: algorithmMonitor.adaptation_plan?.algorithm_readiness_score,
+    algorithm_updates_detected: (algorithmMonitor.latest_updates || []).length,
+    eeat_score: algorithmMonitor.eeat_assessment?.current_score,
     trending_keywords_found: (trendAnalysis.trending_keywords || []).length,
     content_gaps_found: (trendAnalysis.content_gaps || []).length,
     serp_opportunities: (trendAnalysis.serp_features_opportunities || []).length,
     backlink_opportunities: (trendAnalysis.backlink_opportunities || []).length,
-    linkbuilding_outreach_targets: (trendAnalysis.linkbuilding_outreach || []).length,
     semantic_clusters: (trendAnalysis.semantic_clusters || []).length,
     proactive_drafts: (trendAnalysis.proactive_content_drafts || []).length,
     ab_winners_detected: Object.keys(abWinners).length,
-    ab_extended_suggestions: (trendAnalysis.ab_extended_suggestions || []).length,
     posts_flagged_for_update: postsNeedingUpdate.length,
     new_post_generated: generatedPost?.title || null,
     new_post_id: generatedPost?.id || null,
     projected_organic_traffic: trendAnalysis.projected_organic_traffic || 0,
     action_items: trendAnalysis.action_items || [],
+    algorithm_immediate_actions: algorithmMonitor.adaptation_plan?.immediate_actions || [],
     ai_summary: trendAnalysis.ai_summary || ''
   });
 });
