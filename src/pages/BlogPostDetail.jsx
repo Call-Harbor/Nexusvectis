@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "../utils";
-import { ArrowLeft, Clock, Calendar, Tag, Cpu, Zap } from "lucide-react";
+import { ArrowLeft, Clock, Calendar, Tag, Cpu, Zap, Brain } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";

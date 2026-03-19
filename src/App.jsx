@@ -9,6 +9,7 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import HolographicInterface from './pages/HolographicInterface';
 import BlogPostDetail from './pages/BlogPostDetail';
+import BlogAIAnalysis from './pages/BlogAIAnalysis';
 import CEODashboard from './pages/CEODashboard';
 
 const { Pages, Layout, mainPage } = pagesConfig;
