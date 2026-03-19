@@ -154,9 +154,7 @@ export default function BlogPostDetail() {
                   {post.read_time_minutes} min read
                 </span>
               )}
-              {post.word_count && (
-                <span>{post.word_count.toLocaleString()} words</span>
-              )}
+              <span className="text-cyan-500/50">Kilder: Branchedata & AI-analyse</span>
 
             </div>
           </motion.div>
