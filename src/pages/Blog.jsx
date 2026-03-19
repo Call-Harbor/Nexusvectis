@@ -1,24 +1,79 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "../utils";
-import { FileText, Clock, ArrowRight } from "lucide-react";
+import { FileText, Clock, ArrowRight, ChevronDown, Loader2 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
-import { useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
+
+const PAGE_SIZE = 12;
+
+async function fetchPostsPage({ pageParam = 0 }) {
+  const posts = await base44.entities.BlogPost.filter(
+    { status: 'published' },
+    '-published_at',
+    PAGE_SIZE + 1,  // fetch one extra to detect if there's more
+    pageParam
+  );
+  const hasMore = posts.length > PAGE_SIZE;
+  return { posts: posts.slice(0, PAGE_SIZE), hasMore, nextOffset: pageParam + PAGE_SIZE };
+}
+
+const COLORS = ["cyan", "violet", "fuchsia"];
+
+function BlogCard({ post, idx }) {
+  const color = COLORS[idx % COLORS.length];
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+      whileHover={{ scale: 1.02, y: -4 }}
+      className="group cursor-pointer h-full"
+    >
+      <Link to={`/BlogPostDetail?id=${post.id}`} className="block h-full">
+        <div className={`p-8 rounded-3xl bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl border border-white/10 hover:border-${color}-500/40 transition-all h-full flex flex-col`}>
+          <div className="flex items-center gap-2 mb-4 flex-wrap">
+            <span className={`inline-block text-xs font-bold text-${color}-400 bg-${color}-500/10 border border-${color}-500/20 px-3 py-1 rounded-full uppercase tracking-wider`}>
+              {post.category || 'Fleet Intelligence'}
+            </span>
+            {post.word_count >= 1800 && (
+              <span className="text-[10px] text-emerald-400/80 border border-emerald-500/20 px-2 py-0.5 rounded-full bg-emerald-500/5">
+                ✦ In-depth
+              </span>
+            )}
+          </div>
+          <h3 className={`text-xl font-bold text-white mb-3 leading-snug group-hover:text-${color}-400 transition-colors flex-1`}>
+            {post.title}
+          </h3>
+          <p className="text-slate-400 text-sm leading-relaxed mb-6 line-clamp-3">{post.excerpt}</p>
+          <div className="flex items-center justify-between text-xs text-slate-500 border-t border-white/5 pt-4">
+            <span>
+              {post.published_at
+                ? new Date(post.published_at).toLocaleDateString('da-DK', { day: 'numeric', month: 'short', year: 'numeric' })
+                : ''}
+            </span>
+            <span className={`text-${color}-400 font-medium flex items-center gap-1`}>
+              <Clock className="w-3 h-3" />
+              {post.read_time_minutes || '?'} min
+              <ArrowRight className="w-3 h-3" />
+            </span>
+          </div>
+        </div>
+      </Link>
+    </motion.div>
+  );
+}
 
 export default function Blog() {
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
-
-  const { data: rawPosts = [] } = useQuery({
-    queryKey: ['blogPosts'],
-    queryFn: () => base44.entities.BlogPost.filter({ status: 'published' }, '-created_date', 50),
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery({
+    queryKey: ['blogPosts-infinite'],
+    queryFn: fetchPostsPage,
+    getNextPageParam: (lastPage) => lastPage.hasMore ? lastPage.nextOffset : undefined,
+    initialPageParam: 0,
   });
 
-  const posts = [...rawPosts].sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
-
-
+  const allPosts = data?.pages.flatMap(p => p.posts) ?? [];
 
   return (
     <div className="min-h-screen bg-black overflow-hidden relative">
@@ -27,18 +82,12 @@ export default function Blog() {
         <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-violet-950/20 to-cyan-950/20" />
         <motion.div
           className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl"
-          animate={{
-            scale: [1, 1.2, 1],
-            opacity: [0.3, 0.5, 0.3],
-          }}
+          animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
           transition={{ duration: 8, repeat: Infinity }}
         />
         <motion.div
           className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-violet-500/20 rounded-full blur-3xl"
-          animate={{
-            scale: [1.2, 1, 1.2],
-            opacity: [0.3, 0.5, 0.3],
-          }}
+          animate={{ scale: [1.2, 1, 1.2], opacity: [0.3, 0.5, 0.3] }}
           transition={{ duration: 10, repeat: Infinity }}
         />
         <div className="absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.05)_1px,transparent_1px)] bg-[size:100px_100px]" />
@@ -53,9 +102,9 @@ export default function Blog() {
             className="text-center mb-12"
           >
             <Link to={createPageUrl("Home")} className="inline-block mb-8">
-              <img 
-                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/697e930c62bf3e3832b34edb/bc9d40ccc_FullLogo_Transparent1.png" 
-                alt="NexusVectis Logo" 
+              <img
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/697e930c62bf3e3832b34edb/bc9d40ccc_FullLogo_Transparent1.png"
+                alt="NexusVectis Logo"
                 className="h-24 w-auto mx-auto opacity-90"
               />
             </Link>
@@ -69,7 +118,17 @@ export default function Blog() {
             </p>
           </motion.div>
 
-          {posts.length === 0 ? (
+          {/* Loading skeleton */}
+          {isLoading && (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mt-8">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="h-64 rounded-3xl bg-white/5 border border-white/10 animate-pulse" />
+              ))}
+            </div>
+          )}
+
+          {/* Empty state */}
+          {!isLoading && allPosts.length === 0 && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -82,54 +141,33 @@ export default function Blog() {
                 <p className="text-slate-400">We're working on great content. Subscribe to the newsletter below to be the first to know.</p>
               </div>
             </motion.div>
-          ) : (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mt-8"
-            >
-              {posts.map((post, idx) => {
-                const colors = ["cyan", "violet", "fuchsia"];
-                const color = colors[idx % colors.length];
-                return (
-                  <motion.div
-                    key={post.id}
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: idx * 0.1 }}
-                    whileHover={{ scale: 1.03, y: -5 }}
-                    className="group cursor-pointer"
-                  >
-                    <Link to={`/BlogPostDetail?id=${post.id}`} className="block h-full">
-                    <div className={`p-8 rounded-3xl bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl border border-white/10 hover:border-${color}-500/40 transition-all h-full flex flex-col`}>
-                      <div className="flex items-center gap-2 mb-4 flex-wrap">
-                        <span className={`inline-block text-xs font-bold text-${color}-400 bg-${color}-500/10 border border-${color}-500/20 px-3 py-1 rounded-full uppercase tracking-wider`}>
-                          {post.category || 'Fleet Intelligence'}
-                        </span>
-                        {post.ai_generated && (
-                          <span className="text-[10px] text-cyan-400/70 border border-cyan-500/20 px-2 py-0.5 rounded-full bg-cyan-500/5">
-                            ✦ AI Generated
-                          </span>
-                        )}
-                      </div>
-                      <h3 className={`text-xl font-bold text-white mb-3 leading-snug group-hover:text-${color}-400 transition-colors flex-1`}>
-                        {post.title}
-                      </h3>
-                      <p className="text-slate-400 text-sm leading-relaxed mb-6">{post.excerpt}</p>
-                      <div className="flex items-center justify-between text-xs text-slate-500 border-t border-white/5 pt-4">
-                        <span>{post.published_at ? new Date(post.published_at).toLocaleDateString('da-DK', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}</span>
-                        <span className={`text-${color}-400 font-medium flex items-center gap-1`}>
-                          <Clock className="w-3 h-3" />
-                          {post.read_time_minutes || '?'} min <ArrowRight className="w-3 h-3" />
-                        </span>
-                      </div>
-                    </div>
-                    </Link>
-                  </motion.div>
-                );
-              })}
-            </motion.div>
+          )}
+
+          {/* Post grid */}
+          {allPosts.length > 0 && (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mt-8">
+              {allPosts.map((post, idx) => (
+                <BlogCard key={post.id} post={post} idx={idx} />
+              ))}
+            </div>
+          )}
+
+          {/* Load more */}
+          {hasNextPage && (
+            <div className="flex justify-center mt-12">
+              <button
+                onClick={() => fetchNextPage()}
+                disabled={isFetchingNextPage}
+                className="flex items-center gap-3 px-8 py-4 rounded-2xl bg-gradient-to-r from-cyan-500/10 to-violet-500/10 border border-cyan-500/30 text-cyan-300 hover:border-cyan-500/60 hover:text-white transition-all font-semibold disabled:opacity-50"
+              >
+                {isFetchingNextPage ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <ChevronDown className="w-5 h-5" />
+                )}
+                {isFetchingNextPage ? 'Loading...' : 'Load more articles'}
+              </button>
+            </div>
           )}
         </div>
       </section>
@@ -144,9 +182,7 @@ export default function Blog() {
             className="rounded-[3rem] bg-gradient-to-br from-cyan-500/10 via-violet-500/10 to-fuchsia-500/10 border border-cyan-500/30 p-16 text-center"
           >
             <FileText className="w-16 h-16 text-cyan-400 mx-auto mb-6" />
-            <h2 className="text-5xl font-bold text-white mb-6">
-              Never Miss an Update
-            </h2>
+            <h2 className="text-5xl font-bold text-white mb-6">Never Miss an Update</h2>
             <p className="text-xl text-slate-300 mb-8">
               Get the latest on AI, logistics tech, and product updates delivered to your inbox
             </p>
@@ -170,18 +206,15 @@ export default function Blog() {
           <div className="grid md:grid-cols-4 gap-12 mb-12">
             <div className="md:col-span-2">
               <Link to={createPageUrl("Home")}>
-                <motion.img 
+                <motion.img
                   whileHover={{ scale: 1.05 }}
-                  src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/697e930c62bf3e3832b34edb/bc9d40ccc_FullLogo_Transparent1.png" 
-                  alt="NexusVectis Logo" 
+                  src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/697e930c62bf3e3832b34edb/bc9d40ccc_FullLogo_Transparent1.png"
+                  alt="NexusVectis Logo"
                   className="h-32 w-auto mb-6 opacity-90"
                 />
               </Link>
-              <p className="text-slate-400 max-w-md">
-                Next-generation fleet intelligence platform powered by AI
-              </p>
+              <p className="text-slate-400 max-w-md">Next-generation fleet intelligence platform powered by AI</p>
             </div>
-            
             <div>
               <h4 className="text-white font-bold mb-4">Platform</h4>
               <ul className="space-y-2 text-slate-400">
@@ -192,7 +225,6 @@ export default function Blog() {
                 <li><Link to={createPageUrl("IntegrationsPage")} className="hover:text-cyan-400 transition-colors">Integrations</Link></li>
               </ul>
             </div>
-            
             <div>
               <h4 className="text-white font-bold mb-4">Company</h4>
               <ul className="space-y-2 text-slate-400">
@@ -203,14 +235,14 @@ export default function Blog() {
               </ul>
             </div>
           </div>
-          
+
           <motion.div
             initial={{ scaleX: 0 }}
             whileInView={{ scaleX: 1 }}
             viewport={{ once: true }}
             className="h-px bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent mb-8"
           />
-          
+
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <p className="text-slate-500 text-sm">&copy; 2026 NexusVectis. Shaping the future of logistics intelligence.</p>
             <div className="flex gap-6 text-slate-400 text-sm">

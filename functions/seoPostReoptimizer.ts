@@ -1,11 +1,9 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
 
 /**
- * SEO POST RE-OPTIMIZER
- * 
- * Finds blog posts with status "needs_update" and uses Harbor Core
- * to rewrite + improve them based on latest SEO trends.
- * Also handles generating secondary posts from the topics queue.
+ * SEO POST RE-OPTIMIZER — HIGH QUALITY EDITION
+ * Rewrites existing blog posts to full high-quality standard (1800-2500 words).
+ * Processes up to 3 posts per run to avoid timeouts.
  */
 
 Deno.serve(async (req) => {
@@ -13,49 +11,54 @@ Deno.serve(async (req) => {
 
   const today = new Date().toISOString().split('T')[0];
 
-  // ─── Find posts that need re-optimization ─────────────────────────────────
+  // Find posts that need re-optimization (low word count or flagged)
   const stalePosts = await base44.asServiceRole.entities.BlogPost.filter(
     { status: 'needs_update' },
     '-created_date',
-    5 // Process max 5 at a time to avoid timeouts
+    3
   );
 
   const results = [];
 
   for (const post of stalePosts) {
-    const reoptResult = await base44.asServiceRole.integrations.Core.InvokeLLM({
-      prompt: `You are an expert SEO content optimizer for a B2B logistics platform called NexusVectis.
+    const rewritten = await base44.asServiceRole.integrations.Core.InvokeLLM({
+      prompt: `You are a world-class B2B content writer for NexusVectis — an AI-powered fleet management and logistics intelligence platform (nexusvectis.com).
 
-Re-optimize the following blog post to improve its SEO ranking in 2026.
+Completely rewrite and upgrade the following blog post to HIGH QUALITY standard.
 
 Current Title: "${post.title}"
 Primary Keyword: "${post.primary_keyword}"
 Secondary Keywords: ${(post.secondary_keywords || []).join(', ')}
-Current SEO Score: ${post.seo_score || 'unknown'}
-Current Content (first 500 chars): ${(post.content || '').slice(0, 500)}...
+Current excerpt: "${post.excerpt}"
+Current content preview: ${(post.content || '').replace(/<[^>]+>/g, '').slice(0, 300)}...
 
-Your task:
-1. Rewrite the title to be more compelling and SEO-optimized for 2026
-2. Rewrite the excerpt/meta description (max 155 chars, include primary keyword)
-3. Suggest 3 specific improvements to the content structure
-4. Add 2 new secondary keywords that are trending now
-5. Recalculate expected SEO score (0-100)
-6. Identify if this post should target a featured snippet and how
+QUALITY REQUIREMENTS:
+- 1800–2500 words — in-depth, authoritative
+- Semantic HTML: H1, H2, H3 tags
+- Primary keyword in first 100 words, in H1, and in 3+ H2s
+- Include 2025/2026 statistics with source hints
+- At least one comparison table (<table>)
+- At least one numbered or bulleted list per major section
+- Section: "How NexusVectis Solves This" — describe FLEET AI, HARBOR Core, real-time tracking
+- FAQ section (4 questions) structured for Google featured snippets
+- Strong E-E-A-T signals: cite specific expertise, real-world scenarios
+- Internal links to: /FleetAIPage, /LiveTrackingPage, /AnalyticsPage, /HarborInfo, /Blog
+- Closing CTA: "Book a free demo of NexusVectis FLEET AI today"
+- Tone: authoritative, professional, data-driven
 
-Search the web for current trends related to: "${post.primary_keyword}"`,
-      add_context_from_internet: true,
+Return full semantic HTML in content_html. No markdown.`,
       model: "gemini_3_flash",
       response_json_schema: {
         type: "object",
         properties: {
           new_title: { type: "string" },
           new_excerpt: { type: "string" },
-          content_improvements: { type: "array", items: { type: "string" } },
-          new_secondary_keywords: { type: "array", items: { type: "string" } },
+          content_html: { type: "string" },
+          word_count: { type: "number" },
+          read_time_minutes: { type: "number" },
           new_seo_score: { type: "number" },
-          featured_snippet_opportunity: { type: "boolean" },
-          featured_snippet_strategy: { type: "string" },
-          updated_content_html: { type: "string" }
+          readability_score: { type: "number" },
+          new_secondary_keywords: { type: "array", items: { type: "string" } }
         }
       }
     });
@@ -64,22 +67,25 @@ Search the web for current trends related to: "${post.primary_keyword}"`,
       ...(post.optimization_history || []),
       {
         date: today,
-        action: 're_optimization',
+        action: 'high_quality_rewrite',
         previous_seo_score: post.seo_score,
-        new_seo_score: reoptResult.new_seo_score,
-        improvements: reoptResult.content_improvements
+        new_seo_score: rewritten.new_seo_score,
+        word_count: rewritten.word_count
       }
     ];
 
     await base44.asServiceRole.entities.BlogPost.update(post.id, {
-      title: reoptResult.new_title || post.title,
-      excerpt: reoptResult.new_excerpt || post.excerpt,
-      content: reoptResult.updated_content_html || post.content,
+      title: rewritten.new_title || post.title,
+      excerpt: rewritten.new_excerpt || post.excerpt,
+      content: rewritten.content_html || post.content,
       secondary_keywords: [
         ...(post.secondary_keywords || []),
-        ...(reoptResult.new_secondary_keywords || [])
+        ...(rewritten.new_secondary_keywords || [])
       ].slice(0, 10),
-      seo_score: reoptResult.new_seo_score || post.seo_score,
+      seo_score: rewritten.new_seo_score || post.seo_score,
+      readability_score: rewritten.readability_score || post.readability_score,
+      word_count: rewritten.word_count || post.word_count,
+      read_time_minutes: rewritten.read_time_minutes || post.read_time_minutes,
       status: 'published',
       last_optimized_at: new Date().toISOString(),
       optimization_history: updatedHistory
@@ -88,93 +94,15 @@ Search the web for current trends related to: "${post.primary_keyword}"`,
     results.push({
       post_id: post.id,
       old_title: post.title,
-      new_title: reoptResult.new_title,
-      old_seo_score: post.seo_score,
-      new_seo_score: reoptResult.new_seo_score,
-      featured_snippet_opportunity: reoptResult.featured_snippet_opportunity
+      new_title: rewritten.new_title,
+      word_count: rewritten.word_count,
+      new_seo_score: rewritten.new_seo_score
     });
-  }
-
-  // ─── Also generate a secondary blog post from the latest topic queue ──────
-  const latestMetrics = await base44.asServiceRole.entities.SEOMetrics.filter(
-    {},
-    '-created_date',
-    1
-  );
-
-  let bonusPost = null;
-  if (latestMetrics[0]?.recommended_blog_topics?.length >= 1) {
-    const topics = latestMetrics[0].recommended_blog_topics;
-    const topic = topics.sort((a, b) => (b.priority_score || 0) - (a.priority_score || 0))[1];
-
-    if (topic) {
-      const exists = await base44.asServiceRole.entities.BlogPost.filter({
-        primary_keyword: topic.primary_keyword
-      });
-
-      if (exists.length === 0) {
-        const postContent = await base44.asServiceRole.integrations.Core.InvokeLLM({
-          prompt: `Write a comprehensive, SEO-optimized blog post for NexusVectis (AI fleet management platform).
-
-Title: "${topic.title}"
-Primary Keyword: "${topic.primary_keyword}"
-Secondary Keywords: ${(topic.secondary_keywords || []).join(', ')}
-Search Intent: ${topic.search_intent}
-
-Requirements:
-- 1000-1400 words
-- Professional but accessible English  
-- Include 2026 statistics
-- Mention NexusVectis features naturally
-- HTML format with H1, H2, H3 tags
-- End with CTA to try FLEET AI`,
-          response_json_schema: {
-            type: "object",
-            properties: {
-              title: { type: "string" },
-              excerpt: { type: "string" },
-              content_html: { type: "string" },
-              word_count: { type: "number" },
-              read_time_minutes: { type: "number" },
-              seo_score: { type: "number" }
-            }
-          }
-        });
-
-        const slug = topic.primary_keyword
-          .toLowerCase()
-          .replace(/[^a-z0-9\s]/g, '')
-          .replace(/\s+/g, '-')
-          .slice(0, 60);
-
-        bonusPost = await base44.asServiceRole.entities.BlogPost.create({
-          title: postContent.title || topic.title,
-          slug,
-          excerpt: postContent.excerpt || '',
-          content: postContent.content_html || '',
-          category: 'Logistics Intelligence',
-          tags: [topic.primary_keyword, ...(topic.secondary_keywords || [])],
-          primary_keyword: topic.primary_keyword,
-          secondary_keywords: topic.secondary_keywords || [],
-          seo_score: postContent.seo_score || 78,
-          read_time_minutes: postContent.read_time_minutes || 5,
-          word_count: postContent.word_count || 1200,
-          search_intent: topic.search_intent || 'informational',
-          status: 'published',
-          ai_generated: true,
-          ai_model: 'harbor-core',
-          published_at: new Date().toISOString(),
-          last_optimized_at: new Date().toISOString(),
-          optimization_history: [{ date: today, action: 'initial_generation' }]
-        });
-      }
-    }
   }
 
   return Response.json({
     success: true,
-    posts_reoptimized: results.length,
-    reoptimization_results: results,
-    bonus_post_generated: bonusPost?.title || null
+    posts_rewritten: results.length,
+    results
   });
 });
