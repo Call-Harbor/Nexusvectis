@@ -469,6 +469,169 @@ export default function CEODashboard() {
           </Section>
         </div>
 
+        {/* ── Technical SEO Audit ──────────────────────────────────────────── */}
+        {latest?.technical_seo_audit && (
+          <div className="mb-6">
+            <Section title={`Technical SEO Audit — Score: ${latest.technical_seo_audit.overall_score ?? "—"}/100`} icon={Gauge} color="red" defaultOpen={false}>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+                {/* Core Web Vitals */}
+                <div className="p-4 rounded-xl bg-slate-900/50 border border-slate-700/30">
+                  <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-2">Core Web Vitals</p>
+                  <div className="space-y-1.5 text-xs">
+                    {["lcp_status","fid_status","cls_status"].map(k => (
+                      <div key={k} className="flex items-center justify-between">
+                        <span className="text-slate-400">{k.replace("_status","").toUpperCase()}</span>
+                        <Badge className={`text-[10px] ${latest.technical_seo_audit.core_web_vitals?.[k] === "good" ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" : "bg-amber-500/20 text-amber-400 border-amber-500/30"}`}>
+                          {latest.technical_seo_audit.core_web_vitals?.[k] || "—"}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                  {(latest.technical_seo_audit.core_web_vitals?.recommendations || []).map((r, i) => (
+                    <p key={i} className="text-[11px] text-slate-500 mt-2 leading-snug">• {r}</p>
+                  ))}
+                </div>
+                {/* Mobile */}
+                <div className="p-4 rounded-xl bg-slate-900/50 border border-slate-700/30">
+                  <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-2">
+                    <span className="flex items-center gap-1.5"><Smartphone className="w-3 h-3" /> Mobile — {latest.technical_seo_audit.mobile_optimization?.score ?? "—"}/100</span>
+                  </p>
+                  {(latest.technical_seo_audit.mobile_optimization?.issues || []).map((r, i) => (
+                    <p key={i} className="text-[11px] text-red-400 mb-1 leading-snug">⚠ {r}</p>
+                  ))}
+                  {(latest.technical_seo_audit.mobile_optimization?.recommendations || []).map((r, i) => (
+                    <p key={i} className="text-[11px] text-slate-500 leading-snug">→ {r}</p>
+                  ))}
+                </div>
+                {/* Structured Data */}
+                <div className="p-4 rounded-xl bg-slate-900/50 border border-slate-700/30">
+                  <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-2">
+                    <span className="flex items-center gap-1.5"><Code2 className="w-3 h-3" /> Schema / Structured Data</span>
+                  </p>
+                  <p className="text-[10px] text-slate-500 mb-1">Priority schemas to add:</p>
+                  {(latest.technical_seo_audit.structured_data?.priority_schemas || []).map((s, i) => (
+                    <Badge key={i} className="bg-violet-500/10 text-violet-400 border-violet-500/20 text-[10px] mr-1 mb-1">{s}</Badge>
+                  ))}
+                  <p className="text-[10px] text-slate-500 mt-2 mb-1">Missing:</p>
+                  {(latest.technical_seo_audit.structured_data?.missing_schemas || []).map((s, i) => (
+                    <Badge key={i} className="bg-red-500/10 text-red-400 border-red-500/20 text-[10px] mr-1 mb-1">{s}</Badge>
+                  ))}
+                </div>
+              </div>
+              {/* Critical Fixes */}
+              {(latest.technical_seo_audit.critical_fixes || []).length > 0 && (
+                <div className="p-4 rounded-xl bg-red-500/5 border border-red-500/20">
+                  <p className="text-red-400 text-xs font-semibold mb-2">🚨 Critical Fixes (ordered by impact)</p>
+                  {latest.technical_seo_audit.critical_fixes.map((fix, i) => (
+                    <div key={i} className="flex items-start gap-2 text-xs mb-1.5">
+                      <span className="text-red-400 font-bold flex-shrink-0">{i + 1}.</span>
+                      <span className="text-slate-300">{fix}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Section>
+          </div>
+        )}
+
+        {/* ── Proactive Content Drafts ──────────────────────────────────────── */}
+        {(latest?.proactive_content_drafts || []).length > 0 && (
+          <div className="mb-6">
+            <Section title="Proactive Content Drafts (Ready to Publish)" icon={FileEdit} color="cyan" defaultOpen={false}>
+              <div className="space-y-4">
+                {latest.proactive_content_drafts.map((draft, i) => (
+                  <div key={i} className="p-4 rounded-xl bg-slate-900/50 border border-slate-700/30">
+                    <div className="flex items-start justify-between gap-3 mb-2">
+                      <div>
+                        <p className="text-white font-semibold text-sm">{draft.topic_title}</p>
+                        <p className="text-cyan-400 text-xs mt-0.5">🔑 {draft.primary_keyword}</p>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <Badge className="bg-cyan-500/10 text-cyan-400 border-cyan-500/20 text-[10px]">{draft.target_word_count} words</Badge>
+                        {draft.estimated_ranking_time_months && (
+                          <p className="text-[10px] text-slate-500 mt-1">~{draft.estimated_ranking_time_months} months to rank</p>
+                        )}
+                      </div>
+                    </div>
+                    {draft.hook_paragraph && (
+                      <p className="text-slate-400 text-xs italic mb-3 leading-relaxed border-l-2 border-cyan-500/30 pl-3">"{draft.hook_paragraph}"</p>
+                    )}
+                    <div className="space-y-1">
+                      {(draft.outline || []).slice(0, 5).map((section, j) => (
+                        <div key={j} className="flex items-start gap-2 text-[11px] text-slate-400">
+                          <ChevronRight className="w-3 h-3 text-slate-600 flex-shrink-0 mt-0.5" />
+                          <span className="font-medium text-slate-300">{section.heading}</span>
+                          {section.estimated_words && <span className="text-slate-600">~{section.estimated_words}w</span>}
+                        </div>
+                      ))}
+                    </div>
+                    {draft.meta_description && (
+                      <p className="text-[10px] text-slate-500 mt-2 border-t border-slate-700/30 pt-2">
+                        <span className="text-slate-400">Meta:</span> {draft.meta_description}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </Section>
+          </div>
+        )}
+
+        {/* ── Linkbuilding Outreach ─────────────────────────────────────────── */}
+        {(latest?.linkbuilding_outreach || []).length > 0 && (
+          <div className="mb-6">
+            <Section title="Linkbuilding Outreach Targets" icon={Mail} color="emerald" defaultOpen={false}>
+              <div className="grid sm:grid-cols-2 gap-3">
+                {(latest.linkbuilding_outreach).map((target, i) => (
+                  <div key={i} className="p-4 rounded-xl bg-slate-900/50 border border-slate-700/30">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-white text-sm font-semibold">{target.domain}</p>
+                      <Badge className={`text-[10px] ${target.estimated_link_value === "high" ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" : "bg-amber-500/10 text-amber-400 border-amber-500/20"}`}>
+                        {target.estimated_link_value} value
+                      </Badge>
+                    </div>
+                    {target.outreach_subject && (
+                      <p className="text-[11px] text-cyan-300 mb-1">📧 <span className="italic">"{target.outreach_subject}"</span></p>
+                    )}
+                    {target.pitch_angle && (
+                      <p className="text-[11px] text-slate-400">💡 {target.pitch_angle}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </Section>
+          </div>
+        )}
+
+        {/* ── Extended A/B Test Suggestions ────────────────────────────────── */}
+        {(latest?.ab_extended_suggestions || []).length > 0 && (
+          <div className="mb-6">
+            <Section title="Extended A/B Test Ideas (UI/UX Elements)" icon={FlaskConical} color="pink" defaultOpen={false}>
+              <div className="space-y-3">
+                {latest.ab_extended_suggestions.map((test, i) => (
+                  <div key={i} className="p-4 rounded-xl bg-slate-900/50 border border-slate-700/30">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Badge className="bg-pink-500/10 text-pink-400 border-pink-500/20 text-[10px]">{test.element}</Badge>
+                      <span className="text-slate-500 text-xs">→ metric: {test.success_metric}</span>
+                    </div>
+                    <p className="text-slate-400 text-xs mb-2 italic">{test.hypothesis}</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="p-2 rounded-lg bg-slate-800/50 border border-slate-700/30">
+                        <p className="text-[10px] text-slate-500 mb-1">Variant A</p>
+                        <p className="text-xs text-slate-300">{test.variant_a_description}</p>
+                      </div>
+                      <div className="p-2 rounded-lg bg-slate-800/50 border border-pink-500/20">
+                        <p className="text-[10px] text-pink-400 mb-1">Variant B</p>
+                        <p className="text-xs text-slate-300">{test.variant_b_description}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Section>
+          </div>
+        )}
+
         {/* ── AI Summary ───────────────────────────────────────────────────── */}
         {latest?.ai_summary && (
           <div className="mb-6">
