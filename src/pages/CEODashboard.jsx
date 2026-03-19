@@ -11,6 +11,7 @@ import {
   Activity, Layers, Link2, Hash, BookOpen, Crosshair,
   Gauge, Smartphone, Code2, FlaskConical, Mail, FileEdit
 } from "lucide-react";
+import BlogImprovementSuggestions from "@/components/blog/BlogImprovementSuggestions";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import moment from "moment";
