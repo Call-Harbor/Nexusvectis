@@ -598,7 +598,7 @@ export default function NexusOrbit() {
                 </>
               )}
             </motion.div>
-          ) : (
+          ) : activeView === "routes" ? (
             <motion.div
               key="routes"
               initial={{ opacity: 0, x: 20 }}
