@@ -271,11 +271,11 @@ export default function NexusOrbit() {
     },
   });
 
+  console.log("Finding my vehicle - user.id:", user?.id);
+  console.log("All vehicles:", JSON.stringify(vehicles, null, 2));
   const myVehicle = vehicles.find(v => v.driver === user?.id);
-  console.log("Finding my vehicle - user.id:", user?.id, "vehicles:", vehicles.map(v => ({ name: v.name, driver: v.driver })));
   console.log("My vehicle:", myVehicle);
   const myRoute = routes.find(r => r.id === myVehicle?.route_id);
-  console.log("My route:", myRoute);
 
   const recipientList = userRole === "driver" ? coordinators : drivers;
 
