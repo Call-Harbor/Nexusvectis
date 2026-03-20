@@ -11,10 +11,14 @@ import {
 export default function NexusOrbit() {
   const [user, setUser] = useState(null);
   const [org, setOrg] = useState(null);
-  const [activeView, setActiveView] = useState("chat"); // chat, routes
+  const [activeView, setActiveView] = useState("setup"); // setup, chat, routes
   const [selectedRecipient, setSelectedRecipient] = useState(null);
   const [messageText, setMessageText] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
+  const [joinOrgId, setJoinOrgId] = useState("");
+  const [driverName, setDriverName] = useState("");
+  const [driverPhone, setDriverPhone] = useState("");
+  const [requestSubmitted, setRequestSubmitted] = useState(false);
   const messagesEndRef = useRef(null);
   const queryClient = useQueryClient();
 
@@ -44,8 +48,24 @@ export default function NexusOrbit() {
     loadUser();
   }, []);
 
+  // ── Check if driver has pending/approved request ──────────────────────────
+  const { data: myRequest } = useQuery({
+    queryKey: ["my-driver-request", user?.email],
+    queryFn: async () => {
+      if (!user?.email) return null;
+      const requests = await base44.entities.DriverRequest.filter({
+        driver_email: user.email
+      }, "-created_date", 1);
+      return requests[0] || null;
+    },
+    enabled: !!user?.email,
+  });
+
   // ── Determine user role (driver/coordinator based on app role or vehicle assignment) ──
   const userRole = user?.role === "admin" ? "coordinator" : "driver";
+
+  // ── Check if driver needs to join organization first ──
+  const needsSetup = userRole === "driver" && !org && (!myRequest || myRequest.status === "rejected");
 
   // ── Fetch messages ───────────────────────────────────────────────────────
   const { data: messages = [], refetch: refetchMessages } = useQuery({
@@ -69,6 +89,33 @@ export default function NexusOrbit() {
   });
 
   // ── Fetch routes ─────────────────────────────────────────────────────────
+  // ── Fetch all organizations (for driver to select) ──────────────────────
+  const { data: allOrgs = [] } = useQuery({
+    queryKey: ["all-organizations"],
+    queryFn: () => base44.entities.Organization.list("-created_date", 100),
+    enabled: needsSetup,
+  });
+
+  // ── Submit join request mutation ─────────────────────────────────────────
+  const submitRequestMutation = useMutation({
+    mutationFn: (data) => base44.entities.DriverRequest.create(data),
+    onSuccess: () => {
+      setRequestSubmitted(true);
+      queryClient.invalidateQueries(["my-driver-request"]);
+    },
+  });
+
+  const handleSubmitRequest = () => {
+    if (!joinOrgId || !driverName.trim() || !user?.email) return;
+    submitRequestMutation.mutate({
+      organization_id: joinOrgId,
+      driver_email: user.email,
+      driver_name: driverName.trim(),
+      driver_phone: driverPhone.trim() || null,
+      status: "pending"
+    });
+  };
+
   const { data: routes = [] } = useQuery({
     queryKey: ["orbit-routes", org?.id],
     queryFn: () => org?.id ? base44.entities.Route.filter({ organization_id: org.id }, "-created_date", 50) : [],
@@ -171,6 +218,102 @@ export default function NexusOrbit() {
       </div>
     </div>
   );
+
+  // ── Setup flow for new drivers ───────────────────────────────────────────
+  if (needsSetup || (myRequest?.status === "pending" && !org)) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="max-w-md w-full"
+        >
+          <div className="p-8 rounded-2xl bg-slate-900/80 border border-cyan-500/20 backdrop-blur-xl">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-3 rounded-xl bg-gradient-to-br from-cyan-500/20 to-violet-500/20 border border-cyan-500/30">
+                <Satellite className="w-6 h-6 text-cyan-400" />
+              </div>
+              <div>
+                <h1 className="text-white font-black text-xl">Nexus Orbit</h1>
+                <p className="text-cyan-400/60 text-xs">Driver Registration</p>
+              </div>
+            </div>
+
+            {myRequest?.status === "pending" ? (
+              <div className="text-center py-6">
+                <Clock className="w-16 h-16 text-amber-400 mx-auto mb-4 animate-pulse" />
+                <p className="text-white font-bold text-lg mb-2">Request Pending</p>
+                <p className="text-slate-400 text-sm mb-4">
+                  Your request to join <span className="text-cyan-400 font-semibold">{allOrgs.find(o => o.id === myRequest.organization_id)?.name || "organization"}</span> is awaiting approval.
+                </p>
+                <p className="text-slate-600 text-xs">You'll be notified once a coordinator approves your request.</p>
+              </div>
+            ) : requestSubmitted ? (
+              <div className="text-center py-6">
+                <CheckCircle2 className="w-16 h-16 text-emerald-400 mx-auto mb-4" />
+                <p className="text-white font-bold text-lg mb-2">Request Submitted!</p>
+                <p className="text-slate-400 text-sm">
+                  Your request has been sent to the organization coordinators. You'll receive access once approved.
+                </p>
+              </div>
+            ) : (
+              <>
+                <p className="text-slate-400 text-sm mb-6">
+                  To use Nexus Orbit, request access to your organization. A coordinator will approve your request.
+                </p>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-slate-300 text-sm mb-2 block">Your Full Name</label>
+                    <input
+                      type="text"
+                      value={driverName}
+                      onChange={(e) => setDriverName(e.target.value)}
+                      placeholder="John Doe"
+                      className="w-full px-4 py-3 rounded-xl bg-slate-800/60 border border-slate-700/50 text-white placeholder-slate-600 focus:outline-none focus:border-cyan-500/40"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-slate-300 text-sm mb-2 block">Phone Number (Optional)</label>
+                    <input
+                      type="tel"
+                      value={driverPhone}
+                      onChange={(e) => setDriverPhone(e.target.value)}
+                      placeholder="+45 12 34 56 78"
+                      className="w-full px-4 py-3 rounded-xl bg-slate-800/60 border border-slate-700/50 text-white placeholder-slate-600 focus:outline-none focus:border-cyan-500/40"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-slate-300 text-sm mb-2 block">Select Organization</label>
+                    <select
+                      value={joinOrgId}
+                      onChange={(e) => setJoinOrgId(e.target.value)}
+                      className="w-full px-4 py-3 rounded-xl bg-slate-800/60 border border-slate-700/50 text-white focus:outline-none focus:border-cyan-500/40"
+                    >
+                      <option value="">Choose organization...</option>
+                      {allOrgs.map((org) => (
+                        <option key={org.id} value={org.id}>{org.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <button
+                    onClick={handleSubmitRequest}
+                    disabled={!joinOrgId || !driverName.trim() || submitRequestMutation.isPending}
+                    className="w-full py-3 rounded-xl bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 font-semibold hover:bg-cyan-500/30 disabled:opacity-50 transition-all"
+                  >
+                    {submitRequestMutation.isPending ? "Submitting..." : "Request Access"}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-950 flex flex-col overflow-hidden">
