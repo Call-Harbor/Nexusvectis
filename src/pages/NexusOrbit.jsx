@@ -65,6 +65,7 @@ export default function NexusOrbit() {
   const [driverPhone, setDriverPhone] = useState("");
   const [requestSubmitted, setRequestSubmitted] = useState(false);
   const [currentPosition, setCurrentPosition] = useState(null);
+  const [authError, setAuthError] = useState(false);
   const messagesEndRef = useRef(null);
   const queryClient = useQueryClient();
 
@@ -89,6 +90,7 @@ export default function NexusOrbit() {
         }
       } catch (error) {
         console.error('Error loading user:', error);
+        setAuthError(true);
       }
     };
     loadUser();
@@ -267,6 +269,28 @@ export default function NexusOrbit() {
     const url = `https://www.google.com/maps/dir/?api=1&destination=${destination.lat},${destination.lng}${currentPosition ? `&origin=${currentPosition.lat},${currentPosition.lng}` : ''}`;
     window.open(url, '_blank');
   };
+
+  if (authError) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
+        <div className="text-center max-w-md">
+          <div className="p-8 rounded-2xl bg-slate-900/80 border border-rose-500/20 backdrop-blur-xl">
+            <AlertCircle className="w-16 h-16 text-rose-400 mx-auto mb-4" />
+            <h2 className="text-white font-bold text-xl mb-2">Login Required</h2>
+            <p className="text-slate-400 text-sm mb-6">
+              You need a NexusVectis account to access Nexus Orbit. Please log in or create an account to continue.
+            </p>
+            <button
+              onClick={() => base44.auth.redirectToLogin()}
+              className="w-full py-3 rounded-xl bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 font-semibold hover:bg-cyan-500/30 transition-all"
+            >
+              Log In / Sign Up
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (!user) return (
     <div className="min-h-screen bg-slate-950 flex items-center justify-center">
