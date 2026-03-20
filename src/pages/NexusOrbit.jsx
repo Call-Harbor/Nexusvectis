@@ -677,7 +677,12 @@ export default function NexusOrbit() {
                         </div>
                         {userRole === "driver" && !isCurrent && (
                           <button
-                            onClick={() => assignRouteMutation.mutate(route.id)}
+                            onClick={() => {
+                              console.log("Select button clicked for route:", route.id);
+                              console.log("User role:", userRole);
+                              console.log("Current route:", myRoute?.id);
+                              assignRouteMutation.mutate(route.id);
+                            }}
                             disabled={assignRouteMutation.isPending}
                             className="px-3 py-1.5 rounded-lg bg-violet-500/20 border border-violet-500/30 text-violet-300 text-xs font-semibold hover:bg-violet-500/30 transition-all disabled:opacity-50"
                           >
