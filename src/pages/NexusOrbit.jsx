@@ -486,7 +486,8 @@ export default function NexusOrbit() {
         </AnimatePresence>
       </motion.header>
 
-
+      {/* GPS Tracker */}
+      {userRole === "driver" && <GPSTracker onPositionUpdate={setCurrentPosition} />}
 
       {/* ── Main Content ───────────────────────────────────────────── */}
       <main className="flex-1 pt-20 pb-4 px-4 overflow-hidden">
