@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
 import {
   MessageCircle, Send, Radio, MapPin, Navigation,
   CheckCircle2, Clock, AlertCircle, Menu, X,
@@ -252,11 +253,19 @@ export default function NexusOrbit() {
   const assignRouteMutation = useMutation({
     mutationFn: async (routeId) => {
       const myVehicle = vehicles.find(v => v.driver === user?.full_name || v.driver === user?.email);
-      if (myVehicle) {
-        await base44.entities.Vehicle.update(myVehicle.id, { route_id: routeId });
+      if (!myVehicle) {
+        throw new Error("No vehicle assigned to you yet. Contact your coordinator to assign a vehicle.");
       }
+      await base44.entities.Vehicle.update(myVehicle.id, { route_id: routeId });
     },
-    onSuccess: () => queryClient.invalidateQueries(["orbit-vehicles"]),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["orbit-vehicles"]);
+      toast.success("Route selected successfully!");
+      setActiveView("map");
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to select route");
+    },
   });
 
   const myVehicle = vehicles.find(v => v.driver === user?.full_name || v.driver === user?.email);
