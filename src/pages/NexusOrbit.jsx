@@ -277,12 +277,20 @@ export default function NexusOrbit() {
   });
 
   // ── Find driver's vehicle and route ──────────────────────────────────────
-  const myVehicle = vehicles.find(v => 
-    v.driver === user?.id || 
-    v.driver === user?.email || 
-    v.driver === user?.full_name ||
-    v.id === myRequest?.vehicle_assigned
-  );
+  // First check if vehicle is assigned via DriverRequest
+  let myVehicle = myRequest?.vehicle_assigned 
+    ? vehicles.find(v => v.id === myRequest.vehicle_assigned)
+    : null;
+  
+  // Fallback: check if vehicle.driver matches user
+  if (!myVehicle) {
+    myVehicle = vehicles.find(v => 
+      v.driver === user?.id || 
+      v.driver === user?.email || 
+      v.driver === user?.full_name
+    );
+  }
+  
   const myRoute = routes.find(r => r.id === myVehicle?.route_id);
 
   // ── Parse route for map ──────────────────────────────────────────────────
