@@ -86,9 +86,16 @@ export default function DriverManagement() {
       });
 
       if (vehicleId) {
-        await base44.entities.Vehicle.update(vehicleId, {
-          driver: driverName
-        });
+        // Find the user by email to get their user ID
+        const allUsers = await base44.entities.User.list();
+        const driverUser = allUsers.find(u => u.email === driverEmail);
+        
+        if (driverUser) {
+          // Store user ID instead of email/name for reliable matching
+          await base44.entities.Vehicle.update(vehicleId, {
+            driver: driverUser.id
+          });
+        }
       }
     },
     onSuccess: () => {
