@@ -254,12 +254,6 @@ export default function NexusOrbit() {
   // ── Assign route mutation ────────────────────────────────────────────────
   const assignRouteMutation = useMutation({
     mutationFn: async (routeId) => {
-      const myVehicle = vehicles.find(v => 
-        v.driver === user?.id || 
-        v.driver === user?.email || 
-        v.driver === user?.full_name
-      );
-      
       if (!myVehicle) {
         throw new Error("No vehicle assigned yet. Ask your coordinator to assign you a vehicle first.");
       }
@@ -271,7 +265,7 @@ export default function NexusOrbit() {
       toast.success("Route assigned!");
       setActiveView("map");
     },
-    onError: (error) => {
+    onError: (error) {
       toast.error(error.message || "Failed to assign route");
     },
   });
