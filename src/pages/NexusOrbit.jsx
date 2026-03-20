@@ -256,8 +256,17 @@ export default function NexusOrbit() {
       console.log("Available vehicles:", vehicles);
       console.log("User:", user);
       
-      const myVehicle = vehicles.find(v => v.driver === user?.full_name || v.driver === user?.email);
+      // Try multiple match strategies
+      const myVehicle = vehicles.find(v => 
+        v.driver === user?.full_name || 
+        v.driver === user?.email ||
+        v.driver === user?.id ||
+        v.driver?.toLowerCase() === user?.email?.toLowerCase() ||
+        v.driver?.toLowerCase() === user?.full_name?.toLowerCase()
+      );
+      
       console.log("My vehicle:", myVehicle);
+      console.log("Vehicle drivers:", vehicles.map(v => ({ name: v.name, driver: v.driver })));
       
       if (!myVehicle) {
         throw new Error("No vehicle assigned to you yet. Contact your coordinator to assign a vehicle.");
@@ -279,7 +288,13 @@ export default function NexusOrbit() {
     },
   });
 
-  const myVehicle = vehicles.find(v => v.driver === user?.full_name || v.driver === user?.email);
+  const myVehicle = vehicles.find(v => 
+    v.driver === user?.full_name || 
+    v.driver === user?.email ||
+    v.driver === user?.id ||
+    v.driver?.toLowerCase() === user?.email?.toLowerCase() ||
+    v.driver?.toLowerCase() === user?.full_name?.toLowerCase()
+  );
   const myRoute = routes.find(r => r.id === myVehicle?.route_id);
 
   const recipientList = userRole === "driver" ? coordinators : drivers;
