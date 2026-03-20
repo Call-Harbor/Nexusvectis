@@ -120,38 +120,42 @@ export default function DriverManagement() {
 
   const assignVehicleMutation = useMutation({
     mutationFn: async ({ requestId, driverEmail, vehicleId }) => {
+      const currentRequest = requests.find(r => r.id === requestId);
+      
+      // Find the user by email to get their user ID
+      const allUsers = await base44.entities.User.list();
+      const driverUser = allUsers.find(u => u.email === driverEmail);
+      
+      if (!driverUser) {
+        throw new Error("Driver user not found");
+      }
+
+      // Clear old vehicle assignment if exists
+      if (currentRequest?.vehicle_assigned) {
+        await base44.entities.Vehicle.update(currentRequest.vehicle_assigned, { 
+          driver: null 
+        });
+      }
+
       // Update the request with new vehicle assignment
       await base44.entities.DriverRequest.update(requestId, {
         vehicle_assigned: vehicleId
       });
 
-      // If removing vehicle, clear the driver field
+      // If removing vehicle, we're done
       if (!vehicleId) {
-        const oldVehicle = vehicles.find(v => v.id === requests.find(r => r.id === requestId)?.vehicle_assigned);
-        if (oldVehicle) {
-          await base44.entities.Vehicle.update(oldVehicle.id, { driver: null });
-        }
         return;
       }
 
-      // Find the user by email to get their user ID
-      const allUsers = await base44.entities.User.list();
-      const driverUser = allUsers.find(u => u.email === driverEmail);
-      
-      if (driverUser) {
-        // Clear any previous vehicle assignment for this driver
-        const oldVehicle = vehicles.find(v => v.driver === driverUser.id);
-        if (oldVehicle && oldVehicle.id !== vehicleId) {
-          await base44.entities.Vehicle.update(oldVehicle.id, { driver: null });
-        }
-
-        // Assign new vehicle
-        await base44.entities.Vehicle.update(vehicleId, { driver: driverUser.id });
-      }
+      // Assign new vehicle with user ID
+      await base44.entities.Vehicle.update(vehicleId, { 
+        driver: driverUser.id 
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries(["driver-requests"]);
       queryClient.invalidateQueries(["vehicles"]);
+      queryClient.invalidateQueries(["orbit-vehicles"]);
     },
   });
 
