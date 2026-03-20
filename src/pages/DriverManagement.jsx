@@ -328,7 +328,7 @@ export default function DriverManagement() {
           ) : (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredApproved.map((request) => {
-                const driverVehicle = vehicles.find(v => v.vehicle_assigned === request.vehicle_assigned);
+                const assignedVehicle = vehicles.find(v => v.id === request.vehicle_assigned);
                 return (
                   <div
                     key={request.id}
@@ -358,10 +358,8 @@ export default function DriverManagement() {
                         }}
                       >
                         <SelectTrigger className="bg-slate-800/60 border-slate-700 text-white h-9 text-sm">
-                          <SelectValue>
-                            {request.vehicle_assigned 
-                              ? vehicles.find(v => v.id === request.vehicle_assigned)?.name || "Vehicle"
-                              : "No vehicle"}
+                          <SelectValue placeholder="Select vehicle">
+                            {assignedVehicle ? assignedVehicle.name : "No vehicle"}
                           </SelectValue>
                         </SelectTrigger>
                         <SelectContent className="bg-slate-800 border-slate-700 text-white">
