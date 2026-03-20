@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+import { useOfflineSync } from "../hooks/useOfflineSync";
 import {
   MessageCircle, Send, Radio, MapPin, Navigation,
   CheckCircle2, Clock, AlertCircle, Menu, X,
@@ -69,6 +70,7 @@ export default function NexusOrbit() {
   const [authError, setAuthError] = useState(false);
   const messagesEndRef = useRef(null);
   const queryClient = useQueryClient();
+  const { isOnline, queueMessage, processPendingQueue } = useOfflineSync();
 
   // ── Load user & org ──────────────────────────────────────────────────────
   useEffect(() => {
@@ -122,7 +124,7 @@ export default function NexusOrbit() {
   // ── Check if driver needs to join organization first ──
   const needsSetup = userRole === "driver" && !org && (!myRequest || myRequest.status === "rejected");
 
-  // ── Fetch messages ───────────────────────────────────────────────────────
+  // ── Fetch messages (cached for offline) ──────────────────────────────────
   const { data: messages = [], refetch: refetchMessages } = useQuery({
     queryKey: ["orbit-messages", org?.id, user?.email],
     queryFn: async () => {
@@ -140,7 +142,9 @@ export default function NexusOrbit() {
       );
     },
     enabled: !!org?.id && !!user?.email,
-    refetchInterval: 1000,
+    refetchInterval: isOnline ? 3000 : false, // Slower polling, only when online
+    staleTime: 2000,
+    cacheTime: 1000 * 60 * 60, // Cache 1 hour for offline access
   });
 
   // ── Fetch all organizations (for driver to select) ──────────────────────
@@ -214,14 +218,46 @@ export default function NexusOrbit() {
     enabled: !!org?.id,
   });
 
-  // ── Send message mutation ────────────────────────────────────────────────
+  // ── Send message mutation (offline-aware) ────────────────────────────────
   const sendMutation = useMutation({
-    mutationFn: (data) => base44.entities.OrbitMessage.create(data),
+    mutationFn: async (data) => {
+      if (!isOnline) {
+        const queued = queueMessage(data);
+        queryClient.setQueryData(["orbit-messages", org?.id, user?.email], old => 
+          [...(old || []), { ...queued, created_date: new Date().toISOString() }]
+        );
+        throw new Error("OFFLINE_QUEUED");
+      }
+      return await base44.entities.OrbitMessage.create(data);
+    },
     onSuccess: () => {
       refetchMessages();
       setMessageText("");
     },
+    onError: (error) => {
+      if (error.message === "OFFLINE_QUEUED") {
+        toast.info("Message queued - will send when online");
+        setMessageText("");
+      }
+    },
   });
+
+  // Auto-sync pending messages when connection returns
+  useEffect(() => {
+    if (isOnline) {
+      processPendingQueue(async (msg) => {
+        await base44.entities.OrbitMessage.create({
+          organization_id: msg.organization_id,
+          sender_email: msg.sender_email,
+          sender_name: msg.sender_name,
+          sender_role: msg.sender_role,
+          recipient_email: msg.recipient_email,
+          message: msg.message,
+          message_type: msg.message_type,
+        });
+      });
+    }
+  }, [isOnline, processPendingQueue]);
 
   const handleSendMessage = () => {
     if (!messageText.trim() || !selectedRecipient || !org?.id || !user?.email) return;
