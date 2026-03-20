@@ -5,13 +5,58 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   MessageCircle, Send, Radio, MapPin, Navigation,
   CheckCircle2, Clock, AlertCircle, Menu, X,
-  Satellite, ChevronRight, User, Users
+  Satellite, ChevronRight, User, Users, Map, Locate
 } from "lucide-react";
+import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import L from "leaflet";
+
+// Fix Leaflet default marker icons
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+});
+
+// GPS position tracking component
+function GPSTracker({ onPositionUpdate }) {
+  useEffect(() => {
+    if (!navigator.geolocation) return;
+    
+    const watchId = navigator.geolocation.watchPosition(
+      (position) => {
+        onPositionUpdate({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+          accuracy: position.coords.accuracy,
+          heading: position.coords.heading,
+          speed: position.coords.speed
+        });
+      },
+      (error) => console.error("GPS error:", error),
+      { enableHighAccuracy: true, maximumAge: 1000, timeout: 5000 }
+    );
+    
+    return () => navigator.geolocation.clearWatch(watchId);
+  }, [onPositionUpdate]);
+  
+  return null;
+}
+
+// Map auto-center component
+function MapAutoCenter({ center }) {
+  const map = useMap();
+  useEffect(() => {
+    if (center) map.setView(center, map.getZoom());
+  }, [center, map]);
+  return null;
+}
 
 export default function NexusOrbit() {
   const [user, setUser] = useState(null);
   const [org, setOrg] = useState(null);
-  const [activeView, setActiveView] = useState("setup"); // setup, chat, routes
+  const [activeView, setActiveView] = useState("setup"); // setup, chat, routes, map
   const [selectedRecipient, setSelectedRecipient] = useState(null);
   const [messageText, setMessageText] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
@@ -19,6 +64,7 @@ export default function NexusOrbit() {
   const [driverName, setDriverName] = useState("");
   const [driverPhone, setDriverPhone] = useState("");
   const [requestSubmitted, setRequestSubmitted] = useState(false);
+  const [currentPosition, setCurrentPosition] = useState(null);
   const messagesEndRef = useRef(null);
   const queryClient = useQueryClient();
 
@@ -210,6 +256,18 @@ export default function NexusOrbit() {
 
   const recipientList = userRole === "driver" ? coordinators : drivers;
 
+  // Parse route waypoints for map display
+  const routeCoordinates = myRoute?.waypoints?.map(wp => [wp.lat, wp.lng]) || [];
+  const origin = myRoute?.waypoints?.[0];
+  const destination = myRoute?.waypoints?.[myRoute.waypoints.length - 1];
+
+  // Start navigation to destination
+  const handleStartNavigation = () => {
+    if (!destination) return;
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${destination.lat},${destination.lng}${currentPosition ? `&origin=${currentPosition.lat},${currentPosition.lng}` : ''}`;
+    window.open(url, '_blank');
+  };
+
   if (!user) return (
     <div className="min-h-screen bg-slate-950 flex items-center justify-center">
       <div className="text-center">
@@ -382,11 +440,27 @@ export default function NexusOrbit() {
                   <Navigation className="w-4 h-4" />
                   <span className="text-sm font-semibold">Routes</span>
                 </button>
+                {userRole === "driver" && (
+                  <button
+                    onClick={() => { setActiveView("map"); setMenuOpen(false); }}
+                    className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all ${
+                      activeView === "map"
+                        ? "bg-emerald-500/15 border border-emerald-500/30 text-emerald-300"
+                        : "bg-slate-800/40 border border-slate-700/30 text-slate-400 hover:text-white"
+                    }`}
+                  >
+                    <Map className="w-4 h-4" />
+                    <span className="text-sm font-semibold">Live Map</span>
+                  </button>
+                )}
               </div>
             </motion.div>
           )}
         </AnimatePresence>
       </motion.header>
+
+      {/* GPS Tracker */}
+      {userRole === "driver" && <GPSTracker onPositionUpdate={setCurrentPosition} />}
 
       {/* ── Main Content ───────────────────────────────────────────── */}
       <main className="flex-1 pt-20 pb-4 px-4 overflow-hidden">
@@ -606,7 +680,136 @@ export default function NexusOrbit() {
                 )}
               </div>
             </motion.div>
-          )}
+          ) : activeView === "map" ? (
+            <motion.div
+              key="map"
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.98 }}
+              className="h-full flex flex-col max-w-4xl mx-auto"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-slate-500 text-xs uppercase tracking-wider">Live GPS Navigation</p>
+                {currentPosition && (
+                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                    <Locate className="w-3 h-3 text-emerald-400 animate-pulse" />
+                    <span className="text-emerald-300 text-xs font-semibold">GPS Active</span>
+                  </div>
+                )}
+              </div>
+
+              {myRoute ? (
+                <>
+                  {/* Route info card */}
+                  <div className="mb-4 p-4 rounded-xl bg-gradient-to-br from-emerald-500/10 to-cyan-500/10 border border-emerald-500/30">
+                    <div className="flex items-start justify-between gap-3 mb-3">
+                      <div className="flex-1">
+                        <p className="text-white font-bold text-lg mb-1">{myRoute.name}</p>
+                        <div className="flex items-center gap-2 text-xs text-slate-400">
+                          <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{myRoute.origin}</span>
+                          <ChevronRight className="w-3 h-3" />
+                          <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{myRoute.destination}</span>
+                        </div>
+                        {myRoute.distance_km && (
+                          <p className="text-cyan-400 text-xs mt-2">{myRoute.distance_km} km · {myRoute.estimated_duration_hours}h</p>
+                        )}
+                      </div>
+                      <button
+                        onClick={handleStartNavigation}
+                        className="px-4 py-2 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-sm font-semibold hover:bg-emerald-500/30 transition-all flex items-center gap-2"
+                      >
+                        <Navigation className="w-4 h-4" />
+                        Navigate
+                      </button>
+                    </div>
+
+                    {currentPosition && destination && (
+                      <div className="flex items-center gap-4 text-xs text-slate-400 pt-3 border-t border-emerald-500/20">
+                        <span className="flex items-center gap-1">
+                          <Locate className="w-3 h-3 text-emerald-400" />
+                          Current: {currentPosition.lat.toFixed(5)}, {currentPosition.lng.toFixed(5)}
+                        </span>
+                        {currentPosition.speed && (
+                          <span className="flex items-center gap-1">
+                            Speed: {Math.round(currentPosition.speed * 3.6)} km/h
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Map */}
+                  <div className="flex-1 rounded-xl overflow-hidden border border-slate-700/50 bg-slate-900/60">
+                    {currentPosition || routeCoordinates.length > 0 ? (
+                      <MapContainer
+                        center={currentPosition ? [currentPosition.lat, currentPosition.lng] : routeCoordinates[0]}
+                        zoom={13}
+                        style={{ height: "100%", width: "100%" }}
+                        className="z-0"
+                      >
+                        <TileLayer
+                          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                        />
+                        {currentPosition && <MapAutoCenter center={[currentPosition.lat, currentPosition.lng]} />}
+                        
+                        {/* Current position marker */}
+                        {currentPosition && (
+                          <Marker position={[currentPosition.lat, currentPosition.lng]}>
+                            <Popup>
+                              <div className="text-xs">
+                                <p className="font-bold text-emerald-600 mb-1">Your Location</p>
+                                <p>Lat: {currentPosition.lat.toFixed(5)}</p>
+                                <p>Lng: {currentPosition.lng.toFixed(5)}</p>
+                                {currentPosition.accuracy && <p className="text-slate-500 text-[10px] mt-1">±{Math.round(currentPosition.accuracy)}m accuracy</p>}
+                              </div>
+                            </Popup>
+                          </Marker>
+                        )}
+
+                        {/* Route waypoints */}
+                        {myRoute.waypoints?.map((wp, i) => (
+                          <Marker key={i} position={[wp.lat, wp.lng]}>
+                            <Popup>
+                              <div className="text-xs">
+                                <p className="font-bold text-cyan-600 mb-1">{wp.name || `Waypoint ${i + 1}`}</p>
+                                <p>Lat: {wp.lat.toFixed(5)}</p>
+                                <p>Lng: {wp.lng.toFixed(5)}</p>
+                              </div>
+                            </Popup>
+                          </Marker>
+                        ))}
+
+                        {/* Route line */}
+                        {routeCoordinates.length > 1 && (
+                          <Polyline
+                            positions={routeCoordinates}
+                            pathOptions={{ color: "#22d3ee", weight: 4, opacity: 0.7 }}
+                          />
+                        )}
+                      </MapContainer>
+                    ) : (
+                      <div className="h-full flex items-center justify-center">
+                        <div className="text-center p-6">
+                          <AlertCircle className="w-12 h-12 text-slate-700 mx-auto mb-3" />
+                          <p className="text-slate-600 text-sm">Waiting for GPS signal...</p>
+                          <p className="text-slate-700 text-xs mt-1">Make sure location access is enabled</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <div className="flex-1 flex items-center justify-center">
+                  <div className="text-center p-8 rounded-xl bg-slate-900/40 border border-slate-700/30">
+                    <Map className="w-16 h-16 text-slate-700 mx-auto mb-4" />
+                    <p className="text-white font-semibold mb-2">No Active Route</p>
+                    <p className="text-slate-600 text-sm">Select a route to view it on the map</p>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          ) : null}
         </AnimatePresence>
       </main>
 
@@ -635,6 +838,19 @@ export default function NexusOrbit() {
             <Navigation className="w-5 h-5" />
             <span className="text-sm font-semibold">Routes</span>
           </button>
+          {userRole === "driver" && (
+            <button
+              onClick={() => setActiveView("map")}
+              className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl transition-all ${
+                activeView === "map"
+                  ? "bg-emerald-500/20 border border-emerald-500/40 text-emerald-300"
+                  : "bg-slate-800/40 border border-slate-700/30 text-slate-400 hover:text-white"
+              }`}
+            >
+              <Map className="w-5 h-5" />
+              <span className="text-sm font-semibold">Live Map</span>
+            </button>
+          )}
         </div>
       </div>
     </div>
