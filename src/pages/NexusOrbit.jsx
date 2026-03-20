@@ -277,7 +277,9 @@ export default function NexusOrbit() {
     v.driver === user?.email || 
     v.driver === user?.full_name
   );
+  console.log("MyVehicle found:", myVehicle, "route_id:", myVehicle?.route_id);
   const myRoute = routes.find(r => r.id === myVehicle?.route_id);
+  console.log("MyRoute found:", myRoute);
 
   const recipientList = userRole === "driver" ? coordinators : drivers;
 
