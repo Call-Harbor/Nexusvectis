@@ -280,7 +280,8 @@ export default function NexusOrbit() {
   const myVehicle = vehicles.find(v => 
     v.driver === user?.id || 
     v.driver === user?.email || 
-    v.driver === user?.full_name
+    v.driver === user?.full_name ||
+    v.id === myRequest?.vehicle_assigned
   );
   const myRoute = routes.find(r => r.id === myVehicle?.route_id);
 
