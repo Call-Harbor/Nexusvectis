@@ -272,6 +272,8 @@ export default function NexusOrbit() {
   });
 
   // Match vehicle by user ID (preferred) or fall back to email/name for legacy data
+  console.log("Matching vehicle - user.id:", user?.id, "user.email:", user?.email, "user.full_name:", user?.full_name);
+  console.log("Vehicle drivers:", vehicles.map(v => ({ name: v.name, driver: v.driver })));
   const myVehicle = vehicles.find(v => 
     v.driver === user?.id || 
     v.driver === user?.email || 
