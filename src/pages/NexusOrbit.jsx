@@ -271,10 +271,12 @@ export default function NexusOrbit() {
     },
   });
 
-  console.log("Finding my vehicle - user.id:", user?.id);
-  console.log("All vehicles:", JSON.stringify(vehicles, null, 2));
-  const myVehicle = vehicles.find(v => v.driver === user?.id);
-  console.log("My vehicle:", myVehicle);
+  // Match vehicle by user ID (preferred) or fall back to email/name for legacy data
+  const myVehicle = vehicles.find(v => 
+    v.driver === user?.id || 
+    v.driver === user?.email || 
+    v.driver === user?.full_name
+  );
   const myRoute = routes.find(r => r.id === myVehicle?.route_id);
 
   const recipientList = userRole === "driver" ? coordinators : drivers;
