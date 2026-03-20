@@ -118,6 +118,43 @@ export default function DriverManagement() {
     },
   });
 
+  const assignVehicleMutation = useMutation({
+    mutationFn: async ({ requestId, driverEmail, vehicleId }) => {
+      // Update the request with new vehicle assignment
+      await base44.entities.DriverRequest.update(requestId, {
+        vehicle_assigned: vehicleId
+      });
+
+      // If removing vehicle, clear the driver field
+      if (!vehicleId) {
+        const oldVehicle = vehicles.find(v => v.id === requests.find(r => r.id === requestId)?.vehicle_assigned);
+        if (oldVehicle) {
+          await base44.entities.Vehicle.update(oldVehicle.id, { driver: null });
+        }
+        return;
+      }
+
+      // Find the user by email to get their user ID
+      const allUsers = await base44.entities.User.list();
+      const driverUser = allUsers.find(u => u.email === driverEmail);
+      
+      if (driverUser) {
+        // Clear any previous vehicle assignment for this driver
+        const oldVehicle = vehicles.find(v => v.driver === driverUser.id);
+        if (oldVehicle && oldVehicle.id !== vehicleId) {
+          await base44.entities.Vehicle.update(oldVehicle.id, { driver: null });
+        }
+
+        // Assign new vehicle
+        await base44.entities.Vehicle.update(vehicleId, { driver: driverUser.id });
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(["driver-requests"]);
+      queryClient.invalidateQueries(["vehicles"]);
+    },
+  });
+
   const pendingRequests = requests.filter(r => r.status === "pending");
   const approvedRequests = requests.filter(r => r.status === "approved");
   const rejectedRequests = requests.filter(r => r.status === "rejected");
@@ -286,31 +323,71 @@ export default function DriverManagement() {
             </div>
           ) : (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredApproved.map((request) => (
-                <div
-                  key={request.id}
-                  className="p-4 rounded-xl bg-slate-900/40 border border-emerald-500/15"
-                >
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-                      <UserCheck className="w-4 h-4 text-emerald-400" />
+              {filteredApproved.map((request) => {
+                const driverVehicle = vehicles.find(v => v.vehicle_assigned === request.vehicle_assigned);
+                return (
+                  <div
+                    key={request.id}
+                    className="p-4 rounded-xl bg-slate-900/40 border border-emerald-500/15 hover:border-emerald-500/30 transition-all"
+                  >
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                        <UserCheck className="w-4 h-4 text-emerald-400" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-white font-semibold text-sm">{request.driver_name}</p>
+                        <p className="text-slate-500 text-xs">{request.driver_email}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-white font-semibold text-sm">{request.driver_name}</p>
-                      <p className="text-slate-500 text-xs">{request.driver_email}</p>
+                    
+                    <div className="mb-3">
+                      <label className="text-slate-400 text-xs mb-1.5 block">Assigned Vehicle</label>
+                      <Select
+                        value={request.vehicle_assigned || "none"}
+                        onValueChange={(vehicleId) => {
+                          const newVehicleId = vehicleId === "none" ? null : vehicleId;
+                          assignVehicleMutation.mutate({
+                            requestId: request.id,
+                            driverEmail: request.driver_email,
+                            vehicleId: newVehicleId
+                          });
+                        }}
+                      >
+                        <SelectTrigger className="bg-slate-800/60 border-slate-700 text-white h-9 text-sm">
+                          <SelectValue>
+                            {request.vehicle_assigned 
+                              ? vehicles.find(v => v.id === request.vehicle_assigned)?.name || "Vehicle"
+                              : "No vehicle"}
+                          </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent className="bg-slate-800 border-slate-700 text-white">
+                          <SelectItem value="none" className="text-slate-400">
+                            <div className="flex items-center gap-2">
+                              <XIcon className="w-3 h-3" />
+                              Remove vehicle
+                            </div>
+                          </SelectItem>
+                          {vehicles.map((vehicle) => (
+                            <SelectItem key={vehicle.id} value={vehicle.id}>
+                              <div className="flex items-center gap-2">
+                                <Truck className="w-3 h-3" />
+                                {vehicle.name} — {vehicle.type}
+                                {vehicle.driver && vehicle.id !== request.vehicle_assigned && (
+                                  <span className="text-xs text-amber-400">(in use)</span>
+                                )}
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
+
+                    <p className="text-slate-600 text-xs">
+                      Approved {new Date(request.approved_at).toLocaleDateString("da-DK")}
+                    </p>
                   </div>
-                  {request.vehicle_assigned && (
-                    <div className="flex items-center gap-2 text-xs text-cyan-400 mb-2">
-                      <Truck className="w-3 h-3" />
-                      Vehicle assigned
-                    </div>
-                  )}
-                  <p className="text-slate-600 text-xs">
-                    Approved {new Date(request.approved_at).toLocaleDateString("da-DK")}
-                  </p>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
