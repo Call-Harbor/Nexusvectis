@@ -460,8 +460,10 @@ export default function NexusOrbit() {
           <div className="flex items-center gap-2">
             <div className="px-2 py-1 rounded-lg bg-cyan-500/10 border border-cyan-500/20">
               <div className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="text-[10px] text-cyan-300 uppercase tracking-wider">{userRole}</span>
+                <span className={`w-1.5 h-1.5 rounded-full ${isOnline ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
+                <span className="text-[10px] text-cyan-300 uppercase tracking-wider">
+                  {isOnline ? userRole : "OFFLINE"}
+                </span>
               </div>
             </div>
             <button
