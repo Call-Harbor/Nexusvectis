@@ -85,7 +85,7 @@ export default function NexusOrbit() {
       );
     },
     enabled: !!org?.id && !!user?.email,
-    refetchInterval: 3000,
+    refetchInterval: 1000,
   });
 
   // ── Fetch routes ─────────────────────────────────────────────────────────
