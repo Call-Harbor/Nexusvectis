@@ -85,18 +85,8 @@ export default function DriverManagement() {
         status: "active"
       });
 
-      if (vehicleId) {
-        // Find the user by email to get their user ID
-        const allUsers = await base44.entities.User.list();
-        const driverUser = allUsers.find(u => u.email === driverEmail);
-        
-        if (driverUser) {
-          // Store user ID instead of email/name for reliable matching
-          await base44.entities.Vehicle.update(vehicleId, {
-            driver: driverUser.id
-          });
-        }
-      }
+      // Vehicle assignment happens via DriverRequest.vehicle_assigned
+      // No need to update Vehicle.driver field here
     },
     onSuccess: () => {
       queryClient.invalidateQueries(["driver-requests"]);
@@ -119,37 +109,11 @@ export default function DriverManagement() {
   });
 
   const assignVehicleMutation = useMutation({
-    mutationFn: async ({ requestId, driverEmail, vehicleId }) => {
-      const currentRequest = requests.find(r => r.id === requestId);
-      
-      // Find the user by email to get their user ID
-      const allUsers = await base44.entities.User.list();
-      const driverUser = allUsers.find(u => u.email === driverEmail);
-      
-      if (!driverUser) {
-        throw new Error("Driver user not found");
-      }
-
-      // Clear old vehicle assignment if exists
-      if (currentRequest?.vehicle_assigned) {
-        await base44.entities.Vehicle.update(currentRequest.vehicle_assigned, { 
-          driver: null 
-        });
-      }
-
-      // Update the request with new vehicle assignment
+    mutationFn: async ({ requestId, vehicleId }) => {
+      // Simply update the DriverRequest with new vehicle assignment
+      // NexusOrbit will find vehicle via DriverRequest.vehicle_assigned
       await base44.entities.DriverRequest.update(requestId, {
-        vehicle_assigned: vehicleId
-      });
-
-      // If removing vehicle, we're done
-      if (!vehicleId) {
-        return;
-      }
-
-      // Assign new vehicle with user ID
-      await base44.entities.Vehicle.update(vehicleId, { 
-        driver: driverUser.id 
+        vehicle_assigned: vehicleId || null
       });
     },
     onSuccess: () => {
@@ -352,7 +316,6 @@ export default function DriverManagement() {
                           const newVehicleId = vehicleId === "none" ? null : vehicleId;
                           assignVehicleMutation.mutate({
                             requestId: request.id,
-                            driverEmail: request.driver_email,
                             vehicleId: newVehicleId
                           });
                         }}
