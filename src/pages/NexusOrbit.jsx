@@ -252,8 +252,12 @@ export default function NexusOrbit() {
   // ── Assign route mutation ────────────────────────────────────────────────
   const assignRouteMutation = useMutation({
     mutationFn: async (routeId) => {
-      // Match vehicle by user ID (most reliable)
-      const myVehicle = vehicles.find(v => v.driver === user?.id);
+      // Match vehicle by user ID (preferred) or fall back to email/name for legacy data
+      const myVehicle = vehicles.find(v => 
+        v.driver === user?.id || 
+        v.driver === user?.email || 
+        v.driver === user?.full_name
+      );
       
       if (!myVehicle) {
         throw new Error("No vehicle assigned to you yet. Contact your coordinator to assign a vehicle.");
@@ -272,16 +276,12 @@ export default function NexusOrbit() {
   });
 
   // Match vehicle by user ID (preferred) or fall back to email/name for legacy data
-  console.log("Matching vehicle - user.id:", user?.id, "user.email:", user?.email, "user.full_name:", user?.full_name);
-  console.log("Vehicle drivers:", vehicles.map(v => ({ name: v.name, driver: v.driver })));
   const myVehicle = vehicles.find(v => 
     v.driver === user?.id || 
     v.driver === user?.email || 
     v.driver === user?.full_name
   );
-  console.log("MyVehicle found:", myVehicle, "route_id:", myVehicle?.route_id);
   const myRoute = routes.find(r => r.id === myVehicle?.route_id);
-  console.log("MyRoute found:", myRoute);
 
   const recipientList = userRole === "driver" ? coordinators : drivers;
 
