@@ -261,7 +261,7 @@ export default function NexusOrbit() {
       );
       
       if (!myVehicle) {
-        throw new Error("No vehicle assigned. Contact your coordinator.");
+        throw new Error("No vehicle assigned yet. Ask your coordinator to assign you a vehicle first.");
       }
       
       await base44.entities.Vehicle.update(myVehicle.id, { route_id: routeId });
@@ -635,6 +635,18 @@ export default function NexusOrbit() {
             >
               <p className="text-slate-500 text-xs mb-4 uppercase tracking-wider">Available Routes</p>
 
+              {!myVehicle && userRole === "driver" && (
+                <div className="mb-4 p-4 rounded-xl bg-amber-500/10 border border-amber-500/30">
+                  <div className="flex items-start gap-3">
+                    <AlertCircle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-amber-300 text-sm font-semibold mb-1">No Vehicle Assigned</p>
+                      <p className="text-amber-400/70 text-xs">Contact your coordinator to get a vehicle assigned before you can select routes.</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {myRoute && (
                 <div className="mb-6 p-4 rounded-xl bg-gradient-to-br from-emerald-500/10 to-cyan-500/10 border border-emerald-500/30">
                   <div className="flex items-center gap-2 mb-2">
@@ -683,10 +695,10 @@ export default function NexusOrbit() {
                         {userRole === "driver" && !isCurrent && (
                           <button
                             onClick={() => assignRouteMutation.mutate(route.id)}
-                            disabled={assignRouteMutation.isPending}
+                            disabled={assignRouteMutation.isPending || !myVehicle}
                             className="px-3 py-1.5 rounded-lg bg-violet-500/20 border border-violet-500/30 text-violet-300 text-xs font-semibold hover:bg-violet-500/30 transition-all disabled:opacity-50"
                           >
-                            Select
+                            {myVehicle ? "Select" : "No Vehicle"}
                           </button>
                         )}
                       </div>
