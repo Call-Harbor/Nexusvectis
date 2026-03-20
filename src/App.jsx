@@ -11,6 +11,7 @@ import HolographicInterface from './pages/HolographicInterface';
 import BlogPostDetail from './pages/BlogPostDetail';
 import BlogAIAnalysis from './pages/BlogAIAnalysis';
 import CEODashboard from './pages/CEODashboard';
+import NexusOrbit from './pages/NexusOrbit';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -94,6 +95,10 @@ const AuthenticatedApp = () => {
             <CEODashboard />
           </LayoutWrapper>
         } 
+      />
+      <Route 
+        path="/NexusOrbit" 
+        element={<NexusOrbit />}
       />
       <Route path="*" element={<PageNotFound />} />
     </Routes>

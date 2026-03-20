@@ -1,0 +1,499 @@
+import { useState, useEffect, useRef } from "react";
+import { base44 } from "@/api/base44Client";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  MessageCircle, Send, Radio, MapPin, Navigation,
+  CheckCircle2, Clock, AlertCircle, Menu, X,
+  Satellite, ChevronRight, User, Users
+} from "lucide-react";
+
+export default function NexusOrbit() {
+  const [user, setUser] = useState(null);
+  const [org, setOrg] = useState(null);
+  const [activeView, setActiveView] = useState("chat"); // chat, routes
+  const [selectedRecipient, setSelectedRecipient] = useState(null);
+  const [messageText, setMessageText] = useState("");
+  const [menuOpen, setMenuOpen] = useState(false);
+  const messagesEndRef = useRef(null);
+  const queryClient = useQueryClient();
+
+  // ── Load user & org ──────────────────────────────────────────────────────
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const currentUser = await base44.auth.me();
+        setUser(currentUser);
+        
+        if (currentUser?.email) {
+          const members = await base44.entities.OrganizationMember.filter({
+            user_email: currentUser.email,
+            status: "active"
+          });
+          if (members.length > 0) {
+            const orgs = await base44.entities.Organization.filter({
+              id: members[0].organization_id
+            });
+            if (orgs.length > 0) setOrg(orgs[0]);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading user:', error);
+      }
+    };
+    loadUser();
+  }, []);
+
+  // ── Determine user role (driver/coordinator based on app role or vehicle assignment) ──
+  const userRole = user?.role === "admin" ? "coordinator" : "driver";
+
+  // ── Fetch messages ───────────────────────────────────────────────────────
+  const { data: messages = [], refetch: refetchMessages } = useQuery({
+    queryKey: ["orbit-messages", org?.id, user?.email],
+    queryFn: async () => {
+      if (!org?.id || !user?.email) return [];
+      const sent = await base44.entities.OrbitMessage.filter({
+        organization_id: org.id,
+        sender_email: user.email
+      }, "-created_date", 100);
+      const received = await base44.entities.OrbitMessage.filter({
+        organization_id: org.id,
+        recipient_email: user.email
+      }, "-created_date", 100);
+      return [...sent, ...received].sort((a, b) => 
+        new Date(b.created_date) - new Date(a.created_date)
+      );
+    },
+    enabled: !!org?.id && !!user?.email,
+    refetchInterval: 3000,
+  });
+
+  // ── Fetch routes ─────────────────────────────────────────────────────────
+  const { data: routes = [] } = useQuery({
+    queryKey: ["orbit-routes", org?.id],
+    queryFn: () => org?.id ? base44.entities.Route.filter({ organization_id: org.id }, "-created_date", 50) : [],
+    enabled: !!org?.id,
+  });
+
+  // ── Fetch vehicles (for driver to see assigned vehicle) ─────────────────
+  const { data: vehicles = [] } = useQuery({
+    queryKey: ["orbit-vehicles", org?.id],
+    queryFn: () => org?.id ? base44.entities.Vehicle.filter({ organization_id: org.id }, "-created_date", 50) : [],
+    enabled: !!org?.id,
+  });
+
+  // ── Fetch coordinators (for drivers to chat with) ───────────────────────
+  const { data: coordinators = [] } = useQuery({
+    queryKey: ["orbit-coordinators", org?.id],
+    queryFn: async () => {
+      if (!org?.id) return [];
+      const members = await base44.entities.OrganizationMember.filter({
+        organization_id: org.id,
+        status: "active"
+      });
+      const adminMembers = members.filter(m => m.role === "admin");
+      return adminMembers.map(m => ({ email: m.user_email, name: m.user_email.split("@")[0] }));
+    },
+    enabled: !!org?.id && userRole === "driver",
+  });
+
+  // ── Fetch drivers (for coordinators to chat with) ───────────────────────
+  const { data: drivers = [] } = useQuery({
+    queryKey: ["orbit-drivers", org?.id],
+    queryFn: async () => {
+      if (!org?.id) return [];
+      const members = await base44.entities.OrganizationMember.filter({
+        organization_id: org.id,
+        status: "active"
+      });
+      const driverMembers = members.filter(m => m.role === "user");
+      return driverMembers.map(m => ({ email: m.user_email, name: m.user_email.split("@")[0] }));
+    },
+    enabled: !!org?.id && userRole === "coordinator",
+  });
+
+  // ── Send message mutation ────────────────────────────────────────────────
+  const sendMutation = useMutation({
+    mutationFn: (data) => base44.entities.OrbitMessage.create(data),
+    onSuccess: () => {
+      refetchMessages();
+      setMessageText("");
+    },
+  });
+
+  const handleSendMessage = () => {
+    if (!messageText.trim() || !selectedRecipient || !org?.id || !user?.email) return;
+    sendMutation.mutate({
+      organization_id: org.id,
+      sender_email: user.email,
+      sender_name: user.full_name || user.email.split("@")[0],
+      sender_role: userRole,
+      recipient_email: selectedRecipient.email,
+      message: messageText.trim(),
+      message_type: "text",
+    });
+  };
+
+  // ── Filter messages for selected recipient ──────────────────────────────
+  const conversationMessages = selectedRecipient
+    ? messages.filter(m =>
+        (m.sender_email === user?.email && m.recipient_email === selectedRecipient.email) ||
+        (m.recipient_email === user?.email && m.sender_email === selectedRecipient.email)
+      ).reverse()
+    : [];
+
+  // ── Auto-scroll to bottom ────────────────────────────────────────────────
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [conversationMessages]);
+
+  // ── Assign route mutation ────────────────────────────────────────────────
+  const assignRouteMutation = useMutation({
+    mutationFn: async (routeId) => {
+      const myVehicle = vehicles.find(v => v.driver === user?.full_name || v.driver === user?.email);
+      if (myVehicle) {
+        await base44.entities.Vehicle.update(myVehicle.id, { route_id: routeId });
+      }
+    },
+    onSuccess: () => queryClient.invalidateQueries(["orbit-vehicles"]),
+  });
+
+  const myVehicle = vehicles.find(v => v.driver === user?.full_name || v.driver === user?.email);
+  const myRoute = routes.find(r => r.id === myVehicle?.route_id);
+
+  const recipientList = userRole === "driver" ? coordinators : drivers;
+
+  if (!user) return (
+    <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+      <div className="text-center">
+        <div className="w-12 h-12 border-2 border-cyan-500/30 border-t-cyan-400 rounded-full animate-spin mx-auto mb-4" />
+        <p className="text-cyan-400 text-sm tracking-widest">CONNECTING TO ORBIT...</p>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-slate-950 flex flex-col overflow-hidden">
+
+      {/* ── Header ──────────────────────────────────────────────────── */}
+      <motion.header
+        initial={{ y: -60, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        className="fixed top-0 left-0 right-0 z-50 bg-slate-950/95 backdrop-blur-xl border-b border-cyan-500/20"
+      >
+        <div className="px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-gradient-to-br from-cyan-500/20 to-violet-500/20 border border-cyan-500/30">
+              <Satellite className="w-5 h-5 text-cyan-400" />
+            </div>
+            <div>
+              <h1 className="text-white font-black text-lg tracking-tight">Nexus Orbit</h1>
+              <p className="text-cyan-400/60 text-[10px] tracking-wider uppercase">Satellite Comms</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="px-2 py-1 rounded-lg bg-cyan-500/10 border border-cyan-500/20">
+              <div className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="text-[10px] text-cyan-300 uppercase tracking-wider">{userRole}</span>
+              </div>
+            </div>
+            <button
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="p-2 rounded-lg bg-slate-800/60 border border-slate-700/50 text-slate-400 hover:text-white transition-colors"
+            >
+              {menuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile menu */}
+        <AnimatePresence>
+          {menuOpen && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="overflow-hidden border-t border-cyan-500/10"
+            >
+              <div className="px-4 py-3 space-y-2">
+                <button
+                  onClick={() => { setActiveView("chat"); setMenuOpen(false); }}
+                  className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all ${
+                    activeView === "chat"
+                      ? "bg-cyan-500/15 border border-cyan-500/30 text-cyan-300"
+                      : "bg-slate-800/40 border border-slate-700/30 text-slate-400 hover:text-white"
+                  }`}
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  <span className="text-sm font-semibold">Chat</span>
+                </button>
+                <button
+                  onClick={() => { setActiveView("routes"); setMenuOpen(false); }}
+                  className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all ${
+                    activeView === "routes"
+                      ? "bg-violet-500/15 border border-violet-500/30 text-violet-300"
+                      : "bg-slate-800/40 border border-slate-700/30 text-slate-400 hover:text-white"
+                  }`}
+                >
+                  <Navigation className="w-4 h-4" />
+                  <span className="text-sm font-semibold">Routes</span>
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.header>
+
+      {/* ── Main Content ───────────────────────────────────────────── */}
+      <main className="flex-1 pt-20 pb-4 px-4 overflow-hidden">
+        <AnimatePresence mode="wait">
+          {activeView === "chat" ? (
+            <motion.div
+              key="chat"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              className="h-full flex flex-col max-w-2xl mx-auto"
+            >
+              {/* Recipients list */}
+              {!selectedRecipient ? (
+                <div className="flex-1 overflow-y-auto">
+                  <p className="text-slate-500 text-xs mb-4 uppercase tracking-wider">
+                    {userRole === "driver" ? "Select coordinator" : "Select driver"}
+                  </p>
+                  <div className="space-y-2">
+                    {recipientList.map((recipient, i) => {
+                      const lastMsg = messages.find(m =>
+                        (m.sender_email === recipient.email && m.recipient_email === user.email) ||
+                        (m.recipient_email === recipient.email && m.sender_email === user.email)
+                      );
+                      const unread = messages.filter(m =>
+                        m.sender_email === recipient.email &&
+                        m.recipient_email === user.email &&
+                        !m.is_read
+                      ).length;
+                      return (
+                        <motion.button
+                          key={i}
+                          onClick={() => setSelectedRecipient(recipient)}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: i * 0.05 }}
+                          className="w-full flex items-center gap-3 p-4 rounded-xl bg-slate-900/60 border border-slate-700/40 hover:border-cyan-500/40 transition-all text-left"
+                        >
+                          <div className="p-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20">
+                            {userRole === "driver" ? <Users className="w-5 h-5 text-cyan-400" /> : <User className="w-5 h-5 text-violet-400" />}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-white font-semibold text-sm truncate">{recipient.name}</p>
+                            {lastMsg && (
+                              <p className="text-slate-500 text-xs truncate mt-0.5">
+                                {lastMsg.sender_email === user.email ? "You: " : ""}{lastMsg.message}
+                              </p>
+                            )}
+                          </div>
+                          <div className="flex flex-col items-end gap-1">
+                            {unread > 0 && (
+                              <span className="px-2 py-0.5 rounded-full bg-cyan-500 text-white text-[10px] font-bold">{unread}</span>
+                            )}
+                            <ChevronRight className="w-4 h-4 text-slate-600" />
+                          </div>
+                        </motion.button>
+                      );
+                    })}
+                    {recipientList.length === 0 && (
+                      <div className="p-8 text-center">
+                        <Radio className="w-12 h-12 text-slate-700 mx-auto mb-3" />
+                        <p className="text-slate-600 text-sm">
+                          {userRole === "driver" ? "No coordinators available" : "No drivers available"}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <>
+                  {/* Chat header */}
+                  <div className="flex items-center gap-3 pb-4 border-b border-slate-800">
+                    <button
+                      onClick={() => setSelectedRecipient(null)}
+                      className="p-2 rounded-lg bg-slate-800/60 border border-slate-700/50 text-slate-400 hover:text-white"
+                    >
+                      <ChevronRight className="w-4 h-4 rotate-180" />
+                    </button>
+                    <div className="flex-1">
+                      <p className="text-white font-bold">{selectedRecipient.name}</p>
+                      <p className="text-cyan-400/60 text-xs">{selectedRecipient.email}</p>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                      <span className="text-[10px] text-emerald-400 uppercase tracking-wider">Online</span>
+                    </div>
+                  </div>
+
+                  {/* Messages */}
+                  <div className="flex-1 overflow-y-auto py-4 space-y-3">
+                    {conversationMessages.map((msg, i) => {
+                      const isMine = msg.sender_email === user?.email;
+                      return (
+                        <motion.div
+                          key={i}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: i * 0.03 }}
+                          className={`flex ${isMine ? "justify-end" : "justify-start"}`}
+                        >
+                          <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 ${
+                            isMine
+                              ? "bg-cyan-500/20 border border-cyan-500/30 text-cyan-100"
+                              : "bg-slate-800/60 border border-slate-700/40 text-slate-300"
+                          }`}>
+                            <p className="text-sm leading-relaxed">{msg.message}</p>
+                            <p className="text-[10px] text-slate-600 mt-1">
+                              {new Date(msg.created_date).toLocaleTimeString("da-DK", { hour: "2-digit", minute: "2-digit" })}
+                            </p>
+                          </div>
+                        </motion.div>
+                      );
+                    })}
+                    <div ref={messagesEndRef} />
+                  </div>
+
+                  {/* Input */}
+                  <div className="flex items-center gap-2 pt-4 border-t border-slate-800">
+                    <input
+                      type="text"
+                      value={messageText}
+                      onChange={(e) => setMessageText(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
+                      placeholder="Type message..."
+                      className="flex-1 px-4 py-3 rounded-xl bg-slate-900/60 border border-slate-700/40 text-white placeholder-slate-600 focus:outline-none focus:border-cyan-500/40 text-sm"
+                    />
+                    <button
+                      onClick={handleSendMessage}
+                      disabled={!messageText.trim() || sendMutation.isPending}
+                      className="p-3 rounded-xl bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/30 disabled:opacity-50 transition-all"
+                    >
+                      <Send className="w-5 h-5" />
+                    </button>
+                  </div>
+                </>
+              )}
+            </motion.div>
+          ) : (
+            <motion.div
+              key="routes"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="h-full flex flex-col max-w-2xl mx-auto overflow-y-auto"
+            >
+              <p className="text-slate-500 text-xs mb-4 uppercase tracking-wider">Available Routes</p>
+
+              {/* Current route */}
+              {myRoute && (
+                <div className="mb-6 p-4 rounded-xl bg-gradient-to-br from-emerald-500/10 to-cyan-500/10 border border-emerald-500/30">
+                  <div className="flex items-center gap-2 mb-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                    <p className="text-emerald-300 text-xs font-bold uppercase tracking-wider">Current Route</p>
+                  </div>
+                  <p className="text-white font-bold text-lg mb-1">{myRoute.name}</p>
+                  <div className="flex items-center gap-4 text-xs text-slate-400">
+                    <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{myRoute.origin}</span>
+                    <ChevronRight className="w-3 h-3" />
+                    <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{myRoute.destination}</span>
+                  </div>
+                  {myRoute.distance_km && (
+                    <p className="text-cyan-400 text-xs mt-2">{myRoute.distance_km} km · {myRoute.estimated_duration_hours}h</p>
+                  )}
+                </div>
+              )}
+
+              {/* Route list */}
+              <div className="space-y-2">
+                {routes.map((route, i) => {
+                  const isCurrent = route.id === myRoute?.id;
+                  return (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.04 }}
+                      className={`p-4 rounded-xl border transition-all ${
+                        isCurrent
+                          ? "bg-slate-800/40 border-slate-700/50 opacity-60"
+                          : "bg-slate-900/60 border-slate-700/40 hover:border-violet-500/40"
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-3 mb-2">
+                        <div className="flex-1">
+                          <p className="text-white font-semibold text-sm mb-1">{route.name}</p>
+                          <div className="flex items-center gap-2 text-xs text-slate-500 flex-wrap">
+                            <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{route.origin}</span>
+                            <ChevronRight className="w-3 h-3" />
+                            <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{route.destination}</span>
+                          </div>
+                          {route.distance_km && (
+                            <p className="text-violet-400/70 text-xs mt-1.5">{route.distance_km} km · {route.estimated_duration_hours}h</p>
+                          )}
+                        </div>
+                        {userRole === "driver" && !isCurrent && (
+                          <button
+                            onClick={() => assignRouteMutation.mutate(route.id)}
+                            disabled={assignRouteMutation.isPending}
+                            className="px-3 py-1.5 rounded-lg bg-violet-500/20 border border-violet-500/30 text-violet-300 text-xs font-semibold hover:bg-violet-500/30 transition-all disabled:opacity-50"
+                          >
+                            Select
+                          </button>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 text-[10px]">
+                        {route.status === "active" && <span className="flex items-center gap-1 text-emerald-400"><span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />Active</span>}
+                        {route.priority && <span className="px-2 py-0.5 rounded-full bg-slate-800/60 border border-slate-700/40 text-slate-400 uppercase tracking-wider">{route.priority}</span>}
+                      </div>
+                    </motion.div>
+                  );
+                })}
+                {routes.length === 0 && (
+                  <div className="p-8 text-center">
+                    <Navigation className="w-12 h-12 text-slate-700 mx-auto mb-3" />
+                    <p className="text-slate-600 text-sm">No routes available</p>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </main>
+
+      {/* ── Bottom nav (desktop only) ──────────────────────────────── */}
+      <div className="hidden sm:flex fixed bottom-0 left-0 right-0 bg-slate-950/95 backdrop-blur-xl border-t border-cyan-500/20 px-4 py-3">
+        <div className="max-w-2xl mx-auto w-full flex items-center gap-2">
+          <button
+            onClick={() => setActiveView("chat")}
+            className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl transition-all ${
+              activeView === "chat"
+                ? "bg-cyan-500/20 border border-cyan-500/40 text-cyan-300"
+                : "bg-slate-800/40 border border-slate-700/30 text-slate-400 hover:text-white"
+            }`}
+          >
+            <MessageCircle className="w-5 h-5" />
+            <span className="text-sm font-semibold">Chat</span>
+          </button>
+          <button
+            onClick={() => setActiveView("routes")}
+            className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl transition-all ${
+              activeView === "routes"
+                ? "bg-violet-500/20 border border-violet-500/40 text-violet-300"
+                : "bg-slate-800/40 border border-slate-700/30 text-slate-400 hover:text-white"
+            }`}
+          >
+            <Navigation className="w-5 h-5" />
+            <span className="text-sm font-semibold">Routes</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
