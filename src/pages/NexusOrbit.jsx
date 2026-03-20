@@ -252,18 +252,29 @@ export default function NexusOrbit() {
   // ── Assign route mutation ────────────────────────────────────────────────
   const assignRouteMutation = useMutation({
     mutationFn: async (routeId) => {
+      console.log("Assigning route:", routeId);
+      console.log("Available vehicles:", vehicles);
+      console.log("User:", user);
+      
       const myVehicle = vehicles.find(v => v.driver === user?.full_name || v.driver === user?.email);
+      console.log("My vehicle:", myVehicle);
+      
       if (!myVehicle) {
         throw new Error("No vehicle assigned to you yet. Contact your coordinator to assign a vehicle.");
       }
+      
+      console.log("Updating vehicle:", myVehicle.id, "with route:", routeId);
       await base44.entities.Vehicle.update(myVehicle.id, { route_id: routeId });
+      console.log("Route updated successfully");
     },
     onSuccess: () => {
+      console.log("Mutation success");
       queryClient.invalidateQueries(["orbit-vehicles"]);
       toast.success("Route selected successfully!");
       setActiveView("map");
     },
     onError: (error) => {
+      console.error("Mutation error:", error);
       toast.error(error.message || "Failed to select route");
     },
   });
