@@ -9,15 +9,20 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 const PAGE_SIZE = 12;
 
 async function fetchPostsPage({ pageParam = 0 }) {
-  const posts = await base44.entities.BlogPost.filter(
-    { status: 'published' },
-    '-created_date',
-    100,
-    pageParam
-  );
-  const hasMore = posts.length === 100;
-  const actualPosts = posts.slice(0, PAGE_SIZE);
-  return { posts: actualPosts, hasMore, nextOffset: pageParam + PAGE_SIZE };
+  try {
+    const posts = await base44.entities.BlogPost.filter(
+      { status: 'published' },
+      '-created_date',
+      100,
+      pageParam
+    );
+    const hasMore = posts.length === 100;
+    const actualPosts = posts.slice(0, PAGE_SIZE);
+    return { posts: actualPosts, hasMore, nextOffset: pageParam + PAGE_SIZE };
+  } catch (error) {
+    console.error('Error fetching blog posts:', error);
+    return { posts: [], hasMore: false, nextOffset: 0 };
+  }
 }
 
 const COLORS = [
