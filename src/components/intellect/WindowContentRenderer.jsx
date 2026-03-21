@@ -44,7 +44,7 @@ const PAGE_MAP = {
   greentms: 'GreenTMS', gpsintegration: 'GPSIntegration', assignment: 'Assignment',
   routeeditor: 'Routes', fleet: 'Fleet', alerts: 'Alerts', routes: 'Routes',
   shipments: 'Shipments', crm: 'CRM', vehicles: 'Fleet', drivers: 'DriverManagement',
-  maintenance: 'MaintenanceManagement', hr: 'HRManagement'
+  maintenance: 'MaintenanceManagement', hr: 'HRManagement', nexus_orbit: 'NexusOrbit'
 };
 
 function ChartWindow({ data, config }) {
