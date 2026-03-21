@@ -1,7 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import { MapContainer, TileLayer, Marker, Polyline, Popup, useMap } from "react-leaflet";
-import { Navigation, MapPin, ArrowUp, Locate, AlertCircle, Volume2, VolumeX, Compass } from "lucide-react";
+import { Navigation, MapPin, ArrowUp, Locate, AlertCircle, Volume2, VolumeX, Compass, Zap } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { base44 } from "@/api/base44Client";
+import { toast } from "sonner";
+import L from "leaflet";
 
 // Auto-center map on user location
 function MapAutoCenter({ center }) {
@@ -54,15 +57,77 @@ export default function OrbitNavigator({ route, currentPosition, onExit }) {
   const [nextWaypoint, setNextWaypoint] = useState(0);
   const [distanceToNext, setDistanceToNext] = useState(0);
   const [currentBearing, setCurrentBearing] = useState(0);
-  const [instruction, setInstruction] = useState("Starting navigation...");
+  const [instruction, setInstruction] = useState("Optimizing route...");
   const [voiceEnabled, setVoiceEnabled] = useState(true);
   const [totalDistance, setTotalDistance] = useState(0);
   const [estimatedArrival, setEstimatedArrival] = useState(null);
   const [averageSpeed, setAverageSpeed] = useState(0);
+  const [optimizedWaypoints, setOptimizedWaypoints] = useState(route?.waypoints || []);
+  const [isOptimizing, setIsOptimizing] = useState(false);
+  const [lastOptimization, setLastOptimization] = useState(Date.now());
   const lastAnnouncedRef = useRef(null);
+  const optimizationIntervalRef = useRef(null);
 
-  const waypoints = route?.waypoints || [];
+  const waypoints = optimizedWaypoints;
   const routeCoordinates = waypoints.map(wp => [wp.lat, wp.lng]);
+
+  // AI Route Optimization via Harbor Intelligence
+  const optimizeRoute = async () => {
+    if (!currentPosition || waypoints.length === 0 || isOptimizing) return;
+    
+    setIsOptimizing(true);
+    try {
+      const destination = waypoints[waypoints.length - 1];
+      
+      const response = await base44.functions.invoke('harborIntelligenceAPI', {
+        command: "optimize_route",
+        origin: {
+          lat: currentPosition.lat,
+          lng: currentPosition.lng
+        },
+        destination: {
+          lat: destination.lat,
+          lng: destination.lng,
+          name: destination.name || route.destination
+        },
+        current_waypoints: waypoints,
+        avoid_traffic: true,
+        avoid_construction: true,
+        real_time_conditions: true
+      });
+
+      if (response.data?.optimized_waypoints) {
+        setOptimizedWaypoints(response.data.optimized_waypoints);
+        setLastOptimization(Date.now());
+        toast.success("Route optimized with Harbor AI");
+        announceVoice("Route updated to avoid delays");
+      }
+    } catch (error) {
+      console.error("Route optimization failed:", error);
+    } finally {
+      setIsOptimizing(false);
+    }
+  };
+
+  // Initial route optimization on mount
+  useEffect(() => {
+    if (currentPosition && waypoints.length > 0) {
+      optimizeRoute();
+    }
+  }, []);
+
+  // Re-optimize every 5 minutes or when significantly off course
+  useEffect(() => {
+    optimizationIntervalRef.current = setInterval(() => {
+      optimizeRoute();
+    }, 5 * 60 * 1000); // 5 minutes
+
+    return () => {
+      if (optimizationIntervalRef.current) {
+        clearInterval(optimizationIntervalRef.current);
+      }
+    };
+  }, [currentPosition, waypoints]);
 
   // Calculate total route distance
   useEffect(() => {
@@ -179,12 +244,22 @@ export default function OrbitNavigator({ route, currentPosition, onExit }) {
                 <div className="flex items-center gap-2 mb-2">
                   <Navigation className="w-5 h-5 text-cyan-400" />
                   <span className="text-white font-bold text-lg">{route?.name}</span>
+                  {isOptimizing && (
+                    <div className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-violet-500/20 border border-violet-500/30">
+                      <Zap className="w-3 h-3 text-violet-400 animate-pulse" />
+                      <span className="text-violet-300 text-[10px] font-semibold">AI Optimizing</span>
+                    </div>
+                  )}
                 </div>
                 <p className="text-cyan-300 text-2xl font-black mb-1">{instruction}</p>
-                <div className="flex items-center gap-4 text-sm text-slate-400">
+                <div className="flex items-center gap-4 text-sm text-slate-400 flex-wrap">
                   <span>{distanceToNext > 0 ? `${distanceToNext.toFixed(1)} km ahead` : ""}</span>
                   {estimatedArrival && <span>ETA {formatTime(estimatedArrival)}</span>}
                   {averageSpeed > 0 && <span>{Math.round(averageSpeed)} km/h</span>}
+                  <span className="flex items-center gap-1 text-violet-400 text-xs">
+                    <Zap className="w-3 h-3" />
+                    Harbor AI Active
+                  </span>
                 </div>
               </div>
               <div className="flex flex-col gap-2">
@@ -227,7 +302,7 @@ export default function OrbitNavigator({ route, currentPosition, onExit }) {
       {/* Map */}
       <MapContainer
         center={currentPosition ? [currentPosition.lat, currentPosition.lng] : routeCoordinates[0]}
-        zoom={16}
+        zoom={17}
         style={{ height: "100%", width: "100%" }}
         className="z-0"
         zoomControl={false}
@@ -238,13 +313,30 @@ export default function OrbitNavigator({ route, currentPosition, onExit }) {
         />
         {currentPosition && <MapAutoCenter center={[currentPosition.lat, currentPosition.lng]} />}
         
-        {/* Current position */}
+        {/* Current position with custom icon */}
         {currentPosition && (
-          <Marker position={[currentPosition.lat, currentPosition.lng]}>
+          <Marker 
+            position={[currentPosition.lat, currentPosition.lng]}
+            icon={L.divIcon({
+              className: 'custom-location-icon',
+              html: `<div style="
+                width: 20px;
+                height: 20px;
+                background: #22d3ee;
+                border: 3px solid white;
+                border-radius: 50%;
+                box-shadow: 0 0 20px rgba(34, 211, 238, 0.6);
+                animation: pulse 2s infinite;
+              "></div>`,
+              iconSize: [20, 20],
+              iconAnchor: [10, 10]
+            })}
+          >
             <Popup>
               <div className="text-xs">
                 <p className="font-bold text-emerald-600">Your Location</p>
                 {currentPosition.speed && <p>Speed: {Math.round(currentPosition.speed * 3.6)} km/h</p>}
+                {currentPosition.accuracy && <p className="text-slate-500">±{Math.round(currentPosition.accuracy)}m</p>}
               </div>
             </Popup>
           </Marker>
@@ -266,14 +358,33 @@ export default function OrbitNavigator({ route, currentPosition, onExit }) {
           </Marker>
         ))}
 
-        {/* Route line */}
+        {/* Route line with gradient effect */}
         {routeCoordinates.length > 1 && (
-          <Polyline
-            positions={routeCoordinates}
-            pathOptions={{ color: "#22d3ee", weight: 5, opacity: 0.8 }}
-          />
+          <>
+            <Polyline
+              positions={routeCoordinates}
+              pathOptions={{ color: "#8b5cf6", weight: 8, opacity: 0.3 }}
+            />
+            <Polyline
+              positions={routeCoordinates}
+              pathOptions={{ color: "#22d3ee", weight: 5, opacity: 0.9 }}
+            />
+          </>
         )}
       </MapContainer>
+
+      <style>{`
+        @keyframes pulse {
+          0%, 100% {
+            transform: scale(1);
+            opacity: 1;
+          }
+          50% {
+            transform: scale(1.2);
+            opacity: 0.8;
+          }
+        }
+      `}</style>
 
       {/* Bottom stats */}
       <div className="absolute bottom-0 left-0 right-0 z-10 p-4 bg-gradient-to-t from-slate-950 via-slate-950/95 to-transparent pointer-events-none">
@@ -287,10 +398,10 @@ export default function OrbitNavigator({ route, currentPosition, onExit }) {
             <p className="text-cyan-400 font-bold text-lg">{nextWaypoint + 1}/{waypoints.length}</p>
           </div>
           <div className="p-3 rounded-xl bg-slate-900/80 backdrop-blur-xl border border-slate-700/50 text-center">
-            <p className="text-slate-400 text-xs mb-1">GPS Status</p>
+            <p className="text-slate-400 text-xs mb-1">AI Route Status</p>
             <div className="flex items-center justify-center gap-1.5">
-              <Locate className="w-4 h-4 text-emerald-400 animate-pulse" />
-              <span className="text-emerald-400 font-bold text-sm">Active</span>
+              <Zap className={`w-4 h-4 text-violet-400 ${isOptimizing ? 'animate-pulse' : ''}`} />
+              <span className="text-violet-400 font-bold text-sm">{isOptimizing ? 'Updating' : 'Optimized'}</span>
             </div>
           </div>
         </div>
