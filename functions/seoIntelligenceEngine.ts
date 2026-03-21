@@ -145,227 +145,7 @@ Keep responses concise and data-driven for 2026.`,
             }
           }
         },
-        competitor_analysis: {
-          type: "object",
-          properties: {
-            competitors: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  name: { type: "string" },
-                  top_keywords: { type: "array", items: { type: "string" } },
-                  estimated_monthly_traffic: { type: "number" },
-                  content_strengths: { type: "array", items: { type: "string" } },
-                  content_weaknesses: { type: "array", items: { type: "string" } },
-                  backlink_profile: {
-                    type: "object",
-                    properties: {
-                      estimated_backlinks: { type: "number" },
-                      top_referring_domains: { type: "array", items: { type: "string" } },
-                      anchor_text_strategy: { type: "string" }
-                    }
-                  },
-                  technical_seo_notes: {
-                    type: "object",
-                    properties: {
-                      mobile_score: { type: "string" },
-                      page_speed: { type: "string" },
-                      schema_usage: { type: "string" }
-                    }
-                  },
-                  exploitable_gaps: { type: "array", items: { type: "string" } },
-                  content_depth_analysis: {
-                    type: "object",
-                    properties: {
-                      average_word_count: { type: "number" },
-                      content_formats: { type: "array", items: { type: "string" } }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
         content_gaps: { type: "array", items: { type: "string" } },
-        serp_features_opportunities: {
-          type: "array",
-          items: {
-            type: "object",
-            properties: {
-              keyword: { type: "string" },
-              serp_feature: { type: "string" },
-              content_format: { type: "string" },
-              suggested_title: { type: "string" },
-              estimated_clicks_per_month: { type: "number" }
-            }
-          }
-        },
-        backlink_opportunities: {
-          type: "array",
-          items: {
-            type: "object",
-            properties: {
-              domain: { type: "string" },
-              da_estimate: { type: "number" },
-              link_type: { type: "string" },
-              approach: { type: "string" },
-              outreach_subject: { type: "string" },
-              pitch_angle: { type: "string" },
-              contact_page_url: { type: "string" },
-              estimated_link_value: { type: "string" }
-            }
-          }
-        },
-        linkbuilding_outreach: {
-          type: "array",
-          items: {
-            type: "object",
-            properties: {
-              domain: { type: "string" },
-              outreach_subject: { type: "string" },
-              pitch_angle: { type: "string" },
-              estimated_link_value: { type: "string" }
-            }
-          }
-        },
-        semantic_clusters: {
-          type: "array",
-          items: {
-            type: "object",
-            properties: {
-              pillar_title: { type: "string" },
-              pillar_keyword: { type: "string" },
-              cluster_posts: {
-                type: "array",
-                items: {
-                  type: "object",
-                  properties: {
-                    title: { type: "string" },
-                    keyword: { type: "string" },
-                    word_count_target: { type: "number" },
-                    search_intent: { type: "string" }
-                  }
-                }
-              }
-            }
-          }
-        },
-        title_tag_variants: { type: "array", items: { type: "string" } },
-        meta_description_variants: { type: "array", items: { type: "string" } },
-        hero_headline_variants: { type: "array", items: { type: "string" } },
-        hero_subline_variants: { type: "array", items: { type: "string" } },
-        cta_text_variants: { type: "array", items: { type: "string" } },
-        ab_extended_suggestions: {
-          type: "array",
-          items: {
-            type: "object",
-            properties: {
-              element: { type: "string" },
-              hypothesis: { type: "string" },
-              variant_a_description: { type: "string" },
-              variant_b_description: { type: "string" },
-              success_metric: { type: "string" }
-            }
-          }
-        },
-        technical_seo_audit: {
-          type: "object",
-          properties: {
-            overall_score: { type: "number" },
-            core_web_vitals: {
-              type: "object",
-              properties: {
-                lcp_status: { type: "string" },
-                fid_status: { type: "string" },
-                cls_status: { type: "string" },
-                recommendations: { type: "array", items: { type: "string" } }
-              }
-            },
-            mobile_optimization: {
-              type: "object",
-              properties: {
-                score: { type: "number" },
-                issues: { type: "array", items: { type: "string" } },
-                recommendations: { type: "array", items: { type: "string" } }
-              }
-            },
-            indexability: {
-              type: "object",
-              properties: {
-                canonical_issues: { type: "array", items: { type: "string" } },
-                duplicate_content_risks: { type: "array", items: { type: "string" } },
-                recommendations: { type: "array", items: { type: "string" } }
-              }
-            },
-            structured_data: {
-              type: "object",
-              properties: {
-                missing_schemas: { type: "array", items: { type: "string" } },
-                priority_schemas: { type: "array", items: { type: "string" } }
-              }
-            },
-            internal_linking: {
-              type: "object",
-              properties: {
-                issues: { type: "array", items: { type: "string" } },
-                opportunities: {
-                  type: "array",
-                  items: {
-                    type: "object",
-                    properties: {
-                      from_page: { type: "string" },
-                      to_page: { type: "string" },
-                      anchor_text: { type: "string" }
-                    }
-                  }
-                }
-              }
-            },
-            broken_link_risks: { type: "array", items: { type: "string" } },
-            critical_fixes: { type: "array", items: { type: "string" } }
-          }
-        },
-        proactive_content_drafts: {
-          type: "array",
-          items: {
-            type: "object",
-            properties: {
-              topic_title: { type: "string" },
-              primary_keyword: { type: "string" },
-              target_word_count: { type: "number" },
-              outline: {
-                type: "array",
-                items: {
-                  type: "object",
-                  properties: {
-                    heading: { type: "string" },
-                    description: { type: "string" },
-                    estimated_words: { type: "number" }
-                  }
-                }
-              },
-              hook_paragraph: { type: "string" },
-              meta_title: { type: "string" },
-              meta_description: { type: "string" },
-              internal_links_to_include: { type: "array", items: { type: "string" } },
-              estimated_ranking_time_months: { type: "number" }
-            }
-          }
-        },
-        faq_suggestions: {
-          type: "array",
-          items: {
-            type: "object",
-            properties: {
-              question: { type: "string" },
-              answer: { type: "string" }
-            }
-          }
-        },
-        conversion_rate_suggestions: { type: "array", items: { type: "string" } },
-        projected_organic_traffic: { type: "number" },
-        page_speed_suggestions: { type: "array", items: { type: "string" } },
         recommended_topics: {
           type: "array",
           items: {
@@ -375,14 +155,19 @@ Keep responses concise and data-driven for 2026.`,
               primary_keyword: { type: "string" },
               secondary_keywords: { type: "array", items: { type: "string" } },
               search_intent: { type: "string" },
-              difficulty: { type: "number" },
               monthly_searches: { type: "number" },
               why_now: { type: "string" },
               priority_score: { type: "number" }
             }
           }
         },
+        title_tag_variants: { type: "array", items: { type: "string" } },
+        meta_description_variants: { type: "array", items: { type: "string" } },
+        hero_headline_variants: { type: "array", items: { type: "string" } },
+        hero_subline_variants: { type: "array", items: { type: "string" } },
+        cta_text_variants: { type: "array", items: { type: "string" } },
         seo_health_score: { type: "number" },
+        projected_organic_traffic: { type: "number" },
         action_items: { type: "array", items: { type: "string" } },
         ai_summary: { type: "string" }
       }
