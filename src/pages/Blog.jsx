@@ -12,11 +12,12 @@ async function fetchPostsPage({ pageParam = 0 }) {
   const posts = await base44.entities.BlogPost.filter(
     { status: 'published' },
     '-published_at',
-    PAGE_SIZE + 1,
+    100,
     pageParam
   );
-  const hasMore = posts.length > PAGE_SIZE;
-  return { posts: posts.slice(0, PAGE_SIZE), hasMore, nextOffset: pageParam + PAGE_SIZE };
+  const hasMore = posts.length === 100;
+  const actualPosts = posts.slice(0, PAGE_SIZE);
+  return { posts: actualPosts, hasMore, nextOffset: pageParam + PAGE_SIZE };
 }
 
 const COLORS = [
