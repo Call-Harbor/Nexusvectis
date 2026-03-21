@@ -239,49 +239,36 @@ Keep responses concise and data-driven for 2026.`,
     ai_summary: trendAnalysis.ai_summary || '',
   });
 
-  // ─── STEP 5: Auto-generate algorithm-aligned blog post ─────────────────────
+  // ─── STEP 5: Auto-generate blog post (simplified) ─────────────────────
   const topTopic = (trendAnalysis.recommended_topics || [])
     .sort((a, b) => (b.priority_score || 0) - (a.priority_score || 0))[0];
 
-  const topDraft = (trendAnalysis.proactive_content_drafts || [])[0];
-
   let generatedPost = null;
   if (topTopic) {
-    const outlineContext = topDraft
-      ? `Use this pre-planned outline:\n${topDraft.outline?.map(s => `- ${s.heading}: ${s.description}`).join('\n')}\n\nOpening hook: "${topDraft.hook_paragraph}"`
-      : '';
-
     const algoWritingContext = (algorithmMonitor.adaptation_plan?.content_strategy_adjustments || []).length > 0
-      ? `\nAlgorithm-aligned writing requirements: ${algorithmMonitor.adaptation_plan.content_strategy_adjustments.join('; ')}`
+      ? `\nAlign with these algorithm changes: ${algorithmMonitor.adaptation_plan.content_strategy_adjustments.join('; ')}`
       : '';
 
     const postContent = await base44.asServiceRole.integrations.Core.InvokeLLM({
-      prompt: `You are an expert content writer for B2B logistics and fleet management.
-
-Write a COMPREHENSIVE, PUBLICATION-READY, SEO-optimized blog post for NexusVectis (nexusvectis.com).
+      prompt: `Write an SEO-optimized blog post for NexusVectis fleet management platform.
 
 Topic: "${topTopic.title}"
-Primary Keyword: "${topTopic.primary_keyword}"
-Secondary Keywords: ${(topTopic.secondary_keywords || []).join(', ')}
-Search Intent: ${topTopic.search_intent}
-Why now: ${topTopic.why_now}
+Keyword: "${topTopic.primary_keyword}"
+Intent: ${topTopic.search_intent}
+Why: ${topTopic.why_now}
 ${algoWritingContext}
-${outlineContext}
 
 Requirements:
-- 1600-2200 words
-- Proper H1, H2, H3 with keywords naturally placed
-- Primary keyword in first 100 words and in 4+ headings
-- Real 2026 statistics with source citations
-- Comparison tables where relevant
-- Section: "How NexusVectis Solves This"
-- FAQ section (3 questions) for featured snippet eligibility
-- CTA: "Start with FLEET AI today — book a free demo"
-- Internal links: /FleetAIPage, /LiveTrackingPage, /AnalyticsPage, /HarborInfo, /Blog
-- Strong E-E-A-T signals (cite author expertise, real case examples)
+- 1600-2000 words with H1, H2, H3 structure
+- Keyword in first paragraph and 4+ headings
+- 2026 data and statistics
+- Section on "How NexusVectis Addresses This"
+- 3 FAQ questions
+- Internal links to: /FleetAIPage, /LiveTrackingPage, /AnalyticsPage
+- CTA: "Start with FLEET AI — book demo"
 
-Return full HTML with semantic tags.`,
-      model: "gemini_3_flash",
+Return complete HTML.`,
+      model: "gemini_3_pro",
       response_json_schema: {
         type: "object",
         properties: {
