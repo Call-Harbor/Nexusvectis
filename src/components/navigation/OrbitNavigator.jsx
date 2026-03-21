@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import { MapContainer, TileLayer, Marker, Polyline, Popup, useMap } from "react-leaflet";
-import { Navigation, MapPin, ArrowUp, Locate, AlertCircle, Volume2, VolumeX, Compass, Zap } from "lucide-react";
+import { Navigation, MapPin, ArrowUp, Locate, AlertCircle, Volume2, VolumeX, Compass, Zap, Eye } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
 import L from "leaflet";
+import StreetViewMode from "./StreetViewMode";
 
 // Auto-center map on user location
 function MapAutoCenter({ center }) {
@@ -65,6 +66,7 @@ export default function OrbitNavigator({ route, currentPosition, onExit }) {
   const [optimizedWaypoints, setOptimizedWaypoints] = useState(route?.waypoints || []);
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [lastOptimization, setLastOptimization] = useState(Date.now());
+  const [streetViewMode, setStreetViewMode] = useState(false);
   const lastAnnouncedRef = useRef(null);
   const optimizationIntervalRef = useRef(null);
 
@@ -229,6 +231,16 @@ export default function OrbitNavigator({ route, currentPosition, onExit }) {
     return date.toLocaleTimeString("da-DK", { hour: "2-digit", minute: "2-digit" });
   };
 
+  if (streetViewMode) {
+    return (
+      <StreetViewMode
+        currentPosition={currentPosition}
+        heading={currentBearing}
+        onExit={() => setStreetViewMode(false)}
+      />
+    );
+  }
+
   return (
     <div className="fixed inset-0 z-50 bg-slate-950">
       {/* Top HUD */}
@@ -272,6 +284,13 @@ export default function OrbitNavigator({ route, currentPosition, onExit }) {
                   }`}
                 >
                   {voiceEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
+                </button>
+                <button
+                  onClick={() => setStreetViewMode(true)}
+                  className="p-2 rounded-lg bg-violet-500/20 border border-violet-500/40 text-violet-300 hover:bg-violet-500/30 transition-all"
+                  title="Street View Mode"
+                >
+                  <Eye className="w-5 h-5" />
                 </button>
                 <button
                   onClick={onExit}
