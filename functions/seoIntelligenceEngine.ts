@@ -108,50 +108,25 @@ Also assess E-E-A-T status for nexusvectis.com and how to appear in Google AI Ov
     ? `\nIMPORTANT — ADAPT ALL RECOMMENDATIONS TO THESE RECENT GOOGLE ALGORITHM CHANGES:\n${algorithmMonitor.latest_updates.map(u => `- ${u.update_name} (${u.date_announced}): ${u.summary}. NexusVectis impact: ${u.nexusvectis_impact}`).join('\n')}\nImmediate priorities: ${(algorithmMonitor.adaptation_plan?.immediate_actions || []).join('; ')}\nAvoid: ${(algorithmMonitor.adaptation_plan?.what_to_avoid || []).join('; ')}`
     : '';
 
-  // ─── STEP 1: Deep SEO Intelligence (internet-connected, algorithm-aware) ───
+  // ─── STEP 1: Simplified SEO Intelligence (split into manageable parts) ───
   const trendAnalysis = await base44.asServiceRole.integrations.Core.InvokeLLM({
-    prompt: `You are a world-class SEO strategist specializing in B2B SaaS logistics, fleet management, and supply chain AI.
+    prompt: `You are a world-class SEO strategist for B2B SaaS logistics and fleet management.
 
-Today: ${today}. Platform: NexusVectis — AI-powered fleet management & logistics intelligence (nexusvectis.com).
+Today: ${today}. Platform: NexusVectis (nexusvectis.com) — AI-powered fleet management.
 ${algoContext}
 
-Perform a COMPREHENSIVE SEO intelligence analysis covering ALL sections:
+Provide a focused SEO analysis:
 
-=== KEYWORDS ===
-TOP 20 trending keywords (fleet management AI, logistics software, route optimization, predictive maintenance, TMS, shipment tracking, supply chain automation, ETA prediction, cold chain, swarm intelligence logistics) — each with: keyword, monthly_searches, difficulty (1-10), cpc_eur, trend (rising/stable/declining), intent, why_trending.
+1. TOP 15 trending keywords in fleet management/logistics AI with: keyword, monthly_searches, difficulty (1-10), cpc_eur, trend, intent, why_trending
+2. Top 8 content gaps competitors rank for
+3. 10 recommended blog topics with priority_score, primary_keyword, secondary_keywords, search_intent, monthly_searches, why_now
+4. 6 variants each: title_tag_variants, meta_description_variants, hero_headline_variants, hero_subline_variants, cta_text_variants
+5. Basic metrics: seo_health_score (0-100), projected_organic_traffic, ai_summary (2 paragraphs)
+6. Top 5 action_items
 
-=== DEEP COMPETITOR ANALYSIS ===
-Analyze: Samsara, Geotab, Trimble, Oracle TMS, SAP TM.
-For each: name, top_keywords (5), estimated_monthly_traffic, content_strengths (3), content_weaknesses (3), backlink_profile (estimated_backlinks, top_referring_domains, anchor_text_strategy), technical_seo_notes (mobile_score, page_speed, schema_usage), exploitable_gaps (3), content_depth_analysis (average_word_count, content_formats).
-
-=== CONTENT GAPS ===
-10 high-value topics competitors rank for that NexusVectis likely doesn't.
-
-=== SERP FEATURES ===
-8 keywords for featured snippets/PAA/rich results: keyword, serp_feature, content_format, suggested_title, estimated_clicks_per_month.
-
-=== LINKBUILDING ===
-8 high-authority backlink targets: domain, da_estimate, link_type, approach, outreach_subject, pitch_angle, contact_page_url, estimated_link_value.
-
-=== SEMANTIC CLUSTERS ===
-4 pillar clusters: pillar_title, pillar_keyword, 5 cluster_posts (title, keyword, word_count_target, search_intent).
-
-=== A/B VARIANTS ===
-6 variants each for: title_tag_variants, meta_description_variants, hero_headline_variants, hero_subline_variants, cta_text_variants.
-5 ab_extended_suggestions: element, hypothesis, variant_a_description, variant_b_description, success_metric.
-
-=== TECHNICAL SEO AUDIT ===
-overall_score, core_web_vitals (lcp_status, fid_status, cls_status, recommendations), mobile_optimization (score, issues, recommendations), indexability (canonical_issues, duplicate_content_risks, recommendations), structured_data (missing_schemas, priority_schemas), internal_linking (issues, opportunities with from_page/to_page/anchor_text), broken_link_risks, critical_fixes.
-
-=== PROACTIVE CONTENT DRAFTS ===
-Top 3 priority topics: topic_title, primary_keyword, target_word_count, outline (heading, description, estimated_words), hook_paragraph, meta_title, meta_description, internal_links_to_include, estimated_ranking_time_months.
-
-=== MISC ===
-faq_suggestions (6), conversion_rate_suggestions (6), projected_organic_traffic, page_speed_suggestions (5), recommended_topics (10, with priority_score), seo_health_score, action_items (10), ai_summary (4 paragraphs: status, competitors, 90-day strategy, risks).
-
-Be specific, data-driven, actionable for 2026. Adapt all strategies to any recent algorithm changes provided above.`,
+Keep responses concise and data-driven for 2026.`,
     add_context_from_internet: true,
-    model: "gemini_3_flash",
+    model: "gemini_3_pro",
     response_json_schema: {
       type: "object",
       properties: {
