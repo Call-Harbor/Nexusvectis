@@ -229,8 +229,6 @@ export default function IntellectHeader({ orgId, openWindow, executePrompt, setS
       setShowAdvancedPanel?.(true);
     } else if (type === '3d_globe') {
       onShow3DGlobe?.();
-    } else if (type === 'nexus_orbit') {
-      navigate(createPageUrl('NexusOrbit'));
     } else {
       openWindow(type);
     }
