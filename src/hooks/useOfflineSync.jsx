@@ -27,27 +27,59 @@ export function useOfflineSync() {
     };
   }, []);
 
-  // Load pending queue from localStorage
+  // Load pending queue from IndexedDB
   useEffect(() => {
-    const saved = localStorage.getItem("orbit_pending_queue");
-    if (saved) {
-      setPendingQueue(JSON.parse(saved));
+    if ('indexedDB' in window) {
+      const request = indexedDB.open('OrbitOfflineDB', 1);
+      request.onupgradeneeded = (e) => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains('pendingMessages')) {
+          db.createObjectStore('pendingMessages', { keyPath: 'id' });
+        }
+        if (!db.objectStoreNames.contains('cachedMessages')) {
+          db.createObjectStore('cachedMessages', { keyPath: 'id' });
+        }
+      };
+      request.onsuccess = (e) => {
+        const db = e.target.result;
+        const tx = db.transaction('pendingMessages', 'readonly');
+        const store = tx.objectStore('pendingMessages');
+        const getAllRequest = store.getAll();
+        getAllRequest.onsuccess = () => {
+          setPendingQueue(getAllRequest.result || []);
+        };
+      };
     }
   }, []);
 
-  // Save pending queue to localStorage
-  useEffect(() => {
-    localStorage.setItem("orbit_pending_queue", JSON.stringify(pendingQueue));
-  }, [pendingQueue]);
+  // Persist to IndexedDB is handled in queueMessage
 
   const queueMessage = useCallback((message) => {
     const queuedMsg = {
       ...message,
-      id: `pending_${Date.now()}`,
+      id: `pending_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       queued_at: new Date().toISOString(),
-      status: "pending"
+      status: "pending",
+      created_date: new Date().toISOString()
     };
     setPendingQueue(prev => [...prev, queuedMsg]);
+    
+    // Store in IndexedDB for persistence
+    if ('indexedDB' in window) {
+      const request = indexedDB.open('OrbitOfflineDB', 1);
+      request.onupgradeneeded = (e) => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains('pendingMessages')) {
+          db.createObjectStore('pendingMessages', { keyPath: 'id' });
+        }
+      };
+      request.onsuccess = (e) => {
+        const db = e.target.result;
+        const tx = db.transaction('pendingMessages', 'readwrite');
+        tx.objectStore('pendingMessages').add(queuedMsg);
+      };
+    }
+    
     return queuedMsg;
   }, []);
 
@@ -55,25 +87,76 @@ export function useOfflineSync() {
     if (!isOnline || pendingQueue.length === 0) return;
 
     const toProcess = [...pendingQueue];
-    setPendingQueue([]);
+    const failed = [];
 
     for (const msg of toProcess) {
       try {
         await sendFn(msg);
+        
+        // Remove from IndexedDB on success
+        if ('indexedDB' in window) {
+          const request = indexedDB.open('OrbitOfflineDB', 1);
+          request.onsuccess = (e) => {
+            const db = e.target.result;
+            const tx = db.transaction('pendingMessages', 'readwrite');
+            tx.objectStore('pendingMessages').delete(msg.id);
+          };
+        }
       } catch (error) {
         console.error("Failed to sync message:", error);
-        setPendingQueue(prev => [...prev, msg]);
+        failed.push(msg);
       }
     }
 
+    setPendingQueue(failed);
     setLastSync(new Date().toISOString());
+    
+    if (failed.length === 0) {
+      toast.success("All messages synced!");
+    }
   }, [isOnline, pendingQueue]);
+
+  const cacheMessages = useCallback((messages) => {
+    if ('indexedDB' in window) {
+      const request = indexedDB.open('OrbitOfflineDB', 1);
+      request.onsuccess = (e) => {
+        const db = e.target.result;
+        const tx = db.transaction('cachedMessages', 'readwrite');
+        const store = tx.objectStore('cachedMessages');
+        
+        // Clear old cache
+        store.clear();
+        
+        // Add new messages
+        messages.forEach(msg => {
+          store.add({ ...msg, cached_at: new Date().toISOString() });
+        });
+      };
+    }
+  }, []);
+
+  const getCachedMessages = useCallback((callback) => {
+    if ('indexedDB' in window) {
+      const request = indexedDB.open('OrbitOfflineDB', 1);
+      request.onsuccess = (e) => {
+        const db = e.target.result;
+        const tx = db.transaction('cachedMessages', 'readonly');
+        const store = tx.objectStore('cachedMessages');
+        const getAllRequest = store.getAll();
+        getAllRequest.onsuccess = () => {
+          callback(getAllRequest.result || []);
+        };
+      };
+    }
+  }, []);
 
   return {
     isOnline,
     pendingQueue,
     lastSync,
     queueMessage,
-    processPendingQueue
+    processPendingQueue,
+    cacheMessages,
+    getCachedMessages
   };
 }

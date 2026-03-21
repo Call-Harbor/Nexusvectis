@@ -70,7 +70,7 @@ export default function NexusOrbit() {
   const [authError, setAuthError] = useState(false);
   const messagesEndRef = useRef(null);
   const queryClient = useQueryClient();
-  const { isOnline, queueMessage, processPendingQueue } = useOfflineSync();
+  const { isOnline, queueMessage, processPendingQueue, cacheMessages, getCachedMessages, pendingQueue } = useOfflineSync();
 
   // ── Load user & org ──────────────────────────────────────────────────────
   useEffect(() => {
@@ -129,6 +129,20 @@ export default function NexusOrbit() {
     queryKey: ["orbit-messages", org?.id, user?.email],
     queryFn: async () => {
       if (!org?.id || !user?.email) return [];
+      
+      if (!isOnline) {
+        // Load from IndexedDB when offline
+        return new Promise((resolve) => {
+          getCachedMessages((cached) => {
+            // Merge with pending queue
+            const allMessages = [...cached, ...pendingQueue].sort((a, b) => 
+              new Date(b.created_date) - new Date(a.created_date)
+            );
+            resolve(allMessages);
+          });
+        });
+      }
+      
       const sent = await base44.entities.OrbitMessage.filter({
         organization_id: org.id,
         sender_email: user.email
@@ -137,14 +151,19 @@ export default function NexusOrbit() {
         organization_id: org.id,
         recipient_email: user.email
       }, "-created_date", 100);
-      return [...sent, ...received].sort((a, b) => 
+      const allMessages = [...sent, ...received].sort((a, b) => 
         new Date(b.created_date) - new Date(a.created_date)
       );
+      
+      // Cache messages for offline use
+      cacheMessages(allMessages);
+      
+      return allMessages;
     },
     enabled: !!org?.id && !!user?.email,
-    refetchInterval: isOnline ? 3000 : false, // Slower polling, only when online
+    refetchInterval: isOnline ? 3000 : false,
     staleTime: 2000,
-    cacheTime: 1000 * 60 * 60, // Cache 1 hour for offline access
+    cacheTime: 1000 * 60 * 60,
   });
 
   // ── Fetch all organizations (for driver to select) ──────────────────────
@@ -630,14 +649,22 @@ export default function NexusOrbit() {
                           className={`flex ${isMine ? "justify-end" : "justify-start"}`}
                         >
                           <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 ${
-                            isMine
-                              ? "bg-cyan-500/20 border border-cyan-500/30 text-cyan-100"
-                              : "bg-slate-800/60 border border-slate-700/40 text-slate-300"
+                           isMine
+                             ? "bg-cyan-500/20 border border-cyan-500/30 text-cyan-100"
+                             : "bg-slate-800/60 border border-slate-700/40 text-slate-300"
                           }`}>
-                            <p className="text-sm leading-relaxed">{msg.message}</p>
-                            <p className="text-[10px] text-slate-600 mt-1">
-                              {new Date(msg.created_date).toLocaleTimeString("da-DK", { hour: "2-digit", minute: "2-digit" })}
-                            </p>
+                           <p className="text-sm leading-relaxed">{msg.message}</p>
+                           <div className="flex items-center gap-2 mt-1">
+                             <p className="text-[10px] text-slate-600">
+                               {new Date(msg.created_date).toLocaleTimeString("da-DK", { hour: "2-digit", minute: "2-digit" })}
+                             </p>
+                             {msg.status === "pending" && (
+                               <span className="text-[10px] text-amber-400 flex items-center gap-1">
+                                 <Clock className="w-2.5 h-2.5" />
+                                 Queued
+                               </span>
+                             )}
+                           </div>
                           </div>
                         </motion.div>
                       );
