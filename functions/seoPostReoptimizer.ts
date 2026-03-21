@@ -117,9 +117,16 @@ RULES:
     });
   }
 
-  return Response.json({
-    success: true,
-    posts_rewritten: results.length,
-    results
-  });
+    return Response.json({
+      success: true,
+      posts_rewritten: results.length,
+      results
+    });
+  } catch (error) {
+    console.error('[SEO Re-optimizer Error]', error.message);
+    return Response.json({ 
+      success: false, 
+      error: error.message 
+    }, { status: 500 });
+  }
 });
