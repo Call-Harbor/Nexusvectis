@@ -7,18 +7,27 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
  */
 
 Deno.serve(async (req) => {
-  const base44 = createClientFromRequest(req);
+  try {
+    const base44 = createClientFromRequest(req);
 
-  const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toISOString().split('T')[0];
 
-  // Find posts that need re-optimization (low word count or flagged)
-  const stalePosts = await base44.asServiceRole.entities.BlogPost.filter(
-    { status: 'needs_update' },
-    '-created_date',
-    3
-  );
+    // Find posts that need re-optimization (low word count or flagged)
+    const stalePosts = await base44.asServiceRole.entities.BlogPost.filter(
+      { status: 'needs_update' },
+      '-created_date',
+      3
+    );
 
-  const results = [];
+    if (stalePosts.length === 0) {
+      return Response.json({
+        success: true,
+        message: 'No posts need re-optimization',
+        posts_rewritten: 0
+      });
+    }
+
+    const results = [];
 
   // Load published posts once — used inside loop to avoid overlap
   const allPublished = await base44.asServiceRole.entities.BlogPost.filter(
