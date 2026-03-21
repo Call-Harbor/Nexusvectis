@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { toast } from "sonner";
 
 // Offline-first hook for low-bandwidth environments
 export function useOfflineSync() {
