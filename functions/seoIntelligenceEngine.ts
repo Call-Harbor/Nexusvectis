@@ -147,7 +147,44 @@ Data-driven for 2026.`,
             }
           }
         },
+        competitor_analysis: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              name: { type: "string" },
+              top_keywords: { type: "array", items: { type: "string" } },
+              estimated_monthly_traffic: { type: "number" },
+              content_strengths: { type: "array", items: { type: "string" } },
+              exploitable_gaps: { type: "array", items: { type: "string" } },
+              backlink_estimate: { type: "number" }
+            }
+          }
+        },
         content_gaps: { type: "array", items: { type: "string" } },
+        backlink_opportunities: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              domain: { type: "string" },
+              da_estimate: { type: "number" },
+              approach: { type: "string" },
+              outreach_subject: { type: "string" },
+              estimated_link_value: { type: "string" }
+            }
+          }
+        },
+        technical_seo: {
+          type: "object",
+          properties: {
+            overall_score: { type: "number" },
+            core_web_vitals_status: { type: "string" },
+            mobile_score: { type: "number" },
+            critical_fixes: { type: "array", items: { type: "string" } },
+            schema_priorities: { type: "array", items: { type: "string" } }
+          }
+        },
         recommended_topics: {
           type: "array",
           items: {
@@ -158,8 +195,8 @@ Data-driven for 2026.`,
               secondary_keywords: { type: "array", items: { type: "string" } },
               search_intent: { type: "string" },
               monthly_searches: { type: "number" },
-              why_now: { type: "string" },
-              priority_score: { type: "number" }
+              priority_score: { type: "number" },
+              why_now: { type: "string" }
             }
           }
         },
