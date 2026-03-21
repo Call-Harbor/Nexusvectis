@@ -220,34 +220,21 @@ Keep responses concise and data-driven for 2026.`,
     }
   }
 
-  // ─── STEP 4: Save enriched SEO Metrics ────────────────────────────────────
+  // ─── STEP 4: Save simplified SEO Metrics ────────────────────────────────────
   const metricsRecord = await base44.asServiceRole.entities.SEOMetrics.create({
     date: today,
     trending_keywords: trendAnalysis.trending_keywords || [],
     content_gaps: trendAnalysis.content_gaps || [],
     home_page_seo_score: trendAnalysis.seo_health_score || 0,
     home_page_suggestions: trendAnalysis.action_items || [],
-    faq_suggestions: trendAnalysis.faq_suggestions || [],
     meta_description_variants: trendAnalysis.meta_description_variants || [],
     title_tag_variants: trendAnalysis.title_tag_variants || [],
     hero_headline_variants: trendAnalysis.hero_headline_variants || [],
     hero_subline_variants: trendAnalysis.hero_subline_variants || [],
     cta_text_variants: trendAnalysis.cta_text_variants || [],
     recommended_blog_topics: trendAnalysis.recommended_topics || [],
-    competitor_analysis: trendAnalysis.competitor_analysis || {},
-    internal_linking_suggestions: trendAnalysis.technical_seo_audit?.internal_linking?.opportunities || [],
-    schema_markup_suggestions: trendAnalysis.technical_seo_audit?.structured_data?.priority_schemas || [],
-    serp_features_opportunities: trendAnalysis.serp_features_opportunities || [],
-    backlink_opportunities: trendAnalysis.backlink_opportunities || [],
-    page_speed_suggestions: trendAnalysis.page_speed_suggestions || [],
-    semantic_clusters: trendAnalysis.semantic_clusters || [],
-    conversion_rate_suggestions: trendAnalysis.conversion_rate_suggestions || [],
     projected_organic_traffic: trendAnalysis.projected_organic_traffic || 0,
     ab_test_winner: abWinners,
-    ab_extended_suggestions: trendAnalysis.ab_extended_suggestions || [],
-    technical_seo_audit: trendAnalysis.technical_seo_audit || {},
-    linkbuilding_outreach: trendAnalysis.linkbuilding_outreach || trendAnalysis.backlink_opportunities || [],
-    proactive_content_drafts: trendAnalysis.proactive_content_drafts || [],
     algorithm_monitor: algorithmMonitor,
     ai_summary: trendAnalysis.ai_summary || '',
   });
