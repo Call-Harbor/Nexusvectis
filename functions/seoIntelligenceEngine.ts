@@ -22,7 +22,8 @@ Deno.serve(async (req) => {
     // Automation / service role — proceed
   }
 
-  const today = new Date().toISOString().split('T')[0];
+  try {
+    const today = new Date().toISOString().split('T')[0];
 
   // ─── STEP 0: Google Algorithm Monitor ─────────────────────────────────────
   const algorithmMonitor = await base44.asServiceRole.integrations.Core.InvokeLLM({
@@ -355,26 +356,34 @@ Return complete HTML.`,
     });
   }
 
-  return Response.json({
-    success: true,
-    date: today,
-    metrics_id: metricsRecord.id,
-    seo_health_score: trendAnalysis.seo_health_score,
-    technical_seo_score: trendAnalysis.technical_seo?.overall_score,
-    algorithm_readiness_score: algorithmMonitor.adaptation_plan?.algorithm_readiness_score,
-    algorithm_updates_detected: (algorithmMonitor.latest_updates || []).length,
-    eeat_score: algorithmMonitor.eeat_assessment?.current_score,
-    trending_keywords_found: (trendAnalysis.trending_keywords || []).length,
-    competitors_analyzed: (trendAnalysis.competitor_analysis || []).length,
-    content_gaps_found: (trendAnalysis.content_gaps || []).length,
-    backlink_opportunities: (trendAnalysis.backlink_opportunities || []).length,
-    ab_winners_detected: Object.keys(abWinners).length,
-    posts_flagged_for_update: postsNeedingUpdate.length,
-    new_post_generated: generatedPost?.title || null,
-    new_post_id: generatedPost?.id || null,
-    projected_organic_traffic: trendAnalysis.projected_organic_traffic || 0,
-    action_items: trendAnalysis.action_items || [],
-    algorithm_immediate_actions: algorithmMonitor.adaptation_plan?.immediate_actions || [],
-    ai_summary: trendAnalysis.ai_summary || ''
-  });
+    return Response.json({
+      success: true,
+      date: today,
+      metrics_id: metricsRecord.id,
+      seo_health_score: trendAnalysis.seo_health_score,
+      technical_seo_score: trendAnalysis.technical_seo?.overall_score,
+      algorithm_readiness_score: algorithmMonitor.adaptation_plan?.algorithm_readiness_score,
+      algorithm_updates_detected: (algorithmMonitor.latest_updates || []).length,
+      eeat_score: algorithmMonitor.eeat_assessment?.current_score,
+      trending_keywords_found: (trendAnalysis.trending_keywords || []).length,
+      competitors_analyzed: (trendAnalysis.competitor_analysis || []).length,
+      content_gaps_found: (trendAnalysis.content_gaps || []).length,
+      backlink_opportunities: (trendAnalysis.backlink_opportunities || []).length,
+      ab_winners_detected: Object.keys(abWinners).length,
+      posts_flagged_for_update: postsNeedingUpdate.length,
+      new_post_generated: generatedPost?.title || null,
+      new_post_id: generatedPost?.id || null,
+      projected_organic_traffic: trendAnalysis.projected_organic_traffic || 0,
+      action_items: trendAnalysis.action_items || [],
+      algorithm_immediate_actions: algorithmMonitor.adaptation_plan?.immediate_actions || [],
+      ai_summary: trendAnalysis.ai_summary || ''
+    });
+  } catch (error) {
+    console.error('SEO Intelligence Engine Error:', error);
+    return Response.json({ 
+      success: false, 
+      error: error.message,
+      stack: error.stack 
+    }, { status: 500 });
+  }
 });
