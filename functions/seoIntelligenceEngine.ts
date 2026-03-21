@@ -283,78 +283,9 @@ Data-driven for 2026.`,
     ai_summary: trendAnalysis.ai_summary || '',
   });
 
-  // ─── STEP 5: Auto-generate blog post (simplified) ─────────────────────
-  const topTopic = (trendAnalysis.recommended_topics || [])
-    .sort((a, b) => (b.priority_score || 0) - (a.priority_score || 0))[0];
-
-  let generatedPost = null;
-  if (topTopic) {
-    const algoWritingContext = (algorithmMonitor.adaptation_plan?.content_strategy_adjustments || []).length > 0
-      ? `\nAlign with these algorithm changes: ${algorithmMonitor.adaptation_plan.content_strategy_adjustments.join('; ')}`
-      : '';
-
-    const postContent = await base44.asServiceRole.integrations.Core.InvokeLLM({
-      prompt: `Write an SEO-optimized blog post for NexusVectis fleet management platform.
-
-Topic: "${topTopic.title}"
-Keyword: "${topTopic.primary_keyword}"
-Intent: ${topTopic.search_intent}
-Why: ${topTopic.why_now}
-${algoWritingContext}
-
-Requirements:
-- 1600-2000 words with H1, H2, H3 structure
-- Keyword in first paragraph and 4+ headings
-- 2026 data and statistics
-- Section on "How NexusVectis Addresses This"
-- 3 FAQ questions
-- Internal links to: /FleetAIPage, /LiveTrackingPage, /AnalyticsPage
-- CTA: "Start with FLEET AI — book demo"
-
-Return complete HTML.`,
-      model: "gemini_3_flash",
-      response_json_schema: {
-        type: "object",
-        properties: {
-          title: { type: "string" },
-          excerpt: { type: "string" },
-          content_html: { type: "string" },
-          word_count: { type: "number" },
-          read_time_minutes: { type: "number" },
-          seo_score: { type: "number" },
-          readability_score: { type: "number" },
-          internal_links: { type: "array", items: { type: "string" } }
-        }
-      }
-    });
-
-    const slug = topTopic.primary_keyword
-      .toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, '-').slice(0, 60);
-
-    generatedPost = await base44.asServiceRole.entities.BlogPost.create({
-      title: postContent.title || topTopic.title,
-      slug,
-      excerpt: postContent.excerpt || '',
-      content: postContent.content_html || '',
-      category: 'Fleet Intelligence',
-      tags: [topTopic.primary_keyword, ...(topTopic.secondary_keywords || [])],
-      primary_keyword: topTopic.primary_keyword,
-      secondary_keywords: topTopic.secondary_keywords || [],
-      seo_score: postContent.seo_score || 85,
-      readability_score: postContent.readability_score || 72,
-      read_time_minutes: postContent.read_time_minutes || 8,
-      word_count: postContent.word_count || 1800,
-      search_intent: topTopic.search_intent || 'informational',
-      competitor_gap: true,
-      status: 'published',
-      ai_generated: true,
-      ai_model: 'gemini-3-flash',
-      published_at: new Date().toISOString(),
-      internal_links: postContent.internal_links || [],
-      last_optimized_at: new Date().toISOString(),
-      optimization_history: [{ date: today, action: 'initial_generation_v4_algo_aware', seo_score: postContent.seo_score || 85 }]
-    });
-  }
+  // ─── STEP 5: Blog post generation skipped in scheduled runs ─────────────
+  // Note: Blog generation moved to separate weekly function to avoid timeout
+  const generatedPost = null;
 
     return Response.json({
       success: true,
@@ -371,8 +302,8 @@ Return complete HTML.`,
       backlink_opportunities: (trendAnalysis.backlink_opportunities || []).length,
       ab_winners_detected: Object.keys(abWinners).length,
       posts_flagged_for_update: postsNeedingUpdate.length,
-      new_post_generated: generatedPost?.title || null,
-      new_post_id: generatedPost?.id || null,
+      new_post_generated: null,
+      new_post_id: null,
       projected_organic_traffic: trendAnalysis.projected_organic_traffic || 0,
       action_items: trendAnalysis.action_items || [],
       algorithm_immediate_actions: algorithmMonitor.adaptation_plan?.immediate_actions || [],
