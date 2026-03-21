@@ -128,7 +128,7 @@ Provide SEO analysis:
 
 Data-driven for 2026.`,
     add_context_from_internet: true,
-    model: "gemini_3_pro",
+    model: "gemini_3_flash",
     response_json_schema: {
       type: "object",
       properties: {
@@ -311,7 +311,7 @@ Requirements:
 - CTA: "Start with FLEET AI — book demo"
 
 Return complete HTML.`,
-      model: "gemini_3_pro",
+      model: "gemini_3_flash",
       response_json_schema: {
         type: "object",
         properties: {
