@@ -4,11 +4,13 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { useOfflineSync } from "../hooks/useOfflineSync";
+import { useGeofenceMonitor } from "../hooks/useGeofenceMonitor";
 import {
   MessageCircle, Send, Radio, MapPin, Navigation,
   CheckCircle2, Clock, AlertCircle, Menu, X,
-  Satellite, ChevronRight, User, Users, Map, Locate
+  Satellite, ChevronRight, User, Users, Map, Locate, Shield
 } from "lucide-react";
+import GeoFenceManager from "../components/geofencing/GeoFenceManager";
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
@@ -70,6 +72,7 @@ export default function NexusOrbit() {
   const [currentPosition, setCurrentPosition] = useState(null);
   const [authError, setAuthError] = useState(false);
   const [navigating, setNavigating] = useState(false);
+  const [showGeofenceManager, setShowGeofenceManager] = useState(false);
   const messagesEndRef = useRef(null);
   const queryClient = useQueryClient();
   const { isOnline, queueMessage, processPendingQueue, cacheMessages, getCachedMessages, pendingQueue } = useOfflineSync();
@@ -238,6 +241,17 @@ export default function NexusOrbit() {
     queryFn: () => org?.id ? base44.entities.Vehicle.filter({ organization_id: org.id }, "-created_date", 50) : [],
     enabled: !!org?.id,
   });
+
+  // ── Fetch geofences ──────────────────────────────────────────────────────
+  const { data: geofences = [] } = useQuery({
+    queryKey: ["geofences", org?.id],
+    queryFn: () => org?.id ? base44.entities.GeoFence.filter({ organization_id: org.id, active: true }) : [],
+    enabled: !!org?.id,
+    refetchInterval: 10000, // Check for new geofences every 10s
+  });
+
+  // ── Geofence monitoring for drivers ──────────────────────────────────────
+  useGeofenceMonitor(currentPosition, geofences, user, org, myVehicle?.id);
 
   // ── Send message mutation (offline-aware) ────────────────────────────────
   const sendMutation = useMutation({
@@ -542,6 +556,16 @@ export default function NexusOrbit() {
                   </button>
                 )}
 
+                {userRole === "coordinator" && (
+                  <button
+                    onClick={() => { setShowGeofenceManager(true); setMenuOpen(false); }}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all bg-slate-800/40 border border-slate-700/30 text-slate-400 hover:text-white"
+                  >
+                    <Shield className="w-4 h-4" />
+                    <span className="text-sm font-semibold">Geofencing</span>
+                  </button>
+                )}
+
               </div>
             </motion.div>
           )}
@@ -560,6 +584,14 @@ export default function NexusOrbit() {
             setNavigating(false);
             setActiveView("map");
           }}
+        />
+      )}
+
+      {/* Geofence Manager */}
+      {showGeofenceManager && (
+        <GeoFenceManager
+          org={org}
+          onClose={() => setShowGeofenceManager(false)}
         />
       )}
 
@@ -963,6 +995,15 @@ export default function NexusOrbit() {
             >
               <Map className="w-5 h-5" />
               <span className="text-sm font-semibold">Live Map</span>
+            </button>
+          )}
+          {userRole === "coordinator" && (
+            <button
+              onClick={() => setShowGeofenceManager(true)}
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl transition-all bg-slate-800/40 border border-slate-700/30 text-slate-400 hover:text-white"
+            >
+              <Shield className="w-5 h-5" />
+              <span className="text-sm font-semibold">Geofencing</span>
             </button>
           )}
         </div>
