@@ -25,89 +25,13 @@ Deno.serve(async (req) => {
   try {
     const today = new Date().toISOString().split('T')[0];
 
-  // ─── STEP 0: Google Algorithm Monitor ─────────────────────────────────────
-  const algorithmMonitor = await base44.asServiceRole.integrations.Core.InvokeLLM({
-    prompt: `You are a Google algorithm expert and SEO news tracker. Today is ${today}.
-
-Search the web RIGHT NOW for:
-1. Any Google core algorithm updates, broad core updates, spam updates, helpful content updates, or SERP changes in the LAST 60 DAYS.
-2. Any confirmed Google ranking factor changes in the last 60 days.
-3. Major SEO signals from Google Search Central blog, Search Engine Land, Search Engine Journal, Semrush/Ahrefs blogs.
-
-For each update: what changed, winners vs losers, specific adaptation for NexusVectis (B2B SaaS logistics platform).
-
-Also assess E-E-A-T status for nexusvectis.com and how to appear in Google AI Overviews.`,
-    add_context_from_internet: true,
-    model: "gemini_3_flash",
-    response_json_schema: {
-      type: "object",
-      properties: {
-        latest_updates: {
-          type: "array",
-          items: {
-            type: "object",
-            properties: {
-              update_name: { type: "string" },
-              date_announced: { type: "string" },
-              update_type: { type: "string" },
-              summary: { type: "string" },
-              winners: { type: "array", items: { type: "string" } },
-              losers: { type: "array", items: { type: "string" } },
-              impact_level: { type: "string" },
-              nexusvectis_impact: { type: "string" }
-            }
-          }
-        },
-        ranking_factor_changes: {
-          type: "array",
-          items: {
-            type: "object",
-            properties: {
-              factor: { type: "string" },
-              change: { type: "string" },
-              importance_now: { type: "string" }
-            }
-          }
-        },
-        adaptation_plan: {
-          type: "object",
-          properties: {
-            immediate_actions: { type: "array", items: { type: "string" } },
-            content_strategy_adjustments: { type: "array", items: { type: "string" } },
-            technical_adjustments: { type: "array", items: { type: "string" } },
-            what_to_avoid: { type: "array", items: { type: "string" } },
-            opportunity_windows: { type: "array", items: { type: "string" } },
-            algorithm_readiness_score: { type: "number" },
-            summary: { type: "string" }
-          }
-        },
-        eeat_assessment: {
-          type: "object",
-          properties: {
-            current_score: { type: "number" },
-            experience_gaps: { type: "array", items: { type: "string" } },
-            expertise_gaps: { type: "array", items: { type: "string" } },
-            authoritativeness_gaps: { type: "array", items: { type: "string" } },
-            trustworthiness_gaps: { type: "array", items: { type: "string" } },
-            recommendations: { type: "array", items: { type: "string" } }
-          }
-        },
-        ai_overview_strategy: {
-          type: "object",
-          properties: {
-            is_ai_overviews_active: { type: "boolean" },
-            how_to_appear_in_ai_overviews: { type: "array", items: { type: "string" } },
-            content_formats_favored: { type: "array", items: { type: "string" } }
-          }
-        }
-      }
-    }
-  });
-
-  // Build algorithm context to inject into main analysis
-  const algoContext = (algorithmMonitor.latest_updates || []).length > 0
-    ? `\nIMPORTANT — ADAPT ALL RECOMMENDATIONS TO THESE RECENT GOOGLE ALGORITHM CHANGES:\n${algorithmMonitor.latest_updates.map(u => `- ${u.update_name} (${u.date_announced}): ${u.summary}. NexusVectis impact: ${u.nexusvectis_impact}`).join('\n')}\nImmediate priorities: ${(algorithmMonitor.adaptation_plan?.immediate_actions || []).join('; ')}\nAvoid: ${(algorithmMonitor.adaptation_plan?.what_to_avoid || []).join('; ')}`
-    : '';
+  // ─── STEP 0: Skip heavy algorithm monitor in scheduled runs ─────────────
+  const algorithmMonitor = {
+    latest_updates: [],
+    adaptation_plan: { immediate_actions: [], algorithm_readiness_score: 0 },
+    eeat_assessment: { current_score: 0 }
+  };
+  const algoContext = '';
 
   // ─── STEP 1: Core SEO Intelligence ───
   const trendAnalysis = await base44.asServiceRole.integrations.Core.InvokeLLM({
@@ -300,6 +224,7 @@ Data-driven for 2026.`,
       competitors_analyzed: (trendAnalysis.competitor_analysis || []).length,
       content_gaps_found: (trendAnalysis.content_gaps || []).length,
       backlink_opportunities: (trendAnalysis.backlink_opportunities || []).length,
+      optimization_note: 'Algorithm monitor & blog generation skipped to avoid timeout',
       ab_winners_detected: Object.keys(abWinners).length,
       posts_flagged_for_update: postsNeedingUpdate.length,
       new_post_generated: null,
