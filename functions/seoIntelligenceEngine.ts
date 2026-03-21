@@ -25,13 +25,18 @@ Deno.serve(async (req) => {
   try {
     const today = new Date().toISOString().split('T')[0];
 
-  // ─── STEP 0: Skip heavy algorithm monitor in scheduled runs ─────────────
-  const algorithmMonitor = {
+  // ─── STEP 0: Fetch latest algorithm monitor data from SEOMetrics ─────────
+  const latestMetrics = await base44.asServiceRole.entities.SEOMetrics.list('-created_date', 1);
+  const algorithmMonitor = latestMetrics[0]?.algorithm_monitor || {
     latest_updates: [],
     adaptation_plan: { immediate_actions: [], algorithm_readiness_score: 0 },
     eeat_assessment: { current_score: 0 }
   };
-  const algoContext = '';
+
+  // Build algorithm context to inject into main analysis
+  const algoContext = (algorithmMonitor.latest_updates || []).length > 0
+    ? `\nIMPORTANT — ADAPT ALL RECOMMENDATIONS TO THESE RECENT GOOGLE ALGORITHM CHANGES:\n${algorithmMonitor.latest_updates.map(u => `- ${u.update_name} (${u.date_announced}): ${u.summary}. NexusVectis impact: ${u.nexusvectis_impact}`).join('\n')}\nImmediate priorities: ${(algorithmMonitor.adaptation_plan?.immediate_actions || []).join('; ')}\nAvoid: ${(algorithmMonitor.adaptation_plan?.what_to_avoid || []).join('; ')}`
+    : '';
 
   // ─── STEP 1: Core SEO Intelligence ───
   const trendAnalysis = await base44.asServiceRole.integrations.Core.InvokeLLM({
@@ -224,7 +229,7 @@ Data-driven for 2026.`,
       competitors_analyzed: (trendAnalysis.competitor_analysis || []).length,
       content_gaps_found: (trendAnalysis.content_gaps || []).length,
       backlink_opportunities: (trendAnalysis.backlink_opportunities || []).length,
-      optimization_note: 'Algorithm monitor & blog generation skipped to avoid timeout',
+      optimization_note: 'Blog generation skipped, algorithm data loaded from monthly monitor',
       ab_winners_detected: Object.keys(abWinners).length,
       posts_flagged_for_update: postsNeedingUpdate.length,
       new_post_generated: null,
