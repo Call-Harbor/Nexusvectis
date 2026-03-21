@@ -11,7 +11,7 @@ const PAGE_SIZE = 12;
 async function fetchPostsPage({ pageParam = 0 }) {
   const posts = await base44.entities.BlogPost.filter(
     { status: 'published' },
-    '-published_at',
+    '-created_date',
     100,
     pageParam
   );
