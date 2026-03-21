@@ -53,11 +53,13 @@ export default function Home() {
   });
   const latestSEO = seoMetricsList[0] || null;
 
-  // Live AI-generated blog posts from SEO engine
+  // Live AI-generated blog posts from SEO engine - always fetch latest
   const { data: aiBlogPosts = [] } = useQuery({
     queryKey: ['homeBlogPosts'],
     queryFn: () => base44.entities.BlogPost.filter({ status: 'published' }, '-published_at', 3),
-    staleTime: 1000 * 60 * 10,
+    staleTime: 1000 * 60 * 5, // Refresh every 5 minutes
+    refetchInterval: 1000 * 60 * 5, // Auto-refetch every 5 minutes
+    refetchOnWindowFocus: true, // Refetch when user returns to tab
   });
 
   const [abVariants, setAbVariants] = useState({});
