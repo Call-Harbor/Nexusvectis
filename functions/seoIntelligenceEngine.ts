@@ -108,23 +108,25 @@ Also assess E-E-A-T status for nexusvectis.com and how to appear in Google AI Ov
     ? `\nIMPORTANT — ADAPT ALL RECOMMENDATIONS TO THESE RECENT GOOGLE ALGORITHM CHANGES:\n${algorithmMonitor.latest_updates.map(u => `- ${u.update_name} (${u.date_announced}): ${u.summary}. NexusVectis impact: ${u.nexusvectis_impact}`).join('\n')}\nImmediate priorities: ${(algorithmMonitor.adaptation_plan?.immediate_actions || []).join('; ')}\nAvoid: ${(algorithmMonitor.adaptation_plan?.what_to_avoid || []).join('; ')}`
     : '';
 
-  // ─── STEP 1: Simplified SEO Intelligence (split into manageable parts) ───
+  // ─── STEP 1: Core SEO Intelligence ───
   const trendAnalysis = await base44.asServiceRole.integrations.Core.InvokeLLM({
     prompt: `You are a world-class SEO strategist for B2B SaaS logistics and fleet management.
 
 Today: ${today}. Platform: NexusVectis (nexusvectis.com) — AI-powered fleet management.
 ${algoContext}
 
-Provide a focused SEO analysis:
+Provide SEO analysis:
 
-1. TOP 15 trending keywords in fleet management/logistics AI with: keyword, monthly_searches, difficulty (1-10), cpc_eur, trend, intent, why_trending
-2. Top 8 content gaps competitors rank for
-3. 10 recommended blog topics with priority_score, primary_keyword, secondary_keywords, search_intent, monthly_searches, why_now
-4. 6 variants each: title_tag_variants, meta_description_variants, hero_headline_variants, hero_subline_variants, cta_text_variants
-5. Basic metrics: seo_health_score (0-100), projected_organic_traffic, ai_summary (2 paragraphs)
-6. Top 5 action_items
+1. TOP 15 trending keywords: keyword, monthly_searches, difficulty (1-10), cpc_eur, trend, intent, why_trending
+2. COMPETITOR DEEP-DIVE (Samsara, Geotab, Trimble): name, top_keywords (5), estimated_monthly_traffic, content_strengths (3), exploitable_gaps (3), backlink_estimate
+3. Top 8 content gaps
+4. 6 BACKLINK opportunities: domain, da_estimate, approach, outreach_subject, estimated_link_value
+5. TECHNICAL SEO: overall_score, core_web_vitals_status, mobile_score, critical_fixes (3), schema_priorities (3)
+6. 10 blog topics: title, primary_keyword, secondary_keywords, search_intent, monthly_searches, priority_score, why_now
+7. 6 variants each: title_tag_variants, meta_description_variants, hero_headline_variants, hero_subline_variants, cta_text_variants
+8. Metrics: seo_health_score, projected_organic_traffic, ai_summary (2 paragraphs), action_items (5)
 
-Keep responses concise and data-driven for 2026.`,
+Data-driven for 2026.`,
     add_context_from_internet: true,
     model: "gemini_3_pro",
     response_json_schema: {
