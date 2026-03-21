@@ -250,9 +250,6 @@ export default function NexusOrbit() {
     refetchInterval: 10000, // Check for new geofences every 10s
   });
 
-  // ── Geofence monitoring for drivers ──────────────────────────────────────
-  useGeofenceMonitor(currentPosition, geofences, user, org, myVehicle?.id);
-
   // ── Send message mutation (offline-aware) ────────────────────────────────
   const sendMutation = useMutation({
     mutationFn: async (data) => {
@@ -338,6 +335,9 @@ export default function NexusOrbit() {
   }
   
   const myRoute = routes.find(r => r.id === myVehicle?.route_id);
+
+  // ── Geofence monitoring for drivers (after myVehicle is defined) ─────────
+  useGeofenceMonitor(currentPosition, geofences, user, org, myVehicle?.id);
 
   // ── Assign route mutation ────────────────────────────────────────────────
   const assignRouteMutation = useMutation({
