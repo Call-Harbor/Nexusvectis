@@ -259,13 +259,17 @@ Data-driven for 2026.`,
     }
   }
 
-  // ─── STEP 4: Save simplified SEO Metrics ────────────────────────────────────
+  // ─── STEP 4: Save enriched SEO Metrics ────────────────────────────────────
   const metricsRecord = await base44.asServiceRole.entities.SEOMetrics.create({
     date: today,
     trending_keywords: trendAnalysis.trending_keywords || [],
     content_gaps: trendAnalysis.content_gaps || [],
+    competitor_analysis: { competitors: trendAnalysis.competitor_analysis || [] },
+    backlink_opportunities: trendAnalysis.backlink_opportunities || [],
+    technical_seo_audit: trendAnalysis.technical_seo || {},
     home_page_seo_score: trendAnalysis.seo_health_score || 0,
     home_page_suggestions: trendAnalysis.action_items || [],
+    schema_markup_suggestions: trendAnalysis.technical_seo?.schema_priorities || [],
     meta_description_variants: trendAnalysis.meta_description_variants || [],
     title_tag_variants: trendAnalysis.title_tag_variants || [],
     hero_headline_variants: trendAnalysis.hero_headline_variants || [],
