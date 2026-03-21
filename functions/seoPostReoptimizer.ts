@@ -64,7 +64,7 @@ RULES:
 - Internal links naturally to: /FleetAIPage, /LiveTrackingPage, /AnalyticsPage, /HarborInfo
 - Closing CTA: "See it in action — book a free NexusVectis demo"
 - Semantic HTML only (H1, H2, H3, p, ul, ol, table). No markdown.`,
-      model: "gemini_3_flash",
+      model: "gemini_3_pro",
       response_json_schema: {
         type: "object",
         properties: {
