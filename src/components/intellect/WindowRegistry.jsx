@@ -52,6 +52,7 @@ export const WINDOW_META = {
   vehicle_builder: { title: '🔧 Transport Builder & Simulator', icon: Layers },
   harbor_app_builder: { title: '⚡ H.A.R.B.O.R App Builder', icon: Cpu },
   fleet_store: { title: '🛒 Fleet Store', icon: Store },
+  nexus_orbit: { title: '🛰️ Nexus Orbit', icon: Satellite },
 };
 
 export function getWindowMeta(type) {
