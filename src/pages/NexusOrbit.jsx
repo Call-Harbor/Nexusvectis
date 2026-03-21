@@ -12,6 +12,7 @@ import {
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
+import OrbitNavigator from "../components/navigation/OrbitNavigator";
 
 // Fix Leaflet default marker icons
 delete L.Icon.Default.prototype._getIconUrl;
