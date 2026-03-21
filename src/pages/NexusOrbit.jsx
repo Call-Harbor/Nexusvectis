@@ -58,7 +58,7 @@ function MapAutoCenter({ center }) {
 export default function NexusOrbit() {
   const [user, setUser] = useState(null);
   const [org, setOrg] = useState(null);
-  const [activeView, setActiveView] = useState("setup"); // setup, chat, routes, map
+  const [activeView, setActiveView] = useState("setup"); // setup, chat, routes, map, navigate
   const [selectedRecipient, setSelectedRecipient] = useState(null);
   const [messageText, setMessageText] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
@@ -68,6 +68,7 @@ export default function NexusOrbit() {
   const [requestSubmitted, setRequestSubmitted] = useState(false);
   const [currentPosition, setCurrentPosition] = useState(null);
   const [authError, setAuthError] = useState(false);
+  const [navigating, setNavigating] = useState(false);
   const messagesEndRef = useRef(null);
   const queryClient = useQueryClient();
   const { isOnline, queueMessage, processPendingQueue, cacheMessages, getCachedMessages, pendingQueue } = useOfflineSync();
@@ -347,9 +348,9 @@ export default function NexusOrbit() {
   const destination = myRoute?.waypoints?.[myRoute.waypoints.length - 1];
 
   const handleStartNavigation = () => {
-    if (!destination) return;
-    const url = `https://www.google.com/maps/dir/?api=1&destination=${destination.lat},${destination.lng}${currentPosition ? `&origin=${currentPosition.lat},${currentPosition.lng}` : ''}`;
-    window.open(url, '_blank');
+    if (!myRoute) return;
+    setNavigating(true);
+    setActiveView("navigate");
   };
 
   if (!user) return (
@@ -548,6 +549,18 @@ export default function NexusOrbit() {
 
       {/* GPS Tracker */}
       {userRole === "driver" && <GPSTracker onPositionUpdate={setCurrentPosition} />}
+
+      {/* Orbit Navigator */}
+      {navigating && myRoute && (
+        <OrbitNavigator
+          route={myRoute}
+          currentPosition={currentPosition}
+          onExit={() => {
+            setNavigating(false);
+            setActiveView("map");
+          }}
+        />
+      )}
 
       {/* ── Main Content ───────────────────────────────────────────── */}
       <main className="flex-1 pt-20 pb-4 px-4 overflow-hidden">
