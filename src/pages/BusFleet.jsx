@@ -45,14 +45,21 @@ export default function BusFleet() {
       const orgId = user?.organization_id || user?.data?.organization_id;
       
       // Get resource coordinates if resource is selected
-      let latitude = null;
-      let longitude = null;
+      let latitude = 0;
+      let longitude = 0;
       
       if (data.resource_id) {
-        const resource = await base44.entities.Resource.get(data.resource_id);
-        if (resource?.latitude && resource?.longitude) {
-          latitude = resource.latitude;
-          longitude = resource.longitude;
+        try {
+          const resource = await base44.entities.Resource.get(data.resource_id);
+          if (resource?.latitude && resource?.longitude) {
+            latitude = resource.latitude;
+            longitude = resource.longitude;
+          } else {
+            toast.error('Resource does not have coordinates. Using default.');
+          }
+        } catch (error) {
+          console.error('Failed to get resource:', error);
+          toast.error('Could not get resource location. Using default coordinates.');
         }
       }
       
@@ -78,8 +85,8 @@ export default function BusFleet() {
       const orgId = user?.organization_id || user?.data?.organization_id;
       
       // Geocode the address to get coordinates
-      let latitude = null;
-      let longitude = null;
+      let latitude = 0;
+      let longitude = 0;
       
       if (data.address) {
         try {
@@ -90,11 +97,12 @@ export default function BusFleet() {
           if (geocodeResult.data?.latitude && geocodeResult.data?.longitude) {
             latitude = geocodeResult.data.latitude;
             longitude = geocodeResult.data.longitude;
+          } else {
+            toast.error('Could not find coordinates for this location. Using default.');
           }
         } catch (error) {
           console.error('Geocoding failed:', error);
-          toast.error('Could not geocode address. Please check the location.');
-          throw error;
+          toast.error('Could not geocode address. Using default coordinates.');
         }
       }
       
