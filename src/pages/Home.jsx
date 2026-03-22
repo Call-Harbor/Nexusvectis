@@ -9,7 +9,6 @@ import {
 import { base44 } from "@/api/base44Client";
 import { useEffect, useState, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
-import FuturisticMap2D from "../components/home/FuturisticMap2D";
 
 // --- A/B Test Helpers ---
 function getOrCreateAnonymousId() {
@@ -196,40 +195,6 @@ export default function Home() {
     { value: "Global", label: "Coverage" }
   ];
 
-  // Demo data for globe
-  const demoVehicles = [
-    { id: 1, name: "Fleet Truck 47", latitude: 55.6761, longitude: 12.5683, status: "active", speed: 65, heading: 45 },
-    { id: 2, name: "Cargo Ship Alpha", latitude: 51.5074, longitude: -0.1278, status: "active", speed: 22, heading: 90 },
-    { id: 3, name: "Delivery Drone 8", latitude: 48.8566, longitude: 2.3522, status: "idle", speed: 0 },
-    { id: 4, name: "Fleet Truck 23", latitude: 52.5200, longitude: 13.4050, status: "active", speed: 80, heading: 180 },
-    { id: 5, name: "Aircraft Cargo 1", latitude: 40.7128, longitude: -74.0060, status: "active", speed: 450, heading: 270 },
-  ];
-
-  const demoRoutes = [
-    {
-      id: 1,
-      name: "Copenhagen → Berlin",
-      waypoints: [
-        { lat: 55.6761, lng: 12.5683, name: "Copenhagen" },
-        { lat: 52.5200, lng: 13.4050, name: "Berlin" }
-      ]
-    },
-    {
-      id: 2,
-      name: "London → Paris",
-      waypoints: [
-        { lat: 51.5074, lng: -0.1278, name: "London" },
-        { lat: 48.8566, lng: 2.3522, name: "Paris" }
-      ]
-    }
-  ];
-
-  const demoResources = [
-    { id: 1, name: "Copenhagen Port", latitude: 55.6761, longitude: 12.5683, type: "port" },
-    { id: 2, name: "Berlin Warehouse", latitude: 52.5200, longitude: 13.4050, type: "warehouse" },
-    { id: 3, name: "Paris Hub", latitude: 48.8566, longitude: 2.3522, type: "warehouse" },
-  ];
-
   return (
     <div className="min-h-screen bg-black overflow-hidden relative">
       {/* Animated Background */}
@@ -414,52 +379,6 @@ export default function Home() {
                 </div>
               </motion.div>
             ))}
-          </motion.div>
-        </div>
-      </section>
-
-      {/* 3D Globe Showcase */}
-      <section className="relative py-20 sm:py-32 px-4 sm:px-6 z-10">
-        <div className="max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="text-center mb-12"
-          >
-            <motion.div
-              animate={{ rotate: [0, 360] }}
-              transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-              className="inline-block mb-6"
-            >
-              <Globe className="w-12 h-12 text-cyan-400" />
-            </motion.div>
-            <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-6 leading-tight px-2">
-              Global Fleet
-              <br />
-              <span className="bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent">
-                In Real-Time
-              </span>
-            </h2>
-            <p className="text-base sm:text-lg md:text-xl text-slate-400 max-w-3xl mx-auto px-2">
-              Track vehicles, ships, aircraft and resources across the globe with our interactive 3D visualization
-            </p>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="relative rounded-3xl overflow-hidden border-2 border-cyan-500/40 shadow-2xl shadow-cyan-500/20"
-            style={{ height: "600px" }}
-          >
-            <FuturisticMap2D
-              vehicles={demoVehicles}
-              routes={demoRoutes}
-              resources={demoResources}
-            />
           </motion.div>
         </div>
       </section>
