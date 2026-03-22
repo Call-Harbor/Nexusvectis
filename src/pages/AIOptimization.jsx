@@ -1,8 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { motion } from "framer-motion";
-import { Sparkles, Wrench, AlertTriangle, Thermometer, TrendingUp, BarChart3, DollarSign } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+  Sparkles, Wrench, AlertTriangle, Thermometer, TrendingUp, BarChart3, DollarSign,
+  Brain, Cpu, Network, Zap, GitBranch, Activity, Layers, Radar, Target, Workflow
+} from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,11 +14,21 @@ import PredictiveMaintenance from "@/components/ai/PredictiveMaintenance";
 import ExceptionManagement from "@/components/ai/ExceptionManagement";
 import ColdChainMonitor from "@/components/shipments/ColdChainMonitor";
 import AIChat from "@/components/ai/AIChat";
+import AdvancedModelMonitoring from "@/components/intellect/AdvancedModelMonitoring";
+import NeuroSymbolicRiskPanel from "@/components/intellect/NeuroSymbolicRiskPanel";
+import ParallelTaskProcessor from "@/components/intellect/ParallelTaskProcessor";
+import ScenarioPredictionEngine from "@/components/intellect/ScenarioPredictionEngine";
 
 export default function AIOptimization() {
-  const [activeTab, setActiveTab] = useState("maintenance");
+  const [activeTab, setActiveTab] = useState("neural");
   const [loadingKPIs, setLoadingKPIs] = useState(false);
   const [kpiData, setKpiData] = useState(null);
+  const [aiMetrics, setAiMetrics] = useState({
+    neural_accuracy: 0,
+    symbolic_coverage: 0,
+    ensemble_confidence: 0,
+    active_agents: 0
+  });
   const queryClient = useQueryClient();
 
   const { data: currentUser } = useQuery({
@@ -68,6 +81,19 @@ export default function AIOptimization() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['exceptions'] }),
   });
 
+  // Real-time AI metrics simulation
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setAiMetrics({
+        neural_accuracy: 92 + Math.random() * 6,
+        symbolic_coverage: 88 + Math.random() * 8,
+        ensemble_confidence: 94 + Math.random() * 5,
+        active_agents: Math.floor(12 + Math.random() * 8)
+      });
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
+
   const loadAllKPIs = async () => {
     setLoadingKPIs(true);
     const orgId = currentUser?.organization_id || currentUser?.data?.organization_id;
@@ -111,30 +137,88 @@ export default function AIOptimization() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-3 rounded-2xl bg-gradient-to-br from-violet-500/20 to-cyan-500/20 border border-violet-500/30">
-              <Sparkles className="w-8 h-8 text-violet-400" />
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="p-3 rounded-2xl bg-gradient-to-br from-violet-500/20 to-cyan-500/20 border border-violet-500/30">
+                <Brain className="w-8 h-8 text-violet-400" />
+              </div>
+              <div>
+                <h1 className="text-4xl font-bold bg-gradient-to-r from-violet-400 via-cyan-400 to-fuchsia-400 bg-clip-text text-transparent">
+                  Advanced AI Optimization
+                </h1>
+                <p className="text-slate-400 mt-1">Multi-modal neural systems • Neuro-symbolic reasoning • Parallel intelligence</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-3xl font-bold text-white">AI Optimization</h1>
-              <p className="text-slate-400 mt-1">Predictive intelligence & automated management</p>
+
+            {/* Real-time AI Status */}
+            <div className="grid grid-cols-2 gap-4">
+              <motion.div
+                animate={{ scale: [1, 1.02, 1] }}
+                transition={{ duration: 2, repeat: Infinity }}
+                className="bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 border border-emerald-500/30 rounded-xl p-4"
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <Activity className="w-4 h-4 text-emerald-400" />
+                  <span className="text-xs text-emerald-400">Neural Accuracy</span>
+                </div>
+                <div className="text-2xl font-bold text-white">{aiMetrics.neural_accuracy.toFixed(1)}%</div>
+              </motion.div>
+              <motion.div
+                animate={{ scale: [1, 1.02, 1] }}
+                transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+                className="bg-gradient-to-br from-violet-500/10 to-violet-500/5 border border-violet-500/30 rounded-xl p-4"
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <Network className="w-4 h-4 text-violet-400" />
+                  <span className="text-xs text-violet-400">Active Agents</span>
+                </div>
+                <div className="text-2xl font-bold text-white">{aiMetrics.active_agents}</div>
+              </motion.div>
             </div>
           </div>
         </motion.div>
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="bg-slate-800/50 border border-slate-700/50 mb-6">
+          <TabsList className="bg-slate-800/50 border border-slate-700/50 mb-6 flex-wrap gap-2">
+            <TabsTrigger 
+              value="neural" 
+              className="data-[state=active]:bg-violet-500/20 data-[state=active]:text-violet-400"
+            >
+              <Brain className="w-4 h-4 mr-2" />
+              Neural Networks
+            </TabsTrigger>
+            <TabsTrigger 
+              value="symbolic" 
+              className="data-[state=active]:bg-fuchsia-500/20 data-[state=active]:text-fuchsia-400"
+            >
+              <GitBranch className="w-4 h-4 mr-2" />
+              Neuro-Symbolic
+            </TabsTrigger>
+            <TabsTrigger 
+              value="parallel" 
+              className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400"
+            >
+              <Workflow className="w-4 h-4 mr-2" />
+              Parallel Processing
+            </TabsTrigger>
+            <TabsTrigger 
+              value="scenarios" 
+              className="data-[state=active]:bg-emerald-500/20 data-[state=active]:text-emerald-400"
+            >
+              <Radar className="w-4 h-4 mr-2" />
+              Scenario Prediction
+            </TabsTrigger>
             <TabsTrigger 
               value="maintenance" 
-              className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400"
+              className="data-[state=active]:bg-amber-500/20 data-[state=active]:text-amber-400"
             >
               <Wrench className="w-4 h-4 mr-2" />
               Predictive Maintenance
             </TabsTrigger>
             <TabsTrigger 
               value="exceptions" 
-              className="data-[state=active]:bg-amber-500/20 data-[state=active]:text-amber-400"
+              className="data-[state=active]:bg-red-500/20 data-[state=active]:text-red-400"
             >
               <AlertTriangle className="w-4 h-4 mr-2" />
               Exception Management
@@ -148,12 +232,43 @@ export default function AIOptimization() {
             </TabsTrigger>
             <TabsTrigger 
               value="kpis" 
-              className="data-[state=active]:bg-emerald-500/20 data-[state=active]:text-emerald-400"
+              className="data-[state=active]:bg-teal-500/20 data-[state=active]:text-teal-400"
             >
               <BarChart3 className="w-4 h-4 mr-2" />
-              KPIs & Metrics
+              Advanced KPIs
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="neural">
+            <AdvancedModelMonitoring vehicles={vehicles} />
+          </TabsContent>
+
+          <TabsContent value="symbolic">
+            <NeuroSymbolicRiskPanel 
+              vehicles={vehicles}
+              exceptions={exceptions}
+              shipments={shipments}
+            />
+          </TabsContent>
+
+          <TabsContent value="parallel">
+            <ParallelTaskProcessor 
+              vehicles={vehicles}
+              routes={[]}
+              shipments={shipments}
+            />
+          </TabsContent>
+
+          <TabsContent value="scenarios">
+            <ScenarioPredictionEngine 
+              vehicles={vehicles}
+              historicalData={{
+                maintenance: maintenanceRecords,
+                exceptions: exceptions,
+                shipments: shipments
+              }}
+            />
+          </TabsContent>
 
           <TabsContent value="maintenance">
             <PredictiveMaintenance 
