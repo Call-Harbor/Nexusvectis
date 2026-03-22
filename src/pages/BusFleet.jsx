@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Bus, MapPin, Users, Clock, Zap, TrendingUp, AlertCircle, Settings, Plus } from "lucide-react";
+import { Bus, MapPin, Users, Clock, Zap, TrendingUp, AlertCircle, Settings, Plus, Brain } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import BusMap from "../components/bus/BusMap";
