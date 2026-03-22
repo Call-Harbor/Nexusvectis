@@ -58,7 +58,16 @@ export default function BusFleet() {
   });
 
   const createRouteMutation = useMutation({
-    mutationFn: (data) => base44.entities.BusRoute.create(data),
+    mutationFn: async (data) => {
+      // Get organization ID from current user
+      const user = await base44.auth.me();
+      const orgId = user?.organization_id || user?.data?.organization_id;
+      
+      return base44.entities.BusRoute.create({
+        ...data,
+        organization_id: orgId,
+      });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries(['busRoutes']);
       toast.success('Route created successfully');
