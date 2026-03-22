@@ -7,6 +7,8 @@ export default function FuturisticMap2D({ vehicles = [], routes = [], resources 
   const sceneRef = useRef(null);
   const rendererRef = useRef(null);
   const globeRef = useRef(null);
+  const particlesRef = useRef([]);
+  const ringsRef = useRef([]);
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
@@ -34,8 +36,8 @@ export default function FuturisticMap2D({ vehicles = [], routes = [], resources 
     containerRef.current.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 
-    // Globe sphere with gradient material
-    const geometry = new THREE.SphereGeometry(1, 64, 64);
+    // Globe sphere with holographic shader
+    const geometry = new THREE.SphereGeometry(1, 128, 128);
     const material = new THREE.ShaderMaterial({
       transparent: true,
       uniforms: {
@@ -44,9 +46,11 @@ export default function FuturisticMap2D({ vehicles = [], routes = [], resources 
       vertexShader: `
         varying vec3 vNormal;
         varying vec3 vPosition;
+        varying vec2 vUv;
         void main() {
           vNormal = normalize(normalMatrix * normal);
           vPosition = position;
+          vUv = uv;
           gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
         }
       `,
@@ -54,17 +58,33 @@ export default function FuturisticMap2D({ vehicles = [], routes = [], resources 
         uniform float time;
         varying vec3 vNormal;
         varying vec3 vPosition;
+        varying vec2 vUv;
         
         void main() {
-          vec3 color1 = vec3(0.024, 0.714, 0.824); // cyan
-          vec3 color2 = vec3(0.545, 0.361, 0.965); // violet
+          // Holographic cyan/blue gradient
+          vec3 color1 = vec3(0.0, 0.9, 1.0); // bright cyan
+          vec3 color2 = vec3(0.0, 0.5, 1.0); // deep blue
+          vec3 color3 = vec3(0.8, 0.4, 1.0); // violet accent
           
-          float fresnel = pow(1.0 - dot(vNormal, vec3(0.0, 0.0, 1.0)), 2.0);
-          vec3 gradient = mix(color1, color2, vPosition.y * 0.5 + 0.5);
+          // Fresnel glow
+          float fresnel = pow(1.0 - dot(vNormal, vec3(0.0, 0.0, 1.0)), 3.0);
           
-          float pulse = sin(time * 0.5) * 0.1 + 0.9;
+          // Grid pattern for holographic effect
+          float grid = step(0.95, fract(vUv.x * 40.0)) + step(0.95, fract(vUv.y * 40.0));
           
-          gl_FragColor = vec4(gradient * 0.3 * pulse, 0.4 + fresnel * 0.3);
+          // Dot pattern for landmasses
+          float dots = step(0.92, fract(sin(dot(vUv * 60.0, vec2(12.9898, 78.233))) * 43758.5453));
+          
+          // Combine colors
+          vec3 baseColor = mix(color1, color2, vPosition.y * 0.5 + 0.5);
+          baseColor = mix(baseColor, color3, fresnel * 0.3);
+          
+          // Pulsing glow
+          float pulse = sin(time * 0.8) * 0.15 + 0.85;
+          
+          float alpha = 0.25 + fresnel * 0.5 + grid * 0.15 + dots * 0.1;
+          
+          gl_FragColor = vec4(baseColor * pulse, alpha);
         }
       `
     });
@@ -73,108 +93,134 @@ export default function FuturisticMap2D({ vehicles = [], routes = [], resources 
     scene.add(globe);
     globeRef.current = globe;
 
-    // Wireframe overlay
-    const wireframeGeo = new THREE.SphereGeometry(1.01, 32, 32);
-    const wireframeMat = new THREE.MeshBasicMaterial({
-      color: 0x06b6d4,
-      wireframe: true,
+    // Outer glow sphere
+    const glowGeo = new THREE.SphereGeometry(1.15, 64, 64);
+    const glowMat = new THREE.ShaderMaterial({
       transparent: true,
-      opacity: 0.15
+      side: THREE.BackSide,
+      uniforms: { time: { value: 0 } },
+      vertexShader: `
+        varying vec3 vNormal;
+        void main() {
+          vNormal = normalize(normalMatrix * normal);
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        uniform float time;
+        varying vec3 vNormal;
+        void main() {
+          float intensity = pow(0.7 - dot(vNormal, vec3(0.0, 0.0, 1.0)), 2.0);
+          float pulse = sin(time * 0.5) * 0.2 + 0.8;
+          gl_FragColor = vec4(0.0, 0.8, 1.0, intensity * 0.6 * pulse);
+        }
+      `
     });
-    const wireframe = new THREE.Mesh(wireframeGeo, wireframeMat);
-    scene.add(wireframe);
+    const glowSphere = new THREE.Mesh(glowGeo, glowMat);
+    scene.add(glowSphere);
 
-    // Latitude/longitude lines
-    const createLatLine = (latitude) => {
-      const phi = (90 - latitude) * Math.PI / 180;
-      const radius = Math.sin(phi) * 1.02;
-      const circleGeo = new THREE.BufferGeometry();
-      const points = [];
-      for (let i = 0; i <= 64; i++) {
-        const theta = (i / 64) * Math.PI * 2;
-        points.push(
-          radius * Math.cos(theta),
-          Math.cos(phi) * 1.02,
-          radius * Math.sin(theta)
-        );
-      }
-      circleGeo.setAttribute('position', new THREE.Float32BufferAttribute(points, 3));
-      const lineMat = new THREE.LineBasicMaterial({ 
-        color: 0x06b6d4, 
-        transparent: true, 
-        opacity: 0.2 
+    // Orbital rings
+    const createOrbitalRing = (radius, thickness, tilt, speed) => {
+      const ringGeo = new THREE.TorusGeometry(radius, thickness, 16, 100);
+      const ringMat = new THREE.MeshBasicMaterial({
+        color: 0x00e5ff,
+        transparent: true,
+        opacity: 0.4
       });
-      return new THREE.Line(circleGeo, lineMat);
+      const ring = new THREE.Mesh(ringGeo, ringMat);
+      ring.rotation.x = Math.PI / 2 + tilt;
+      ring.userData.rotationSpeed = speed;
+      ringsRef.current.push(ring);
+      return ring;
     };
 
-    [-60, -30, 0, 30, 60].forEach(lat => {
-      scene.add(createLatLine(lat));
-    });
+    scene.add(createOrbitalRing(1.3, 0.01, 0.2, 0.001));
+    scene.add(createOrbitalRing(1.5, 0.008, -0.3, -0.0015));
+    scene.add(createOrbitalRing(1.7, 0.006, 0.1, 0.002));
 
-    // Longitude lines
-    const createLongLine = (longitude) => {
-      const curvePoints = [];
-      for (let i = 0; i <= 64; i++) {
-        const phi = (i / 64) * Math.PI;
-        const theta = longitude * Math.PI / 180;
-        curvePoints.push(new THREE.Vector3(
-          1.02 * Math.sin(phi) * Math.cos(theta),
-          1.02 * Math.cos(phi),
-          1.02 * Math.sin(phi) * Math.sin(theta)
-        ));
-      }
-      const curve = new THREE.CatmullRomCurve3(curvePoints);
-      const curveGeo = new THREE.BufferGeometry().setFromPoints(curve.getPoints(64));
-      const lineMat = new THREE.LineBasicMaterial({ 
-        color: 0x06b6d4, 
-        transparent: true, 
-        opacity: 0.2 
+    // Floating particles around globe
+    const particleCount = 300;
+    const particleGeo = new THREE.BufferGeometry();
+    const particlePositions = new Float32Array(particleCount * 3);
+    const particleVelocities = [];
+
+    for (let i = 0; i < particleCount; i++) {
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.random() * Math.PI;
+      const radius = 1.8 + Math.random() * 1.2;
+      
+      particlePositions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
+      particlePositions[i * 3 + 1] = radius * Math.cos(phi);
+      particlePositions[i * 3 + 2] = radius * Math.sin(phi) * Math.sin(theta);
+      
+      particleVelocities.push({
+        theta: Math.random() * 0.002,
+        phi: Math.random() * 0.001
       });
-      return new THREE.Line(curveGeo, lineMat);
-    };
+    }
 
-    [0, 30, 60, 90, 120, 150].forEach(lng => {
-      scene.add(createLongLine(lng));
+    particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
+    const particleMat = new THREE.PointsMaterial({
+      color: 0x00e5ff,
+      size: 0.03,
+      transparent: true,
+      opacity: 0.8,
+      blending: THREE.AdditiveBlending
     });
+    const particles = new THREE.Points(particleGeo, particleMat);
+    scene.add(particles);
+    particlesRef.current = { mesh: particles, velocities: particleVelocities };
 
-    // Vehicle markers
-    const markerGeo = new THREE.SphereGeometry(0.02, 16, 16);
+    // Data nodes with light beams
+    const markerGeo = new THREE.SphereGeometry(0.025, 16, 16);
+    const beamGeo = new THREE.CylinderGeometry(0.003, 0.003, 0.4, 8);
+    
     vehicles.forEach((vehicle, idx) => {
       const phi = (90 - vehicle.latitude) * Math.PI / 180;
       const theta = (vehicle.longitude + 180) * Math.PI / 180;
-      const x = 1.05 * Math.sin(phi) * Math.cos(theta);
-      const y = 1.05 * Math.cos(phi);
-      const z = 1.05 * Math.sin(phi) * Math.sin(theta);
+      const x = 1.08 * Math.sin(phi) * Math.cos(theta);
+      const y = 1.08 * Math.cos(phi);
+      const z = 1.08 * Math.sin(phi) * Math.sin(theta);
 
+      // Glowing marker
       const markerMat = new THREE.MeshBasicMaterial({ 
-        color: vehicle.status === 'active' ? 0x06b6d4 : 0xfbbf24 
+        color: 0x00ffff,
+        emissive: 0x00ffff,
+        emissiveIntensity: 2
       });
       const marker = new THREE.Mesh(markerGeo, markerMat);
       marker.position.set(x, y, z);
       scene.add(marker);
 
-      // Pulsing ring
-      const ringGeo = new THREE.RingGeometry(0.02, 0.04, 16);
-      const ringMat = new THREE.MeshBasicMaterial({ 
-        color: 0x06b6d4, 
-        transparent: true, 
-        opacity: 0.5,
-        side: THREE.DoubleSide
+      // Light beam from marker
+      const beamMat = new THREE.MeshBasicMaterial({
+        color: 0x00e5ff,
+        transparent: true,
+        opacity: 0.3
       });
-      const ring = new THREE.Mesh(ringGeo, ringMat);
-      ring.position.set(x, y, z);
-      ring.lookAt(0, 0, 0);
-      scene.add(ring);
+      const beam = new THREE.Mesh(beamGeo, beamMat);
+      beam.position.set(x * 0.8, y * 0.8, z * 0.8);
+      beam.lookAt(x, y, z);
+      scene.add(beam);
+
+      // Point light for glow effect
+      const pointLight = new THREE.PointLight(0x00ffff, 0.5, 0.3);
+      pointLight.position.set(x, y, z);
+      scene.add(pointLight);
     });
 
     // Ambient light
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    const ambientLight = new THREE.AmbientLight(0x0088ff, 0.3);
     scene.add(ambientLight);
 
-    // Point light
-    const pointLight = new THREE.PointLight(0x06b6d4, 1, 100);
-    pointLight.position.set(2, 2, 2);
-    scene.add(pointLight);
+    // Key lights
+    const keyLight1 = new THREE.PointLight(0x00e5ff, 2, 100);
+    keyLight1.position.set(3, 3, 3);
+    scene.add(keyLight1);
+
+    const keyLight2 = new THREE.PointLight(0x0088ff, 1.5, 100);
+    keyLight2.position.set(-3, -2, 2);
+    scene.add(keyLight2);
 
     // Mouse interaction
     let mouseX = 0;
@@ -192,15 +238,45 @@ export default function FuturisticMap2D({ vehicles = [], routes = [], resources 
       requestAnimationFrame(animate);
       time += 0.01;
 
+      // Rotate globe
       if (globeRef.current) {
-        globeRef.current.rotation.y += 0.002;
-        globeRef.current.rotation.y += mouseX * 0.001;
-        globeRef.current.rotation.x += mouseY * 0.0005;
+        globeRef.current.rotation.y += 0.003;
+        globeRef.current.rotation.y += mouseX * 0.002;
+        globeRef.current.rotation.x += mouseY * 0.001;
         globeRef.current.material.uniforms.time.value = time;
       }
 
-      if (wireframe) {
-        wireframe.rotation.y += 0.002;
+      // Rotate glow sphere
+      if (glowSphere) {
+        glowSphere.rotation.y += 0.002;
+        glowSphere.material.uniforms.time.value = time;
+      }
+
+      // Rotate orbital rings
+      ringsRef.current.forEach(ring => {
+        ring.rotation.z += ring.userData.rotationSpeed;
+      });
+
+      // Animate particles
+      if (particlesRef.current.mesh) {
+        const positions = particlesRef.current.mesh.geometry.attributes.position.array;
+        const velocities = particlesRef.current.velocities;
+        
+        for (let i = 0; i < particleCount; i++) {
+          const x = positions[i * 3];
+          const y = positions[i * 3 + 1];
+          const z = positions[i * 3 + 2];
+          
+          const radius = Math.sqrt(x * x + y * y + z * z);
+          let theta = Math.atan2(z, x) + velocities[i].theta;
+          let phi = Math.acos(y / radius) + velocities[i].phi;
+          
+          positions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
+          positions[i * 3 + 1] = radius * Math.cos(phi);
+          positions[i * 3 + 2] = radius * Math.sin(phi) * Math.sin(theta);
+        }
+        
+        particlesRef.current.mesh.geometry.attributes.position.needsUpdate = true;
       }
 
       renderer.render(scene, camera);
@@ -230,103 +306,19 @@ export default function FuturisticMap2D({ vehicles = [], routes = [], resources 
   }, []);
 
   return (
-    <div className="relative w-full h-full overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-      {/* Animated background */}
-      <div className="absolute inset-0">
-        <motion.div
-          className="absolute inset-0 opacity-20"
-          style={{
-            backgroundImage: `
-              linear-gradient(rgba(6, 182, 212, 0.2) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(6, 182, 212, 0.2) 1px, transparent 1px)
-            `,
-            backgroundSize: '60px 60px',
-          }}
-          animate={{
-            backgroundPosition: ['0px 0px', '60px 60px'],
-          }}
-          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-        />
-      </div>
-
+    <div className="relative w-full h-full overflow-hidden">
       {/* 3D Globe Container */}
       <div ref={containerRef} className="absolute inset-0" />
 
-      {/* Stats overlay */}
-      <div className="absolute top-6 left-6 space-y-3 pointer-events-none z-10">
-        {[
-          { label: 'Active Fleet', value: vehicles.length, color: 'cyan' },
-          { label: 'Routes', value: routes.length, color: 'violet' },
-          { label: 'Hubs', value: resources.length, color: 'fuchsia' },
-        ].map((stat, idx) => (
-          <motion.div
-            key={stat.label}
-            initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: isReady ? 1 : 0, x: isReady ? 0 : -30 }}
-            transition={{ delay: idx * 0.15 }}
-            className={`px-4 py-2.5 rounded-xl bg-gradient-to-r from-${stat.color}-500/20 to-${stat.color}-500/10 border border-${stat.color}-400/40 backdrop-blur-xl shadow-lg`}
-          >
-            <div className="flex items-baseline gap-3">
-              <span className={`text-3xl font-bold text-${stat.color}-400`}>{stat.value}</span>
-              <span className="text-xs text-slate-300 uppercase tracking-widest">{stat.label}</span>
-            </div>
-          </motion.div>
-        ))}
-      </div>
-
-      {/* Status indicator */}
+      {/* Minimal data overlay */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: isReady ? 1 : 0, y: isReady ? 0 : 20 }}
-        className="absolute bottom-6 right-6 flex items-center gap-3 px-4 py-2 rounded-xl bg-black/40 border border-cyan-500/30 backdrop-blur-xl z-10"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: isReady ? 1 : 0 }}
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2 px-4 py-2 rounded-full bg-black/20 border border-cyan-400/20 backdrop-blur-sm z-10"
       >
-        <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-        <span className="text-cyan-300 text-xs font-mono">REAL-TIME TRACKING</span>
+        <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+        <span className="text-cyan-300/80 text-xs font-mono">GLOBAL FLEET TRACKING</span>
       </motion.div>
-
-      {/* Corner brackets */}
-      {[
-        { corner: 'top-left', rotate: 0 },
-        { corner: 'top-right', rotate: 90 },
-        { corner: 'bottom-left', rotate: 270 },
-        { corner: 'bottom-right', rotate: 180 },
-      ].map((item, idx) => (
-        <motion.div
-          key={idx}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: isReady ? 0.6 : 0 }}
-          transition={{ delay: idx * 0.1 }}
-          className={`absolute ${
-            item.corner.includes('top') ? 'top-4' : 'bottom-4'
-          } ${
-            item.corner.includes('left') ? 'left-4' : 'right-4'
-          } w-12 h-12 pointer-events-none`}
-          style={{ transform: `rotate(${item.rotate}deg)` }}
-        >
-          <svg viewBox="0 0 40 40" className="w-full h-full">
-            <path
-              d="M 0 8 L 0 0 L 8 0"
-              fill="none"
-              stroke="#06b6d4"
-              strokeWidth="2"
-            />
-            <circle cx="0" cy="0" r="2" fill="#06b6d4" />
-          </svg>
-        </motion.div>
-      ))}
-
-      {/* Scan line effect */}
-      <motion.div
-        className="absolute inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent pointer-events-none"
-        animate={{
-          top: ['0%', '100%'],
-        }}
-        transition={{
-          duration: 3,
-          repeat: Infinity,
-          ease: "linear",
-        }}
-      />
     </div>
   );
 }
