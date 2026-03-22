@@ -1,15 +1,24 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { useQuery } from "@tanstack/react-query";
-import { Bus, MapPin, Users, Clock, Zap, TrendingUp, AlertCircle, Settings } from "lucide-react";
-import { motion } from "framer-motion";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Bus, MapPin, Users, Clock, Zap, TrendingUp, AlertCircle, Settings, Plus } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
 import BusMap from "../components/bus/BusMap";
 import BusCard from "../components/bus/BusCard";
 import BusRouteOverview from "../components/bus/BusRouteOverview";
+import BusEditor from "../components/bus/BusEditor";
+import BusStopEditor from "../components/bus/BusStopEditor";
+import BusRouteEditor from "../components/bus/BusRouteEditor";
 
 export default function BusFleet() {
   const [selectedBus, setSelectedBus] = useState(null);
   const [view, setView] = useState("map"); // map, list, routes
+  const [showBusEditor, setShowBusEditor] = useState(false);
+  const [showStopEditor, setShowStopEditor] = useState(false);
+  const [showRouteEditor, setShowRouteEditor] = useState(false);
+  const [editingItem, setEditingItem] = useState(null);
+  const queryClient = useQueryClient();
 
   const { data: buses = [], isLoading: loadingBuses } = useQuery({
     queryKey: ['buses'],
@@ -25,6 +34,36 @@ export default function BusFleet() {
   const { data: stops = [] } = useQuery({
     queryKey: ['busStops'],
     queryFn: () => base44.entities.BusStop.list('-stop_code', 200),
+  });
+
+  const createBusMutation = useMutation({
+    mutationFn: (data) => base44.entities.Bus.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['buses']);
+      toast.success('Bus created successfully');
+      setShowBusEditor(false);
+      setEditingItem(null);
+    },
+  });
+
+  const createStopMutation = useMutation({
+    mutationFn: (data) => base44.entities.BusStop.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['busStops']);
+      toast.success('Stop created successfully');
+      setShowStopEditor(false);
+      setEditingItem(null);
+    },
+  });
+
+  const createRouteMutation = useMutation({
+    mutationFn: (data) => base44.entities.BusRoute.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['busRoutes']);
+      toast.success('Route created successfully');
+      setShowRouteEditor(false);
+      setEditingItem(null);
+    },
   });
 
   const stats = {
@@ -103,43 +142,74 @@ export default function BusFleet() {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => setView('map')}
-                className={`px-6 py-3 rounded-xl font-semibold transition-all flex items-center gap-2 ${
-                  view === 'map' 
-                    ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-lg shadow-cyan-500/30 border border-cyan-400/50' 
-                    : 'bg-slate-900/60 backdrop-blur-xl text-slate-300 hover:text-white border border-slate-700/50 hover:border-slate-600'
-                }`}
+                onClick={() => setShowBusEditor(true)}
+                className="px-6 py-3 rounded-xl font-semibold bg-gradient-to-r from-cyan-500 to-violet-500 hover:from-cyan-600 hover:to-violet-600 text-white shadow-lg shadow-cyan-500/20 border border-cyan-400/50 flex items-center gap-2"
               >
-                <MapPin className="w-5 h-5" />
-                Map View
+                <Plus className="w-5 h-5" />
+                Add Bus
               </motion.button>
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => setView('list')}
-                className={`px-6 py-3 rounded-xl font-semibold transition-all flex items-center gap-2 ${
-                  view === 'list' 
-                    ? 'bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white shadow-lg shadow-violet-500/30 border border-violet-400/50' 
-                    : 'bg-slate-900/60 backdrop-blur-xl text-slate-300 hover:text-white border border-slate-700/50 hover:border-slate-600'
-                }`}
+                onClick={() => setShowStopEditor(true)}
+                className="px-6 py-3 rounded-xl font-semibold bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white shadow-lg shadow-emerald-500/20 border border-emerald-400/50 flex items-center gap-2"
               >
-                <Bus className="w-5 h-5" />
-                List View
+                <Plus className="w-5 h-5" />
+                Add Stop
               </motion.button>
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => setView('routes')}
-                className={`px-6 py-3 rounded-xl font-semibold transition-all flex items-center gap-2 ${
-                  view === 'routes' 
-                    ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-500/30 border border-emerald-400/50' 
-                    : 'bg-slate-900/60 backdrop-blur-xl text-slate-300 hover:text-white border border-slate-700/50 hover:border-slate-600'
-                }`}
+                onClick={() => setShowRouteEditor(true)}
+                className="px-6 py-3 rounded-xl font-semibold bg-gradient-to-r from-violet-500 to-fuchsia-500 hover:from-violet-600 hover:to-fuchsia-600 text-white shadow-lg shadow-violet-500/20 border border-violet-400/50 flex items-center gap-2"
               >
-                <TrendingUp className="w-5 h-5" />
-                Routes
+                <Plus className="w-5 h-5" />
+                Add Route
               </motion.button>
             </div>
+          </div>
+
+          <div className="flex gap-3">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setView('map')}
+              className={`px-6 py-3 rounded-xl font-semibold transition-all flex items-center gap-2 ${
+                view === 'map' 
+                  ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-lg shadow-cyan-500/30 border border-cyan-400/50' 
+                  : 'bg-slate-900/60 backdrop-blur-xl text-slate-300 hover:text-white border border-slate-700/50 hover:border-slate-600'
+              }`}
+            >
+              <MapPin className="w-5 h-5" />
+              Map View
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setView('list')}
+              className={`px-6 py-3 rounded-xl font-semibold transition-all flex items-center gap-2 ${
+                view === 'list' 
+                  ? 'bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white shadow-lg shadow-violet-500/30 border border-violet-400/50' 
+                  : 'bg-slate-900/60 backdrop-blur-xl text-slate-300 hover:text-white border border-slate-700/50 hover:border-slate-600'
+              }`}
+            >
+              <Bus className="w-5 h-5" />
+              List View
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setView('routes')}
+              className={`px-6 py-3 rounded-xl font-semibold transition-all flex items-center gap-2 ${
+                view === 'routes' 
+                  ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-500/30 border border-emerald-400/50' 
+                  : 'bg-slate-900/60 backdrop-blur-xl text-slate-300 hover:text-white border border-slate-700/50 hover:border-slate-600'
+              }`}
+            >
+              <TrendingUp className="w-5 h-5" />
+              Routes
+            </motion.button>
+          </div>
           </div>
 
           {/* Stats */}
@@ -287,6 +357,40 @@ export default function BusFleet() {
         {view === 'routes' && (
           <BusRouteOverview routes={routes} stops={stops} buses={buses} />
         )}
+
+        {/* Editors */}
+        <AnimatePresence>
+          {showBusEditor && (
+            <BusEditor
+              bus={editingItem}
+              onSave={(data) => createBusMutation.mutate(data)}
+              onClose={() => {
+                setShowBusEditor(false);
+                setEditingItem(null);
+              }}
+            />
+          )}
+          {showStopEditor && (
+            <BusStopEditor
+              stop={editingItem}
+              onSave={(data) => createStopMutation.mutate(data)}
+              onClose={() => {
+                setShowStopEditor(false);
+                setEditingItem(null);
+              }}
+            />
+          )}
+          {showRouteEditor && (
+            <BusRouteEditor
+              route={editingItem}
+              onSave={(data) => createRouteMutation.mutate(data)}
+              onClose={() => {
+                setShowRouteEditor(false);
+                setEditingItem(null);
+              }}
+            />
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
