@@ -210,10 +210,10 @@ export default function BusFleet() {
               Routes
             </motion.button>
           </div>
-          </div>
+        </motion.div>
 
-          {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+        {/* Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -325,12 +325,11 @@ export default function BusFleet() {
                   {routes.length}
                 </div>
                 <div className="text-sm text-rose-400/60 font-medium">Routes</div>
-              </div>
-            </motion.div>
-          </div>
-        </motion.div>
+                </div>
+                </motion.div>
+                </div>
 
-        {/* Main Content */}
+                {/* Main Content */}
         {view === 'map' && (
           <BusMap 
             buses={buses} 
