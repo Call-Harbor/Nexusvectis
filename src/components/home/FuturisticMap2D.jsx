@@ -20,31 +20,33 @@ export default function FuturisticMap2D({ vehicles = [], routes = [], resources 
   };
 
   return (
-    <div className="relative w-full h-full overflow-hidden">
-      {/* Animated grid background */}
-      <div className="absolute inset-0">
-        <motion.div
-          className="absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.08)_1px,transparent_1px)] bg-[size:40px_40px]"
-          animate={{
-            backgroundPosition: ['0% 0%', '100% 100%'],
-          }}
-          transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
-        />
-      </div>
+    <div className="relative w-full h-full overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+      {/* Radial gradient overlay */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(6,182,212,0.15)_0%,transparent_70%)]" />
+      
+      {/* Animated scanlines */}
+      <motion.div
+        className="absolute inset-0 opacity-[0.03]"
+        style={{
+          backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(6, 182, 212, 1) 2px, rgba(6, 182, 212, 1) 4px)',
+        }}
+        animate={{ backgroundPositionY: ['0px', '100px'] }}
+        transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+      />
 
       {/* Glowing orbs */}
       <motion.div
-        className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl"
+        className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-cyan-500/20 rounded-full blur-[100px]"
         animate={{
-          scale: [1, 1.3, 1],
-          opacity: [0.3, 0.6, 0.3],
+          scale: [1, 1.2, 1],
+          opacity: [0.4, 0.6, 0.4],
         }}
         transition={{ duration: 8, repeat: Infinity }}
       />
       <motion.div
-        className="absolute bottom-1/4 right-1/3 w-80 h-80 bg-violet-500/20 rounded-full blur-3xl"
+        className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-violet-500/20 rounded-full blur-[100px]"
         animate={{
-          scale: [1.2, 1, 1.2],
+          scale: [1.1, 0.9, 1.1],
           opacity: [0.3, 0.5, 0.3],
         }}
         transition={{ duration: 10, repeat: Infinity }}
@@ -70,29 +72,29 @@ export default function FuturisticMap2D({ vehicles = [], routes = [], resources 
           </filter>
         </defs>
 
-        {/* World Map Outline - Simplified Continents */}
-        <g className="opacity-20 stroke-cyan-400" fill="none" strokeWidth="0.15">
-          {/* Europe */}
-          <path d="M 45 25 L 48 24 L 50 26 L 52 25 L 54 27 L 52 29 L 50 28 L 48 30 L 46 29 L 45 27 Z" />
+        {/* World Map Outline - Better Continents */}
+        <g fill="rgba(6, 182, 212, 0.08)" stroke="rgba(6, 182, 212, 0.3)" strokeWidth="0.12">
           {/* North America */}
-          <path d="M 15 20 L 20 18 L 25 20 L 28 25 L 25 30 L 22 32 L 18 30 L 15 25 Z" />
+          <path d="M 18,20 L 22,18 L 26,19 L 28,22 L 30,26 L 28,30 L 25,33 L 22,35 L 19,34 L 17,31 L 16,27 L 17,23 Z" />
           {/* South America */}
-          <path d="M 25 45 L 28 43 L 30 45 L 32 50 L 30 55 L 27 58 L 25 56 L 23 52 L 25 48 Z" />
+          <path d="M 24,42 L 27,40 L 29,42 L 30,46 L 31,52 L 29,56 L 26,58 L 23,56 L 22,52 L 23,46 Z" />
+          {/* Europe */}
+          <path d="M 47,24 L 50,23 L 52,24 L 54,26 L 53,28 L 51,29 L 49,28 L 47,27 Z" />
           {/* Africa */}
-          <path d="M 48 38 L 52 36 L 55 38 L 56 42 L 54 48 L 52 52 L 48 50 L 46 45 L 48 40 Z" />
+          <path d="M 47,36 L 51,34 L 54,36 L 56,40 L 56,46 L 54,52 L 50,54 L 47,52 L 46,46 L 46,40 Z" />
           {/* Asia */}
-          <path d="M 60 22 L 68 20 L 75 24 L 78 28 L 75 32 L 70 35 L 65 33 L 62 28 L 60 25 Z" />
+          <path d="M 58,20 L 65,18 L 72,20 L 78,24 L 80,28 L 78,32 L 73,35 L 67,34 L 62,30 L 59,26 Z" />
           {/* Australia */}
-          <path d="M 72 52 L 76 50 L 80 52 L 82 56 L 78 58 L 74 57 L 72 54 Z" />
+          <path d="M 75,52 L 79,50 L 82,52 L 83,55 L 81,58 L 77,59 L 74,57 L 73,54 Z" />
         </g>
 
-        {/* Grid lines - latitude/longitude */}
-        <g className="opacity-10 stroke-cyan-500" strokeWidth="0.08">
-          {[...Array(9)].map((_, i) => (
-            <line key={`lat-${i}`} x1="0" y1={i * 12.5} x2="100" y2={i * 12.5} />
+        {/* Dotted grid - subtle */}
+        <g className="opacity-[0.15] stroke-cyan-500" strokeWidth="0.05" strokeDasharray="0.3,1">
+          {[...Array(7)].map((_, i) => (
+            <line key={`lat-${i}`} x1="10" y1={15 + i * 12} x2="90" y2={15 + i * 12} />
           ))}
-          {[...Array(9)].map((_, i) => (
-            <line key={`lng-${i}`} x1={i * 12.5} y1="0" x2={i * 12.5} y2="100" />
+          {[...Array(7)].map((_, i) => (
+            <line key={`lng-${i}`} x1={15 + i * 12} y1="10" x2={15 + i * 12} y2="90" />
           ))}
         </g>
 
@@ -276,38 +278,41 @@ export default function FuturisticMap2D({ vehicles = [], routes = [], resources 
         </defs>
       </svg>
 
-      {/* Overlay stats */}
-      <div className="absolute top-4 left-4 space-y-2 pointer-events-none">
+      {/* Overlay stats - redesigned */}
+      <div className="absolute top-6 left-6 space-y-3 pointer-events-none">
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          className="px-3 py-1.5 rounded-lg bg-cyan-500/10 border border-cyan-500/30 backdrop-blur-xl"
+          className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500/20 to-cyan-500/10 border border-cyan-400/40 backdrop-blur-xl shadow-lg shadow-cyan-500/20"
         >
-          <div className="flex items-center gap-2">
-            <Radio className="w-3 h-3 text-cyan-400 animate-pulse" />
-            <span className="text-cyan-300 text-xs font-bold">{vehicles.length} Active</span>
+          <div className="flex items-center gap-3">
+            <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+            <span className="text-white text-sm font-bold">{vehicles.length}</span>
+            <span className="text-cyan-300 text-xs">Vehicles Active</span>
           </div>
         </motion.div>
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.1 }}
-          className="px-3 py-1.5 rounded-lg bg-violet-500/10 border border-violet-500/30 backdrop-blur-xl"
+          className="px-4 py-2 rounded-xl bg-gradient-to-r from-violet-500/20 to-violet-500/10 border border-violet-400/40 backdrop-blur-xl shadow-lg shadow-violet-500/20"
         >
-          <div className="flex items-center gap-2">
-            <Navigation className="w-3 h-3 text-violet-400" />
-            <span className="text-violet-300 text-xs font-bold">{routes.length} Routes</span>
+          <div className="flex items-center gap-3">
+            <div className="w-2 h-2 rounded-full bg-violet-400" />
+            <span className="text-white text-sm font-bold">{routes.length}</span>
+            <span className="text-violet-300 text-xs">Routes Optimized</span>
           </div>
         </motion.div>
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.2 }}
-          className="px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/30 backdrop-blur-xl"
+          className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500/20 to-amber-500/10 border border-amber-400/40 backdrop-blur-xl shadow-lg shadow-amber-500/20"
         >
-          <div className="flex items-center gap-2">
-            <MapPin className="w-3 h-3 text-amber-400" />
-            <span className="text-amber-300 text-xs font-bold">{resources.length} Hubs</span>
+          <div className="flex items-center gap-3">
+            <div className="w-2 h-2 rounded-full bg-amber-400" />
+            <span className="text-white text-sm font-bold">{resources.length}</span>
+            <span className="text-amber-300 text-xs">Global Hubs</span>
           </div>
         </motion.div>
       </div>
@@ -325,11 +330,18 @@ export default function FuturisticMap2D({ vehicles = [], routes = [], resources 
         transition={{ duration: 4, repeat: Infinity }}
       />
 
-      {/* Corner decorations */}
-      <div className="absolute top-0 left-0 w-16 h-16 border-l-2 border-t-2 border-cyan-500/40 opacity-40" />
-      <div className="absolute top-0 right-0 w-16 h-16 border-r-2 border-t-2 border-cyan-500/40 opacity-40" />
-      <div className="absolute bottom-0 left-0 w-16 h-16 border-l-2 border-b-2 border-cyan-500/40 opacity-40" />
-      <div className="absolute bottom-0 right-0 w-16 h-16 border-r-2 border-b-2 border-cyan-500/40 opacity-40" />
+      {/* Corner UI elements */}
+      <div className="absolute top-0 left-0 w-20 h-20 border-l-2 border-t-2 border-cyan-400/50 rounded-tl-lg" />
+      <div className="absolute top-0 right-0 w-20 h-20 border-r-2 border-t-2 border-cyan-400/50 rounded-tr-lg" />
+      <div className="absolute bottom-0 left-0 w-20 h-20 border-l-2 border-b-2 border-cyan-400/50 rounded-bl-lg" />
+      <div className="absolute bottom-0 right-0 w-20 h-20 border-r-2 border-b-2 border-cyan-400/50 rounded-br-lg" />
+      
+      {/* Bottom status bar */}
+      <div className="absolute bottom-6 right-6 flex items-center gap-3 px-4 py-2 rounded-xl bg-black/40 border border-cyan-500/30 backdrop-blur-xl">
+        <Zap className="w-4 h-4 text-cyan-400" />
+        <span className="text-cyan-300 text-xs font-mono">LIVE TRACKING</span>
+        <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+      </div>
     </div>
   );
 }
