@@ -2,6 +2,11 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Brain, Activity, Zap, TrendingUp, AlertTriangle, CheckCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import NetworkDesignAI from "./NetworkDesignAI";
+import FrequencyOptimizer from "./FrequencyOptimizer";
+import VehicleDriverAssignment from "./VehicleDriverAssignment";
+import RealTimeControlAI from "./RealTimeControlAI";
 
 export default function NeuralTransitOrchestrator({ buses, routes, stops }) {
   const [orchestrationMetrics, setOrchestrationMetrics] = useState({
@@ -182,6 +187,40 @@ export default function NeuralTransitOrchestrator({ buses, routes, stops }) {
           </div>
         </div>
       </motion.div>
+
+      {/* AI Engines Tabs */}
+      <Tabs defaultValue="realtime" className="space-y-6">
+        <TabsList className="bg-slate-800/50 border border-slate-700/50">
+          <TabsTrigger value="realtime" className="data-[state=active]:bg-amber-500/20 data-[state=active]:text-amber-400">
+            Real-Time Control
+          </TabsTrigger>
+          <TabsTrigger value="network" className="data-[state=active]:bg-violet-500/20 data-[state=active]:text-violet-400">
+            Network Design
+          </TabsTrigger>
+          <TabsTrigger value="frequency" className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400">
+            Frequency Optimizer
+          </TabsTrigger>
+          <TabsTrigger value="assignment" className="data-[state=active]:bg-emerald-500/20 data-[state=active]:text-emerald-400">
+            Vehicle Assignment
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="realtime">
+          <RealTimeControlAI buses={buses} />
+        </TabsContent>
+
+        <TabsContent value="network">
+          <NetworkDesignAI routes={routes} stops={stops} buses={buses} />
+        </TabsContent>
+
+        <TabsContent value="frequency">
+          <FrequencyOptimizer routes={routes} buses={buses} />
+        </TabsContent>
+
+        <TabsContent value="assignment">
+          <VehicleDriverAssignment buses={buses} routes={routes} />
+        </TabsContent>
+      </Tabs>
 
       {/* Active AI Optimizations */}
       {orchestrationMetrics.activeOptimizations.length > 0 && (
