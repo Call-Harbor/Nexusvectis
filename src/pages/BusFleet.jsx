@@ -11,10 +11,11 @@ import BusEditor from "../components/bus/BusEditor";
 import BusStopEditor from "../components/bus/BusStopEditor";
 import BusRouteEditor from "../components/bus/BusRouteEditor";
 import NeuralTransitOrchestrator from "../components/bus/NeuralTransitOrchestrator";
+import BusIntellectMode from "../components/bus/BusIntellectMode";
 
 export default function BusFleet() {
   const [selectedBus, setSelectedBus] = useState(null);
-  const [view, setView] = useState("orchestration"); // orchestration, map, list, routes
+  const [view, setView] = useState("intellect"); // intellect, orchestration, map, list, routes
   const [showBusEditor, setShowBusEditor] = useState(false);
   const [showStopEditor, setShowStopEditor] = useState(false);
   const [showRouteEditor, setShowRouteEditor] = useState(false);
@@ -180,6 +181,19 @@ export default function BusFleet() {
           </div>
 
           <div className="flex gap-3">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setView('intellect')}
+              className={`px-6 py-3 rounded-xl font-semibold transition-all flex items-center gap-2 ${
+                view === 'intellect' 
+                  ? 'bg-gradient-to-r from-cyan-500 via-violet-500 to-fuchsia-500 text-white shadow-lg shadow-cyan-500/30 border border-cyan-400/50' 
+                  : 'bg-slate-900/60 backdrop-blur-xl text-slate-300 hover:text-white border border-slate-700/50 hover:border-slate-600'
+              }`}
+            >
+              <Brain className="w-5 h-5" />
+              Intellect Mode
+            </motion.button>
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -353,6 +367,10 @@ export default function BusFleet() {
                 </div>
 
                 {/* Main Content */}
+        {view === 'intellect' && (
+          <BusIntellectMode buses={buses} routes={routes} stops={stops} />
+        )}
+
         {view === 'orchestration' && (
           <NeuralTransitOrchestrator buses={buses} routes={routes} stops={stops} />
         )}
