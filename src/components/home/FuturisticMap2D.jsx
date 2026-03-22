@@ -31,6 +31,7 @@ export default function FuturisticMap2D({ vehicles = [], routes = [], resources 
       alpha: true,
       powerPreference: "high-performance"
     });
+    renderer.setClearColor(0x000000, 0); // Transparent background
     renderer.setSize(containerRef.current.clientWidth, containerRef.current.clientHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     containerRef.current.appendChild(renderer.domElement);
@@ -60,31 +61,44 @@ export default function FuturisticMap2D({ vehicles = [], routes = [], resources 
         varying vec3 vPosition;
         varying vec2 vUv;
         
+        // Simplified continent shapes
+        bool isLand(vec2 uv) {
+          // Europe/Africa
+          if (uv.x > 0.45 && uv.x < 0.65 && uv.y > 0.35 && uv.y < 0.7) return true;
+          // Americas
+          if (uv.x > 0.15 && uv.x < 0.35 && uv.y > 0.25 && uv.y < 0.75) return true;
+          // Asia
+          if (uv.x > 0.65 && uv.x < 0.9 && uv.y > 0.35 && uv.y < 0.65) return true;
+          return false;
+        }
+        
         void main() {
-          // Holographic cyan/blue gradient
-          vec3 color1 = vec3(0.0, 0.9, 1.0); // bright cyan
-          vec3 color2 = vec3(0.0, 0.5, 1.0); // deep blue
-          vec3 color3 = vec3(0.8, 0.4, 1.0); // violet accent
+          vec3 cyan = vec3(0.0, 0.9, 1.0);
+          vec3 blue = vec3(0.0, 0.5, 1.0);
+          vec3 violet = vec3(0.6, 0.4, 1.0);
           
-          // Fresnel glow
+          // Fresnel rim lighting
           float fresnel = pow(1.0 - dot(vNormal, vec3(0.0, 0.0, 1.0)), 3.0);
           
-          // Grid pattern for holographic effect
-          float grid = step(0.95, fract(vUv.x * 40.0)) + step(0.95, fract(vUv.y * 40.0));
+          // Latitude/longitude grid
+          float lat = step(0.97, fract(vUv.y * 12.0));
+          float lng = step(0.97, fract(vUv.x * 24.0));
+          float grid = max(lat, lng);
           
-          // Dot pattern for landmasses
-          float dots = step(0.92, fract(sin(dot(vUv * 60.0, vec2(12.9898, 78.233))) * 43758.5453));
+          // Landmasses
+          float land = isLand(vUv) ? 0.4 : 0.0;
           
-          // Combine colors
-          vec3 baseColor = mix(color1, color2, vPosition.y * 0.5 + 0.5);
-          baseColor = mix(baseColor, color3, fresnel * 0.3);
+          // Base color gradient
+          vec3 baseColor = mix(cyan, blue, vUv.y);
+          baseColor = mix(baseColor, violet, fresnel * 0.4);
           
-          // Pulsing glow
-          float pulse = sin(time * 0.8) * 0.15 + 0.85;
+          // Pulse
+          float pulse = sin(time * 0.6) * 0.1 + 0.9;
           
-          float alpha = 0.25 + fresnel * 0.5 + grid * 0.15 + dots * 0.1;
+          // Combine everything
+          float alpha = 0.15 + fresnel * 0.6 + grid * 0.25 + land;
           
-          gl_FragColor = vec4(baseColor * pulse, alpha);
+          gl_FragColor = vec4(baseColor * pulse, alpha * 0.8);
         }
       `
     });
@@ -306,19 +320,9 @@ export default function FuturisticMap2D({ vehicles = [], routes = [], resources 
   }, []);
 
   return (
-    <div className="relative w-full h-full overflow-hidden">
+    <div className="relative w-full h-full">
       {/* 3D Globe Container */}
       <div ref={containerRef} className="absolute inset-0" />
-
-      {/* Minimal data overlay */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: isReady ? 1 : 0 }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2 px-4 py-2 rounded-full bg-black/20 border border-cyan-400/20 backdrop-blur-sm z-10"
-      >
-        <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-        <span className="text-cyan-300/80 text-xs font-mono">GLOBAL FLEET TRACKING</span>
-      </motion.div>
     </div>
   );
 }
