@@ -10,8 +10,6 @@ export default function BusStopEditor({ stop, onSave, onClose }) {
   const [formData, setFormData] = useState(stop || {
     stop_code: "",
     stop_name: "",
-    latitude: 55.6761,
-    longitude: 12.5683,
     address: "",
     zone: "1",
     stop_type: "standard",
@@ -81,38 +79,15 @@ export default function BusStopEditor({ stop, onSave, onClose }) {
           </div>
 
           <div>
-            <Label className="text-slate-300">Address</Label>
+            <Label className="text-slate-300">Address / Location *</Label>
             <Input
+              required
               value={formData.address}
               onChange={(e) => setFormData({...formData, address: e.target.value})}
               className="bg-slate-800/50 border-slate-700"
-              placeholder="Full address"
+              placeholder="e.g., Central Station, Copenhagen, Denmark"
             />
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <Label className="text-slate-300">Latitude *</Label>
-              <Input
-                required
-                type="number"
-                step="0.0001"
-                value={formData.latitude}
-                onChange={(e) => setFormData({...formData, latitude: parseFloat(e.target.value)})}
-                className="bg-slate-800/50 border-slate-700"
-              />
-            </div>
-            <div>
-              <Label className="text-slate-300">Longitude *</Label>
-              <Input
-                required
-                type="number"
-                step="0.0001"
-                value={formData.longitude}
-                onChange={(e) => setFormData({...formData, longitude: parseFloat(e.target.value)})}
-                className="bg-slate-800/50 border-slate-700"
-              />
-            </div>
+            <p className="text-xs text-slate-500 mt-1">Coordinates will be automatically geocoded from this address</p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-4">
