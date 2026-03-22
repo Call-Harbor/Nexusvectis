@@ -10,10 +10,11 @@ import BusRouteOverview from "../components/bus/BusRouteOverview";
 import BusEditor from "../components/bus/BusEditor";
 import BusStopEditor from "../components/bus/BusStopEditor";
 import BusRouteEditor from "../components/bus/BusRouteEditor";
+import NeuralTransitOrchestrator from "../components/bus/NeuralTransitOrchestrator";
 
 export default function BusFleet() {
   const [selectedBus, setSelectedBus] = useState(null);
-  const [view, setView] = useState("map"); // map, list, routes
+  const [view, setView] = useState("orchestration"); // orchestration, map, list, routes
   const [showBusEditor, setShowBusEditor] = useState(false);
   const [showStopEditor, setShowStopEditor] = useState(false);
   const [showRouteEditor, setShowRouteEditor] = useState(false);
@@ -173,6 +174,19 @@ export default function BusFleet() {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
+              onClick={() => setView('orchestration')}
+              className={`px-6 py-3 rounded-xl font-semibold transition-all flex items-center gap-2 ${
+                view === 'orchestration' 
+                  ? 'bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white shadow-lg shadow-violet-500/30 border border-violet-400/50' 
+                  : 'bg-slate-900/60 backdrop-blur-xl text-slate-300 hover:text-white border border-slate-700/50 hover:border-slate-600'
+              }`}
+            >
+              <Zap className="w-5 h-5" />
+              Neural AI
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => setView('map')}
               className={`px-6 py-3 rounded-xl font-semibold transition-all flex items-center gap-2 ${
                 view === 'map' 
@@ -189,7 +203,7 @@ export default function BusFleet() {
               onClick={() => setView('list')}
               className={`px-6 py-3 rounded-xl font-semibold transition-all flex items-center gap-2 ${
                 view === 'list' 
-                  ? 'bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white shadow-lg shadow-violet-500/30 border border-violet-400/50' 
+                  ? 'bg-gradient-to-r from-rose-500 to-pink-500 text-white shadow-lg shadow-rose-500/30 border border-rose-400/50' 
                   : 'bg-slate-900/60 backdrop-blur-xl text-slate-300 hover:text-white border border-slate-700/50 hover:border-slate-600'
               }`}
             >
@@ -330,6 +344,10 @@ export default function BusFleet() {
                 </div>
 
                 {/* Main Content */}
+        {view === 'orchestration' && (
+          <NeuralTransitOrchestrator buses={buses} routes={routes} stops={stops} />
+        )}
+
         {view === 'map' && (
           <BusMap 
             buses={buses} 
