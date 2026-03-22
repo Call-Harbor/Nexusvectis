@@ -1,347 +1,332 @@
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import { MapPin, Radio, Zap, Navigation } from "lucide-react";
+import { TrendingUp, Zap, Globe, Activity } from "lucide-react";
 
 export default function FuturisticMap2D({ vehicles = [], routes = [], resources = [] }) {
-  const [pulsePhase, setPulsePhase] = useState(0);
+  const [rotation, setRotation] = useState(0);
+  const [dataPoints, setDataPoints] = useState([]);
   
   useEffect(() => {
     const interval = setInterval(() => {
-      setPulsePhase(p => (p + 1) % 360);
+      setRotation(r => (r + 0.3) % 360);
     }, 50);
+    
+    // Generate random floating data points
+    const points = Array.from({ length: 15 }, (_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      delay: Math.random() * 2,
+      duration: 3 + Math.random() * 2,
+    }));
+    setDataPoints(points);
+    
     return () => clearInterval(interval);
   }, []);
 
-  // Convert lat/lng to SVG coordinates (simple equirectangular projection)
-  const project = (lat, lng) => {
-    const x = ((lng + 180) / 360) * 100;
-    const y = ((90 - lat) / 180) * 100;
-    return { x, y };
-  };
-
   return (
-    <div className="relative w-full h-full overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-      {/* Radial gradient overlay */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(6,182,212,0.15)_0%,transparent_70%)]" />
+    <div className="relative w-full h-full overflow-hidden bg-[#0a0e1a]">
+      {/* Deep space background */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_#0f172a_0%,_#020617_100%)]" />
       
-      {/* Animated scanlines */}
-      <motion.div
-        className="absolute inset-0 opacity-[0.03]"
-        style={{
-          backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(6, 182, 212, 1) 2px, rgba(6, 182, 212, 1) 4px)',
-        }}
-        animate={{ backgroundPositionY: ['0px', '100px'] }}
-        transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-      />
+      {/* Animated stars */}
+      {Array.from({ length: 50 }).map((_, i) => (
+        <motion.div
+          key={`star-${i}`}
+          className="absolute w-[2px] h-[2px] bg-cyan-400/60 rounded-full"
+          style={{
+            left: `${Math.random() * 100}%`,
+            top: `${Math.random() * 100}%`,
+          }}
+          animate={{
+            opacity: [0.3, 1, 0.3],
+            scale: [1, 1.5, 1],
+          }}
+          transition={{
+            duration: 2 + Math.random() * 3,
+            repeat: Infinity,
+            delay: Math.random() * 2,
+          }}
+        />
+      ))}
 
-      {/* Glowing orbs */}
-      <motion.div
-        className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-cyan-500/20 rounded-full blur-[100px]"
-        animate={{
-          scale: [1, 1.2, 1],
-          opacity: [0.4, 0.6, 0.4],
-        }}
-        transition={{ duration: 8, repeat: Infinity }}
-      />
-      <motion.div
-        className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-violet-500/20 rounded-full blur-[100px]"
-        animate={{
-          scale: [1.1, 0.9, 1.1],
-          opacity: [0.3, 0.5, 0.3],
-        }}
-        transition={{ duration: 10, repeat: Infinity }}
-      />
+      {/* Central globe container */}
+      <div className="absolute inset-0 flex items-center justify-center">
+        {/* Orbital rings */}
+        {[0, 1, 2].map((i) => (
+          <motion.div
+            key={`ring-${i}`}
+            className="absolute rounded-full border border-cyan-500/20"
+            style={{
+              width: `${40 + i * 15}%`,
+              height: `${40 + i * 15}%`,
+              transform: `rotateX(75deg) rotateZ(${i * 45}deg)`,
+            }}
+            animate={{
+              rotateZ: [i * 45, i * 45 + 360],
+            }}
+            transition={{
+              duration: 20 - i * 3,
+              repeat: Infinity,
+              ease: "linear",
+            }}
+          />
+        ))}
 
-      {/* SVG Map Layer */}
-      <svg className="relative w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice">
-        <defs>
-          {/* Glow filters */}
-          <filter id="glow-cyan">
-            <feGaussianBlur stdDeviation="0.3" result="coloredBlur"/>
-            <feMerge>
-              <feMergeNode in="coloredBlur"/>
-              <feMergeNode in="SourceGraphic"/>
-            </feMerge>
-          </filter>
-          <filter id="glow-violet">
-            <feGaussianBlur stdDeviation="0.4" result="coloredBlur"/>
-            <feMerge>
-              <feMergeNode in="coloredBlur"/>
-              <feMergeNode in="SourceGraphic"/>
-            </feMerge>
-          </filter>
-        </defs>
-
-        {/* World Map Outline - Better Continents */}
-        <g fill="rgba(6, 182, 212, 0.08)" stroke="rgba(6, 182, 212, 0.3)" strokeWidth="0.12">
-          {/* North America */}
-          <path d="M 18,20 L 22,18 L 26,19 L 28,22 L 30,26 L 28,30 L 25,33 L 22,35 L 19,34 L 17,31 L 16,27 L 17,23 Z" />
-          {/* South America */}
-          <path d="M 24,42 L 27,40 L 29,42 L 30,46 L 31,52 L 29,56 L 26,58 L 23,56 L 22,52 L 23,46 Z" />
-          {/* Europe */}
-          <path d="M 47,24 L 50,23 L 52,24 L 54,26 L 53,28 L 51,29 L 49,28 L 47,27 Z" />
-          {/* Africa */}
-          <path d="M 47,36 L 51,34 L 54,36 L 56,40 L 56,46 L 54,52 L 50,54 L 47,52 L 46,46 L 46,40 Z" />
-          {/* Asia */}
-          <path d="M 58,20 L 65,18 L 72,20 L 78,24 L 80,28 L 78,32 L 73,35 L 67,34 L 62,30 L 59,26 Z" />
-          {/* Australia */}
-          <path d="M 75,52 L 79,50 L 82,52 L 83,55 L 81,58 L 77,59 L 74,57 L 73,54 Z" />
-        </g>
-
-        {/* Dotted grid - subtle */}
-        <g className="opacity-[0.15] stroke-cyan-500" strokeWidth="0.05" strokeDasharray="0.3,1">
-          {[...Array(7)].map((_, i) => (
-            <line key={`lat-${i}`} x1="10" y1={15 + i * 12} x2="90" y2={15 + i * 12} />
-          ))}
-          {[...Array(7)].map((_, i) => (
-            <line key={`lng-${i}`} x1={15 + i * 12} y1="10" x2={15 + i * 12} y2="90" />
-          ))}
-        </g>
-
-        {/* Route arcs with animated flow */}
-        {routes.map((route, idx) => {
-          const waypoints = route.waypoints || [];
-          if (waypoints.length < 2) return null;
+        {/* Main globe sphere */}
+        <motion.div
+          className="relative"
+          style={{
+            width: '35%',
+            height: '35%',
+            transformStyle: 'preserve-3d',
+          }}
+          animate={{
+            rotateY: rotation,
+          }}
+        >
+          {/* Globe glow */}
+          <div className="absolute inset-0 rounded-full bg-gradient-to-br from-cyan-500/30 via-blue-500/20 to-violet-500/30 blur-2xl" />
           
-          const colors = ['#06b6d4', '#8b5cf6', '#10b981'];
-          const color = colors[idx % colors.length];
-          
-          return waypoints.slice(0, -1).map((wp, i) => {
-            const start = project(wp.lat, wp.lng);
-            const end = project(waypoints[i + 1].lat, waypoints[i + 1].lng);
-            const mid = {
-              x: (start.x + end.x) / 2,
-              y: Math.min(start.y, end.y) - 5
-            };
+          {/* Globe mesh */}
+          <div className="absolute inset-0 rounded-full border-2 border-cyan-400/40 shadow-[0_0_60px_rgba(6,182,212,0.5)]">
+            {/* Latitude lines */}
+            {[20, 35, 50, 65, 80].map((percent) => (
+              <div
+                key={`lat-${percent}`}
+                className="absolute left-0 right-0 border-t border-cyan-500/20"
+                style={{ top: `${percent}%` }}
+              />
+            ))}
             
-            return (
-              <g key={`route-${idx}-${i}`}>
-                <motion.path
-                  d={`M ${start.x} ${start.y} Q ${mid.x} ${mid.y} ${end.x} ${end.y}`}
-                  fill="none"
-                  stroke={color}
-                  strokeWidth="0.15"
-                  opacity="0.5"
-                  filter="url(#glow-cyan)"
-                  initial={{ pathLength: 0 }}
-                  animate={{ pathLength: 1 }}
-                  transition={{ duration: 2, delay: idx * 0.3 }}
+            {/* Longitude lines */}
+            {[0, 30, 60, 90, 120, 150].map((deg) => (
+              <div
+                key={`lng-${deg}`}
+                className="absolute inset-0 border-l border-cyan-500/20"
+                style={{
+                  transform: `rotateY(${deg}deg)`,
+                  borderRadius: '50%',
+                }}
+              />
+            ))}
+
+            {/* Continents as dots pattern */}
+            <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
+              {/* North America */}
+              {Array.from({ length: 30 }).map((_, i) => (
+                <circle
+                  key={`na-${i}`}
+                  cx={15 + Math.random() * 15}
+                  cy={20 + Math.random() * 20}
+                  r="0.4"
+                  fill="#06b6d4"
+                  opacity="0.6"
                 />
-                {/* Animated flow particle */}
-                <motion.circle
-                  r="0.3"
-                  fill={color}
-                  filter="url(#glow-cyan)"
-                  animate={{
-                    offsetDistance: ['0%', '100%'],
-                  }}
-                  transition={{
-                    duration: 3,
-                    repeat: Infinity,
-                    delay: idx * 0.5,
-                    ease: "linear"
-                  }}
-                >
-                  <animateMotion
-                    dur="3s"
-                    repeatCount="indefinite"
-                    path={`M ${start.x} ${start.y} Q ${mid.x} ${mid.y} ${end.x} ${end.y}`}
-                  />
-                </motion.circle>
-              </g>
-            );
-          });
-        })}
+              ))}
+              {/* Europe */}
+              {Array.from({ length: 20 }).map((_, i) => (
+                <circle
+                  key={`eu-${i}`}
+                  cx={48 + Math.random() * 8}
+                  cy={22 + Math.random() * 10}
+                  r="0.4"
+                  fill="#06b6d4"
+                  opacity="0.6"
+                />
+              ))}
+              {/* Asia */}
+              {Array.from({ length: 40 }).map((_, i) => (
+                <circle
+                  key={`as-${i}`}
+                  cx={60 + Math.random() * 20}
+                  cy={20 + Math.random() * 20}
+                  r="0.4"
+                  fill="#06b6d4"
+                  opacity="0.6"
+                />
+              ))}
+            </svg>
+          </div>
 
-        {/* Resources - pulsing markers */}
-        {resources.map((resource, idx) => {
-          const pos = project(resource.latitude, resource.longitude);
-          const pulseScale = 1 + 0.3 * Math.sin((pulsePhase + idx * 30) * Math.PI / 180);
-          
-          return (
-            <g key={`resource-${idx}`}>
-              <motion.circle
-                cx={pos.x}
-                cy={pos.y}
-                r={pulseScale * 0.6}
-                fill="none"
-                stroke="#fbbf24"
-                strokeWidth="0.15"
-                opacity={0.6}
-                filter="url(#glow-violet)"
-              />
-              <circle
-                cx={pos.x}
-                cy={pos.y}
-                r="0.35"
-                fill="#fbbf24"
-                filter="url(#glow-violet)"
-              />
-            </g>
-          );
-        })}
-
-        {/* Vehicles - animated with heading */}
-        {vehicles.map((vehicle, idx) => {
-          const pos = project(vehicle.latitude, vehicle.longitude);
-          const isMoving = vehicle.speed > 0;
-          const heading = vehicle.heading || 0;
-          
-          const statusColor = {
-            active: '#06b6d4',
-            idle: '#fbbf24',
-            maintenance: '#f97316',
-            offline: '#64748b'
-          }[vehicle.status] || '#06b6d4';
-          
-          return (
-            <g key={`vehicle-${idx}`} transform={`translate(${pos.x}, ${pos.y})`}>
-              {/* Pulsing ring */}
-              <motion.circle
-                r="0.8"
-                fill="none"
-                stroke={statusColor}
-                strokeWidth="0.1"
-                opacity={isMoving ? 0.6 : 0.3}
+          {/* Active location pulses */}
+          {vehicles.map((vehicle, idx) => {
+            const angle = (idx / vehicles.length) * 360;
+            const radius = 45;
+            return (
+              <motion.div
+                key={`pulse-${idx}`}
+                className="absolute w-2 h-2 -ml-1 -mt-1"
+                style={{
+                  left: `${50 + radius * Math.cos(angle * Math.PI / 180)}%`,
+                  top: `${50 + radius * Math.sin(angle * Math.PI / 180)}%`,
+                }}
                 animate={{
-                  r: [0.8, 1.4, 0.8],
-                  opacity: [0.6, 0, 0.6],
+                  scale: [1, 1.5, 1],
+                  opacity: [1, 0.5, 1],
                 }}
                 transition={{
                   duration: 2,
                   repeat: Infinity,
-                  delay: idx * 0.2
+                  delay: idx * 0.2,
                 }}
-              />
-              
-              {/* Vehicle marker */}
-              <motion.g
-                animate={isMoving ? {
-                  rotate: [0, 360]
-                } : {}}
-                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
               >
-                <polygon
-                  points="0,-0.5 0.3,0.3 -0.3,0.3"
-                  fill={statusColor}
-                  filter="url(#glow-cyan)"
-                  transform={`rotate(${heading})`}
-                />
-              </motion.g>
-              
-              {/* Speed trail for moving vehicles */}
-              {isMoving && (
-                <motion.line
-                  x1="0"
-                  y1="0"
-                  x2={-Math.sin(heading * Math.PI / 180) * 1.5}
-                  y2={Math.cos(heading * Math.PI / 180) * 1.5}
-                  stroke={statusColor}
-                  strokeWidth="0.08"
-                  opacity="0.4"
-                  animate={{
-                    opacity: [0.2, 0.6, 0.2],
-                  }}
-                  transition={{ duration: 1, repeat: Infinity }}
-                />
-              )}
-            </g>
+                <div className="w-full h-full rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(6,182,212,1)]" />
+              </motion.div>
+            );
+          })}
+        </motion.div>
+
+        {/* Connection lines from center */}
+        {routes.map((route, idx) => {
+          const angle = (idx / routes.length) * 360;
+          return (
+            <motion.div
+              key={`line-${idx}`}
+              className="absolute w-[1px] bg-gradient-to-t from-cyan-500/50 to-transparent origin-bottom"
+              style={{
+                height: '30%',
+                left: '50%',
+                bottom: '50%',
+                transform: `rotate(${angle}deg)`,
+              }}
+              animate={{
+                opacity: [0.3, 0.8, 0.3],
+              }}
+              transition={{
+                duration: 3,
+                repeat: Infinity,
+                delay: idx * 0.3,
+              }}
+            />
           );
         })}
+      </div>
 
-        {/* Scanning lines effect */}
-        <motion.line
-          x1="0"
-          y1="0"
-          x2="100"
-          y2="0"
-          stroke="url(#scan-gradient)"
-          strokeWidth="0.2"
-          opacity="0.3"
+      {/* Floating HUD panels */}
+      {dataPoints.slice(0, 8).map((point, idx) => (
+        <motion.div
+          key={`panel-${point.id}`}
+          className="absolute px-3 py-2 bg-cyan-950/40 border border-cyan-500/30 backdrop-blur-md rounded"
+          style={{
+            left: `${point.x}%`,
+            top: `${point.y}%`,
+          }}
+          initial={{ opacity: 0, scale: 0.8 }}
           animate={{
-            y1: [0, 100],
-            y2: [0, 100],
+            opacity: [0, 0.8, 0],
+            y: [-20, -40, -60],
+            scale: [0.8, 1, 0.8],
           }}
           transition={{
-            duration: 8,
+            duration: point.duration,
             repeat: Infinity,
-            ease: "linear"
+            delay: point.delay,
           }}
-        />
-        
-        <defs>
-          <linearGradient id="scan-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#06b6d4" stopOpacity="0" />
-            <stop offset="50%" stopColor="#06b6d4" stopOpacity="1" />
-            <stop offset="100%" stopColor="#06b6d4" stopOpacity="0" />
-          </linearGradient>
-        </defs>
-      </svg>
+        >
+          <div className="text-[10px] text-cyan-400 font-mono">
+            {['789.4', '152.68', '903.25', '268', '743.06', '921', '85', '65'][idx]}
+          </div>
+        </motion.div>
+      ))}
 
-      {/* Overlay stats - redesigned */}
-      <div className="absolute top-6 left-6 space-y-3 pointer-events-none">
+      {/* Floating data icons */}
+      {[
+        { Icon: Globe, x: 15, y: 20, rotate: -15 },
+        { Icon: Activity, x: 75, y: 25, rotate: 10 },
+        { Icon: TrendingUp, x: 20, y: 70, rotate: -20 },
+        { Icon: Zap, x: 80, y: 65, rotate: 15 },
+      ].map((item, idx) => (
         <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500/20 to-cyan-500/10 border border-cyan-400/40 backdrop-blur-xl shadow-lg shadow-cyan-500/20"
+          key={`icon-${idx}`}
+          className="absolute"
+          style={{
+            left: `${item.x}%`,
+            top: `${item.y}%`,
+          }}
+          animate={{
+            y: [-10, 10, -10],
+            rotate: [item.rotate - 5, item.rotate + 5, item.rotate - 5],
+            opacity: [0.4, 0.7, 0.4],
+          }}
+          transition={{
+            duration: 4 + idx,
+            repeat: Infinity,
+          }}
         >
-          <div className="flex items-center gap-3">
-            <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-            <span className="text-white text-sm font-bold">{vehicles.length}</span>
-            <span className="text-cyan-300 text-xs">Vehicles Active</span>
+          <div className="p-3 rounded-lg bg-cyan-500/10 border border-cyan-500/20 backdrop-blur-sm">
+            <item.Icon className="w-5 h-5 text-cyan-400/60" />
           </div>
         </motion.div>
+      ))}
+
+      {/* Corner HUD elements */}
+      {[
+        { corner: 'top-left', text: 'SYSTEM ACTIVE', x: 6, y: 6 },
+        { corner: 'top-right', text: 'LIVE FEED', x: 'auto', y: 6, right: 6 },
+        { corner: 'bottom-left', text: 'ENCRYPTED', x: 6, y: 'auto', bottom: 6 },
+        { corner: 'bottom-right', text: 'GLOBAL SYNC', x: 'auto', y: 'auto', right: 6, bottom: 6 },
+      ].map((corner, idx) => (
         <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.1 }}
-          className="px-4 py-2 rounded-xl bg-gradient-to-r from-violet-500/20 to-violet-500/10 border border-violet-400/40 backdrop-blur-xl shadow-lg shadow-violet-500/20"
+          key={`corner-${idx}`}
+          className="absolute"
+          style={{
+            left: corner.x !== 'auto' ? `${corner.x}%` : undefined,
+            right: corner.right ? `${corner.right}%` : undefined,
+            top: corner.y !== 'auto' ? `${corner.y}%` : undefined,
+            bottom: corner.bottom ? `${corner.bottom}%` : undefined,
+          }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: idx * 0.2 }}
         >
-          <div className="flex items-center gap-3">
-            <div className="w-2 h-2 rounded-full bg-violet-400" />
-            <span className="text-white text-sm font-bold">{routes.length}</span>
-            <span className="text-violet-300 text-xs">Routes Optimized</span>
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-cyan-950/60 border border-cyan-500/40 rounded backdrop-blur-sm">
+            <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+            <span className="text-[10px] text-cyan-300 font-mono tracking-wider">{corner.text}</span>
           </div>
         </motion.div>
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.2 }}
-          className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500/20 to-amber-500/10 border border-amber-400/40 backdrop-blur-xl shadow-lg shadow-amber-500/20"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-2 h-2 rounded-full bg-amber-400" />
-            <span className="text-white text-sm font-bold">{resources.length}</span>
-            <span className="text-amber-300 text-xs">Global Hubs</span>
-          </div>
-        </motion.div>
+      ))}
+
+      {/* Stats overlay */}
+      <div className="absolute top-6 left-6 space-y-2">
+        {[
+          { label: 'ACTIVE FLEET', value: vehicles.length, color: 'cyan' },
+          { label: 'OPTIMIZED ROUTES', value: routes.length, color: 'violet' },
+          { label: 'GLOBAL HUBS', value: resources.length, color: 'emerald' },
+        ].map((stat, idx) => (
+          <motion.div
+            key={stat.label}
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: idx * 0.15 }}
+            className={`px-4 py-2 bg-${stat.color}-950/40 border border-${stat.color}-500/40 backdrop-blur-md rounded-lg`}
+          >
+            <div className="flex items-baseline gap-3">
+              <span className={`text-2xl font-bold text-${stat.color}-400`}>{stat.value}</span>
+              <span className="text-[10px] text-slate-400 uppercase tracking-widest">{stat.label}</span>
+            </div>
+          </motion.div>
+        ))}
       </div>
 
-      {/* Scanning effect overlay */}
+      {/* Scan line effect */}
       <motion.div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background: 'radial-gradient(circle at 50% 50%, rgba(6, 182, 212, 0.1) 0%, transparent 70%)',
-        }}
+        className="absolute inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent"
         animate={{
-          scale: [1, 1.2, 1],
-          opacity: [0.5, 0.8, 0.5],
+          top: ['0%', '100%'],
         }}
-        transition={{ duration: 4, repeat: Infinity }}
+        transition={{
+          duration: 4,
+          repeat: Infinity,
+          ease: "linear",
+        }}
       />
 
-      {/* Corner UI elements */}
-      <div className="absolute top-0 left-0 w-20 h-20 border-l-2 border-t-2 border-cyan-400/50 rounded-tl-lg" />
-      <div className="absolute top-0 right-0 w-20 h-20 border-r-2 border-t-2 border-cyan-400/50 rounded-tr-lg" />
-      <div className="absolute bottom-0 left-0 w-20 h-20 border-l-2 border-b-2 border-cyan-400/50 rounded-bl-lg" />
-      <div className="absolute bottom-0 right-0 w-20 h-20 border-r-2 border-b-2 border-cyan-400/50 rounded-br-lg" />
-      
-      {/* Bottom status bar */}
-      <div className="absolute bottom-6 right-6 flex items-center gap-3 px-4 py-2 rounded-xl bg-black/40 border border-cyan-500/30 backdrop-blur-xl">
-        <Zap className="w-4 h-4 text-cyan-400" />
-        <span className="text-cyan-300 text-xs font-mono">LIVE TRACKING</span>
-        <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-      </div>
+      {/* Grid overlay */}
+      <div className="absolute inset-0 opacity-[0.02]" style={{
+        backgroundImage: 'linear-gradient(rgba(6, 182, 212, 1) 1px, transparent 1px), linear-gradient(90deg, rgba(6, 182, 212, 1) 1px, transparent 1px)',
+        backgroundSize: '40px 40px',
+      }} />
     </div>
   );
 }
