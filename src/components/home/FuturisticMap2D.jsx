@@ -1,332 +1,413 @@
-import { motion } from "framer-motion";
+import { motion, useMotionValue, useTransform } from "framer-motion";
 import { useEffect, useState } from "react";
-import { TrendingUp, Zap, Globe, Activity } from "lucide-react";
 
 export default function FuturisticMap2D({ vehicles = [], routes = [], resources = [] }) {
   const [rotation, setRotation] = useState(0);
-  const [dataPoints, setDataPoints] = useState([]);
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
   
+  const rotateX = useTransform(mouseY, [-300, 300], [10, -10]);
+  const rotateY = useTransform(mouseX, [-300, 300], [-10, 10]);
+
   useEffect(() => {
     const interval = setInterval(() => {
-      setRotation(r => (r + 0.3) % 360);
-    }, 50);
-    
-    // Generate random floating data points
-    const points = Array.from({ length: 15 }, (_, i) => ({
-      id: i,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      delay: Math.random() * 2,
-      duration: 3 + Math.random() * 2,
-    }));
-    setDataPoints(points);
-    
+      setRotation(r => (r + 0.15) % 360);
+    }, 30);
     return () => clearInterval(interval);
   }, []);
 
+  const handleMouseMove = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left - rect.width / 2;
+    const y = e.clientY - rect.top - rect.height / 2;
+    mouseX.set(x);
+    mouseY.set(y);
+  };
+
   return (
-    <div className="relative w-full h-full overflow-hidden bg-[#0a0e1a]">
-      {/* Deep space background */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_#0f172a_0%,_#020617_100%)]" />
-      
-      {/* Animated stars */}
-      {Array.from({ length: 50 }).map((_, i) => (
+    <div 
+      className="relative w-full h-full overflow-hidden bg-black"
+      onMouseMove={handleMouseMove}
+    >
+      {/* Jarvis background grid */}
+      <div className="absolute inset-0">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(6,182,212,0.1)_0%,transparent_50%)]" />
         <motion.div
-          key={`star-${i}`}
-          className="absolute w-[2px] h-[2px] bg-cyan-400/60 rounded-full"
+          className="absolute inset-0 opacity-20"
+          style={{
+            backgroundImage: `
+              linear-gradient(rgba(6, 182, 212, 0.3) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(6, 182, 212, 0.3) 1px, transparent 1px)
+            `,
+            backgroundSize: '50px 50px',
+          }}
+          animate={{
+            backgroundPosition: ['0px 0px', '50px 50px'],
+          }}
+          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+        />
+      </div>
+
+      {/* Particle field */}
+      {Array.from({ length: 100 }).map((_, i) => (
+        <motion.div
+          key={`particle-${i}`}
+          className="absolute w-[2px] h-[2px] bg-cyan-400 rounded-full"
           style={{
             left: `${Math.random() * 100}%`,
             top: `${Math.random() * 100}%`,
           }}
           animate={{
-            opacity: [0.3, 1, 0.3],
-            scale: [1, 1.5, 1],
+            opacity: [0, 1, 0],
+            scale: [0, 1, 0],
           }}
           transition={{
-            duration: 2 + Math.random() * 3,
+            duration: 2 + Math.random() * 2,
             repeat: Infinity,
-            delay: Math.random() * 2,
+            delay: Math.random() * 3,
           }}
         />
       ))}
 
-      {/* Central globe container */}
-      <div className="absolute inset-0 flex items-center justify-center">
-        {/* Orbital rings */}
-        {[0, 1, 2].map((i) => (
-          <motion.div
-            key={`ring-${i}`}
-            className="absolute rounded-full border border-cyan-500/20"
-            style={{
-              width: `${40 + i * 15}%`,
-              height: `${40 + i * 15}%`,
-              transform: `rotateX(75deg) rotateZ(${i * 45}deg)`,
-            }}
-            animate={{
-              rotateZ: [i * 45, i * 45 + 360],
-            }}
-            transition={{
-              duration: 20 - i * 3,
-              repeat: Infinity,
-              ease: "linear",
-            }}
-          />
-        ))}
-
-        {/* Main globe sphere */}
+      {/* Central globe assembly */}
+      <motion.div 
+        className="absolute inset-0 flex items-center justify-center perspective-1000"
+        style={{
+          rotateX,
+          rotateY,
+        }}
+      >
+        {/* Outer orbital ring */}
         <motion.div
-          className="relative"
-          style={{
-            width: '35%',
-            height: '35%',
-            transformStyle: 'preserve-3d',
-          }}
-          animate={{
-            rotateY: rotation,
-          }}
+          className="absolute w-[65%] h-[65%]"
+          animate={{ rotate: 360 }}
+          transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
         >
-          {/* Globe glow */}
-          <div className="absolute inset-0 rounded-full bg-gradient-to-br from-cyan-500/30 via-blue-500/20 to-violet-500/30 blur-2xl" />
-          
-          {/* Globe mesh */}
-          <div className="absolute inset-0 rounded-full border-2 border-cyan-400/40 shadow-[0_0_60px_rgba(6,182,212,0.5)]">
-            {/* Latitude lines */}
-            {[20, 35, 50, 65, 80].map((percent) => (
-              <div
-                key={`lat-${percent}`}
-                className="absolute left-0 right-0 border-t border-cyan-500/20"
-                style={{ top: `${percent}%` }}
-              />
-            ))}
-            
-            {/* Longitude lines */}
-            {[0, 30, 60, 90, 120, 150].map((deg) => (
-              <div
-                key={`lng-${deg}`}
-                className="absolute inset-0 border-l border-cyan-500/20"
-                style={{
-                  transform: `rotateY(${deg}deg)`,
-                  borderRadius: '50%',
-                }}
-              />
-            ))}
+          <svg className="w-full h-full" viewBox="0 0 200 200">
+            <circle
+              cx="100"
+              cy="100"
+              r="95"
+              fill="none"
+              stroke="url(#gradient1)"
+              strokeWidth="0.5"
+              opacity="0.6"
+            />
+            <defs>
+              <linearGradient id="gradient1">
+                <stop offset="0%" stopColor="#06b6d4" stopOpacity="0" />
+                <stop offset="50%" stopColor="#06b6d4" stopOpacity="1" />
+                <stop offset="100%" stopColor="#06b6d4" stopOpacity="0" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </motion.div>
 
-            {/* Continents as dots pattern */}
+        {/* Mid orbital ring */}
+        <motion.div
+          className="absolute w-[55%] h-[55%]"
+          animate={{ rotate: -360 }}
+          transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
+        >
+          <svg className="w-full h-full" viewBox="0 0 200 200">
+            <circle
+              cx="100"
+              cy="100"
+              r="95"
+              fill="none"
+              stroke="#06b6d4"
+              strokeWidth="0.3"
+              strokeDasharray="5,5"
+              opacity="0.4"
+            />
+          </svg>
+        </motion.div>
+
+        {/* Globe core */}
+        <motion.div
+          className="relative w-[45%] h-[45%]"
+          animate={{ rotateY: rotation }}
+          style={{ transformStyle: 'preserve-3d' }}
+        >
+          {/* Glow effect */}
+          <div className="absolute inset-[-20%] rounded-full bg-cyan-500/20 blur-3xl" />
+          
+          {/* Main sphere */}
+          <div className="absolute inset-0 rounded-full border-2 border-cyan-400/60 bg-gradient-to-br from-cyan-950/40 via-blue-950/20 to-transparent shadow-[inset_0_0_60px_rgba(6,182,212,0.3),0_0_80px_rgba(6,182,212,0.4)]">
+            {/* Grid lines */}
             <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
-              {/* North America */}
-              {Array.from({ length: 30 }).map((_, i) => (
-                <circle
-                  key={`na-${i}`}
-                  cx={15 + Math.random() * 15}
-                  cy={20 + Math.random() * 20}
-                  r="0.4"
-                  fill="#06b6d4"
-                  opacity="0.6"
+              {/* Latitude lines */}
+              {[15, 30, 45, 55, 70, 85].map(y => (
+                <ellipse
+                  key={`lat-${y}`}
+                  cx="50"
+                  cy="50"
+                  rx="48"
+                  ry={48 * Math.sin((y - 50) * Math.PI / 100)}
+                  fill="none"
+                  stroke="rgba(6, 182, 212, 0.3)"
+                  strokeWidth="0.2"
+                  transform={`translate(0, ${y - 50})`}
                 />
               ))}
-              {/* Europe */}
-              {Array.from({ length: 20 }).map((_, i) => (
-                <circle
-                  key={`eu-${i}`}
-                  cx={48 + Math.random() * 8}
-                  cy={22 + Math.random() * 10}
-                  r="0.4"
-                  fill="#06b6d4"
-                  opacity="0.6"
+              
+              {/* Longitude lines */}
+              {[0, 30, 60, 90, 120, 150].map(angle => (
+                <ellipse
+                  key={`lng-${angle}`}
+                  cx="50"
+                  cy="50"
+                  rx="5"
+                  ry="48"
+                  fill="none"
+                  stroke="rgba(6, 182, 212, 0.3)"
+                  strokeWidth="0.2"
+                  transform={`rotate(${angle}, 50, 50)`}
                 />
               ))}
-              {/* Asia */}
-              {Array.from({ length: 40 }).map((_, i) => (
-                <circle
-                  key={`as-${i}`}
-                  cx={60 + Math.random() * 20}
-                  cy={20 + Math.random() * 20}
-                  r="0.4"
-                  fill="#06b6d4"
-                  opacity="0.6"
-                />
-              ))}
+
+              {/* Landmass dots */}
+              {Array.from({ length: 200 }).map((_, i) => {
+                const lat = (Math.random() * 160 - 80) + 50;
+                const lng = Math.random() * 100;
+                const shouldShow = (
+                  (lng > 10 && lng < 35 && lat > 30 && lat < 55) || // N America
+                  (lng > 45 && lng < 58 && lat > 35 && lat < 50) || // Europe
+                  (lng > 60 && lng < 85 && lat > 30 && lat < 55) || // Asia
+                  (lng > 48 && lng < 60 && lat > 55 && lat < 75)    // Africa
+                );
+                return shouldShow ? (
+                  <circle
+                    key={`land-${i}`}
+                    cx={lng}
+                    cy={lat}
+                    r="0.3"
+                    fill="#06b6d4"
+                    opacity="0.7"
+                  />
+                ) : null;
+              })}
             </svg>
+
+            {/* Active nodes */}
+            {vehicles.map((vehicle, idx) => {
+              const angle = (idx / vehicles.length) * 360;
+              const radius = 48;
+              return (
+                <motion.div
+                  key={`node-${idx}`}
+                  className="absolute"
+                  style={{
+                    left: `${50 + radius * Math.cos(angle * Math.PI / 180)}%`,
+                    top: `${50 + radius * Math.sin(angle * Math.PI / 180)}%`,
+                    transform: 'translate(-50%, -50%)',
+                  }}
+                >
+                  <motion.div
+                    className="relative w-3 h-3"
+                    animate={{
+                      scale: [1, 1.3, 1],
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      delay: idx * 0.2,
+                    }}
+                  >
+                    <div className="absolute inset-0 rounded-full bg-cyan-400 shadow-[0_0_15px_rgba(6,182,212,1)]" />
+                    <motion.div
+                      className="absolute inset-0 rounded-full border-2 border-cyan-400"
+                      animate={{
+                        scale: [1, 2.5],
+                        opacity: [1, 0],
+                      }}
+                      transition={{
+                        duration: 2,
+                        repeat: Infinity,
+                        delay: idx * 0.2,
+                      }}
+                    />
+                  </motion.div>
+                </motion.div>
+              );
+            })}
           </div>
 
-          {/* Active location pulses */}
-          {vehicles.map((vehicle, idx) => {
-            const angle = (idx / vehicles.length) * 360;
-            const radius = 45;
+          {/* Data connection lines */}
+          {routes.map((route, idx) => {
+            const angle1 = (idx / routes.length) * 360;
+            const angle2 = ((idx + 1) / routes.length) * 360;
             return (
-              <motion.div
-                key={`pulse-${idx}`}
-                className="absolute w-2 h-2 -ml-1 -mt-1"
-                style={{
-                  left: `${50 + radius * Math.cos(angle * Math.PI / 180)}%`,
-                  top: `${50 + radius * Math.sin(angle * Math.PI / 180)}%`,
-                }}
-                animate={{
-                  scale: [1, 1.5, 1],
-                  opacity: [1, 0.5, 1],
-                }}
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                  delay: idx * 0.2,
-                }}
+              <svg
+                key={`connection-${idx}`}
+                className="absolute inset-0 w-full h-full pointer-events-none"
+                style={{ transform: 'translateZ(1px)' }}
               >
-                <div className="w-full h-full rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(6,182,212,1)]" />
-              </motion.div>
+                <motion.path
+                  d={`M ${50 + 48 * Math.cos(angle1 * Math.PI / 180)} ${50 + 48 * Math.sin(angle1 * Math.PI / 180)} Q 50 50 ${50 + 48 * Math.cos(angle2 * Math.PI / 180)} ${50 + 48 * Math.sin(angle2 * Math.PI / 180)}`}
+                  fill="none"
+                  stroke="#06b6d4"
+                  strokeWidth="0.3"
+                  opacity="0.4"
+                  initial={{ pathLength: 0 }}
+                  animate={{ pathLength: 1 }}
+                  transition={{ duration: 2, delay: idx * 0.3 }}
+                />
+              </svg>
             );
           })}
         </motion.div>
 
-        {/* Connection lines from center */}
-        {routes.map((route, idx) => {
-          const angle = (idx / routes.length) * 360;
-          return (
-            <motion.div
-              key={`line-${idx}`}
-              className="absolute w-[1px] bg-gradient-to-t from-cyan-500/50 to-transparent origin-bottom"
-              style={{
-                height: '30%',
-                left: '50%',
-                bottom: '50%',
-                transform: `rotate(${angle}deg)`,
-              }}
-              animate={{
-                opacity: [0.3, 0.8, 0.3],
-              }}
-              transition={{
-                duration: 3,
-                repeat: Infinity,
-                delay: idx * 0.3,
-              }}
-            />
-          );
-        })}
-      </div>
+        {/* Scanning circles */}
+        {[0, 1, 2].map(i => (
+          <motion.div
+            key={`scan-${i}`}
+            className="absolute rounded-full border border-cyan-400/20"
+            style={{
+              width: `${40 + i * 20}%`,
+              height: `${40 + i * 20}%`,
+            }}
+            animate={{
+              scale: [1, 1.05, 1],
+              opacity: [0.2, 0.4, 0.2],
+            }}
+            transition={{
+              duration: 3,
+              repeat: Infinity,
+              delay: i * 0.5,
+            }}
+          />
+        ))}
+      </motion.div>
 
-      {/* Floating HUD panels */}
-      {dataPoints.slice(0, 8).map((point, idx) => (
-        <motion.div
-          key={`panel-${point.id}`}
-          className="absolute px-3 py-2 bg-cyan-950/40 border border-cyan-500/30 backdrop-blur-md rounded"
-          style={{
-            left: `${point.x}%`,
-            top: `${point.y}%`,
-          }}
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{
-            opacity: [0, 0.8, 0],
-            y: [-20, -40, -60],
-            scale: [0.8, 1, 0.8],
-          }}
-          transition={{
-            duration: point.duration,
-            repeat: Infinity,
-            delay: point.delay,
-          }}
-        >
-          <div className="text-[10px] text-cyan-400 font-mono">
-            {['789.4', '152.68', '903.25', '268', '743.06', '921', '85', '65'][idx]}
-          </div>
-        </motion.div>
-      ))}
-
-      {/* Floating data icons */}
+      {/* Circular HUD elements */}
       {[
-        { Icon: Globe, x: 15, y: 20, rotate: -15 },
-        { Icon: Activity, x: 75, y: 25, rotate: 10 },
-        { Icon: TrendingUp, x: 20, y: 70, rotate: -20 },
-        { Icon: Zap, x: 80, y: 65, rotate: 15 },
+        { angle: 45, distance: 38, label: 'FLEET', value: vehicles.length },
+        { angle: 135, distance: 38, label: 'ROUTES', value: routes.length },
+        { angle: 225, distance: 38, label: 'HUBS', value: resources.length },
+        { angle: 315, distance: 38, label: 'STATUS', value: 'ACTIVE' },
       ].map((item, idx) => (
         <motion.div
-          key={`icon-${idx}`}
+          key={`hud-${idx}`}
           className="absolute"
           style={{
-            left: `${item.x}%`,
-            top: `${item.y}%`,
+            left: `${50 + item.distance * Math.cos(item.angle * Math.PI / 180)}%`,
+            top: `${50 + item.distance * Math.sin(item.angle * Math.PI / 180)}%`,
+            transform: 'translate(-50%, -50%)',
           }}
-          animate={{
-            y: [-10, 10, -10],
-            rotate: [item.rotate - 5, item.rotate + 5, item.rotate - 5],
-            opacity: [0.4, 0.7, 0.4],
-          }}
-          transition={{
-            duration: 4 + idx,
-            repeat: Infinity,
-          }}
+          initial={{ opacity: 0, scale: 0 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: idx * 0.15 }}
         >
-          <div className="p-3 rounded-lg bg-cyan-500/10 border border-cyan-500/20 backdrop-blur-sm">
-            <item.Icon className="w-5 h-5 text-cyan-400/60" />
+          <div className="relative">
+            <motion.div
+              className="w-20 h-20 rounded-full border-2 border-cyan-500/40 bg-cyan-950/20 backdrop-blur-sm flex flex-col items-center justify-center"
+              whileHover={{ scale: 1.1, borderColor: 'rgba(6, 182, 212, 0.8)' }}
+            >
+              <div className="text-2xl font-bold text-cyan-400">{item.value}</div>
+              <div className="text-[8px] text-cyan-300/60 tracking-widest">{item.label}</div>
+            </motion.div>
+            
+            {/* Connecting line */}
+            <svg className="absolute inset-0 w-full h-full overflow-visible pointer-events-none">
+              <line
+                x1="50%"
+                y1="50%"
+                x2={`${50 - item.distance * Math.cos(item.angle * Math.PI / 180) * 2.5}%`}
+                y2={`${50 - item.distance * Math.sin(item.angle * Math.PI / 180) * 2.5}%`}
+                stroke="rgba(6, 182, 212, 0.2)"
+                strokeWidth="1"
+                strokeDasharray="3,3"
+              />
+            </svg>
           </div>
         </motion.div>
       ))}
 
-      {/* Corner HUD elements */}
+      {/* Corner brackets */}
       {[
-        { corner: 'top-left', text: 'SYSTEM ACTIVE', x: 6, y: 6 },
-        { corner: 'top-right', text: 'LIVE FEED', x: 'auto', y: 6, right: 6 },
-        { corner: 'bottom-left', text: 'ENCRYPTED', x: 6, y: 'auto', bottom: 6 },
-        { corner: 'bottom-right', text: 'GLOBAL SYNC', x: 'auto', y: 'auto', right: 6, bottom: 6 },
+        { x: 0, y: 0, rotate: 0 },
+        { x: 100, y: 0, rotate: 90 },
+        { x: 0, y: 100, rotate: 270 },
+        { x: 100, y: 100, rotate: 180 },
       ].map((corner, idx) => (
         <motion.div
-          key={`corner-${idx}`}
-          className="absolute"
+          key={`bracket-${idx}`}
+          className="absolute w-16 h-16"
           style={{
-            left: corner.x !== 'auto' ? `${corner.x}%` : undefined,
-            right: corner.right ? `${corner.right}%` : undefined,
-            top: corner.y !== 'auto' ? `${corner.y}%` : undefined,
-            bottom: corner.bottom ? `${corner.bottom}%` : undefined,
+            left: corner.x === 0 ? '1rem' : 'auto',
+            right: corner.x === 100 ? '1rem' : 'auto',
+            top: corner.y === 0 ? '1rem' : 'auto',
+            bottom: corner.y === 100 ? '1rem' : 'auto',
+            transform: `rotate(${corner.rotate}deg)`,
           }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: idx * 0.2 }}
+          transition={{ delay: idx * 0.1 }}
         >
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-cyan-950/60 border border-cyan-500/40 rounded backdrop-blur-sm">
-            <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-            <span className="text-[10px] text-cyan-300 font-mono tracking-wider">{corner.text}</span>
-          </div>
+          <svg className="w-full h-full" viewBox="0 0 40 40">
+            <path
+              d="M 0 8 L 0 0 L 8 0"
+              fill="none"
+              stroke="#06b6d4"
+              strokeWidth="2"
+              opacity="0.6"
+            />
+            <circle cx="0" cy="0" r="2" fill="#06b6d4" />
+          </svg>
         </motion.div>
       ))}
 
-      {/* Stats overlay */}
-      <div className="absolute top-6 left-6 space-y-2">
-        {[
-          { label: 'ACTIVE FLEET', value: vehicles.length, color: 'cyan' },
-          { label: 'OPTIMIZED ROUTES', value: routes.length, color: 'violet' },
-          { label: 'GLOBAL HUBS', value: resources.length, color: 'emerald' },
-        ].map((stat, idx) => (
-          <motion.div
-            key={stat.label}
-            initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: idx * 0.15 }}
-            className={`px-4 py-2 bg-${stat.color}-950/40 border border-${stat.color}-500/40 backdrop-blur-md rounded-lg`}
-          >
-            <div className="flex items-baseline gap-3">
-              <span className={`text-2xl font-bold text-${stat.color}-400`}>{stat.value}</span>
-              <span className="text-[10px] text-slate-400 uppercase tracking-widest">{stat.label}</span>
-            </div>
-          </motion.div>
-        ))}
-      </div>
-
-      {/* Scan line effect */}
+      {/* Top status bar */}
       <motion.div
-        className="absolute inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent"
+        className="absolute top-6 left-1/2 -translate-x-1/2 px-6 py-2 bg-cyan-950/30 border border-cyan-500/40 backdrop-blur-md rounded-full"
+        initial={{ y: -50, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+      >
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="text-xs text-cyan-300 font-mono">SYSTEM ONLINE</span>
+          </div>
+          <div className="w-px h-4 bg-cyan-500/30" />
+          <span className="text-xs text-cyan-400 font-mono">GLOBAL FLEET INTELLIGENCE</span>
+        </div>
+      </motion.div>
+
+      {/* Bottom info panel */}
+      <motion.div
+        className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-6"
+        initial={{ y: 50, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.3 }}
+      >
+        {[
+          { label: 'LATENCY', value: '12ms' },
+          { label: 'SYNC', value: '99.9%' },
+          { label: 'UPTIME', value: '100%' },
+        ].map((stat, idx) => (
+          <div
+            key={stat.label}
+            className="px-4 py-2 bg-cyan-950/30 border border-cyan-500/30 backdrop-blur-sm rounded"
+          >
+            <div className="text-[10px] text-cyan-400/60 mb-1">{stat.label}</div>
+            <div className="text-sm text-cyan-300 font-mono font-bold">{stat.value}</div>
+          </div>
+        ))}
+      </motion.div>
+
+      {/* Animated scan line */}
+      <motion.div
+        className="absolute inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent"
         animate={{
           top: ['0%', '100%'],
         }}
         transition={{
-          duration: 4,
+          duration: 3,
           repeat: Infinity,
           ease: "linear",
         }}
       />
-
-      {/* Grid overlay */}
-      <div className="absolute inset-0 opacity-[0.02]" style={{
-        backgroundImage: 'linear-gradient(rgba(6, 182, 212, 1) 1px, transparent 1px), linear-gradient(90deg, rgba(6, 182, 212, 1) 1px, transparent 1px)',
-        backgroundSize: '40px 40px',
-      }} />
     </div>
   );
 }
