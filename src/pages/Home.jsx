@@ -9,7 +9,7 @@ import {
 import { base44 } from "@/api/base44Client";
 import { useEffect, useState, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
-import FuturisticGlobe from "../components/holographic/FuturisticGlobe";
+import DashboardGlobeFrame from "../components/holographic/DashboardGlobeFrame";
 
 // --- A/B Test Helpers ---
 function getOrCreateAnonymousId() {
@@ -194,6 +194,40 @@ export default function Home() {
     { value: "Real-time", label: "Tracking" },
     { value: "Multi-modal", label: "Transport" },
     { value: "Global", label: "Coverage" }
+  ];
+
+  // Demo data for globe
+  const demoVehicles = [
+    { id: 1, name: "Fleet Truck 47", latitude: 55.6761, longitude: 12.5683, status: "active", speed: 65, heading: 45 },
+    { id: 2, name: "Cargo Ship Alpha", latitude: 51.5074, longitude: -0.1278, status: "active", speed: 22, heading: 90 },
+    { id: 3, name: "Delivery Drone 8", latitude: 48.8566, longitude: 2.3522, status: "idle", speed: 0 },
+    { id: 4, name: "Fleet Truck 23", latitude: 52.5200, longitude: 13.4050, status: "active", speed: 80, heading: 180 },
+    { id: 5, name: "Aircraft Cargo 1", latitude: 40.7128, longitude: -74.0060, status: "active", speed: 450, heading: 270 },
+  ];
+
+  const demoRoutes = [
+    {
+      id: 1,
+      name: "Copenhagen → Berlin",
+      waypoints: [
+        { lat: 55.6761, lng: 12.5683, name: "Copenhagen" },
+        { lat: 52.5200, lng: 13.4050, name: "Berlin" }
+      ]
+    },
+    {
+      id: 2,
+      name: "London → Paris",
+      waypoints: [
+        { lat: 51.5074, lng: -0.1278, name: "London" },
+        { lat: 48.8566, lng: 2.3522, name: "Paris" }
+      ]
+    }
+  ];
+
+  const demoResources = [
+    { id: 1, name: "Copenhagen Port", latitude: 55.6761, longitude: 12.5683, type: "port" },
+    { id: 2, name: "Berlin Warehouse", latitude: 52.5200, longitude: 13.4050, type: "warehouse" },
+    { id: 3, name: "Paris Hub", latitude: 48.8566, longitude: 2.3522, type: "warehouse" },
   ];
 
   return (
@@ -418,10 +452,18 @@ export default function Home() {
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
-            className="relative rounded-3xl overflow-hidden border border-cyan-500/30 bg-slate-900/50 backdrop-blur-xl"
+            className="relative rounded-3xl overflow-hidden border border-cyan-500/30"
             style={{ height: "600px" }}
           >
-            <FuturisticGlobe demoMode={true} />
+            <DashboardGlobeFrame
+              vehicles={demoVehicles}
+              routes={demoRoutes}
+              resources={demoResources}
+              digitalTwins={[]}
+              orgId={null}
+              onSelectVehicle={() => {}}
+              onSelectResource={() => {}}
+            />
           </motion.div>
         </div>
       </section>
