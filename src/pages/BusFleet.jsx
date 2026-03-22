@@ -409,6 +409,7 @@ export default function BusFleet() {
           {showRouteEditor && (
             <BusRouteEditor
               route={editingItem}
+              stops={stops}
               onSave={(data) => createRouteMutation.mutate(data)}
               onClose={() => {
                 setShowRouteEditor(false);
