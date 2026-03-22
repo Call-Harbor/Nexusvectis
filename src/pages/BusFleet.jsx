@@ -44,9 +44,23 @@ export default function BusFleet() {
       const user = await base44.auth.me();
       const orgId = user?.organization_id || user?.data?.organization_id;
       
+      // Get resource coordinates if resource is selected
+      let latitude = null;
+      let longitude = null;
+      
+      if (data.resource_id) {
+        const resource = await base44.entities.Resource.get(data.resource_id);
+        if (resource?.latitude && resource?.longitude) {
+          latitude = resource.latitude;
+          longitude = resource.longitude;
+        }
+      }
+      
       return base44.entities.Bus.create({
         ...data,
         organization_id: orgId,
+        latitude,
+        longitude,
       });
     },
     onSuccess: () => {
@@ -63,9 +77,32 @@ export default function BusFleet() {
       const user = await base44.auth.me();
       const orgId = user?.organization_id || user?.data?.organization_id;
       
+      // Geocode the address to get coordinates
+      let latitude = null;
+      let longitude = null;
+      
+      if (data.address) {
+        try {
+          const geocodeResult = await base44.functions.invoke('geocodeCity', {
+            city: data.address
+          });
+          
+          if (geocodeResult.data?.latitude && geocodeResult.data?.longitude) {
+            latitude = geocodeResult.data.latitude;
+            longitude = geocodeResult.data.longitude;
+          }
+        } catch (error) {
+          console.error('Geocoding failed:', error);
+          toast.error('Could not geocode address. Please check the location.');
+          throw error;
+        }
+      }
+      
       return base44.entities.BusStop.create({
         ...data,
         organization_id: orgId,
+        latitude,
+        longitude,
       });
     },
     onSuccess: () => {

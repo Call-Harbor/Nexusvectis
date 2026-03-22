@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { X, Save, Bus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { base44 } from "@/api/base44Client";
+import { useQuery } from "@tanstack/react-query";
 
 export default function BusEditor({ bus, onSave, onClose }) {
   const [formData, setFormData] = useState(bus || {
@@ -15,10 +17,14 @@ export default function BusEditor({ bus, onSave, onClose }) {
     status: "active",
     current_passengers: 0,
     fuel_level: 100,
-    latitude: 55.6761,
-    longitude: 12.5683,
+    resource_id: "",
     heading: 0,
     speed: 0,
+  });
+
+  const { data: resources = [] } = useQuery({
+    queryKey: ['resources'],
+    queryFn: () => base44.entities.Resource.list('-name', 100),
   });
 
   const handleSubmit = (e) => {
@@ -138,27 +144,21 @@ export default function BusEditor({ bus, onSave, onClose }) {
             </div>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <Label className="text-slate-300">Latitude</Label>
-              <Input
-                type="number"
-                step="0.0001"
-                value={formData.latitude}
-                onChange={(e) => setFormData({...formData, latitude: parseFloat(e.target.value)})}
-                className="bg-slate-800/50 border-slate-700"
-              />
-            </div>
-            <div>
-              <Label className="text-slate-300">Longitude</Label>
-              <Input
-                type="number"
-                step="0.0001"
-                value={formData.longitude}
-                onChange={(e) => setFormData({...formData, longitude: parseFloat(e.target.value)})}
-                className="bg-slate-800/50 border-slate-700"
-              />
-            </div>
+          <div>
+            <Label className="text-slate-300">Resource / Depot *</Label>
+            <Select value={formData.resource_id} onValueChange={(val) => setFormData({...formData, resource_id: val})}>
+              <SelectTrigger className="bg-slate-800/50 border-slate-700">
+                <SelectValue placeholder="Select a depot or parking location" />
+              </SelectTrigger>
+              <SelectContent>
+                {resources.map(resource => (
+                  <SelectItem key={resource.id} value={resource.id}>
+                    {resource.name} - {resource.location}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-slate-500 mt-1">Bus location will be set to the resource's coordinates</p>
           </div>
 
           <div className="flex gap-3 justify-end pt-4 border-t border-slate-700/50">
