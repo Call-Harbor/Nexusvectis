@@ -9,7 +9,7 @@ import {
 import { base44 } from "@/api/base44Client";
 import { useEffect, useState, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
-import DashboardGlobeFrame from "../components/holographic/DashboardGlobeFrame";
+import FuturisticMap2D from "../components/home/FuturisticMap2D";
 
 // --- A/B Test Helpers ---
 function getOrCreateAnonymousId() {
@@ -452,17 +452,13 @@ export default function Home() {
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
-            className="relative rounded-3xl overflow-hidden border border-cyan-500/30"
+            className="relative rounded-3xl overflow-hidden border-2 border-cyan-500/40 shadow-2xl shadow-cyan-500/20"
             style={{ height: "600px" }}
           >
-            <DashboardGlobeFrame
+            <FuturisticMap2D
               vehicles={demoVehicles}
               routes={demoRoutes}
               resources={demoResources}
-              digitalTwins={[]}
-              orgId={null}
-              onSelectVehicle={() => {}}
-              onSelectResource={() => {}}
             />
           </motion.div>
         </div>
