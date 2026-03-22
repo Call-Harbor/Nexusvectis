@@ -9,6 +9,7 @@ import {
 import { base44 } from "@/api/base44Client";
 import { useEffect, useState, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
+import FuturisticGlobe from "../components/holographic/FuturisticGlobe";
 
 // --- A/B Test Helpers ---
 function getOrCreateAnonymousId() {
@@ -379,6 +380,48 @@ export default function Home() {
                 </div>
               </motion.div>
             ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* 3D Globe Showcase */}
+      <section className="relative py-20 sm:py-32 px-4 sm:px-6 z-10">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="text-center mb-12"
+          >
+            <motion.div
+              animate={{ rotate: [0, 360] }}
+              transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+              className="inline-block mb-6"
+            >
+              <Globe className="w-12 h-12 text-cyan-400" />
+            </motion.div>
+            <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-6 leading-tight px-2">
+              Global Fleet
+              <br />
+              <span className="bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent">
+                In Real-Time
+              </span>
+            </h2>
+            <p className="text-base sm:text-lg md:text-xl text-slate-400 max-w-3xl mx-auto px-2">
+              Track vehicles, ships, aircraft and resources across the globe with our interactive 3D visualization
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="relative rounded-3xl overflow-hidden border border-cyan-500/30 bg-slate-900/50 backdrop-blur-xl"
+            style={{ height: "600px" }}
+          >
+            <FuturisticGlobe demoMode={true} />
           </motion.div>
         </div>
       </section>
