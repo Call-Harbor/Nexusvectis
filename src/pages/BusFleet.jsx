@@ -84,25 +84,34 @@ export default function BusFleet() {
       const user = await base44.auth.me();
       const orgId = user?.organization_id || user?.data?.organization_id;
       
-      // Geocode the address to get coordinates
+      // Geocode the address to get coordinates using AI
       let latitude = 0;
       let longitude = 0;
       
       if (data.address) {
         try {
-          const geocodeResult = await base44.functions.invoke('geocodeCity', {
-            city: data.address
+          const geocodeResult = await base44.integrations.Core.InvokeLLM({
+            prompt: `Return the GPS coordinates for this location: ${data.address}. Only return the coordinates, nothing else.`,
+            add_context_from_internet: true,
+            response_json_schema: {
+              type: "object",
+              properties: {
+                latitude: { type: "number" },
+                longitude: { type: "number" }
+              },
+              required: ["latitude", "longitude"]
+            }
           });
           
-          if (geocodeResult.data?.latitude && geocodeResult.data?.longitude) {
-            latitude = geocodeResult.data.latitude;
-            longitude = geocodeResult.data.longitude;
+          if (geocodeResult?.latitude && geocodeResult?.longitude) {
+            latitude = geocodeResult.latitude;
+            longitude = geocodeResult.longitude;
           } else {
-            toast.error('Could not find coordinates for this location. Using default.');
+            toast.error('Could not find coordinates for this location.');
           }
         } catch (error) {
           console.error('Geocoding failed:', error);
-          toast.error('Could not geocode address. Using default coordinates.');
+          toast.error('Could not geocode address.');
         }
       }
       
