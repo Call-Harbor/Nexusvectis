@@ -48,7 +48,9 @@ export default function TransitControl() {
     queryKey: ['busStops'],
     queryFn: async () => {
       if (!user?.organization_id) return [];
-      return await base44.entities.BusStop.filter({ organization_id: user.organization_id });
+      const allStops = await base44.entities.BusStop.list();
+      // Include both org-specific stops and global stops (organization_id is null)
+      return allStops.filter(s => !s.organization_id || s.organization_id === user.organization_id);
     },
     enabled: !!user?.organization_id,
   });
