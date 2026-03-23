@@ -27,6 +27,9 @@ import BusFleetManager from "@/components/transit/BusFleetManager";
 import TransitKPIBanner from "@/components/transit/TransitKPIBanner";
 import TransitAlertBar from "@/components/transit/TransitAlertBar";
 import TransitOperationsPanel from "@/components/transit/TransitOperationsPanel";
+import AdvancedAnalyticsDashboard from "@/components/transit/AdvancedAnalyticsDashboard";
+import PredictiveCapacityOptimizer from "@/components/transit/PredictiveCapacityOptimizer";
+import IncidentResponseCenter from "@/components/transit/IncidentResponseCenter";
 
 export default function TransitControl() {
   const [selectedLine, setSelectedLine] = useState(null);
@@ -255,115 +258,30 @@ export default function TransitControl() {
 
           {/* OPERATIONS BOARD */}
           <TabsContent value="operations" className="space-y-6">
-            {/* Live Transit Map */}
-            <LiveTransitMap 
-              organizationId={user?.organization_id} 
+            {/* ADVANCED ANALYTICS DASHBOARD */}
+            <AdvancedAnalyticsDashboard 
+              kpis={todayKPI} 
+              activeTrips={activeTrips} 
               buses={activeBuses}
-              stops={stops}
-              onBusClick={setSelectedBus}
+              trips={activeTrips}
             />
 
-            {/* AI Real-Time Recommendations */}
-            {realtimeRecommendations && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-              >
-                <Card className="p-6 bg-gradient-to-br from-cyan-500/10 to-violet-500/10 border-cyan-500/30">
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-2xl font-bold text-white flex items-center gap-3">
-                      <Brain className="w-7 h-7 text-cyan-400" />
-                      AI Control Recommendations
-                    </h2>
-                    <Badge className="bg-cyan-500/20 text-cyan-400 border-cyan-500/30 px-3 py-1">
-                      Urgency: {realtimeRecommendations.recommendations?.urgency_score || 0}/100
-                    </Badge>
-                  </div>
-
-                  <div className="grid md:grid-cols-3 gap-4">
-                    {/* Short Turns */}
-                    {realtimeRecommendations.recommendations?.short_turns?.length > 0 && (
-                      <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30">
-                        <h3 className="text-amber-300 font-semibold mb-3 flex items-center gap-2">
-                          <Activity className="w-4 h-4" />
-                          Short-Turn Opportunities
-                        </h3>
-                        <div className="space-y-2">
-                          {realtimeRecommendations.recommendations.short_turns.map((st, i) => (
-                            <div key={i} className="p-3 rounded-lg bg-slate-800/50 text-sm">
-                              <p className="text-white font-medium mb-1">Trip {st.trip_id}</p>
-                              <p className="text-slate-400 text-xs mb-1">Turn at: {st.turn_at_stop}</p>
-                              <p className="text-amber-300 text-xs">{st.reason}</p>
-                              <Button className="w-full mt-2" size="sm" variant="outline">
-                                Execute Short-Turn
-                              </Button>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Extra Insertions */}
-                    {realtimeRecommendations.recommendations?.extra_insertions?.length > 0 && (
-                      <div className="p-4 rounded-xl bg-violet-500/10 border border-violet-500/30">
-                        <h3 className="text-violet-300 font-semibold mb-3 flex items-center gap-2">
-                          <Plus className="w-4 h-4" />
-                          Extra Trip Insertions
-                        </h3>
-                        <div className="space-y-2">
-                          {realtimeRecommendations.recommendations.extra_insertions.map((ei, i) => (
-                            <div key={i} className="p-3 rounded-lg bg-slate-800/50 text-sm">
-                              <p className="text-white font-medium mb-1">Line {ei.line}</p>
-                              <p className="text-slate-400 text-xs mb-1">Insert at: {ei.insert_at}</p>
-                              <p className="text-violet-300 text-xs mb-2">{ei.justification}</p>
-                              <p className="text-emerald-400 text-xs">Bus: {ei.available_bus}</p>
-                              <Button className="w-full mt-2" size="sm" variant="outline">
-                                Schedule Extra Trip
-                              </Button>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Rerouting */}
-                    {realtimeRecommendations.recommendations?.rerouting?.length > 0 && (
-                      <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30">
-                        <h3 className="text-rose-300 font-semibold mb-3 flex items-center gap-2">
-                          <MapPin className="w-4 h-4" />
-                          Rerouting Needed
-                        </h3>
-                        <div className="space-y-2">
-                          {realtimeRecommendations.recommendations.rerouting.map((rr, i) => (
-                            <div key={i} className="p-3 rounded-lg bg-slate-800/50 text-sm">
-                              <p className="text-white font-medium mb-1">Trip {rr.trip_id}</p>
-                              <p className="text-rose-300 text-xs mb-1">Avoid: {rr.avoid_area}</p>
-                              <p className="text-slate-400 text-xs mb-2">{rr.reason}</p>
-                              <p className="text-cyan-400 text-xs">Alt: {rr.alternative_route}</p>
-                              <Button className="w-full mt-2" size="sm" variant="outline">
-                                Apply Reroute
-                              </Button>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </Card>
-              </motion.div>
-            )}
-
-            <TransitOperationsPanel
-              activeBuses={activeBuses}
-              drivers={drivers}
+            {/* PREDICTIVE CAPACITY OPTIMIZER */}
+            <PredictiveCapacityOptimizer
+              buses={activeBuses}
+              trips={activeTrips}
               lines={lines}
-              activeTrips={activeTrips}
-              onSelectBus={setSelectedBus}
-              onSelectLine={setSelectedLine}
-              onAssignDriver={setAssigningDriver}
             />
 
-            {/* Detailed Trip Status */}
+            {/* INCIDENT RESPONSE CENTER */}
+            <IncidentResponseCenter
+              incidents={[]}
+              buses={activeBuses}
+              drivers={drivers}
+            />
+
+            {/* Live Transit Map */}
+            <LiveTransitMap
 <Card className="p-6 bg-slate-800/50 border-slate-700/50">
               <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
                 <BarChart3 className="w-6 h-6 text-cyan-400" />
