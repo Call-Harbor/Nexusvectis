@@ -209,10 +209,9 @@ export default function Fleet() {
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-white">Fleet Management</h1>
+            <h1 className="text-3xl font-bold text-white">Units Management</h1>
             <p className="text-slate-400 mt-1">
-              {filteredVehicles.length} of {vehicles.length} units
-              {searchTerm && ` matching "${searchTerm}"`}
+              All vehicles and transit units in one place
             </p>
           </div>
           <div className="flex gap-2">

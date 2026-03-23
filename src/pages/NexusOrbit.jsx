@@ -235,10 +235,17 @@ export default function NexusOrbit() {
     enabled: !!org?.id,
   });
 
-  // ── Fetch vehicles ───────────────────────────────────────────────────────
+  // ── Fetch vehicles (general fleet) ──────────────────────────────────────
   const { data: vehicles = [] } = useQuery({
     queryKey: ["orbit-vehicles", org?.id],
     queryFn: () => org?.id ? base44.entities.Vehicle.filter({ organization_id: org.id }, "-created_date", 50) : [],
+    enabled: !!org?.id,
+  });
+
+  // ── Fetch buses (transit units) ─────────────────────────────────────────
+  const { data: buses = [] } = useQuery({
+    queryKey: ["orbit-buses", org?.id],
+    queryFn: () => org?.id ? base44.entities.Bus.filter({ organization_id: org.id }, "-created_date", 50) : [],
     enabled: !!org?.id,
   });
 
@@ -319,7 +326,7 @@ export default function NexusOrbit() {
 
   const recipientList = userRole === "driver" ? coordinators : drivers;
 
-  // ── Find driver's vehicle and route ──────────────────────────────────────
+  // ── Find driver's vehicle/bus and route ─────────────────────────────────
   // First check if vehicle is assigned via DriverRequest
   let myVehicle = myRequest?.vehicle_assigned 
     ? vehicles.find(v => v.id === myRequest.vehicle_assigned)
@@ -333,23 +340,35 @@ export default function NexusOrbit() {
       v.driver === user?.full_name
     );
   }
-  
-  const myRoute = routes.find(r => r.id === myVehicle?.route_id);
 
-  // ── Geofence monitoring for drivers (after myVehicle is defined) ─────────
-  useGeofenceMonitor(currentPosition, geofences, user, org, myVehicle?.id);
+  // Check if driver has a bus assigned
+  let myBus = buses.find(b => 
+    b.driver_id === user?.id || 
+    b.driver_id === user?.email
+  );
+  
+  const myUnit = myVehicle || myBus;
+  const myRoute = routes.find(r => r.id === (myVehicle?.route_id || myBus?.current_line_id));
+
+  // ── Geofence monitoring for drivers (after myUnit is defined) ────────────
+  useGeofenceMonitor(currentPosition, geofences, user, org, myUnit?.id);
 
   // ── Assign route mutation ────────────────────────────────────────────────
   const assignRouteMutation = useMutation({
     mutationFn: async (routeId) => {
-      if (!myVehicle) {
-        throw new Error("No vehicle assigned yet. Ask your coordinator to assign you a vehicle first.");
+      if (!myUnit) {
+        throw new Error("No vehicle/bus assigned yet. Ask your coordinator to assign you a unit first.");
       }
       
-      await base44.entities.Vehicle.update(myVehicle.id, { route_id: routeId });
+      if (myVehicle) {
+        await base44.entities.Vehicle.update(myVehicle.id, { route_id: routeId });
+      } else if (myBus) {
+        await base44.entities.Bus.update(myBus.id, { current_line_id: routeId });
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries(["orbit-vehicles"]);
+      queryClient.invalidateQueries(["orbit-buses"]);
       toast.success("Route assigned!");
       setActiveView("map");
     },
@@ -749,13 +768,13 @@ export default function NexusOrbit() {
             >
               <p className="text-slate-500 text-xs mb-4 uppercase tracking-wider">Available Routes</p>
 
-              {!myVehicle && userRole === "driver" && (
+              {!myUnit && userRole === "driver" && (
                 <div className="mb-4 p-4 rounded-xl bg-amber-500/10 border border-amber-500/30">
                   <div className="flex items-start gap-3">
                     <AlertCircle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-amber-300 text-sm font-semibold mb-1">No Vehicle Assigned</p>
-                      <p className="text-amber-400/70 text-xs">Contact your coordinator to get a vehicle assigned before you can select routes.</p>
+                      <p className="text-amber-300 text-sm font-semibold mb-1">No Unit Assigned</p>
+                      <p className="text-amber-400/70 text-xs">Contact your coordinator to get a vehicle or bus assigned before you can select routes.</p>
                     </div>
                   </div>
                 </div>
@@ -809,10 +828,10 @@ export default function NexusOrbit() {
                         {userRole === "driver" && !isCurrent && (
                           <button
                             onClick={() => assignRouteMutation.mutate(route.id)}
-                            disabled={assignRouteMutation.isPending || !myVehicle}
+                            disabled={assignRouteMutation.isPending || !myUnit}
                             className="px-3 py-1.5 rounded-lg bg-violet-500/20 border border-violet-500/30 text-violet-300 text-xs font-semibold hover:bg-violet-500/30 transition-all disabled:opacity-50"
                           >
-                            {myVehicle ? "Select" : "No Vehicle"}
+                            {myUnit ? "Select" : "No Unit"}
                           </button>
                         )}
                       </div>
