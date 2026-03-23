@@ -379,6 +379,163 @@ export default function IntellectMode() {
     return Promise.all([mainCall, ...microCalls]);
   };
 
+  // ── Bus Command Detection ───────────────────────────────────────────────────
+  const detectBusCommand = async (command, vehicles, orgId) => {
+    const lower = command.toLowerCase();
+    
+    // Fetch bus data if needed
+    const buses = orgId ? await base44.entities.Bus.filter({ organization_id: orgId }).catch(() => []) : [];
+    const busLines = orgId ? await base44.entities.BusLine.filter({ organization_id: orgId }).catch(() => []) : [];
+    const busStops = orgId ? await base44.entities.BusStop.filter({ organization_id: orgId }).catch(() => []) : [];
+    const busDrivers = orgId ? await base44.entities.BusDriver.filter({ organization_id: orgId }).catch(() => []) : [];
+    
+    // Assign driver to bus
+    const assignDriverMatch = lower.match(/(?:assign|tildel)\s+(?:driver|chauffør)\s+(?:x|(\w+))\s+(?:to|til)\s+(?:bus|bus nummer)\s+(?:y|(\w+))/i);
+    if (assignDriverMatch || lower.includes('assign driver') || lower.includes('tildel chauffør')) {
+      const driverId = assignDriverMatch?.[1] || 'driver-id';
+      const busId = assignDriverMatch?.[2] || 'bus-id';
+      return { type: 'assign_driver', driverId, busId, buses, busDrivers };
+    }
+    
+    // Divert bus to route/line
+    const divertMatch = lower.match(/(?:divert|omdiriger|send)\s+(?:bus|bus nummer)\s+(?:z|(\w+))\s+(?:to|til)\s+(?:route|line|rute)\s+(?:a|(\w+))/i);
+    if (divertMatch || lower.includes('divert bus') || lower.includes('omdiriger bus')) {
+      const busId = divertMatch?.[1] || 'bus-id';
+      const lineId = divertMatch?.[2] || 'line-id';
+      return { type: 'divert_bus', busId, lineId, buses, busLines };
+    }
+    
+    // Report breakdown
+    const breakdownMatch = lower.match(/(?:report|rapporter)\s+(?:breakdown|nedbrud|fejl)\s+(?:on|på)\s+(?:line|linje)\s+(?:b|(\w+))/i);
+    if (breakdownMatch || lower.includes('report breakdown') || lower.includes('rapporter nedbrud')) {
+      const lineId = breakdownMatch?.[1] || 'line-id';
+      return { type: 'report_breakdown', lineId, buses, busLines };
+    }
+    
+    // Get bus status
+    if (lower.includes('bus status') || lower.includes('bus status') || lower.includes('hvad er status på bus')) {
+      const busIdMatch = lower.match(/(?:bus|bus nummer)\s+(\w+)/i);
+      const busId = busIdMatch?.[1];
+      return { type: 'get_bus_status', busId, buses };
+    }
+    
+    // List all buses
+    if (lower.includes('list buses') || lower.includes('show buses') || lower.includes('vis busser')) {
+      return { type: 'list_buses', buses };
+    }
+    
+    // List bus lines
+    if (lower.includes('list lines') || lower.includes('show lines') || lower.includes('vis linjer')) {
+      return { type: 'list_lines', busLines };
+    }
+    
+    // Create new bus
+    const createBusMatch = lower.match(/(?:create|opret)\s+(?:a|en)\s+(?:new|ny)\s+bus/i);
+    if (createBusMatch || lower.includes('opret bus')) {
+      return { type: 'create_bus' };
+    }
+    
+    // Update bus status
+    const updateStatusMatch = lower.match(/(?:set|ændre|opdater)\s+(?:bus|bus nummer)\s+(\w+)\s+(?:status|til)\s+(?:in_service|idle|maintenance|out_of_service|aktiv|vedligehold)/i);
+    if (updateStatusMatch) {
+      const busId = updateStatusMatch[1];
+      const status = updateStatusMatch[2];
+      return { type: 'update_bus_status', busId, status, buses };
+    }
+    
+    return null;
+  };
+
+  // ── Bus Command Execution ───────────────────────────────────────────────────
+  const executeBusCommand = async (cmd, orgId, userOrgId) => {
+    try {
+      switch (cmd.type) {
+        case 'assign_driver': {
+          const bus = cmd.buses.find(b => b.bus_number === cmd.busId || b.id === cmd.busId);
+          const driver = cmd.busDrivers.find(d => d.driver_id === cmd.driverId || d.id === cmd.driverId);
+          if (!bus) return { role: "system", content: `❌ Bus ${cmd.busId} not found` };
+          if (!driver) return { role: "system", content: `❌ Driver ${cmd.driverId} not found` };
+          
+          await base44.entities.Bus.update(bus.id, { driver_id: driver.driver_id });
+          return { role: "system", content: `✅ Assigned driver ${driver.first_name} ${driver.last_name} to bus ${bus.bus_number}` };
+        }
+        
+        case 'divert_bus': {
+          const bus = cmd.buses.find(b => b.bus_number === cmd.busId || b.id === cmd.busId);
+          const line = cmd.busLines.find(l => l.line_number === cmd.lineId || l.id === cmd.lineId);
+          if (!bus) return { role: "system", content: `❌ Bus ${cmd.busId} not found` };
+          if (!line) return { role: "system", content: `❌ Line ${cmd.lineId} not found` };
+          
+          await base44.entities.Bus.update(bus.id, { current_line_id: line.line_number });
+          return { role: "system", content: `✅ Diverted bus ${bus.bus_number} to line ${line.line_number}` };
+        }
+        
+        case 'report_breakdown': {
+          const line = cmd.busLines.find(l => l.line_number === cmd.lineId || l.id === cmd.lineId);
+          if (!line) return { role: "system", content: `❌ Line ${cmd.lineId} not found` };
+          
+          await base44.entities.Alert.create({
+            organization_id: orgId,
+            title: `Breakdown on Line ${line.line_number}`,
+            message: `Vehicle breakdown reported on line ${line.line_number}. Maintenance required.`,
+            type: 'critical',
+            category: 'maintenance',
+            is_read: false,
+            is_resolved: false
+          });
+          return { role: "system", content: `✅ Breakdown reported on line ${line.line_number}. Maintenance alert created.` };
+        }
+        
+        case 'get_bus_status': {
+          const bus = cmd.buses.find(b => b.bus_number === cmd.busId || b.id === cmd.busId);
+          if (!bus) return { role: "system", content: `❌ Bus ${cmd.busId} not found` };
+          
+          const status = `**Bus ${bus.bus_number} Status:**\n- Status: ${bus.status}\n- Location: ${bus.latitude?.toFixed(4) || 'N/A'}, ${bus.longitude?.toFixed(4) || 'N/A'}\n- Speed: ${bus.speed || 0} km/h\n- Fuel/Battery: ${bus.fuel_type === 'electric' ? `${bus.battery_level || 0}%` : `${bus.fuel_level || 0}%`}\n- Passengers: ${bus.passenger_count || 0}\n- Current Line: ${bus.current_line_id || 'Unassigned'}`;
+          return { role: "assistant", content: status };
+        }
+        
+        case 'list_buses': {
+          if (!cmd.buses.length) return { role: "system", content: `ℹ️ No buses in fleet` };
+          
+          const summary = `**Fleet Overview:** ${cmd.buses.length} buses\n\n` + cmd.buses.map(b => 
+            `• **${b.bus_number}** - ${b.status} | ${b.vehicle_type} | ${b.fuel_type} | Line: ${b.current_line_id || 'Unassigned'}`
+          ).join('\n');
+          return { role: "assistant", content: summary };
+        }
+        
+        case 'list_lines': {
+          if (!cmd.busLines.length) return { role: "system", content: `ℹ️ No bus lines configured` };
+          
+          const summary = `**Bus Lines:** ${cmd.busLines.length} lines\n\n` + cmd.busLines.map(l => 
+            `• **${l.line_number}** - ${l.line_name} | Status: ${l.status} | ${l.daily_trips || 'N/A'} trips/day`
+          ).join('\n');
+          return { role: "assistant", content: summary };
+        }
+        
+        case 'create_bus': {
+          // Open TransitControl to the bus management section
+          return { role: "system", content: `ℹ️ To create a new bus, please use the TransitControl dashboard. Type "open transit control" to navigate there.` };
+        }
+        
+        case 'update_bus_status': {
+          const bus = cmd.buses.find(b => b.bus_number === cmd.busId || b.id === cmd.busId);
+          if (!bus) return { role: "system", content: `❌ Bus ${cmd.busId} not found` };
+          
+          const validStatuses = ['in_service', 'idle', 'maintenance', 'out_of_service'];
+          const newStatus = validStatuses.includes(cmd.status) ? cmd.status : 'idle';
+          
+          await base44.entities.Bus.update(bus.id, { status: newStatus });
+          return { role: "system", content: `✅ Updated bus ${bus.bus_number} status to ${newStatus}` };
+        }
+        
+        default:
+          return null;
+      }
+    } catch (error) {
+      return { role: "system", content: `❌ Bus command failed: ${error.message}` };
+    }
+  };
+
   // ── Deep Research ──────────────────────────────────────────────────────────
   const runDeepAnalysis = async (currentCommand) => {
     setMessages(prev => [...prev, { role: "user", content: currentCommand }]);
