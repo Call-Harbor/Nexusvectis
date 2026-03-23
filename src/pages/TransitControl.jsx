@@ -19,6 +19,9 @@ import NetworkDesignStudio from "@/components/transit/NetworkDesignStudio";
 import ScenarioSimulator from "@/components/transit/ScenarioSimulator";
 import FrequencyOptimizer from "@/components/transit/FrequencyOptimizer";
 import PassengerExperiencePanel from "@/components/transit/PassengerExperiencePanel";
+import BusStopManager from "@/components/transit/BusStopManager";
+import BusLineManager from "@/components/transit/BusLineManager";
+import BusFleetManager from "@/components/transit/BusFleetManager";
 
 export default function TransitControl() {
   const [selectedLine, setSelectedLine] = useState(null);
@@ -336,6 +339,10 @@ export default function TransitControl() {
               <Sparkles className="w-4 h-4 mr-2" />
               Scenario Testing
             </TabsTrigger>
+            <TabsTrigger value="infrastructure" className="data-[state=active]:bg-fuchsia-500/20 data-[state=active]:text-fuchsia-300">
+              <MapPin className="w-4 h-4 mr-2" />
+              Infrastructure Setup
+            </TabsTrigger>
           </TabsList>
 
           {/* OPERATIONS BOARD */}
@@ -651,6 +658,13 @@ export default function TransitControl() {
           {/* SCENARIOS */}
           <TabsContent value="scenarios">
             <ScenarioSimulator organizationId={user?.organization_id} />
+          </TabsContent>
+
+          {/* INFRASTRUCTURE SETUP */}
+          <TabsContent value="infrastructure" className="space-y-6">
+            <BusFleetManager organizationId={user?.organization_id} />
+            <BusStopManager organizationId={user?.organization_id} stops={stops} />
+            <BusLineManager organizationId={user?.organization_id} lines={lines} stops={stops} />
           </TabsContent>
         </Tabs>
       </div>
