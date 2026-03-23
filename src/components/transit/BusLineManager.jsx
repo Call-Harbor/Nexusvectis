@@ -2,7 +2,7 @@ import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import { Network, Plus, X, Clock, MapPin, Route, Sparkles, Navigation, AlertCircle, TrendingUp } from "lucide-react";
+import { Network, Plus, X, Clock, MapPin, Route, Sparkles, Navigation, TrendingUp, Gauge } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -162,22 +162,49 @@ Return ONLY valid JSON with this structure:
     }
   };
 
+  const activeLines = lines.filter(l => l.status === 'active').length;
+  const totalRouteKm = lines.reduce((sum, l) => sum + (l.route_length_km || 0), 0);
+
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-2xl font-bold text-white flex items-center gap-2">
-          <Network className="w-7 h-7 text-violet-400" />
-          Bus Lines ({lines.length})
-        </h3>
+    <div className="space-y-6">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div>
+          <h3 className="text-3xl font-bold text-white flex items-center gap-3">
+            <Network className="w-8 h-8 text-violet-400" />
+            Bus Lines & Routes
+          </h3>
+          <p className="text-slate-400 text-sm mt-2">{lines.length} lines • {activeLines} active</p>
+        </div>
         <Button
           onClick={() => setShowAddDialog(true)}
-          className="bg-gradient-to-r from-violet-500 to-fuchsia-500"
+          className="bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white font-semibold shadow-lg hover:shadow-violet-500/50"
         >
           <Plus className="w-4 h-4 mr-2" />
           Add Line
         </Button>
       </div>
 
+      {/* Network Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="p-4 rounded-2xl bg-gradient-to-br from-violet-500/20 to-violet-500/5 border border-violet-500/30 backdrop-blur-xl">
+          <p className="text-xs text-violet-400 font-bold uppercase mb-1">Total Lines</p>
+          <p className="text-3xl font-bold text-white">{lines.length}</p>
+        </div>
+        <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-emerald-500/5 border border-emerald-500/30 backdrop-blur-xl">
+          <p className="text-xs text-emerald-400 font-bold uppercase mb-1">Active</p>
+          <p className="text-3xl font-bold text-white">{activeLines}</p>
+        </div>
+        <div className="p-4 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-cyan-500/5 border border-cyan-500/30 backdrop-blur-xl">
+          <p className="text-xs text-cyan-400 font-bold uppercase mb-1">Total Route</p>
+          <p className="text-3xl font-bold text-white">{totalRouteKm.toFixed(0)} km</p>
+        </div>
+        <div className="p-4 rounded-2xl bg-gradient-to-br from-amber-500/20 to-amber-500/5 border border-amber-500/30 backdrop-blur-xl">
+          <p className="text-xs text-amber-400 font-bold uppercase mb-1">Stops</p>
+          <p className="text-3xl font-bold text-white">{stops.length}</p>
+        </div>
+      </div>
+
+      {/* Bus Lines Grid */}
       <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
         {lines.map((line, i) => {
           const passengersDaily = Math.floor((line.annual_passengers || 0) / 365);
@@ -189,46 +216,133 @@ Return ONLY valid JSON with this structure:
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: i * 0.03 }}
-            className="p-5 rounded-2xl bg-gradient-to-br from-slate-800/70 to-slate-900/40 backdrop-blur-xl border border-white/10 hover:border-violet-500/30 shadow-xl transition-all group"
+            className="p-5 rounded-2xl bg-gradient-to-br from-slate-800/80 to-slate-900/50 backdrop-blur-xl border border-white/10 hover:border-violet-500/40 shadow-2xl transition-all duration-300 group"
           >
             <div className="flex items-start justify-between mb-4">
               <div className="flex-1">
-                <h4 className="text-white font-bold text-lg group-hover:text-violet-400 transition">Line {line.line_number}</h4>
-                <p className="text-sm text-slate-400 font-medium mt-1">{line.line_name}</p>
+                <h4 className="text-white font-bold text-lg group-hover:text-violet-400 transition\">Line {line.line_number}</h4>
+                <p className="text-sm text-slate-400 font-medium mt-1\">{line.line_name}</p>
               </div>
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-8 w-8 text-slate-400 hover:text-rose-400 opacity-0 group-hover:opacity-100 transition"
+                onClick={() => {
+                  if (confirm('Delete this line?')) {
+                    deleteLineMutation.mutate(line.id);
+                  }
+                }}
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+
+            <div className="space-y-3">
+              {/* Status Badge */}
+              <Badge className={
+                line.status === 'active' ? 'bg-emerald-500/25 text-emerald-300 border-emerald-500/40' :
+                line.status === 'suspended' ? 'bg-rose-500/25 text-rose-300 border-rose-500/40' :
+                'bg-slate-500/25 text-slate-300 border-slate-500/40'
+              }>
+                <div className="w-2 h-2 rounded-full mr-2" style={{
+                  backgroundColor: line.status === 'active' ? '#10b981' : line.status === 'suspended' ? '#ef4444' : '#64748b'
+                }}></div>
+                {line.status}
+              </Badge>
+
+              {/* Key Metrics */}
+              <div className="grid grid-cols-2 gap-2">
+                <div className="p-3 rounded-lg bg-slate-900/70 border border-slate-700/50">
+                  <p className="text-xs text-slate-400 font-medium\">Directions</p>
+                  <p className="text-white font-bold text-lg mt-1\">{line.directions?.length || 0}</p>
+                </div>
+                <div className="p-3 rounded-lg bg-slate-900/70 border border-slate-700/50">
+                  <p className="text-xs text-slate-400 font-medium\">Daily Trips</p>
+                  <p className="text-white font-bold text-lg mt-1\">{line.daily_trips || 0}</p>
+                </div>
+              </div>
+
+              {/* Route Details */}
+              {line.route_length_km > 0 && (
+                <div className="p-3 rounded-lg bg-gradient-to-r from-violet-500/15 to-cyan-500/15 border border-violet-500/25">
+                  <div className="flex items-center justify-between text-xs mb-2">
+                    <div className="flex items-center gap-1">
+                      <MapPin className="w-3 h-3 text-violet-400" />
+                      <span className="text-slate-400 font-medium\">Route Length</span>
+                    </div>
+                    <span className="text-violet-400 font-bold\">{line.route_length_km.toFixed(1)} km</span>
+                  </div>
+                  {line.average_trip_time_minutes > 0 && (
+                    <div className="flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-1">
+                        <Clock className="w-3 h-3 text-cyan-400" />
+                        <span className="text-slate-400 font-medium\">Trip Time</span>
+                      </div>
+                      <span className="text-cyan-400 font-bold\">{line.average_trip_time_minutes} min</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Daily Passengers */}
+              {passengersDaily > 0 && (
+                <div className="p-3 rounded-lg bg-slate-900/70 border border-slate-700/50 text-center">
+                  <p className="text-xs text-slate-400 font-medium\">Avg Daily Passengers</p>
+                  <p className="text-white font-bold text-sm mt-1\">{passengersDaily.toLocaleString()}</p>
+                </div>
+              )}
+
+              {/* Configure Button */}
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full mt-3 text-xs border-white/20 hover:bg-violet-500/20"
+                onClick={() => {
+                  setSelectedLine(line);
+                  setShowRouteDialog(true);
+                }}
+              >
+                <Route className="w-3 h-3 mr-2" />
+                Configure Route
+              </Button>
+            </div>
+          </motion.div>
+          );
+        })}
+      </div>
 
       {/* Add Line Dialog */}
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-        <DialogContent className="bg-slate-900 border-slate-700 text-white">
+        <DialogContent className="bg-gradient-to-br from-slate-900 to-slate-950 border-white/10 text-white backdrop-blur-2xl">
           <DialogHeader>
-            <DialogTitle>Add Bus Line</DialogTitle>
+            <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-white to-violet-200 bg-clip-text text-transparent">Add Bus Line</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label>Line Number</Label>
+              <Label className="text-slate-300 font-semibold">Line Number</Label>
               <Input
                 value={formData.line_number}
                 onChange={(e) => setFormData({...formData, line_number: e.target.value})}
-                className="bg-slate-800 border-slate-700"
+                className="bg-slate-800/60 border-white/10 text-white mt-1"
                 placeholder="e.g. 5A, 42, Express 1"
               />
             </div>
             <div>
-              <Label>Line Name</Label>
+              <Label className="text-slate-300 font-semibold">Line Name</Label>
               <Input
                 value={formData.line_name}
                 onChange={(e) => setFormData({...formData, line_name: e.target.value})}
-                className="bg-slate-800 border-slate-700"
+                className="bg-slate-800/60 border-white/10 text-white mt-1"
                 placeholder="e.g. City Center - Airport"
               />
             </div>
             <div>
-              <Label>Status</Label>
+              <Label className="text-slate-300 font-semibold">Status</Label>
               <Select value={formData.status} onValueChange={(v) => setFormData({...formData, status: v})}>
-                <SelectTrigger className="bg-slate-800 border-slate-700">
+                <SelectTrigger className="bg-slate-800/60 border-white/10 text-white mt-1">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-slate-900 border-white/10">
                   <SelectItem value="active">Active</SelectItem>
                   <SelectItem value="planned">Planned</SelectItem>
                   <SelectItem value="seasonal">Seasonal</SelectItem>
@@ -237,7 +351,7 @@ Return ONLY valid JSON with this structure:
               </Select>
             </div>
             <Button
-              className="w-full bg-gradient-to-r from-violet-500 to-fuchsia-500"
+              className="w-full bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white font-semibold shadow-lg hover:shadow-violet-500/50 mt-6"
               onClick={() => createLineMutation.mutate(formData)}
               disabled={!formData.line_number || !formData.line_name || createLineMutation.isPending}
             >
@@ -249,23 +363,23 @@ Return ONLY valid JSON with this structure:
 
       {/* Route Configuration Dialog */}
       <Dialog open={showRouteDialog} onOpenChange={setShowRouteDialog}>
-        <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="bg-gradient-to-br from-slate-900 to-slate-950 border-white/10 text-white backdrop-blur-2xl max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Configure Route - Line {selectedLine?.line_number}</DialogTitle>
+            <DialogTitle className="text-2xl font-bold">Configure Route - Line {selectedLine?.line_number}</DialogTitle>
           </DialogHeader>
           
           <div className="space-y-6">
             {/* Stop Selection */}
             <div>
-              <Label className="text-lg mb-3 block">Select Stops for This Route</Label>
-              <div className="grid md:grid-cols-2 gap-2 max-h-60 overflow-y-auto p-2 bg-slate-800/50 rounded-lg">
+              <Label className="text-lg text-slate-300 font-semibold mb-3 block">Select Stops for This Route</Label>
+              <div className="grid md:grid-cols-2 gap-2 max-h-60 overflow-y-auto p-3 bg-slate-800/50 rounded-xl border border-white/10">
                 {stops.map(stop => (
                   <div
                     key={stop.id}
                     className={`p-3 rounded-lg border cursor-pointer transition-all ${
                       selectedStops.includes(stop.id)
                         ? 'bg-cyan-500/20 border-cyan-500'
-                        : 'bg-slate-800 border-slate-700 hover:border-slate-600'
+                        : 'bg-slate-800/50 border-slate-700/50 hover:border-slate-600'
                     }`}
                     onClick={() => toggleStop(stop.id)}
                   >
@@ -279,14 +393,14 @@ Return ONLY valid JSON with this structure:
                   </div>
                 ))}
               </div>
-              <p className="text-xs text-slate-400 mt-2">
+              <p className="text-xs text-slate-400 mt-2 font-medium">
                 {selectedStops.length} stops selected
               </p>
             </div>
 
             {/* Optimize Button */}
             <Button
-              className="w-full bg-gradient-to-r from-violet-500 to-fuchsia-500"
+              className="w-full bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white font-semibold shadow-lg"
               onClick={optimizeRoute}
               disabled={selectedStops.length < 2 || isOptimizing}
             >
@@ -304,32 +418,32 @@ Return ONLY valid JSON with this structure:
                   className="space-y-4"
                 >
                   {/* Route Stats */}
-                  <Card className="p-4 bg-gradient-to-br from-cyan-500/10 to-violet-500/10 border-cyan-500/30">
+                  <Card className="p-4 bg-gradient-to-br from-cyan-500/15 to-violet-500/15 border-cyan-500/30">
                     <h3 className="text-white font-bold mb-3 flex items-center gap-2">
                       <Sparkles className="w-5 h-5 text-cyan-400" />
                       AI Optimized Route
                     </h3>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                       <div className="p-3 rounded-lg bg-slate-900/50">
-                        <p className="text-xs text-slate-400">Total Distance</p>
-                        <p className="text-xl font-bold text-white">{optimizedRoute.total_distance_km?.toFixed(1)} km</p>
+                        <p className="text-xs text-slate-400\">Total Distance</p>
+                        <p className="text-xl font-bold text-white mt-1\">{optimizedRoute.total_distance_km?.toFixed(1)} km</p>
                       </div>
                       <div className="p-3 rounded-lg bg-slate-900/50">
-                        <p className="text-xs text-slate-400">Travel Time</p>
-                        <p className="text-xl font-bold text-white">{optimizedRoute.total_time_minutes} min</p>
+                        <p className="text-xs text-slate-400\">Travel Time</p>
+                        <p className="text-xl font-bold text-white mt-1\">{optimizedRoute.total_time_minutes} min</p>
                       </div>
                       <div className="p-3 rounded-lg bg-slate-900/50">
-                        <p className="text-xs text-slate-400">Suggested Frequency</p>
-                        <p className="text-xl font-bold text-white">{optimizedRoute.suggested_frequency_minutes} min</p>
+                        <p className="text-xs text-slate-400\">Suggested Frequency</p>
+                        <p className="text-xl font-bold text-white mt-1\">{optimizedRoute.suggested_frequency_minutes} min</p>
                       </div>
                       <div className="p-3 rounded-lg bg-slate-900/50">
-                        <p className="text-xs text-slate-400">Efficiency Score</p>
-                        <p className="text-xl font-bold text-cyan-400">{optimizedRoute.route_efficiency_score}/100</p>
+                        <p className="text-xs text-slate-400\">Efficiency Score</p>
+                        <p className="text-xl font-bold text-cyan-400 mt-1\">{optimizedRoute.route_efficiency_score}/100</p>
                       </div>
                     </div>
                   </Card>
 
-                  {/* Route Map Visualization */}
+                  {/* Route Visualization */}
                   <Card className="p-4 bg-slate-800/50 border-slate-700">
                     <h4 className="text-white font-semibold mb-3 flex items-center gap-2">
                       <Navigation className="w-4 h-4 text-violet-400" />
@@ -361,9 +475,9 @@ Return ONLY valid JSON with this structure:
                     </div>
                   </Card>
 
-                  {/* Save Route Button */}
+                  {/* Save Button */}
                   <Button
-                    className="w-full bg-gradient-to-r from-emerald-500 to-cyan-500"
+                    className="w-full bg-gradient-to-r from-emerald-500 to-cyan-500 text-white font-semibold shadow-lg"
                     onClick={saveOptimizedRoute}
                   >
                     Save Route to Line
