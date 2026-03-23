@@ -14,8 +14,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 
-const vehicleIcons = { truck: Truck, ship: Ship, drone: Plane, train: Train, aircraft: Plane };
-const vehicleLabels = { truck: "Truck", ship: "Ship", drone: "Drone", train: "Train", aircraft: "Aircraft" };
+const vehicleIcons = { truck: Truck, ship: Ship, drone: Plane, train: Train, aircraft: Plane, bus: Truck };
+const vehicleLabels = { truck: "Truck", ship: "Ship", drone: "Drone", train: "Train", aircraft: "Aircraft", bus: "Bus" };
 const statusColors = {
   active: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
   idle: "bg-amber-500/20 text-amber-400 border-amber-500/30",
@@ -169,6 +169,7 @@ export default function Fleet() {
     drone: vehicles.filter(v => v.type === 'drone').length,
     train: vehicles.filter(v => v.type === 'train').length,
     aircraft: vehicles.filter(v => v.type === 'aircraft').length,
+    bus: vehicles.filter(v => v.type === 'bus').length,
   };
 
   const exportToCSV = () => {
@@ -234,7 +235,7 @@ export default function Fleet() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
           {Object.entries(typeStats).map(([type, count]) => {
             const Icon = vehicleIcons[type];
             return (
@@ -277,11 +278,12 @@ export default function Fleet() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Types</SelectItem>
-                  <SelectItem value="truck">Truck</SelectItem>
-                  <SelectItem value="ship">Ship</SelectItem>
-                  <SelectItem value="drone">Drone</SelectItem>
-                  <SelectItem value="train">Train</SelectItem>
+                  <SelectItem value="truck">Trucks</SelectItem>
+                  <SelectItem value="ship">Ships</SelectItem>
+                  <SelectItem value="drone">Drones</SelectItem>
+                  <SelectItem value="train">Trains</SelectItem>
                   <SelectItem value="aircraft">Aircraft</SelectItem>
+                  <SelectItem value="bus">Buses</SelectItem>
                 </SelectContent>
               </Select>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -479,6 +481,7 @@ export default function Fleet() {
                     <SelectItem value="drone">Drone</SelectItem>
                     <SelectItem value="train">Train</SelectItem>
                     <SelectItem value="aircraft">Aircraft</SelectItem>
+                    <SelectItem value="bus">Bus</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
