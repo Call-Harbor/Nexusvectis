@@ -30,6 +30,10 @@ import TransitOperationsPanel from "@/components/transit/TransitOperationsPanel"
 import AdvancedAnalyticsDashboard from "@/components/transit/AdvancedAnalyticsDashboard";
 import PredictiveCapacityOptimizer from "@/components/transit/PredictiveCapacityOptimizer";
 import IncidentResponseCenter from "@/components/transit/IncidentResponseCenter";
+import CrowdingDashboard from "@/components/transit/CrowdingDashboard";
+import PassengerFlowPanel from "@/components/transit/PassengerFlowPanel";
+import DRTMonitor from "@/components/transit/DRTMonitor";
+import SustainabilityPanel from "@/components/transit/SustainabilityPanel";
 
 export default function TransitControl() {
   const [selectedLine, setSelectedLine] = useState(null);
@@ -261,6 +265,10 @@ export default function TransitControl() {
               <MapPin className="w-4 h-4 mr-2" />
               <span className="hidden sm:inline">Fleet</span>
             </TabsTrigger>
+            <TabsTrigger value="advanced-ai" className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-cyan-600 data-[state=active]:text-white data-[state=active]:shadow-xl transition-all text-xs md:text-sm font-medium">
+              <Sparkles className="w-4 h-4 mr-2" />
+              <span className="hidden sm:inline">Advanced AI</span>
+            </TabsTrigger>
           </TabsList>
 
           {/* OPERATIONS */}
@@ -367,12 +375,20 @@ export default function TransitControl() {
           </TabsContent>
 
           {/* INFRASTRUCTURE */}
-          <TabsContent value="infrastructure" className="space-y-8 animate-in fade-in duration-300">
-            <BusFleetManager organizationId={user?.organization_id} />
-            <BusStopManager organizationId={user?.organization_id} stops={stops} />
-            <BusLineManager organizationId={user?.organization_id} lines={lines} stops={stops} />
-          </TabsContent>
-        </Tabs>
+           <TabsContent value="infrastructure" className="space-y-8 animate-in fade-in duration-300">
+             <BusFleetManager organizationId={user?.organization_id} />
+             <BusStopManager organizationId={user?.organization_id} stops={stops} />
+             <BusLineManager organizationId={user?.organization_id} lines={lines} stops={stops} />
+           </TabsContent>
+
+          {/* ADVANCED AI */}
+           <TabsContent value="advanced-ai" className="space-y-8 animate-in fade-in duration-300">
+             <CrowdingDashboard />
+             <PassengerFlowPanel />
+             <DRTMonitor />
+             <SustainabilityPanel />
+           </TabsContent>
+          </Tabs>
       </div>
 
       {/* Driver Assignment Dialog */}

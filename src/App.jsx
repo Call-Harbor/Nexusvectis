@@ -13,6 +13,7 @@ import BlogAIAnalysis from './pages/BlogAIAnalysis';
 import CEODashboard from './pages/CEODashboard';
 import NexusOrbit from './pages/NexusOrbit';
 import TransitControl from './pages/TransitControl';
+import ScenarioStudio from './pages/ScenarioStudio';
 
 
 const { Pages, Layout, mainPage } = pagesConfig;
@@ -109,6 +110,10 @@ const AuthenticatedApp = () => {
             <TransitControl />
           </LayoutWrapper>
         } 
+      />
+      <Route 
+        path="/ScenarioStudio" 
+        element={<ScenarioStudio />}
       />
 
       <Route path="*" element={<PageNotFound />} />
