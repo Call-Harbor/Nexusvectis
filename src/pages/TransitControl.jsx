@@ -6,7 +6,7 @@ import {
   Bus, MapPin, TrendingUp, AlertTriangle, Users, Clock, Zap,
   Radio, Shield, BarChart3, Sparkles, Globe, Network, Brain,
   ChevronRight, Play, Settings, MessageSquare, Maximize2, Activity,
-  Battery, Fuel, Plus, TrendingDown, Wifi
+  Battery, Fuel, Plus, TrendingDown, Wifi, Target, Gauge
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
@@ -162,7 +162,7 @@ export default function TransitControl() {
   }, [user?.organization_id]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950/30 to-slate-950 p-8 overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950/30 to-slate-950 p-6 md:p-8 overflow-hidden">
       {/* Modern animated background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-40 left-1/3 w-[500px] h-[500px] bg-indigo-500/15 rounded-full blur-3xl animate-pulse"></div>
@@ -175,32 +175,49 @@ export default function TransitControl() {
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-12"
+          className="mb-10"
         >
           <div className="flex items-center gap-4 mb-3">
             <div className="w-1 h-12 bg-gradient-to-b from-indigo-400 to-cyan-400 rounded-full"></div>
-            <h1 className="text-6xl font-bold bg-gradient-to-r from-white via-indigo-200 to-cyan-200 bg-clip-text text-transparent tracking-tight">Transit Control</h1>
+            <div>
+              <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-white via-indigo-200 to-cyan-200 bg-clip-text text-transparent tracking-tight">Transit Control</h1>
+              <p className="text-slate-400 text-sm md:text-lg font-light mt-2">Intelligence-powered public transit management</p>
+            </div>
           </div>
-          <p className="text-slate-400 text-lg ml-6 font-light">AI-powered fleet & network command • {lines.length} Lines • {activeBuses.length} Buses</p>
         </motion.div>
 
-        {/* Quick Stats */}
+        {/* Key Metrics Grid */}
         <motion.div 
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="flex items-center justify-end gap-3 mb-8"
+          className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4 mb-8"
         >
-          <Badge className="bg-gradient-to-r from-emerald-500/30 to-emerald-500/10 text-emerald-400 border-emerald-500/30 px-4 py-2 text-sm font-semibold backdrop-blur-xl">
-            <Radio className="w-4 h-4 mr-2 animate-pulse" />
-            Live System
-          </Badge>
-          {alerts.length > 0 && (
-            <Badge className="bg-gradient-to-r from-rose-500/30 to-rose-500/10 text-rose-400 border-rose-500/30 px-4 py-2 text-sm font-semibold backdrop-blur-xl animate-pulse">
-              <AlertTriangle className="w-4 h-4 mr-2" />
-              {alerts.length} Active
-            </Badge>
-          )}
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-500/25 to-emerald-500/5 backdrop-blur-2xl border border-emerald-500/40 shadow-lg hover:shadow-emerald-500/20 transition-shadow">
+            <p className="text-xs text-emerald-400 font-bold uppercase tracking-wide mb-2">Active Buses</p>
+            <p className="text-3xl font-bold text-white">{activeBuses.length}</p>
+            <p className="text-xs text-emerald-300/60 mt-1">In Service</p>
+          </div>
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-cyan-500/25 to-cyan-500/5 backdrop-blur-2xl border border-cyan-500/40 shadow-lg hover:shadow-cyan-500/20 transition-shadow">
+            <p className="text-xs text-cyan-400 font-bold uppercase tracking-wide mb-2">Bus Lines</p>
+            <p className="text-3xl font-bold text-white">{lines.length}</p>
+            <p className="text-xs text-cyan-300/60 mt-1">Network</p>
+          </div>
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-violet-500/25 to-violet-500/5 backdrop-blur-2xl border border-violet-500/40 shadow-lg hover:shadow-violet-500/20 transition-shadow">
+            <p className="text-xs text-violet-400 font-bold uppercase tracking-wide mb-2">Live Trips</p>
+            <p className="text-3xl font-bold text-white">{activeTrips.length}</p>
+            <p className="text-xs text-violet-300/60 mt-1">In Progress</p>
+          </div>
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-amber-500/25 to-amber-500/5 backdrop-blur-2xl border border-amber-500/40 shadow-lg hover:shadow-amber-500/20 transition-shadow">
+            <p className="text-xs text-amber-400 font-bold uppercase tracking-wide mb-2\">Punctuality</p>
+            <p className="text-3xl font-bold text-white">{todayKPI.on_time_performance ? Math.round(todayKPI.on_time_performance) : '--'}%</p>
+            <p className="text-xs text-amber-300/60 mt-1">On Time</p>
+          </div>
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-rose-500/25 to-rose-500/5 backdrop-blur-2xl border border-rose-500/40 shadow-lg hover:shadow-rose-500/20 transition-shadow">
+            <p className="text-xs text-rose-400 font-bold uppercase tracking-wide mb-2">Alerts</p>
+            <p className="text-3xl font-bold text-white">{alerts.length}</p>
+            <p className="text-xs text-rose-300/60 mt-1">Unresolved</p>
+          </div>
         </motion.div>
 
         {/* KPI Banner */}
@@ -223,26 +240,26 @@ export default function TransitControl() {
 
         {/* Main Tabs */}
         <Tabs defaultValue="operations" className="space-y-8">
-          <TabsList className="bg-gradient-to-r from-slate-900/50 to-slate-800/30 backdrop-blur-2xl border border-white/10 rounded-2xl p-2 shadow-2xl gap-1">
-            <TabsTrigger value="operations" className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-cyan-600 data-[state=active]:text-white data-[state=active]:shadow-xl transition-all text-sm font-medium">
+          <TabsList className="bg-gradient-to-r from-slate-900/60 to-slate-800/40 backdrop-blur-3xl border border-white/15 rounded-2xl p-2 shadow-2xl gap-1 flex-wrap">
+            <TabsTrigger value="operations" className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-cyan-600 data-[state=active]:text-white data-[state=active]:shadow-xl transition-all text-xs md:text-sm font-medium">
               <Radio className="w-4 h-4 mr-2" />
-              Live
+              <span className="hidden sm:inline">Live</span>
             </TabsTrigger>
-            <TabsTrigger value="network" className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-cyan-600 data-[state=active]:text-white data-[state=active]:shadow-xl transition-all text-sm font-medium">
+            <TabsTrigger value="network" className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-cyan-600 data-[state=active]:text-white data-[state=active]:shadow-xl transition-all text-xs md:text-sm font-medium">
               <Network className="w-4 h-4 mr-2" />
-              Network
+              <span className="hidden sm:inline">Network</span>
             </TabsTrigger>
-            <TabsTrigger value="planning" className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-cyan-600 data-[state=active]:text-white data-[state=active]:shadow-xl transition-all text-sm font-medium">
+            <TabsTrigger value="planning" className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-cyan-600 data-[state=active]:text-white data-[state=active]:shadow-xl transition-all text-xs md:text-sm font-medium">
               <Brain className="w-4 h-4 mr-2" />
-              Planning
+              <span className="hidden sm:inline">Planning</span>
             </TabsTrigger>
-            <TabsTrigger value="scenarios" className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-cyan-600 data-[state=active]:text-white data-[state=active]:shadow-xl transition-all text-sm font-medium">
+            <TabsTrigger value="scenarios" className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-cyan-600 data-[state=active]:text-white data-[state=active]:shadow-xl transition-all text-xs md:text-sm font-medium">
               <Sparkles className="w-4 h-4 mr-2" />
-              Scenarios
+              <span className="hidden sm:inline">Scenarios</span>
             </TabsTrigger>
-            <TabsTrigger value="infrastructure" className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-cyan-600 data-[state=active]:text-white data-[state=active]:shadow-xl transition-all text-sm font-medium">
+            <TabsTrigger value="infrastructure" className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-cyan-600 data-[state=active]:text-white data-[state=active]:shadow-xl transition-all text-xs md:text-sm font-medium">
               <MapPin className="w-4 h-4 mr-2" />
-              Infrastructure
+              <span className="hidden sm:inline">Fleet</span>
             </TabsTrigger>
           </TabsList>
 
@@ -275,7 +292,7 @@ export default function TransitControl() {
             />
 
             <Card className="p-8 bg-gradient-to-br from-slate-800/70 to-slate-900/70 backdrop-blur-2xl border border-white/10 shadow-2xl rounded-2xl">
-              <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center justify-between mb-8">
                 <h3 className="text-2xl font-bold bg-gradient-to-r from-white to-cyan-200 bg-clip-text text-transparent tracking-tight flex items-center gap-3">
                   <BarChart3 className="w-6 h-6 text-cyan-400" />
                   Live Trips Dashboard
@@ -286,6 +303,51 @@ export default function TransitControl() {
                 </Badge>
               </div>
               <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
+                {activeTrips.map((trip, i) => {
+                  const tripLine = lines.find(l => l.id === trip.line_id);
+                  const tripBus = activeBuses.find(b => b.id === trip.assigned_bus_id);
+                  const isDelayed = (trip.delay_minutes || 0) > 5;
+
+                  return (
+                    <motion.div
+                      key={trip.id}
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: i * 0.02 }}
+                      className={`p-5 rounded-xl border backdrop-blur-xl transition-all ${
+                        isDelayed 
+                          ? 'bg-gradient-to-br from-rose-500/20 to-rose-500/5 border-rose-500/30 hover:border-rose-400/50' 
+                          : 'bg-gradient-to-br from-slate-700/30 to-slate-800/20 border-white/10 hover:border-cyan-500/30'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between mb-3">
+                        <div>
+                          <p className="text-white font-semibold">Line {tripLine?.line_number || trip.line_id}</p>
+                          <p className="text-xs text-slate-400">{trip.direction_id}</p>
+                        </div>
+                        <Badge className={isDelayed ? "bg-rose-500/20 text-rose-400 border-rose-500/30" : "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"}>
+                          {isDelayed ? `+${trip.delay_minutes}min` : 'On time'}
+                        </Badge>
+                      </div>
+                      <div className="space-y-2 text-xs">
+                        <div className="flex items-center justify-between">
+                          <span className="text-slate-400">Bus:</span>
+                          <span className="text-white font-medium">{tripBus?.bus_number || 'N/A'}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-slate-400">Departure:</span>
+                          <span className="text-white">{trip.scheduled_departure}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-slate-400">Passengers:</span>
+                          <span className="text-cyan-400 font-semibold">{tripBus?.passenger_count || 0}</span>
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            </Card>
           </TabsContent>
 
           {/* NETWORK */}
@@ -306,24 +368,7 @@ export default function TransitControl() {
 
           {/* INFRASTRUCTURE */}
           <TabsContent value="infrastructure" className="space-y-8 animate-in fade-in duration-300">
-            <div className="p-8 rounded-2xl bg-gradient-to-br from-slate-800/70 to-slate-900/70 backdrop-blur-2xl border border-white/10 shadow-2xl">
-              <div className="flex items-center gap-3 mb-4">
-                <Bus className="w-8 h-8 text-cyan-400" />
-                <div>
-                  <h3 className="text-xl font-bold text-white">Bus Management</h3>
-                  <p className="text-sm text-slate-400">Manage buses from the Units page</p>
-                </div>
-              </div>
-              <p className="text-slate-300 mb-4">
-                All bus fleet management has been centralized in the <span className="font-semibold text-cyan-400">Units</span> page for better coordination across your entire fleet.
-              </p>
-              <Button
-                onClick={() => window.location.href = '/Fleet'}
-                className="bg-gradient-to-r from-cyan-500 to-violet-500 text-black font-semibold"
-              >
-                Go to Units
-              </Button>
-            </div>
+            <BusFleetManager organizationId={user?.organization_id} />
             <BusStopManager organizationId={user?.organization_id} stops={stops} />
             <BusLineManager organizationId={user?.organization_id} lines={lines} stops={stops} />
           </TabsContent>
