@@ -156,6 +156,21 @@ export default function Dashboard() {
     queryKey: ['digitalTwins', orgId], queryFn: () => base44.entities.DigitalTwin.filter({ organization_id: orgId }),
     enabled: !!orgId, refetchInterval: 20000,
   });
+  const { data: busLines = [] } = useQuery({
+    queryKey: ['busLines', orgId], queryFn: () => base44.entities.BusLine.filter({ organization_id: orgId }),
+    enabled: !!orgId, refetchInterval: 15000,
+  });
+  const { data: buses = [] } = useQuery({
+    queryKey: ['buses', orgId], queryFn: () => base44.entities.Bus.filter({ organization_id: orgId }),
+    enabled: !!orgId, refetchInterval: 5000,
+  });
+  const { data: busStops = [] } = useQuery({
+    queryKey: ['busStops', orgId], queryFn: async () => {
+      const allStops = await base44.entities.BusStop.list();
+      return allStops.filter(s => !s.organization_id || s.organization_id === orgId);
+    },
+    enabled: !!orgId, refetchInterval: 20000,
+  });
   const { data: alerts = [] } = useQuery({
     queryKey: ['alerts', orgId], queryFn: () => base44.entities.Alert.filter({ organization_id: orgId }, '-created_date', 10),
     enabled: !!orgId, refetchInterval: 15000,
@@ -495,7 +510,7 @@ export default function Dashboard() {
             
             <DashboardGlobeFrame
               vehicles={vehicles} routes={routes} resources={resources}
-              digitalTwins={digitalTwins} orgId={orgId}
+              digitalTwins={digitalTwins} busLines={busLines} buses={buses} busStops={busStops} orgId={orgId}
               onSelectVehicle={setSelectedVehicle} onSelectResource={setSelectedResource}
               className="w-full h-full"
             />

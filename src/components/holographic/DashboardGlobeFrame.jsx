@@ -19,6 +19,9 @@ export default function DashboardGlobeFrame({
   routes = [],
   resources = [],
   digitalTwins = [],
+  busLines = [],
+  buses = [],
+  busStops = [],
   orgId,
   onSelectVehicle,
   onSelectResource,
@@ -106,6 +109,9 @@ export default function DashboardGlobeFrame({
         routes={routes}
         resources={resources}
         digitalTwins={digitalTwins}
+        busLines={busLines}
+        buses={buses}
+        busStops={busStops}
         onSelectVehicle={onSelectVehicle}
         onSelectResource={onSelectResource}
       />
