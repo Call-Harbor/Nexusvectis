@@ -164,6 +164,57 @@ export default function IntellectMode() {
     enabled: !!orgId, staleTime: 30000
   });
 
+  // Bus entities
+  const { data: buses = [] } = useQuery({
+    queryKey: ['buses-intellect', orgId],
+    queryFn: async () => {
+      if (!orgId) return [];
+      return await base44.entities.Bus.filter({ organization_id: orgId });
+    },
+    enabled: !!orgId,
+    refetchInterval: 10000,
+  });
+
+  const { data: busLines = [] } = useQuery({
+    queryKey: ['busLines-intellect', orgId],
+    queryFn: async () => {
+      if (!orgId) return [];
+      return await base44.entities.BusLine.filter({ organization_id: orgId });
+    },
+    enabled: !!orgId,
+    refetchInterval: 15000,
+  });
+
+  const { data: busStops = [] } = useQuery({
+    queryKey: ['busStops-intellect', orgId],
+    queryFn: async () => {
+      if (!orgId) return [];
+      return await base44.entities.BusStop.filter({ organization_id: orgId });
+    },
+    enabled: !!orgId,
+    refetchInterval: 15000,
+  });
+
+  const { data: busDrivers = [] } = useQuery({
+    queryKey: ['busDrivers-intellect', orgId],
+    queryFn: async () => {
+      if (!orgId) return [];
+      return await base44.entities.BusDriver.filter({ organization_id: orgId });
+    },
+    enabled: !!orgId,
+    refetchInterval: 15000,
+  });
+
+  const { data: busTrips = [] } = useQuery({
+    queryKey: ['busTrips-intellect', orgId],
+    queryFn: async () => {
+      if (!orgId) return [];
+      return await base44.entities.BusTrip.filter({ organization_id: orgId });
+    },
+    enabled: !!orgId,
+    refetchInterval: 10000,
+  });
+
   // ── Load installed apps from user profile ─────────────────────────────────
   useEffect(() => {
     if (currentUser?.installed_harbor_apps) {
