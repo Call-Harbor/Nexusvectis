@@ -230,6 +230,8 @@ export default function IntellectHeader({ orgId, openWindow, executePrompt, setS
       setShowAdvancedPanel?.(true);
     } else if (type === '3d_globe') {
       onShow3DGlobe?.();
+    } else if (type === 'transit_console') {
+      navigate('/TransitControl');
     } else {
       openWindow(type);
     }
