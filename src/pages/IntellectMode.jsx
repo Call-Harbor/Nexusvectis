@@ -600,6 +600,85 @@ export default function IntellectMode() {
           return { role: "system", content: `✅ Updated bus ${bus.bus_number} status to ${newStatus}` };
         }
         
+        case 'create_line': {
+          const lineNumber = cmd.lineNumber === 'NEW' ? `L${Math.floor(Math.random() * 100)}` : cmd.lineNumber;
+          const newLine = {
+            organization_id: orgId,
+            line_number: lineNumber,
+            line_name: cmd.lineName,
+            status: 'active',
+            directions: []
+          };
+          
+          const created = await base44.entities.BusLine.create(newLine);
+          return { role: "assistant", content: `✅ Created new bus line **${lineNumber}** - ${cmd.lineName}\n\nLine ID: ${created.id}\nStatus: active\n\nYou can now add stops to this line using "add stop [stop name] to line ${lineNumber}"` };
+        }
+        
+        case 'add_stop_to_line': {
+          const line = cmd.busLines.find(l => l.line_number === cmd.lineId || l.id === cmd.lineId || l.line_name === cmd.lineId);
+          if (!line) return { role: "system", content: `❌ Line ${cmd.lineId} not found` };
+          
+          // Find or create the stop
+          let stop = cmd.busStops.find(s => s.stop_name.toLowerCase().includes(cmd.stopName.toLowerCase()));
+          if (!stop) {
+            return { role: "system", content: `❌ Stop "${cmd.stopName}" not found. Create it first with "create stop ${cmd.stopName} at coordinates lat, lng"` };
+          }
+          
+          // Add stop to line's direction
+          const directions = line.directions || [];
+          if (directions.length === 0) {
+            directions.push({
+              direction_id: 'outbound',
+              direction_name: `${line.line_number} Outbound`,
+              stop_sequence: []
+            });
+          }
+          
+          const sequence = directions[0].stop_sequence || [];
+          const nextOrder = sequence.length > 0 ? Math.max(...sequence.map(s => s.sequence_order)) + 1 : 1;
+          
+          sequence.push({
+            stop_id: stop.stop_id,
+            sequence_order: nextOrder,
+            planned_travel_time_minutes: 2
+          });
+          
+          directions[0].stop_sequence = sequence;
+          
+          await base44.entities.BusLine.update(line.id, { directions });
+          return { role: "assistant", content: `✅ Added stop **${stop.stop_name}** to line **${line.line_number}**\n\nStop order: ${nextOrder}\nDirection: ${directions[0].direction_name}` };
+        }
+        
+        case 'create_stop': {
+          const stopId = `STOP-${Math.floor(Math.random() * 10000)}`;
+          
+          if (!cmd.lat || !cmd.lng) {
+            return { role: "system", content: `❌ Please provide coordinates: "create stop ${cmd.stopName} at coordinates 55.6761, 12.5683"` };
+          }
+          
+          const newStop = {
+            organization_id: orgId,
+            stop_id: stopId,
+            stop_name: cmd.stopName,
+            latitude: cmd.lat,
+            longitude: cmd.lng,
+            stop_type: 'regular',
+            status: 'operational',
+            facilities: {
+              shelter: false,
+              seating: false,
+              realtime_display: false,
+              ticket_machine: false,
+              wheelchair_accessible: true,
+              bike_parking: false,
+              lighting: true
+            }
+          };
+          
+          const created = await base44.entities.BusStop.create(newStop);
+          return { role: "assistant", content: `✅ Created new bus stop **${cmd.stopName}**\n\nStop ID: ${stopId}\nCoordinates: ${cmd.lat}, ${cmd.lng}\nStatus: operational\n\nAdd it to a line with "add stop ${cmd.stopName} to line [line number]"` };
+        }
+        
         default:
           return null;
       }
