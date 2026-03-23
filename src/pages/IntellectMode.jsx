@@ -164,6 +164,36 @@ export default function IntellectMode() {
     enabled: !!orgId, staleTime: 30000
   });
 
+  const { data: buses = [] } = useQuery({
+    queryKey: ['buses', orgId],
+    queryFn: async () => {
+      if (!orgId) return [];
+      return await base44.entities.Bus.filter({ organization_id: orgId });
+    },
+    enabled: !!orgId,
+    refetchInterval: 10000,
+  });
+
+  const { data: busRoutes = [] } = useQuery({
+    queryKey: ['busRoutes', orgId],
+    queryFn: async () => {
+      if (!orgId) return [];
+      return await base44.entities.BusRoute.filter({ organization_id: orgId });
+    },
+    enabled: !!orgId,
+    refetchInterval: 15000,
+  });
+
+  const { data: busStops = [] } = useQuery({
+    queryKey: ['busStops', orgId],
+    queryFn: async () => {
+      if (!orgId) return [];
+      return await base44.entities.BusStop.filter({ organization_id: orgId });
+    },
+    enabled: !!orgId,
+    refetchInterval: 20000,
+  });
+
   // ── Load installed apps from user profile ─────────────────────────────────
   useEffect(() => {
     if (currentUser?.installed_harbor_apps) {
@@ -1126,6 +1156,9 @@ Return ONLY JSON:
                 routes={show3DVisualization.routes || routes}
                 resources={show3DVisualization.resources || resources}
                 digitalTwins={[]}
+                buses={buses}
+                busRoutes={busRoutes}
+                busStops={busStops}
                 orgId={orgId}
                 onSelectVehicle={() => {}}
                 onSelectResource={() => {}}

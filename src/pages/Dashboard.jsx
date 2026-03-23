@@ -495,7 +495,8 @@ export default function Dashboard() {
             
             <DashboardGlobeFrame
               vehicles={vehicles} routes={routes} resources={resources}
-              digitalTwins={digitalTwins} orgId={orgId}
+              digitalTwins={digitalTwins} buses={buses} busRoutes={busRoutes} busStops={busStops}
+              orgId={orgId}
               onSelectVehicle={setSelectedVehicle} onSelectResource={setSelectedResource}
               className="w-full h-full"
             />

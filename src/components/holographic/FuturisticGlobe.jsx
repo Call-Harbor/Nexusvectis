@@ -40,7 +40,7 @@ function createHolographicArc(lat1, lng1, lat2, lng2, color = 0x00ffff) {
   return new THREE.Line(geometry, material);
 }
 
-export default function FuturisticGlobe({ vehicles = [], routes = [], resources = [], digitalTwins = [], onSelectVehicle, onSelectResource }) {
+export default function FuturisticGlobe({ vehicles = [], routes = [], resources = [], digitalTwins = [], buses = [], busRoutes = [], busStops = [], onSelectVehicle, onSelectResource }) {
   const mountRef = useRef(null);
   const sceneRef = useRef(null);
   const cameraRef = useRef(null);
@@ -263,7 +263,7 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
     scene.add(pointLight2);
 
     // ══════════════════════════════════════════════════════════════
-    // RESOURCE MARKERS - PORTS, WAREHOUSES, HUBS
+    // RESOURCE MARKERS - PORTS, WAREHOUSES, HUBS, BUS STOPS
     // ══════════════════════════════════════════════════════════════
     const resourceMarkers = [];
     
@@ -304,6 +304,27 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
       );
       ring.userData = { phase: Math.random() * Math.PI * 2 };
       globe.add(ring);
+    });
+
+    // Bus stops as resources (smaller markers)
+    busStops.forEach(stop => {
+      if (!stop.latitude || !stop.longitude) return;
+      
+      const pos = latLngToVec3(stop.latitude, stop.longitude, 1.04);
+      
+      const markerGeometry = new THREE.SphereGeometry(0.015, 8, 8);
+      const markerMaterial = new THREE.MeshBasicMaterial({
+        color: 0x10b981,
+        transparent: true,
+        opacity: 0.8,
+        emissive: 0x10b981,
+        emissiveIntensity: 0.5
+      });
+      const marker = new THREE.Mesh(markerGeometry, markerMaterial);
+      marker.position.copy(pos);
+      marker.userData = { resource: { ...stop, type: 'bus_stop', name: stop.stop_name }, type: 'resource' };
+      globe.add(marker);
+      resourceMarkers.push(marker);
     });
 
     // ══════════════════════════════════════════════════════════════
@@ -351,12 +372,13 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
     });
 
     // ══════════════════════════════════════════════════════════════
-    // VEHICLE MARKERS - HOLOGRAPHIC STYLE
+    // VEHICLE MARKERS - HOLOGRAPHIC STYLE (VEHICLES + BUSES)
     // ══════════════════════════════════════════════════════════════
     const vehicleMarkers = [];
     const vehiclePulses = [];
     const vehicleBeams = [];
 
+    // Regular vehicles
     vehicles.forEach(vehicle => {
       if (!vehicle.latitude || !vehicle.longitude) return;
       
@@ -441,11 +463,56 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
       }
     });
 
+    // Buses as vehicles (cyan pyramids)
+    buses.forEach(bus => {
+      if (!bus.latitude || !bus.longitude) return;
+      
+      const status = bus.status || 'offline';
+      const color = STATUS_COLORS[status] || STATUS_COLORS.offline;
+      const pos = latLngToVec3(bus.latitude, bus.longitude, 1.025);
+
+      // Bus marker
+      const markerGeometry = new THREE.ConeGeometry(0.015, 0.05, 4);
+      const markerMaterial = new THREE.MeshBasicMaterial({
+        color: 0x06b6d4,
+        transparent: true,
+        opacity: 0.9
+      });
+      const marker = new THREE.Mesh(markerGeometry, markerMaterial);
+      marker.position.copy(pos);
+      marker.lookAt(0, 0, 0);
+      marker.rotateX(Math.PI / 2);
+      marker.userData = { vehicle: { ...bus, type: 'bus', name: bus.bus_number }, status };
+      globe.add(marker);
+      vehicleMarkers.push(marker);
+
+      // Pulsing ring
+      const ringGeometry = new THREE.RingGeometry(0.022, 0.038, 32);
+      const ringMaterial = new THREE.MeshBasicMaterial({
+        color: 0x06b6d4,
+        transparent: true,
+        opacity: 0.6,
+        side: THREE.DoubleSide,
+        blending: THREE.AdditiveBlending
+      });
+      const ring = new THREE.Mesh(ringGeometry, ringMaterial);
+      ring.position.copy(pos.clone().multiplyScalar(1.002));
+      ring.quaternion.setFromUnitVectors(
+        new THREE.Vector3(0, 0, 1),
+        pos.clone().normalize()
+      );
+      ring.userData = { phase: Math.random() * Math.PI * 2, baseColor: 0x06b6d4 };
+      globe.add(ring);
+      vehiclePulses.push(ring);
+    });
+
     // ══════════════════════════════════════════════════════════════
-    // ROUTE ARCS - HOLOGRAPHIC PATHS
+    // ROUTE ARCS - HOLOGRAPHIC PATHS (ROUTES + BUS ROUTES)
     // ══════════════════════════════════════════════════════════════
     const routeArcs = [];
     const routeColors = [0x00ffff, 0x8b5cf6, 0x10b981, 0xf59e0b, 0xf43f5e];
+    
+    // Regular routes
     routes.forEach((route, rIdx) => {
       const waypoints = (route.waypoints || []).filter(w => w.lat && w.lng);
       const arcColor = routeColors[rIdx % routeColors.length];
@@ -475,6 +542,47 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
           routeId: route.id, 
           route,
           isFirstSegment: i === 0
+        };
+        globe.add(arc);
+      }
+    });
+
+    // Bus routes (cyan arcs)
+    busRoutes.forEach((route, rIdx) => {
+      const stops = (route.stops || []).filter(s => s.stop_id);
+      const stopMap = new Map(busStops.map(s => [s.id, s]));
+      
+      for (let i = 0; i < stops.length - 1; i++) {
+        const currentStop = stopMap.get(stops[i].stop_id);
+        const nextStop = stopMap.get(stops[i + 1].stop_id);
+        
+        if (!currentStop?.latitude || !currentStop?.longitude || !nextStop?.latitude || !nextStop?.longitude) continue;
+        
+        const arc = createHolographicArc(
+          currentStop.latitude,
+          currentStop.longitude,
+          nextStop.latitude,
+          nextStop.longitude,
+          0x06b6d4
+        );
+        
+        const hitGeometry = new THREE.TubeGeometry(
+          new THREE.QuadraticBezierCurve3(
+            latLngToVec3(currentStop.latitude, currentStop.longitude, 1.03),
+            latLngToVec3(currentStop.latitude, currentStop.longitude, 1.03).clone().add(latLngToVec3(nextStop.latitude, nextStop.longitude, 1.03)).normalize().multiplyScalar(1.23),
+            latLngToVec3(nextStop.latitude, nextStop.longitude, 1.03)
+          ), 20, 0.015, 4, false
+        );
+        const hitMesh = new THREE.Mesh(hitGeometry, new THREE.MeshBasicMaterial({ visible: false }));
+        hitMesh.userData = { routeId: route.id, route: { ...route, name: route.route_name, waypoints: [] }, isFirstSegment: i === 0, isBusRoute: true };
+        globe.add(hitMesh);
+        routeArcs.push(hitMesh);
+
+        arc.userData = { 
+          routeId: route.id, 
+          route: { ...route, name: route.route_name, waypoints: [] },
+          isFirstSegment: i === 0,
+          isBusRoute: true
         };
         globe.add(arc);
       }
@@ -877,7 +985,7 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
         el.removeChild(renderer.domElement);
       }
     };
-  }, [vehicles, routes, resources, digitalTwins, onSelectVehicle, onSelectResource]);
+  }, [vehicles, routes, resources, digitalTwins, buses, busRoutes, busStops, onSelectVehicle, onSelectResource]);
 
   return (
     <div className="relative w-full h-full">
