@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MapPin, Bus, AlertTriangle, TrendingUp, Navigation, Users, Battery, Zap, X } from "lucide-react";
+import { MapPin, Bus, AlertTriangle, TrendingUp, Navigation, Users, Battery, Zap, X, Maximize2, MessageSquare, Radio, Clock } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

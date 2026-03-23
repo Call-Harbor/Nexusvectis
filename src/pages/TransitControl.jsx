@@ -5,8 +5,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   Bus, MapPin, TrendingUp, AlertTriangle, Users, Clock, Zap,
   Radio, Shield, BarChart3, Sparkles, Globe, Network, Brain,
-  ChevronRight, Play, Settings, MessageSquare, Maximize2, Activity
+  ChevronRight, Play, Settings, MessageSquare, Maximize2, Activity,
+  Battery, Fuel, Plus
 } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
