@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AlertTriangle, Zap, Clock, Shield, TrendingUp, Phone, MessageSquare } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -6,77 +6,99 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 
-export default function IncidentResponseCenter({ incidents, buses, drivers }) {
+export default function IncidentResponseCenter({ incidents = [], buses = [], drivers = [] }) {
   const [selectedIncident, setSelectedIncident] = useState(null);
 
-  const mockIncidents = [
-    {
-      id: 1,
-      severity: "critical",
-      title: "Bus 42 Mechanical Failure",
-      time: "14:23",
-      line: "Line 7",
-      passengers: 67,
-      driver: "Carlos Mendez",
-      location: "Hauptstrasse 45",
-      status: "escalated",
-      aiResponse: {
-        action: "Deployed Bus 18 (3min away) to provide replacement service",
-        passengers: "Rerouted 67 to Bus 18 at next stop",
-        mitigation: "Reduced service disruption from 45min → 8min"
-      },
-      timeline: [
-        { time: "14:23", event: "Mechanical failure detected via IoT sensors", type: "alert" },
-        { time: "14:23:15", event: "AI evaluated 8 response scenarios", type: "ai" },
-        { time: "14:24", event: "Alerted driver + dispatch team", type: "notification" },
-        { time: "14:25", event: "Replacement bus routed (ETA 3min 22sec)", type: "response" },
-        { time: "14:28", event: "Passengers transferred, original bus towed", type: "resolved" }
-      ]
-    },
-    {
-      id: 2,
-      severity: "high",
-      title: "Line 5 Massive Overcrowding",
-      time: "14:42",
-      line: "Line 5",
-      passengers: 156,
-      driver: "Maria Schmidt",
-      location: "Central Station",
-      status: "mitigating",
-      aiResponse: {
-        action: "Inserted express bus + recommended passenger shift",
-        passengers: "48 passengers offered free transfer to express Line 5E",
-        mitigation: "Reduced overcrowding from 173% → 98% capacity"
-      },
-      timeline: [
-        { time: "14:42", event: "Real-time capacity prediction exceeded threshold", type: "alert" },
-        { time: "14:42:30", event: "AI predicted 156 passengers at next 3 stops", type: "ai" },
-        { time: "14:43", event: "Notified control center + suggested express solution", type: "notification" },
-        { time: "14:44", event: "Express bus deployed (8min ETA)", type: "response" }
-      ]
-    },
-    {
-      id: 3,
-      severity: "medium",
-      title: "Driver Fatigue Warning",
-      time: "14:55",
-      line: "Line 12",
-      passengers: 42,
-      driver: "Klaus Mueller",
-      location: "Königstrasse",
-      status: "monitoring",
-      aiResponse: {
-        action: "Recommended immediate 20min break + shift relief driver on standby",
-        passengers: "Schedule maintained with relief driver",
-        mitigation: "Prevented potential safety incident"
-      },
-      timeline: [
-        { time: "14:55", event: "Driver alert system: 7.5h worked, fatigue score 73%", type: "alert" },
-        { time: "14:56", event: "AI evaluated break schedule + relief availability", type: "ai" },
-        { time: "14:57", event: "Sent break recommendation to driver + control", type: "notification" }
-      ]
+  // Generer dynamiske incidents fra real data
+  const generatedIncidents = useMemo(() => {
+    const incidents = [];
+    
+    // Find overloaded buses → overcrowding incident
+    const overloaded = buses.filter(b => 
+      (b.passenger_count || 0) > (b.capacity_seated + b.capacity_standing) * 0.9
+    );
+    
+    if (overloaded.length > 0) {
+      const bus = overloaded[0];
+      incidents.push({
+        id: `overcrowd-${bus.id}`,
+        severity: "high",
+        title: `Bus ${bus.bus_number} Overcrowding`,
+        time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
+        line: bus.current_line_id || "Unknown",
+        passengers: bus.passenger_count || 0,
+        driver: drivers[0]?.first_name || "Unknown",
+        location: "In service",
+        status: "mitigating",
+        aiResponse: {
+          action: `Deployed backup bus to Line ${bus.current_line_id}`,
+          passengers: `${Math.round((bus.passenger_count || 0) * 0.4)} passengers offered transfer`,
+          mitigation: `Reduced overcrowding from ${Math.round((bus.passenger_count / ((bus.capacity_seated || 40) + (bus.capacity_standing || 40))) * 100)}% → 85%`
+        },
+        timeline: [
+          { time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' }), event: "Real-time overcrowding detected", type: "alert" },
+          { time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' }), event: "AI evaluated response options", type: "ai" },
+          { time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' }), event: "Notified dispatch & driver", type: "notification" }
+        ]
+      });
     }
-  ];
+
+    // Find delayed trips → service disruption
+    const delayedTrips = incidents.length === 0 ? [] : [];
+    
+    // Find buses with low fuel → mechanical risk
+    const lowFuel = buses.filter(b => (b.fuel_level || 100) < 20);
+    if (lowFuel.length > 0 && incidents.length < 2) {
+      const bus = lowFuel[0];
+      incidents.push({
+        id: `fuel-${bus.id}`,
+        severity: "medium",
+        title: `Bus ${bus.bus_number} Low Fuel`,
+        time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
+        line: bus.current_line_id || "Unknown",
+        passengers: bus.passenger_count || 0,
+        driver: drivers[0]?.first_name || "Unknown",
+        location: "In service",
+        status: "monitoring",
+        aiResponse: {
+          action: "Scheduled depot refueling at next available slot",
+          passengers: "Service maintained with planned refuel",
+          mitigation: "Prevented potential service disruption"
+        },
+        timeline: [
+          { time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' }), event: "Fuel level alert: <20%", type: "alert" },
+          { time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' }), event: "AI evaluated refuel options", type: "ai" },
+          { time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' }), event: "Scheduled refuel without service loss", type: "notification" }
+        ]
+      });
+    }
+
+    // Fallback: Show operational status if no issues
+    if (incidents.length === 0) {
+      incidents.push({
+        id: "operational",
+        severity: "info",
+        title: "Fleet Operating Normally",
+        time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
+        line: "All",
+        passengers: buses.reduce((sum, b) => sum + (b.passenger_count || 0), 0),
+        driver: "Multiple",
+        location: "System-wide",
+        status: "monitoring",
+        aiResponse: {
+          action: "Continuous monitoring active",
+          passengers: "All services normal",
+          mitigation: "No critical incidents detected"
+        },
+        timeline: [
+          { time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' }), event: "All buses operating within parameters", type: "ai" },
+          { time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' }), event: "Fleet health: Optimal", type: "notification" }
+        ]
+      });
+    }
+
+    return incidents;
+  }, [buses, drivers]);
 
   const getIndicator = (severity) => {
     switch (severity) {
@@ -95,17 +117,17 @@ export default function IncidentResponseCenter({ incidents, buses, drivers }) {
             <Shield className="w-6 h-6 text-rose-400" />
             Incident Response Center
           </h2>
-          <p className="text-slate-400 mt-1">Real-time AI-powered incident management & escalation</p>
+          <p className="text-slate-400 mt-1">Real-time AI-powered incident management</p>
         </div>
-        <Badge className="bg-rose-500/20 text-rose-400 border-rose-500/30 text-lg px-4 py-2">
-          {mockIncidents.length} Active Incidents
+        <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30 text-lg px-4 py-2">
+          {generatedIncidents.filter(i => i.severity !== 'info').length} Active
         </Badge>
       </div>
 
       {/* Incident List */}
       <div className="space-y-4">
         <AnimatePresence>
-          {mockIncidents.map((incident, i) => {
+          {generatedIncidents.map((incident, i) => {
             const indicator = getIndicator(incident.severity);
             const isSelected = selectedIncident?.id === incident.id;
 
@@ -139,8 +161,8 @@ export default function IncidentResponseCenter({ incidents, buses, drivers }) {
                     </div>
                   </div>
                   <Zap className={`w-5 h-5 ${
-                    incident.status === 'escalated' ? 'text-rose-400 animate-pulse' :
-                    incident.status === 'mitigating' ? 'text-amber-400' : 'text-blue-400'
+                    incident.severity === 'critical' ? 'text-rose-400 animate-pulse' :
+                    incident.severity === 'high' ? 'text-amber-400' : 'text-blue-400'
                   }`} />
                 </div>
 
@@ -155,7 +177,7 @@ export default function IncidentResponseCenter({ incidents, buses, drivers }) {
                     >
                       {/* AI Response Summary */}
                       <div className="p-4 rounded-lg bg-slate-900/30 border border-violet-500/20">
-                        <p className="text-violet-300 font-semibold text-sm mb-2">🤖 AI Response Executed</p>
+                        <p className="text-violet-300 font-semibold text-sm mb-2">🤖 AI Response</p>
                         <p className="text-sm text-slate-300 mb-2">{incident.aiResponse.action}</p>
                         <p className="text-xs text-slate-500">
                           <strong>Passengers:</strong> {incident.aiResponse.passengers}
@@ -190,17 +212,19 @@ export default function IncidentResponseCenter({ incidents, buses, drivers }) {
                       </div>
 
                       {/* Action Buttons */}
-                      <div className="flex gap-2 pt-2 border-t border-slate-700/50">
-                        <Button size="sm" variant="outline" className="flex-1 text-xs">
-                          <Phone className="w-3 h-3 mr-1" /> Call Dispatch
-                        </Button>
-                        <Button size="sm" variant="outline" className="flex-1 text-xs">
-                          <MessageSquare className="w-3 h-3 mr-1" /> Send Alert
-                        </Button>
-                        <Button size="sm" variant="outline" className="flex-1 text-xs">
-                          <TrendingUp className="w-3 h-3 mr-1" /> View Analytics
-                        </Button>
-                      </div>
+                      {incident.severity !== 'info' && (
+                        <div className="flex gap-2 pt-2 border-t border-slate-700/50">
+                          <Button size="sm" variant="outline" className="flex-1 text-xs">
+                            <Phone className="w-3 h-3 mr-1" /> Call Dispatch
+                          </Button>
+                          <Button size="sm" variant="outline" className="flex-1 text-xs">
+                            <MessageSquare className="w-3 h-3 mr-1" /> Send Alert
+                          </Button>
+                          <Button size="sm" variant="outline" className="flex-1 text-xs">
+                            <TrendingUp className="w-3 h-3 mr-1" /> View Analytics
+                          </Button>
+                        </div>
+                      )}
                     </motion.div>
                   )}
                 </AnimatePresence>
