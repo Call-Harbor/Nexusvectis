@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { useMutation } from "@tantml/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { Users, TrendingDown, Lightbulb, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
