@@ -513,6 +513,20 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
     const currentCommand = commandText || input;
     if (!currentCommand.trim()) return;
 
+    // Bus Management Commands Detection
+    const busCommand = await detectBusCommand(currentCommand, vehicles, orgId);
+    if (busCommand) {
+      setMessages(prev => [...prev, { role: "user", content: currentCommand }]);
+      setInput("");
+      const result = await executeBusCommand(busCommand, orgId, userOrgId);
+      if (result) {
+        setMessages(prev => [...prev, result]);
+        queryClient.invalidateQueries({ queryKey: ['buses-intellect', 'busLines-intellect', 'busStops-intellect', 'busDrivers-intellect', 'busTrips-intellect'] });
+        setIsProcessing(false);
+        return;
+      }
+    }
+
     // H.A.R.B.O.R App Builder detection
     const harborAppMatch = currentCommand.match(/(?:harbor\s+app|build\s+(?:an?\s+)?app|create\s+(?:an?\s+)?app|app\s+builder|lav\s+(?:en?\s+)?app|byg\s+(?:en?\s+)?app|h\.?a\.?r\.?b\.?o\.?r\s+builder)/i);
     if (harborAppMatch) {
