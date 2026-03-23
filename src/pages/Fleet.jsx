@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Truck, Ship, Plane, Train, Plus, Search,
-  Fuel, MapPin, Clock, Settings, Radio, X, Filter, Download, BarChart3
+  Fuel, MapPin, Clock, Settings, Radio, X, Filter, Download, BarChart3, Bus
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,7 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 
-const vehicleIcons = { truck: Truck, ship: Ship, drone: Plane, train: Train, aircraft: Plane, bus: Truck };
+const vehicleIcons = { truck: Truck, ship: Ship, drone: Plane, train: Train, aircraft: Plane, bus: Bus };
 const vehicleLabels = { truck: "Truck", ship: "Ship", drone: "Drone", train: "Train", aircraft: "Aircraft", bus: "Bus" };
 const statusColors = {
   active: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
@@ -44,7 +44,8 @@ export default function Fleet() {
   const [formData, setFormData] = useState({
     name: "TRUCK-001", type: "truck", status: "active",
     speed: 0, latitude: 20, longitude: 0,
-    signal_type: "GPS", signal_strength: 95, callsign: "", mmsi: "", icao: "", driver: "", resource_id: ""
+    signal_type: "GPS", signal_strength: 95, callsign: "", mmsi: "", icao: "", driver: "", resource_id: "",
+    bus_vehicle_type: "standard_12m", bus_fuel_type: "diesel", bus_capacity_seated: 40, bus_capacity_standing: 40
   });
 
   const queryClient = useQueryClient();
@@ -67,9 +68,42 @@ export default function Fleet() {
     },
   });
 
+  const { data: buses = [] } = useQuery({
+    queryKey: ['buses'],
+    queryFn: async () => {
+      const user = await base44.auth.me();
+      if (!user.organization_id) return [];
+      return await base44.entities.Bus.filter({ organization_id: user.organization_id });
+    },
+  });
+
   const createMutation = useMutation({
     mutationFn: async (data) => {
       const user = await base44.auth.me();
+      
+      // Check if this is a bus type
+      if (data.type === 'bus') {
+        const busData = {
+          organization_id: user.organization_id,
+          bus_number: data.name,
+          vehicle_type: data.bus_vehicle_type || "standard_12m",
+          fuel_type: data.bus_fuel_type || "diesel",
+          capacity_seated: data.bus_capacity_seated || 40,
+          capacity_standing: data.bus_capacity_standing || 40,
+          status: "idle",
+          battery_level: data.bus_fuel_type === 'electric' ? 100 : 0,
+          fuel_level: data.bus_fuel_type !== 'electric' ? 100 : 0,
+          passenger_count: 0,
+          speed: 0,
+          heading: 0,
+          latitude: data.latitude || 0,
+          longitude: data.longitude || 0
+        };
+        const newBus = await base44.entities.Bus.create(busData);
+        return newBus;
+      }
+      
+      // Regular vehicle creation
       const vehicleData = { ...data, organization_id: user.organization_id };
       
       // Set position from selected resource
@@ -103,6 +137,7 @@ export default function Fleet() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['vehicles'] });
+      queryClient.invalidateQueries({ queryKey: ['buses'] });
       queryClient.invalidateQueries({ queryKey: ['resources'] });
       setShowAddDialog(false);
       resetForm();
@@ -144,7 +179,8 @@ export default function Fleet() {
     setFormData({
       name: `TRUCK-${String(nextNumber).padStart(3, '0')}`, type: "truck", status: "active",
       speed: 0, latitude: 20, longitude: 0,
-      signal_type: "GPS", signal_strength: 95, callsign: "", mmsi: "", icao: "", driver: "", resource_id: ""
+      signal_type: "GPS", signal_strength: 95, callsign: "", mmsi: "", icao: "", driver: "", resource_id: "",
+      bus_vehicle_type: "standard_12m", bus_fuel_type: "diesel", bus_capacity_seated: 40, bus_capacity_standing: 40
     });
   };
 
@@ -169,7 +205,7 @@ export default function Fleet() {
     drone: vehicles.filter(v => v.type === 'drone').length,
     train: vehicles.filter(v => v.type === 'train').length,
     aircraft: vehicles.filter(v => v.type === 'aircraft').length,
-    bus: vehicles.filter(v => v.type === 'bus').length,
+    bus: buses.length,
   };
 
   const exportToCSV = () => {
@@ -211,7 +247,7 @@ export default function Fleet() {
           <div>
             <h1 className="text-3xl font-bold text-white">Units Management</h1>
             <p className="text-slate-400 mt-1">
-              All vehicles and transit units in one place
+              {vehicles.length} vehicles + {buses.length} buses · All units in one place
             </p>
           </div>
           <div className="flex gap-2">
@@ -475,24 +511,12 @@ export default function Fleet() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="truck_delivery">Delivery Truck</SelectItem>
-                    <SelectItem value="truck_semi">Semi Truck</SelectItem>
-                    <SelectItem value="truck_refrigerated">Refrigerated Truck</SelectItem>
-                    <SelectItem value="truck_tanker">Tanker Truck</SelectItem>
-                    <SelectItem value="ship_container">Container Ship</SelectItem>
-                    <SelectItem value="ship_tanker">Tanker Ship</SelectItem>
-                    <SelectItem value="ship_cargo">Cargo Ship</SelectItem>
-                    <SelectItem value="ship_ferry">Ferry</SelectItem>
+                    <SelectItem value="truck">Truck</SelectItem>
+                    <SelectItem value="ship">Ship</SelectItem>
                     <SelectItem value="drone">Drone</SelectItem>
-                    <SelectItem value="train_freight">Freight Train</SelectItem>
-                    <SelectItem value="train_passenger">Passenger Train</SelectItem>
-                    <SelectItem value="train_high_speed">High-Speed Train</SelectItem>
-                    <SelectItem value="aircraft_cargo">Cargo Aircraft</SelectItem>
-                    <SelectItem value="aircraft_passenger">Passenger Aircraft</SelectItem>
-                    <SelectItem value="aircraft_private">Private Jet</SelectItem>
-                    <SelectItem value="bus_city">City Bus</SelectItem>
-                    <SelectItem value="bus_coach">Coach Bus</SelectItem>
-                    <SelectItem value="bus_school">School Bus</SelectItem>
+                    <SelectItem value="train">Train</SelectItem>
+                    <SelectItem value="aircraft">Aircraft</SelectItem>
+                    <SelectItem value="bus">Bus (Transit)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -588,6 +612,61 @@ export default function Fleet() {
                   placeholder="e.g. ALPHA-1"
                 />
               </div>
+            )}
+
+            {formData.type === 'bus' && (
+              <>
+                <div>
+                  <Label>Bus Vehicle Type</Label>
+                  <Select value={formData.bus_vehicle_type} onValueChange={(v) => setFormData({...formData, bus_vehicle_type: v})}>
+                    <SelectTrigger className="bg-slate-800 border-slate-700">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="standard_12m">Standard 12m</SelectItem>
+                      <SelectItem value="articulated_18m">Articulated 18m</SelectItem>
+                      <SelectItem value="minibus">Minibus</SelectItem>
+                      <SelectItem value="double_decker">Double Decker</SelectItem>
+                      <SelectItem value="brt">BRT</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Fuel Type</Label>
+                  <Select value={formData.bus_fuel_type} onValueChange={(v) => setFormData({...formData, bus_fuel_type: v})}>
+                    <SelectTrigger className="bg-slate-800 border-slate-700">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="diesel">Diesel</SelectItem>
+                      <SelectItem value="electric">Electric</SelectItem>
+                      <SelectItem value="hybrid">Hybrid</SelectItem>
+                      <SelectItem value="cng">CNG</SelectItem>
+                      <SelectItem value="hydrogen">Hydrogen</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label>Seated Capacity</Label>
+                    <Input
+                      type="number"
+                      value={formData.bus_capacity_seated}
+                      onChange={(e) => setFormData({...formData, bus_capacity_seated: parseInt(e.target.value) || 40})}
+                      className="bg-slate-800 border-slate-700"
+                    />
+                  </div>
+                  <div>
+                    <Label>Standing Capacity</Label>
+                    <Input
+                      type="number"
+                      value={formData.bus_capacity_standing}
+                      onChange={(e) => setFormData({...formData, bus_capacity_standing: parseInt(e.target.value) || 40})}
+                      className="bg-slate-800 border-slate-700"
+                    />
+                  </div>
+                </div>
+              </>
             )}
             <Button 
               className="w-full bg-gradient-to-r from-cyan-500 to-violet-500 text-black font-semibold"
