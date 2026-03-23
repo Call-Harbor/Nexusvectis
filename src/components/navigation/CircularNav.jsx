@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { 
   Truck, Route, Warehouse, Sparkles, 
   Settings, Users, Shield, FileText, Package, 
-  DollarSign, Target, Menu, X, Zap, Home, AlertCircle, Code2, BarChart2, Brain
+  DollarSign, Target, Menu, X, Zap, Home, AlertCircle, Code2, BarChart2, Brain, Bus
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import NotificationCenter from "../notifications/NotificationCenter";
@@ -19,6 +19,7 @@ const menuCategories = [
     items: [
       { name: "Dashboard", icon: Home, page: "Dashboard" },
       { name: "Alerts", icon: AlertCircle, page: "Alerts" },
+      { name: "Transit Control", icon: Bus, page: "TransitControl" },
     ]
   },
   { 
