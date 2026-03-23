@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Bus, MapPin, Users, Clock, Zap, TrendingUp, AlertCircle, Settings, Plus, Brain } from "lucide-react";
@@ -12,10 +12,12 @@ import BusStopEditor from "../components/bus/BusStopEditor";
 import BusRouteEditor from "../components/bus/BusRouteEditor";
 import NeuralTransitOrchestrator from "../components/bus/NeuralTransitOrchestrator";
 import BusIntellectMode from "../components/bus/BusIntellectMode";
+import BusFleetAI from "../components/bus/BusFleetAI";
 
 export default function BusFleet() {
   const [selectedBus, setSelectedBus] = useState(null);
   const [view, setView] = useState("intellect"); // intellect, orchestration, map, list, routes
+  const [showAISetup, setShowAISetup] = useState(false);
   const [showBusEditor, setShowBusEditor] = useState(false);
   const [showStopEditor, setShowStopEditor] = useState(false);
   const [showRouteEditor, setShowRouteEditor] = useState(false);
@@ -37,6 +39,13 @@ export default function BusFleet() {
     queryKey: ['busStops'],
     queryFn: () => base44.entities.BusStop.list('-stop_code', 200),
   });
+
+  // Auto-show AI setup if no fleet exists
+  useEffect(() => {
+    if (buses.length === 0 && routes.length === 0 && !loadingBuses) {
+      setShowAISetup(true);
+    }
+  }, [buses.length, routes.length, loadingBuses]);
 
   const createBusMutation = useMutation({
     mutationFn: async (data) => {
@@ -158,6 +167,17 @@ export default function BusFleet() {
     capacity: buses.reduce((acc, b) => acc + (b.capacity || 0), 0),
   };
 
+  if (showAISetup) {
+    return (
+      <BusFleetAI 
+        onSetupComplete={() => {
+          setShowAISetup(false);
+          queryClient.invalidateQueries();
+        }} 
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-black text-white relative overflow-hidden">
       {/* Animated Holographic Background */}
@@ -225,8 +245,17 @@ export default function BusFleet() {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
+                onClick={() => setShowAISetup(true)}
+                className="px-6 py-3 rounded-xl font-semibold bg-gradient-to-r from-cyan-500 via-violet-500 to-fuchsia-500 hover:from-cyan-600 hover:via-violet-600 hover:to-fuchsia-600 text-white shadow-lg shadow-cyan-500/30 border border-cyan-400/50 flex items-center gap-2"
+              >
+                <Brain className="w-5 h-5" />
+                AI Setup
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => setShowBusEditor(true)}
-                className="px-6 py-3 rounded-xl font-semibold bg-gradient-to-r from-cyan-500 to-violet-500 hover:from-cyan-600 hover:to-violet-600 text-white shadow-lg shadow-cyan-500/20 border border-cyan-400/50 flex items-center gap-2"
+                className="px-6 py-3 rounded-xl font-semibold bg-slate-900/60 backdrop-blur-xl text-slate-300 hover:text-white border border-slate-700/50 hover:border-slate-600 flex items-center gap-2"
               >
                 <Plus className="w-5 h-5" />
                 Add Bus
@@ -235,7 +264,7 @@ export default function BusFleet() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setShowStopEditor(true)}
-                className="px-6 py-3 rounded-xl font-semibold bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white shadow-lg shadow-emerald-500/20 border border-emerald-400/50 flex items-center gap-2"
+                className="px-6 py-3 rounded-xl font-semibold bg-slate-900/60 backdrop-blur-xl text-slate-300 hover:text-white border border-slate-700/50 hover:border-slate-600 flex items-center gap-2"
               >
                 <Plus className="w-5 h-5" />
                 Add Stop
@@ -244,7 +273,7 @@ export default function BusFleet() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setShowRouteEditor(true)}
-                className="px-6 py-3 rounded-xl font-semibold bg-gradient-to-r from-violet-500 to-fuchsia-500 hover:from-violet-600 hover:to-fuchsia-600 text-white shadow-lg shadow-violet-500/20 border border-violet-400/50 flex items-center gap-2"
+                className="px-6 py-3 rounded-xl font-semibold bg-slate-900/60 backdrop-blur-xl text-slate-300 hover:text-white border border-slate-700/50 hover:border-slate-600 flex items-center gap-2"
               >
                 <Plus className="w-5 h-5" />
                 Add Route
