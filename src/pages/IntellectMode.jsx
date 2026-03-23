@@ -488,6 +488,33 @@ export default function IntellectMode() {
       return { type: 'update_bus_status', busId, status, buses };
     }
     
+    // Create new bus line/route
+    const createLineMatch = lower.match(/(?:create|opret)\s+(?:a|en)\s+(?:new|ny)\s+(?:bus\s+)?(?:line|rute)\s+(?:number|nummer)?\s*(\w+)?(?:\s+(?:named|kaldet)\s+(\w+))?/i) || 
+                           lower.match(/(?:opret|rute)\s+(\w+)\s+(?:fra|from)\s+(.+?)\s+(?:til|to)\s+(.+)/i);
+    if (createLineMatch || lower.includes('create line') || lower.includes('opret rute')) {
+      const lineNumber = createLineMatch?.[1] || 'NEW';
+      const lineName = createLineMatch?.[2] || 'New Route';
+      return { type: 'create_line', lineNumber, lineName, busStops };
+    }
+    
+    // Add stop to line
+    const addStopMatch = lower.match(/(?:add|tilføj)\s+(?:stop|stoppested)\s+(?:['"]?)(.+?)(?:['"]?)\s+(?:to|til)\s+(?:line|rute)\s+(\w+)/i);
+    if (addStopMatch || lower.includes('add stop to') || lower.includes('tilføj stoppested til')) {
+      const stopName = addStopMatch?.[1] || 'stop-name';
+      const lineId = addStopMatch?.[2] || 'line-id';
+      return { type: 'add_stop_to_line', stopName, lineId, busStops, busLines };
+    }
+    
+    // Create new bus stop
+    const createStopMatch = lower.match(/(?:create|opret)\s+(?:a|et)\s+(?:new|nyt)\s+(?:bus\s+)?(?:stop|stoppested)\s+(?:named|kaldet)?\s*['"]?(.+?)['"]?\s+(?:at|ved|på)?\s*(?:coords|koordinater)?\s*(-?\d+\.?\d*)\s*,?\s*(-?\d+\.?\d*)/i) ||
+                           lower.match(/(?:opret|create)\s+(?:stoppested|stop)\s+(.+?)\s+(?:på|at)\s+(.+?)\s+(?:gade|vej|street)/i);
+    if (createStopMatch || lower.includes('create stop') || lower.includes('opret stoppested')) {
+      const stopName = createStopMatch?.[1] || 'New Stop';
+      const lat = createStopMatch?.[2] ? parseFloat(createStopMatch[2]) : null;
+      const lng = createStopMatch?.[3] ? parseFloat(createStopMatch[3]) : null;
+      return { type: 'create_stop', stopName, lat, lng, busStops };
+    }
+    
     return null;
   };
 
