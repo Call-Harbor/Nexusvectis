@@ -277,11 +277,11 @@ export default function Resources() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Types</SelectItem>
-                  <SelectItem value="fuel_depot">Fuel Depot</SelectItem>
-                  <SelectItem value="warehouse">Warehouse</SelectItem>
-                  <SelectItem value="charging_station">Charging Station</SelectItem>
-                  <SelectItem value="maintenance_hub">Maintenance Hub</SelectItem>
-                  <SelectItem value="port">Port</SelectItem>
+                  <SelectItem value="fuel_depot">All Fuel Depots</SelectItem>
+                  <SelectItem value="warehouse">All Warehouses</SelectItem>
+                  <SelectItem value="charging_station">All Charging Stations</SelectItem>
+                  <SelectItem value="maintenance_hub">All Maintenance Hubs</SelectItem>
+                  <SelectItem value="port">All Ports</SelectItem>
                 </SelectContent>
               </Select>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
