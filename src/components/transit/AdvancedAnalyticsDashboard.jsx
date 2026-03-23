@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { TrendingUp, Activity, AlertTriangle, Zap, Clock, Users, Fuel, Wind } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -6,41 +5,39 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 
 export default function AdvancedAnalyticsDashboard({ kpis, activeTrips, buses, trips }) {
-  const [streamingData, setStreamingData] = useState(null);
-  const [predictions, setPredictions] = useState(null);
-
-  useEffect(() => {
-    // Simuler real-time streaming data
-    const interval = setInterval(() => {
-      setStreamingData(prev => ({
-        ...prev,
-        avgDelay: (Math.random() * 15).toFixed(1),
-        networkLoad: (65 + Math.random() * 30).toFixed(0),
-        occupancyRate: (72 + Math.random() * 20).toFixed(0),
-        fuelEfficiency: (85 + Math.random() * 10).toFixed(1),
-        co2Saved: (Math.random() * 500).toFixed(0),
-        predictedDelays: Math.floor(Math.random() * 8),
-      }));
-    }, 2000);
-
-    return () => clearInterval(interval);
-  }, []);
-
+  // Beregn real-time metrics direkte fra data
   const delayedTrips = trips.filter(t => (t.delay_minutes || 0) > 5).length;
   const overloadedBuses = buses.filter(b => (b.passenger_count || 0) > (b.capacity_seated + b.capacity_standing) * 0.85).length;
+  
   const avgOccupancy = buses.length > 0 
     ? (buses.reduce((sum, b) => sum + ((b.passenger_count || 0) / ((b.capacity_seated || 40) + (b.capacity_standing || 40)) * 100), 0) / buses.length).toFixed(0)
+    : 0;
+  
+  const avgDelay = activeTrips.length > 0 
+    ? (activeTrips.reduce((sum, t) => sum + (t.delay_minutes || 0), 0) / activeTrips.length).toFixed(1)
+    : 0;
+  
+  const networkLoad = buses.length > 0
+    ? Math.round((buses.filter(b => b.status === 'in_service').length / buses.length) * 100)
+    : 0;
+  
+  const fuelEfficiency = buses.length > 0
+    ? Math.round(85 + (buses.filter(b => b.fuel_level > 70).length / buses.length) * 15)
+    : 85;
+  
+  const co2Saved = activeTrips.length > 0
+    ? Math.round(activeTrips.reduce((sum, t) => sum + (t.co2_kg || 0), 0))
     : 0;
 
   const metrics = [
     {
       icon: AlertTriangle,
-      label: "Predicted Delays",
-      value: streamingData?.predictedDelays || 0,
+      label: "Delayed Trips",
+      value: delayedTrips,
       unit: "trips",
       color: "text-rose-400",
       bg: "bg-rose-500/10 border-rose-500/30",
-      trend: "⚠️ Next 30min"
+      trend: "Current"
     },
     {
       icon: Users,
@@ -54,7 +51,7 @@ export default function AdvancedAnalyticsDashboard({ kpis, activeTrips, buses, t
     {
       icon: Activity,
       label: "Network Load",
-      value: streamingData?.networkLoad || 72,
+      value: networkLoad,
       unit: "%",
       color: "text-amber-400",
       bg: "bg-amber-500/10 border-amber-500/30",
@@ -63,7 +60,7 @@ export default function AdvancedAnalyticsDashboard({ kpis, activeTrips, buses, t
     {
       icon: Fuel,
       label: "Fleet Efficiency",
-      value: streamingData?.fuelEfficiency || 87,
+      value: fuelEfficiency,
       unit: "%",
       color: "text-emerald-400",
       bg: "bg-emerald-500/10 border-emerald-500/30",
@@ -71,17 +68,17 @@ export default function AdvancedAnalyticsDashboard({ kpis, activeTrips, buses, t
     },
     {
       icon: Wind,
-      label: "CO₂ Reduction",
-      value: streamingData?.co2Saved || 156,
+      label: "CO₂ Saved",
+      value: co2Saved,
       unit: "kg",
       color: "text-green-400",
       bg: "bg-green-500/10 border-green-500/30",
-      trend: "Cumulative"
+      trend: "Today"
     },
     {
       icon: Clock,
       label: "Avg Delay",
-      value: streamingData?.avgDelay || 2.4,
+      value: avgDelay,
       unit: "min",
       color: "text-blue-400",
       bg: "bg-blue-500/10 border-blue-500/30",
@@ -127,16 +124,15 @@ export default function AdvancedAnalyticsDashboard({ kpis, activeTrips, buses, t
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-bold text-white flex items-center gap-2">
               <AlertTriangle className="w-5 h-5 text-rose-400" />
-              Anomaly Detection
+              Real-Time Alerts
             </h3>
-            <Badge className="bg-rose-500/20 text-rose-400 border-rose-500/30">AI-Powered</Badge>
+            <Badge className="bg-rose-500/20 text-rose-400 border-rose-500/30">Live</Badge>
           </div>
           <div className="space-y-3">
             {[
-              { name: "Line 42 overcapacity", severity: "high", probability: 87 },
-              { name: "Driver 15 fatigue alert", severity: "high", probability: 72 },
-              { name: "Stop B7 unusual dwell time", severity: "medium", probability: 54 },
-              { name: "Bus 23 fuel consumption spike", severity: "medium", probability: 43 }
+              ...delayedTrips > 0 ? [{ name: `${delayedTrips} trips delayed (>5 min)`, severity: "high", probability: 95 }] : [],
+              ...overloadedBuses > 0 ? [{ name: `${overloadedBuses} buses overcapacity (85%+)`, severity: "high", probability: 88 }] : [],
+              { name: "System normal", severity: "medium", probability: 45 }
             ].map((anomaly, i) => (
               <motion.div
                 key={i}
@@ -172,10 +168,10 @@ export default function AdvancedAnalyticsDashboard({ kpis, activeTrips, buses, t
           </div>
           <div className="space-y-4">
             {[
-              { label: "System Stability", value: 94 },
-              { label: "Communication Latency", value: 98, inverse: true },
-              { label: "Vehicle Tracking Coverage", value: 99 },
-              { label: "Prediction Accuracy", value: 87 }
+              { label: "Buses In Service", value: Math.round((buses.filter(b => b.status === 'in_service').length / buses.length) * 100) || 0 },
+              { label: "Avg Fleet Occupancy", value: Math.round(avgOccupancy) },
+              { label: "On-Time Performance", value: Math.max(0, 100 - Math.round(avgDelay * 5)) },
+              { label: "System Uptime", value: 99 }
             ].map((metric, i) => (
               <motion.div
                 key={i}
@@ -203,13 +199,13 @@ export default function AdvancedAnalyticsDashboard({ kpis, activeTrips, buses, t
       <Card className="p-6 bg-gradient-to-r from-violet-500/10 to-cyan-500/10 border border-violet-500/30">
         <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
           <Zap className="w-5 h-5 text-violet-400" />
-          AI Predictive Alerts (Next 2 Hours)
+          Real-Time Insights
         </h3>
         <div className="grid md:grid-cols-3 gap-4">
           {[
-            { time: "14:25", event: "Line 7 congestion expected", impact: "High" },
-            { time: "14:45", event: "Optimal time for depot charging (3 buses)", impact: "Savings" },
-            { time: "15:10", event: "Driver shift change recommended (Bus 12)", impact: "Wellness" }
+            ...delayedTrips > 0 ? [{ time: "Now", event: `${delayedTrips} delayed trips - urgent action needed`, impact: "Critical" }] : [],
+            ...overloadedBuses > 0 ? [{ time: "Now", event: `${overloadedBuses} buses overloaded - rebalancing recommended`, impact: "High" }] : [],
+            { time: "Current", event: `${buses.filter(b => b.status === 'in_service').length} buses actively serving ${trips.length} trips`, impact: "Operational" }
           ].map((alert, i) => (
             <motion.div
               key={i}
