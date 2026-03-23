@@ -70,6 +70,7 @@ const APP_CATEGORIES = [
     ['vehicle_builder', Calculator, '🔧 Transportbygger & Simulator'],
     ['harbor_app_builder', Zap, '⚡ H.A.R.B.O.R App Builder'],
     ['fleet_store', Store, '🛒 Fleet Store'],
+    ['transit_console', LayoutDashboard, '🚌 Transit Console'],
   ]],
   ['Productivity', [
     ['document_editor', FileText, 'FleetDocs'],
