@@ -431,14 +431,8 @@ export default function IntellectMode() {
   };
 
   // ── Bus Command Detection ───────────────────────────────────────────────────
-  const detectBusCommand = async (command, vehicles, orgId) => {
+  const detectBusCommand = async (command, vehicles, orgId, buses, busLines, busStops, busDrivers) => {
     const lower = command.toLowerCase();
-    
-    // Fetch bus data if needed
-    const buses = orgId ? await base44.entities.Bus.filter({ organization_id: orgId }).catch(() => []) : [];
-    const busLines = orgId ? await base44.entities.BusLine.filter({ organization_id: orgId }).catch(() => []) : [];
-    const busStops = orgId ? await base44.entities.BusStop.filter({ organization_id: orgId }).catch(() => []) : [];
-    const busDrivers = orgId ? await base44.entities.BusDriver.filter({ organization_id: orgId }).catch(() => []) : [];
     
     // Assign driver to bus
     const assignDriverMatch = lower.match(/(?:assign|tildel)\s+(?:driver|chauffør)\s+(?:x|(\w+))\s+(?:to|til)\s+(?:bus|bus nummer)\s+(?:y|(\w+))/i);
