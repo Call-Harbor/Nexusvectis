@@ -720,7 +720,7 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
     if (busCommand) {
       setMessages(prev => [...prev, { role: "user", content: currentCommand }]);
       setInput("");
-      const result = await executeBusCommand(busCommand, orgId, userOrgId);
+      const result = await executeBusCommand(busCommand, orgId, userOrgId, busTrips);
       if (result) {
         setMessages(prev => [...prev, result]);
         queryClient.invalidateQueries({ queryKey: ['buses-intellect', 'busLines-intellect', 'busStops-intellect', 'busDrivers-intellect', 'busTrips-intellect'] });
