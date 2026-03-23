@@ -488,7 +488,7 @@ export default function Fleet() {
           <DialogHeader>
             <DialogTitle>Add New Unit</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-4 overflow-y-auto max-h-[65vh] pr-1">
             <div>
               <Label>Name (Auto-generated)</Label>
               <Input
