@@ -492,7 +492,7 @@ export default function IntellectMode() {
   };
 
   // ── Bus Command Execution ───────────────────────────────────────────────────
-  const executeBusCommand = async (cmd, orgId, userOrgId) => {
+  const executeBusCommand = async (cmd, orgId, userOrgId, busTrips = []) => {
     try {
       switch (cmd.type) {
         case 'assign_driver': {
