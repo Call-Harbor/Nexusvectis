@@ -12,8 +12,6 @@ import BlogPostDetail from './pages/BlogPostDetail';
 import BlogAIAnalysis from './pages/BlogAIAnalysis';
 import CEODashboard from './pages/CEODashboard';
 import NexusOrbit from './pages/NexusOrbit';
-import BusFleet from './pages/BusFleet';
-import BusRoutes from './pages/BusRoutes';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -101,22 +99,6 @@ const AuthenticatedApp = () => {
       <Route 
         path="/NexusOrbit" 
         element={<NexusOrbit />}
-      />
-      <Route 
-        path="/BusFleet" 
-        element={
-          <LayoutWrapper currentPageName="BusFleet">
-            <BusFleet />
-          </LayoutWrapper>
-        } 
-      />
-      <Route 
-        path="/BusRoutes" 
-        element={
-          <LayoutWrapper currentPageName="BusRoutes">
-            <BusRoutes />
-          </LayoutWrapper>
-        } 
       />
       <Route path="*" element={<PageNotFound />} />
     </Routes>

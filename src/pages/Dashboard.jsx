@@ -165,36 +165,6 @@ export default function Dashboard() {
     enabled: !!orgId, refetchInterval: 15000,
   });
 
-  const { data: buses = [] } = useQuery({
-    queryKey: ['buses', orgId],
-    queryFn: async () => {
-      if (!orgId) return [];
-      return await base44.entities.Bus.filter({ organization_id: orgId });
-    },
-    enabled: !!orgId,
-    refetchInterval: 10000,
-  });
-
-  const { data: busRoutes = [] } = useQuery({
-    queryKey: ['busRoutes', orgId],
-    queryFn: async () => {
-      if (!orgId) return [];
-      return await base44.entities.BusRoute.filter({ organization_id: orgId });
-    },
-    enabled: !!orgId,
-    refetchInterval: 15000,
-  });
-
-  const { data: busStops = [] } = useQuery({
-    queryKey: ['busStops', orgId],
-    queryFn: async () => {
-      if (!orgId) return [];
-      return await base44.entities.BusStop.filter({ organization_id: orgId });
-    },
-    enabled: !!orgId,
-    refetchInterval: 20000,
-  });
-
   const activeVehicles = vehicles.filter(v => v.status === 'active').length;
   const activeRoutes = routes.filter(r => r.status === 'active').length;
   const avgEfficiency = vehicles.length > 0 
@@ -525,8 +495,7 @@ export default function Dashboard() {
             
             <DashboardGlobeFrame
               vehicles={vehicles} routes={routes} resources={resources}
-              digitalTwins={digitalTwins} buses={buses} busRoutes={busRoutes} busStops={busStops}
-              orgId={orgId}
+              digitalTwins={digitalTwins} orgId={orgId}
               onSelectVehicle={setSelectedVehicle} onSelectResource={setSelectedResource}
               className="w-full h-full"
             />

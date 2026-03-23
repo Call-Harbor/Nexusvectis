@@ -108,7 +108,7 @@ export default function CircularNav({ currentPageName, user }) {
 
   return (
     <>
-    <div className="fixed bottom-[274px] left-1/2 -translate-x-1/2 z-[9999]">
+    <div className="fixed bottom-[274px] left-1/2 -translate-x-1/2 z-50">
       {/* Main Menu Button */}
       <motion.button
         onClick={() => {
@@ -262,7 +262,7 @@ export default function CircularNav({ currentPageName, user }) {
     </div>
 
     {/* Bottom Action Bar - Fleet AI & User Info - Always visible */}
-    <div className="fixed bottom-4 left-4 flex flex-col gap-2 pointer-events-auto z-[9999]">
+    <div className="fixed bottom-4 left-4 flex flex-col gap-2 pointer-events-auto z-50">
       {/* Fleet AI Button */}
       <motion.button
         onClick={() => navigate(createPageUrl("IntellectMode"))}
