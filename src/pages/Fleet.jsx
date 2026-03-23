@@ -24,6 +24,51 @@ const statusColors = {
 };
 const statusLabels = { active: "Active", idle: "Standby", maintenance: "Maintenance", offline: "Offline" };
 
+const allVehicleTypes = [
+  { value: "truck", subtype: "box_truck",       label: "Truck — Box Truck" },
+  { value: "truck", subtype: "flatbed",          label: "Truck — Flatbed" },
+  { value: "truck", subtype: "refrigerated",     label: "Truck — Refrigerated" },
+  { value: "truck", subtype: "tanker",           label: "Truck — Tanker" },
+  { value: "truck", subtype: "dump_truck",       label: "Truck — Dump Truck" },
+  { value: "truck", subtype: "semi_trailer",     label: "Truck — Semi-Trailer" },
+  { value: "truck", subtype: "pickup",           label: "Truck — Pickup" },
+  { value: "truck", subtype: "delivery_van",     label: "Truck — Delivery Van" },
+  { value: "ship",  subtype: "cargo",            label: "Ship — Cargo Ship" },
+  { value: "ship",  subtype: "container",        label: "Ship — Container Ship" },
+  { value: "ship",  subtype: "tanker",           label: "Ship — Tanker" },
+  { value: "ship",  subtype: "bulk_carrier",     label: "Ship — Bulk Carrier" },
+  { value: "ship",  subtype: "roro",             label: "Ship — RoRo" },
+  { value: "ship",  subtype: "ferry",            label: "Ship — Ferry" },
+  { value: "ship",  subtype: "cruise",           label: "Ship — Cruise Ship" },
+  { value: "ship",  subtype: "fishing",          label: "Ship — Fishing Vessel" },
+  { value: "ship",  subtype: "tugboat",          label: "Ship — Tugboat" },
+  { value: "aircraft", subtype: "cargo_plane",   label: "Aircraft — Cargo Plane" },
+  { value: "aircraft", subtype: "passenger",     label: "Aircraft — Passenger Plane" },
+  { value: "aircraft", subtype: "private_jet",   label: "Aircraft — Private Jet" },
+  { value: "aircraft", subtype: "helicopter",    label: "Aircraft — Helicopter" },
+  { value: "aircraft", subtype: "seaplane",      label: "Aircraft — Seaplane" },
+  { value: "aircraft", subtype: "military",      label: "Aircraft — Military" },
+  { value: "train", subtype: "freight",          label: "Train — Freight Train" },
+  { value: "train", subtype: "passenger",        label: "Train — Passenger Train" },
+  { value: "train", subtype: "high_speed",       label: "Train — High-Speed" },
+  { value: "train", subtype: "metro",            label: "Train — Metro/Subway" },
+  { value: "train", subtype: "tram",             label: "Train — Tram" },
+  { value: "train", subtype: "locomotive",       label: "Train — Locomotive" },
+  { value: "drone", subtype: "delivery",         label: "Drone — Delivery" },
+  { value: "drone", subtype: "surveillance",     label: "Drone — Surveillance" },
+  { value: "drone", subtype: "agricultural",     label: "Drone — Agricultural" },
+  { value: "drone", subtype: "industrial",       label: "Drone — Industrial" },
+  { value: "bus",   subtype: "standard_12m",     label: "Bus — Standard 12m" },
+  { value: "bus",   subtype: "articulated_18m",  label: "Bus — Articulated 18m" },
+  { value: "bus",   subtype: "minibus",          label: "Bus — Minibus" },
+  { value: "bus",   subtype: "double_decker",    label: "Bus — Double Decker" },
+  { value: "bus",   subtype: "brt",              label: "Bus — BRT" },
+  { value: "bus",   subtype: "electric",         label: "Bus — Electric" },
+  { value: "bus",   subtype: "hybrid",           label: "Bus — Hybrid" },
+  { value: "bus",   subtype: "school_bus",       label: "Bus — School Bus" },
+  { value: "bus",   subtype: "coach",            label: "Bus — Coach/Intercity" },
+];
+
 // Sort options
 const sortOptions = [
   { value: "name", label: "Name" },
@@ -42,10 +87,10 @@ export default function Fleet() {
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [viewMode, setViewMode] = useState("grid"); // grid or table
   const [formData, setFormData] = useState({
-    name: "TRUCK-001", type: "truck", status: "active",
+    name: "TRUCK-001", type: "truck", subtype: "box_truck", status: "active",
     speed: 0, latitude: 20, longitude: 0,
     signal_type: "GPS", signal_strength: 95, callsign: "", mmsi: "", icao: "", driver: "", resource_id: "",
-    bus_vehicle_type: "standard_12m", bus_fuel_type: "diesel", bus_capacity_seated: 40, bus_capacity_standing: 40
+    bus_fuel_type: "diesel", bus_capacity_seated: 40, bus_capacity_standing: 40
   });
 
   const queryClient = useQueryClient();
@@ -501,22 +546,24 @@ export default function Fleet() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>Type</Label>
-                <Select value={formData.type} onValueChange={(v) => {
-                  const typePrefix = v.toUpperCase();
-                  const nextNumber = vehicles.filter(vehicle => vehicle.type === v).length + 1;
-                  const autoName = `${typePrefix}-${String(nextNumber).padStart(3, '0')}`;
-                  setFormData({...formData, type: v, name: autoName});
-                }}>
+                <Select
+                  value={`${formData.type}::${formData.subtype}`}
+                  onValueChange={(v) => {
+                    const [type, subtype] = v.split('::');
+                    const nextNumber = vehicles.filter(vehicle => vehicle.type === type).length + 1;
+                    const autoName = `${type.toUpperCase()}-${String(nextNumber).padStart(3, '0')}`;
+                    setFormData({...formData, type, subtype, name: autoName});
+                  }}
+                >
                   <SelectTrigger className="bg-slate-800 border-slate-700">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="truck">Truck</SelectItem>
-                    <SelectItem value="ship">Ship</SelectItem>
-                    <SelectItem value="drone">Drone</SelectItem>
-                    <SelectItem value="train">Train</SelectItem>
-                    <SelectItem value="aircraft">Aircraft</SelectItem>
-                    <SelectItem value="bus">Bus (Transit)</SelectItem>
+                    {allVehicleTypes.map(t => (
+                      <SelectItem key={`${t.value}::${t.subtype}`} value={`${t.value}::${t.subtype}`}>
+                        {t.label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -589,7 +636,6 @@ export default function Fleet() {
                 />
               </div>
             )}
-
             {formData.type === 'aircraft' && (
               <div>
                 <Label>ICAO Code</Label>
@@ -601,7 +647,6 @@ export default function Fleet() {
                 />
               </div>
             )}
-
             {(formData.type === 'ship' || formData.type === 'aircraft') && (
               <div>
                 <Label>Callsign</Label>
@@ -613,127 +658,8 @@ export default function Fleet() {
                 />
               </div>
             )}
-
-            {formData.type === 'truck' && (
-              <div>
-                <Label>Truck Type</Label>
-                <Select value={formData.truck_type || "box_truck"} onValueChange={(v) => setFormData({...formData, truck_type: v})}>
-                  <SelectTrigger className="bg-slate-800 border-slate-700">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="box_truck">Box Truck</SelectItem>
-                    <SelectItem value="flatbed">Flatbed</SelectItem>
-                    <SelectItem value="refrigerated">Refrigerated</SelectItem>
-                    <SelectItem value="tanker">Tanker</SelectItem>
-                    <SelectItem value="dump_truck">Dump Truck</SelectItem>
-                    <SelectItem value="semi_trailer">Semi-Trailer</SelectItem>
-                    <SelectItem value="pickup">Pickup</SelectItem>
-                    <SelectItem value="delivery_van">Delivery Van</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-
-            {formData.type === 'ship' && (
-              <div>
-                <Label>Ship Type</Label>
-                <Select value={formData.ship_type || "cargo"} onValueChange={(v) => setFormData({...formData, ship_type: v})}>
-                  <SelectTrigger className="bg-slate-800 border-slate-700">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="cargo">Cargo Ship</SelectItem>
-                    <SelectItem value="container">Container Ship</SelectItem>
-                    <SelectItem value="tanker">Tanker</SelectItem>
-                    <SelectItem value="bulk_carrier">Bulk Carrier</SelectItem>
-                    <SelectItem value="roro">RoRo (Roll-on/Roll-off)</SelectItem>
-                    <SelectItem value="ferry">Ferry</SelectItem>
-                    <SelectItem value="cruise">Cruise Ship</SelectItem>
-                    <SelectItem value="fishing">Fishing Vessel</SelectItem>
-                    <SelectItem value="tugboat">Tugboat</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-
-            {formData.type === 'aircraft' && (
-              <div>
-                <Label>Aircraft Type</Label>
-                <Select value={formData.aircraft_type || "cargo_plane"} onValueChange={(v) => setFormData({...formData, aircraft_type: v})}>
-                  <SelectTrigger className="bg-slate-800 border-slate-700">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="cargo_plane">Cargo Plane</SelectItem>
-                    <SelectItem value="passenger">Passenger Plane</SelectItem>
-                    <SelectItem value="private_jet">Private Jet</SelectItem>
-                    <SelectItem value="helicopter">Helicopter</SelectItem>
-                    <SelectItem value="seaplane">Seaplane</SelectItem>
-                    <SelectItem value="military">Military Aircraft</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-
-            {formData.type === 'train' && (
-              <div>
-                <Label>Train Type</Label>
-                <Select value={formData.train_type || "freight"} onValueChange={(v) => setFormData({...formData, train_type: v})}>
-                  <SelectTrigger className="bg-slate-800 border-slate-700">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="freight">Freight Train</SelectItem>
-                    <SelectItem value="passenger">Passenger Train</SelectItem>
-                    <SelectItem value="high_speed">High-Speed Train</SelectItem>
-                    <SelectItem value="metro">Metro/Subway</SelectItem>
-                    <SelectItem value="tram">Tram</SelectItem>
-                    <SelectItem value="locomotive">Locomotive</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-
-            {formData.type === 'drone' && (
-              <div>
-                <Label>Drone Type</Label>
-                <Select value={formData.drone_type || "delivery"} onValueChange={(v) => setFormData({...formData, drone_type: v})}>
-                  <SelectTrigger className="bg-slate-800 border-slate-700">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="delivery">Delivery Drone</SelectItem>
-                    <SelectItem value="surveillance">Surveillance Drone</SelectItem>
-                    <SelectItem value="agricultural">Agricultural Drone</SelectItem>
-                    <SelectItem value="racing">Racing Drone</SelectItem>
-                    <SelectItem value="industrial">Industrial Inspection</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-
             {formData.type === 'bus' && (
               <>
-                <div>
-                  <Label>Bus Vehicle Type</Label>
-                  <Select value={formData.bus_vehicle_type} onValueChange={(v) => setFormData({...formData, bus_vehicle_type: v})}>
-                    <SelectTrigger className="bg-slate-800 border-slate-700">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="standard_12m">Standard 12m</SelectItem>
-                      <SelectItem value="articulated_18m">Articulated 18m</SelectItem>
-                      <SelectItem value="minibus">Minibus</SelectItem>
-                      <SelectItem value="double_decker">Double Decker</SelectItem>
-                      <SelectItem value="brt">BRT</SelectItem>
-                      <SelectItem value="electric">Electric Bus</SelectItem>
-                      <SelectItem value="hybrid">Hybrid Bus</SelectItem>
-                      <SelectItem value="school_bus">School Bus</SelectItem>
-                      <SelectItem value="coach">Coach/Intercity</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
                 <div>
                   <Label>Fuel Type</Label>
                   <Select value={formData.bus_fuel_type} onValueChange={(v) => setFormData({...formData, bus_fuel_type: v})}>
@@ -813,42 +739,38 @@ export default function Fleet() {
                     <p className="text-xs text-slate-500">Speed</p>
                     <p className="font-medium">{selectedVehicle.speed || 0} km/h</p>
                   </div>
-                  </div>
-
-                  {selectedVehicle.driver && (
+                </div>
+                {selectedVehicle.driver && (
                   <div className="p-3 rounded-lg bg-slate-800/50">
                     <p className="text-xs text-slate-500">Driver / Operator</p>
                     <p className="font-medium">{selectedVehicle.driver}</p>
                   </div>
-                  )}
-
-                  {selectedVehicle.efficiency_score > 0 && (
-                    <div className="p-3 rounded-lg bg-slate-800/50">
-                      <p className="text-xs text-slate-500">Efficiency Score</p>
-                      <div className="flex items-center gap-2">
-                        <BarChart3 className={`w-4 h-4 ${
-                          selectedVehicle.efficiency_score >= 80 ? 'text-emerald-400' :
-                          selectedVehicle.efficiency_score >= 60 ? 'text-amber-400' : 'text-red-400'
-                        }`} />
-                        <p className="font-medium">{selectedVehicle.efficiency_score}%</p>
-                      </div>
+                )}
+                {selectedVehicle.efficiency_score > 0 && (
+                  <div className="p-3 rounded-lg bg-slate-800/50">
+                    <p className="text-xs text-slate-500">Efficiency Score</p>
+                    <div className="flex items-center gap-2">
+                      <BarChart3 className={`w-4 h-4 ${
+                        selectedVehicle.efficiency_score >= 80 ? 'text-emerald-400' :
+                        selectedVehicle.efficiency_score >= 60 ? 'text-amber-400' : 'text-red-400'
+                      }`} />
+                      <p className="font-medium">{selectedVehicle.efficiency_score}%</p>
                     </div>
-                  )}
-
-                  {selectedVehicle.route_id && (
-                    <div className="p-3 rounded-lg bg-violet-500/10 border border-violet-500/20">
-                      <p className="text-xs text-violet-300">Assigned Route</p>
-                      <p className="font-medium text-violet-200">{selectedVehicle.route_id}</p>
-                    </div>
-                  )}
-                  {selectedVehicle.resource_id && (
-                    <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-                      <p className="text-xs text-emerald-300">Current Resource</p>
-                      <p className="font-medium text-emerald-200">{selectedVehicle.resource_id}</p>
-                    </div>
-                  )}
-
-                  <div className="flex gap-2">
+                  </div>
+                )}
+                {selectedVehicle.route_id && (
+                  <div className="p-3 rounded-lg bg-violet-500/10 border border-violet-500/20">
+                    <p className="text-xs text-violet-300">Assigned Route</p>
+                    <p className="font-medium text-violet-200">{selectedVehicle.route_id}</p>
+                  </div>
+                )}
+                {selectedVehicle.resource_id && (
+                  <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                    <p className="text-xs text-emerald-300">Current Resource</p>
+                    <p className="font-medium text-emerald-200">{selectedVehicle.resource_id}</p>
+                  </div>
+                )}
+                <div className="flex gap-2">
                   <Button 
                     variant="outline" 
                     className="flex-1 border-slate-700 text-black bg-white hover:bg-slate-100"
