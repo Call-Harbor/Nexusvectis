@@ -100,6 +100,7 @@ import SecurityPage from './pages/SecurityPage';
 import Settings from './pages/Settings';
 import Shipments from './pages/Shipments';
 import TermsOfService from './pages/TermsOfService';
+import TransitControl from './pages/TransitControl';
 import UserManagement from './pages/UserManagement';
 import WarehouseAutomation from './pages/WarehouseAutomation';
 import __Layout from './Layout.jsx';
@@ -159,6 +160,7 @@ export const PAGES = {
     "Settings": Settings,
     "Shipments": Shipments,
     "TermsOfService": TermsOfService,
+    "TransitControl": TransitControl,
     "UserManagement": UserManagement,
     "WarehouseAutomation": WarehouseAutomation,
 }
