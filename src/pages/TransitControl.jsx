@@ -6,7 +6,7 @@ import {
   Bus, MapPin, TrendingUp, AlertTriangle, Users, Clock, Zap,
   Radio, Shield, BarChart3, Sparkles, Globe, Network, Brain,
   ChevronRight, Play, Settings, MessageSquare, Maximize2, Activity,
-  Battery, Fuel, Plus
+  Battery, Fuel, Plus, TrendingDown, Wifi
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
@@ -275,56 +275,17 @@ export default function TransitControl() {
             />
 
             <Card className="p-8 bg-gradient-to-br from-slate-800/70 to-slate-900/70 backdrop-blur-2xl border border-white/10 shadow-2xl rounded-2xl">
-              <h3 className="text-2xl font-bold bg-gradient-to-r from-white to-cyan-200 bg-clip-text text-transparent mb-6 tracking-tight flex items-center gap-3">
-                <BarChart3 className="w-6 h-6 text-cyan-400" />
-                Active Trips
-              </h3>
-              <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
-                {activeTrips.map((trip, i) => {
-                  const tripLine = lines.find(l => l.id === trip.line_id);
-                  const tripBus = activeBuses.find(b => b.id === trip.assigned_bus_id);
-                  const isDelayed = (trip.delay_minutes || 0) > 5;
-
-                  return (
-                    <motion.div
-                      key={trip.id}
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: i * 0.02 }}
-                      className={`p-5 rounded-xl border backdrop-blur-xl transition-all ${
-                        isDelayed 
-                          ? 'bg-gradient-to-br from-rose-500/20 to-rose-500/5 border-rose-500/30 hover:border-rose-400/50' 
-                          : 'bg-gradient-to-br from-slate-700/30 to-slate-800/20 border-white/10 hover:border-cyan-500/30'
-                      }`}
-                    >
-                      <div className="flex items-start justify-between mb-3">
-                        <div>
-                          <p className="text-white font-semibold">Line {tripLine?.line_number || trip.line_id}</p>
-                          <p className="text-xs text-slate-400">{trip.direction_id}</p>
-                        </div>
-                        <Badge className={isDelayed ? "bg-rose-500/20 text-rose-400 border-rose-500/30" : "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"}>
-                          {isDelayed ? `+${trip.delay_minutes}min` : 'On time'}
-                        </Badge>
-                      </div>
-                      <div className="space-y-2 text-xs">
-                        <div className="flex items-center justify-between">
-                          <span className="text-slate-400">Bus:</span>
-                          <span className="text-white font-medium">{tripBus?.bus_number || 'N/A'}</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-slate-400">Departure:</span>
-                          <span className="text-white">{trip.scheduled_departure}</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-slate-400">Passengers:</span>
-                          <span className="text-cyan-400 font-semibold">{tripBus?.passenger_count || 0}</span>
-                        </div>
-                      </div>
-                    </motion.div>
-                  );
-                })}
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-2xl font-bold bg-gradient-to-r from-white to-cyan-200 bg-clip-text text-transparent tracking-tight flex items-center gap-3">
+                  <BarChart3 className="w-6 h-6 text-cyan-400" />
+                  Live Trips Dashboard
+                </h3>
+                <Badge className="bg-gradient-to-r from-emerald-500/30 to-emerald-500/10 text-emerald-400 border-emerald-500/30 font-semibold">
+                  <Radio className="w-3 h-3 mr-2 animate-pulse" />
+                  Real-time
+                </Badge>
               </div>
-            </Card>
+              <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
           </TabsContent>
 
           {/* NETWORK */}

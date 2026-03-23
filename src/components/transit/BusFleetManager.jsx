@@ -2,7 +2,7 @@ import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { Bus, Plus, X, Battery, Fuel } from "lucide-react";
+import { Bus, Plus, X, Battery, Fuel, Users, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -93,18 +93,24 @@ export default function BusFleetManager({ organizationId }) {
       </div>
 
       <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-4">
-        {buses.map((bus, i) => (
+        {buses.map((bus, i) => {
+          const capacity = (bus.capacity_seated || 0) + (bus.capacity_standing || 0);
+          const occupancy = bus.passenger_count ? Math.round((bus.passenger_count / capacity) * 100) : 0;
+          const fuelLevel = bus.fuel_type === 'electric' ? (bus.battery_level || 0) : (bus.fuel_level || 0);
+          const lowFuel = fuelLevel < 30;
+
+          return (
           <motion.div
             key={bus.id}
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: i * 0.02 }}
-            className="p-4 rounded-xl bg-slate-800/50 border border-slate-700/50"
+            className="p-5 rounded-2xl bg-gradient-to-br from-slate-800/70 to-slate-900/40 backdrop-blur-xl border border-white/10 hover:border-cyan-500/30 shadow-xl transition-all group"
           >
-            <div className="flex items-start justify-between mb-3">
+            <div className="flex items-start justify-between mb-4">
               <div>
-                <h4 className="text-white font-bold">{bus.bus_number}</h4>
-                <p className="text-xs text-slate-400">{bus.vehicle_type?.replace('_', ' ')}</p>
+                <h4 className="text-white font-bold text-lg group-hover:text-cyan-400 transition">{bus.bus_number}</h4>
+                <p className="text-xs text-slate-400 font-medium">{bus.vehicle_type?.replace('_', ' ').toUpperCase()}</p>
               </div>
               <Button
                 size="icon"
@@ -119,57 +125,6 @@ export default function BusFleetManager({ organizationId }) {
                 <X className="w-4 h-4" />
               </Button>
             </div>
-
-            <div className="space-y-2">
-              <Badge className={
-                bus.status === 'in_service' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' :
-                bus.status === 'idle' ? 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30' :
-                bus.status === 'maintenance' ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' :
-                'bg-slate-500/20 text-slate-400 border-slate-500/30'
-              }>
-                {bus.status?.replace('_', ' ')}
-              </Badge>
-
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <div className="p-2 rounded bg-slate-900/50">
-                  <p className="text-slate-500">Capacity</p>
-                  <p className="text-white font-semibold">
-                    {(bus.capacity_seated || 0) + (bus.capacity_standing || 0)}
-                  </p>
-                </div>
-                <div className="p-2 rounded bg-slate-900/50">
-                  <p className="text-slate-500">Fuel Type</p>
-                  <p className="text-white font-semibold">{bus.fuel_type}</p>
-                </div>
-              </div>
-
-              {bus.fuel_type === 'electric' ? (
-                <div>
-                  <div className="flex items-center justify-between text-xs mb-1">
-                    <div className="flex items-center gap-1">
-                      <Battery className="w-3 h-3 text-cyan-400" />
-                      <span className="text-slate-400">Battery</span>
-                    </div>
-                    <span className="text-white">{bus.battery_level || 0}%</span>
-                  </div>
-                  <Progress value={bus.battery_level || 0} className="h-1" />
-                </div>
-              ) : (
-                <div>
-                  <div className="flex items-center justify-between text-xs mb-1">
-                    <div className="flex items-center gap-1">
-                      <Fuel className="w-3 h-3 text-amber-400" />
-                      <span className="text-slate-400">Fuel</span>
-                    </div>
-                    <span className="text-white">{bus.fuel_level || 0}%</span>
-                  </div>
-                  <Progress value={bus.fuel_level || 0} className="h-1" />
-                </div>
-              )}
-            </div>
-          </motion.div>
-        ))}
-      </div>
 
       {/* Add Bus Dialog */}
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
