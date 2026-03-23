@@ -484,11 +484,11 @@ export default function Fleet() {
 
       {/* Add Vehicle Dialog */}
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-        <DialogContent className="bg-slate-900 border-slate-700 text-white">
+        <DialogContent className="bg-slate-900 border-slate-700 text-white max-h-[90vh] flex flex-col">
           <DialogHeader>
             <DialogTitle>Add New Unit</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 overflow-y-auto max-h-[65vh] pr-1">
+          <div className="space-y-4 overflow-y-auto flex-1 pr-2">
             <div>
               <Label>Name (Auto-generated)</Label>
               <Input
