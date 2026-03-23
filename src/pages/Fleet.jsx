@@ -614,6 +614,105 @@ export default function Fleet() {
               </div>
             )}
 
+            {formData.type === 'truck' && (
+              <div>
+                <Label>Truck Type</Label>
+                <Select value={formData.truck_type || "box_truck"} onValueChange={(v) => setFormData({...formData, truck_type: v})}>
+                  <SelectTrigger className="bg-slate-800 border-slate-700">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="box_truck">Box Truck</SelectItem>
+                    <SelectItem value="flatbed">Flatbed</SelectItem>
+                    <SelectItem value="refrigerated">Refrigerated</SelectItem>
+                    <SelectItem value="tanker">Tanker</SelectItem>
+                    <SelectItem value="dump_truck">Dump Truck</SelectItem>
+                    <SelectItem value="semi_trailer">Semi-Trailer</SelectItem>
+                    <SelectItem value="pickup">Pickup</SelectItem>
+                    <SelectItem value="delivery_van">Delivery Van</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            {formData.type === 'ship' && (
+              <div>
+                <Label>Ship Type</Label>
+                <Select value={formData.ship_type || "cargo"} onValueChange={(v) => setFormData({...formData, ship_type: v})}>
+                  <SelectTrigger className="bg-slate-800 border-slate-700">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="cargo">Cargo Ship</SelectItem>
+                    <SelectItem value="container">Container Ship</SelectItem>
+                    <SelectItem value="tanker">Tanker</SelectItem>
+                    <SelectItem value="bulk_carrier">Bulk Carrier</SelectItem>
+                    <SelectItem value="roro">RoRo (Roll-on/Roll-off)</SelectItem>
+                    <SelectItem value="ferry">Ferry</SelectItem>
+                    <SelectItem value="cruise">Cruise Ship</SelectItem>
+                    <SelectItem value="fishing">Fishing Vessel</SelectItem>
+                    <SelectItem value="tugboat">Tugboat</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            {formData.type === 'aircraft' && (
+              <div>
+                <Label>Aircraft Type</Label>
+                <Select value={formData.aircraft_type || "cargo_plane"} onValueChange={(v) => setFormData({...formData, aircraft_type: v})}>
+                  <SelectTrigger className="bg-slate-800 border-slate-700">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="cargo_plane">Cargo Plane</SelectItem>
+                    <SelectItem value="passenger">Passenger Plane</SelectItem>
+                    <SelectItem value="private_jet">Private Jet</SelectItem>
+                    <SelectItem value="helicopter">Helicopter</SelectItem>
+                    <SelectItem value="seaplane">Seaplane</SelectItem>
+                    <SelectItem value="military">Military Aircraft</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            {formData.type === 'train' && (
+              <div>
+                <Label>Train Type</Label>
+                <Select value={formData.train_type || "freight"} onValueChange={(v) => setFormData({...formData, train_type: v})}>
+                  <SelectTrigger className="bg-slate-800 border-slate-700">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="freight">Freight Train</SelectItem>
+                    <SelectItem value="passenger">Passenger Train</SelectItem>
+                    <SelectItem value="high_speed">High-Speed Train</SelectItem>
+                    <SelectItem value="metro">Metro/Subway</SelectItem>
+                    <SelectItem value="tram">Tram</SelectItem>
+                    <SelectItem value="locomotive">Locomotive</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            {formData.type === 'drone' && (
+              <div>
+                <Label>Drone Type</Label>
+                <Select value={formData.drone_type || "delivery"} onValueChange={(v) => setFormData({...formData, drone_type: v})}>
+                  <SelectTrigger className="bg-slate-800 border-slate-700">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="delivery">Delivery Drone</SelectItem>
+                    <SelectItem value="surveillance">Surveillance Drone</SelectItem>
+                    <SelectItem value="agricultural">Agricultural Drone</SelectItem>
+                    <SelectItem value="racing">Racing Drone</SelectItem>
+                    <SelectItem value="industrial">Industrial Inspection</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
             {formData.type === 'bus' && (
               <>
                 <div>
@@ -628,6 +727,10 @@ export default function Fleet() {
                       <SelectItem value="minibus">Minibus</SelectItem>
                       <SelectItem value="double_decker">Double Decker</SelectItem>
                       <SelectItem value="brt">BRT</SelectItem>
+                      <SelectItem value="electric">Electric Bus</SelectItem>
+                      <SelectItem value="hybrid">Hybrid Bus</SelectItem>
+                      <SelectItem value="school_bus">School Bus</SelectItem>
+                      <SelectItem value="coach">Coach/Intercity</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
