@@ -89,7 +89,7 @@ export default function AdvancedAnalyticsDashboard({ kpis, activeTrips, buses, t
   return (
     <div className="space-y-6">
       {/* Real-Time Metrics Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         <AnimatePresence mode="wait">
           {metrics.map((metric, i) => {
             const Icon = metric.icon;
@@ -99,7 +99,7 @@ export default function AdvancedAnalyticsDashboard({ kpis, activeTrips, buses, t
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: i * 0.05 }}
-                className={`p-4 rounded-xl border ${metric.bg} backdrop-blur-xl`}
+                className={`p-5 rounded-2xl border ${metric.bg} backdrop-blur-xl bg-gradient-to-br from-white/10 to-white/5 hover:from-white/15 hover:to-white/10 transition-all shadow-lg hover:shadow-xl`}
               >
                 <div className="flex items-start justify-between mb-2">
                   <Icon className={`w-5 h-5 ${metric.color}`} />
@@ -118,11 +118,11 @@ export default function AdvancedAnalyticsDashboard({ kpis, activeTrips, buses, t
       </div>
 
       {/* Advanced Insights */}
-      <div className="grid lg:grid-cols-2 gap-6">
+      <div className="grid lg:grid-cols-2 gap-6 mt-8">
         {/* Anomaly Detection */}
-        <Card className="p-6 bg-slate-800/50 border-slate-700/50">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-bold text-white flex items-center gap-2">
+        <Card className="p-8 bg-gradient-to-br from-slate-800/80 to-slate-900/80 border border-white/10 backdrop-blur-2xl shadow-2xl">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-bold text-white flex items-center gap-3 tracking-tight">
               <AlertTriangle className="w-5 h-5 text-rose-400" />
               Real-Time Alerts
             </h3>
@@ -158,7 +158,7 @@ export default function AdvancedAnalyticsDashboard({ kpis, activeTrips, buses, t
         </Card>
 
         {/* Network Health */}
-        <Card className="p-6 bg-slate-800/50 border-slate-700/50">
+        <Card className="p-8 bg-gradient-to-br from-slate-800/80 to-slate-900/80 border border-white/10 backdrop-blur-2xl shadow-2xl">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-bold text-white flex items-center gap-2">
               <Activity className="w-5 h-5 text-cyan-400" />
@@ -196,12 +196,12 @@ export default function AdvancedAnalyticsDashboard({ kpis, activeTrips, buses, t
       </div>
 
       {/* Predictive Alerts */}
-      <Card className="p-6 bg-gradient-to-r from-violet-500/10 to-cyan-500/10 border border-violet-500/30">
-        <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+      <Card className="p-8 bg-gradient-to-r from-violet-600/20 via-purple-600/10 to-cyan-600/20 border border-violet-400/30 backdrop-blur-2xl shadow-2xl mt-8">
+        <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-3 tracking-tight">
           <Zap className="w-5 h-5 text-violet-400" />
           Real-Time Insights
         </h3>
-        <div className="grid md:grid-cols-3 gap-4">
+        <div className="grid md:grid-cols-3 gap-5">
           {[
             ...delayedTrips > 0 ? [{ time: "Now", event: `${delayedTrips} delayed trips - urgent action needed`, impact: "Critical" }] : [],
             ...overloadedBuses > 0 ? [{ time: "Now", event: `${overloadedBuses} buses overloaded - rebalancing recommended`, impact: "High" }] : [],
@@ -212,10 +212,10 @@ export default function AdvancedAnalyticsDashboard({ kpis, activeTrips, buses, t
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: i * 0.1 }}
-              className="p-4 rounded-lg bg-slate-900/30 border border-violet-500/20 backdrop-blur-sm"
+              className="p-5 rounded-xl bg-gradient-to-br from-slate-900/60 to-slate-800/60 border border-violet-500/30 backdrop-blur-xl hover:border-violet-400/50 transition-all shadow-lg"
             >
-              <p className="text-violet-300 font-semibold text-sm">{alert.time}</p>
-              <p className="text-white mt-1 text-sm">{alert.event}</p>
+              <p className="text-violet-300 font-semibold text-sm uppercase tracking-wider">{alert.time}</p>
+              <p className="text-white mt-2 text-sm leading-relaxed font-medium">{alert.event}</p>
               <Badge variant="outline" className="mt-2 bg-white/5 border-white/10 text-xs">
                 {alert.impact}
               </Badge>
