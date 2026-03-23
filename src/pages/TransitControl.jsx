@@ -664,7 +664,24 @@ export default function TransitControl() {
 
           {/* INFRASTRUCTURE SETUP */}
           <TabsContent value="infrastructure" className="space-y-6">
-            <BusFleetManager organizationId={user?.organization_id} />
+            <div className="p-6 rounded-xl bg-slate-800/50 border border-slate-700/50">
+              <div className="flex items-center gap-3 mb-4">
+                <Bus className="w-8 h-8 text-cyan-400" />
+                <div>
+                  <h3 className="text-xl font-bold text-white">Bus Management</h3>
+                  <p className="text-sm text-slate-400">Manage buses from the Units page</p>
+                </div>
+              </div>
+              <p className="text-slate-300 mb-4">
+                All bus fleet management has been centralized in the <span className="font-semibold text-cyan-400">Units</span> page for better coordination across your entire fleet.
+              </p>
+              <Button
+                onClick={() => window.location.href = '/Fleet'}
+                className="bg-gradient-to-r from-cyan-500 to-violet-500 text-black font-semibold"
+              >
+                Go to Units
+              </Button>
+            </div>
             <BusStopManager organizationId={user?.organization_id} stops={stops} />
             <BusLineManager organizationId={user?.organization_id} lines={lines} stops={stops} />
           </TabsContent>
