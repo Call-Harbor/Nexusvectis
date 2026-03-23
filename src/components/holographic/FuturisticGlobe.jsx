@@ -40,7 +40,7 @@ function createHolographicArc(lat1, lng1, lat2, lng2, color = 0x00ffff) {
   return new THREE.Line(geometry, material);
 }
 
-export default function FuturisticGlobe({ vehicles = [], routes = [], resources = [], digitalTwins = [], onSelectVehicle, onSelectResource }) {
+export default function FuturisticGlobe({ vehicles = [], routes = [], resources = [], digitalTwins = [], busLines = [], buses = [], busStops = [], onSelectVehicle, onSelectResource }) {
   const mountRef = useRef(null);
   const sceneRef = useRef(null);
   const cameraRef = useRef(null);
@@ -442,6 +442,112 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
     });
 
     // ══════════════════════════════════════════════════════════════
+    // BUS STOPS - TRANSIT INFRASTRUCTURE
+    // ══════════════════════════════════════════════════════════════
+    const busStopMarkers = [];
+    
+    busStops.forEach(stop => {
+      if (!stop.latitude || !stop.longitude) return;
+      
+      const pos = latLngToVec3(stop.latitude, stop.longitude, 1.02);
+      
+      // Bus stop marker (small sphere)
+      const markerGeometry = new THREE.SphereGeometry(0.012, 16, 16);
+      const markerMaterial = new THREE.MeshBasicMaterial({
+        color: 0x06b6d4,
+        transparent: true,
+        opacity: 0.8,
+        emissive: 0x06b6d4,
+        emissiveIntensity: 0.4
+      });
+      const marker = new THREE.Mesh(markerGeometry, markerMaterial);
+      marker.position.copy(pos);
+      marker.userData = { busStop: stop, type: 'busStop' };
+      globe.add(marker);
+      busStopMarkers.push(marker);
+    });
+
+    // ══════════════════════════════════════════════════════════════
+    // BUS LINES - TRANSIT ROUTES
+    // ══════════════════════════════════════════════════════════════
+    const busLineArcs = [];
+    const busLineColors = [0x06b6d4, 0x8b5cf6, 0x10b981, 0xf59e0b];
+    
+    busLines.forEach((line, lineIdx) => {
+      if (!line.directions || !line.directions.length) return;
+      
+      const lineColor = busLineColors[lineIdx % busLineColors.length];
+      
+      line.directions.forEach(direction => {
+        const stops = (direction.stop_sequence || [])
+          .map(seq => busStops.find(s => s.stop_id === seq.stop_id))
+          .filter(s => s && s.latitude && s.longitude);
+        
+        for (let i = 0; i < stops.length - 1; i++) {
+          const arc = createHolographicArc(
+            stops[i].latitude,
+            stops[i].longitude,
+            stops[i + 1].latitude,
+            stops[i + 1].longitude,
+            lineColor
+          );
+          arc.userData = { 
+            busLine: line,
+            directionId: direction.direction_id,
+            type: 'busLine'
+          };
+          globe.add(arc);
+          busLineArcs.push(arc);
+        }
+      });
+    });
+
+    // ══════════════════════════════════════════════════════════════
+    // BUSES - REAL-TIME TRANSIT VEHICLES
+    // ══════════════════════════════════════════════════════════════
+    const busMarkers = [];
+    
+    buses.forEach(bus => {
+      if (!bus.latitude || !bus.longitude) return;
+      
+      const status = bus.status || 'idle';
+      const color = status === 'in_service' ? 0x10b981 : 
+                    status === 'charging' ? 0xf59e0b : 0x64748b;
+      const pos = latLngToVec3(bus.latitude, bus.longitude, 1.03);
+
+      // Bus marker (small cube)
+      const markerGeometry = new THREE.BoxGeometry(0.018, 0.018, 0.018);
+      const markerMaterial = new THREE.MeshBasicMaterial({
+        color: color,
+        transparent: true,
+        opacity: 0.9
+      });
+      const marker = new THREE.Mesh(markerGeometry, markerMaterial);
+      marker.position.copy(pos);
+      marker.userData = { bus, type: 'bus' };
+      globe.add(marker);
+      busMarkers.push(marker);
+
+      // Bus pulsing ring
+      const ringGeometry = new THREE.RingGeometry(0.024, 0.032, 32);
+      const ringMaterial = new THREE.MeshBasicMaterial({
+        color: color,
+        transparent: true,
+        opacity: 0.6,
+        side: THREE.DoubleSide,
+        blending: THREE.AdditiveBlending
+      });
+      const ring = new THREE.Mesh(ringGeometry, ringMaterial);
+      ring.position.copy(pos.clone().multiplyScalar(1.001));
+      ring.quaternion.setFromUnitVectors(
+        new THREE.Vector3(0, 0, 1),
+        pos.clone().normalize()
+      );
+      ring.userData = { phase: Math.random() * Math.PI * 2 };
+      globe.add(ring);
+    });
+
+    // ══════════════════════════════════════════════════════════════
     // ROUTE ARCS - HOLOGRAPHIC PATHS
     // ══════════════════════════════════════════════════════════════
     const routeArcs = [];
@@ -597,6 +703,11 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
       resourceMarkers.forEach(resource => {
         resource.rotation.y = time * 0.5;
         resource.scale.setScalar(1 + 0.1 * Math.sin(time * 3));
+      });
+
+      // Rotate bus markers
+      busMarkers.forEach(bus => {
+        bus.rotation.y = time * 1.5;
       });
 
       // Rotate point lights
@@ -877,7 +988,7 @@ export default function FuturisticGlobe({ vehicles = [], routes = [], resources 
         el.removeChild(renderer.domElement);
       }
     };
-  }, [vehicles, routes, resources, digitalTwins, onSelectVehicle, onSelectResource]);
+  }, [vehicles, routes, resources, digitalTwins, busLines, buses, busStops, onSelectVehicle, onSelectResource]);
 
   return (
     <div className="relative w-full h-full">
