@@ -10,6 +10,11 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import NetworkDesignStudio from "@/components/transit/NetworkDesignStudio";
+import ScenarioSimulator from "@/components/transit/ScenarioSimulator";
+import FrequencyOptimizer from "@/components/transit/FrequencyOptimizer";
+import PassengerExperiencePanel from "@/components/transit/PassengerExperiencePanel";
+import LiveTransitMap from "@/components/transit/LiveTransitMap";
 
 export default function TransitControl() {
   const [selectedLine, setSelectedLine] = useState(null);
@@ -202,6 +207,9 @@ export default function TransitControl() {
 
           {/* Operations Board */}
           <TabsContent value="operations" className="space-y-6">
+            {/* Live Map */}
+            <LiveTransitMap organizationId={user?.organization_id} />
+
             <Card className="p-6 bg-slate-800/30 border-slate-700/50">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold text-white">Real-Time Operations</h2>
@@ -279,43 +287,22 @@ export default function TransitControl() {
 
           {/* Network Design */}
           <TabsContent value="network">
-            <Card className="p-6 bg-slate-800/30 border-slate-700/50">
-              <h2 className="text-2xl font-bold text-white mb-6">AI Network Design Studio</h2>
-              <p className="text-slate-400 mb-6">
-                Use AI to analyze passenger flows and suggest new lines, express routes, and network restructuring
-              </p>
-              <Button className="bg-gradient-to-r from-cyan-500 to-violet-500">
-                <Brain className="w-4 h-4 mr-2" />
-                Generate Network Proposals
-              </Button>
-            </Card>
+            <NetworkDesignStudio organizationId={user?.organization_id} />
           </TabsContent>
 
           {/* Planning Studio */}
           <TabsContent value="planning">
             <Card className="p-6 bg-slate-800/30 border-slate-700/50">
-              <h2 className="text-2xl font-bold text-white mb-6">Holographic Planning Studio</h2>
-              <p className="text-slate-400">
-                Visual editor for drawing new lines, moving stops, and simulating passenger flow impact
-              </p>
+              <FrequencyOptimizer organizationId={user?.organization_id} />
+              <div className="mt-8">
+                <PassengerExperiencePanel organizationId={user?.organization_id} />
+              </div>
             </Card>
           </TabsContent>
 
           {/* Scenarios */}
           <TabsContent value="scenarios">
-            <Card className="p-6 bg-slate-800/30 border-slate-700/50">
-              <h2 className="text-2xl font-bold text-white mb-6">Scenario Simulation</h2>
-              <div className="grid md:grid-cols-3 gap-4">
-                {['Storm Weather', 'Metro Breakdown', 'Concert Event'].map((scenario) => (
-                  <div key={scenario} className="p-4 rounded-xl bg-slate-700/30 border border-slate-600/30">
-                    <h3 className="text-white font-semibold mb-2">{scenario}</h3>
-                    <Button variant="outline" className="w-full mt-2">
-                      Simulate
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            </Card>
+            <ScenarioSimulator organizationId={user?.organization_id} />
           </TabsContent>
         </Tabs>
       </div>

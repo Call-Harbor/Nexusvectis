@@ -278,12 +278,12 @@ export default function Fleet() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Types</SelectItem>
-                  <SelectItem value="truck">Trucks</SelectItem>
-                  <SelectItem value="ship">Ships</SelectItem>
-                  <SelectItem value="drone">Drones</SelectItem>
-                  <SelectItem value="train">Trains</SelectItem>
-                  <SelectItem value="aircraft">Aircraft</SelectItem>
-                  <SelectItem value="bus">Buses</SelectItem>
+                  <SelectItem value="truck">All Trucks</SelectItem>
+                  <SelectItem value="ship">All Ships</SelectItem>
+                  <SelectItem value="drone">All Drones</SelectItem>
+                  <SelectItem value="train">All Trains</SelectItem>
+                  <SelectItem value="aircraft">All Aircraft</SelectItem>
+                  <SelectItem value="bus">All Buses</SelectItem>
                 </SelectContent>
               </Select>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
