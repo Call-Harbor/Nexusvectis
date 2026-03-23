@@ -716,7 +716,7 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
     if (!currentCommand.trim()) return;
 
     // Bus Management Commands Detection
-    const busCommand = await detectBusCommand(currentCommand, vehicles, orgId);
+    const busCommand = await detectBusCommand(currentCommand, vehicles, orgId, buses, busLines, busStops, busDrivers);
     if (busCommand) {
       setMessages(prev => [...prev, { role: "user", content: currentCommand }]);
       setInput("");
