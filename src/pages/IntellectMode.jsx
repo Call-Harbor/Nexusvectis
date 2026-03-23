@@ -543,6 +543,150 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
       return;
     }
 
+    // Bus Fleet AI detection
+    const busFleetMatch = currentCommand.match(/(?:bus|transit|offentlig\s+transport|kollektiv\s+trafik|busnet|bus\s+fleet|bus\s+system|lav\s+(?:en?\s+)?bus|opret\s+bus|create\s+bus|build\s+(?:a\s+)?bus\s+network)/i);
+    if (busFleetMatch) {
+      setMessages(prev => [...prev, { role: "user", content: currentCommand }]);
+      setInput("");
+      setIsProcessing(true);
+      
+      // AI-powered bus fleet setup
+      const setupBusFleet = async () => {
+        try {
+          const user = await base44.auth.me();
+          const userOrgId = user?.organization_id || user?.data?.organization_id;
+
+          setMessages(prev => [...prev, { role: "system", content: "🚍 AI Bus Fleet Architect aktiveret — analyserer din kommando..." }]);
+
+          const result = await base44.integrations.Core.InvokeLLM({
+            prompt: `You are an AI transit system architect. The user wants: "${currentCommand}"
+
+Analyze and create a complete bus transit network setup with:
+1. Bus fleet specifications
+2. Route network with stops
+3. Depot locations
+
+Return ONLY JSON:
+{
+  "summary": "Brief summary",
+  "depots": [{"name": "...", "location": "City, Country", "capacity": number}],
+  "buses": [{"bus_number": "...", "bus_type": "city_bus|electric_bus|...", "capacity": number, "depot_name": "..."}],
+  "stops": [{"stop_code": "...", "stop_name": "...", "address": "Full address with city"}],
+  "routes": [{"route_number": "...", "route_name": "...", "stop_codes": ["..."], "frequency_minutes": number}]
+}`,
+            response_json_schema: {
+              type: "object",
+              properties: {
+                summary: { type: "string" },
+                depots: { type: "array", items: { type: "object", properties: { name: { type: "string" }, location: { type: "string" }, capacity: { type: "number" } }, required: ["name", "location", "capacity"] } },
+                buses: { type: "array", items: { type: "object", properties: { bus_number: { type: "string" }, bus_type: { type: "string" }, capacity: { type: "number" }, depot_name: { type: "string" } }, required: ["bus_number", "bus_type", "capacity"] } },
+                stops: { type: "array", items: { type: "object", properties: { stop_code: { type: "string" }, stop_name: { type: "string" }, address: { type: "string" } }, required: ["stop_code", "stop_name", "address"] } },
+                routes: { type: "array", items: { type: "object", properties: { route_number: { type: "string" }, route_name: { type: "string" }, stop_codes: { type: "array", items: { type: "string" } }, frequency_minutes: { type: "number" } }, required: ["route_number", "route_name", "stop_codes"] } }
+              },
+              required: ["summary", "depots", "buses", "stops", "routes"]
+            }
+          });
+
+          setMessages(prev => [...prev, { role: "assistant", content: `✅ ${result.summary}\n\n🏗️ Building system...` }]);
+
+          // Create depots
+          const depotMap = {};
+          for (const depot of result.depots) {
+            const geocode = await base44.integrations.Core.InvokeLLM({
+              prompt: `Return GPS coordinates for: ${depot.location}`,
+              add_context_from_internet: true,
+              response_json_schema: { type: "object", properties: { latitude: { type: "number" }, longitude: { type: "number" } }, required: ["latitude", "longitude"] }
+            });
+            const resource = await base44.entities.Resource.create({
+              organization_id: userOrgId,
+              name: depot.name,
+              type: "warehouse",
+              location: depot.location,
+              latitude: geocode.latitude,
+              longitude: geocode.longitude,
+              capacity: depot.capacity,
+              current_level: 0,
+              status: "operational"
+            });
+            depotMap[depot.name] = resource;
+          }
+
+          // Create stops
+          const stopMap = {};
+          for (const stop of result.stops) {
+            const geocode = await base44.integrations.Core.InvokeLLM({
+              prompt: `Return GPS coordinates for: ${stop.address}`,
+              add_context_from_internet: true,
+              response_json_schema: { type: "object", properties: { latitude: { type: "number" }, longitude: { type: "number" } }, required: ["latitude", "longitude"] }
+            });
+            const busStop = await base44.entities.BusStop.create({
+              organization_id: userOrgId,
+              stop_code: stop.stop_code,
+              stop_name: stop.stop_name,
+              address: stop.address,
+              latitude: geocode.latitude,
+              longitude: geocode.longitude,
+              zone: "1",
+              stop_type: "standard",
+              accessibility: true,
+              status: "active"
+            });
+            stopMap[stop.stop_code] = busStop;
+          }
+
+          // Create buses
+          for (const busData of result.buses) {
+            const depot = depotMap[busData.depot_name];
+            await base44.entities.Bus.create({
+              organization_id: userOrgId,
+              bus_number: busData.bus_number,
+              bus_type: busData.bus_type,
+              capacity: busData.capacity,
+              status: "idle",
+              fuel_level: 100,
+              latitude: depot?.latitude || 0,
+              longitude: depot?.longitude || 0,
+              heading: 0,
+              speed: 0,
+              resource_id: depot?.id
+            });
+          }
+
+          // Create routes
+          for (const route of result.routes) {
+            const stops = route.stop_codes.map((code, idx) => ({
+              stop_id: stopMap[code]?.id,
+              sequence: idx + 1,
+              travel_time_from_previous: idx === 0 ? 0 : 5
+            })).filter(s => s.stop_id);
+
+            await base44.entities.BusRoute.create({
+              organization_id: userOrgId,
+              route_number: route.route_number,
+              route_name: route.route_name,
+              route_type: "urban",
+              stops: stops,
+              frequency_minutes: route.frequency_minutes || 15,
+              status: "active",
+              start_stop_id: stops[0]?.stop_id,
+              end_stop_id: stops[stops.length - 1]?.stop_id
+            });
+          }
+
+          queryClient.invalidateQueries();
+          setMessages(prev => [...prev, { role: "system", content: `✅ Bus fleet system konfigureret! Åbn /BusFleet for at se dit netværk.` }]);
+          toast.success("Bus fleet created successfully!");
+        } catch (error) {
+          setMessages(prev => [...prev, { role: "system", content: `❌ Fejl: ${error.message}` }]);
+        } finally {
+          setIsProcessing(false);
+        }
+      };
+
+      setupBusFleet();
+      return;
+    }
+
     // Image generation detection
     const imageMatch = currentCommand.match(/(?:generer(?:er)?\s+(?:et\s+)?billede(?:\s+af)?[:\s]*|generate\s+(?:an?\s+)?image(?:\s+of)?[:\s]*|lav\s+(?:et\s+)?billede(?:\s+af)?[:\s]*|create\s+(?:an?\s+)?image(?:\s+of)?[:\s]*)(.+)/i);
     if (imageMatch || currentCommand.toLowerCase().match(/^(?:billede|image|generer billede|generate image)$/)) {
