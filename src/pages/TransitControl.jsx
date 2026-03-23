@@ -13,6 +13,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import LiveTransitMap from "@/components/transit/LiveTransitMap";
 import NetworkDesignStudio from "@/components/transit/NetworkDesignStudio";
@@ -27,6 +29,7 @@ export default function TransitControl() {
   const [selectedLine, setSelectedLine] = useState(null);
   const [selectedBus, setSelectedBus] = useState(null);
   const [realtimeRecommendations, setRealtimeRecommendations] = useState(null);
+  const [assigningDriver, setAssigningDriver] = useState(null);
   const queryClient = useQueryClient();
 
   const { data: user } = useQuery({
@@ -125,6 +128,15 @@ export default function TransitControl() {
     },
     onError: () => {
       toast.error('Analysis failed');
+    },
+  });
+
+  const assignDriverMutation = useMutation({
+    mutationFn: ({ busId, driverId }) => base44.entities.Bus.update(busId, { driver_id: driverId }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['activeBuses'] });
+      toast.success('Driver assigned to bus');
+      setAssigningDriver(null);
     },
   });
 
@@ -465,10 +477,26 @@ export default function TransitControl() {
                       className="p-3 rounded-xl bg-slate-700/30 border border-slate-600/30 cursor-pointer hover:bg-slate-700/50 hover:border-cyan-500/30 transition-all"
                     >
                       <div className="flex items-center justify-between mb-2">
-                        <div>
+                        <div className="flex-1">
                           <p className="text-white font-semibold">{bus.bus_number}</p>
-                          <p className="text-xs text-slate-400">Line {bus.current_line_id || 'Unassigned'}</p>
+                          <p className="text-xs text-slate-400">
+                            {bus.driver_id ? drivers.find(d => d.driver_id === bus.driver_id)?.first_name + ' ' + drivers.find(d => d.driver_id === bus.driver_id)?.last_name || 'Driver assigned' : 'No driver'}
+                          </p>
                         </div>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setAssigningDriver(bus);
+                          }}
+                          className="h-7 px-2 text-xs"
+                        >
+                          {bus.driver_id ? 'Change' : 'Assign'}
+                        </Button>
+                      </div>
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-xs text-slate-500">Line {bus.current_line_id || 'Unassigned'}</p>
                         <Badge className={
                           (bus.passenger_count || 0) > (bus.capacity_seated + bus.capacity_standing) * 0.9
                             ? "bg-rose-500/20 text-rose-400 border-rose-500/30"
@@ -687,6 +715,44 @@ export default function TransitControl() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Assign Driver Dialog */}
+      <Dialog open={!!assigningDriver} onOpenChange={() => setAssigningDriver(null)}>
+        <DialogContent className="bg-slate-900 border-slate-700 text-white">
+          <DialogHeader>
+            <DialogTitle>Assign Driver to {assigningDriver?.bus_number}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm text-slate-400 mb-2 block">Select Driver</label>
+              <Select 
+                value={assigningDriver?.driver_id || ""} 
+                onValueChange={(driverId) => {
+                  assignDriverMutation.mutate({ 
+                    busId: assigningDriver.id, 
+                    driverId: driverId 
+                  });
+                }}
+              >
+                <SelectTrigger className="bg-slate-800 border-slate-700">
+                  <SelectValue placeholder="Choose driver..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={null}>No driver (unassign)</SelectItem>
+                  {drivers.filter(d => d.status === 'active').map(driver => (
+                    <SelectItem key={driver.driver_id} value={driver.driver_id}>
+                      {driver.first_name} {driver.last_name} - #{driver.employee_number}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <p className="text-xs text-slate-500">
+              Driver will be able to access this bus from Nexus Orbit and receive route assignments.
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
