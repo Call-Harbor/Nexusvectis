@@ -476,12 +476,24 @@ export default function Fleet() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="truck">Truck</SelectItem>
-                    <SelectItem value="ship">Ship</SelectItem>
+                    <SelectItem value="truck_delivery">Delivery Truck</SelectItem>
+                    <SelectItem value="truck_semi">Semi Truck</SelectItem>
+                    <SelectItem value="truck_refrigerated">Refrigerated Truck</SelectItem>
+                    <SelectItem value="truck_tanker">Tanker Truck</SelectItem>
+                    <SelectItem value="ship_container">Container Ship</SelectItem>
+                    <SelectItem value="ship_tanker">Tanker Ship</SelectItem>
+                    <SelectItem value="ship_cargo">Cargo Ship</SelectItem>
+                    <SelectItem value="ship_ferry">Ferry</SelectItem>
                     <SelectItem value="drone">Drone</SelectItem>
-                    <SelectItem value="train">Train</SelectItem>
-                    <SelectItem value="aircraft">Aircraft</SelectItem>
-                    <SelectItem value="bus">Bus</SelectItem>
+                    <SelectItem value="train_freight">Freight Train</SelectItem>
+                    <SelectItem value="train_passenger">Passenger Train</SelectItem>
+                    <SelectItem value="train_high_speed">High-Speed Train</SelectItem>
+                    <SelectItem value="aircraft_cargo">Cargo Aircraft</SelectItem>
+                    <SelectItem value="aircraft_passenger">Passenger Aircraft</SelectItem>
+                    <SelectItem value="aircraft_private">Private Jet</SelectItem>
+                    <SelectItem value="bus_city">City Bus</SelectItem>
+                    <SelectItem value="bus_coach">Coach Bus</SelectItem>
+                    <SelectItem value="bus_school">School Bus</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
