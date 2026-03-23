@@ -28,7 +28,7 @@ function buildArc(lat1, lng1, lat2, lng2, r = 1.02, lift = 0.16) {
   return new THREE.Line(geo, mat);
 }
 
-export default function Fleet3DGlobeMap({ vehicles = [], routes = [], onSelectVehicle }) {
+export default function Fleet3DGlobeMap({ vehicles = [], routes = [], buses = [], busLines = [], busStops = [], onSelectVehicle }) {
   const mountRef = useRef(null);
 
   useEffect(() => {
@@ -175,12 +175,74 @@ export default function Fleet3DGlobeMap({ vehicles = [], routes = [], onSelectVe
       }
     });
 
+    // ── Bus stops ──────────────────────────────────────────────────────────
+    busStops.forEach(stop => {
+      if (!stop.latitude || !stop.longitude) return;
+      const pos = latLngToVec3(stop.latitude, stop.longitude, 1.015);
+      const marker = new THREE.Mesh(
+        new THREE.SphereGeometry(0.008, 12, 12),
+        new THREE.MeshBasicMaterial({ color: 0x06b6d4, transparent: true, opacity: 0.7 })
+      );
+      marker.position.copy(pos);
+      globe.add(marker);
+    });
+
+    // ── Bus lines (transit routes) ─────────────────────────────────────────
+    busLines.forEach((line, idx) => {
+      if (!line.directions || !line.directions.length) return;
+      
+      const lineColor = [0x06b6d4, 0x8b5cf6, 0x10b981, 0xf59e0b][idx % 4];
+      
+      line.directions.forEach(direction => {
+        const stops = (direction.stop_sequence || [])
+          .map(seq => busStops.find(s => s.stop_id === seq.stop_id))
+          .filter(s => s && s.latitude && s.longitude);
+        
+        for (let i = 0; i < stops.length - 1; i++) {
+          const arc = buildArc(stops[i].latitude, stops[i].longitude, stops[i + 1].latitude, stops[i + 1].longitude);
+          arc.material.color.setHex(lineColor);
+          arc.material.opacity = 0.8;
+          globe.add(arc);
+        }
+      });
+    });
+
     // ── Route arcs ─────────────────────────────────────────────────────────
     routes.forEach(route => {
       const wp = (route.waypoints || []).filter(w => w.lat && w.lng);
       for (let i = 0; i < wp.length - 1; i++) {
         globe.add(buildArc(wp[i].lat, wp[i].lng, wp[i + 1].lat, wp[i + 1].lng));
       }
+    });
+
+    // ── Buses (transit vehicles) ───────────────────────────────────────────
+    const busMeshes = [];
+    buses.forEach(bus => {
+      if (!bus.latitude || !bus.longitude) return;
+      const color = bus.status === 'in_service' ? 0x10b981 : 
+                    bus.status === 'charging' ? 0xf59e0b : 0x64748b;
+      const pos = latLngToVec3(bus.latitude, bus.longitude, 1.025);
+
+      const cube = new THREE.Mesh(
+        new THREE.BoxGeometry(0.015, 0.015, 0.015),
+        new THREE.MeshBasicMaterial({ color: color })
+      );
+      cube.position.copy(pos);
+      cube.userData = { bus: bus, type: 'bus' };
+      globe.add(cube);
+      busMeshes.push(cube);
+      vehicleMeshes.push(cube);
+
+      // Pulse ring
+      const ring = new THREE.Mesh(
+        new THREE.RingGeometry(0.020, 0.028, 24),
+        new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 0.6, side: THREE.DoubleSide })
+      );
+      ring.position.copy(pos.clone().multiplyScalar(1.001));
+      ring.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), pos.clone().normalize());
+      ring.userData = { phase: Math.random() * Math.PI * 2 };
+      globe.add(ring);
+      pulseRings.push(ring);
     });
 
     // ── Traffic obstacles (simulated near active vehicles) ─────────────────
@@ -208,7 +270,11 @@ export default function Fleet3DGlobeMap({ vehicles = [], routes = [], onSelectVe
       mouseVec.y = -((e.clientY - rect.top)  / rect.height) * 2 + 1;
       raycaster.setFromCamera(mouseVec, camera);
       const hits = raycaster.intersectObjects(vehicleMeshes);
-      if (hits.length) onSelectVehicle?.(hits[0].object.userData.vehicle);
+      if (hits.length) {
+        const data = hits[0].object.userData;
+        if (data.vehicle) onSelectVehicle?.(data.vehicle);
+        else if (data.bus) onSelectVehicle?.(data.bus);
+      }
     };
 
     // ── Orbit controls (mouse + touch) ─────────────────────────────────────
@@ -255,6 +321,10 @@ export default function Fleet3DGlobeMap({ vehicles = [], routes = [], onSelectVe
         o.material.opacity = 0.45 + 0.5 * (0.5 + 0.5 * Math.sin(ph));
       });
 
+      busMeshes.forEach(bus => {
+        bus.rotation.y = t * 1.2;
+      });
+
       renderer.render(scene, camera);
     };
     tick();
@@ -282,7 +352,7 @@ export default function Fleet3DGlobeMap({ vehicles = [], routes = [], onSelectVe
       renderer.dispose();
       if (el.contains(renderer.domElement)) el.removeChild(renderer.domElement);
     };
-  }, [vehicles, routes]);
+  }, [vehicles, routes, buses, busLines, busStops]);
 
   return (
     <div className="relative w-full h-full bg-slate-950">

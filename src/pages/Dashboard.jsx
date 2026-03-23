@@ -320,8 +320,8 @@ export default function Dashboard() {
 
             {/* Stats Grid */}
             <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-8 gap-2">
-              <StatCard icon={Activity} label="Active Fleet" value={activeVehicles} sub={`of ${vehicles.length} total`} color="cyan" delay={0.1} />
-              <StatCard icon={Network} label="Live Routes" value={activeRoutes} sub={`of ${routes.length} total`} color="violet" delay={0.15} />
+              <StatCard icon={Activity} label="Active Fleet" value={activeVehicles + buses.filter(b => b.status === 'in_service').length} sub={`${vehicles.length}V + ${buses.length}B`} color="cyan" delay={0.1} />
+              <StatCard icon={Network} label="Live Routes" value={activeRoutes + busLines.length} sub={`${routes.length}R + ${busLines.length}BL`} color="violet" delay={0.15} />
               <StatCard icon={Target} label="Efficiency" value={avgEfficiency} suffix="%" sub="Fleet average" color="emerald" delay={0.2} />
               <StatCard icon={Brain} label="AI Routes" value={aiOptimizedRoutes} sub="Optimized" color="amber" delay={0.25} />
               <StatCard icon={Sparkles} label="Digital Twins" value={digitalTwins.length} sub="Active models" color="pink" delay={0.3} />
