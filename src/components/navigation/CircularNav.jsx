@@ -129,7 +129,7 @@ export default function CircularNav({ currentPageName, user }) {
 
   return (
     <>
-    <div className="fixed bottom-[274px] left-1/2 -translate-x-1/2 z-50">
+    <div className="fixed bottom-[360px] left-1/2 -translate-x-1/2 z-50">
       {/* Main Menu Button */}
       <motion.button
         onClick={() => {
@@ -174,7 +174,7 @@ export default function CircularNav({ currentPageName, user }) {
           <>
             {menuCategories.map((category, index) => {
                const angle = (index / menuCategories.length) * 2 * Math.PI - Math.PI / 2;
-               const radius = 160;
+               const radius = 130;
               const x = Math.cos(angle) * radius;
               const y = Math.sin(angle) * radius;
               const isActive = activeCategory === category.name;
@@ -227,12 +227,12 @@ export default function CircularNav({ currentPageName, user }) {
               const categoryIndex = menuCategories.findIndex(c => c.name === activeCategory);
               const categoryAngle = (categoryIndex / menuCategories.length) * 2 * Math.PI - Math.PI / 2;
               const totalItems = activeMenu?.items.length || 1;
-              const spreadAngle = Math.max(Math.PI / 4, (totalItems - 1) * 0.28);
+              const spreadAngle = Math.min(Math.PI / 2, (totalItems - 1) * 0.32);
               const startAngle = categoryAngle - spreadAngle / 2;
 
               return activeMenu?.items.map((item, index) => {
                 const itemAngle = startAngle + (index / (totalItems - 1 || 1)) * spreadAngle;
-                const radius = totalItems > 4 ? 340 : 280;
+                const radius = 240;
                 const x = Math.cos(itemAngle) * radius;
                 const y = Math.sin(itemAngle) * radius;
                 const isActive = currentPageName === item.page;
