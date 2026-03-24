@@ -131,9 +131,6 @@ const APP_CATEGORIES = [
     ['vehicle_builder', Calculator, '🔧 Transportbygger'],
     ['harbor_app_builder', Zap, '⚡ H.A.R.B.O.R App Builder'],
     ['fleet_store', Store, '🛒 Fleet Store'],
-    ['ceodashboard', PieChart, '👔 CEO Dashboard'],
-    ['holographicinterface', Globe, '🔮 Holografisk Interface'],
-    ['blogaianalysis', Brain, '📊 Blog AI Analyse'],
   ]],
   ['Produktivitet', [
     ['document_editor', FileText, 'FleetDocs'],
