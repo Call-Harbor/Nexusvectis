@@ -154,13 +154,6 @@ const APP_CATEGORIES = [
     ['neuro_risk', Shield, 'Neuro-Symbolisk Risiko'],
     ['news_intelligence', Newspaper, 'Nyhedsintelligens'],
   ]],
-  ['Administration', [
-    ['admindashboard', MonitorCheck, 'Admin Dashboard'],
-    ['security', Shield, 'Sikkerhed'],
-    ['notificationsettings', Bell, 'Notifikationer'],
-    ['apidocumentation', FileCode, 'API Dokumentation'],
-    ['apimetrics', BarChart2, 'API Metrics'],
-  ]],
 ];
 
 function AppSearchDropdown({ onSelect, children }) {
