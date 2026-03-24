@@ -113,7 +113,11 @@ const AuthenticatedApp = () => {
       />
       <Route 
         path="/ScenarioStudio" 
-        element={<ScenarioStudio />}
+        element={
+          <LayoutWrapper currentPageName="ScenarioStudio">
+            <ScenarioStudio />
+          </LayoutWrapper>
+        }
       />
 
       <Route path="*" element={<PageNotFound />} />
