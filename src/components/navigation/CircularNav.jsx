@@ -6,7 +6,8 @@ import { cn } from "@/lib/utils";
 import { 
   Truck, Route, Warehouse, Sparkles, 
   Settings, Users, Shield, FileText, Package, 
-  DollarSign, Target, Menu, X, Zap, Home, AlertCircle, Code2, BarChart2, Brain, Bus
+  DollarSign, Target, Menu, X, Zap, Home, AlertCircle, Code2, BarChart2, Brain, Bus,
+  Wrench, Receipt, BarChart3, Leaf, Satellite, Bell, TrendingUp, GitBranch, Box, GraduationCap, MapPin
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import NotificationCenter from "../notifications/NotificationCenter";
@@ -20,6 +21,8 @@ const menuCategories = [
       { name: "Dashboard", icon: Home, page: "Dashboard" },
       { name: "Alerts", icon: AlertCircle, page: "Alerts" },
       { name: "Transit Control", icon: Bus, page: "TransitControl" },
+      { name: "Scenario Studio", icon: GitBranch, page: "ScenarioStudio" },
+      { name: "Map Monitor", icon: MapPin, page: "MapMonitor" },
     ]
   },
   { 
@@ -30,6 +33,8 @@ const menuCategories = [
       { name: "Fleet", icon: Truck, page: "Fleet" },
       { name: "Drivers", icon: Users, page: "DriverManagement" },
       { name: "Assets", icon: Package, page: "AssetManagement" },
+      { name: "Maintenance", icon: Wrench, page: "MaintenanceManagement" },
+      { name: "GPS Integration", icon: Satellite, page: "GPSIntegration" },
     ]
   },
   { 
@@ -40,6 +45,8 @@ const menuCategories = [
       { name: "Shipments", icon: Package, page: "Shipments" },
       { name: "Routes", icon: Route, page: "Routes" },
       { name: "Resources", icon: Warehouse, page: "Resources" },
+      { name: "Warehouse", icon: Box, page: "WarehouseAutomation" },
+      { name: "Documents", icon: FileText, page: "DocumentManagement" },
     ]
   },
   { 
@@ -50,6 +57,8 @@ const menuCategories = [
       { name: "CRM", icon: Target, page: "CRM" },
       { name: "Customers", icon: Users, page: "CustomerManagement" },
       { name: "Contracts", icon: FileText, page: "ContractManagement" },
+      { name: "Invoices", icon: Receipt, page: "Invoices" },
+      { name: "Reports", icon: BarChart3, page: "Reports" },
     ]
   },
   { 
@@ -58,7 +67,17 @@ const menuCategories = [
     color: "pink",
     items: [
       { name: "Intellect Mode", icon: Sparkles, page: "IntellectMode", badge: "BETA" },
-      { name: "AI Optimization", icon: Sparkles, page: "AIOptimization" },
+      { name: "AI Optimization", icon: Brain, page: "AIOptimization" },
+      { name: "Demand Forecast", icon: TrendingUp, page: "DemandForecasting" },
+      { name: "Green TMS", icon: Leaf, page: "GreenTMS" },
+    ]
+  },
+  {
+    name: "HR",
+    icon: GraduationCap,
+    color: "amber",
+    items: [
+      { name: "HR Management", icon: GraduationCap, page: "HRManagement" },
     ]
   },
   { 
@@ -69,6 +88,7 @@ const menuCategories = [
       { name: "Users", icon: Users, page: "UserManagement" },
       { name: "Security", icon: Shield, page: "Security" },
       { name: "Settings", icon: Settings, page: "Settings" },
+      { name: "Notifications", icon: Bell, page: "NotificationSettings" },
     ]
   },
   {
