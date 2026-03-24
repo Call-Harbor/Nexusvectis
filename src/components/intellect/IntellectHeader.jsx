@@ -83,73 +83,73 @@ const PAGE_ROUTES = {
 };
 
 const APP_CATEGORIES = [
-  ['Fleet & Logistik', [
+  ['Fleet & Logistics', [
     ['fleet', Truck, 'Fleet'],
-    ['routes', Route, 'Ruter'],
-    ['shipments', Package, 'Forsendelser'],
-    ['resources', Warehouse, 'Ressourcer'],
+    ['routes', Route, 'Routes'],
+    ['shipments', Package, 'Shipments'],
+    ['resources', Warehouse, 'Resources'],
     ['gpsintegration', Satellite, 'GPS Integration'],
-    ['assignment', Navigation, 'Tildeling'],
-    ['mapmonitor', Map, 'Kortmonitor'],
+    ['assignment', Navigation, 'Assignment'],
+    ['mapmonitor', Map, 'Map Monitor'],
     ['transit_console', Bus, '🚌 Transit Control'],
     ['scenariostudio', Layers, '🎬 Scenario Studio'],
     ['nexus_orbit', Satellite, '🛰️ Nexus Orbit'],
   ]],
-  ['Vedligehold & Drift', [
-    ['maintenance_management', Wrench, 'Vedligeholdelse'],
-    ['warehouseautomation', Warehouse, 'Lagerautomatisering'],
-    ['demandforecasting', TrendingUp, 'Efterspørgselsprognose'],
+  ['Maintenance & Operations', [
+    ['maintenance_management', Wrench, 'Maintenance'],
+    ['warehouseautomation', Warehouse, 'Warehouse Automation'],
+    ['demandforecasting', TrendingUp, 'Demand Forecasting'],
     ['greentms', Leaf, 'Green TMS'],
-    ['route_optimization', Route, 'Ruteoptimering'],
+    ['route_optimization', Route, 'Route Optimization'],
   ]],
   ['Business & CRM', [
     ['dashboard', LayoutDashboard, 'Dashboard'],
     ['crm', Users, 'CRM'],
-    ['invoices', FileText, 'Fakturaer'],
-    ['customermanagement', Building2, 'Kundestyring'],
-    ['contractmanagement', FileText, 'Kontraktstyring'],
-    ['reports', BarChart2, 'Rapporter'],
-    ['alerts', AlertTriangle, 'Alarmer'],
+    ['invoices', FileText, 'Invoices'],
+    ['customermanagement', Building2, 'Customer Management'],
+    ['contractmanagement', FileText, 'Contract Management'],
+    ['reports', BarChart2, 'Reports'],
+    ['alerts', AlertTriangle, 'Alerts'],
   ]],
-  ['HR & Folk', [
+  ['HR & People', [
     ['hr', Users, 'HR Management'],
-    ['drivermanagement', Car, 'Chaufførstyring'],
-    ['usermanagement', Users, 'Brugerstyring'],
+    ['drivermanagement', Car, 'Driver Management'],
+    ['usermanagement', Users, 'User Management'],
   ]],
-  ['Dokumenter & Assets', [
-    ['documentmanagement', FileText, 'Dokumentstyring'],
-    ['assetmanagement', Package, 'Aktivstyring'],
+  ['Documents & Assets', [
+    ['documentmanagement', FileText, 'Document Management'],
+    ['assetmanagement', Package, 'Asset Management'],
   ]],
   ['AI & Intelligence', [
-    ['aioptimization', Sparkles, 'AI Optimering'],
+    ['aioptimization', Sparkles, 'AI Optimization'],
     ['predictive_maintenance', Wrench, 'Predictive Maintenance'],
     ['advanced_intelligence', Brain, 'Advanced Intelligence'],
-    ['deep_analysis', Activity, 'Anomalidetektering'],
+    ['deep_analysis', Activity, 'Anomaly Detection'],
     ['fleetai_trainer', Cpu, 'H.A.R.B.O.R Trainer'],
-    ['course_ai', GraduationCap, 'Fleet AI Kurser'],
+    ['course_ai', GraduationCap, 'Fleet AI Courses'],
     ['parallel_processor', Zap, 'Parallel Processor'],
-    ['vehicle_builder', Calculator, '🔧 Transportbygger'],
+    ['vehicle_builder', Calculator, '🔧 Vehicle Builder'],
     ['harbor_app_builder', Zap, '⚡ H.A.R.B.O.R App Builder'],
     ['fleet_store', Store, '🛒 Fleet Store'],
   ]],
-  ['Produktivitet', [
+  ['Productivity', [
     ['document_editor', FileText, 'FleetDocs'],
     ['spreadsheet_editor', BarChart3, 'FleetSheet'],
     ['hologram_presentation', MonitorPlay, 'FleetSlide'],
     ['project_management', ListTodo, 'PM Dashboard'],
     ['fleet_drive', HardDrive, 'Fleet Drive'],
-    ['web_browser', Globe, 'Webbrowser'],
+    ['web_browser', Globe, 'Web Browser'],
     ['profile_search', Search, 'People Intelligence'],
   ]],
-  ['Kreativt', [
-    ['image_generator', Image, 'AI Billedgenerator'],
-    ['image_editor', Image, 'AI Billedredigering'],
+  ['Creative', [
+    ['image_generator', Image, 'AI Image Generator'],
+    ['image_editor', Image, 'AI Image Editor'],
   ]],
-  ['Intelligence & Analyse', [
-    ['company_analysis', Building2, 'Firmaanalyse'],
-    ['satellite_weather', Satellite, 'Satellit & Vejr'],
-    ['neuro_risk', Shield, 'Neuro-Symbolisk Risiko'],
-    ['news_intelligence', Newspaper, 'Nyhedsintelligens'],
+  ['Intelligence & Analysis', [
+    ['company_analysis', Building2, 'Company Analytics'],
+    ['satellite_weather', Satellite, 'Satellite & Weather'],
+    ['neuro_risk', Shield, 'Neuro-Symbolic Risk'],
+    ['news_intelligence', Newspaper, 'News Intelligence'],
   ]],
 ];
 
