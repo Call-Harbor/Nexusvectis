@@ -43,44 +43,7 @@ const AI_PROMPT_SECTIONS = [
   ]],
 ];
 
-// Pages that should navigate instead of open as hologram windows
-const PAGE_ROUTES = {
-  'transit_console': '/TransitControl',
-  'nexus_orbit': '/NexusOrbit',
-  'scenariostudio': '/ScenarioStudio',
-  'fleet': '/Fleet',
-  'routes': '/Routes',
-  'shipments': '/Shipments',
-  'resources': '/Resources',
-  'gpsintegration': '/GPSIntegration',
-  'dashboard': '/Dashboard',
-  'crm': '/CRM',
-  'invoices': '/Invoices',
-  'hr': '/HRManagement',
-  'alerts': '/Alerts',
-  'aioptimization': '/AIOptimization',
-  'maintenance_management': '/MaintenanceManagement',
-  'warehouseautomation': '/WarehouseAutomation',
-  'demandforecasting': '/DemandForecasting',
-  'greentms': '/GreenTMS',
-  'assignment': '/Assignment',
-  'mapmonitor': '/MapMonitor',
-  'customermanagement': '/CustomerManagement',
-  'drivermanagement': '/DriverManagement',
-  'contractmanagement': '/ContractManagement',
-  'documentmanagement': '/DocumentManagement',
-  'assetmanagement': '/AssetManagement',
-  'reports': '/Reports',
-  'admindashboard': '/AdminDashboard',
-  'security': '/Security',
-  'notificationsettings': '/NotificationSettings',
-  'apidocumentation': '/APIDocumentation',
-  'apimetrics': '/APIMetrics',
-  'usermanagement': '/UserManagement',
-  'holographicinterface': '/HolographicInterface',
-  'ceodashboard': '/CEODashboard',
-  'blogaianalysis': '/BlogAIAnalysis',
-};
+
 
 const APP_CATEGORIES = [
   ['Fleet & Logistics', [
@@ -290,8 +253,6 @@ export default function IntellectHeader({ orgId, openWindow, executePrompt, setS
       setShowAdvancedPanel?.(true);
     } else if (type === '3d_globe') {
       onShow3DGlobe?.();
-    } else if (PAGE_ROUTES[type]) {
-      navigate(PAGE_ROUTES[type]);
     } else {
       openWindow(type);
     }
