@@ -225,7 +225,7 @@ export default function CircularNav({ currentPageName, user }) {
             {(() => {
               const activeMenu = menuCategories.find(c => c.name === activeCategory);
               const categoryIndex = menuCategories.findIndex(c => c.name === activeCategory);
-              const categoryAngle = (categoryIndex / menuCategories.length) * Math.PI - Math.PI / 2;
+              const categoryAngle = (categoryIndex / menuCategories.length) * 2 * Math.PI - Math.PI / 2;
               const totalItems = activeMenu?.items.length || 1;
               const spreadAngle = Math.max(Math.PI / 4, (totalItems - 1) * 0.28);
               const startAngle = categoryAngle - spreadAngle / 2;
