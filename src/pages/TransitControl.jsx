@@ -34,6 +34,10 @@ import CrowdingDashboard from "@/components/transit/CrowdingDashboard";
 import PassengerFlowPanel from "@/components/transit/PassengerFlowPanel";
 import DRTMonitor from "@/components/transit/DRTMonitor";
 import SustainabilityPanel from "@/components/transit/SustainabilityPanel";
+import TSPInterface from "@/components/transit/TSPInterface";
+import DriverCopilot from "@/components/transit/DriverCopilot";
+import SmartTicketingPanel from "@/components/transit/SmartTicketingPanel";
+import MultiModalPanel from "@/components/transit/MultiModalPanel";
 
 export default function TransitControl() {
   const [selectedLine, setSelectedLine] = useState(null);
@@ -383,10 +387,18 @@ export default function TransitControl() {
 
           {/* ADVANCED AI */}
            <TabsContent value="advanced-ai" className="space-y-8 animate-in fade-in duration-300">
-             <CrowdingDashboard />
-             <PassengerFlowPanel />
-             <DRTMonitor />
-             <SustainabilityPanel />
+             <div className="grid md:grid-cols-2 gap-6">
+               <CrowdingDashboard />
+               <PassengerFlowPanel />
+             </div>
+             <div className="grid md:grid-cols-2 gap-6">
+               <DRTMonitor />
+               <SustainabilityPanel />
+             </div>
+             <TSPInterface organizationId={user?.organization_id} />
+             <DriverCopilot organizationId={user?.organization_id} />
+             <SmartTicketingPanel organizationId={user?.organization_id} />
+             <MultiModalPanel organizationId={user?.organization_id} />
            </TabsContent>
           </Tabs>
       </div>
