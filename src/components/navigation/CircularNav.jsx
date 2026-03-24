@@ -174,7 +174,7 @@ export default function CircularNav({ currentPageName, user }) {
           <>
             {menuCategories.map((category, index) => {
                const angle = (index / menuCategories.length) * Math.PI - Math.PI / 2;
-               const radius = 140;
+               const radius = 190;
               const x = Math.cos(angle) * radius;
               const y = Math.sin(angle) * radius;
               const isActive = activeCategory === category.name;
@@ -232,7 +232,7 @@ export default function CircularNav({ currentPageName, user }) {
 
               return activeMenu?.items.map((item, index) => {
                 const itemAngle = startAngle + (index / (totalItems - 1 || 1)) * spreadAngle;
-                const radius = totalItems > 3 ? 280 : 240;
+                const radius = totalItems > 3 ? 370 : 320;
                 const x = Math.cos(itemAngle) * radius;
                 const y = Math.sin(itemAngle) * radius;
                 const isActive = currentPageName === item.page;
