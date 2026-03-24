@@ -44,7 +44,12 @@ const PAGE_MAP = {
   greentms: 'GreenTMS', gpsintegration: 'GPSIntegration', assignment: 'Assignment',
   routeeditor: 'Routes', fleet: 'Fleet', alerts: 'Alerts', routes: 'Routes',
   shipments: 'Shipments', crm: 'CRM', vehicles: 'Fleet', drivers: 'DriverManagement',
-  maintenance: 'MaintenanceManagement', hr: 'HRManagement', nexus_orbit: 'NexusOrbit'
+  maintenance: 'MaintenanceManagement', hr: 'HRManagement', nexus_orbit: 'NexusOrbit',
+  mapmonitor: 'MapMonitor', scenariostudio: 'ScenarioStudio',
+  customermanagement: 'CustomerManagement', contractmanagement: 'ContractManagement',
+  reports: 'Reports', drivermanagement: 'DriverManagement', usermanagement: 'UserManagement',
+  documentmanagement: 'DocumentManagement', assetmanagement: 'AssetManagement',
+  maintenance_management: 'MaintenanceManagement', notificationsettings: 'NotificationSettings',
 };
 
 function ChartWindow({ data, config }) {
