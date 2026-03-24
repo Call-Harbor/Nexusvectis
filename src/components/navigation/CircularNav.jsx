@@ -216,7 +216,7 @@ export default function CircularNav({ currentPageName, user }) {
       </AnimatePresence>
 
       {/* Toggle Button */}
-      <div className="fixed bottom-16 left-6 z-50 flex flex-col gap-2">
+      <div className="fixed bottom-20 left-6 z-50 flex flex-col gap-2">
         <motion.button
           onClick={() => { setIsOpen(!isOpen); if (isOpen) setActiveCategory(null); }}
           whileHover={{ scale: 1.05 }}
