@@ -237,7 +237,7 @@ export default function CircularNav({ currentPageName, user }) {
           onClick={() => navigate(createPageUrl("IntellectMode"))}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.98 }}
-          className="px-4 py-2 rounded-full bg-gradient-to-r from-cyan-500/30 to-violet-500/30 backdrop-blur-2xl border border-cyan-400/50 text-white text-sm font-medium shadow-lg hover:border-cyan-400/70 flex items-center gap-2 whitespace-nowrap"
+          className="px-4 py-2 rounded-full bg-gradient-to-r from-cyan-500/30 to-violet-500/30 backdrop-blur-2xl border border-cyan-400/50 text-white text-sm font-medium shadow-lg hover:border-cyan-400/70 flex items-center gap-2 whitespace-nowrap fixed bottom-6 right-6 z-50"
         >
           <Zap className="w-4 h-4" strokeWidth={1.5} />
           FLEET AI
