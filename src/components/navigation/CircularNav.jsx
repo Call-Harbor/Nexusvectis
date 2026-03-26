@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import NotificationCenter from "../notifications/NotificationCenter";
+import ThemeToggle from "@/components/ThemeToggle";
 
 const menuCategories = [
   { 
@@ -203,14 +204,13 @@ export default function CircularNav({ currentPageName, user }) {
             </div>
 
             {/* Footer */}
-            {user && (
-              <div className="px-5 py-4 border-t border-slate-700/50 flex items-center gap-3">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-slate-300 truncate">{user.full_name || user.email}</p>
-                </div>
-                <NotificationCenter user={user} />
+            <div className="px-5 py-4 border-t border-slate-700/50 flex items-center gap-3">
+              <div className="flex-1 min-w-0">
+                {user && <p className="text-sm text-slate-300 truncate">{user.full_name || user.email}</p>}
               </div>
-            )}
+              <ThemeToggle />
+              {user && <NotificationCenter user={user} />}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

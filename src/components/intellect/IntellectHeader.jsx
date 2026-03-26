@@ -9,7 +9,6 @@ import {
   Map, Leaf, Car, ClipboardList, Bell, Bus, Layers, BarChart2, Settings, TrendingUp, BookOpen, Key, MonitorCheck, PieChart, Navigation, MapPin
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import ThemeToggle from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -317,8 +316,6 @@ export default function IntellectHeader({ orgId, openWindow, executePrompt, setS
                 <Sparkles className="w-3.5 h-3.5 inline mr-2" />COMMAND<ChevronDown className="w-3.5 h-3.5 inline ml-2" />
               </button>
             </PromptSearchDropdown>
-
-            <ThemeToggle />
 
             <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 text-[8px] font-mono tracking-widest uppercase"
               style={{ color: "#10b981", border: "1px solid rgba(16,185,129,0.3)", background: "rgba(16,185,129,0.05)" }}>
