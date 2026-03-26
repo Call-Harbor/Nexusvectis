@@ -87,8 +87,7 @@
   }
 }
 
-/* ── Light mode overrides ── */
-:root.light,
+/* ── Light mode ── */
 html.light {
   --background: 210 20% 96%;
   --foreground: 222 47% 11%;
@@ -108,8 +107,6 @@ html.light {
   --input: 214 32% 80%;
   --ring: 222 47% 11%;
 }
-
-/* Hologram / dark-glass panels become light-glass in light mode */
 html.light .bg-slate-950,
 html.light .bg-slate-900 { background-color: hsl(210 20% 98%) !important; }
 html.light .bg-slate-800 { background-color: hsl(210 20% 93%) !important; }
@@ -118,8 +115,86 @@ html.light .text-slate-300,
 html.light .text-slate-400 { color: hsl(215 16% 35%) !important; }
 html.light .border-slate-700,
 html.light .border-slate-800 { border-color: hsl(214 32% 75%) !important; }
-/* Hologram backgrounds */
-html.light [style*="background: rgba(0,10,25"],
-html.light [style*="background: rgba(0,0,0"] {
-  background: rgba(240,245,255,0.9) !important;
+
+/* ── Blue theme ── */
+html.blue {
+  --background: 213 60% 6%;
+  --foreground: 200 100% 90%;
+  --card: 213 55% 9%;
+  --card-foreground: 200 100% 90%;
+  --popover: 213 55% 9%;
+  --popover-foreground: 200 100% 90%;
+  --primary: 199 89% 58%;
+  --primary-foreground: 213 60% 6%;
+  --secondary: 213 50% 14%;
+  --secondary-foreground: 200 100% 90%;
+  --muted: 213 50% 14%;
+  --muted-foreground: 210 40% 60%;
+  --accent: 199 89% 40%;
+  --accent-foreground: 0 0% 100%;
+  --border: 213 50% 18%;
+  --input: 213 50% 18%;
+  --ring: 199 89% 58%;
 }
+html.blue .bg-slate-950 { background-color: #020d1a !important; }
+html.blue .bg-slate-900 { background-color: #041526 !important; }
+html.blue .bg-slate-800 { background-color: #062035 !important; }
+html.blue .border-slate-700,
+html.blue .border-slate-800 { border-color: #0e4d7a !important; }
+html.blue .text-cyan-400 { color: #38bdf8 !important; }
+
+/* ── Green theme ── */
+html.green {
+  --background: 140 60% 4%;
+  --foreground: 140 60% 90%;
+  --card: 140 55% 7%;
+  --card-foreground: 140 60% 90%;
+  --popover: 140 55% 7%;
+  --popover-foreground: 140 60% 90%;
+  --primary: 142 72% 50%;
+  --primary-foreground: 140 60% 4%;
+  --secondary: 140 45% 12%;
+  --secondary-foreground: 140 60% 90%;
+  --muted: 140 45% 12%;
+  --muted-foreground: 140 30% 55%;
+  --accent: 142 72% 35%;
+  --accent-foreground: 0 0% 100%;
+  --border: 140 45% 16%;
+  --input: 140 45% 16%;
+  --ring: 142 72% 50%;
+}
+html.green .bg-slate-950 { background-color: #010f05 !important; }
+html.green .bg-slate-900 { background-color: #041a0a !important; }
+html.green .bg-slate-800 { background-color: #062610 !important; }
+html.green .border-slate-700,
+html.green .border-slate-800 { border-color: #14532d !important; }
+html.green .text-cyan-400 { color: #4ade80 !important; }
+
+/* ── High Contrast ── */
+html.contrast {
+  --background: 0 0% 0%;
+  --foreground: 0 0% 100%;
+  --card: 0 0% 5%;
+  --card-foreground: 0 0% 100%;
+  --popover: 0 0% 5%;
+  --popover-foreground: 0 0% 100%;
+  --primary: 0 0% 100%;
+  --primary-foreground: 0 0% 0%;
+  --secondary: 0 0% 10%;
+  --secondary-foreground: 0 0% 100%;
+  --muted: 0 0% 10%;
+  --muted-foreground: 0 0% 70%;
+  --accent: 0 0% 15%;
+  --accent-foreground: 0 0% 100%;
+  --border: 0 0% 30%;
+  --input: 0 0% 15%;
+  --ring: 0 0% 100%;
+}
+html.contrast .bg-slate-950 { background-color: #000000 !important; }
+html.contrast .bg-slate-900 { background-color: #0a0a0a !important; }
+html.contrast .bg-slate-800 { background-color: #141414 !important; }
+html.contrast .border-slate-700,
+html.contrast .border-slate-800 { border-color: #404040 !important; }
+html.contrast .text-slate-300,
+html.contrast .text-slate-400 { color: #e5e5e5 !important; }
+html.contrast .text-cyan-400 { color: #ffffff !important; }

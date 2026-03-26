@@ -203,12 +203,14 @@ export default function CircularNav({ currentPageName, user }) {
               })}
             </div>
 
+            {/* Theme Picker */}
+            <ThemeToggle />
+
             {/* Footer */}
             <div className="px-5 py-4 border-t border-slate-700/50 flex items-center gap-3">
               <div className="flex-1 min-w-0">
                 {user && <p className="text-sm text-slate-300 truncate">{user.full_name || user.email}</p>}
               </div>
-              <ThemeToggle />
               {user && <NotificationCenter user={user} />}
             </div>
           </motion.div>
