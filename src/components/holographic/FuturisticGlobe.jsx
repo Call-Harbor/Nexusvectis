@@ -380,6 +380,18 @@ export default function FuturisticGlobe({
     sat2Group.add(sat2Light);
     scene.add(sat2Group);
 
+    const TRAIL2_LENGTH = 32;
+    const trail2Pts = new Float32Array(TRAIL2_LENGTH * 3);
+    const trail2Colors = new Float32Array(TRAIL2_LENGTH * 3);
+    const trail2Geo = new THREE.BufferGeometry();
+    trail2Geo.setAttribute('position', new THREE.BufferAttribute(trail2Pts, 3));
+    trail2Geo.setAttribute('color', new THREE.BufferAttribute(trail2Colors, 3));
+    const trail2Mat = new THREE.PointsMaterial({
+      size: 0.01, transparent: true, opacity: 0.8,
+      vertexColors: true, sizeAttenuation: true,
+      blending: THREE.AdditiveBlending, depthWrite: false
+    });
+    scene.add(new THREE.Points(trail2Geo, trail2Mat));
     const trail2History = [];
 
     // ── LIGHTING ──────────────────────────────────────────────────────────────
