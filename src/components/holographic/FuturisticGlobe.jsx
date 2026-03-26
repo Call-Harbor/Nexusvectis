@@ -414,21 +414,75 @@ export default function FuturisticGlobe({
     resources.forEach(resource => {
       if (!resource.latitude || !resource.longitude) return;
       const pos = latLngToVec3(resource.latitude, resource.longitude, 1.04);
-      const marker = new THREE.Mesh(
-        new THREE.BoxGeometry(0.03, 0.03, 0.03),
-        new THREE.MeshBasicMaterial({ color: 0xffaa00, transparent: true, opacity: 0.85 })
-      );
-      marker.position.copy(pos);
-      marker.userData = { resource, type: 'resource' };
-      globe.add(marker);
-      resourceMarkers.push(marker);
+      const up = pos.clone().normalize();
+      const color = resource.status === 'offline' ? 0x334455 : resource.status === 'limited' ? 0xff8800 : 0xffaa00;
+      const colorInt = color;
 
+      const rGroup = new THREE.Group();
+      rGroup.position.copy(pos);
+      // Orient group so Y axis points away from globe center
+      rGroup.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), up);
+      rGroup.userData = { resource, type: 'resource' };
+
+      const mat = new THREE.MeshPhongMaterial({ color: colorInt, emissive: colorInt, emissiveIntensity: 0.4, shininess: 80, transparent: true, opacity: 0.9 });
+      const wireMat = new THREE.MeshBasicMaterial({ color: colorInt, transparent: true, opacity: 0.5, wireframe: true });
+
+      if (resource.type === 'warehouse') {
+        // Wide flat box (building)
+        rGroup.add(new THREE.Mesh(new THREE.BoxGeometry(0.055, 0.018, 0.04), mat));
+        // Roof ridge
+        const ridge = new THREE.Mesh(new THREE.CylinderGeometry(0.004, 0.004, 0.055, 6), new THREE.MeshPhongMaterial({ color: 0xffcc44, emissive: 0xffcc44, emissiveIntensity: 0.5 }));
+        ridge.rotation.z = Math.PI / 2; ridge.position.y = 0.012;
+        rGroup.add(ridge);
+      } else if (resource.type === 'fuel_depot') {
+        // Cylinder tank
+        rGroup.add(new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.04, 16), mat));
+        // Top dome
+        rGroup.add(new THREE.Mesh(new THREE.SphereGeometry(0.02, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2), mat));
+        // Pipe
+        const pipe = new THREE.Mesh(new THREE.CylinderGeometry(0.004, 0.004, 0.03, 8), mat);
+        pipe.position.set(0.022, 0, 0); pipe.rotation.z = Math.PI / 2;
+        rGroup.add(pipe);
+      } else if (resource.type === 'charging_station') {
+        // Tall narrow post
+        rGroup.add(new THREE.Mesh(new THREE.BoxGeometry(0.012, 0.05, 0.012), mat));
+        // Charging head
+        rGroup.add(new THREE.Mesh(new THREE.BoxGeometry(0.028, 0.016, 0.01), mat));
+        // Glow ring at base
+        const gRing = new THREE.Mesh(new THREE.RingGeometry(0.018, 0.026, 24), new THREE.MeshBasicMaterial({ color: 0x00ffff, transparent: true, opacity: 0.6, side: THREE.DoubleSide, blending: THREE.AdditiveBlending }));
+        gRing.rotation.x = -Math.PI / 2; gRing.position.y = -0.025;
+        rGroup.add(gRing);
+      } else if (resource.type === 'maintenance_hub') {
+        // Hangar shape: wide box + triangular roof
+        rGroup.add(new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.022, 0.035), mat));
+        const roofGeo = new THREE.CylinderGeometry(0, 0.038, 0.02, 4);
+        const roof = new THREE.Mesh(roofGeo, mat);
+        roof.position.y = 0.021; roof.rotation.y = Math.PI / 4;
+        rGroup.add(roof);
+      } else if (resource.type === 'port') {
+        // Platform / dock
+        rGroup.add(new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.008, 0.04), mat));
+        // Crane arm
+        const crane = new THREE.Mesh(new THREE.BoxGeometry(0.004, 0.04, 0.004), mat);
+        crane.position.set(0.025, 0.024, 0);
+        rGroup.add(crane);
+        const arm = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.004, 0.004), mat);
+        arm.position.set(0.01, 0.045, 0);
+        rGroup.add(arm);
+      } else {
+        rGroup.add(new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.035, 0.035), mat));
+      }
+
+      globe.add(rGroup);
+      resourceMarkers.push(rGroup);
+
+      // Pulse ring on ground
       const ring = new THREE.Mesh(
         new THREE.RingGeometry(0.04, 0.06, 32),
-        new THREE.MeshBasicMaterial({ color: 0xffaa00, transparent: true, opacity: 0.4, side: THREE.DoubleSide, blending: THREE.AdditiveBlending })
+        new THREE.MeshBasicMaterial({ color: colorInt, transparent: true, opacity: 0.4, side: THREE.DoubleSide, blending: THREE.AdditiveBlending })
       );
       ring.position.copy(pos);
-      ring.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1), pos.clone().normalize());
+      ring.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1), up);
       ring.userData = { phase: Math.random() * Math.PI * 2 };
       globe.add(ring);
     });
@@ -442,38 +496,115 @@ export default function FuturisticGlobe({
       const status = vehicle.status || 'offline';
       const color = STATUS_COLORS[status] || STATUS_COLORS.offline;
       const pos = latLngToVec3(vehicle.latitude, vehicle.longitude, 1.025);
+      const up = pos.clone().normalize();
 
-      const marker = new THREE.Mesh(
-        new THREE.ConeGeometry(0.015, 0.05, 4),
-        new THREE.MeshBasicMaterial({ color: color.int, transparent: true, opacity: 0.9 })
-      );
-      marker.position.copy(pos);
-      marker.lookAt(0,0,0); marker.rotateX(Math.PI/2);
-      marker.userData = { vehicle, status };
-      globe.add(marker);
-      vehicleMarkers.push(marker);
+      const vMat = new THREE.MeshPhongMaterial({ color: color.int, emissive: color.int, emissiveIntensity: 0.35, shininess: 100, transparent: true, opacity: 0.92 });
+      const glassMat = new THREE.MeshPhongMaterial({ color: 0xaaddff, emissive: 0x003366, emissiveIntensity: 0.5, transparent: true, opacity: 0.7, shininess: 200 });
 
-      const pulse = new THREE.Mesh(
-        new THREE.RingGeometry(0.022, 0.038, 32),
-        new THREE.MeshBasicMaterial({ color: color.int, transparent: true, opacity: 0.6, side: THREE.DoubleSide, blending: THREE.AdditiveBlending })
-      );
-      pulse.position.copy(pos.clone().multiplyScalar(1.002));
-      pulse.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1), pos.clone().normalize());
-      pulse.userData = { phase: Math.random() * Math.PI * 2 };
-      globe.add(pulse);
-      vehiclePulses.push(pulse);
+      const vGroup = new THREE.Group();
+      vGroup.position.copy(pos);
+      vGroup.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), up);
+      vGroup.userData = { vehicle, status };
 
-      const beamH = 0.3;
-      const beam = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.003, 0.008, beamH, 8),
-        new THREE.MeshBasicMaterial({ color: color.int, transparent: true, opacity: 0.35, blending: THREE.AdditiveBlending })
-      );
-      beam.position.copy(pos.clone().normalize().multiplyScalar(1 + beamH/2));
-      beam.lookAt(0,0,0); beam.rotateX(Math.PI/2);
-      beam.userData = { phase: Math.random() * Math.PI * 2 };
-      globe.add(beam);
-      vehicleBeams.push(beam);
+      const type = vehicle.type || 'truck';
+      if (type === 'truck' || type === 'bus') {
+        // Cab + trailer body
+        const body = new THREE.Mesh(new THREE.BoxGeometry(0.048, 0.016, 0.022), vMat);
+        body.position.y = 0.008;
+        vGroup.add(body);
+        const cab = new THREE.Mesh(new THREE.BoxGeometry(0.018, 0.014, 0.02), vMat);
+        cab.position.set(0.017, 0.015, 0);
+        vGroup.add(cab);
+        const windshield = new THREE.Mesh(new THREE.BoxGeometry(0.002, 0.01, 0.016), glassMat);
+        windshield.position.set(0.027, 0.015, 0);
+        vGroup.add(windshield);
+        // Wheels (4 small cylinders)
+        [[-0.014, -0.01], [0.014, -0.01], [-0.014, 0.01], [0.014, 0.01]].forEach(([wx, wz]) => {
+          const w = new THREE.Mesh(new THREE.CylinderGeometry(0.005, 0.005, 0.006, 8), vMat);
+          w.position.set(wx, 0, wz); w.rotation.z = Math.PI / 2;
+          vGroup.add(w);
+        });
+      } else if (type === 'ship') {
+        // Hull
+        const hull = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.014, 0.026), vMat);
+        hull.position.y = 0.007;
+        vGroup.add(hull);
+        // Bridge
+        const bridge = new THREE.Mesh(new THREE.BoxGeometry(0.018, 0.016, 0.022), vMat);
+        bridge.position.set(-0.018, 0.022, 0);
+        vGroup.add(bridge);
+        // Bridge windows
+        const bWin = new THREE.Mesh(new THREE.BoxGeometry(0.014, 0.008, 0.016), glassMat);
+        bWin.position.set(-0.018, 0.024, 0);
+        vGroup.add(bWin);
+        // Bow shape (cone)
+        const bow = new THREE.Mesh(new THREE.ConeGeometry(0.013, 0.022, 4), vMat);
+        bow.position.set(0.046, 0.007, 0); bow.rotation.z = -Math.PI / 2;
+        vGroup.add(bow);
+      } else if (type === 'aircraft') {
+        // Fuselage
+        const fuse = new THREE.Mesh(new THREE.CylinderGeometry(0.007, 0.007, 0.06, 12), vMat);
+        fuse.rotation.z = Math.PI / 2;
+        vGroup.add(fuse);
+        // Wings
+        const wing = new THREE.Mesh(new THREE.BoxGeometry(0.018, 0.003, 0.065), vMat);
+        vGroup.add(wing);
+        // Tail fin
+        const tail = new THREE.Mesh(new THREE.BoxGeometry(0.003, 0.016, 0.018), vMat);
+        tail.position.set(-0.028, 0.008, 0);
+        vGroup.add(tail);
+        // Nose
+        const nose = new THREE.Mesh(new THREE.ConeGeometry(0.007, 0.014, 12), vMat);
+        nose.position.set(0.037, 0, 0); nose.rotation.z = Math.PI / 2;
+        vGroup.add(nose);
+        // Engine nacelles
+        [-0.018, 0.018].forEach(ez => {
+          const eng = new THREE.Mesh(new THREE.CylinderGeometry(0.004, 0.004, 0.016, 8), vMat);
+          eng.rotation.z = Math.PI / 2; eng.position.set(0.004, -0.006, ez);
+          vGroup.add(eng);
+        });
+      } else if (type === 'drone') {
+        // Center disc
+        vGroup.add(new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.014, 0.007, 16), vMat));
+        // Arms + rotors
+        [0, 1, 2, 3].forEach(i => {
+          const angle = (i / 4) * Math.PI * 2;
+          const arm = new THREE.Mesh(new THREE.BoxGeometry(0.028, 0.003, 0.004), vMat);
+          arm.rotation.y = angle;
+          vGroup.add(arm);
+          const rotor = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 0.01, 0.002, 16), vMat);
+          rotor.position.set(Math.cos(angle) * 0.016, 0.005, Math.sin(angle) * 0.016);
+          vGroup.add(rotor);
+        });
+      } else if (type === 'train') {
+        // Long body with segments
+        [-0.03, 0, 0.03].forEach(ox => {
+          const car = new THREE.Mesh(new THREE.BoxGeometry(0.028, 0.014, 0.016), vMat);
+          car.position.set(ox, 0.007, 0);
+          vGroup.add(car);
+        });
+        // Windows strip
+        const winStrip = new THREE.Mesh(new THREE.BoxGeometry(0.072, 0.005, 0.003), glassMat);
+        winStrip.position.set(0, 0.012, 0.009);
+        vGroup.add(winStrip);
+      } else {
+        // Fallback: simple cone
+        const cone = new THREE.Mesh(new THREE.ConeGeometry(0.015, 0.04, 6), vMat);
+        cone.rotation.x = Math.PI / 2;
+        vGroup.add(cone);
+      }
 
+      // Speed direction indicator (small arrow)
+      if (vehicle.speed > 0) {
+        const arrow = new THREE.Mesh(new THREE.ConeGeometry(0.004, 0.012, 4), new THREE.MeshBasicMaterial({ color: color.int, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending }));
+        arrow.position.set(0.04, 0.018, 0);
+        vGroup.add(arrow);
+      }
+
+      globe.add(vGroup);
+      vehicleMarkers.push(vGroup);
+
+      // Speed trail
       if (vehicle.speed > 0 && vehicle.heading !== undefined) {
         const tl = 1.2;
         const bl = vehicle.latitude - Math.cos(vehicle.heading * Math.PI/180) * tl;
