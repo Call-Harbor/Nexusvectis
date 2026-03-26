@@ -243,25 +243,114 @@ export default function FuturisticGlobe({
     orbitRing.rotation.z = Math.PI * 0.08;
     scene.add(orbitRing);
 
-    const satelliteGeo = new THREE.OctahedronGeometry(0.018, 0);
-    const satelliteMat = new THREE.MeshBasicMaterial({
-      color: 0xffffff, transparent: true, opacity: 0.95,
+    // Second orbit ring (different inclination)
+    const orbitRing2Geo = new THREE.TorusGeometry(1.42, 0.0015, 16, 256);
+    const orbitRing2Mat = new THREE.MeshBasicMaterial({
+      color: 0x8844ff, transparent: true, opacity: 0.15,
       blending: THREE.AdditiveBlending
     });
-    const satellite = new THREE.Mesh(satelliteGeo, satelliteMat);
-    scene.add(satellite);
+    const orbitRing2 = new THREE.Mesh(orbitRing2Geo, orbitRing2Mat);
+    orbitRing2.rotation.x = Math.PI * 0.55;
+    orbitRing2.rotation.z = Math.PI * 0.25;
+    scene.add(orbitRing2);
 
-    // Satellite trail
-    const trailPts = new Float32Array(24 * 3);
+    // ── SATELLITE GROUP ───────────────────────────────────────────────────────
+    const satGroup = new THREE.Group();
+    scene.add(satGroup);
+
+    // Main body (metallic box)
+    const satBody = new THREE.Mesh(
+      new THREE.BoxGeometry(0.028, 0.02, 0.02),
+      new THREE.MeshPhongMaterial({ color: 0xccddff, emissive: 0x2244aa, emissiveIntensity: 0.6, shininess: 120 })
+    );
+    satGroup.add(satBody);
+
+    // Solar panel left
+    const panelMat = new THREE.MeshBasicMaterial({
+      color: 0x1144cc, transparent: true, opacity: 0.9,
+      side: THREE.DoubleSide, blending: THREE.AdditiveBlending
+    });
+    const panelGeo = new THREE.PlaneGeometry(0.07, 0.022);
+    const panelL = new THREE.Mesh(panelGeo, panelMat);
+    panelL.position.x = -0.055;
+    satGroup.add(panelL);
+
+    // Solar panel right
+    const panelR = new THREE.Mesh(panelGeo, panelMat);
+    panelR.position.x = 0.055;
+    satGroup.add(panelR);
+
+    // Solar panel grid lines
+    const panelLinesMat = new THREE.LineBasicMaterial({ color: 0x44aaff, transparent: true, opacity: 0.5 });
+    [-0.055, 0.055].forEach(px => {
+      // Vertical lines on panel
+      [-0.017, 0, 0.017].forEach(lx => {
+        const pts = [new THREE.Vector3(px + lx, -0.011, 0.001), new THREE.Vector3(px + lx, 0.011, 0.001)];
+        satGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), panelLinesMat));
+      });
+    });
+
+    // Antenna dish (small cone pointing earth)
+    const antenna = new THREE.Mesh(
+      new THREE.ConeGeometry(0.012, 0.028, 12, 1, true),
+      new THREE.MeshBasicMaterial({ color: 0x00ffff, transparent: true, opacity: 0.5, wireframe: true })
+    );
+    antenna.position.y = -0.02;
+    satGroup.add(antenna);
+
+    // Satellite glow point light
+    const satLight = new THREE.PointLight(0x00ccff, 2.5, 0.8);
+    satGroup.add(satLight);
+
+    // Signal beam (cone from satellite to globe)
+    const beamGeo = new THREE.CylinderGeometry(0.0005, 0.08, 1.2, 16, 1, true);
+    const beamMat = new THREE.MeshBasicMaterial({
+      color: 0x00ffff, transparent: true, opacity: 0.08,
+      side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false
+    });
+    const satBeam = new THREE.Mesh(beamGeo, beamMat);
+    satGroup.add(satBeam); // positioned dynamically in animate
+
+    // ── SATELLITE TRAIL (gradient points) ────────────────────────────────────
+    const TRAIL_LENGTH = 48;
+    const trailPts = new Float32Array(TRAIL_LENGTH * 3);
+    const trailColorsArr = new Float32Array(TRAIL_LENGTH * 3);
     const trailGeo = new THREE.BufferGeometry();
     trailGeo.setAttribute('position', new THREE.BufferAttribute(trailPts, 3));
-    const trailMat = new THREE.LineBasicMaterial({
-      color: 0x00ccff, transparent: true, opacity: 0.4,
-      blending: THREE.AdditiveBlending
+    trailGeo.setAttribute('color', new THREE.BufferAttribute(trailColorsArr, 3));
+    const trailMat = new THREE.PointsMaterial({
+      size: 0.015, transparent: true, opacity: 0.9,
+      vertexColors: true, sizeAttenuation: true,
+      blending: THREE.AdditiveBlending, depthWrite: false
     });
-    const satTrail = new THREE.Line(trailGeo, trailMat);
+    const satTrail = new THREE.Points(trailGeo, trailMat);
     scene.add(satTrail);
     const trailHistory = [];
+
+    // Second satellite on different orbit
+    const sat2Group = new THREE.Group();
+    const sat2Body = new THREE.Mesh(
+      new THREE.OctahedronGeometry(0.015, 0),
+      new THREE.MeshBasicMaterial({ color: 0xaa44ff, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending })
+    );
+    sat2Group.add(sat2Body);
+    const sat2Light = new THREE.PointLight(0xaa44ff, 1.5, 0.6);
+    sat2Group.add(sat2Light);
+    scene.add(sat2Group);
+
+    const TRAIL2_LENGTH = 32;
+    const trail2Pts = new Float32Array(TRAIL2_LENGTH * 3);
+    const trail2Colors = new Float32Array(TRAIL2_LENGTH * 3);
+    const trail2Geo = new THREE.BufferGeometry();
+    trail2Geo.setAttribute('position', new THREE.BufferAttribute(trail2Pts, 3));
+    trail2Geo.setAttribute('color', new THREE.BufferAttribute(trail2Colors, 3));
+    const trail2Mat = new THREE.PointsMaterial({
+      size: 0.01, transparent: true, opacity: 0.8,
+      vertexColors: true, sizeAttenuation: true,
+      blending: THREE.AdditiveBlending, depthWrite: false
+    });
+    scene.add(new THREE.Points(trail2Geo, trail2Mat));
+    const trail2History = [];
 
     // ── LIGHTING ──────────────────────────────────────────────────────────────
     scene.add(new THREE.AmbientLight(0xffffff, 2.0));
@@ -575,7 +664,7 @@ export default function FuturisticGlobe({
         p.position.copy(p.userData.curve.getPoint(p.userData.progress));
       });
 
-      // Satellite orbit
+      // ── SAT 1 ORBIT (cyan, tilted) ───────────────────────────────────────
       const satAngle = time * 0.38;
       const orbitTiltX = Math.PI * 0.28;
       const orbitTiltZ = Math.PI * 0.08;
@@ -586,23 +675,75 @@ export default function FuturisticGlobe({
       const rx = sx * cosZ - sy * sinX * sinZ;
       const ry = sy * cosX;
       const rz = sx * sinZ + sy * sinX * cosZ;
-      satellite.position.set(rx, ry, rz);
-      satellite.rotation.y = time * 3;
-      satellite.rotation.x = time * 2;
 
-      // Trail
+      satGroup.position.set(rx, ry, rz);
+
+      // Face satellite body along orbit tangent
+      const nextAngle = satAngle + 0.05;
+      const nsx = Math.cos(nextAngle) * 1.35;
+      const nsy = Math.sin(nextAngle) * 1.35;
+      const nrx = nsx * cosZ - nsy * sinX * sinZ;
+      const nry = nsy * cosX;
+      const nrz = nsx * sinZ + nsy * sinX * cosZ;
+      satGroup.lookAt(nrx, nry, nrz);
+
+      // Solar panels pulse (reflect sun)
+      panelMat.opacity = 0.7 + 0.25 * Math.sin(time * 2.5);
+
+      // Signal beam: point from satellite toward globe center
+      const satPos3 = new THREE.Vector3(rx, ry, rz);
+      const toCenter = satPos3.clone().negate().normalize();
+      const beamLen = satPos3.length() - 1.0;
+      satBeam.position.copy(toCenter.clone().multiplyScalar(beamLen * 0.5).applyMatrix4(satGroup.matrixWorld.clone().invert()));
+      satBeam.scale.y = beamLen;
+      satBeam.lookAt(satGroup.position.clone().add(toCenter));
+      satBeam.rotateX(Math.PI / 2);
+      beamMat.opacity = 0.04 + 0.06 * (0.5 + 0.5 * Math.sin(time * 4));
+
+      // Trail 1 — gradient fade
       trailHistory.push(new THREE.Vector3(rx, ry, rz));
-      if (trailHistory.length > 24) trailHistory.shift();
+      if (trailHistory.length > TRAIL_LENGTH) trailHistory.shift();
       const trailArr = trailGeo.attributes.position.array;
-      for (let i = 0; i < 24; i++) {
-        const h = trailHistory[i] || satellite.position;
+      const trailCols = trailGeo.attributes.color.array;
+      for (let i = 0; i < TRAIL_LENGTH; i++) {
+        const h = trailHistory[i] || new THREE.Vector3(rx, ry, rz);
         trailArr[i*3] = h.x; trailArr[i*3+1] = h.y; trailArr[i*3+2] = h.z;
+        // Head = bright cyan, tail = dark blue
+        const t2 = i / TRAIL_LENGTH;
+        trailCols[i*3]   = t2 * 0.0 + (1-t2) * 0.0;   // R
+        trailCols[i*3+1] = t2 * 0.8 + (1-t2) * 0.1;   // G
+        trailCols[i*3+2] = t2 * 1.0 + (1-t2) * 0.2;   // B
       }
       trailGeo.attributes.position.needsUpdate = true;
-      trailMat.opacity = 0.15 + 0.2 * Math.sin(time * 2);
+      trailGeo.attributes.color.needsUpdate = true;
+
+      // ── SAT 2 ORBIT (purple, polar) ───────────────────────────────────────
+      const sat2Angle = time * 0.52 + 1.8;
+      const s2x = Math.cos(sat2Angle) * 1.42;
+      const s2y = Math.sin(sat2Angle) * 1.42 * Math.cos(Math.PI * 0.55);
+      const s2z = Math.sin(sat2Angle) * 1.42 * Math.sin(Math.PI * 0.55);
+      sat2Group.position.set(s2x, s2y, s2z);
+      sat2Body.rotation.y = time * 4;
+      sat2Body.rotation.x = time * 2.5;
+
+      trail2History.push(new THREE.Vector3(s2x, s2y, s2z));
+      if (trail2History.length > TRAIL2_LENGTH) trail2History.shift();
+      const t2Arr = trail2Geo.attributes.position.array;
+      const t2Cols = trail2Geo.attributes.color.array;
+      for (let i = 0; i < TRAIL2_LENGTH; i++) {
+        const h = trail2History[i] || new THREE.Vector3(s2x, s2y, s2z);
+        t2Arr[i*3] = h.x; t2Arr[i*3+1] = h.y; t2Arr[i*3+2] = h.z;
+        const t3 = i / TRAIL2_LENGTH;
+        t2Cols[i*3]   = t3 * 0.6 + (1-t3) * 0.1;  // R
+        t2Cols[i*3+1] = t3 * 0.1 + (1-t3) * 0.0;  // G
+        t2Cols[i*3+2] = t3 * 1.0 + (1-t3) * 0.1;  // B
+      }
+      trail2Geo.attributes.position.needsUpdate = true;
+      trail2Geo.attributes.color.needsUpdate = true;
 
       // Orbit ring shimmer
       orbitRingMat.opacity = 0.15 + 0.12 * Math.sin(time * 1.2);
+      orbitRing2Mat.opacity = 0.08 + 0.07 * Math.sin(time * 0.9 + 1.2);
 
       // Moving rim lights
       rimLight1.position.x = Math.cos(time * 0.5) * 4;
