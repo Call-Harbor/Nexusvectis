@@ -20,7 +20,7 @@ export default function Layout({ children, currentPageName }) {
   }, []);
 
   return (
-    <div className="min-h-screen" style={{ background: 'hsl(var(--background))' }}>
+    <div className="min-h-screen bg-slate-950">
       {!hideNav && (
         <CircularNav currentPageName={currentPageName} user={user} />
       )}
