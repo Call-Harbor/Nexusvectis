@@ -86,3 +86,40 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* ── Light mode overrides ── */
+:root.light,
+html.light {
+  --background: 210 20% 96%;
+  --foreground: 222 47% 11%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 47% 11%;
+  --primary: 222 47% 11%;
+  --primary-foreground: 0 0% 98%;
+  --secondary: 210 20% 88%;
+  --secondary-foreground: 222 47% 11%;
+  --muted: 210 20% 92%;
+  --muted-foreground: 215 16% 40%;
+  --accent: 210 20% 88%;
+  --accent-foreground: 222 47% 11%;
+  --border: 214 32% 80%;
+  --input: 214 32% 80%;
+  --ring: 222 47% 11%;
+}
+
+/* Hologram / dark-glass panels become light-glass in light mode */
+html.light .bg-slate-950,
+html.light .bg-slate-900 { background-color: hsl(210 20% 98%) !important; }
+html.light .bg-slate-800 { background-color: hsl(210 20% 93%) !important; }
+html.light .text-white   { color: hsl(222 47% 11%)  !important; }
+html.light .text-slate-300,
+html.light .text-slate-400 { color: hsl(215 16% 35%) !important; }
+html.light .border-slate-700,
+html.light .border-slate-800 { border-color: hsl(214 32% 75%) !important; }
+/* Hologram backgrounds */
+html.light [style*="background: rgba(0,10,25"],
+html.light [style*="background: rgba(0,0,0"] {
+  background: rgba(240,245,255,0.9) !important;
+}
