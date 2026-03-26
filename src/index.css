@@ -136,12 +136,17 @@ html.blue {
   --input: 213 50% 18%;
   --ring: 199 89% 58%;
 }
+html.blue body { background: #020d1a !important; color: #bae6fd !important; }
 html.blue .bg-slate-950 { background-color: #020d1a !important; }
 html.blue .bg-slate-900 { background-color: #041526 !important; }
 html.blue .bg-slate-800 { background-color: #062035 !important; }
+html.blue .bg-slate-700 { background-color: #0c3054 !important; }
 html.blue .border-slate-700,
 html.blue .border-slate-800 { border-color: #0e4d7a !important; }
 html.blue .text-cyan-400 { color: #38bdf8 !important; }
+html.blue [class*="bg-slate-9"] { background-color: #041526 !important; }
+html.blue [style*="background: rgba(0,10,25"],
+html.blue [style*="background: rgba(0,0,0"] { background: rgba(2,20,45,0.95) !important; }
 
 /* ── Green theme ── */
 html.green {
@@ -163,12 +168,17 @@ html.green {
   --input: 140 45% 16%;
   --ring: 142 72% 50%;
 }
+html.green body { background: #010f05 !important; color: #bbf7d0 !important; }
 html.green .bg-slate-950 { background-color: #010f05 !important; }
 html.green .bg-slate-900 { background-color: #041a0a !important; }
 html.green .bg-slate-800 { background-color: #062610 !important; }
+html.green .bg-slate-700 { background-color: #0d3d1c !important; }
 html.green .border-slate-700,
 html.green .border-slate-800 { border-color: #14532d !important; }
 html.green .text-cyan-400 { color: #4ade80 !important; }
+html.green [class*="bg-slate-9"] { background-color: #041a0a !important; }
+html.green [style*="background: rgba(0,10,25"],
+html.green [style*="background: rgba(0,0,0"] { background: rgba(4,26,10,0.95) !important; }
 
 /* ── High Contrast ── */
 html.contrast {
@@ -190,11 +200,15 @@ html.contrast {
   --input: 0 0% 15%;
   --ring: 0 0% 100%;
 }
+html.contrast body { background: #000000 !important; color: #ffffff !important; }
 html.contrast .bg-slate-950 { background-color: #000000 !important; }
 html.contrast .bg-slate-900 { background-color: #0a0a0a !important; }
 html.contrast .bg-slate-800 { background-color: #141414 !important; }
+html.contrast .bg-slate-700 { background-color: #222222 !important; }
 html.contrast .border-slate-700,
-html.contrast .border-slate-800 { border-color: #404040 !important; }
+html.contrast .border-slate-800 { border-color: #555555 !important; }
 html.contrast .text-slate-300,
 html.contrast .text-slate-400 { color: #e5e5e5 !important; }
 html.contrast .text-cyan-400 { color: #ffffff !important; }
+html.contrast [style*="background: rgba(0,10,25"],
+html.contrast [style*="background: rgba(0,0,0"] { background: rgba(10,10,10,0.98) !important; }
