@@ -327,29 +327,59 @@ export default function FuturisticGlobe({
     scene.add(satTrail);
     const trailHistory = [];
 
-    // Second satellite on different orbit
+    // Second satellite on different orbit — full satellite body like sat1 but purple
     const sat2Group = new THREE.Group();
+
+    // Main body
     const sat2Body = new THREE.Mesh(
-      new THREE.OctahedronGeometry(0.015, 0),
-      new THREE.MeshBasicMaterial({ color: 0xaa44ff, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending })
+      new THREE.BoxGeometry(0.028, 0.02, 0.02),
+      new THREE.MeshPhongMaterial({ color: 0xddaaff, emissive: 0x440088, emissiveIntensity: 0.6, shininess: 120 })
     );
     sat2Group.add(sat2Body);
+
+    // Solar panels
+    const panel2Mat = new THREE.MeshBasicMaterial({
+      color: 0x5511aa, transparent: true, opacity: 0.9,
+      side: THREE.DoubleSide, blending: THREE.AdditiveBlending
+    });
+    const panel2Geo = new THREE.PlaneGeometry(0.07, 0.022);
+    const panel2L = new THREE.Mesh(panel2Geo, panel2Mat);
+    panel2L.position.x = -0.055;
+    sat2Group.add(panel2L);
+    const panel2R = new THREE.Mesh(panel2Geo, panel2Mat);
+    panel2R.position.x = 0.055;
+    sat2Group.add(panel2R);
+
+    // Solar panel grid lines
+    const panel2LinesMat = new THREE.LineBasicMaterial({ color: 0xaa66ff, transparent: true, opacity: 0.5 });
+    [-0.055, 0.055].forEach(px => {
+      [-0.017, 0, 0.017].forEach(lx => {
+        const pts = [new THREE.Vector3(px + lx, -0.011, 0.001), new THREE.Vector3(px + lx, 0.011, 0.001)];
+        sat2Group.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), panel2LinesMat));
+      });
+    });
+
+    // Antenna
+    const antenna2 = new THREE.Mesh(
+      new THREE.ConeGeometry(0.012, 0.028, 12, 1, true),
+      new THREE.MeshBasicMaterial({ color: 0xaa44ff, transparent: true, opacity: 0.5, wireframe: true })
+    );
+    antenna2.position.y = -0.02;
+    sat2Group.add(antenna2);
+
+    // Signal beam
+    const beam2Geo = new THREE.CylinderGeometry(0.0005, 0.08, 1.2, 16, 1, true);
+    const beam2Mat = new THREE.MeshBasicMaterial({
+      color: 0xaa44ff, transparent: true, opacity: 0.08,
+      side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false
+    });
+    const sat2Beam = new THREE.Mesh(beam2Geo, beam2Mat);
+    sat2Group.add(sat2Beam);
+
     const sat2Light = new THREE.PointLight(0xaa44ff, 1.5, 0.6);
     sat2Group.add(sat2Light);
     scene.add(sat2Group);
 
-    const TRAIL2_LENGTH = 32;
-    const trail2Pts = new Float32Array(TRAIL2_LENGTH * 3);
-    const trail2Colors = new Float32Array(TRAIL2_LENGTH * 3);
-    const trail2Geo = new THREE.BufferGeometry();
-    trail2Geo.setAttribute('position', new THREE.BufferAttribute(trail2Pts, 3));
-    trail2Geo.setAttribute('color', new THREE.BufferAttribute(trail2Colors, 3));
-    const trail2Mat = new THREE.PointsMaterial({
-      size: 0.01, transparent: true, opacity: 0.8,
-      vertexColors: true, sizeAttenuation: true,
-      blending: THREE.AdditiveBlending, depthWrite: false
-    });
-    scene.add(new THREE.Points(trail2Geo, trail2Mat));
     const trail2History = [];
 
     // ── LIGHTING ──────────────────────────────────────────────────────────────
@@ -723,8 +753,26 @@ export default function FuturisticGlobe({
       const s2y = Math.sin(sat2Angle) * 1.42 * Math.cos(Math.PI * 0.55);
       const s2z = Math.sin(sat2Angle) * 1.42 * Math.sin(Math.PI * 0.55);
       sat2Group.position.set(s2x, s2y, s2z);
-      sat2Body.rotation.y = time * 4;
-      sat2Body.rotation.x = time * 2.5;
+
+      // Face sat2 along orbit tangent
+      const next2Angle = sat2Angle + 0.05;
+      const ns2x = Math.cos(next2Angle) * 1.42;
+      const ns2y = Math.sin(next2Angle) * 1.42 * Math.cos(Math.PI * 0.55);
+      const ns2z = Math.sin(next2Angle) * 1.42 * Math.sin(Math.PI * 0.55);
+      sat2Group.lookAt(ns2x, ns2y, ns2z);
+
+      // Solar panels pulse
+      panel2Mat.opacity = 0.7 + 0.25 * Math.sin(time * 2.1 + 1.3);
+
+      // Signal beam toward globe
+      const sat2Pos3 = new THREE.Vector3(s2x, s2y, s2z);
+      const toCenter2 = sat2Pos3.clone().negate().normalize();
+      const beamLen2 = sat2Pos3.length() - 1.0;
+      sat2Beam.position.copy(toCenter2.clone().multiplyScalar(beamLen2 * 0.5).applyMatrix4(sat2Group.matrixWorld.clone().invert()));
+      sat2Beam.scale.y = beamLen2;
+      sat2Beam.lookAt(sat2Group.position.clone().add(toCenter2));
+      sat2Beam.rotateX(Math.PI / 2);
+      beam2Mat.opacity = 0.04 + 0.05 * (0.5 + 0.5 * Math.sin(time * 3.5 + 1));
 
       trail2History.push(new THREE.Vector3(s2x, s2y, s2z));
       if (trail2History.length > TRAIL2_LENGTH) trail2History.shift();
