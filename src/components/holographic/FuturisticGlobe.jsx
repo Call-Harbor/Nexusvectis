@@ -730,10 +730,18 @@ export default function FuturisticGlobe({
       mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
       mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
       raycaster.setFromCamera(mouse, camera);
-      const vHit = raycaster.intersectObjects(vehicleMarkers);
-      if (vHit.length > 0) { onSelectVehicle?.(vHit[0].object.userData.vehicle); return; }
-      const rHit = raycaster.intersectObjects(resourceMarkers);
-      if (rHit.length > 0) { onSelectResource?.(rHit[0].object.userData.resource); return; }
+      const vHit = raycaster.intersectObjects(vehicleMarkers, true);
+      if (vHit.length > 0) {
+        let obj = vHit[0].object;
+        while (obj && !obj.userData.vehicle) obj = obj.parent;
+        if (obj?.userData.vehicle) { onSelectVehicle?.(obj.userData.vehicle); return; }
+      }
+      const rHit = raycaster.intersectObjects(resourceMarkers, true);
+      if (rHit.length > 0) {
+        let obj = rHit[0].object;
+        while (obj && !obj.userData.resource) obj = obj.parent;
+        if (obj?.userData.resource) { onSelectResource?.(obj.userData.resource); return; }
+      }
       const arcHit = raycaster.intersectObjects(routeArcs);
       if (arcHit.length > 0) { const r = arcHit[0].object.userData.route; if (r) setSimulatingRoute(r); }
     };
