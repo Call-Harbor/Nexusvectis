@@ -420,12 +420,28 @@ export default function FuturisticGlobe({
 
       const rGroup = new THREE.Group();
       rGroup.position.copy(pos);
-      // Orient group so Y axis points away from globe center
       rGroup.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), up);
       rGroup.userData = { resource, type: 'resource' };
 
-      const mat = new THREE.MeshPhongMaterial({ color: colorInt, emissive: colorInt, emissiveIntensity: 0.4, shininess: 80, transparent: true, opacity: 0.9 });
-      const wireMat = new THREE.MeshBasicMaterial({ color: colorInt, transparent: true, opacity: 0.5, wireframe: true });
+      const mat = new THREE.MeshPhongMaterial({ color: colorInt, emissive: colorInt, emissiveIntensity: 0.7, shininess: 140, transparent: true, opacity: 0.95 });
+      const wireMat = new THREE.MeshBasicMaterial({ color: colorInt, transparent: true, opacity: 0.4, wireframe: true });
+
+      // Point light glow (like satellite)
+      const rLight = new THREE.PointLight(colorInt, 3.0, 0.5);
+      rLight.position.set(0, 0.04, 0);
+      rGroup.add(rLight);
+
+      // Vertical signal beam upward
+      const rBeamGeo = new THREE.CylinderGeometry(0.0003, 0.02, 0.18, 12, 1, true);
+      const rBeamMat = new THREE.MeshBasicMaterial({ color: colorInt, transparent: true, opacity: 0.12, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false });
+      const rBeam = new THREE.Mesh(rBeamGeo, rBeamMat);
+      rBeam.position.y = 0.09;
+      rGroup.add(rBeam);
+
+      // Top glow sphere
+      const rGlow = new THREE.Mesh(new THREE.SphereGeometry(0.012, 16, 16), new THREE.MeshBasicMaterial({ color: colorInt, transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending }));
+      rGlow.position.y = 0.055;
+      rGroup.add(rGlow);
 
       if (resource.type === 'warehouse') {
         // Wide flat box (building)
@@ -476,15 +492,17 @@ export default function FuturisticGlobe({
       globe.add(rGroup);
       resourceMarkers.push(rGroup);
 
-      // Pulse ring on ground
-      const ring = new THREE.Mesh(
-        new THREE.RingGeometry(0.04, 0.06, 32),
-        new THREE.MeshBasicMaterial({ color: colorInt, transparent: true, opacity: 0.4, side: THREE.DoubleSide, blending: THREE.AdditiveBlending })
-      );
-      ring.position.copy(pos);
-      ring.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1), up);
-      ring.userData = { phase: Math.random() * Math.PI * 2 };
-      globe.add(ring);
+      // Double pulse rings
+      [0.04, 0.07].forEach((innerR, ri) => {
+        const ring = new THREE.Mesh(
+          new THREE.RingGeometry(innerR, innerR + 0.016, 32),
+          new THREE.MeshBasicMaterial({ color: colorInt, transparent: true, opacity: ri === 0 ? 0.5 : 0.25, side: THREE.DoubleSide, blending: THREE.AdditiveBlending })
+        );
+        ring.position.copy(pos);
+        ring.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1), up);
+        ring.userData = { phase: Math.random() * Math.PI * 2 + ri * 1.0, isPulse: true };
+        globe.add(ring);
+      });
     });
 
     // ── VEHICLE MARKERS ───────────────────────────────────────────────────────
@@ -498,8 +516,8 @@ export default function FuturisticGlobe({
       const pos = latLngToVec3(vehicle.latitude, vehicle.longitude, 1.025);
       const up = pos.clone().normalize();
 
-      const vMat = new THREE.MeshPhongMaterial({ color: color.int, emissive: color.int, emissiveIntensity: 0.35, shininess: 100, transparent: true, opacity: 0.92 });
-      const glassMat = new THREE.MeshPhongMaterial({ color: 0xaaddff, emissive: 0x003366, emissiveIntensity: 0.5, transparent: true, opacity: 0.7, shininess: 200 });
+      const vMat = new THREE.MeshPhongMaterial({ color: color.int, emissive: color.int, emissiveIntensity: 0.65, shininess: 140, transparent: true, opacity: 0.95 });
+      const glassMat = new THREE.MeshPhongMaterial({ color: 0xaaddff, emissive: 0x003366, emissiveIntensity: 0.8, transparent: true, opacity: 0.75, shininess: 220 });
 
       const vGroup = new THREE.Group();
       vGroup.position.copy(pos);
@@ -593,6 +611,23 @@ export default function FuturisticGlobe({
         cone.rotation.x = Math.PI / 2;
         vGroup.add(cone);
       }
+
+      // Point light glow (like satellite)
+      const vLight = new THREE.PointLight(color.int, 2.5, 0.45);
+      vLight.position.set(0, 0.035, 0);
+      vGroup.add(vLight);
+
+      // Signal beacon beam upward
+      const vBeamGeo = new THREE.CylinderGeometry(0.0003, 0.016, 0.14, 12, 1, true);
+      const vBeamMat = new THREE.MeshBasicMaterial({ color: color.int, transparent: true, opacity: 0.14, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false });
+      const vBeam = new THREE.Mesh(vBeamGeo, vBeamMat);
+      vBeam.position.y = 0.07;
+      vGroup.add(vBeam);
+
+      // Top glow dot
+      const vGlow = new THREE.Mesh(new THREE.SphereGeometry(0.009, 16, 16), new THREE.MeshBasicMaterial({ color: color.int, transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending }));
+      vGlow.position.y = 0.042;
+      vGroup.add(vGlow);
 
       // Speed direction indicator (small arrow)
       if (vehicle.speed > 0) {
@@ -830,10 +865,12 @@ export default function FuturisticGlobe({
         if (i % 2 === 0) { t.rotation.y = time * 2; t.rotation.x = Math.sin(time * 1.5) * 0.3; }
       });
 
-      // Resource pulse
+      // Resource pulse + beacon flicker
       resourceMarkers.forEach(r => {
         r.rotation.y = time * 0.5;
-        r.scale.setScalar(1 + 0.12 * Math.sin(time * 3 + r.userData?.phase || 0));
+        // Flicker beacon light
+        const rLt = r.children.find(c => c.isPointLight);
+        if (rLt) rLt.intensity = 2.5 + 1.5 * Math.sin(time * 4 + (r.userData?.resource?.id?.charCodeAt(0) || 0));
       });
 
       // Animate data-flow particles along route arcs
