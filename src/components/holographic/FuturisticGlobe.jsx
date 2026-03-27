@@ -422,6 +422,7 @@ export default function FuturisticGlobe({
       rGroup.position.copy(pos);
       rGroup.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), up);
       rGroup.userData = { resource, type: 'resource' };
+      rGroup.scale.setScalar(2.5);
 
       const mat = new THREE.MeshPhongMaterial({ color: colorInt, emissive: colorInt, emissiveIntensity: 0.7, shininess: 140, transparent: true, opacity: 0.95 });
       const wireMat = new THREE.MeshBasicMaterial({ color: colorInt, transparent: true, opacity: 0.4, wireframe: true });
@@ -519,10 +520,19 @@ export default function FuturisticGlobe({
       const vMat = new THREE.MeshPhongMaterial({ color: color.int, emissive: color.int, emissiveIntensity: 0.65, shininess: 140, transparent: true, opacity: 0.95 });
       const glassMat = new THREE.MeshPhongMaterial({ color: 0xaaddff, emissive: 0x003366, emissiveIntensity: 0.8, transparent: true, opacity: 0.75, shininess: 220 });
 
+      // Type-specific accent colors for better visual distinction
+      const typeColors = {
+        truck: 0x00e5ff, ship: 0x0055ff, aircraft: 0xff6600,
+        drone: 0x00ff88, train: 0xffdd00, bus: 0xff3399
+      };
+      const accentColor = typeColors[type] || color.int;
+      const accentMat = new THREE.MeshPhongMaterial({ color: accentColor, emissive: accentColor, emissiveIntensity: 0.9, shininess: 180, transparent: true, opacity: 0.98 });
+
       const vGroup = new THREE.Group();
       vGroup.position.copy(pos);
       vGroup.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), up);
       vGroup.userData = { vehicle, status };
+      vGroup.scale.setScalar(2.2);
 
       const type = vehicle.type || 'truck';
       if (type === 'truck' || type === 'bus') {
