@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, X, Ship, Wrench } from "lucide-react";
+import { Plus, X, Ship } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,9 +9,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const TABS = [
-  { id: "vessel", label: "Skibe (Vessels)" },
-  { id: "crane", label: "Kraner" },
-  { id: "equipment", label: "Havn-udstyr" },
+  { id: "vessel", label: "Vessels" },
+  { id: "crane", label: "Cranes" },
+  { id: "equipment", label: "Port Equipment" },
 ];
 
 function VesselForm({ onSave, onClose }) {
@@ -19,8 +19,8 @@ function VesselForm({ onSave, onClose }) {
   return (
     <div className="space-y-3">
       <div className="grid grid-cols-2 gap-3">
-        <div><Label>Skibsnavn *</Label><Input value={f.name} onChange={e => setF({...f, name: e.target.value})} className="bg-slate-800 border-slate-700" placeholder="MSC AURORA" /></div>
-        <div><Label>IMO Nummer</Label><Input value={f.imo} onChange={e => setF({...f, imo: e.target.value})} className="bg-slate-800 border-slate-700" placeholder="9876543" /></div>
+        <div><Label>Vessel Name *</Label><Input value={f.name} onChange={e => setF({...f, name: e.target.value})} className="bg-slate-800 border-slate-700" placeholder="MSC AURORA" /></div>
+        <div><Label>IMO Number</Label><Input value={f.imo} onChange={e => setF({...f, imo: e.target.value})} className="bg-slate-800 border-slate-700" placeholder="9876543" /></div>
         <div><Label>Type</Label>
           <Select value={f.type} onValueChange={v => setF({...f, type: v})}>
             <SelectTrigger className="bg-slate-800 border-slate-700"><SelectValue /></SelectTrigger>
@@ -46,19 +46,19 @@ function VesselForm({ onSave, onClose }) {
             </SelectContent>
           </Select>
         </div>
-        <div><Label>Rederi/Operatør</Label><Input value={f.operator} onChange={e => setF({...f, operator: e.target.value})} className="bg-slate-800 border-slate-700" placeholder="Maersk" /></div>
-        <div><Label>Servicelinje</Label><Input value={f.service} onChange={e => setF({...f, service: e.target.value})} className="bg-slate-800 border-slate-700" placeholder="AE-1" /></div>
-        <div><Label>Flagstat</Label><Input value={f.flag} onChange={e => setF({...f, flag: e.target.value})} className="bg-slate-800 border-slate-700" placeholder="Denmark" /></div>
-        <div><Label>Længde (m)</Label><Input type="number" value={f.length_m} onChange={e => setF({...f, length_m: e.target.value})} className="bg-slate-800 border-slate-700" placeholder="347" /></div>
-        <div><Label>TEU Kapacitet</Label><Input type="number" value={f.teu_capacity} onChange={e => setF({...f, teu_capacity: e.target.value})} className="bg-slate-800 border-slate-700" placeholder="11000" /></div>
+        <div><Label>Operator / Shipping Line</Label><Input value={f.operator} onChange={e => setF({...f, operator: e.target.value})} className="bg-slate-800 border-slate-700" placeholder="Maersk" /></div>
+        <div><Label>Service Line</Label><Input value={f.service} onChange={e => setF({...f, service: e.target.value})} className="bg-slate-800 border-slate-700" placeholder="AE-1" /></div>
+        <div><Label>Flag State</Label><Input value={f.flag} onChange={e => setF({...f, flag: e.target.value})} className="bg-slate-800 border-slate-700" placeholder="Denmark" /></div>
+        <div><Label>Length (m)</Label><Input type="number" value={f.length_m} onChange={e => setF({...f, length_m: e.target.value})} className="bg-slate-800 border-slate-700" placeholder="347" /></div>
+        <div><Label>TEU Capacity</Label><Input type="number" value={f.teu_capacity} onChange={e => setF({...f, teu_capacity: e.target.value})} className="bg-slate-800 border-slate-700" placeholder="11000" /></div>
       </div>
       <div className="flex items-center gap-2">
         <input type="checkbox" checked={f.shore_power_capable} onChange={e => setF({...f, shore_power_capable: e.target.checked})} id="shore" />
         <Label htmlFor="shore">Shore Power Capable</Label>
       </div>
       <div className="flex gap-2">
-        <Button className="flex-1 bg-cyan-600 hover:bg-cyan-700 text-white" onClick={() => onSave(f)} disabled={!f.name}>Opret Skib</Button>
-        <Button variant="outline" className="border-slate-700 text-white" onClick={onClose}>Annuller</Button>
+        <Button className="flex-1 bg-cyan-600 hover:bg-cyan-700 text-white" onClick={() => onSave(f)} disabled={!f.name}>Create Vessel</Button>
+        <Button variant="outline" className="border-slate-700 text-white" onClick={onClose}>Cancel</Button>
       </div>
     </div>
   );
@@ -69,7 +69,7 @@ function CraneForm({ onSave, onClose }) {
   return (
     <div className="space-y-3">
       <div className="grid grid-cols-2 gap-3">
-        <div><Label>Kranenavn *</Label><Input value={f.name} onChange={e => setF({...f, name: e.target.value})} className="bg-slate-800 border-slate-700" placeholder="STS-01" /></div>
+        <div><Label>Crane Name *</Label><Input value={f.name} onChange={e => setF({...f, name: e.target.value})} className="bg-slate-800 border-slate-700" placeholder="STS-01" /></div>
         <div><Label>Type</Label>
           <Select value={f.type} onValueChange={v => setF({...f, type: v})}>
             <SelectTrigger className="bg-slate-800 border-slate-700"><SelectValue /></SelectTrigger>
@@ -77,7 +77,7 @@ function CraneForm({ onSave, onClose }) {
               <SelectItem value="STS">STS (Ship-to-Shore)</SelectItem>
               <SelectItem value="RTG">RTG (Rubber Tyred Gantry)</SelectItem>
               <SelectItem value="RMG">RMG (Rail Mounted Gantry)</SelectItem>
-              <SelectItem value="mobile">Mobile Kran</SelectItem>
+              <SelectItem value="mobile">Mobile Crane</SelectItem>
               <SelectItem value="reachstacker">Reachstacker</SelectItem>
             </SelectContent>
           </Select>
@@ -94,14 +94,14 @@ function CraneForm({ onSave, onClose }) {
             </SelectContent>
           </Select>
         </div>
-        <div><Label>Moves/time (kapacitet)</Label><Input type="number" value={f.moves_per_hour} onChange={e => setF({...f, moves_per_hour: e.target.value})} className="bg-slate-800 border-slate-700" placeholder="30" /></div>
-        <div><Label>Rækkevidde (m)</Label><Input type="number" value={f.outreach_m} onChange={e => setF({...f, outreach_m: e.target.value})} className="bg-slate-800 border-slate-700" placeholder="65" /></div>
-        <div><Label>Max løft (tons)</Label><Input type="number" value={f.max_lift_tons} onChange={e => setF({...f, max_lift_tons: e.target.value})} className="bg-slate-800 border-slate-700" placeholder="65" /></div>
-        <div><Label>Installationsår</Label><Input type="number" value={f.year_installed} onChange={e => setF({...f, year_installed: e.target.value})} className="bg-slate-800 border-slate-700" placeholder="2020" /></div>
+        <div><Label>Moves/hour (capacity)</Label><Input type="number" value={f.moves_per_hour} onChange={e => setF({...f, moves_per_hour: e.target.value})} className="bg-slate-800 border-slate-700" placeholder="30" /></div>
+        <div><Label>Outreach (m)</Label><Input type="number" value={f.outreach_m} onChange={e => setF({...f, outreach_m: e.target.value})} className="bg-slate-800 border-slate-700" placeholder="65" /></div>
+        <div><Label>Max lift (tons)</Label><Input type="number" value={f.max_lift_tons} onChange={e => setF({...f, max_lift_tons: e.target.value})} className="bg-slate-800 border-slate-700" placeholder="65" /></div>
+        <div><Label>Year installed</Label><Input type="number" value={f.year_installed} onChange={e => setF({...f, year_installed: e.target.value})} className="bg-slate-800 border-slate-700" placeholder="2020" /></div>
       </div>
       <div className="flex gap-2">
-        <Button className="flex-1 bg-cyan-600 hover:bg-cyan-700 text-white" onClick={() => onSave(f)} disabled={!f.name}>Opret Kran</Button>
-        <Button variant="outline" className="border-slate-700 text-white" onClick={onClose}>Annuller</Button>
+        <Button className="flex-1 bg-cyan-600 hover:bg-cyan-700 text-white" onClick={() => onSave(f)} disabled={!f.name}>Create Crane</Button>
+        <Button variant="outline" className="border-slate-700 text-white" onClick={onClose}>Cancel</Button>
       </div>
     </div>
   );
@@ -112,26 +112,26 @@ function EquipmentForm({ onSave, onClose }) {
   return (
     <div className="space-y-3">
       <div className="grid grid-cols-2 gap-3">
-        <div><Label>Navn *</Label><Input value={f.name} onChange={e => setF({...f, name: e.target.value})} className="bg-slate-800 border-slate-700" placeholder="TT-01" /></div>
+        <div><Label>Name *</Label><Input value={f.name} onChange={e => setF({...f, name: e.target.value})} className="bg-slate-800 border-slate-700" placeholder="TT-01" /></div>
         <div><Label>Type</Label>
           <Select value={f.type} onValueChange={v => setF({...f, type: v})}>
             <SelectTrigger className="bg-slate-800 border-slate-700"><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="terminal_tractor">Terminal Traktor</SelectItem>
+              <SelectItem value="terminal_tractor">Terminal Tractor</SelectItem>
               <SelectItem value="reachstacker">Reachstacker</SelectItem>
               <SelectItem value="straddle_carrier">Straddle Carrier</SelectItem>
-              <SelectItem value="AGV">AGV (Autonom)</SelectItem>
-              <SelectItem value="forklift">Gaffeltruck</SelectItem>
+              <SelectItem value="AGV">AGV (Autonomous)</SelectItem>
+              <SelectItem value="forklift">Forklift</SelectItem>
               <SelectItem value="empty_handler">Empty Handler</SelectItem>
             </SelectContent>
           </Select>
         </div>
-        <div><Label>Brændstof</Label>
+        <div><Label>Fuel Type</Label>
           <Select value={f.fuel_type} onValueChange={v => setF({...f, fuel_type: v})}>
             <SelectTrigger className="bg-slate-800 border-slate-700"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="diesel">Diesel</SelectItem>
-              <SelectItem value="electric">Elektrisk</SelectItem>
+              <SelectItem value="electric">Electric</SelectItem>
               <SelectItem value="hybrid">Hybrid</SelectItem>
               <SelectItem value="hydrogen">Hydrogen</SelectItem>
             </SelectContent>
@@ -149,11 +149,11 @@ function EquipmentForm({ onSave, onClose }) {
             </SelectContent>
           </Select>
         </div>
-        <div className="col-span-2"><Label>Operatør</Label><Input value={f.operator_name} onChange={e => setF({...f, operator_name: e.target.value})} className="bg-slate-800 border-slate-700" placeholder="Jens K." /></div>
+        <div className="col-span-2"><Label>Operator</Label><Input value={f.operator_name} onChange={e => setF({...f, operator_name: e.target.value})} className="bg-slate-800 border-slate-700" placeholder="John K." /></div>
       </div>
       <div className="flex gap-2">
-        <Button className="flex-1 bg-cyan-600 hover:bg-cyan-700 text-white" onClick={() => onSave(f)} disabled={!f.name}>Opret Udstyr</Button>
-        <Button variant="outline" className="border-slate-700 text-white" onClick={onClose}>Annuller</Button>
+        <Button className="flex-1 bg-cyan-600 hover:bg-cyan-700 text-white" onClick={() => onSave(f)} disabled={!f.name}>Create Equipment</Button>
+        <Button variant="outline" className="border-slate-700 text-white" onClick={onClose}>Cancel</Button>
       </div>
     </div>
   );
@@ -203,7 +203,7 @@ export default function PortFleetManager() {
             ))}
           </div>
           <Button onClick={() => setShowDialog(true)} className="bg-cyan-600 hover:bg-cyan-700 text-white" size="sm">
-            <Plus className="w-4 h-4 mr-1" /> Tilføj
+            <Plus className="w-4 h-4 mr-1" /> Add
           </Button>
         </div>
       </div>
@@ -212,7 +212,7 @@ export default function PortFleetManager() {
         {currentList.length === 0 ? (
           <div className="text-center py-10 text-slate-500">
             <Ship className="w-10 h-10 mx-auto mb-2 opacity-20" />
-            <p className="text-sm">Ingen {TABS.find(t=>t.id===activeTab)?.label} endnu. Klik "Tilføj" for at oprette.</p>
+            <p className="text-sm">No {TABS.find(t=>t.id===activeTab)?.label} yet. Click "Add" to create one.</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
@@ -226,7 +226,7 @@ export default function PortFleetManager() {
                   {item.moves_per_hour && <p className="text-xs text-slate-500">{item.moves_per_hour} mv/h</p>}
                   {item.teu_capacity && <p className="text-xs text-slate-500">{item.teu_capacity} TEU</p>}
                 </div>
-                <button onClick={() => { if(confirm("Slet?")) deleteMutations[activeTab].mutate(item.id); }} className="text-slate-600 hover:text-red-400 ml-2">
+                <button onClick={() => { if(confirm("Delete this item?")) deleteMutations[activeTab].mutate(item.id); }} className="text-slate-600 hover:text-red-400 ml-2">
                   <X className="w-3.5 h-3.5" />
                 </button>
               </div>
@@ -237,7 +237,7 @@ export default function PortFleetManager() {
 
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
         <DialogContent className="bg-slate-900 border-slate-700 text-white max-h-[90vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>Tilføj {TABS.find(t=>t.id===activeTab)?.label}</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>Add {TABS.find(t=>t.id===activeTab)?.label}</DialogTitle></DialogHeader>
           {activeTab === "vessel" && <VesselForm onSave={d => saveMutations.vessel.mutate(d)} onClose={() => setShowDialog(false)} />}
           {activeTab === "crane" && <CraneForm onSave={d => saveMutations.crane.mutate(d)} onClose={() => setShowDialog(false)} />}
           {activeTab === "equipment" && <EquipmentForm onSave={d => saveMutations.equipment.mutate(d)} onClose={() => setShowDialog(false)} />}

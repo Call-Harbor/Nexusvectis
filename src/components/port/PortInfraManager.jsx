@@ -9,10 +9,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const TABS = [
-  { id: "berth", label: "Kajer (Berths)" },
-  { id: "yard", label: "Yard Zoner" },
+  { id: "berth", label: "Berths" },
+  { id: "yard", label: "Yard Zones" },
   { id: "gate", label: "Gates" },
-  { id: "rail", label: "Jernbane Slots" },
+  { id: "rail", label: "Rail Slots" },
 ];
 
 function BerthForm({ onSave, onClose }) {
@@ -20,12 +20,12 @@ function BerthForm({ onSave, onClose }) {
   return (
     <div className="space-y-3">
       <div className="grid grid-cols-2 gap-3">
-        <div><Label>Kajnavn *</Label><Input value={f.name} onChange={e=>setF({...f,name:e.target.value})} className="bg-slate-800 border-slate-700" placeholder="Kaj 1" /></div>
-        <div><Label>Terminal</Label><Input value={f.terminal} onChange={e=>setF({...f,terminal:e.target.value})} className="bg-slate-800 border-slate-700" placeholder="Nordterminal" /></div>
-        <div><Label>Kajlængde (m)</Label><Input type="number" value={f.length_m} onChange={e=>setF({...f,length_m:e.target.value})} className="bg-slate-800 border-slate-700" placeholder="350" /></div>
-        <div><Label>Max dybgang (m)</Label><Input type="number" value={f.max_draft_m} onChange={e=>setF({...f,max_draft_m:e.target.value})} className="bg-slate-800 border-slate-700" placeholder="15" /></div>
-        <div><Label>Antal kraner</Label><Input type="number" value={f.crane_count} onChange={e=>setF({...f,crane_count:parseInt(e.target.value)||0})} className="bg-slate-800 border-slate-700" /></div>
-        <div><Label>Reefer tilslutninger</Label><Input type="number" value={f.reefer_points} onChange={e=>setF({...f,reefer_points:parseInt(e.target.value)||0})} className="bg-slate-800 border-slate-700" /></div>
+        <div><Label>Berth Name *</Label><Input value={f.name} onChange={e=>setF({...f,name:e.target.value})} className="bg-slate-800 border-slate-700" placeholder="Berth 1" /></div>
+        <div><Label>Terminal</Label><Input value={f.terminal} onChange={e=>setF({...f,terminal:e.target.value})} className="bg-slate-800 border-slate-700" placeholder="North Terminal" /></div>
+        <div><Label>Berth Length (m)</Label><Input type="number" value={f.length_m} onChange={e=>setF({...f,length_m:e.target.value})} className="bg-slate-800 border-slate-700" placeholder="350" /></div>
+        <div><Label>Max Draft (m)</Label><Input type="number" value={f.max_draft_m} onChange={e=>setF({...f,max_draft_m:e.target.value})} className="bg-slate-800 border-slate-700" placeholder="15" /></div>
+        <div><Label>Crane Count</Label><Input type="number" value={f.crane_count} onChange={e=>setF({...f,crane_count:parseInt(e.target.value)||0})} className="bg-slate-800 border-slate-700" /></div>
+        <div><Label>Reefer Points</Label><Input type="number" value={f.reefer_points} onChange={e=>setF({...f,reefer_points:parseInt(e.target.value)||0})} className="bg-slate-800 border-slate-700" /></div>
         <div><Label>Status</Label>
           <Select value={f.status} onValueChange={v=>setF({...f,status:v})}>
             <SelectTrigger className="bg-slate-800 border-slate-700"><SelectValue /></SelectTrigger>
@@ -40,11 +40,11 @@ function BerthForm({ onSave, onClose }) {
       </div>
       <div className="flex items-center gap-2">
         <input type="checkbox" checked={f.shore_power_available} onChange={e=>setF({...f,shore_power_available:e.target.checked})} id="sp" />
-        <Label htmlFor="sp">Shore Power tilgængeligt</Label>
+        <Label htmlFor="sp">Shore Power Available</Label>
       </div>
       <div className="flex gap-2">
-        <Button className="flex-1 bg-amber-600 hover:bg-amber-700 text-white" onClick={()=>onSave(f)} disabled={!f.name}>Opret Kaj</Button>
-        <Button variant="outline" className="border-slate-700 text-white" onClick={onClose}>Annuller</Button>
+        <Button className="flex-1 bg-amber-600 hover:bg-amber-700 text-white" onClick={()=>onSave(f)} disabled={!f.name}>Create Berth</Button>
+        <Button variant="outline" className="border-slate-700 text-white" onClick={onClose}>Cancel</Button>
       </div>
     </div>
   );
@@ -55,25 +55,25 @@ function YardForm({ onSave, onClose }) {
   return (
     <div className="space-y-3">
       <div className="grid grid-cols-2 gap-3">
-        <div><Label>Zone navn *</Label><Input value={f.name} onChange={e=>setF({...f,name:e.target.value})} className="bg-slate-800 border-slate-700" placeholder="A-BLOK" /></div>
+        <div><Label>Zone Name *</Label><Input value={f.name} onChange={e=>setF({...f,name:e.target.value})} className="bg-slate-800 border-slate-700" placeholder="A-BLOCK" /></div>
         <div><Label>Type</Label>
           <Select value={f.type} onValueChange={v=>setF({...f,type:v})}>
             <SelectTrigger className="bg-slate-800 border-slate-700"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="standard">Standard</SelectItem>
               <SelectItem value="reefer">Reefer</SelectItem>
-              <SelectItem value="dangerous_goods">Farligt Gods</SelectItem>
+              <SelectItem value="dangerous_goods">Dangerous Goods</SelectItem>
               <SelectItem value="empty">Empty</SelectItem>
-              <SelectItem value="customs">Toldklarering</SelectItem>
+              <SelectItem value="customs">Customs</SelectItem>
               <SelectItem value="rail_connection">Rail Connection</SelectItem>
             </SelectContent>
           </Select>
         </div>
-        <div><Label>Rækker</Label><Input type="number" value={f.rows} onChange={e=>setF({...f,rows:e.target.value})} className="bg-slate-800 border-slate-700" placeholder="8" /></div>
+        <div><Label>Rows</Label><Input type="number" value={f.rows} onChange={e=>setF({...f,rows:e.target.value})} className="bg-slate-800 border-slate-700" placeholder="8" /></div>
         <div><Label>Bays</Label><Input type="number" value={f.bays} onChange={e=>setF({...f,bays:e.target.value})} className="bg-slate-800 border-slate-700" placeholder="40" /></div>
-        <div><Label>Max stakhøjde</Label><Input type="number" value={f.max_stack_height} onChange={e=>setF({...f,max_stack_height:parseInt(e.target.value)||4})} className="bg-slate-800 border-slate-700" /></div>
-        <div><Label>Total slots</Label><Input type="number" value={f.total_slots} onChange={e=>setF({...f,total_slots:e.target.value})} className="bg-slate-800 border-slate-700" placeholder="1600" /></div>
-        {f.type === "reefer" && <div><Label>Reefer slots</Label><Input type="number" value={f.reefer_slots} onChange={e=>setF({...f,reefer_slots:parseInt(e.target.value)||0})} className="bg-slate-800 border-slate-700" /></div>}
+        <div><Label>Max Stack Height</Label><Input type="number" value={f.max_stack_height} onChange={e=>setF({...f,max_stack_height:parseInt(e.target.value)||4})} className="bg-slate-800 border-slate-700" /></div>
+        <div><Label>Total Slots</Label><Input type="number" value={f.total_slots} onChange={e=>setF({...f,total_slots:e.target.value})} className="bg-slate-800 border-slate-700" placeholder="1600" /></div>
+        {f.type === "reefer" && <div><Label>Reefer Slots</Label><Input type="number" value={f.reefer_slots} onChange={e=>setF({...f,reefer_slots:parseInt(e.target.value)||0})} className="bg-slate-800 border-slate-700" /></div>}
         <div><Label>Status</Label>
           <Select value={f.status} onValueChange={v=>setF({...f,status:v})}>
             <SelectTrigger className="bg-slate-800 border-slate-700"><SelectValue /></SelectTrigger>
@@ -87,8 +87,8 @@ function YardForm({ onSave, onClose }) {
         </div>
       </div>
       <div className="flex gap-2">
-        <Button className="flex-1 bg-amber-600 hover:bg-amber-700 text-white" onClick={()=>onSave(f)} disabled={!f.name}>Opret Yard Zone</Button>
-        <Button variant="outline" className="border-slate-700 text-white" onClick={onClose}>Annuller</Button>
+        <Button className="flex-1 bg-amber-600 hover:bg-amber-700 text-white" onClick={()=>onSave(f)} disabled={!f.name}>Create Yard Zone</Button>
+        <Button variant="outline" className="border-slate-700 text-white" onClick={onClose}>Cancel</Button>
       </div>
     </div>
   );
@@ -99,38 +99,38 @@ function GateForm({ onSave, onClose }) {
   return (
     <div className="space-y-3">
       <div className="grid grid-cols-2 gap-3">
-        <div><Label>Gate navn *</Label><Input value={f.name} onChange={e=>setF({...f,name:e.target.value})} className="bg-slate-800 border-slate-700" placeholder="Nordport Gate" /></div>
-        <div><Label>Retning</Label>
+        <div><Label>Gate Name *</Label><Input value={f.name} onChange={e=>setF({...f,name:e.target.value})} className="bg-slate-800 border-slate-700" placeholder="North Gate" /></div>
+        <div><Label>Direction</Label>
           <Select value={f.direction} onValueChange={v=>setF({...f,direction:v})}>
             <SelectTrigger className="bg-slate-800 border-slate-700"><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="both">Begge (in/ud)</SelectItem>
-              <SelectItem value="in">Kun ind</SelectItem>
-              <SelectItem value="out">Kun ud</SelectItem>
+              <SelectItem value="both">Both (in/out)</SelectItem>
+              <SelectItem value="in">Inbound only</SelectItem>
+              <SelectItem value="out">Outbound only</SelectItem>
             </SelectContent>
           </Select>
         </div>
-        <div><Label>Total baner</Label><Input type="number" value={f.lanes_total} onChange={e=>setF({...f,lanes_total:parseInt(e.target.value)||1})} className="bg-slate-800 border-slate-700" /></div>
-        <div><Label>Åbne baner</Label><Input type="number" value={f.lanes_open} onChange={e=>setF({...f,lanes_open:parseInt(e.target.value)||1})} className="bg-slate-800 border-slate-700" /></div>
-        <div><Label>Behandlingstid (min)</Label><Input type="number" value={f.avg_processing_min} onChange={e=>setF({...f,avg_processing_min:parseInt(e.target.value)||5})} className="bg-slate-800 border-slate-700" /></div>
+        <div><Label>Total Lanes</Label><Input type="number" value={f.lanes_total} onChange={e=>setF({...f,lanes_total:parseInt(e.target.value)||1})} className="bg-slate-800 border-slate-700" /></div>
+        <div><Label>Open Lanes</Label><Input type="number" value={f.lanes_open} onChange={e=>setF({...f,lanes_open:parseInt(e.target.value)||1})} className="bg-slate-800 border-slate-700" /></div>
+        <div><Label>Avg Processing Time (min)</Label><Input type="number" value={f.avg_processing_min} onChange={e=>setF({...f,avg_processing_min:parseInt(e.target.value)||5})} className="bg-slate-800 border-slate-700" /></div>
         <div><Label>Status</Label>
           <Select value={f.status} onValueChange={v=>setF({...f,status:v})}>
             <SelectTrigger className="bg-slate-800 border-slate-700"><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="open">Åben</SelectItem>
-              <SelectItem value="closed">Lukket</SelectItem>
-              <SelectItem value="limited">Begrænset</SelectItem>
+              <SelectItem value="open">Open</SelectItem>
+              <SelectItem value="closed">Closed</SelectItem>
+              <SelectItem value="limited">Limited</SelectItem>
             </SelectContent>
           </Select>
         </div>
       </div>
       <div className="flex gap-4">
-        <div className="flex items-center gap-2"><input type="checkbox" checked={f.anpr_enabled} onChange={e=>setF({...f,anpr_enabled:e.target.checked})} id="anpr" /><Label htmlFor="anpr">ANPR aktivt</Label></div>
-        <div className="flex items-center gap-2"><input type="checkbox" checked={f.booking_required} onChange={e=>setF({...f,booking_required:e.target.checked})} id="bk" /><Label htmlFor="bk">Booking krævet</Label></div>
+        <div className="flex items-center gap-2"><input type="checkbox" checked={f.anpr_enabled} onChange={e=>setF({...f,anpr_enabled:e.target.checked})} id="anpr" /><Label htmlFor="anpr">ANPR Enabled</Label></div>
+        <div className="flex items-center gap-2"><input type="checkbox" checked={f.booking_required} onChange={e=>setF({...f,booking_required:e.target.checked})} id="bk" /><Label htmlFor="bk">Booking Required</Label></div>
       </div>
       <div className="flex gap-2">
-        <Button className="flex-1 bg-amber-600 hover:bg-amber-700 text-white" onClick={()=>onSave(f)} disabled={!f.name}>Opret Gate</Button>
-        <Button variant="outline" className="border-slate-700 text-white" onClick={onClose}>Annuller</Button>
+        <Button className="flex-1 bg-amber-600 hover:bg-amber-700 text-white" onClick={()=>onSave(f)} disabled={!f.name}>Create Gate</Button>
+        <Button variant="outline" className="border-slate-700 text-white" onClick={onClose}>Cancel</Button>
       </div>
     </div>
   );
@@ -141,9 +141,9 @@ function RailForm({ onSave, onClose }) {
   return (
     <div className="space-y-3">
       <div className="grid grid-cols-2 gap-3">
-        <div><Label>Tog ID</Label><Input value={f.train_id} onChange={e=>setF({...f,train_id:e.target.value})} className="bg-slate-800 border-slate-700" placeholder="IC-3847" /></div>
-        <div><Label>Spor *</Label><Input value={f.track} onChange={e=>setF({...f,track:e.target.value})} className="bg-slate-800 border-slate-700" placeholder="Spor 1" /></div>
-        <div><Label>Retning</Label>
+        <div><Label>Train ID</Label><Input value={f.train_id} onChange={e=>setF({...f,train_id:e.target.value})} className="bg-slate-800 border-slate-700" placeholder="IC-3847" /></div>
+        <div><Label>Track *</Label><Input value={f.track} onChange={e=>setF({...f,track:e.target.value})} className="bg-slate-800 border-slate-700" placeholder="Track 1" /></div>
+        <div><Label>Direction</Label>
           <Select value={f.direction} onValueChange={v=>setF({...f,direction:v})}>
             <SelectTrigger className="bg-slate-800 border-slate-700"><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -165,15 +165,15 @@ function RailForm({ onSave, onClose }) {
             </SelectContent>
           </Select>
         </div>
-        <div><Label>Planlagt ankomst</Label><Input type="datetime-local" value={f.scheduled_arrival} onChange={e=>setF({...f,scheduled_arrival:e.target.value})} className="bg-slate-800 border-slate-700" /></div>
-        <div><Label>Planlagt afgang</Label><Input type="datetime-local" value={f.scheduled_departure} onChange={e=>setF({...f,scheduled_departure:e.target.value})} className="bg-slate-800 border-slate-700" /></div>
-        <div><Label>Antal vogne</Label><Input type="number" value={f.wagons} onChange={e=>setF({...f,wagons:e.target.value})} className="bg-slate-800 border-slate-700" placeholder="22" /></div>
-        <div><Label>TEU kapacitet</Label><Input type="number" value={f.teu_capacity} onChange={e=>setF({...f,teu_capacity:e.target.value})} className="bg-slate-800 border-slate-700" placeholder="88" /></div>
-        <div className="col-span-2"><Label>Operatør</Label><Input value={f.operator} onChange={e=>setF({...f,operator:e.target.value})} className="bg-slate-800 border-slate-700" placeholder="DSB Cargo" /></div>
+        <div><Label>Scheduled Arrival</Label><Input type="datetime-local" value={f.scheduled_arrival} onChange={e=>setF({...f,scheduled_arrival:e.target.value})} className="bg-slate-800 border-slate-700" /></div>
+        <div><Label>Scheduled Departure</Label><Input type="datetime-local" value={f.scheduled_departure} onChange={e=>setF({...f,scheduled_departure:e.target.value})} className="bg-slate-800 border-slate-700" /></div>
+        <div><Label>Wagons</Label><Input type="number" value={f.wagons} onChange={e=>setF({...f,wagons:e.target.value})} className="bg-slate-800 border-slate-700" placeholder="22" /></div>
+        <div><Label>TEU Capacity</Label><Input type="number" value={f.teu_capacity} onChange={e=>setF({...f,teu_capacity:e.target.value})} className="bg-slate-800 border-slate-700" placeholder="88" /></div>
+        <div className="col-span-2"><Label>Operator</Label><Input value={f.operator} onChange={e=>setF({...f,operator:e.target.value})} className="bg-slate-800 border-slate-700" placeholder="DB Cargo" /></div>
       </div>
       <div className="flex gap-2">
-        <Button className="flex-1 bg-amber-600 hover:bg-amber-700 text-white" onClick={()=>onSave(f)} disabled={!f.track}>Opret Togslot</Button>
-        <Button variant="outline" className="border-slate-700 text-white" onClick={onClose}>Annuller</Button>
+        <Button className="flex-1 bg-amber-600 hover:bg-amber-700 text-white" onClick={()=>onSave(f)} disabled={!f.track}>Create Rail Slot</Button>
+        <Button variant="outline" className="border-slate-700 text-white" onClick={onClose}>Cancel</Button>
       </div>
     </div>
   );
@@ -213,7 +213,7 @@ export default function PortInfraManager() {
       <div className="flex items-center justify-between px-6 py-4 border-b border-slate-700/50" style={{ background: "rgba(245,158,11,0.06)" }}>
         <div className="flex items-center gap-3">
           <Anchor className="w-5 h-5 text-amber-400" />
-          <h2 className="text-lg font-bold text-white">Port Infrastruktur</h2>
+          <h2 className="text-lg font-bold text-white">Port Infrastructure</h2>
         </div>
         <div className="flex items-center gap-3">
           <div className="flex rounded-lg overflow-hidden border border-slate-700">
@@ -226,7 +226,7 @@ export default function PortInfraManager() {
             ))}
           </div>
           <Button onClick={() => setShowDialog(true)} className="bg-amber-600 hover:bg-amber-700 text-white" size="sm">
-            <Plus className="w-4 h-4 mr-1" /> Tilføj
+            <Plus className="w-4 h-4 mr-1" /> Add
           </Button>
         </div>
       </div>
@@ -235,7 +235,7 @@ export default function PortInfraManager() {
         {currentList.length === 0 ? (
           <div className="text-center py-10 text-slate-500">
             <Anchor className="w-10 h-10 mx-auto mb-2 opacity-20" />
-            <p className="text-sm">Ingen {TABS.find(t=>t.id===activeTab)?.label} endnu. Klik "Tilføj" for at oprette.</p>
+            <p className="text-sm">No {TABS.find(t=>t.id===activeTab)?.label} yet. Click "Add" to create one.</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
@@ -245,12 +245,12 @@ export default function PortInfraManager() {
                   <p className="font-semibold text-white text-sm">{item.name || item.train_id || item.track}</p>
                   <p className="text-xs text-slate-500 mt-0.5">{item.terminal || item.type?.replace("_"," ") || item.direction || ""}</p>
                   {item.status && <p className={`text-xs mt-1 font-medium ${statusColor(item.status)}`}>{item.status}</p>}
-                  {item.length_m && <p className="text-xs text-slate-500">{item.length_m}m · {item.max_draft_m}m dybgang</p>}
+                  {item.length_m && <p className="text-xs text-slate-500">{item.length_m}m · {item.max_draft_m}m draft</p>}
                   {item.total_slots && <p className="text-xs text-slate-500">{item.occupied_slots||0}/{item.total_slots} slots</p>}
-                  {item.lanes_total && <p className="text-xs text-slate-500">{item.lanes_open}/{item.lanes_total} baner · kø: {item.queue_trucks||0}</p>}
-                  {item.wagons && <p className="text-xs text-slate-500">{item.wagons} vogne · {item.teu_capacity} TEU</p>}
+                  {item.lanes_total && <p className="text-xs text-slate-500">{item.lanes_open}/{item.lanes_total} lanes · queue: {item.queue_trucks||0}</p>}
+                  {item.wagons && <p className="text-xs text-slate-500">{item.wagons} wagons · {item.teu_capacity} TEU</p>}
                 </div>
-                <button onClick={() => { if(confirm("Slet?")) deleteMutations[activeTab].mutate(item.id); }} className="text-slate-600 hover:text-red-400 ml-2">
+                <button onClick={() => { if(confirm("Delete this item?")) deleteMutations[activeTab].mutate(item.id); }} className="text-slate-600 hover:text-red-400 ml-2">
                   <X className="w-3.5 h-3.5" />
                 </button>
               </div>
@@ -261,7 +261,7 @@ export default function PortInfraManager() {
 
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
         <DialogContent className="bg-slate-900 border-slate-700 text-white max-h-[90vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>Tilføj {TABS.find(t=>t.id===activeTab)?.label}</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>Add {TABS.find(t=>t.id===activeTab)?.label}</DialogTitle></DialogHeader>
           {activeTab === "berth" && <BerthForm onSave={d => saveMutations.berth.mutate(d)} onClose={() => setShowDialog(false)} />}
           {activeTab === "yard" && <YardForm onSave={d => saveMutations.yard.mutate(d)} onClose={() => setShowDialog(false)} />}
           {activeTab === "gate" && <GateForm onSave={d => saveMutations.gate.mutate(d)} onClose={() => setShowDialog(false)} />}
