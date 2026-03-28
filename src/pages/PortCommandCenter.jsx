@@ -29,6 +29,8 @@ export default function PortCommandCenter() {
   const [selectedPortCall, setSelectedPortCall] = useState(null);
   const [dataReady, setDataReady] = useState(false);
   const [showAddPortCall, setShowAddPortCall] = useState(false);
+  const [showAddGate, setShowAddGate] = useState(false);
+  const [showAddRailSlot, setShowAddRailSlot] = useState(false);
 
   useEffect(() => {
     base44.auth.me().then(u => {
@@ -190,7 +192,25 @@ export default function PortCommandCenter() {
           <PortYardOverview yardZones={yardZones} equipment={equipment} orgId={orgId} />
         )}
         {activeTab === "gate" && (
-          <PortGateMonitor gates={gates} railSlots={railSlots} />
+          <div className="space-y-3">
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowAddGate(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded transition-all hover:opacity-80 text-[9px] tracking-widest uppercase font-bold"
+                style={{ border: "1px solid rgba(6,182,212,0.4)", background: "rgba(6,182,212,0.1)", color: "#06b6d4" }}
+              >
+                <Plus className="w-3.5 h-3.5" /> Ny Gate
+              </button>
+              <button
+                onClick={() => setShowAddRailSlot(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded transition-all hover:opacity-80 text-[9px] tracking-widest uppercase font-bold"
+                style={{ border: "1px solid rgba(139,92,246,0.4)", background: "rgba(139,92,246,0.1)", color: "#8b5cf6" }}
+              >
+                <Plus className="w-3.5 h-3.5" /> Ny Rail Slot
+              </button>
+            </div>
+            <PortGateMonitor gates={gates} railSlots={railSlots} />
+          </div>
         )}
         {activeTab === "ai" && (
           <PortAIAdvisor portCalls={portCalls} vessels={vessels} cranes={cranes} yardZones={yardZones} gates={gates} orgId={orgId} />
@@ -203,6 +223,8 @@ export default function PortCommandCenter() {
         )}
       </div>
 
+      <AddGateDialog open={showAddGate} onClose={() => setShowAddGate(false)} orgId={orgId} onSuccess={() => queryClient.invalidateQueries({queryKey: ["gates_mgr"]})} />
+      <AddRailSlotDialog open={showAddRailSlot} onClose={() => setShowAddRailSlot(false)} orgId={orgId} yardZones={yardZones} onSuccess={() => queryClient.invalidateQueries({queryKey: ["rails_mgr"]})} />
       <AddPortCallDialog
         open={showAddPortCall}
         onClose={() => setShowAddPortCall(false)}
@@ -287,6 +309,105 @@ function AddPortCallDialog({ open, onClose, vessels, berths, orgId, onSuccess })
             style={{ background: "rgba(6,182,212,0.2)", border: "1px solid rgba(6,182,212,0.4)", color: "#06b6d4", opacity: (!f.vessel_id || !f.eta) ? 0.4 : 1 }}
           >
             {create.isPending ? "Saving..." : "Create Port Call"}
+          </button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function AddGateDialog({ open, onClose, orgId, onSuccess }) {
+  const [f, setF] = useState({ name: "", lanes_total: 4, lanes_open: 2, direction: "both", status: "open", anpr_enabled: true, booking_required: true });
+  const create = useMutation({
+    mutationFn: d => base44.entities.PortGate.create({ ...d, organization_id: orgId }),
+    onSuccess: () => { onSuccess(); onClose(); setF({ name: "", lanes_total: 4, lanes_open: 2, direction: "both", status: "open", anpr_enabled: true, booking_required: true }); }
+  });
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="bg-slate-900 border-slate-700 text-white">
+        <DialogHeader><DialogTitle>Ny Gate</DialogTitle></DialogHeader>
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="col-span-2"><Label>Navn *</Label><Input value={f.name} onChange={e => setF({...f, name: e.target.value})} className="bg-slate-800 border-slate-700" placeholder="Gate A" /></div>
+            <div><Label>Baner total</Label><Input type="number" value={f.lanes_total} onChange={e => setF({...f, lanes_total: parseInt(e.target.value)||1})} className="bg-slate-800 border-slate-700" /></div>
+            <div><Label>Åbne baner</Label><Input type="number" value={f.lanes_open} onChange={e => setF({...f, lanes_open: parseInt(e.target.value)||0})} className="bg-slate-800 border-slate-700" /></div>
+            <div><Label>Retning</Label>
+              <Select value={f.direction} onValueChange={v => setF({...f, direction: v})}>
+                <SelectTrigger className="bg-slate-800 border-slate-700"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="in">Ind</SelectItem>
+                  <SelectItem value="out">Ud</SelectItem>
+                  <SelectItem value="both">Begge</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div><Label>Status</Label>
+              <Select value={f.status} onValueChange={v => setF({...f, status: v})}>
+                <SelectTrigger className="bg-slate-800 border-slate-700"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="open">Åben</SelectItem>
+                  <SelectItem value="limited">Begrænset</SelectItem>
+                  <SelectItem value="closed">Lukket</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <button onClick={() => create.mutate(f)} disabled={!f.name || create.isPending}
+            className="w-full py-2 rounded-lg font-semibold text-sm transition-all"
+            style={{ background: "rgba(6,182,212,0.2)", border: "1px solid rgba(6,182,212,0.4)", color: "#06b6d4", opacity: !f.name ? 0.4 : 1 }}>
+            {create.isPending ? "Gemmer..." : "Opret Gate"}
+          </button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function AddRailSlotDialog({ open, onClose, orgId, yardZones, onSuccess }) {
+  const [f, setF] = useState({ train_id: "", track: "", direction: "inbound", scheduled_arrival: "", scheduled_departure: "", wagons: 0, teu_capacity: 0, operator: "", status: "planned" });
+  const create = useMutation({
+    mutationFn: d => base44.entities.RailSlot.create({ ...d, organization_id: orgId }),
+    onSuccess: () => { onSuccess(); onClose(); setF({ train_id: "", track: "", direction: "inbound", scheduled_arrival: "", scheduled_departure: "", wagons: 0, teu_capacity: 0, operator: "", status: "planned" }); }
+  });
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="bg-slate-900 border-slate-700 text-white">
+        <DialogHeader><DialogTitle>Ny Rail Slot</DialogTitle></DialogHeader>
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div><Label>Tog ID</Label><Input value={f.train_id} onChange={e => setF({...f, train_id: e.target.value})} className="bg-slate-800 border-slate-700" placeholder="IC123" /></div>
+            <div><Label>Spor *</Label><Input value={f.track} onChange={e => setF({...f, track: e.target.value})} className="bg-slate-800 border-slate-700" placeholder="Spor 1" /></div>
+            <div><Label>Retning</Label>
+              <Select value={f.direction} onValueChange={v => setF({...f, direction: v})}>
+                <SelectTrigger className="bg-slate-800 border-slate-700"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="inbound">Indgående</SelectItem>
+                  <SelectItem value="outbound">Udgående</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div><Label>Status</Label>
+              <Select value={f.status} onValueChange={v => setF({...f, status: v})}>
+                <SelectTrigger className="bg-slate-800 border-slate-700"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="planned">Planlagt</SelectItem>
+                  <SelectItem value="arriving">Ankommer</SelectItem>
+                  <SelectItem value="loading">Læsser</SelectItem>
+                  <SelectItem value="departing">Afgår</SelectItem>
+                  <SelectItem value="delayed">Forsinket</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div><Label>Planlagt ankomst</Label><Input type="datetime-local" value={f.scheduled_arrival} onChange={e => setF({...f, scheduled_arrival: e.target.value})} className="bg-slate-800 border-slate-700" /></div>
+            <div><Label>Planlagt afgang</Label><Input type="datetime-local" value={f.scheduled_departure} onChange={e => setF({...f, scheduled_departure: e.target.value})} className="bg-slate-800 border-slate-700" /></div>
+            <div><Label>Vogne</Label><Input type="number" value={f.wagons} onChange={e => setF({...f, wagons: parseInt(e.target.value)||0})} className="bg-slate-800 border-slate-700" /></div>
+            <div><Label>TEU kapacitet</Label><Input type="number" value={f.teu_capacity} onChange={e => setF({...f, teu_capacity: parseInt(e.target.value)||0})} className="bg-slate-800 border-slate-700" /></div>
+            <div className="col-span-2"><Label>Operatør</Label><Input value={f.operator} onChange={e => setF({...f, operator: e.target.value})} className="bg-slate-800 border-slate-700" placeholder="DSB Cargo" /></div>
+          </div>
+          <button onClick={() => create.mutate(f)} disabled={!f.track || create.isPending}
+            className="w-full py-2 rounded-lg font-semibold text-sm transition-all"
+            style={{ background: "rgba(139,92,246,0.2)", border: "1px solid rgba(139,92,246,0.4)", color: "#8b5cf6", opacity: !f.track ? 0.4 : 1 }}>
+            {create.isPending ? "Gemmer..." : "Opret Rail Slot"}
           </button>
         </div>
       </DialogContent>
