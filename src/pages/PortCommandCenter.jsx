@@ -66,6 +66,7 @@ export default function PortCommandCenter() {
     queryKey: ["cranes_port"],
     queryFn: () => base44.entities.PortCrane.list("-created_date", 50),
     enabled: dataReady,
+    refetchInterval: 30000,
   });
 
   const { data: yardZones = [] } = useQuery({
@@ -127,8 +128,8 @@ export default function PortCommandCenter() {
               <p className="text-2xl font-bold" style={{ color: "#8b5cf6" }}>{plannedCalls.length}</p>
             </div>
             <div className="text-center">
-              <p className="text-[8px] tracking-widest uppercase" style={{ color: "rgba(6,182,212,0.4)" }}>CRANES ACTIVE</p>
-              <p className="text-2xl font-bold" style={{ color: "#10b981" }}>{cranes.filter(c => c.status === "working").length}</p>
+              <p className="text-[8px] tracking-widest uppercase" style={{ color: "rgba(6,182,212,0.4)" }}>CRANES TOTAL</p>
+              <p className="text-2xl font-bold" style={{ color: "#10b981" }}>{cranes.length}</p>
             </div>
             <button
               onClick={() => setShowAddPortCall(true)}
