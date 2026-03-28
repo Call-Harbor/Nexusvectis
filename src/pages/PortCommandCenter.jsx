@@ -8,7 +8,9 @@ import PortYardOverview from "@/components/port/PortYardOverview";
 import PortGateMonitor from "@/components/port/PortGateMonitor";
 import PortAIAdvisor from "@/components/port/PortAIAdvisor";
 import PortScenarioEngine from "@/components/port/PortScenarioEngine";
-import { Ship, Anchor, Cpu, BarChart3, AlertTriangle, Leaf, Settings, Zap, Plus } from "lucide-react";
+import { Ship, Anchor, Cpu, BarChart3, AlertTriangle, Leaf, Settings, Zap, Plus, Package } from "lucide-react";
+import CraneSchedulingAI from "../components/port/CraneSchedulingAI";
+import ContainerTracker from "../components/port/ContainerTracker";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,6 +18,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 const TABS = [
   { id: "berth", label: "BERTH PLAN", icon: Anchor },
+  { id: "crane_ai", label: "CRANE AI", icon: Zap },
+  { id: "containers", label: "CONTAINERE", icon: Package },
   { id: "yard", label: "YARD", icon: BarChart3 },
   { id: "gate", label: "GATE & RAIL", icon: Zap },
   { id: "ai", label: "AI ADVISOR", icon: Cpu },
@@ -188,6 +192,12 @@ export default function PortCommandCenter() {
               <PortVesselQueue portCalls={portCalls} vessels={vessels} onSelectPortCall={setSelectedPortCall} />
             </div>
           </div>
+        )}
+        {activeTab === "crane_ai" && (
+          <CraneSchedulingAI cranes={cranes} portCalls={portCalls} berths={berths} yardZones={yardZones} orgId={orgId} />
+        )}
+        {activeTab === "containers" && (
+          <ContainerTracker orgId={orgId} />
         )}
         {activeTab === "yard" && (
           <PortYardOverview yardZones={yardZones} equipment={equipment} orgId={orgId} />

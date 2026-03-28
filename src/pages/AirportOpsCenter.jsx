@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import { Plane, Shield, Package, Users, AlertTriangle, Cpu, BarChart3, Leaf, Plus, Zap, Map, GitBranch } from "lucide-react";
+import { Plane, Shield, Package, Users, AlertTriangle, Cpu, BarChart3, Leaf, Plus, Zap, Map, GitBranch, Car } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,10 +21,14 @@ import TerminalHeatmap from "@/components/airport/TerminalHeatmap";
 import AirportSustainability from "@/components/airport/AirportSustainability";
 import SmartBaggageAI from "@/components/airport/SmartBaggageAI";
 import TurnaroundAI from "@/components/airport/TurnaroundAI";
+import LandsideMonitor from "@/components/airport/LandsideMonitor";
+import Terminal2DLayout from "@/components/airport/Terminal2DLayout";
 
 const TABS = [
   { id: "operations", label: "LIVE OPS", icon: Plane },
   { id: "heatmap", label: "TERMINAL TWIN", icon: Map },
+  { id: "terminal2d", label: "2D LAYOUT", icon: Map },
+  { id: "landside", label: "LANDSIDE", icon: Car },
   { id: "ground", label: "GROUND HANDLING", icon: Zap },
   { id: "pax_flow", label: "PAX FLOW AI", icon: Users },
   { id: "gate_ai", label: "GATE AI", icon: GitBranch },
@@ -195,6 +199,14 @@ export default function AirportOpsCenter() {
 
         {activeTab === "heatmap" && (
           <TerminalHeatmap flights={flights} securityLanes={securityLanes} bags={bags} gates={gates} />
+        )}
+
+        {activeTab === "terminal2d" && (
+          <Terminal2DLayout flights={flights} gates={gates} securityLanes={securityLanes} bags={bags} />
+        )}
+
+        {activeTab === "landside" && (
+          <LandsideMonitor flights={flights} />
         )}
 
         {activeTab === "pax_flow" && (
