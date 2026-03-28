@@ -55,6 +55,38 @@ const ATMO_FRAG = `
   }
 `;
 
+const DISPLAY_MODES = [
+  { id: 'default',     label: 'STATUS',      icon: '◈', desc: 'Operationel status',   color: '#00ffff' },
+  { id: 'energy',      label: 'ENERGI-FLOW', icon: '⚡', desc: 'Brændstof & batteri',  color: '#10b981' },
+  { id: 'traffic',     label: 'TRAFIKTÆTHED',icon: '▶', desc: 'Hastighed & flow',     color: '#f59e0b' },
+  { id: 'maintenance', label: 'VEDLIGEHOLD', icon: '⚙', desc: 'Vedligeholdsstatus',   color: '#f43f5e' },
+];
+
+function getModeColor(mode, vehicle) {
+  if (mode === 'energy') {
+    const lvl = vehicle.fuel_level ?? 80;
+    if (lvl > 60) return 0x10b981;
+    if (lvl > 30) return 0xf59e0b;
+    return 0xf43f5e;
+  }
+  if (mode === 'traffic') {
+    const spd = vehicle.speed ?? 0;
+    if (spd > 80) return 0xf43f5e;
+    if (spd > 40) return 0xf59e0b;
+    if (spd > 0)  return 0x00ffff;
+    return 0x334455;
+  }
+  if (mode === 'maintenance') {
+    const nxt = vehicle.next_maintenance;
+    if (!nxt) return 0x10b981;
+    const days = (new Date(nxt) - new Date()) / 86400000;
+    if (days < 0)  return 0xf43f5e;
+    if (days < 14) return 0xf59e0b;
+    return 0x10b981;
+  }
+  return null; // default: keep original
+}
+
 export default function FuturisticGlobe({
   vehicles = [], routes = [], resources = [], digitalTwins = [],
   busLines = [], buses = [], busStops = [],
@@ -65,6 +97,8 @@ export default function FuturisticGlobe({
   const [visibleResources, setVisibleResources] = useState([]);
   const [visibleVehicles, setVisibleVehicles] = useState([]);
   const [simulatingRoute, setSimulatingRoute] = useState(null);
+  const [activeMode, setActiveMode] = useState('default');
+  const activeModeRef = useRef('default');
 
   useEffect(() => {
     const el = mountRef.current;
@@ -528,6 +562,7 @@ export default function FuturisticGlobe({
 
     // ── VEHICLE MARKERS ───────────────────────────────────────────────────────
     const vehicleMarkers = [];
+    const vehicleMarkerMaterials = []; // track emissive materials for mode switching
     const vehiclePulses = [];
     const vehicleBeams = [];
     vehicles.forEach(vehicle => {
@@ -539,7 +574,9 @@ export default function FuturisticGlobe({
 
       const vMat = new THREE.MeshPhongMaterial({ color: color.int, emissive: color.int, emissiveIntensity: 0.65, shininess: 140, transparent: true, opacity: 0.95 });
       const glassMat = new THREE.MeshPhongMaterial({ color: 0xaaddff, emissive: 0x003366, emissiveIntensity: 0.8, transparent: true, opacity: 0.75, shininess: 220 });
+      vehicleMarkerMaterials.push({ vMat, accentMat: null, vehicle, baseColor: color.int });
 
+      // store accentMat ref after creation — patch vehicleMarkerMaterials last entry
       // Type-specific accent colors for better visual distinction
       const typeColors = {
         truck: 0x00e5ff, ship: 0x0055ff, aircraft: 0xff6600,
@@ -547,6 +584,8 @@ export default function FuturisticGlobe({
       };
       const accentColor = typeColors[type] || color.int;
       const accentMat = new THREE.MeshPhongMaterial({ color: accentColor, emissive: accentColor, emissiveIntensity: 0.9, shininess: 180, transparent: true, opacity: 0.98 });
+      vehicleMarkerMaterials[vehicleMarkerMaterials.length - 1].accentMat = accentMat;
+      vehicleMarkerMaterials[vehicleMarkerMaterials.length - 1].accentColor = accentColor;
 
       const vGroup = new THREE.Group();
       vGroup.position.copy(pos);
@@ -891,10 +930,19 @@ export default function FuturisticGlobe({
         if (i % 2 === 0) { t.rotation.y = time * 2; t.rotation.x = Math.sin(time * 1.5) * 0.3; }
       });
 
+      // ── MODE-BASED COLOR SWITCHING ─────────────────────────────────────────
+      const currentMode = activeModeRef.current;
+      vehicleMarkerMaterials.forEach(({ vMat, accentMat, accentColor, vehicle, baseColor }) => {
+        const modeColor = getModeColor(currentMode, vehicle);
+        const c = modeColor ?? baseColor;
+        const ac = modeColor ?? accentColor ?? baseColor;
+        vMat.color.setHex(c); vMat.emissive.setHex(c);
+        if (accentMat) { accentMat.color.setHex(ac); accentMat.emissive.setHex(ac); }
+      });
+
       // Resource pulse + beacon flicker
       resourceMarkers.forEach(r => {
         r.rotation.y = time * 0.5;
-        // Flicker beacon light
         const rLt = r.children.find(c => c.isPointLight);
         if (rLt) rLt.intensity = 2.5 + 1.5 * Math.sin(time * 4 + (r.userData?.resource?.id?.charCodeAt(0) || 0));
       });
@@ -1119,9 +1167,82 @@ export default function FuturisticGlobe({
     };
   }, [vehicles, routes, resources, digitalTwins, busLines, buses, busStops, onSelectVehicle, onSelectResource]);
 
+  const handleSetMode = (id) => {
+    setActiveMode(id);
+    activeModeRef.current = id;
+  };
+
   return (
     <div className="relative w-full h-full">
       <div ref={mountRef} className="w-full h-full bg-black" style={{ cursor: 'grab' }} />
+
+      {/* 3D Control Panel Overlay */}
+      <div className="absolute top-4 right-4 z-20 select-none" style={{ pointerEvents: 'auto' }}>
+        <div className="rounded-xl overflow-hidden" style={{ background: 'rgba(0,8,20,0.85)', border: '1px solid rgba(6,182,212,0.25)', backdropFilter: 'blur(12px)', boxShadow: '0 0 32px rgba(6,182,212,0.08)' }}>
+          <div className="px-3 py-2 border-b" style={{ borderColor: 'rgba(6,182,212,0.15)' }}>
+            <p className="text-[8px] font-mono tracking-[0.2em] uppercase" style={{ color: 'rgba(6,182,212,0.5)' }}>VISNINGSTILSTAND</p>
+          </div>
+          <div className="p-2 space-y-1">
+            {DISPLAY_MODES.map(mode => {
+              const active = activeMode === mode.id;
+              return (
+                <button
+                  key={mode.id}
+                  onClick={() => handleSetMode(mode.id)}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg transition-all text-left"
+                  style={{
+                    background: active ? `${mode.color}18` : 'transparent',
+                    border: `1px solid ${active ? mode.color + '55' : 'transparent'}`,
+                    boxShadow: active ? `0 0 12px ${mode.color}22` : 'none',
+                  }}
+                >
+                  <span className="text-sm" style={{ color: active ? mode.color : 'rgba(148,163,184,0.5)', textShadow: active ? `0 0 8px ${mode.color}` : 'none' }}>{mode.icon}</span>
+                  <div>
+                    <p className="text-[9px] font-mono font-bold tracking-wider" style={{ color: active ? mode.color : 'rgba(148,163,184,0.6)' }}>{mode.label}</p>
+                    <p className="text-[8px] font-mono" style={{ color: 'rgba(100,116,139,0.7)' }}>{mode.desc}</p>
+                  </div>
+                  {active && <span className="ml-auto w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: mode.color, boxShadow: `0 0 6px ${mode.color}` }} />}
+                </button>
+              );
+            })}
+          </div>
+          {/* Legend for active mode */}
+          {activeMode !== 'default' && (
+            <div className="px-3 py-2 border-t" style={{ borderColor: 'rgba(6,182,212,0.1)' }}>
+              {activeMode === 'energy' && (
+                <div className="space-y-0.5">
+                  {[['> 60%', '#10b981', 'Fuld'], ['30–60%', '#f59e0b', 'Lav'], ['< 30%', '#f43f5e', 'Kritisk']].map(([r, c, l]) => (
+                    <div key={r} className="flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full" style={{ background: c }} />
+                      <span className="text-[8px] font-mono" style={{ color: 'rgba(148,163,184,0.6)' }}>{r} — {l}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {activeMode === 'traffic' && (
+                <div className="space-y-0.5">
+                  {[['> 80 km/h', '#f43f5e', 'Høj'], ['40–80', '#f59e0b', 'Middel'], ['< 40', '#00ffff', 'Lav'], ['Stoppet', '#334455', '—']].map(([r, c, l]) => (
+                    <div key={r} className="flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full" style={{ background: c }} />
+                      <span className="text-[8px] font-mono" style={{ color: 'rgba(148,163,184,0.6)' }}>{r} — {l}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {activeMode === 'maintenance' && (
+                <div className="space-y-0.5">
+                  {[['OK', '#10b981', '> 14 dage'], ['Snart', '#f59e0b', '< 14 dage'], ['Overskredet', '#f43f5e', 'Forfald']].map(([l, c, r]) => (
+                    <div key={l} className="flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full" style={{ background: c }} />
+                      <span className="text-[8px] font-mono" style={{ color: 'rgba(148,163,184,0.6)' }}>{l} — {r}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
 
       {routes.some(r => (r.waypoints || []).length >= 2) && !simulatingRoute && (
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 pointer-events-none">
