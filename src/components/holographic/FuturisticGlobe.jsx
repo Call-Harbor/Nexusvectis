@@ -576,7 +576,9 @@ export default function FuturisticGlobe({
       const glassMat = new THREE.MeshPhongMaterial({ color: 0xaaddff, emissive: 0x003366, emissiveIntensity: 0.8, transparent: true, opacity: 0.75, shininess: 220 });
       vehicleMarkerMaterials.push({ vMat, accentMat: null, vehicle, baseColor: color.int });
 
-      // store accentMat ref after creation — patch vehicleMarkerMaterials last entry
+      // Type needs to be defined first so typeColors can use it
+      const type = vehicle.type || 'truck';
+
       // Type-specific accent colors for better visual distinction
       const typeColors = {
         truck: 0x00e5ff, ship: 0x0055ff, aircraft: 0xff6600,
@@ -593,7 +595,6 @@ export default function FuturisticGlobe({
       vGroup.userData = { vehicle, status };
       vGroup.scale.setScalar(2.2);
 
-      const type = vehicle.type || 'truck';
       if (type === 'truck' || type === 'bus') {
         const body = new THREE.Mesh(new THREE.BoxGeometry(0.048, 0.016, 0.022), accentMat);
         body.position.y = 0.008;
