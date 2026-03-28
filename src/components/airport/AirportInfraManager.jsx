@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, X, Plane, Shield, Users } from "lucide-react";
@@ -25,13 +25,25 @@ export default function AirportInfraManager() {
   const [orgId, setOrgId] = useState(null);
   const queryClient = useQueryClient();
 
-  useState(() => {
-    base44.auth.me().then(u => setOrgId(u?.organization_id || "__all__")).catch(() => {});
-  });
+  useEffect(() => {
+    base44.auth.me().then(u => setOrgId(u?.organization_id || null)).catch(() => {});
+  }, []);
 
-  const { data: gates = [] } = useQuery({ queryKey: ["infra_gates"], queryFn: () => base44.entities.AirportGate.list("-created_date", 50) });
-  const { data: lanes = [] } = useQuery({ queryKey: ["infra_lanes"], queryFn: () => base44.entities.SecurityLane.list("-created_date", 30) });
-  const { data: staff = [] } = useQuery({ queryKey: ["infra_staff"], queryFn: () => base44.entities.AirportStaff.list("-created_date", 100) });
+  const { data: gates = [] } = useQuery({
+    queryKey: ["infra_gates", orgId],
+    queryFn: () => orgId ? base44.entities.AirportGate.filter({ organization_id: orgId }, "-created_date", 50) : [],
+    enabled: !!orgId
+  });
+  const { data: lanes = [] } = useQuery({
+    queryKey: ["infra_lanes", orgId],
+    queryFn: () => orgId ? base44.entities.SecurityLane.filter({ organization_id: orgId }, "-created_date", 30) : [],
+    enabled: !!orgId
+  });
+  const { data: staff = [] } = useQuery({
+    queryKey: ["infra_staff", orgId],
+    queryFn: () => orgId ? base44.entities.AirportStaff.filter({ organization_id: orgId }, "-created_date", 100) : [],
+    enabled: !!orgId
+  });
 
   const deleteGate = useMutation({ mutationFn: id => base44.entities.AirportGate.delete(id), onSuccess: () => queryClient.invalidateQueries({ queryKey: ["infra_gates"] }) });
   const deleteLane = useMutation({ mutationFn: id => base44.entities.SecurityLane.delete(id), onSuccess: () => queryClient.invalidateQueries({ queryKey: ["infra_lanes"] }) });
