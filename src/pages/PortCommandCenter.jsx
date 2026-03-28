@@ -23,58 +23,64 @@ export default function PortCommandCenter() {
   const [activeTab, setActiveTab] = useState("berth");
   const [orgId, setOrgId] = useState(null);
   const [selectedPortCall, setSelectedPortCall] = useState(null);
+  const [dataReady, setDataReady] = useState(false);
 
   useEffect(() => {
-    base44.auth.me().then(u => setOrgId(u?.organization_id)).catch(() => {});
+    base44.auth.me().then(u => {
+      setOrgId(u?.organization_id || "__all__");
+      setDataReady(true);
+    }).catch(() => setDataReady(true));
   }, []);
+
+  const buildFilter = (extra = {}) => orgId && orgId !== "__all__" ? { organization_id: orgId, ...extra } : extra;
 
   const { data: portCalls = [] } = useQuery({
     queryKey: ["portCalls", orgId],
-    queryFn: () => base44.entities.PortCall.filter({ organization_id: orgId }, "-eta", 50),
-    enabled: !!orgId,
+    queryFn: () => base44.entities.PortCall.list("-eta", 50),
+    enabled: dataReady,
     refetchInterval: 30000,
   });
 
   const { data: vessels = [] } = useQuery({
     queryKey: ["vessels", orgId],
-    queryFn: () => base44.entities.Vessel.filter({ organization_id: orgId }),
-    enabled: !!orgId,
+    queryFn: () => base44.entities.Vessel.list("-created_date", 100),
+    enabled: dataReady,
   });
 
   const { data: berths = [] } = useQuery({
     queryKey: ["berths", orgId],
-    queryFn: () => base44.entities.Berth.filter({ organization_id: orgId }),
-    enabled: !!orgId,
+    queryFn: () => base44.entities.Berth.list("-created_date", 50),
+    enabled: dataReady,
   });
 
   const { data: cranes = [] } = useQuery({
     queryKey: ["portCranes", orgId],
-    queryFn: () => base44.entities.PortCrane.filter({ organization_id: orgId }),
-    enabled: !!orgId,
+    queryFn: () => base44.entities.PortCrane.list("-created_date", 50),
+    enabled: dataReady,
   });
 
   const { data: yardZones = [] } = useQuery({
     queryKey: ["yardZones", orgId],
-    queryFn: () => base44.entities.YardZone.filter({ organization_id: orgId }),
-    enabled: !!orgId,
+    queryFn: () => base44.entities.YardZone.list("-created_date", 50),
+    enabled: dataReady,
   });
 
   const { data: gates = [] } = useQuery({
     queryKey: ["portGates", orgId],
-    queryFn: () => base44.entities.PortGate.filter({ organization_id: orgId }),
-    enabled: !!orgId,
+    queryFn: () => base44.entities.PortGate.list("-created_date", 20),
+    enabled: dataReady,
   });
 
   const { data: railSlots = [] } = useQuery({
     queryKey: ["railSlots", orgId],
-    queryFn: () => base44.entities.RailSlot.filter({ organization_id: orgId }),
-    enabled: !!orgId,
+    queryFn: () => base44.entities.RailSlot.list("-created_date", 30),
+    enabled: dataReady,
   });
 
   const { data: equipment = [] } = useQuery({
     queryKey: ["portEquipment", orgId],
-    queryFn: () => base44.entities.PortEquipment.filter({ organization_id: orgId }),
-    enabled: !!orgId,
+    queryFn: () => base44.entities.PortEquipment.list("-created_date", 100),
+    enabled: dataReady,
   });
 
   const activeCalls = portCalls.filter(pc => ["approaching", "berthed", "operations"].includes(pc.status));
