@@ -206,7 +206,7 @@ export default function AirportOpsCenter() {
         )}
 
         {activeTab === "landside" && (
-          <LandsideMonitor flights={flights} />
+          <LandsideMonitor flights={flights} orgId={orgId} />
         )}
 
         {activeTab === "pax_flow" && (
