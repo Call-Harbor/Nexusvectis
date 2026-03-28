@@ -19,6 +19,8 @@ import PassengerFlowAI from "@/components/airport/PassengerFlowAI";
 import GateAllocationAI from "@/components/airport/GateAllocationAI";
 import TerminalHeatmap from "@/components/airport/TerminalHeatmap";
 import AirportSustainability from "@/components/airport/AirportSustainability";
+import SmartBaggageAI from "@/components/airport/SmartBaggageAI";
+import TurnaroundAI from "@/components/airport/TurnaroundAI";
 
 const TABS = [
   { id: "operations", label: "LIVE OPS", icon: Plane },
@@ -27,7 +29,7 @@ const TABS = [
   { id: "pax_flow", label: "PAX FLOW AI", icon: Users },
   { id: "gate_ai", label: "GATE AI", icon: GitBranch },
   { id: "security", label: "SECURITY & GATES", icon: Shield },
-  { id: "baggage", label: "BAGGAGE", icon: Package },
+  { id: "baggage", label: "BAGGAGE AI", icon: Package },
   { id: "staff", label: "STAFF", icon: Users },
   { id: "ai", label: "AI CO-PILOT", icon: Cpu },
   { id: "scenario", label: "SCENARIOS", icon: AlertTriangle },
@@ -142,40 +144,25 @@ export default function AirportOpsCenter() {
         )}
 
         {activeTab === "ground" && (
-          <div className="grid grid-cols-2 gap-4">
-            <TurnaroundPanel flights={flights} tasks={tasks} />
-            <div className="space-y-4">
-              <div className="rounded-xl p-4" style={{ border: "1px solid rgba(245,158,11,0.15)", background: "rgba(0,10,25,0.6)" }}>
-                <h3 className="text-[10px] font-bold tracking-[0.3em] uppercase mb-3" style={{ color: "#f59e0b" }}>TASK OVERVIEW</h3>
-                <div className="grid grid-cols-3 gap-3">
-                  {["pending","in_progress","completed","delayed","skipped"].map(s => {
-                    const count = tasks.filter(t => t.status === s).length;
-                    const colors = { pending:"#64748b", in_progress:"#06b6d4", completed:"#10b981", delayed:"#f43f5e", skipped:"#475569" };
-                    return (
-                      <div key={s} className="text-center p-2 rounded-lg" style={{ background: `${colors[s]}10`, border: `1px solid ${colors[s]}25` }}>
-                        <p className="text-[8px] uppercase tracking-widest mb-1" style={{ color: `${colors[s]}88` }}>{s.replace(/_/g," ")}</p>
-                        <p className="text-xl font-bold" style={{ color: colors[s] }}>{count}</p>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-              <div className="rounded-xl p-4 overflow-auto max-h-72" style={{ border: "1px solid rgba(245,158,11,0.15)", background: "rgba(0,10,25,0.6)" }}>
-                <h3 className="text-[10px] font-bold tracking-[0.3em] uppercase mb-3" style={{ color: "#f59e0b" }}>ACTIVE TASKS</h3>
-                <div className="space-y-1.5">
-                  {tasks.filter(t => t.status !== "completed").slice(0, 20).map(t => (
-                    <div key={t.id} className="flex items-center gap-2 text-[10px] px-2 py-1.5 rounded" style={{ background: t.status === "delayed" ? "rgba(244,63,94,0.08)" : "rgba(15,23,42,0.5)" }}>
-                      <span className="capitalize text-slate-300 flex-1">{t.task_type?.replace(/_/g," ")}</span>
-                      <span className="text-slate-500">{t.assigned_crew}</span>
-                      {t.delay_minutes > 0 && <span className="text-red-400 font-bold">+{t.delay_minutes}m</span>}
-                      <span className="px-1.5 py-0.5 rounded text-[9px] font-bold capitalize"
-                        style={{ background: t.status === "in_progress" ? "rgba(6,182,212,0.15)" : t.status === "delayed" ? "rgba(244,63,94,0.15)" : "rgba(100,116,139,0.15)",
-                          color: t.status === "in_progress" ? "#06b6d4" : t.status === "delayed" ? "#f43f5e" : "#64748b" }}>
-                        {t.status}
-                      </span>
-                    </div>
-                  ))}
-                  {tasks.filter(t => t.status !== "completed").length === 0 && <p className="text-slate-600 text-xs text-center py-3">All tasks completed</p>}
+          <div className="space-y-4">
+            <TurnaroundAI flights={flights} tasks={tasks} />
+            <div className="grid grid-cols-2 gap-4">
+              <TurnaroundPanel flights={flights} tasks={tasks} />
+              <div className="space-y-4">
+                <div className="rounded-xl p-4" style={{ border: "1px solid rgba(245,158,11,0.15)", background: "rgba(0,10,25,0.6)" }}>
+                  <h3 className="text-[10px] font-bold tracking-[0.3em] uppercase mb-3" style={{ color: "#f59e0b" }}>TASK OVERVIEW</h3>
+                  <div className="grid grid-cols-3 gap-3">
+                    {["pending","in_progress","completed","delayed","skipped"].map(s => {
+                      const count = tasks.filter(t => t.status === s).length;
+                      const colors = { pending:"#64748b", in_progress:"#06b6d4", completed:"#10b981", delayed:"#f43f5e", skipped:"#475569" };
+                      return (
+                        <div key={s} className="text-center p-2 rounded-lg" style={{ background: `${colors[s]}10`, border: `1px solid ${colors[s]}25` }}>
+                          <p className="text-[8px] uppercase tracking-widest mb-1" style={{ color: `${colors[s]}88` }}>{s.replace(/_/g," ")}</p>
+                          <p className="text-xl font-bold" style={{ color: colors[s] }}>{count}</p>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
             </div>
@@ -190,7 +177,10 @@ export default function AirportOpsCenter() {
         )}
 
         {activeTab === "baggage" && (
-          <BaggageTracker bags={bags} flights={flights} />
+          <div className="space-y-4">
+            <SmartBaggageAI bags={bags} flights={flights} />
+            <BaggageTracker bags={bags} flights={flights} />
+          </div>
         )}
 
         {activeTab === "staff" && (
