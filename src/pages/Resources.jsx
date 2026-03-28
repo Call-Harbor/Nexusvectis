@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import PortInfraManager from "@/components/port/PortInfraManager";
+import AirportInfraManager from "@/components/airport/AirportInfraManager";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Warehouse, Plus, Search, MapPin, Fuel, Battery, Wrench, Ship, X, Filter, Download, BarChart3
@@ -449,6 +450,7 @@ export default function Resources() {
         )}
 
         <PortInfraManager />
+        <AirportInfraManager />
       </div>
 
       {/* Add Resource Dialog */}

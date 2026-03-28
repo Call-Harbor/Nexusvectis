@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import moment from "moment";
 import AssetEditor from "../components/assets/AssetEditor.jsx";
 import AssetDetails from "../components/assets/AssetDetails.jsx";
+import AirportInfraManager from "../components/airport/AirportInfraManager.jsx";
 
 export default function AssetManagement() {
   const [user, setUser] = useState(null);
@@ -396,6 +397,8 @@ export default function AssetManagement() {
             ))
           )}
         </div>
+
+        <AirportInfraManager />
       </div>
     </div>
   );
