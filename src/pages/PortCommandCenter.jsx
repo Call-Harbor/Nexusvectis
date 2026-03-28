@@ -15,10 +15,10 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const TABS = [
-  { id: "berth", label: "BERTH PLAN", icon: Anchor },
+  { id: "berth", label: "KAJPLAN", icon: Anchor },
   { id: "yard", label: "YARD", icon: BarChart3 },
-  { id: "gate", label: "GATE & RAIL", icon: Zap },
-  { id: "ai", label: "AI ADVISOR", icon: Cpu },
+  { id: "gate", label: "PORT & JERNBANE", icon: Zap },
+  { id: "ai", label: "AI RÅDGIVER", icon: Cpu },
   { id: "scenario", label: "SCENARIER", icon: AlertTriangle },
   { id: "sustainability", label: "CO₂", icon: Leaf },
 ];
