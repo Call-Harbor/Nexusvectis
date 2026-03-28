@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import PortKPIBanner from "@/components/port/PortKPIBanner";
 import PortBerthBoard from "@/components/port/PortBerthBoard";
 import PortVesselQueue from "@/components/port/PortVesselQueue";
@@ -8,7 +8,11 @@ import PortYardOverview from "@/components/port/PortYardOverview";
 import PortGateMonitor from "@/components/port/PortGateMonitor";
 import PortAIAdvisor from "@/components/port/PortAIAdvisor";
 import PortScenarioEngine from "@/components/port/PortScenarioEngine";
-import { Ship, Anchor, Cpu, BarChart3, AlertTriangle, Leaf, Settings, Zap } from "lucide-react";
+import { Ship, Anchor, Cpu, BarChart3, AlertTriangle, Leaf, Settings, Zap, Plus } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const TABS = [
   { id: "berth", label: "BERTH PLAN", icon: Anchor },
@@ -24,6 +28,7 @@ export default function PortCommandCenter() {
   const [orgId, setOrgId] = useState(null);
   const [selectedPortCall, setSelectedPortCall] = useState(null);
   const [dataReady, setDataReady] = useState(false);
+  const [showAddPortCall, setShowAddPortCall] = useState(false);
 
   useEffect(() => {
     base44.auth.me().then(u => {
@@ -34,51 +39,53 @@ export default function PortCommandCenter() {
 
   const buildFilter = (extra = {}) => orgId && orgId !== "__all__" ? { organization_id: orgId, ...extra } : extra;
 
-  const { data: portCalls = [] } = useQuery({
-    queryKey: ["portCalls", orgId],
+  const queryClient = useQueryClient();
+
+  const { data: portCalls = [], refetch: refetchPortCalls } = useQuery({
+    queryKey: ["portCalls"],
     queryFn: () => base44.entities.PortCall.list("-eta", 50),
     enabled: dataReady,
     refetchInterval: 30000,
   });
 
   const { data: vessels = [] } = useQuery({
-    queryKey: ["vessels", orgId],
+    queryKey: ["vessels_port"],
     queryFn: () => base44.entities.Vessel.list("-created_date", 100),
     enabled: dataReady,
   });
 
   const { data: berths = [] } = useQuery({
-    queryKey: ["berths", orgId],
+    queryKey: ["berths_mgr"],
     queryFn: () => base44.entities.Berth.list("-created_date", 50),
     enabled: dataReady,
   });
 
   const { data: cranes = [] } = useQuery({
-    queryKey: ["portCranes", orgId],
+    queryKey: ["cranes_port"],
     queryFn: () => base44.entities.PortCrane.list("-created_date", 50),
     enabled: dataReady,
   });
 
   const { data: yardZones = [] } = useQuery({
-    queryKey: ["yardZones", orgId],
+    queryKey: ["yards_mgr"],
     queryFn: () => base44.entities.YardZone.list("-created_date", 50),
     enabled: dataReady,
   });
 
   const { data: gates = [] } = useQuery({
-    queryKey: ["portGates", orgId],
+    queryKey: ["gates_mgr"],
     queryFn: () => base44.entities.PortGate.list("-created_date", 20),
     enabled: dataReady,
   });
 
   const { data: railSlots = [] } = useQuery({
-    queryKey: ["railSlots", orgId],
+    queryKey: ["rails_mgr"],
     queryFn: () => base44.entities.RailSlot.list("-created_date", 30),
     enabled: dataReady,
   });
 
   const { data: equipment = [] } = useQuery({
-    queryKey: ["portEquipment", orgId],
+    queryKey: ["equipment_port"],
     queryFn: () => base44.entities.PortEquipment.list("-created_date", 100),
     enabled: dataReady,
   });
@@ -110,20 +117,28 @@ export default function PortCommandCenter() {
           </div>
           <div className="flex items-center gap-6">
             <div className="text-center">
-              <p className="text-[8px] tracking-widest uppercase" style={{ color: "rgba(6,182,212,0.4)" }}>AKTIVE ANLØB</p>
+              <p className="text-[8px] tracking-widest uppercase" style={{ color: "rgba(6,182,212,0.4)" }}>ACTIVE CALLS</p>
               <p className="text-2xl font-bold" style={{ color: "#06b6d4", textShadow: "0 0 10px rgba(6,182,212,0.5)" }}>{activeCalls.length}</p>
             </div>
             <div className="text-center">
-              <p className="text-[8px] tracking-widest uppercase" style={{ color: "rgba(6,182,212,0.4)" }}>PLANLAGTE</p>
+              <p className="text-[8px] tracking-widest uppercase" style={{ color: "rgba(6,182,212,0.4)" }}>PLANNED</p>
               <p className="text-2xl font-bold" style={{ color: "#8b5cf6" }}>{plannedCalls.length}</p>
             </div>
             <div className="text-center">
-              <p className="text-[8px] tracking-widest uppercase" style={{ color: "rgba(6,182,212,0.4)" }}>KRANER AKTIVE</p>
+              <p className="text-[8px] tracking-widest uppercase" style={{ color: "rgba(6,182,212,0.4)" }}>CRANES ACTIVE</p>
               <p className="text-2xl font-bold" style={{ color: "#10b981" }}>{cranes.filter(c => c.status === "working").length}</p>
             </div>
+            <button
+              onClick={() => setShowAddPortCall(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded transition-all hover:opacity-80"
+              style={{ border: "1px solid rgba(6,182,212,0.4)", background: "rgba(6,182,212,0.1)" }}
+            >
+              <Plus className="w-3.5 h-3.5" style={{ color: "#06b6d4" }} />
+              <span className="text-[9px] tracking-widest uppercase" style={{ color: "#06b6d4" }}>NEW PORT CALL</span>
+            </button>
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded" style={{ border: "1px solid rgba(16,185,129,0.3)", background: "rgba(16,185,129,0.06)" }}>
               <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-              <span className="text-[9px] tracking-widest uppercase" style={{ color: "#10b981" }}>OPERATIONEL</span>
+              <span className="text-[9px] tracking-widest uppercase" style={{ color: "#10b981" }}>OPERATIONAL</span>
             </div>
           </div>
         </div>
@@ -187,7 +202,95 @@ export default function PortCommandCenter() {
           <PortSustainability portCalls={portCalls} equipment={equipment} cranes={cranes} />
         )}
       </div>
+
+      <AddPortCallDialog
+        open={showAddPortCall}
+        onClose={() => setShowAddPortCall(false)}
+        vessels={vessels}
+        berths={berths}
+        orgId={orgId}
+        onSuccess={() => queryClient.invalidateQueries({queryKey: ["portCalls"]})}
+      />
     </div>
+  );
+}
+
+function AddPortCallDialog({ open, onClose, vessels, berths, orgId, onSuccess }) {
+  const [f, setF] = useState({ vessel_id: "", berth_id: "", eta: "", etd: "", status: "planned", priority: "normal", cargo_profile: "mixed", import_teu: 0, export_teu: 0, agent: "" });
+  const create = useMutation({
+    mutationFn: d => base44.entities.PortCall.create({ ...d, organization_id: orgId }),
+    onSuccess: () => { onSuccess(); onClose(); setF({ vessel_id: "", berth_id: "", eta: "", etd: "", status: "planned", priority: "normal", cargo_profile: "mixed", import_teu: 0, export_teu: 0, agent: "" }); }
+  });
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="bg-slate-900 border-slate-700 text-white max-h-[90vh] overflow-y-auto">
+        <DialogHeader><DialogTitle>New Port Call</DialogTitle></DialogHeader>
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="col-span-2"><Label>Vessel *</Label>
+              <Select value={f.vessel_id} onValueChange={v => setF({...f, vessel_id: v})}>
+                <SelectTrigger className="bg-slate-800 border-slate-700"><SelectValue placeholder="Select vessel..." /></SelectTrigger>
+                <SelectContent>{vessels.map(v => <SelectItem key={v.id} value={v.id}>{v.name} ({v.type})</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div className="col-span-2"><Label>Berth</Label>
+              <Select value={f.berth_id} onValueChange={v => setF({...f, berth_id: v})}>
+                <SelectTrigger className="bg-slate-800 border-slate-700"><SelectValue placeholder="Select berth..." /></SelectTrigger>
+                <SelectContent>{berths.map(b => <SelectItem key={b.id} value={b.id}>{b.name} {b.terminal ? `— ${b.terminal}` : ""}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div><Label>ETA</Label><Input type="datetime-local" value={f.eta} onChange={e => setF({...f, eta: e.target.value})} className="bg-slate-800 border-slate-700" /></div>
+            <div><Label>ETD</Label><Input type="datetime-local" value={f.etd} onChange={e => setF({...f, etd: e.target.value})} className="bg-slate-800 border-slate-700" /></div>
+            <div><Label>Status</Label>
+              <Select value={f.status} onValueChange={v => setF({...f, status: v})}>
+                <SelectTrigger className="bg-slate-800 border-slate-700"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="planned">Planned</SelectItem>
+                  <SelectItem value="approaching">Approaching</SelectItem>
+                  <SelectItem value="berthed">Berthed</SelectItem>
+                  <SelectItem value="operations">Operations</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
+                  <SelectItem value="delayed">Delayed</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div><Label>Priority</Label>
+              <Select value={f.priority} onValueChange={v => setF({...f, priority: v})}>
+                <SelectTrigger className="bg-slate-800 border-slate-700"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="low">Low</SelectItem>
+                  <SelectItem value="normal">Normal</SelectItem>
+                  <SelectItem value="high">High</SelectItem>
+                  <SelectItem value="critical">Critical</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div><Label>Cargo Profile</Label>
+              <Select value={f.cargo_profile} onValueChange={v => setF({...f, cargo_profile: v})}>
+                <SelectTrigger className="bg-slate-800 border-slate-700"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="import">Import</SelectItem>
+                  <SelectItem value="export">Export</SelectItem>
+                  <SelectItem value="transit">Transit</SelectItem>
+                  <SelectItem value="mixed">Mixed</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div><Label>Import TEU</Label><Input type="number" value={f.import_teu} onChange={e => setF({...f, import_teu: parseInt(e.target.value)||0})} className="bg-slate-800 border-slate-700" /></div>
+            <div><Label>Export TEU</Label><Input type="number" value={f.export_teu} onChange={e => setF({...f, export_teu: parseInt(e.target.value)||0})} className="bg-slate-800 border-slate-700" /></div>
+            <div className="col-span-2"><Label>Shipping Agent</Label><Input value={f.agent} onChange={e => setF({...f, agent: e.target.value})} className="bg-slate-800 border-slate-700" placeholder="e.g. GAC Shipping" /></div>
+          </div>
+          <button
+            onClick={() => create.mutate(f)}
+            disabled={!f.vessel_id || !f.eta || create.isPending}
+            className="w-full py-2 rounded-lg font-semibold text-sm transition-all"
+            style={{ background: "rgba(6,182,212,0.2)", border: "1px solid rgba(6,182,212,0.4)", color: "#06b6d4", opacity: (!f.vessel_id || !f.eta) ? 0.4 : 1 }}
+          >
+            {create.isPending ? "Saving..." : "Create Port Call"}
+          </button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
