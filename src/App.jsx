@@ -16,6 +16,7 @@ import TransitControl from './pages/TransitControl';
 import ScenarioStudio from './pages/ScenarioStudio';
 import PortCommandCenter from './pages/PortCommandCenter';
 import AirportOpsCenter from './pages/AirportOpsCenter';
+import StaffPortal from './pages/StaffPortal';
 
 
 const { Pages, Layout, mainPage } = pagesConfig;
@@ -137,6 +138,7 @@ const AuthenticatedApp = () => {
           </LayoutWrapper>
         }
       />
+      <Route path="/StaffPortal" element={<StaffPortal />} />
 
       <Route path="*" element={<PageNotFound />} />
     </Routes>
