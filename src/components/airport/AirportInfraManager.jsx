@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, X, Plane, Shield, Users } from "lucide-react";
+import { Plus, X, Plane, Shield, Users, Car } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,7 +17,11 @@ const TABS = [
   { id: "gates", label: "Gates", icon: Plane },
   { id: "security", label: "Security Lanes", icon: Shield },
   { id: "staff", label: "Staff", icon: Users },
+  { id: "landside", label: "Landside Zones", icon: Car },
 ];
+
+const LANDSIDE_STATUS_COLOR = { open: "bg-emerald-500/20 text-emerald-400", closed: "bg-rose-500/20 text-rose-400", limited: "bg-amber-500/20 text-amber-400" };
+const FACILITY_TYPES = ["checkin","security","immigration","baggage_reclaim","taxi","bus","train","parking"];
 
 export default function AirportInfraManager() {
   const [activeTab, setActiveTab] = useState("gates");
@@ -45,9 +49,16 @@ export default function AirportInfraManager() {
     enabled: !!orgId
   });
 
+  const { data: landsideZones = [] } = useQuery({
+    queryKey: ["infra_landside", orgId],
+    queryFn: () => orgId ? base44.entities.LandsideZone.filter({ organization_id: orgId }, "-created_date", 100) : [],
+    enabled: !!orgId
+  });
+
   const deleteGate = useMutation({ mutationFn: id => base44.entities.AirportGate.delete(id), onSuccess: () => queryClient.invalidateQueries({ queryKey: ["infra_gates"] }) });
   const deleteLane = useMutation({ mutationFn: id => base44.entities.SecurityLane.delete(id), onSuccess: () => queryClient.invalidateQueries({ queryKey: ["infra_lanes"] }) });
   const deleteStaff = useMutation({ mutationFn: id => base44.entities.AirportStaff.delete(id), onSuccess: () => queryClient.invalidateQueries({ queryKey: ["infra_staff"] }) });
+  const deleteLandside = useMutation({ mutationFn: id => base44.entities.LandsideZone.delete(id), onSuccess: () => queryClient.invalidateQueries({ queryKey: ["infra_landside"] }) });
 
   return (
     <div className="mt-8 rounded-2xl border border-violet-500/20 bg-slate-900/50 p-6">
@@ -56,7 +67,7 @@ export default function AirportInfraManager() {
           <Plane className="w-5 h-5 text-violet-400" />
           <h2 className="text-lg font-bold text-white">Airport Infrastructure</h2>
           <Badge variant="outline" className="bg-violet-500/10 text-violet-400 border-violet-500/30 ml-2">
-            {gates.length}G · {lanes.length}L · {staff.length}S
+            {gates.length}G · {lanes.length}L · {staff.length}S · {landsideZones.length}Z
           </Badge>
         </div>
         <Button onClick={() => setShowDialog(true)} size="sm" className="bg-violet-600 hover:bg-violet-700 text-white">
@@ -140,6 +151,30 @@ export default function AirportInfraManager() {
         </div>
       )}
 
+      {/* Landside Zones */}
+      {activeTab === "landside" && (
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+          {landsideZones.length === 0 && <p className="text-slate-500 text-sm col-span-full text-center py-4">No landside zones added yet</p>}
+          {landsideZones.map(z => (
+            <div key={z.id} className="rounded-xl p-3 bg-slate-800/50 border border-slate-700/50 flex items-start justify-between group">
+              <div>
+                <p className="font-bold text-white text-sm">{z.name}</p>
+                <p className="text-xs text-slate-400 capitalize">{z.facility_type?.replace(/_/g, " ")}</p>
+                <Badge className={`mt-1 text-[10px] ${LANDSIDE_STATUS_COLOR[z.status] || ""}`}>{z.status}</Badge>
+                <div className="flex gap-3 mt-1 text-[10px] text-slate-400">
+                  <span>Queue: {z.queue_count || 0}</span>
+                  <span>Wait: {z.wait_minutes || 0} min</span>
+                </div>
+                {z.capacity > 0 && <p className="text-[10px] text-slate-500 mt-0.5">{z.current_occupancy || 0}/{z.capacity} capacity</p>}
+              </div>
+              <button onClick={() => deleteLandside.mutate(z.id)} className="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-rose-400 transition-all">
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
       <AddAirportEntityDialog
         open={showDialog}
         onClose={() => setShowDialog(false)}
@@ -149,6 +184,7 @@ export default function AirportInfraManager() {
           queryClient.invalidateQueries({ queryKey: ["infra_gates"] });
           queryClient.invalidateQueries({ queryKey: ["infra_lanes"] });
           queryClient.invalidateQueries({ queryKey: ["infra_staff"] });
+          queryClient.invalidateQueries({ queryKey: ["infra_landside"] });
         }}
       />
     </div>
@@ -156,21 +192,23 @@ export default function AirportInfraManager() {
 }
 
 function AddAirportEntityDialog({ open, onClose, activeTab, orgId, onSuccess }) {
+  const [landsideForm, setLandsideForm] = useState({ name: "", facility_type: "taxi", status: "open", queue_count: 0, wait_minutes: 0, capacity: 100, current_occupancy: 0, staff_assigned: 0, next_departure_minutes: null, delay_minutes: 0 });
   const [gateForm, setGateForm] = useState({ gate_code: "", terminal: "", concourse: "", gate_type: "jetbridge", schengen: true, aircraft_size: "any", status: "open", pax_waiting: 0 });
   const [laneForm, setLaneForm] = useState({ name: "", terminal: "", lane_type: "standard", status: "open", queue_length: 0, wait_minutes: 0, throughput_per_hour: 180, staff_assigned: 2, staff_required: 2 });
   const [staffForm, setStaffForm] = useState({ name: "", role: "gate_agent", status: "on_duty", terminal: "", assigned_to: "" });
 
+  const createLandside = useMutation({ mutationFn: d => base44.entities.LandsideZone.create({ ...d, organization_id: orgId }), onSuccess: () => { onSuccess(); onClose(); } });
   const createGate = useMutation({ mutationFn: d => base44.entities.AirportGate.create({ ...d, organization_id: orgId }), onSuccess: () => { onSuccess(); onClose(); } });
   const createLane = useMutation({ mutationFn: d => base44.entities.SecurityLane.create({ ...d, organization_id: orgId }), onSuccess: () => { onSuccess(); onClose(); } });
   const createStaff = useMutation({ mutationFn: d => base44.entities.AirportStaff.create({ ...d, organization_id: orgId }), onSuccess: () => { onSuccess(); onClose(); } });
 
-  const isPending = createGate.isPending || createLane.isPending || createStaff.isPending;
+  const isPending = createGate.isPending || createLane.isPending || createStaff.isPending || createLandside.isPending;
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="bg-slate-900 border-slate-700 text-white max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add {activeTab === "gates" ? "Gate" : activeTab === "security" ? "Security Lane" : "Staff"}</DialogTitle>
+          <DialogTitle>Add {activeTab === "gates" ? "Gate" : activeTab === "security" ? "Security Lane" : activeTab === "landside" ? "Landside Zone" : "Staff"}</DialogTitle>
         </DialogHeader>
 
         {activeTab === "gates" && (
@@ -226,6 +264,35 @@ function AddAirportEntityDialog({ open, onClose, activeTab, orgId, onSuccess }) 
             </div>
             <Button onClick={() => createLane.mutate(laneForm)} disabled={!laneForm.name || isPending} className="w-full bg-violet-600 hover:bg-violet-700">
               {isPending ? "Saving..." : "Create Lane"}
+            </Button>
+          </div>
+        )}
+
+        {activeTab === "landside" && (
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="col-span-2"><Label>Name *</Label><Input value={landsideForm.name} onChange={e => setLandsideForm({...landsideForm, name: e.target.value})} className="bg-slate-800 border-slate-700" placeholder="Arrivals Taxi Rank" /></div>
+              <div><Label>Facility Type</Label>
+                <Select value={landsideForm.facility_type} onValueChange={v => setLandsideForm({...landsideForm, facility_type: v})}>
+                  <SelectTrigger className="bg-slate-800 border-slate-700"><SelectValue /></SelectTrigger>
+                  <SelectContent>{FACILITY_TYPES.map(t => <SelectItem key={t} value={t}>{t.replace(/_/g," ")}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              <div><Label>Status</Label>
+                <Select value={landsideForm.status} onValueChange={v => setLandsideForm({...landsideForm, status: v})}>
+                  <SelectTrigger className="bg-slate-800 border-slate-700"><SelectValue /></SelectTrigger>
+                  <SelectContent><SelectItem value="open">Open</SelectItem><SelectItem value="limited">Limited</SelectItem><SelectItem value="closed">Closed</SelectItem></SelectContent>
+                </Select>
+              </div>
+              <div><Label>Capacity</Label><Input type="number" value={landsideForm.capacity} onChange={e => setLandsideForm({...landsideForm, capacity: parseInt(e.target.value)||100})} className="bg-slate-800 border-slate-700" /></div>
+              <div><Label>Current Occupancy</Label><Input type="number" value={landsideForm.current_occupancy} onChange={e => setLandsideForm({...landsideForm, current_occupancy: parseInt(e.target.value)||0})} className="bg-slate-800 border-slate-700" /></div>
+              <div><Label>Queue Count</Label><Input type="number" value={landsideForm.queue_count} onChange={e => setLandsideForm({...landsideForm, queue_count: parseInt(e.target.value)||0})} className="bg-slate-800 border-slate-700" /></div>
+              <div><Label>Wait (minutes)</Label><Input type="number" value={landsideForm.wait_minutes} onChange={e => setLandsideForm({...landsideForm, wait_minutes: parseInt(e.target.value)||0})} className="bg-slate-800 border-slate-700" /></div>
+              <div><Label>Staff Assigned</Label><Input type="number" value={landsideForm.staff_assigned} onChange={e => setLandsideForm({...landsideForm, staff_assigned: parseInt(e.target.value)||0})} className="bg-slate-800 border-slate-700" /></div>
+              <div><Label>Next Departure (min)</Label><Input type="number" value={landsideForm.next_departure_minutes || ""} onChange={e => setLandsideForm({...landsideForm, next_departure_minutes: parseInt(e.target.value)||null})} className="bg-slate-800 border-slate-700" placeholder="Only for bus/train" /></div>
+            </div>
+            <Button onClick={() => createLandside.mutate(landsideForm)} disabled={!landsideForm.name || isPending} className="w-full bg-violet-600 hover:bg-violet-700">
+              {isPending ? "Saving..." : "Create Landside Zone"}
             </Button>
           </div>
         )}
