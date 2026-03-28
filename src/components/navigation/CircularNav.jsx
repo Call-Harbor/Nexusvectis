@@ -7,7 +7,7 @@ import {
   Truck, Route, Warehouse, Sparkles, 
   Settings, Users, Shield, FileText, Package, 
   DollarSign, Target, Menu, X, Zap, Home, AlertCircle, Code2, BarChart2, Brain, Bus,
-  Wrench, Receipt, BarChart3, Leaf, Satellite, Bell, TrendingUp, GitBranch, Box, GraduationCap, MapPin, ChevronRight, Anchor
+  Wrench, Receipt, BarChart3, Leaf, Satellite, Bell, TrendingUp, GitBranch, Box, GraduationCap, MapPin, ChevronRight, Anchor, Plane
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import NotificationCenter from "../notifications/NotificationCenter";
@@ -37,6 +37,7 @@ const menuCategories = [
     name: "Logistics", icon: Route, color: "violet",
     items: [
       { name: "Port Command", icon: Anchor, page: "PortCommandCenter" },
+      { name: "Airport Ops", icon: Plane, page: "AirportOpsCenter" },
       { name: "Shipments", icon: Package, page: "Shipments" },
       { name: "Routes", icon: Route, page: "Routes" },
       { name: "Resources", icon: Warehouse, page: "Resources" },

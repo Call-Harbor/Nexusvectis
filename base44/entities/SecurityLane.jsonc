@@ -1,0 +1,59 @@
+{
+  "name": "SecurityLane",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "terminal": {
+      "type": "string"
+    },
+    "lane_type": {
+      "type": "string",
+      "enum": [
+        "standard",
+        "fast_track",
+        "special_assistance",
+        "staff"
+      ],
+      "default": "standard"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "closed",
+        "degraded"
+      ],
+      "default": "open"
+    },
+    "queue_length": {
+      "type": "number",
+      "default": 0,
+      "description": "Estimated pax in queue"
+    },
+    "wait_minutes": {
+      "type": "number",
+      "default": 0
+    },
+    "throughput_per_hour": {
+      "type": "number",
+      "default": 180
+    },
+    "staff_assigned": {
+      "type": "number",
+      "default": 2
+    },
+    "staff_required": {
+      "type": "number",
+      "default": 2
+    }
+  },
+  "required": [
+    "name",
+    "organization_id"
+  ]
+}

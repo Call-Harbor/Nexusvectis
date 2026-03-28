@@ -1,0 +1,83 @@
+{
+  "name": "AirportGate",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string"
+    },
+    "gate_code": {
+      "type": "string",
+      "description": "e.g. B14"
+    },
+    "terminal": {
+      "type": "string"
+    },
+    "concourse": {
+      "type": "string"
+    },
+    "gate_type": {
+      "type": "string",
+      "enum": [
+        "jetbridge",
+        "bus_gate",
+        "remote_stand"
+      ],
+      "default": "jetbridge"
+    },
+    "schengen": {
+      "type": "boolean",
+      "default": true
+    },
+    "aircraft_size": {
+      "type": "string",
+      "enum": [
+        "narrow",
+        "wide",
+        "any"
+      ],
+      "default": "any"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "occupied",
+        "maintenance",
+        "closed"
+      ],
+      "default": "open"
+    },
+    "current_flight_id": {
+      "type": "string"
+    },
+    "next_flight_id": {
+      "type": "string"
+    },
+    "pax_waiting": {
+      "type": "number",
+      "default": 0
+    },
+    "boarding_active": {
+      "type": "boolean",
+      "default": false
+    },
+    "latitude": {
+      "type": "number"
+    },
+    "longitude": {
+      "type": "number"
+    },
+    "x_pos": {
+      "type": "number",
+      "description": "2D layout x%"
+    },
+    "y_pos": {
+      "type": "number",
+      "description": "2D layout y%"
+    }
+  },
+  "required": [
+    "gate_code",
+    "organization_id"
+  ]
+}

@@ -1,0 +1,86 @@
+{
+  "name": "GroundHandlingTask",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string"
+    },
+    "flight_id": {
+      "type": "string"
+    },
+    "task_type": {
+      "type": "string",
+      "enum": [
+        "deboarding",
+        "cleaning",
+        "catering",
+        "fueling",
+        "baggage_unload",
+        "baggage_load",
+        "boarding",
+        "pushback",
+        "water_service",
+        "lavatory",
+        "deicing"
+      ],
+      "default": "cleaning"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "in_progress",
+        "completed",
+        "delayed",
+        "skipped"
+      ],
+      "default": "pending"
+    },
+    "assigned_crew": {
+      "type": "string"
+    },
+    "assigned_equipment": {
+      "type": "string"
+    },
+    "scheduled_start": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "actual_start": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "actual_end": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "duration_minutes": {
+      "type": "number"
+    },
+    "target_duration_minutes": {
+      "type": "number"
+    },
+    "delay_minutes": {
+      "type": "number",
+      "default": 0
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "low",
+        "normal",
+        "high",
+        "critical"
+      ],
+      "default": "normal"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "flight_id",
+    "task_type",
+    "organization_id"
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "name": "AirportStaff",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "security_officer",
+        "gate_agent",
+        "ground_handler",
+        "baggage_driver",
+        "cleaning_crew",
+        "bus_driver",
+        "supervisor",
+        "dispatcher"
+      ],
+      "default": "gate_agent"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "on_duty",
+        "on_break",
+        "off_duty",
+        "assigned"
+      ],
+      "default": "on_duty"
+    },
+    "assigned_to": {
+      "type": "string",
+      "description": "Gate / flight / zone ID"
+    },
+    "terminal": {
+      "type": "string"
+    },
+    "shift_start": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "shift_end": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "certifications": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "name",
+    "role",
+    "organization_id"
+  ]
+}

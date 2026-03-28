@@ -1,0 +1,63 @@
+{
+  "name": "BaggageItem",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string"
+    },
+    "tag_number": {
+      "type": "string"
+    },
+    "flight_id": {
+      "type": "string"
+    },
+    "passenger_name": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "checked_in",
+        "sorting",
+        "loaded",
+        "in_transit",
+        "at_reclaim",
+        "collected",
+        "mishandled",
+        "delayed"
+      ],
+      "default": "checked_in"
+    },
+    "connection_flight_id": {
+      "type": "string"
+    },
+    "connection_time_minutes": {
+      "type": "number"
+    },
+    "is_rush": {
+      "type": "boolean",
+      "default": false
+    },
+    "current_location": {
+      "type": "string"
+    },
+    "weight_kg": {
+      "type": "number"
+    },
+    "bag_type": {
+      "type": "string",
+      "enum": [
+        "standard",
+        "oversized",
+        "fragile",
+        "special"
+      ],
+      "default": "standard"
+    }
+  },
+  "required": [
+    "tag_number",
+    "flight_id",
+    "organization_id"
+  ]
+}
