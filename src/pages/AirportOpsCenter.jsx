@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import { Plane, Shield, Package, Users, AlertTriangle, Cpu, BarChart3, Leaf, Plus, Zap } from "lucide-react";
+import { Plane, Shield, Package, Users, AlertTriangle, Cpu, BarChart3, Leaf, Plus, Zap, Map, GitBranch } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,15 +15,23 @@ import BaggageTracker from "@/components/airport/BaggageTracker";
 import AirportAIAdvisor from "@/components/airport/AirportAIAdvisor";
 import AirportScenarioEngine from "@/components/airport/AirportScenarioEngine";
 import StaffResourcePanel from "@/components/airport/StaffResourcePanel";
+import PassengerFlowAI from "@/components/airport/PassengerFlowAI";
+import GateAllocationAI from "@/components/airport/GateAllocationAI";
+import TerminalHeatmap from "@/components/airport/TerminalHeatmap";
+import AirportSustainability from "@/components/airport/AirportSustainability";
 
 const TABS = [
   { id: "operations", label: "LIVE OPS", icon: Plane },
+  { id: "heatmap", label: "TERMINAL TWIN", icon: Map },
   { id: "ground", label: "GROUND HANDLING", icon: Zap },
+  { id: "pax_flow", label: "PAX FLOW AI", icon: Users },
+  { id: "gate_ai", label: "GATE AI", icon: GitBranch },
   { id: "security", label: "SECURITY & GATES", icon: Shield },
   { id: "baggage", label: "BAGGAGE", icon: Package },
   { id: "staff", label: "STAFF", icon: Users },
   { id: "ai", label: "AI CO-PILOT", icon: Cpu },
   { id: "scenario", label: "SCENARIOS", icon: AlertTriangle },
+  { id: "sustainability", label: "CO₂ & ENERGY", icon: Leaf },
 ];
 
 export default function AirportOpsCenter() {
@@ -195,8 +203,24 @@ export default function AirportOpsCenter() {
           </div>
         )}
 
+        {activeTab === "heatmap" && (
+          <TerminalHeatmap flights={flights} securityLanes={securityLanes} bags={bags} gates={gates} />
+        )}
+
+        {activeTab === "pax_flow" && (
+          <PassengerFlowAI flights={flights} securityLanes={securityLanes} staff={staff} />
+        )}
+
+        {activeTab === "gate_ai" && (
+          <GateAllocationAI gates={gates} flights={flights} />
+        )}
+
         {activeTab === "scenario" && (
           <AirportScenarioEngine flights={flights} gates={gates} securityLanes={securityLanes} />
+        )}
+
+        {activeTab === "sustainability" && (
+          <AirportSustainability flights={flights} tasks={tasks} />
         )}
       </div>
 
