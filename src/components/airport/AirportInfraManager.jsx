@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, X, Plane, Shield, Users, Car } from "lucide-react";
+import { Plus, X, Plane, Shield, Users, Car, Pencil } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,6 +26,7 @@ const FACILITY_TYPES = ["checkin","security","immigration","baggage_reclaim","ta
 export default function AirportInfraManager() {
   const [activeTab, setActiveTab] = useState("gates");
   const [showDialog, setShowDialog] = useState(false);
+  const [editItem, setEditItem] = useState(null);
   const [orgId, setOrgId] = useState(null);
   const queryClient = useQueryClient();
 
@@ -59,6 +60,11 @@ export default function AirportInfraManager() {
   const deleteLane = useMutation({ mutationFn: id => base44.entities.SecurityLane.delete(id), onSuccess: () => queryClient.invalidateQueries({ queryKey: ["infra_lanes"] }) });
   const deleteStaff = useMutation({ mutationFn: id => base44.entities.AirportStaff.delete(id), onSuccess: () => queryClient.invalidateQueries({ queryKey: ["infra_staff"] }) });
   const deleteLandside = useMutation({ mutationFn: id => base44.entities.LandsideZone.delete(id), onSuccess: () => queryClient.invalidateQueries({ queryKey: ["infra_landside"] }) });
+
+  const updateGate = useMutation({ mutationFn: ({id, ...d}) => base44.entities.AirportGate.update(id, d), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["infra_gates"] }); setEditItem(null); } });
+  const updateLane = useMutation({ mutationFn: ({id, ...d}) => base44.entities.SecurityLane.update(id, d), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["infra_lanes"] }); setEditItem(null); } });
+  const updateStaff = useMutation({ mutationFn: ({id, ...d}) => base44.entities.AirportStaff.update(id, d), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["infra_staff"] }); setEditItem(null); } });
+  const updateLandside = useMutation({ mutationFn: ({id, ...d}) => base44.entities.LandsideZone.update(id, d), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["infra_landside"] }); setEditItem(null); } });
 
   return (
     <div className="mt-8 rounded-2xl border border-violet-500/20 bg-slate-900/50 p-6">
@@ -100,9 +106,10 @@ export default function AirportInfraManager() {
                 <Badge className={`mt-1 text-[10px] ${GATE_STATUS_COLOR[g.status] || "bg-slate-500/20 text-slate-400"}`}>{g.status}</Badge>
                 {g.pax_waiting > 0 && <p className="text-xs text-cyan-400 mt-0.5">{g.pax_waiting} pax waiting</p>}
               </div>
-              <button onClick={() => deleteGate.mutate(g.id)} className="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-rose-400 transition-all">
-                <X className="w-3.5 h-3.5" />
-              </button>
+              <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                <button onClick={() => setEditItem({...g, _type: "gates"})} className="text-slate-500 hover:text-violet-400"><Pencil className="w-3.5 h-3.5" /></button>
+                <button onClick={() => deleteGate.mutate(g.id)} className="text-slate-500 hover:text-rose-400"><X className="w-3.5 h-3.5" /></button>
+              </div>
             </div>
           ))}
         </div>
@@ -123,9 +130,10 @@ export default function AirportInfraManager() {
                   <span className={l.wait_minutes > 20 ? "text-red-400" : "text-emerald-400"}>{l.wait_minutes || 0} min</span>
                 </div>
               </div>
-              <button onClick={() => deleteLane.mutate(l.id)} className="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-rose-400 transition-all">
-                <X className="w-3.5 h-3.5" />
-              </button>
+              <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                <button onClick={() => setEditItem({...l, _type: "security"})} className="text-slate-500 hover:text-violet-400"><Pencil className="w-3.5 h-3.5" /></button>
+                <button onClick={() => deleteLane.mutate(l.id)} className="text-slate-500 hover:text-rose-400"><X className="w-3.5 h-3.5" /></button>
+              </div>
             </div>
           ))}
         </div>
@@ -143,9 +151,10 @@ export default function AirportInfraManager() {
                 <Badge className={`mt-1 text-[10px] ${STAFF_STATUS_COLOR[s.status] || ""}`}>{s.status?.replace(/_/g, " ")}</Badge>
                 {s.assigned_to && <p className="text-xs text-cyan-400 mt-0.5">{s.assigned_to}</p>}
               </div>
-              <button onClick={() => deleteStaff.mutate(s.id)} className="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-rose-400 transition-all">
-                <X className="w-3.5 h-3.5" />
-              </button>
+              <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                <button onClick={() => setEditItem({...s, _type: "staff"})} className="text-slate-500 hover:text-violet-400"><Pencil className="w-3.5 h-3.5" /></button>
+                <button onClick={() => deleteStaff.mutate(s.id)} className="text-slate-500 hover:text-rose-400"><X className="w-3.5 h-3.5" /></button>
+              </div>
             </div>
           ))}
         </div>
@@ -167,9 +176,10 @@ export default function AirportInfraManager() {
                 </div>
                 {z.capacity > 0 && <p className="text-[10px] text-slate-500 mt-0.5">{z.current_occupancy || 0}/{z.capacity} capacity</p>}
               </div>
-              <button onClick={() => deleteLandside.mutate(z.id)} className="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-rose-400 transition-all">
-                <X className="w-3.5 h-3.5" />
-              </button>
+              <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                <button onClick={() => setEditItem({...z, _type: "landside"})} className="text-slate-500 hover:text-violet-400"><Pencil className="w-3.5 h-3.5" /></button>
+                <button onClick={() => deleteLandside.mutate(z.id)} className="text-slate-500 hover:text-rose-400"><X className="w-3.5 h-3.5" /></button>
+              </div>
             </div>
           ))}
         </div>
@@ -187,7 +197,161 @@ export default function AirportInfraManager() {
           queryClient.invalidateQueries({ queryKey: ["infra_landside"] });
         }}
       />
+
+      {editItem && (
+        <EditAirportEntityDialog
+          item={editItem}
+          onClose={() => setEditItem(null)}
+          onSave={(data) => {
+            const { _type, ...rest } = data;
+            if (_type === "gates") updateGate.mutate(rest);
+            else if (_type === "security") updateLane.mutate(rest);
+            else if (_type === "staff") updateStaff.mutate(rest);
+            else if (_type === "landside") updateLandside.mutate(rest);
+          }}
+        />
+      )}
     </div>
+  );
+}
+
+function EditAirportEntityDialog({ item, onClose, onSave }) {
+  const [form, setForm] = useState({...item});
+  const type = item._type;
+
+  const set = (k, v) => setForm(f => ({...f, [k]: v}));
+
+  return (
+    <Dialog open={true} onOpenChange={onClose}>
+      <DialogContent className="bg-slate-900 border-slate-700 text-white max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Edit {type === "gates" ? `Gate ${item.gate_code}` : type === "security" ? `Lane ${item.name}` : type === "landside" ? `Zone ${item.name}` : item.name}</DialogTitle>
+        </DialogHeader>
+
+        {type === "gates" && (
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>Gate Code</Label><Input value={form.gate_code} onChange={e => set("gate_code", e.target.value)} className="bg-slate-800 border-slate-700" /></div>
+              <div><Label>Terminal</Label><Input value={form.terminal || ""} onChange={e => set("terminal", e.target.value)} className="bg-slate-800 border-slate-700" /></div>
+              <div><Label>Concourse</Label><Input value={form.concourse || ""} onChange={e => set("concourse", e.target.value)} className="bg-slate-800 border-slate-700" /></div>
+              <div><Label>Gate Type</Label>
+                <Select value={form.gate_type} onValueChange={v => set("gate_type", v)}>
+                  <SelectTrigger className="bg-slate-800 border-slate-700"><SelectValue /></SelectTrigger>
+                  <SelectContent><SelectItem value="jetbridge">Jetbridge</SelectItem><SelectItem value="bus_gate">Bus Gate</SelectItem><SelectItem value="remote_stand">Remote Stand</SelectItem></SelectContent>
+                </Select>
+              </div>
+              <div><Label>Aircraft Size</Label>
+                <Select value={form.aircraft_size} onValueChange={v => set("aircraft_size", v)}>
+                  <SelectTrigger className="bg-slate-800 border-slate-700"><SelectValue /></SelectTrigger>
+                  <SelectContent><SelectItem value="any">Any</SelectItem><SelectItem value="narrow">Narrow</SelectItem><SelectItem value="wide">Wide</SelectItem></SelectContent>
+                </Select>
+              </div>
+              <div><Label>Status</Label>
+                <Select value={form.status} onValueChange={v => set("status", v)}>
+                  <SelectTrigger className="bg-slate-800 border-slate-700"><SelectValue /></SelectTrigger>
+                  <SelectContent><SelectItem value="open">Open</SelectItem><SelectItem value="occupied">Occupied</SelectItem><SelectItem value="maintenance">Maintenance</SelectItem><SelectItem value="closed">Closed</SelectItem></SelectContent>
+                </Select>
+              </div>
+              <div><Label>Pax Waiting</Label><Input type="number" value={form.pax_waiting || 0} onChange={e => set("pax_waiting", parseInt(e.target.value)||0)} className="bg-slate-800 border-slate-700" /></div>
+              <div><Label>Boarding Active</Label>
+                <Select value={form.boarding_active ? "true" : "false"} onValueChange={v => set("boarding_active", v === "true")}>
+                  <SelectTrigger className="bg-slate-800 border-slate-700"><SelectValue /></SelectTrigger>
+                  <SelectContent><SelectItem value="false">No</SelectItem><SelectItem value="true">Yes</SelectItem></SelectContent>
+                </Select>
+              </div>
+            </div>
+            <Button onClick={() => onSave(form)} className="w-full bg-violet-600 hover:bg-violet-700">Save Changes</Button>
+          </div>
+        )}
+
+        {type === "security" && (
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>Name</Label><Input value={form.name} onChange={e => set("name", e.target.value)} className="bg-slate-800 border-slate-700" /></div>
+              <div><Label>Terminal</Label><Input value={form.terminal || ""} onChange={e => set("terminal", e.target.value)} className="bg-slate-800 border-slate-700" /></div>
+              <div><Label>Lane Type</Label>
+                <Select value={form.lane_type} onValueChange={v => set("lane_type", v)}>
+                  <SelectTrigger className="bg-slate-800 border-slate-700"><SelectValue /></SelectTrigger>
+                  <SelectContent><SelectItem value="standard">Standard</SelectItem><SelectItem value="fast_track">Fast Track</SelectItem><SelectItem value="special_assistance">Special Assistance</SelectItem><SelectItem value="staff">Staff</SelectItem></SelectContent>
+                </Select>
+              </div>
+              <div><Label>Status</Label>
+                <Select value={form.status} onValueChange={v => set("status", v)}>
+                  <SelectTrigger className="bg-slate-800 border-slate-700"><SelectValue /></SelectTrigger>
+                  <SelectContent><SelectItem value="open">Open</SelectItem><SelectItem value="closed">Closed</SelectItem><SelectItem value="degraded">Degraded</SelectItem></SelectContent>
+                </Select>
+              </div>
+              <div><Label>Queue Length</Label><Input type="number" value={form.queue_length || 0} onChange={e => set("queue_length", parseInt(e.target.value)||0)} className="bg-slate-800 border-slate-700" /></div>
+              <div><Label>Wait (min)</Label><Input type="number" value={form.wait_minutes || 0} onChange={e => set("wait_minutes", parseInt(e.target.value)||0)} className="bg-slate-800 border-slate-700" /></div>
+              <div><Label>Throughput/hr</Label><Input type="number" value={form.throughput_per_hour || 180} onChange={e => set("throughput_per_hour", parseInt(e.target.value)||180)} className="bg-slate-800 border-slate-700" /></div>
+              <div><Label>Staff Assigned</Label><Input type="number" value={form.staff_assigned || 0} onChange={e => set("staff_assigned", parseInt(e.target.value)||0)} className="bg-slate-800 border-slate-700" /></div>
+              <div><Label>Staff Required</Label><Input type="number" value={form.staff_required || 2} onChange={e => set("staff_required", parseInt(e.target.value)||2)} className="bg-slate-800 border-slate-700" /></div>
+            </div>
+            <Button onClick={() => onSave(form)} className="w-full bg-violet-600 hover:bg-violet-700">Save Changes</Button>
+          </div>
+        )}
+
+        {type === "staff" && (
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="col-span-2"><Label>Name</Label><Input value={form.name} onChange={e => set("name", e.target.value)} className="bg-slate-800 border-slate-700" /></div>
+              <div><Label>Role</Label>
+                <Select value={form.role} onValueChange={v => set("role", v)}>
+                  <SelectTrigger className="bg-slate-800 border-slate-700"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="security_officer">Security Officer</SelectItem>
+                    <SelectItem value="gate_agent">Gate Agent</SelectItem>
+                    <SelectItem value="ground_handler">Ground Handler</SelectItem>
+                    <SelectItem value="baggage_driver">Baggage Driver</SelectItem>
+                    <SelectItem value="cleaning_crew">Cleaning Crew</SelectItem>
+                    <SelectItem value="bus_driver">Bus Driver</SelectItem>
+                    <SelectItem value="supervisor">Supervisor</SelectItem>
+                    <SelectItem value="dispatcher">Dispatcher</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div><Label>Status</Label>
+                <Select value={form.status} onValueChange={v => set("status", v)}>
+                  <SelectTrigger className="bg-slate-800 border-slate-700"><SelectValue /></SelectTrigger>
+                  <SelectContent><SelectItem value="on_duty">On Duty</SelectItem><SelectItem value="assigned">Assigned</SelectItem><SelectItem value="on_break">On Break</SelectItem><SelectItem value="off_duty">Off Duty</SelectItem></SelectContent>
+                </Select>
+              </div>
+              <div><Label>Terminal</Label><Input value={form.terminal || ""} onChange={e => set("terminal", e.target.value)} className="bg-slate-800 border-slate-700" /></div>
+              <div><Label>Assigned To</Label><Input value={form.assigned_to || ""} onChange={e => set("assigned_to", e.target.value)} className="bg-slate-800 border-slate-700" /></div>
+            </div>
+            <Button onClick={() => onSave(form)} className="w-full bg-violet-600 hover:bg-violet-700">Save Changes</Button>
+          </div>
+        )}
+
+        {type === "landside" && (
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="col-span-2"><Label>Name</Label><Input value={form.name} onChange={e => set("name", e.target.value)} className="bg-slate-800 border-slate-700" /></div>
+              <div><Label>Facility Type</Label>
+                <Select value={form.facility_type} onValueChange={v => set("facility_type", v)}>
+                  <SelectTrigger className="bg-slate-800 border-slate-700"><SelectValue /></SelectTrigger>
+                  <SelectContent>{FACILITY_TYPES.map(t => <SelectItem key={t} value={t}>{t.replace(/_/g," ")}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              <div><Label>Status</Label>
+                <Select value={form.status} onValueChange={v => set("status", v)}>
+                  <SelectTrigger className="bg-slate-800 border-slate-700"><SelectValue /></SelectTrigger>
+                  <SelectContent><SelectItem value="open">Open</SelectItem><SelectItem value="limited">Limited</SelectItem><SelectItem value="closed">Closed</SelectItem></SelectContent>
+                </Select>
+              </div>
+              <div><Label>Capacity</Label><Input type="number" value={form.capacity || 0} onChange={e => set("capacity", parseInt(e.target.value)||0)} className="bg-slate-800 border-slate-700" /></div>
+              <div><Label>Current Occupancy</Label><Input type="number" value={form.current_occupancy || 0} onChange={e => set("current_occupancy", parseInt(e.target.value)||0)} className="bg-slate-800 border-slate-700" /></div>
+              <div><Label>Queue Count</Label><Input type="number" value={form.queue_count || 0} onChange={e => set("queue_count", parseInt(e.target.value)||0)} className="bg-slate-800 border-slate-700" /></div>
+              <div><Label>Wait (min)</Label><Input type="number" value={form.wait_minutes || 0} onChange={e => set("wait_minutes", parseInt(e.target.value)||0)} className="bg-slate-800 border-slate-700" /></div>
+              <div><Label>Staff Assigned</Label><Input type="number" value={form.staff_assigned || 0} onChange={e => set("staff_assigned", parseInt(e.target.value)||0)} className="bg-slate-800 border-slate-700" /></div>
+              <div><Label>Next Departure (min)</Label><Input type="number" value={form.next_departure_minutes || ""} onChange={e => set("next_departure_minutes", parseInt(e.target.value)||null)} className="bg-slate-800 border-slate-700" placeholder="Bus/Train only" /></div>
+              <div><Label>Delay (min)</Label><Input type="number" value={form.delay_minutes || 0} onChange={e => set("delay_minutes", parseInt(e.target.value)||0)} className="bg-slate-800 border-slate-700" /></div>
+            </div>
+            <Button onClick={() => onSave(form)} className="w-full bg-violet-600 hover:bg-violet-700">Save Changes</Button>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }
 
