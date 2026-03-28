@@ -1,0 +1,96 @@
+{
+  "name": "PortContainer",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string"
+    },
+    "container_id": {
+      "type": "string",
+      "description": "Container nummer (f.eks. MSCU1234567)"
+    },
+    "size": {
+      "type": "string",
+      "enum": [
+        "20ft",
+        "40ft",
+        "45ft"
+      ],
+      "default": "40ft"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "dry",
+        "reefer",
+        "open_top",
+        "flat_rack",
+        "tank",
+        "dangerous_goods"
+      ],
+      "default": "dry"
+    },
+    "weight_kg": {
+      "type": "number"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "import",
+        "export",
+        "transit",
+        "empty",
+        "customs_hold"
+      ],
+      "default": "import"
+    },
+    "port_call_id": {
+      "type": "string"
+    },
+    "yard_zone_id": {
+      "type": "string"
+    },
+    "yard_position": {
+      "type": "string",
+      "description": "Row-Bay-Tier f.eks. A-12-3"
+    },
+    "customer": {
+      "type": "string"
+    },
+    "destination": {
+      "type": "string"
+    },
+    "cutoff": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "dwell_days": {
+      "type": "number",
+      "default": 0
+    },
+    "reefer_temp_c": {
+      "type": "number"
+    },
+    "next_move": {
+      "type": "string",
+      "enum": [
+        "gate_out",
+        "rail",
+        "vessel",
+        "yard_move",
+        "none"
+      ],
+      "default": "none"
+    },
+    "planned_vessel_id": {
+      "type": "string"
+    },
+    "dangerous_goods_class": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "container_id",
+    "organization_id"
+  ]
+}

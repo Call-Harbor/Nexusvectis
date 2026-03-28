@@ -1,0 +1,65 @@
+{
+  "name": "PortGate",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "lanes_total": {
+      "type": "number",
+      "default": 4
+    },
+    "lanes_open": {
+      "type": "number",
+      "default": 2
+    },
+    "direction": {
+      "type": "string",
+      "enum": [
+        "in",
+        "out",
+        "both"
+      ],
+      "default": "both"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "closed",
+        "limited"
+      ],
+      "default": "open"
+    },
+    "queue_trucks": {
+      "type": "number",
+      "default": 0
+    },
+    "avg_processing_min": {
+      "type": "number",
+      "default": 5
+    },
+    "trucks_today": {
+      "type": "number",
+      "default": 0
+    },
+    "peak_hour": {
+      "type": "string"
+    },
+    "anpr_enabled": {
+      "type": "boolean",
+      "default": true
+    },
+    "booking_required": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "name",
+    "organization_id"
+  ]
+}

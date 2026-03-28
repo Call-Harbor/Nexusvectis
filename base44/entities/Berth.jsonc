@@ -1,0 +1,66 @@
+{
+  "name": "Berth",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string",
+      "description": "Kajnavn/nummer"
+    },
+    "terminal": {
+      "type": "string",
+      "description": "Terminal navn"
+    },
+    "length_m": {
+      "type": "number",
+      "description": "Kajl\u00e6ngde i meter"
+    },
+    "max_draft_m": {
+      "type": "number",
+      "description": "Max dybgang"
+    },
+    "latitude": {
+      "type": "number"
+    },
+    "longitude": {
+      "type": "number"
+    },
+    "crane_count": {
+      "type": "number",
+      "default": 0
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "available",
+        "occupied",
+        "maintenance",
+        "reserved"
+      ],
+      "default": "available"
+    },
+    "vessel_types_allowed": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "shore_power_available": {
+      "type": "boolean",
+      "default": false
+    },
+    "reefer_points": {
+      "type": "number",
+      "default": 0
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "organization_id"
+  ]
+}

@@ -1,0 +1,76 @@
+{
+  "name": "YardZone",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string",
+      "description": "Zone ID/navn"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "standard",
+        "reefer",
+        "dangerous_goods",
+        "empty",
+        "customs",
+        "rail_connection"
+      ],
+      "default": "standard"
+    },
+    "rows": {
+      "type": "number"
+    },
+    "bays": {
+      "type": "number"
+    },
+    "max_stack_height": {
+      "type": "number",
+      "default": 4
+    },
+    "total_slots": {
+      "type": "number"
+    },
+    "occupied_slots": {
+      "type": "number",
+      "default": 0
+    },
+    "occupancy_pct": {
+      "type": "number"
+    },
+    "reefer_slots": {
+      "type": "number",
+      "default": 0
+    },
+    "reefer_occupied": {
+      "type": "number",
+      "default": 0
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "operational",
+        "congested",
+        "maintenance",
+        "closed"
+      ],
+      "default": "operational"
+    },
+    "latitude": {
+      "type": "number"
+    },
+    "longitude": {
+      "type": "number"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "organization_id"
+  ]
+}

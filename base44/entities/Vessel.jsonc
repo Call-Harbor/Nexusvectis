@@ -1,0 +1,102 @@
+{
+  "name": "Vessel",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string",
+      "description": "Skibnavn"
+    },
+    "imo": {
+      "type": "string",
+      "description": "IMO-nummer"
+    },
+    "mmsi": {
+      "type": "string",
+      "description": "MMSI-nummer"
+    },
+    "callsign": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "container",
+        "roro",
+        "bulk",
+        "tanker",
+        "general_cargo",
+        "cruise"
+      ],
+      "default": "container"
+    },
+    "operator": {
+      "type": "string",
+      "description": "Rederi/operat\u00f8r"
+    },
+    "service": {
+      "type": "string",
+      "description": "Servicenavn/linje"
+    },
+    "flag": {
+      "type": "string",
+      "description": "Flagstat"
+    },
+    "length_m": {
+      "type": "number",
+      "description": "Skibsl\u00e6ngde i meter"
+    },
+    "beam_m": {
+      "type": "number",
+      "description": "Bredde i meter"
+    },
+    "max_draft_m": {
+      "type": "number",
+      "description": "Max dybgang i meter"
+    },
+    "teu_capacity": {
+      "type": "number",
+      "description": "TEU kapacitet"
+    },
+    "gross_tonnage": {
+      "type": "number"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "at_sea",
+        "approaching",
+        "berthed",
+        "departing",
+        "anchored"
+      ],
+      "default": "at_sea"
+    },
+    "current_latitude": {
+      "type": "number"
+    },
+    "current_longitude": {
+      "type": "number"
+    },
+    "current_speed_knots": {
+      "type": "number"
+    },
+    "current_heading": {
+      "type": "number"
+    },
+    "shore_power_capable": {
+      "type": "boolean",
+      "default": false
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "type",
+    "organization_id"
+  ]
+}

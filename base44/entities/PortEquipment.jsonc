@@ -1,0 +1,75 @@
+{
+  "name": "PortEquipment",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "terminal_tractor",
+        "reachstacker",
+        "straddle_carrier",
+        "AGV",
+        "forklift",
+        "empty_handler"
+      ],
+      "default": "terminal_tractor"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "available",
+        "working",
+        "charging",
+        "maintenance",
+        "breakdown"
+      ],
+      "default": "available"
+    },
+    "fuel_type": {
+      "type": "string",
+      "enum": [
+        "diesel",
+        "electric",
+        "hybrid",
+        "hydrogen"
+      ],
+      "default": "diesel"
+    },
+    "battery_pct": {
+      "type": "number"
+    },
+    "fuel_pct": {
+      "type": "number"
+    },
+    "assigned_zone_id": {
+      "type": "string"
+    },
+    "assigned_port_call_id": {
+      "type": "string"
+    },
+    "moves_today": {
+      "type": "number",
+      "default": 0
+    },
+    "latitude": {
+      "type": "number"
+    },
+    "longitude": {
+      "type": "number"
+    },
+    "operator_name": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "type",
+    "organization_id"
+  ]
+}

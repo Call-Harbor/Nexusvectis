@@ -1,0 +1,123 @@
+{
+  "name": "PortCall",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string"
+    },
+    "vessel_id": {
+      "type": "string"
+    },
+    "berth_id": {
+      "type": "string"
+    },
+    "call_number": {
+      "type": "string",
+      "description": "Unikt anl\u00f8bsnummer"
+    },
+    "eta": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Forventet ankomst"
+    },
+    "etd": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Forventet afgang"
+    },
+    "ata": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Faktisk ankomst"
+    },
+    "atd": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Faktisk afgang"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "planned",
+        "approaching",
+        "berthed",
+        "operations",
+        "completed",
+        "cancelled",
+        "delayed"
+      ],
+      "default": "planned"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "low",
+        "normal",
+        "high",
+        "critical"
+      ],
+      "default": "normal"
+    },
+    "cargo_profile": {
+      "type": "string",
+      "enum": [
+        "import",
+        "export",
+        "transit",
+        "mixed"
+      ],
+      "default": "mixed"
+    },
+    "import_teu": {
+      "type": "number",
+      "default": 0
+    },
+    "export_teu": {
+      "type": "number",
+      "default": 0
+    },
+    "total_moves": {
+      "type": "number",
+      "default": 0
+    },
+    "completed_moves": {
+      "type": "number",
+      "default": 0
+    },
+    "target_turnaround_hours": {
+      "type": "number"
+    },
+    "actual_turnaround_hours": {
+      "type": "number"
+    },
+    "assigned_cranes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "agent": {
+      "type": "string",
+      "description": "Skibsagent"
+    },
+    "delay_reason": {
+      "type": "string"
+    },
+    "ai_optimized": {
+      "type": "boolean",
+      "default": false
+    },
+    "co2_at_berth_kg": {
+      "type": "number"
+    },
+    "shore_power_connected": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "vessel_id",
+    "eta",
+    "organization_id"
+  ]
+}

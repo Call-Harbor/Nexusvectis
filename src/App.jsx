@@ -14,6 +14,7 @@ import CEODashboard from './pages/CEODashboard';
 import NexusOrbit from './pages/NexusOrbit';
 import TransitControl from './pages/TransitControl';
 import ScenarioStudio from './pages/ScenarioStudio';
+import PortCommandCenter from './pages/PortCommandCenter';
 
 
 const { Pages, Layout, mainPage } = pagesConfig;
@@ -116,6 +117,14 @@ const AuthenticatedApp = () => {
         element={
           <LayoutWrapper currentPageName="ScenarioStudio">
             <ScenarioStudio />
+          </LayoutWrapper>
+        }
+      />
+      <Route 
+        path="/PortCommandCenter" 
+        element={
+          <LayoutWrapper currentPageName="PortCommandCenter">
+            <PortCommandCenter />
           </LayoutWrapper>
         }
       />

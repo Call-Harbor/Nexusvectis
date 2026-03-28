@@ -1,0 +1,68 @@
+{
+  "name": "RailSlot",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string"
+    },
+    "train_id": {
+      "type": "string"
+    },
+    "track": {
+      "type": "string",
+      "description": "Sporidentifikation"
+    },
+    "direction": {
+      "type": "string",
+      "enum": [
+        "inbound",
+        "outbound"
+      ],
+      "default": "inbound"
+    },
+    "scheduled_arrival": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "scheduled_departure": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "actual_arrival": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "wagons": {
+      "type": "number"
+    },
+    "teu_capacity": {
+      "type": "number"
+    },
+    "teu_loaded": {
+      "type": "number",
+      "default": 0
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "planned",
+        "arriving",
+        "loading",
+        "departing",
+        "completed",
+        "delayed"
+      ],
+      "default": "planned"
+    },
+    "yard_zone_id": {
+      "type": "string"
+    },
+    "operator": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "track",
+    "organization_id"
+  ]
+}

@@ -1,0 +1,88 @@
+{
+  "name": "PortCrane",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "STS",
+        "RTG",
+        "RMG",
+        "mobile",
+        "reachstacker"
+      ],
+      "default": "STS"
+    },
+    "berth_id": {
+      "type": "string",
+      "description": "Tilknyttet kaj (hvis STS)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "available",
+        "working",
+        "maintenance",
+        "breakdown",
+        "standby"
+      ],
+      "default": "available"
+    },
+    "moves_per_hour": {
+      "type": "number",
+      "description": "Kapacitet moves/time"
+    },
+    "current_moves_per_hour": {
+      "type": "number"
+    },
+    "outreach_m": {
+      "type": "number",
+      "description": "R\u00e6kkevidde i meter"
+    },
+    "max_lift_tons": {
+      "type": "number"
+    },
+    "year_installed": {
+      "type": "number"
+    },
+    "last_maintenance": {
+      "type": "string",
+      "format": "date"
+    },
+    "next_maintenance": {
+      "type": "string",
+      "format": "date"
+    },
+    "total_moves_today": {
+      "type": "number",
+      "default": 0
+    },
+    "utilization_pct": {
+      "type": "number"
+    },
+    "energy_kwh_today": {
+      "type": "number",
+      "default": 0
+    },
+    "assigned_port_call_id": {
+      "type": "string"
+    },
+    "latitude": {
+      "type": "number"
+    },
+    "longitude": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "name",
+    "type",
+    "organization_id"
+  ]
+}
