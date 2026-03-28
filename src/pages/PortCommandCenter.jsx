@@ -15,10 +15,10 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const TABS = [
-  { id: "berth", label: "KAJPLAN", icon: Anchor },
+  { id: "berth", label: "BERTH PLAN", icon: Anchor },
   { id: "yard", label: "YARD", icon: BarChart3 },
-  { id: "gate", label: "PORT & JERNBANE", icon: Zap },
-  { id: "ai", label: "AI RÅDGIVER", icon: Cpu },
+  { id: "gate", label: "GATE & RAIL", icon: Zap },
+  { id: "ai", label: "AI ADVISOR", icon: Cpu },
   { id: "scenario", label: "SCENARIER", icon: AlertTriangle },
   { id: "sustainability", label: "CO₂", icon: Leaf },
 ];
@@ -199,14 +199,14 @@ export default function PortCommandCenter() {
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded transition-all hover:opacity-80 text-[9px] tracking-widest uppercase font-bold"
                 style={{ border: "1px solid rgba(6,182,212,0.4)", background: "rgba(6,182,212,0.1)", color: "#06b6d4" }}
               >
-                <Plus className="w-3.5 h-3.5" /> Ny Gate
+                <Plus className="w-3.5 h-3.5" /> New Gate
               </button>
               <button
                 onClick={() => setShowAddRailSlot(true)}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded transition-all hover:opacity-80 text-[9px] tracking-widest uppercase font-bold"
                 style={{ border: "1px solid rgba(139,92,246,0.4)", background: "rgba(139,92,246,0.1)", color: "#8b5cf6" }}
               >
-                <Plus className="w-3.5 h-3.5" /> Ny Rail Slot
+                <Plus className="w-3.5 h-3.5" /> New Rail Slot
               </button>
             </div>
             <PortGateMonitor gates={gates} railSlots={railSlots} />
@@ -325,19 +325,19 @@ function AddGateDialog({ open, onClose, orgId, onSuccess }) {
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="bg-slate-900 border-slate-700 text-white">
-        <DialogHeader><DialogTitle>Ny Gate</DialogTitle></DialogHeader>
+        <DialogHeader><DialogTitle>New Gate</DialogTitle></DialogHeader>
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
-            <div className="col-span-2"><Label>Navn *</Label><Input value={f.name} onChange={e => setF({...f, name: e.target.value})} className="bg-slate-800 border-slate-700" placeholder="Gate A" /></div>
-            <div><Label>Baner total</Label><Input type="number" value={f.lanes_total} onChange={e => setF({...f, lanes_total: parseInt(e.target.value)||1})} className="bg-slate-800 border-slate-700" /></div>
-            <div><Label>Åbne baner</Label><Input type="number" value={f.lanes_open} onChange={e => setF({...f, lanes_open: parseInt(e.target.value)||0})} className="bg-slate-800 border-slate-700" /></div>
-            <div><Label>Retning</Label>
+            <div className="col-span-2"><Label>Name *</Label><Input value={f.name} onChange={e => setF({...f, name: e.target.value})} className="bg-slate-800 border-slate-700" placeholder="Gate A" /></div>
+            <div><Label>Total Lanes</Label><Input type="number" value={f.lanes_total} onChange={e => setF({...f, lanes_total: parseInt(e.target.value)||1})} className="bg-slate-800 border-slate-700" /></div>
+            <div><Label>Open Lanes</Label><Input type="number" value={f.lanes_open} onChange={e => setF({...f, lanes_open: parseInt(e.target.value)||0})} className="bg-slate-800 border-slate-700" /></div>
+            <div><Label>Direction</Label>
               <Select value={f.direction} onValueChange={v => setF({...f, direction: v})}>
                 <SelectTrigger className="bg-slate-800 border-slate-700"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="in">Ind</SelectItem>
-                  <SelectItem value="out">Ud</SelectItem>
-                  <SelectItem value="both">Begge</SelectItem>
+                  <SelectItem value="in">Inbound</SelectItem>
+                  <SelectItem value="out">Outbound</SelectItem>
+                  <SelectItem value="both">Both</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -345,9 +345,9 @@ function AddGateDialog({ open, onClose, orgId, onSuccess }) {
               <Select value={f.status} onValueChange={v => setF({...f, status: v})}>
                 <SelectTrigger className="bg-slate-800 border-slate-700"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="open">Åben</SelectItem>
-                  <SelectItem value="limited">Begrænset</SelectItem>
-                  <SelectItem value="closed">Lukket</SelectItem>
+                  <SelectItem value="open">Open</SelectItem>
+                  <SelectItem value="limited">Limited</SelectItem>
+                  <SelectItem value="closed">Closed</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -355,7 +355,7 @@ function AddGateDialog({ open, onClose, orgId, onSuccess }) {
           <button onClick={() => create.mutate(f)} disabled={!f.name || create.isPending}
             className="w-full py-2 rounded-lg font-semibold text-sm transition-all"
             style={{ background: "rgba(6,182,212,0.2)", border: "1px solid rgba(6,182,212,0.4)", color: "#06b6d4", opacity: !f.name ? 0.4 : 1 }}>
-            {create.isPending ? "Gemmer..." : "Opret Gate"}
+            {create.isPending ? "Saving..." : "Create Gate"}
           </button>
         </div>
       </DialogContent>
@@ -372,17 +372,17 @@ function AddRailSlotDialog({ open, onClose, orgId, yardZones, onSuccess }) {
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="bg-slate-900 border-slate-700 text-white">
-        <DialogHeader><DialogTitle>Ny Rail Slot</DialogTitle></DialogHeader>
+        <DialogHeader><DialogTitle>New Rail Slot</DialogTitle></DialogHeader>
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
-            <div><Label>Tog ID</Label><Input value={f.train_id} onChange={e => setF({...f, train_id: e.target.value})} className="bg-slate-800 border-slate-700" placeholder="IC123" /></div>
-            <div><Label>Spor *</Label><Input value={f.track} onChange={e => setF({...f, track: e.target.value})} className="bg-slate-800 border-slate-700" placeholder="Spor 1" /></div>
-            <div><Label>Retning</Label>
+            <div><Label>Train ID</Label><Input value={f.train_id} onChange={e => setF({...f, train_id: e.target.value})} className="bg-slate-800 border-slate-700" placeholder="IC123" /></div>
+            <div><Label>Track *</Label><Input value={f.track} onChange={e => setF({...f, track: e.target.value})} className="bg-slate-800 border-slate-700" placeholder="Spor 1" /></div>
+            <div><Label>Direction</Label>
               <Select value={f.direction} onValueChange={v => setF({...f, direction: v})}>
                 <SelectTrigger className="bg-slate-800 border-slate-700"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="inbound">Indgående</SelectItem>
-                  <SelectItem value="outbound">Udgående</SelectItem>
+                  <SelectItem value="inbound">Inbound</SelectItem>
+                  <SelectItem value="outbound">Outbound</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -390,24 +390,24 @@ function AddRailSlotDialog({ open, onClose, orgId, yardZones, onSuccess }) {
               <Select value={f.status} onValueChange={v => setF({...f, status: v})}>
                 <SelectTrigger className="bg-slate-800 border-slate-700"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="planned">Planlagt</SelectItem>
-                  <SelectItem value="arriving">Ankommer</SelectItem>
-                  <SelectItem value="loading">Læsser</SelectItem>
-                  <SelectItem value="departing">Afgår</SelectItem>
-                  <SelectItem value="delayed">Forsinket</SelectItem>
+                  <SelectItem value="planned">Planned</SelectItem>
+                  <SelectItem value="arriving">Arriving</SelectItem>
+                  <SelectItem value="loading">Loading</SelectItem>
+                  <SelectItem value="departing">Departing</SelectItem>
+                  <SelectItem value="delayed">Delayed</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-            <div><Label>Planlagt ankomst</Label><Input type="datetime-local" value={f.scheduled_arrival} onChange={e => setF({...f, scheduled_arrival: e.target.value})} className="bg-slate-800 border-slate-700" /></div>
-            <div><Label>Planlagt afgang</Label><Input type="datetime-local" value={f.scheduled_departure} onChange={e => setF({...f, scheduled_departure: e.target.value})} className="bg-slate-800 border-slate-700" /></div>
-            <div><Label>Vogne</Label><Input type="number" value={f.wagons} onChange={e => setF({...f, wagons: parseInt(e.target.value)||0})} className="bg-slate-800 border-slate-700" /></div>
-            <div><Label>TEU kapacitet</Label><Input type="number" value={f.teu_capacity} onChange={e => setF({...f, teu_capacity: parseInt(e.target.value)||0})} className="bg-slate-800 border-slate-700" /></div>
-            <div className="col-span-2"><Label>Operatør</Label><Input value={f.operator} onChange={e => setF({...f, operator: e.target.value})} className="bg-slate-800 border-slate-700" placeholder="DSB Cargo" /></div>
+            <div><Label>Scheduled Arrival</Label><Input type="datetime-local" value={f.scheduled_arrival} onChange={e => setF({...f, scheduled_arrival: e.target.value})} className="bg-slate-800 border-slate-700" /></div>
+            <div><Label>Scheduled Departure</Label><Input type="datetime-local" value={f.scheduled_departure} onChange={e => setF({...f, scheduled_departure: e.target.value})} className="bg-slate-800 border-slate-700" /></div>
+            <div><Label>Wagons</Label><Input type="number" value={f.wagons} onChange={e => setF({...f, wagons: parseInt(e.target.value)||0})} className="bg-slate-800 border-slate-700" /></div>
+            <div><Label>TEU Capacity</Label><Input type="number" value={f.teu_capacity} onChange={e => setF({...f, teu_capacity: parseInt(e.target.value)||0})} className="bg-slate-800 border-slate-700" /></div>
+            <div className="col-span-2"><Label>Operator</Label><Input value={f.operator} onChange={e => setF({...f, operator: e.target.value})} className="bg-slate-800 border-slate-700" placeholder="DSB Cargo" /></div>
           </div>
           <button onClick={() => create.mutate(f)} disabled={!f.track || create.isPending}
             className="w-full py-2 rounded-lg font-semibold text-sm transition-all"
             style={{ background: "rgba(139,92,246,0.2)", border: "1px solid rgba(139,92,246,0.4)", color: "#8b5cf6", opacity: !f.track ? 0.4 : 1 }}>
-            {create.isPending ? "Gemmer..." : "Opret Rail Slot"}
+            {create.isPending ? "Saving..." : "Create Rail Slot"}
           </button>
         </div>
       </DialogContent>
@@ -422,13 +422,13 @@ function PortSustainability({ portCalls, equipment, cranes }) {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-[10px] font-bold tracking-[0.3em] uppercase" style={{ color: "#10b981" }}>BÆREDYGTIGHED & CO₂ OVERBLIK</h2>
+      <h2 className="text-[10px] font-bold tracking-[0.3em] uppercase" style={{ color: "#10b981" }}>SUSTAINABILITY & CO₂ OVERVIEW</h2>
       <div className="grid grid-cols-4 gap-4">
         {[
-          { label: "CO₂ Udledning (kg)", value: totalCO2.toLocaleString(), color: "#f43f5e" },
-          { label: "Shore Power Aktiv", value: shorePower, color: "#10b981" },
-          { label: "El-/Brint Udstyr", value: electricEq, color: "#06b6d4" },
-          { label: "Kran Energi kWh", value: cranes.reduce((s, c) => s + (c.energy_kwh_today || 0), 0).toLocaleString(), color: "#f59e0b" },
+          { label: "CO₂ Emissions (kg)", value: totalCO2.toLocaleString(), color: "#f43f5e" },
+          { label: "Shore Power Active", value: shorePower, color: "#10b981" },
+          { label: "Electric/H₂ Equipment", value: electricEq, color: "#06b6d4" },
+          { label: "Crane Energy kWh", value: cranes.reduce((s, c) => s + (c.energy_kwh_today || 0), 0).toLocaleString(), color: "#f59e0b" },
         ].map(kpi => (
           <div key={kpi.label} className="rounded-xl p-4" style={{ border: `1px solid ${kpi.color}22`, background: `${kpi.color}08` }}>
             <p className="text-[8px] tracking-widest uppercase mb-2" style={{ color: `${kpi.color}88` }}>{kpi.label}</p>
@@ -437,10 +437,10 @@ function PortSustainability({ portCalls, equipment, cranes }) {
         ))}
       </div>
       <div className="rounded-xl p-6 text-center" style={{ border: "1px solid rgba(16,185,129,0.15)", background: "rgba(16,185,129,0.04)" }}>
-        <p className="text-[9px] tracking-widest uppercase mb-2" style={{ color: "rgba(16,185,129,0.5)" }}>AI CO₂ ANBEFALING</p>
+        <p className="text-[9px] tracking-widest uppercase mb-2" style={{ color: "rgba(16,185,129,0.5)" }}>AI CO₂ RECOMMENDATION</p>
         <p className="text-slate-300 text-sm">
-          Aktivér shore power på alle kajer med tilgængeligt udstyr. Det estimerede besparingspotentiale er <span style={{ color: "#10b981" }}>38% CO₂-reduktion</span> per anløb. 
-          Skift 4 dieseltraktorer til el-traktorer for yderligere <span style={{ color: "#10b981" }}>12 ton CO₂/måned</span> besparelse.
+          Activate shore power on all berths with available equipment. Estimated savings potential is <span style={{ color: "#10b981" }}>38% CO₂ reduction</span> per port call.
+          Switch 4 diesel tractors to electric for an additional <span style={{ color: "#10b981" }}>12 tons CO₂/month</span> savings.
         </p>
       </div>
     </div>
