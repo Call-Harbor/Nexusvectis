@@ -23,6 +23,7 @@ import SmartBaggageAI from "@/components/airport/SmartBaggageAI";
 import TurnaroundAI from "@/components/airport/TurnaroundAI";
 import LandsideMonitor from "@/components/airport/LandsideMonitor";
 import Terminal2DLayout from "@/components/airport/Terminal2DLayout";
+import AirportInfraManager from "@/components/airport/AirportInfraManager";
 
 const TABS = [
   { id: "operations", label: "LIVE OPS", icon: Plane },
@@ -38,6 +39,7 @@ const TABS = [
   { id: "ai", label: "AI CO-PILOT", icon: Cpu },
   { id: "scenario", label: "SCENARIOS", icon: AlertTriangle },
   { id: "sustainability", label: "CO₂ & ENERGY", icon: Leaf },
+  { id: "infra", label: "INFRASTRUCTURE", icon: Plus },
 ];
 
 export default function AirportOpsCenter() {
@@ -223,6 +225,10 @@ export default function AirportOpsCenter() {
 
         {activeTab === "sustainability" && (
           <AirportSustainability flights={flights} tasks={tasks} />
+        )}
+
+        {activeTab === "infra" && (
+          <AirportInfraManager />
         )}
       </div>
 
