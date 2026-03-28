@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
+import PortFleetManager from "@/components/port/PortFleetManager";
 import { 
   Truck, Ship, Plane, Train, Plus, Search,
   Fuel, MapPin, Clock, Settings, Radio, X, Filter, Download, BarChart3, Bus
@@ -525,6 +526,8 @@ export default function Fleet() {
             <p className="text-slate-400">No units match your search</p>
           </div>
         )}
+
+        <PortFleetManager />
       </div>
 
       {/* Add Vehicle Dialog */}

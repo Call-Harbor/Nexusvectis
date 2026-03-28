@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
+import PortInfraManager from "@/components/port/PortInfraManager";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Warehouse, Plus, Search, MapPin, Fuel, Battery, Wrench, Ship, X, Filter, Download, BarChart3
@@ -446,6 +447,8 @@ export default function Resources() {
             <p className="text-slate-400">No resources match your search</p>
           </div>
         )}
+
+        <PortInfraManager />
       </div>
 
       {/* Add Resource Dialog */}
