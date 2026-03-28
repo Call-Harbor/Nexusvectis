@@ -1,0 +1,67 @@
+{
+  "name": "AirportShift",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string"
+    },
+    "staff_id": {
+      "type": "string",
+      "description": "Reference to AirportStaff id"
+    },
+    "staff_name": {
+      "type": "string"
+    },
+    "staff_role": {
+      "type": "string"
+    },
+    "date": {
+      "type": "string",
+      "format": "date"
+    },
+    "shift_start": {
+      "type": "string",
+      "description": "HH:MM"
+    },
+    "shift_end": {
+      "type": "string",
+      "description": "HH:MM"
+    },
+    "assigned_zone": {
+      "type": "string",
+      "description": "Gate code / lane name / zone name"
+    },
+    "zone_type": {
+      "type": "string",
+      "enum": [
+        "gate",
+        "security",
+        "landside",
+        "baggage",
+        "general"
+      ],
+      "default": "general"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "scheduled",
+        "active",
+        "completed",
+        "absent",
+        "swapped"
+      ],
+      "default": "scheduled"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "staff_name",
+    "date",
+    "shift_start",
+    "shift_end",
+    "organization_id"
+  ]
+}

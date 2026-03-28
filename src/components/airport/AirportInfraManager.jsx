@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, X, Plane, Shield, Users, Car, Pencil } from "lucide-react";
+import { Plus, X, Plane, Shield, Users, Car, Pencil, CalendarDays } from "lucide-react";
+import AirportStaffManager from "./AirportStaffManager";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,6 +19,7 @@ const TABS = [
   { id: "security", label: "Security Lanes", icon: Shield },
   { id: "staff", label: "Staff", icon: Users },
   { id: "landside", label: "Landside Zones", icon: Car },
+  { id: "roster", label: "Shift Roster", icon: CalendarDays },
 ];
 
 const LANDSIDE_STATUS_COLOR = { open: "bg-emerald-500/20 text-emerald-400", closed: "bg-rose-500/20 text-rose-400", limited: "bg-amber-500/20 text-amber-400" };
@@ -183,6 +185,10 @@ export default function AirportInfraManager() {
             </div>
           ))}
         </div>
+      )}
+
+      {activeTab === "roster" && (
+        <AirportStaffManager />
       )}
 
       <AddAirportEntityDialog
