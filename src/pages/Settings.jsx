@@ -46,54 +46,20 @@ export default function Settings() {
   }, []);
 
   const toggleAddon = async (addonKey, currentValue) => {
-    const orgId = organization?.id;
-    if (!orgId) { toast.error("Organization not found"); return; }
+    if (!organization?.id) { toast.error("Organization not found"); return; }
     if (user?.role !== 'admin') { toast.error("Only admins can manage add-ons"); return; }
+    
     setAddonSaving(addonKey);
     try {
-      await base44.entities.Organization.update(orgId, { [addonKey]: !currentValue });
-      setOrganization({...organization, [addonKey]: !currentValue});
-      toast.success(!currentValue ? "Add-on enabled! It will be added to your next invoice." : "Add-on disabled.");
+      const newValue = !currentValue;
+      await base44.entities.Organization.update(organization.id, { [addonKey]: newValue });
+      setOrganization({ ...organization, [addonKey]: newValue });
+      toast.success(newValue ? "Add-on enabled! It will be added to your next invoice." : "Add-on disabled.");
     } catch (e) {
-      console.error(e);
-      toast.error("Could not update add-on");
+      console.error('Toggle addon error:', e);
+      toast.error("Could not update add-on: " + (e.message || 'Unknown error'));
     } finally {
       setAddonSaving(null);
-    }
-  };
-
-  const loadUserData = async () => {
-    try {
-      const currentUser = await base44.auth.me();
-      setUser(currentUser);
-      
-      const orgId = currentUser.organization_id || currentUser.data?.organization_id;
-      if (orgId) {
-        const org = await base44.entities.Organization.filter({ id: orgId });
-        if (org.length > 0) {
-          setOrganization(org[0]);
-          setOrgName(org[0].name);
-        }
-      }
-      
-      // Load invoice settings
-      const settings = await base44.entities.InvoiceSettings.list();
-      if (settings.length > 0) {
-        const s = settings[0];
-        setInvoiceSettings(s);
-        setInvoiceSettingsId(s.id);
-        
-        // Load accounting defaults if they exist
-        setAccountingDefaults({
-          accounting_account: s.accounting_account || "",
-          cost_center: s.cost_center || "",
-          project_number: s.project_number || "",
-          reference_number: s.reference_number || "",
-          accounting_notes: s.accounting_notes || ""
-        });
-      }
-    } catch (error) {
-      console.error("Error loading user data:", error);
     }
   };
 
