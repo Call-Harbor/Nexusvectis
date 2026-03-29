@@ -18,6 +18,7 @@ export default function AdminInvoices() {
   const [searchTerm, setSearchTerm] = useState("");
   const [openCreateDialog, setOpenCreateDialog] = useState(false);
   const [selectedOrgId, setSelectedOrgId] = useState("");
+  const [selectedInvoice, setSelectedInvoice] = useState(null);
   const queryClient = useQueryClient();
 
   const { data: invoices = [], isLoading } = useQuery({
@@ -347,9 +348,18 @@ export default function AdminInvoices() {
 
                     {/* Actions */}
                     <div className="flex items-center gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="bg-cyan-500/20 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/30"
+                        onClick={() => setSelectedInvoice(invoice)}
+                      >
+                        <FileText className="w-4 h-4 mr-1" />
+                        View
+                      </Button>
                       {invoice.status === 'pending' || invoice.status === 'overdue' ? (
                         <>
-                          <Button
+                           <Button
                             size="sm"
                             variant="outline"
                             className="bg-green-500/20 border-green-500/30 text-green-400 hover:bg-green-500/30"
@@ -448,6 +458,145 @@ export default function AdminInvoices() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Invoice Detail Modal */}
+        {selectedInvoice && (
+          <Dialog open={!!selectedInvoice} onOpenChange={() => setSelectedInvoice(null)}>
+            <DialogContent className="bg-slate-900 border-slate-800 max-w-2xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle className="text-white">Invoice Details</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-6">
+                {/* Header */}
+                <div className="grid grid-cols-2 gap-4 pb-4 border-b border-slate-700">
+                  <div>
+                    <p className="text-slate-500 text-sm">Invoice Number</p>
+                    <p className="text-white font-semibold">{selectedInvoice.invoice_number}</p>
+                  </div>
+                  <div>
+                    <p className="text-slate-500 text-sm">Period</p>
+                    <p className="text-white font-semibold">{selectedInvoice.period_month}</p>
+                  </div>
+                  <div>
+                    <p className="text-slate-500 text-sm">Status</p>
+                    <Badge className={statusColors[selectedInvoice.status]?.bg + ' ' + statusColors[selectedInvoice.status]?.text}>
+                      {selectedInvoice.status}
+                    </Badge>
+                  </div>
+                  <div>
+                    <p className="text-slate-500 text-sm">Issue Date</p>
+                    <p className="text-white font-semibold">{moment(selectedInvoice.issue_date).format('DD/MM/YYYY')}</p>
+                  </div>
+                </div>
+
+                {/* Buyer & Seller */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-slate-400 font-semibold mb-2">Bill To</p>
+                    <div className="text-sm space-y-1">
+                      <p className="text-white">{selectedInvoice.buyer_name}</p>
+                      <p className="text-slate-400">{selectedInvoice.buyer_vat_number}</p>
+                      <p className="text-slate-400">{selectedInvoice.buyer_address}</p>
+                      <p className="text-slate-400">{selectedInvoice.buyer_country}</p>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-slate-400 font-semibold mb-2">From</p>
+                    <div className="text-sm space-y-1">
+                      <p className="text-white">{selectedInvoice.seller_name}</p>
+                      <p className="text-slate-400">{selectedInvoice.seller_vat_number}</p>
+                      <p className="text-slate-400">{selectedInvoice.seller_address}</p>
+                      <p className="text-slate-400">{selectedInvoice.seller_country}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Line Items */}
+                <div>
+                  <p className="text-slate-400 font-semibold mb-3">Line Items</p>
+                  <div className="space-y-2 text-sm">
+                    {selectedInvoice.vehicle_count > 0 && (
+                      <div className="flex justify-between text-slate-300">
+                        <span>{selectedInvoice.vehicle_count} vehicles @ €{selectedInvoice.vehicle_price_euro}</span>
+                        <span>€{(selectedInvoice.vehicle_count * selectedInvoice.vehicle_price_euro).toFixed(2)}</span>
+                      </div>
+                    )}
+                    {selectedInvoice.resource_count > 0 && (
+                      <div className="flex justify-between text-slate-300">
+                        <span>{selectedInvoice.resource_count} resources @ €{selectedInvoice.resource_price_euro}</span>
+                        <span>€{(selectedInvoice.resource_count * selectedInvoice.resource_price_euro).toFixed(2)}</span>
+                      </div>
+                    )}
+                    {selectedInvoice.fleetai_commands > 0 && (
+                      <div className="flex justify-between text-slate-300">
+                        <span>FLEET AI: {selectedInvoice.fleetai_commands} commands @ €{selectedInvoice.fleetai_price_per_100}/100</span>
+                        <span>€{(Math.floor(selectedInvoice.fleetai_commands / 100) * selectedInvoice.fleetai_price_per_100).toFixed(2)}</span>
+                      </div>
+                    )}
+                    {selectedInvoice.api_calls > 0 && (
+                      <div className="flex justify-between text-slate-300">
+                        <span>API Calls: {selectedInvoice.api_calls} @ €{selectedInvoice.api_price_per_100}/100</span>
+                        <span>€{(Math.floor(selectedInvoice.api_calls / 100) * selectedInvoice.api_price_per_100).toFixed(2)}</span>
+                      </div>
+                    )}
+                    {selectedInvoice.harbor_intelligence_calls > 0 && (
+                      <div className="flex justify-between text-slate-300">
+                        <span>Harbor Intelligence: {selectedInvoice.harbor_intelligence_calls} @ €{selectedInvoice.harbor_intelligence_price_per_call}</span>
+                        <span>€{(selectedInvoice.harbor_intelligence_calls * selectedInvoice.harbor_intelligence_price_per_call).toFixed(2)}</span>
+                      </div>
+                    )}
+                    {selectedInvoice.addon_airport_ops && selectedInvoice.addon_airport_ops_price > 0 && (
+                      <div className="flex justify-between text-slate-300">
+                        <span>Airport Ops Center</span>
+                        <span>€{selectedInvoice.addon_airport_ops_price.toFixed(2)}</span>
+                      </div>
+                    )}
+                    {selectedInvoice.addon_port_command && selectedInvoice.addon_port_command_price > 0 && (
+                      <div className="flex justify-between text-slate-300">
+                        <span>Port Command Center</span>
+                        <span>€{selectedInvoice.addon_port_command_price.toFixed(2)}</span>
+                      </div>
+                    )}
+                    {selectedInvoice.addon_transit_control && selectedInvoice.addon_transit_control_price > 0 && (
+                      <div className="flex justify-between text-slate-300">
+                        <span>Transit Control</span>
+                        <span>€{selectedInvoice.addon_transit_control_price.toFixed(2)}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Totals */}
+                <div className="space-y-2 pt-4 border-t border-slate-700">
+                  <div className="flex justify-between text-slate-300">
+                    <span>Subtotal</span>
+                    <span>€{(selectedInvoice.subtotal || 0).toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-slate-300">
+                    <span>VAT ({selectedInvoice.vat_rate}%)</span>
+                    <span>€{(selectedInvoice.vat_amount || 0).toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-lg font-bold text-white pt-2 border-t border-slate-600">
+                    <span>Total</span>
+                    <span>€{selectedInvoice.total_amount.toFixed(2)}</span>
+                  </div>
+                </div>
+
+                {/* Payment Info */}
+                <div className="space-y-2 pt-4 border-t border-slate-700 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Due Date</span>
+                    <span className="text-white">{moment(selectedInvoice.due_date).format('DD/MM/YYYY')}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Payment Terms</span>
+                    <span className="text-white">{selectedInvoice.payment_terms}</span>
+                  </div>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
     </div>
     </AdminLayout>
