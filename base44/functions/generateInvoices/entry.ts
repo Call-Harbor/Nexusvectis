@@ -95,27 +95,31 @@ Deno.serve(async (req) => {
       const harborPricePerCall = 0.25;
       const addonPrice = 2000;
 
-      // Check if add-ons have been active for 48+ hours
+      // Check if add-ons have been active for 48+ hours (once activated, billed for entire period even if deactivated)
       const HOURS_48_MS = 48 * 60 * 60 * 1000;
-      const now = new Date();
+      const periodCheckDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
       
       let addonAirportOps = false;
       let addonPortCommand = false;
       let addonTransitControl = false;
       
-      if (org.addon_airport_ops === true && org.addon_airport_ops_activated_at) {
+      // Addon is billed if: activated within/before period AND reached 48 hours by period end
+      if (org.addon_airport_ops_activated_at) {
         const activatedAt = new Date(org.addon_airport_ops_activated_at);
-        addonAirportOps = (now - activatedAt) >= HOURS_48_MS;
+        const hoursSinceActivation = periodCheckDate - activatedAt;
+        addonAirportOps = hoursSinceActivation >= HOURS_48_MS;
       }
       
-      if (org.addon_port_command === true && org.addon_port_command_activated_at) {
+      if (org.addon_port_command_activated_at) {
         const activatedAt = new Date(org.addon_port_command_activated_at);
-        addonPortCommand = (now - activatedAt) >= HOURS_48_MS;
+        const hoursSinceActivation = periodCheckDate - activatedAt;
+        addonPortCommand = hoursSinceActivation >= HOURS_48_MS;
       }
       
-      if (org.addon_transit_control === true && org.addon_transit_control_activated_at) {
+      if (org.addon_transit_control_activated_at) {
         const activatedAt = new Date(org.addon_transit_control_activated_at);
-        addonTransitControl = (now - activatedAt) >= HOURS_48_MS;
+        const hoursSinceActivation = periodCheckDate - activatedAt;
+        addonTransitControl = hoursSinceActivation >= HOURS_48_MS;
       }
       
       const vehicleTotal = vehicleCount * vehiclePriceEuro;
