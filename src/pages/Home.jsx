@@ -622,26 +622,26 @@ export default function Home() {
                           <p className="text-slate-400 text-sm">{item.description}</p>
                         </motion.div>
                       );
-                    })}
-                    </div>
-                    </div>
+                      })}
+                      </div>
+                      </div>
 
-                    <motion.div
-                    initial={{ opacity: 0 }}
-                    whileInView={{ opacity: 1 }}
-                    viewport={{ once: true }}
-                    className="text-center mt-12"
-                    >
-                    <p className="text-slate-400 mb-6">Activate premium modules to unlock advanced fleet operations. Cancel anytime.</p>
-                    <button
-                    onClick={() => base44.auth.redirectToLogin(createPageUrl("Dashboard"))}
-                    className="bg-gradient-to-r from-cyan-500 to-violet-500 text-white text-lg px-8 py-4 rounded-2xl font-semibold hover:shadow-lg hover:shadow-cyan-500/50 transition-all"
-                    >
-                    Get Started
-                    </button>
-                    </motion.div>
-                    </div>
-                    </section>
+                      <motion.div
+                      initial={{ opacity: 0 }}
+                      whileInView={{ opacity: 1 }}
+                      viewport={{ once: true }}
+                      className="text-center mt-12"
+                      >
+                      <p className="text-slate-400 mb-6">Activate premium modules to unlock advanced fleet operations. Cancel anytime.</p>
+                      <button
+                      onClick={() => base44.auth.redirectToLogin(createPageUrl("Dashboard"))}
+                      className="bg-gradient-to-r from-cyan-500 to-violet-500 text-white text-lg px-8 py-4 rounded-2xl font-semibold hover:shadow-lg hover:shadow-cyan-500/50 transition-all"
+                      >
+                      Get Started
+                      </button>
+                      </motion.div>
+                      </div>
+                      </section>
 
       {/* Digital Twin Federation Section */}
       <section className="relative py-20 sm:py-32 px-4 sm:px-6 z-10">
