@@ -18,6 +18,7 @@ import PortCommandCenter from './pages/PortCommandCenter';
 import AirportOpsCenter from './pages/AirportOpsCenter';
 import StaffPortal from './pages/StaffPortal';
 import AirportReports from './pages/AirportReports';
+import StaffManagement from './pages/StaffManagement';
 
 
 const { Pages, Layout, mainPage } = pagesConfig;
@@ -148,6 +149,7 @@ const AuthenticatedApp = () => {
           </LayoutWrapper>
         }
       />
+      <Route path="/StaffManagement" element={<StaffManagement />} />
 
       <Route path="*" element={<PageNotFound />} />
     </Routes>

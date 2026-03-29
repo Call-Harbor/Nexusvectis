@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { Plane, Shield, Package, Users, AlertTriangle, Cpu, BarChart3, Leaf, Plus, Zap, Map, GitBranch, Car, Activity } from "lucide-react";
 import AddonAccessGate from "@/components/shared/AddonAccessGate";
 import moment from "moment";
@@ -48,15 +49,18 @@ const TABS = [
 ];
 
 function AirportOpsCenterContent() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("operations");
   const [orgId, setOrgId] = useState(null);
   const [dataReady, setDataReady] = useState(false);
   const [selectedFlight, setSelectedFlight] = useState(null);
   const [showAddFlight, setShowAddFlight] = useState(false);
+  const [user, setUser] = useState(null);
   const queryClient = useQueryClient();
 
   useEffect(() => {
     base44.auth.me().then(u => {
+      setUser(u);
       setOrgId(u?.organization_id || "__all__");
       setDataReady(true);
     }).catch(() => setDataReady(true));
@@ -119,12 +123,23 @@ function AirportOpsCenterContent() {
               <p className="text-2xl font-black font-mono" style={{ color: "#06b6d4", textShadow: "0 0 20px rgba(6,182,212,0.4)" }}>{clock}</p>
               <p className="text-[8px] tracking-widest" style={{ color: "rgba(6,182,212,0.4)" }}>{moment().format("ddd DD MMM YYYY", "en").toUpperCase()}</p>
             </div>
-            <button onClick={() => setShowAddFlight(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded transition-all hover:opacity-80"
-                style={{ border: "1px solid rgba(139,92,246,0.4)", background: "rgba(139,92,246,0.1)", color: "#8b5cf6" }}>
-                <Plus className="w-3.5 h-3.5" />
-                <span className="text-[9px] tracking-widest uppercase">Add Flight</span>
-            </button>
+            <div className="flex items-center gap-1.5">
+              {user?.role === 'admin' && (
+                <button onClick={() => navigate('/StaffManagement')}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded transition-all hover:opacity-80"
+                  style={{ border: "1px solid rgba(139,92,246,0.4)", background: "rgba(139,92,246,0.1)", color: "#8b5cf6" }}
+                  title="Staff Management">
+                  <Users className="w-3.5 h-3.5" />
+                  <span className="text-[9px] tracking-widest uppercase">Staff</span>
+                </button>
+              )}
+              <button onClick={() => setShowAddFlight(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded transition-all hover:opacity-80"
+                  style={{ border: "1px solid rgba(139,92,246,0.4)", background: "rgba(139,92,246,0.1)", color: "#8b5cf6" }}>
+                  <Plus className="w-3.5 h-3.5" />
+                  <span className="text-[9px] tracking-widest uppercase">Add Flight</span>
+              </button>
+            </div>
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded" style={{ border: "1px solid rgba(16,185,129,0.3)", background: "rgba(16,185,129,0.06)" }}>
               <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
               <span className="text-[9px] tracking-widest uppercase" style={{ color: "#10b981" }}>OPERATIONAL</span>

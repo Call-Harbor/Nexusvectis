@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { 
   Bus, MapPin, TrendingUp, AlertTriangle, Users, Clock, Zap,
   Radio, Shield, BarChart3, Sparkles, Globe, Network, Brain,
@@ -62,10 +63,12 @@ const TABS = [
 ];
 
 function TransitControlContent() {
+  const navigate = useNavigate();
   const [selectedLine, setSelectedLine] = useState(null);
   const [selectedBus, setSelectedBus] = useState(null);
   const [activeTab, setActiveTab] = useState("operations");
   const [orgId, setOrgId] = useState(null);
+  const [user, setUser] = useState(null);
   const [dataReady, setDataReady] = useState(false);
   const [clock, setClock] = useState("");
   const [showAddLine, setShowAddLine] = useState(false);
@@ -85,10 +88,9 @@ function TransitControlContent() {
     return () => clearInterval(t);
   }, []);
 
-  const { data: user } = useQuery({
-    queryKey: ['user'],
-    queryFn: () => base44.auth.me(),
-  });
+  useEffect(() => {
+    base44.auth.me().then(u => setUser(u));
+  }, []);
 
   const { data: lines = [] } = useQuery({
     queryKey: ['busLines', orgId],
@@ -214,12 +216,23 @@ function TransitControlContent() {
               <p className="text-2xl font-black font-mono" style={{ color: "#06b6d4", textShadow: "0 0 20px rgba(6,182,212,0.4)" }}>{clock}</p>
               <p className="text-[8px] tracking-widest" style={{ color: "rgba(6,182,212,0.4)" }}>{new Date().toLocaleDateString("en-GB", { weekday: "short", day: "2-digit", month: "short", year: "numeric" }).toUpperCase()}</p>
             </div>
-            <button onClick={() => setShowAddLine(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded transition-all hover:opacity-80"
-              style={{ border: "1px solid rgba(139,92,246,0.4)", background: "rgba(139,92,246,0.1)", color: "#8b5cf6" }}>
-              <Plus className="w-3.5 h-3.5" />
-              <span className="text-[9px] tracking-widest uppercase">New Line</span>
-            </button>
+            <div className="flex items-center gap-1.5">
+              {user?.role === 'admin' && (
+                <button onClick={() => navigate('/StaffManagement')}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded transition-all hover:opacity-80"
+                  style={{ border: "1px solid rgba(139,92,246,0.4)", background: "rgba(139,92,246,0.1)", color: "#8b5cf6" }}
+                  title="Staff Management">
+                  <Users className="w-3.5 h-3.5" />
+                  <span className="text-[9px] tracking-widest uppercase">Staff</span>
+                </button>
+              )}
+              <button onClick={() => setShowAddLine(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded transition-all hover:opacity-80"
+                style={{ border: "1px solid rgba(139,92,246,0.4)", background: "rgba(139,92,246,0.1)", color: "#8b5cf6" }}>
+                <Plus className="w-3.5 h-3.5" />
+                <span className="text-[9px] tracking-widest uppercase">New Line</span>
+              </button>
+            </div>
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded" style={{ border: "1px solid rgba(16,185,129,0.3)", background: "rgba(16,185,129,0.06)" }}>
               <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
               <span className="text-[9px] tracking-widest uppercase" style={{ color: "#10b981" }}>OPERATIONAL</span>

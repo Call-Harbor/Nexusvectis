@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import PortKPIBanner from "@/components/port/PortKPIBanner";
 import PortBerthBoard from "@/components/port/PortBerthBoard";
 import PortVesselQueue from "@/components/port/PortVesselQueue";
@@ -12,7 +13,7 @@ import PortAlertTicker from "@/components/port/PortAlertTicker";
 import PortNowPanel from "@/components/port/PortNowPanel";
 import PortFleetManager from "@/components/port/PortFleetManager";
 import LiveVesselDashboard from "@/components/port/LiveVesselDashboard";
-import { Ship, Anchor, Cpu, BarChart3, AlertTriangle, Leaf, Zap, Plus, Package, Map, Activity, GitBranch, Layers } from "lucide-react";
+import { Ship, Anchor, Cpu, BarChart3, AlertTriangle, Leaf, Zap, Plus, Package, Map, Activity, GitBranch, Layers, Users } from "lucide-react";
 import AddonAccessGate from "@/components/shared/AddonAccessGate";
 import CraneSchedulingAI from "../components/port/CraneSchedulingAI";
 import ContainerTracker from "../components/port/ContainerTracker";
@@ -35,8 +36,10 @@ const TABS = [
 ];
 
 function PortCommandCenterContent() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("operations");
   const [orgId, setOrgId] = useState(null);
+  const [user, setUser] = useState(null);
   const [selectedPortCall, setSelectedPortCall] = useState(null);
   const [dataReady, setDataReady] = useState(false);
   const [showAddPortCall, setShowAddPortCall] = useState(false);
@@ -53,6 +56,7 @@ function PortCommandCenterContent() {
 
   useEffect(() => {
     base44.auth.me().then(u => {
+      setUser(u);
       setOrgId(u?.organization_id || "__all__");
       setDataReady(true);
     }).catch(() => setDataReady(true));
@@ -154,12 +158,23 @@ function PortCommandCenterContent() {
               <p className="text-2xl font-black font-mono" style={{ color: "#06b6d4", textShadow: "0 0 20px rgba(6,182,212,0.4)" }}>{clock}</p>
               <p className="text-[8px] tracking-widest" style={{ color: "rgba(6,182,212,0.4)" }}>{new Date().toLocaleDateString("en-GB", { weekday: "short", day: "2-digit", month: "short", year: "numeric" }).toUpperCase()}</p>
             </div>
-            <button onClick={() => setShowAddPortCall(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded transition-all hover:opacity-80"
-              style={{ border: "1px solid rgba(6,182,212,0.4)", background: "rgba(6,182,212,0.1)", color: "#06b6d4" }}>
-              <Plus className="w-3.5 h-3.5" />
-              <span className="text-[9px] tracking-widest uppercase">New Port Call</span>
-            </button>
+            <div className="flex items-center gap-1.5">
+              {user?.role === 'admin' && (
+                <button onClick={() => navigate('/StaffManagement')}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded transition-all hover:opacity-80"
+                  style={{ border: "1px solid rgba(6,182,212,0.4)", background: "rgba(6,182,212,0.1)", color: "#06b6d4" }}
+                  title="Staff Management">
+                  <Users className="w-3.5 h-3.5" />
+                  <span className="text-[9px] tracking-widest uppercase">Staff</span>
+                </button>
+              )}
+              <button onClick={() => setShowAddPortCall(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded transition-all hover:opacity-80"
+                style={{ border: "1px solid rgba(6,182,212,0.4)", background: "rgba(6,182,212,0.1)", color: "#06b6d4" }}>
+                <Plus className="w-3.5 h-3.5" />
+                <span className="text-[9px] tracking-widest uppercase">New Port Call</span>
+              </button>
+            </div>
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded" style={{ border: "1px solid rgba(16,185,129,0.3)", background: "rgba(16,185,129,0.06)" }}>
               <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
               <span className="text-[9px] tracking-widest uppercase" style={{ color: "#10b981" }}>Operational</span>
