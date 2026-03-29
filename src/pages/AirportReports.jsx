@@ -8,11 +8,11 @@ import jsPDF from "jspdf";
 
 const ENERGY_SYSTEMS = [
   { id: "hvac", label: "HVAC", base_kwh: 1200, color: "#06b6d4" },
-  { id: "lighting", label: "Belysning", base_kwh: 480, color: "#f59e0b" },
-  { id: "baggage", label: "Båndsystem", base_kwh: 320, color: "#8b5cf6" },
-  { id: "escalators", label: "Rulletrapper", base_kwh: 210, color: "#10b981" },
-  { id: "apron", label: "Forplads", base_kwh: 890, color: "#f97316" },
-  { id: "groundvehicles", label: "Groundkøretøjer", base_kwh: 640, color: "#ec4899" },
+  { id: "lighting", label: "Lighting", base_kwh: 480, color: "#f59e0b" },
+  { id: "baggage", label: "Baggage Systems", base_kwh: 320, color: "#8b5cf6" },
+  { id: "escalators", label: "Escalators", base_kwh: 210, color: "#10b981" },
+  { id: "apron", label: "Apron", base_kwh: 890, color: "#f97316" },
+  { id: "groundvehicles", label: "Ground Vehicles", base_kwh: 640, color: "#ec4899" },
 ];
 
 function KPICard({ label, val, sub, color, icon: IconComp }) {
@@ -216,11 +216,11 @@ Return JSON:
       doc.setFontSize(18);
       doc.setFont("helvetica", "bold");
       doc.text("AIRPORT OPS CENTER", margin, 16);
-      doc.setFontSize(10);
-      doc.setTextColor(148, 163, 184);
-      doc.text(`Daglig Driftsrapport — ${moment(selectedDate).format("DD. MMMM YYYY")}`, margin, 24);
-      doc.setTextColor(100, 116, 139);
-      doc.text(`Genereret: ${moment().format("DD/MM/YYYY HH:mm")}`, margin, 30);
+       doc.setFontSize(10);
+       doc.setTextColor(148, 163, 184);
+       doc.text(`Daily Operations Report — ${moment(selectedDate).format("DD. MMMM YYYY")}`, margin, 24);
+       doc.setTextColor(100, 116, 139);
+       doc.text(`Generated: ${moment().format("DD/MM/YYYY HH:mm")}`, margin, 30);
       y = 45;
 
       // Performance rating
@@ -230,7 +230,7 @@ Return JSON:
         doc.setTextColor(255, 255, 255);
         doc.setFontSize(11);
         doc.setFont("helvetica", "bold");
-        doc.text(`SAMLET VURDERING: ${aiReport.performance_rating}`, margin + 5, y + 6.5);
+        doc.text(`Overall Rating: ${aiReport.performance_rating}`, margin + 5, y + 6.5);
         y += 16;
       }
 
@@ -239,7 +239,7 @@ Return JSON:
         doc.setTextColor(30, 41, 59);
         doc.setFontSize(12);
         doc.setFont("helvetica", "bold");
-        doc.text("EKSEKUTIV OPSUMMERING", margin, y);
+        doc.text("Executive Summary", margin, y);
         y += 6;
         doc.setFontSize(9);
         doc.setFont("helvetica", "normal");
@@ -253,15 +253,15 @@ Return JSON:
       doc.setTextColor(30, 41, 59);
       doc.setFontSize(12);
       doc.setFont("helvetica", "bold");
-      doc.text("NØGLETAL", margin, y);
+      doc.text("Key Performance Indicators", margin, y);
       y += 7;
 
       const kpis = [
-        ["Total fly", metrics.todayFlights.length, "Til tiden", `${metrics.onTimeRate}%`],
-        ["Forsinkede", metrics.delayed.length, "Gns. forsinkelse", `${metrics.avgDelay} min`],
-        ["Total PAX", metrics.totalPax.toLocaleString(), "Sec. ventetid", `${metrics.avgSecWait} min`],
-        ["Energi", `${metrics.totalEnergy} kWh/t`, "Ground tasks", `${metrics.taskRate}%`],
-        ["Mishandlet bagage", `${metrics.mishandledBags} (${metrics.mishandledRate}%)`, "Personale udnyttelse", `${metrics.staffUtil}%`],
+        ["Total Flights", metrics.todayFlights.length, "On-time", `${metrics.onTimeRate}%`],
+        ["Delayed", metrics.delayed.length, "Avg Delay", `${metrics.avgDelay} min`],
+        ["Total PAX", metrics.totalPax.toLocaleString(), "Sec. Wait", `${metrics.avgSecWait} min`],
+        ["Energy", `${metrics.totalEnergy} kWh/h`, "Ground Tasks", `${metrics.taskRate}%`],
+        ["Mishandled Baggage", `${metrics.mishandledBags} (${metrics.mishandledRate}%)`, "Staff Util.", `${metrics.staffUtil}%`],
       ];
 
       kpis.forEach(row => {
@@ -288,12 +288,12 @@ Return JSON:
         doc.setFontSize(12);
         doc.setFont("helvetica", "bold");
         doc.setTextColor(30, 41, 59);
-        doc.text("AI ANBEFALINGER", margin, y);
+        doc.text("AI Recommendations", margin, y);
         y += 7;
 
         aiReport.ai_recommendations.forEach(r => {
           if (y > 250) { doc.addPage(); y = 20; }
-          const priorityColor = r.priority === "høj" ? [244, 63, 94] : r.priority === "medium" ? [245, 158, 11] : [16, 185, 129];
+          const priorityColor = r.priority === "high" ? [244, 63, 94] : r.priority === "medium" ? [245, 158, 11] : [16, 185, 129];
           doc.setFillColor(...priorityColor);
           doc.roundedRect(margin, y, 18, 6, 1, 1, "F");
           doc.setFontSize(7);
@@ -324,7 +324,7 @@ Return JSON:
         doc.setFontSize(12);
         doc.setFont("helvetica", "bold");
         doc.setTextColor(30, 41, 59);
-        doc.text("FOKUS I MORGEN", margin, y);
+        doc.text("Tomorrow's Focus", margin, y);
         y += 7;
         aiReport.tomorrow_focus.forEach((t, i) => {
           doc.setFontSize(9);
@@ -341,7 +341,7 @@ Return JSON:
         doc.setPage(i);
         doc.setFontSize(7);
         doc.setTextColor(148, 163, 184);
-        doc.text(`NexusVectis Airport Ops Center · ${moment(selectedDate).format("DD/MM/YYYY")} · Side ${i} af ${totalPages}`, pageW / 2, 290, { align: "center" });
+        doc.text(`NexusVectis Airport Ops Center · ${moment(selectedDate).format("DD/MM/YYYY")} · Page ${i} of ${totalPages}`, pageW / 2, 290, { align: "center" });
       }
 
       doc.save(`AirportReport_${selectedDate}.pdf`);
@@ -429,8 +429,8 @@ Return JSON:
     setExportingExcel(false);
   };
 
-  const ratingColor = { "Fremragende": "#10b981", "God": "#06b6d4", "Acceptabel": "#f59e0b", "Under standard": "#f43f5e" };
-  const prioColor = { "høj": "#f43f5e", "medium": "#f59e0b", "lav": "#10b981" };
+  const ratingColor = { "Excellent": "#10b981", "Good": "#06b6d4", "Acceptable": "#f59e0b", "Below Standard": "#f43f5e" };
+  const prioColor = { "high": "#f43f5e", "medium": "#f59e0b", "low": "#10b981" };
   const isLoading = flightsLoading;
 
   return (
@@ -450,11 +450,11 @@ Return JSON:
             <Calendar className="w-4 h-4 text-slate-500" />
             <input type="date" value={selectedDate} onChange={e => setSelectedDate(e.target.value)}
               className="bg-transparent text-white text-sm outline-none" max={moment().format("YYYY-MM-DD")} />
-          </div>
-          <button onClick={generateAIReport} disabled={loadingAI || isLoading}
+            </div>
+            <button onClick={generateAIReport} disabled={loadingAI || isLoading}
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95"
             style={{ background: "rgba(139,92,246,0.15)", border: "1.5px solid rgba(139,92,246,0.4)", color: "#8b5cf6" }}>
-            {loadingAI ? <><Loader2 className="w-3.5 h-3.5 animate-spin" />Genererer AI...</> : <><Cpu className="w-3.5 h-3.5" />Generer AI Rapport</>}
+            {loadingAI ? <><Loader2 className="w-3.5 h-3.5 animate-spin" />Generating AI...</> : <><Cpu className="w-3.5 h-3.5" />Generate AI Report</>}
           </button>
           <button onClick={exportPDF} disabled={exportingPDF || isLoading}
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95"
@@ -478,14 +478,14 @@ Return JSON:
           {/* KPI Strip */}
           <div className="grid grid-cols-4 lg:grid-cols-8 gap-3">
             {[
-              { label: "Total Fly", val: metrics.todayFlights.length, color: "#8b5cf6", sub: moment(selectedDate).format("DD/MM"), icon: Activity },
-              { label: "Til Tiden", val: `${metrics.onTimeRate}%`, color: "#10b981", sub: `${metrics.onTime.length} fly`, icon: CheckCircle },
-              { label: "Forsinkede", val: metrics.delayed.length, color: metrics.delayed.length > 0 ? "#f59e0b" : "#10b981", sub: `⌀ ${metrics.avgDelay}m`, icon: AlertTriangle },
-              { label: "Total PAX", val: metrics.totalPax.toLocaleString(), color: "#06b6d4", sub: `⌀ ${metrics.avgPax}/fly`, icon: Users },
-              { label: "Sec. Ventetid", val: `${metrics.avgSecWait}m`, color: metrics.avgSecWait > 15 ? "#f43f5e" : "#10b981", sub: `max ${metrics.maxSecWait}m`, icon: Activity },
-              { label: "Energi/t", val: `${(metrics.totalEnergy / 1000).toFixed(1)}MWh`, color: "#f59e0b", sub: "terminal total", icon: Leaf },
+              { label: "Total Flights", val: metrics.todayFlights.length, color: "#8b5cf6", sub: moment(selectedDate).format("DD/MM"), icon: Activity },
+              { label: "On-Time", val: `${metrics.onTimeRate}%`, color: "#10b981", sub: `${metrics.onTime.length} flights`, icon: CheckCircle },
+              { label: "Delayed", val: metrics.delayed.length, color: metrics.delayed.length > 0 ? "#f59e0b" : "#10b981", sub: `⌀ ${metrics.avgDelay}m`, icon: AlertTriangle },
+              { label: "Total PAX", val: metrics.totalPax.toLocaleString(), color: "#06b6d4", sub: `⌀ ${metrics.avgPax}/flight`, icon: Users },
+              { label: "Sec. Wait", val: `${metrics.avgSecWait}m`, color: metrics.avgSecWait > 15 ? "#f43f5e" : "#10b981", sub: `max ${metrics.maxSecWait}m`, icon: Activity },
+              { label: "Energy/h", val: `${(metrics.totalEnergy / 1000).toFixed(1)}MWh`, color: "#f59e0b", sub: "terminal total", icon: Leaf },
               { label: "Ground Tasks", val: `${metrics.taskRate}%`, color: "#10b981", sub: `${metrics.completedTasks}/${tasks.length}`, icon: CheckCircle },
-              { label: "Mishandlet", val: metrics.mishandledBags, color: metrics.mishandledBags > 0 ? "#f43f5e" : "#10b981", sub: `${metrics.mishandledRate}%`, icon: AlertTriangle },
+              { label: "Mishandled", val: metrics.mishandledBags, color: metrics.mishandledBags > 0 ? "#f43f5e" : "#10b981", sub: `${metrics.mishandledRate}%`, icon: AlertTriangle },
             ].map(k => <KPICard key={k.label} {...k} />)}
           </div>
 
@@ -494,7 +494,7 @@ Return JSON:
             {/* Hourly pax flow */}
             <div className="col-span-2 rounded-2xl p-4" style={{ border: "1px solid rgba(6,182,212,0.2)", background: "rgba(0,8,20,0.95)" }}>
               <p className="text-[9px] font-black tracking-widest uppercase text-cyan-400 mb-3 flex items-center gap-1.5">
-                <Users className="w-3.5 h-3.5" />TIMELIGT PASSAGERFLOW
+                <Users className="w-3.5 h-3.5" />Hourly Passenger Flow
               </p>
               <ResponsiveContainer width="100%" height={160}>
                 <AreaChart data={hourlyFlow}>
@@ -515,7 +515,7 @@ Return JSON:
             {/* Status pie */}
             <div className="rounded-2xl p-4" style={{ border: "1px solid rgba(30,41,59,0.6)", background: "rgba(0,8,20,0.95)" }}>
               <p className="text-[9px] font-black tracking-widest uppercase text-slate-400 mb-3 flex items-center gap-1.5">
-                <BarChart2 className="w-3.5 h-3.5" />FLYSTATUS FORDELING
+                <BarChart2 className="w-3.5 h-3.5" />Flight Status Distribution
               </p>
               {statusBreakdown.length > 0 ? (
                 <>
@@ -545,7 +545,7 @@ Return JSON:
           <div className="grid grid-cols-2 gap-4">
             <div className="rounded-2xl p-4" style={{ border: "1px solid rgba(245,158,11,0.2)", background: "rgba(0,8,20,0.95)" }}>
               <p className="text-[9px] font-black tracking-widest uppercase text-amber-400 mb-3 flex items-center gap-1.5">
-                <Leaf className="w-3.5 h-3.5" />ENERGIFORBRUG PR. SYSTEM (kWh/t)
+                <Leaf className="w-3.5 h-3.5" />Energy Consumption by System (kWh/h)
               </p>
               <ResponsiveContainer width="100%" height={140}>
                 <BarChart data={ENERGY_SYSTEMS.map(e => ({ name: e.label, kwh: e.base_kwh, color: e.color }))}>
@@ -562,14 +562,14 @@ Return JSON:
             {/* Delay distribution */}
             <div className="rounded-2xl p-4" style={{ border: "1px solid rgba(139,92,246,0.2)", background: "rgba(0,8,20,0.95)" }}>
               <p className="text-[9px] font-black tracking-widest uppercase text-violet-400 mb-4 flex items-center gap-1.5">
-                <Activity className="w-3.5 h-3.5" />DRIFTSPERFORMANCE OVERSIGT
+                <Activity className="w-3.5 h-3.5" />Operations Performance Overview
               </p>
               <div className="space-y-3">
                 {[
                   { label: "On-time Rate", val: metrics.onTimeRate, max: 100, color: "#10b981", unit: "%" },
                   { label: "Ground Task Rate", val: metrics.taskRate, max: 100, color: "#06b6d4", unit: "%" },
-                  { label: "Personale Udnyttelse", val: metrics.staffUtil, max: 100, color: "#8b5cf6", unit: "%" },
-                  { label: "Security Belastning", val: Math.min(100, metrics.avgSecWait * 4), max: 100, color: metrics.avgSecWait > 15 ? "#f43f5e" : "#f59e0b", unit: "%" },
+                  { label: "Staff Utilization", val: metrics.staffUtil, max: 100, color: "#8b5cf6", unit: "%" },
+                  { label: "Security Load", val: Math.min(100, metrics.avgSecWait * 4), max: 100, color: metrics.avgSecWait > 15 ? "#f43f5e" : "#f59e0b", unit: "%" },
                 ].map(m => (
                   <div key={m.label}>
                     <div className="flex justify-between mb-1">
@@ -589,15 +589,15 @@ Return JSON:
           {!aiReport && !loadingAI && (
             <div className="rounded-2xl p-8 text-center" style={{ border: "1.5px dashed rgba(139,92,246,0.3)", background: "rgba(139,92,246,0.03)" }}>
               <Cpu className="w-10 h-10 mx-auto mb-3 text-violet-500/40" />
-              <p className="text-sm font-black text-slate-500">Klik "Generer AI Rapport" for en komplet AI-drevet opsummering</p>
-              <p className="text-[10px] text-slate-600 mt-1">Inkluderer præstationsvurdering, anbefalinger og fokuspunkter til i morgen</p>
+              <p className="text-sm font-black text-slate-500">Click "Generate AI Report" for a complete AI-driven summary</p>
+              <p className="text-[10px] text-slate-600 mt-1">Includes performance rating, recommendations and focus points for tomorrow</p>
             </div>
           )}
 
           {loadingAI && (
             <div className="rounded-2xl p-8 flex items-center justify-center gap-3" style={{ border: "1px solid rgba(139,92,246,0.2)", background: "rgba(0,8,20,0.95)" }}>
               <Loader2 className="w-6 h-6 text-violet-400 animate-spin" />
-              <span className="text-violet-400 font-black text-sm">AI analyserer dagens drift...</span>
+              <span className="text-violet-400 font-black text-sm">AI analyzing today's operations...</span>
             </div>
           )}
 
@@ -607,7 +607,7 @@ Return JSON:
               <div className="rounded-2xl overflow-hidden" style={{ border: `1.5px solid ${ratingColor[aiReport.performance_rating] || "#64748b"}40`, background: "rgba(0,8,20,0.97)" }}>
                 <div className="flex items-center gap-4 px-6 py-4 border-b border-slate-800/50" style={{ background: `${ratingColor[aiReport.performance_rating] || "#64748b"}10` }}>
                   <div className="text-center flex-shrink-0">
-                    <p className="text-[7px] uppercase tracking-widest text-slate-600">SAMLET VURDERING</p>
+                    <p className="text-[7px] uppercase tracking-widest text-slate-600">Overall Rating</p>
                     <p className="text-xl font-black" style={{ color: ratingColor[aiReport.performance_rating] }}>{aiReport.performance_rating}</p>
                   </div>
                   <div className="w-px h-10 bg-slate-800" />
@@ -624,7 +624,7 @@ Return JSON:
                 {/* Achievements */}
                 <div className="rounded-2xl p-4" style={{ border: "1px solid rgba(16,185,129,0.2)", background: "rgba(0,8,20,0.95)" }}>
                   <p className="text-[9px] font-black tracking-widest uppercase text-emerald-400 mb-3 flex items-center gap-1.5">
-                    <CheckCircle className="w-3.5 h-3.5" />TOP SUCCESER
+                    <CheckCircle className="w-3.5 h-3.5" />Top Achievements
                   </p>
                   {(aiReport.top_achievements || []).map((a, i) => (
                     <div key={i} className="flex items-start gap-2 mb-2">
@@ -637,7 +637,7 @@ Return JSON:
                 {/* Key issues */}
                 <div className="rounded-2xl p-4" style={{ border: "1px solid rgba(244,63,94,0.2)", background: "rgba(0,8,20,0.95)" }}>
                   <p className="text-[9px] font-black tracking-widest uppercase text-red-400 mb-3 flex items-center gap-1.5">
-                    <AlertTriangle className="w-3.5 h-3.5" />NØGLEPROBLEMER
+                    <AlertTriangle className="w-3.5 h-3.5" />Key Issues
                   </p>
                   {(aiReport.key_issues || []).map((k, i) => (
                     <div key={i} className="flex items-start gap-2 mb-2">
@@ -650,7 +650,7 @@ Return JSON:
                 {/* Tomorrow focus */}
                 <div className="rounded-2xl p-4" style={{ border: "1px solid rgba(6,182,212,0.2)", background: "rgba(0,8,20,0.95)" }}>
                   <p className="text-[9px] font-black tracking-widest uppercase text-cyan-400 mb-3 flex items-center gap-1.5">
-                    <RefreshCw className="w-3.5 h-3.5" />FOKUS I MORGEN
+                    <RefreshCw className="w-3.5 h-3.5" />Tomorrow's Focus
                   </p>
                   {(aiReport.tomorrow_focus || []).map((t, i) => (
                     <div key={i} className="flex items-start gap-2 mb-2">
@@ -666,7 +666,7 @@ Return JSON:
                 <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(139,92,246,0.2)", background: "rgba(0,8,20,0.95)" }}>
                   <div className="px-4 py-3 border-b border-slate-800/50" style={{ background: "rgba(139,92,246,0.06)" }}>
                     <p className="text-[9px] font-black tracking-widest uppercase text-violet-400 flex items-center gap-1.5">
-                      <Cpu className="w-3.5 h-3.5" />AI ANBEFALINGER FOR DAGEN
+                      <Cpu className="w-3.5 h-3.5" />AI Recommendations
                     </p>
                   </div>
                   <div className="divide-y divide-slate-800/30">

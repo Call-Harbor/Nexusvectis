@@ -23,15 +23,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 const TABS = [
   { id: "operations", label: "LIVE OPS", icon: Activity },
-  { id: "berth", label: "BERTH PLAN", icon: Anchor },
-  { id: "crane_ai", label: "CRANE AI", icon: Zap },
-  { id: "containers", label: "CONTAINERE", icon: Package },
-  { id: "yard", label: "YARD", icon: BarChart3 },
-  { id: "gate", label: "GATE & RAIL", icon: Layers },
-  { id: "fleet", label: "FLEET MGR", icon: Ship },
-  { id: "ai", label: "AI ADVISOR", icon: Cpu },
-  { id: "scenario", label: "SCENARIER", icon: AlertTriangle },
-  { id: "sustainability", label: "CO₂", icon: Leaf },
+   { id: "berth", label: "BERTH PLAN", icon: Anchor },
+   { id: "crane_ai", label: "CRANE AI", icon: Zap },
+   { id: "containers", label: "Containers", icon: Package },
+   { id: "yard", label: "YARD", icon: BarChart3 },
+   { id: "gate", label: "GATE & RAIL", icon: Layers },
+   { id: "fleet", label: "FLEET MGR", icon: Ship },
+   { id: "ai", label: "AI ADVISOR", icon: Cpu },
+   { id: "scenario", label: "Scenarios", icon: AlertTriangle },
+   { id: "sustainability", label: "CO₂", icon: Leaf },
 ];
 
 function PortCommandCenterContent() {
@@ -140,10 +140,10 @@ function PortCommandCenterContent() {
           </div>
           <div className="flex items-center flex-wrap gap-3 sm:gap-5">
             {[
-              { label: "AKTIVE ANLØB", val: activeCalls.length, color: "#06b6d4" },
-              { label: "FORSINKEDE", val: delayedCalls.length, color: delayedCalls.length > 0 ? "#f43f5e" : "#10b981" },
-              { label: "KRANER AKTIVE", val: cranes.filter(c => c.status === "working").length, color: "#f59e0b" },
-              { label: "PLANLAGTE", val: plannedCalls.length, color: "#8b5cf6" },
+              { label: "ACTIVE CALLS", val: activeCalls.length, color: "#06b6d4" },
+              { label: "DELAYED", val: delayedCalls.length, color: delayedCalls.length > 0 ? "#f43f5e" : "#10b981" },
+              { label: "CRANES WORKING", val: cranes.filter(c => c.status === "working").length, color: "#f59e0b" },
+              { label: "PLANNED", val: plannedCalls.length, color: "#8b5cf6" },
             ].map(k => (
               <div key={k.label} className="text-center hidden sm:block">
                 <p className="text-[8px] tracking-widest uppercase" style={{ color: "rgba(6,182,212,0.4)" }}>{k.label}</p>
@@ -152,17 +152,17 @@ function PortCommandCenterContent() {
             ))}
             <div className="text-right">
               <p className="text-2xl font-black font-mono" style={{ color: "#06b6d4", textShadow: "0 0 20px rgba(6,182,212,0.4)" }}>{clock}</p>
-              <p className="text-[8px] tracking-widest" style={{ color: "rgba(6,182,212,0.4)" }}>{new Date().toLocaleDateString("da-DK", { weekday: "short", day: "2-digit", month: "short", year: "numeric" }).toUpperCase()}</p>
+              <p className="text-[8px] tracking-widest" style={{ color: "rgba(6,182,212,0.4)" }}>{new Date().toLocaleDateString("en-GB", { weekday: "short", day: "2-digit", month: "short", year: "numeric" }).toUpperCase()}</p>
             </div>
             <button onClick={() => setShowAddPortCall(true)}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded transition-all hover:opacity-80"
               style={{ border: "1px solid rgba(6,182,212,0.4)", background: "rgba(6,182,212,0.1)", color: "#06b6d4" }}>
               <Plus className="w-3.5 h-3.5" />
-              <span className="text-[9px] tracking-widest uppercase">NY PORT CALL</span>
+              <span className="text-[9px] tracking-widest uppercase">New Port Call</span>
             </button>
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded" style={{ border: "1px solid rgba(16,185,129,0.3)", background: "rgba(16,185,129,0.06)" }}>
               <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-              <span className="text-[9px] tracking-widest uppercase" style={{ color: "#10b981" }}>OPERATIONEL</span>
+              <span className="text-[9px] tracking-widest uppercase" style={{ color: "#10b981" }}>Operational</span>
             </div>
           </div>
         </div>
@@ -278,7 +278,7 @@ export default function PortCommandCenter() {
       addonKey="addon_port_command"
       icon={Ship}
       title="Port Command Center"
-      description="AI-drevet havneoperationscentral med live AIS-tracking, kranplanlægning, containertracking og AI-rådgiver."
+      description="AI-powered port operations command center with live AIS tracking, crane scheduling, container tracking, and AI advisor."
       color="#06b6d4"
     >
       <PortCommandCenterContent />
@@ -486,10 +486,9 @@ function PortSustainability({ portCalls, equipment, cranes }) {
         ))}
       </div>
       <div className="rounded-xl p-6 text-center" style={{ border: "1px solid rgba(16,185,129,0.15)", background: "rgba(16,185,129,0.04)" }}>
-        <p className="text-[9px] tracking-widest uppercase mb-2" style={{ color: "rgba(16,185,129,0.5)" }}>AI CO₂ RECOMMENDATION</p>
+        <p className="text-[9px] tracking-widest uppercase mb-2" style={{ color: "rgba(16,185,129,0.5)" }}>AI CO₂ Recommendation</p>
         <p className="text-slate-300 text-sm">
-          Activate shore power on all berths with available equipment. Estimated savings potential is <span style={{ color: "#10b981" }}>38% CO₂ reduction</span> per port call.
-          Switch 4 diesel tractors to electric for an additional <span style={{ color: "#10b981" }}>12 tons CO₂/month</span> savings.
+          Activate shore power on all berths with available equipment. Estimated savings potential is <span style={{ color: "#10b981" }}>38% CO₂ reduction</span> per port call. Switch 4 diesel tractors to electric for an additional <span style={{ color: "#10b981" }}>12 tons CO₂/month</span> savings.
         </p>
       </div>
     </div>

@@ -15,7 +15,7 @@ import SupervisorTab from "@/components/staff/SupervisorTab";
 
 const ROLES = [
   {
-    id: "gate_agent", label: "Gate Agent", icon: Plane, color: "#06b6d4", desc: "Gates, boarding & fly status",
+    id: "gate_agent", label: "Gate Agent", icon: Plane, color: "#06b6d4", desc: "Gates, boarding & flight status",
     tabs: [
       { id: "gates", label: "Gates", icon: Plane },
       { id: "ground", label: "Handling", icon: Wrench },
@@ -23,24 +23,24 @@ const ROLES = [
     ]
   },
   {
-    id: "security_officer", label: "Security", icon: Shield, color: "#f59e0b", desc: "Lanes, kø & ventetider",
+    id: "security_officer", label: "Security", icon: Shield, color: "#f59e0b", desc: "Lanes, queues & wait times",
     tabs: [
       { id: "security", label: "Lanes", icon: Shield },
       { id: "incidents", label: "Incidents", icon: AlertTriangle },
     ]
   },
   {
-    id: "bus_driver", label: "Transport", icon: Car, color: "#8b5cf6", desc: "Landside zoner & afgange",
+    id: "bus_driver", label: "Transport", icon: Car, color: "#8b5cf6", desc: "Landside zones & departures",
     tabs: [
-      { id: "landside", label: "Zoner", icon: Car },
+      { id: "landside", label: "Zones", icon: Car },
       { id: "incidents", label: "Incidents", icon: AlertTriangle },
     ]
   },
   {
-    id: "supervisor", label: "Supervisor", icon: Users, color: "#f43f5e", desc: "Fuldt overblik & AI analyse",
+    id: "supervisor", label: "Supervisor", icon: Users, color: "#f43f5e", desc: "Full overview & AI insights",
     tabs: [
-      { id: "supervisor", label: "Overblik", icon: Zap },
-      { id: "map", label: "Kortoverblik", icon: Map },
+      { id: "supervisor", label: "Overview", icon: Zap },
+      { id: "map", label: "Terminal Map", icon: Map },
       { id: "gates", label: "Gates", icon: Plane },
       { id: "security", label: "Security", icon: Shield },
       { id: "landside", label: "Landside", icon: Car },
@@ -62,12 +62,12 @@ function ShiftLog({ log }) {
   return (
     <div className="mt-6 rounded-2xl p-4" style={{ border: "1px solid rgba(30,41,59,0.8)", background: "rgba(2,8,23,0.5)" }}>
       <p className="text-xs font-bold uppercase tracking-widest text-slate-500 flex items-center gap-1.5 mb-3">
-        <Activity className="w-3.5 h-3.5" /> Vagtlog ({log.length})
+        <Activity className="w-3.5 h-3.5" /> Shift Log ({log.length})
       </p>
       <div className="space-y-2">
         {log.slice(0, 8).map((e, i) => (
           <div key={i} className="flex items-start gap-2 text-xs">
-            <span className="text-slate-600 w-10 flex-shrink-0">{e.time.toLocaleTimeString("da-DK", { hour: "2-digit", minute: "2-digit" })}</span>
+            <span className="text-slate-600 w-10 flex-shrink-0">{e.time.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}</span>
             <span className={e.type === "success" ? "text-emerald-400" : e.type === "alert" ? "text-amber-400" : "text-slate-400"}>{e.msg}</span>
           </div>
         ))}
@@ -85,7 +85,7 @@ function RoleSelector({ onSelect }) {
             <Zap className="w-10 h-10 text-white" />
           </div>
           <h1 className="text-3xl font-black text-white">Staff Portal</h1>
-          <p className="text-slate-400 mt-2 text-sm">Vælg din rolle for vagten</p>
+           <p className="text-slate-400 mt-2 text-sm">Select your role for the shift</p>
         </div>
         <div className="space-y-3">
           {ROLES.map(r => {
@@ -137,7 +137,7 @@ export default function StaffPortal() {
   const selectRole = (r) => {
     setRole(r);
     setActiveTab(r.tabs[0].id);
-    logAdd(`Vagt startet som ${r.label}`, "info");
+    logAdd(`Shift started as ${r.label}`, "info");
   };
 
   if (!role) return <RoleSelector onSelect={selectRole} />;
@@ -158,7 +158,7 @@ export default function StaffPortal() {
             <p className="font-black text-white text-base leading-tight">{role.label}</p>
             <div className="flex items-center gap-1.5 text-xs text-slate-500">
               <Clock className="w-3 h-3" />
-              {time.toLocaleTimeString("da-DK", { hour: "2-digit", minute: "2-digit" })}
+                {time.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
               {log.length > 0 && (
                 <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold" style={{ background: `${role.color}20`, color: role.color }}>
                   {log.length}

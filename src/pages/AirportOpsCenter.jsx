@@ -121,9 +121,9 @@ function AirportOpsCenterContent() {
             </div>
             <button onClick={() => setShowAddFlight(true)}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded transition-all hover:opacity-80"
-              style={{ border: "1px solid rgba(139,92,246,0.4)", background: "rgba(139,92,246,0.1)", color: "#8b5cf6" }}>
-              <Plus className="w-3.5 h-3.5" />
-              <span className="text-[9px] tracking-widest uppercase">ADD FLIGHT</span>
+                style={{ border: "1px solid rgba(139,92,246,0.4)", background: "rgba(139,92,246,0.1)", color: "#8b5cf6" }}>
+                <Plus className="w-3.5 h-3.5" />
+                <span className="text-[9px] tracking-widest uppercase">Add Flight</span>
             </button>
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded" style={{ border: "1px solid rgba(16,185,129,0.3)", background: "rgba(16,185,129,0.06)" }}>
               <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
@@ -178,7 +178,7 @@ function AirportOpsCenterContent() {
               <TurnaroundPanel flights={flights} tasks={tasks} />
               <div className="space-y-4">
                 <div className="rounded-xl p-4" style={{ border: "1px solid rgba(245,158,11,0.15)", background: "rgba(0,10,25,0.6)" }}>
-                  <h3 className="text-[10px] font-bold tracking-[0.3em] uppercase mb-3" style={{ color: "#f59e0b" }}>TASK OVERVIEW</h3>
+                  <h3 className="text-[10px] font-bold tracking-[0.3em] uppercase mb-3" style={{ color: "#f59e0b" }}>Task Overview</h3>
                   <div className="grid grid-cols-3 gap-3">
                     {["pending","in_progress","completed","delayed","skipped"].map(s => {
                       const count = tasks.filter(t => t.status === s).length;
@@ -241,7 +241,7 @@ export default function AirportOpsCenter() {
       addonKey="addon_airport_ops"
       icon={Plane}
       title="Airport Ops Center"
-      description="AI-drevet lufthavnsoperationscentral med realtidsflyvninger, bagagesporing, sikkerhedsmonitorering og AI Co-Pilot."
+      description="AI-powered airport operations command center with real-time flights, baggage tracking, security monitoring, and AI Co-Pilot."
       color="#8b5cf6"
     >
       <AirportOpsCenterContent />
@@ -273,9 +273,9 @@ function AddFlightDialog({ open, onClose, gates, orgId, onSuccess }) {
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <div><Label>Flight Number *</Label><Input value={f.flight_number} onChange={e => setF({...f, flight_number: e.target.value})} className="bg-slate-800 border-slate-700" placeholder="SK204" /></div>
-            <div><Label>Airline</Label><Input value={f.airline} onChange={e => setF({...f, airline: e.target.value})} className="bg-slate-800 border-slate-700" placeholder="SAS" /></div>
-            <div><Label>Origin (IATA)</Label><Input value={f.origin} onChange={e => setF({...f, origin: e.target.value.toUpperCase()})} className="bg-slate-800 border-slate-700" placeholder="CPH" /></div>
-            <div><Label>Destination (IATA)</Label><Input value={f.destination} onChange={e => setF({...f, destination: e.target.value.toUpperCase()})} className="bg-slate-800 border-slate-700" placeholder="LHR" /></div>
+             <div><Label>Airline</Label><Input value={f.airline} onChange={e => setF({...f, airline: e.target.value})} className="bg-slate-800 border-slate-700" placeholder="SAS" /></div>
+             <div><Label>Origin (IATA)</Label><Input value={f.origin} onChange={e => setF({...f, origin: e.target.value.toUpperCase()})} className="bg-slate-800 border-slate-700" placeholder="CPH" /></div>
+             <div><Label>Destination (IATA)</Label><Input value={f.destination} onChange={e => setF({...f, destination: e.target.value.toUpperCase()})} className="bg-slate-800 border-slate-700" placeholder="LHR" /></div>
             <div><Label>Flight Type</Label>
               <Select value={f.flight_type} onValueChange={v => setF({...f, flight_type: v})}>
                 <SelectTrigger className="bg-slate-800 border-slate-700"><SelectValue /></SelectTrigger>
