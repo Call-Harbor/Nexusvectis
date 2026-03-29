@@ -3,12 +3,12 @@ import { base44 } from "@/api/base44Client";
 import { AlertTriangle, Zap, Wind, Wrench, Users, Ship } from "lucide-react";
 
 const SCENARIOS = [
-  { id: "storm", label: "Storm / Ekstremvejr", icon: Wind, color: "#f59e0b", desc: "Simulér lukning af ydre kajer + forsinkelse på 12-48 timer for alle indgående skibe" },
-  { id: "crane_breakdown", label: "Kran Breakdown", icon: Wrench, color: "#f43f5e", desc: "En STS-kran falder ud. Hvad sker der med backlog og turnaround?" },
-  { id: "strike", label: "Strejke (delvis)", icon: Users, color: "#8b5cf6", desc: "Kapaciteten reduceres til 60% pga. delstrejke. Konsekvensanalyse." },
-  { id: "vessel_diverted", label: "Skib omdirigeret", icon: Ship, color: "#06b6d4", desc: "Et større skib skipper havnen og går til naboport. Kapacitets- og indkomsteffekt." },
-  { id: "it_outage", label: "IT Nedbrud", icon: Zap, color: "#f43f5e", desc: "TOS er nede i 4 timer. Manuelt beredskab og prioritering af kritiske operationer." },
-  { id: "congestion", label: "Yard Overbelægning", icon: AlertTriangle, color: "#f59e0b", desc: "Yard rammer 95%+ belægning. Hvad gøres for at undgå stop i gate/losning?" },
+  { id: "storm", label: "Storm / Extreme Weather", icon: Wind, color: "#f59e0b", desc: "Simulate closure of outer berths + 12-48 hour delay for all incoming vessels" },
+  { id: "crane_breakdown", label: "Crane Breakdown", icon: Wrench, color: "#f43f5e", desc: "One STS crane goes down. What happens to backlog and turnaround?" },
+  { id: "strike", label: "Strike (Partial)", icon: Users, color: "#8b5cf6", desc: "Capacity reduced to 60% due to partial strike. Impact analysis." },
+  { id: "vessel_diverted", label: "Vessel Diverted", icon: Ship, color: "#06b6d4", desc: "Large vessel skips the port and goes to neighboring port. Capacity and revenue impact." },
+  { id: "it_outage", label: "IT Outage", icon: Zap, color: "#f43f5e", desc: "TOS down for 4 hours. Manual contingency and critical operations prioritization." },
+  { id: "congestion", label: "Yard Overcongestion", icon: AlertTriangle, color: "#f59e0b", desc: "Yard hits 95%+ occupancy. What to do to prevent gate/discharge stoppage?" },
 ];
 
 export default function PortScenarioEngine({ portCalls, berths, cranes, yardZones, orgId }) {
@@ -32,24 +32,24 @@ export default function PortScenarioEngine({ portCalls, berths, cranes, yardZone
       berthsAvail: berths.filter(b => b.status === "available").length,
     };
 
-    const prompt = `Du er port operations AI der kører en scenariosimulering.
+    const prompt = `You are a port operations AI running a scenario simulation.
 
-HAVN STATUS:
-- ${contextData.activeCalls} aktive anløb, ${contextData.plannedCalls} planlagte, ${contextData.criticalCalls} kritiske
-- ${contextData.workingCranes}/${contextData.totalCranes} kraner aktive
-- Yard belægning: ${contextData.avgYardOcc}%
-- ${contextData.berthsAvail} kajer tilgængelige
+PORT STATUS:
+- ${contextData.activeCalls} active calls, ${contextData.plannedCalls} planned, ${contextData.criticalCalls} critical
+- ${contextData.workingCranes}/${contextData.totalCranes} cranes active
+- Yard occupancy: ${contextData.avgYardOcc}%
+- ${contextData.berthsAvail} berths available
 
-SCENARIE: ${scenario ? scenario.label + " — " + scenario.desc : customText}
+SCENARIO: ${scenario ? scenario.label + " — " + scenario.desc : customText}
 
-Simulér dette scenarie og giv:
-1. Direkte konsekvenser (næste 6 timer)
-2. Kaskadering effekter (næste 24-72 timer)
-3. Estimeret impact: backlog (TEU), forsinket turnaround (timer), estimeret omkostning (EUR)
-4. Prioriterede mitigationshandlinger (top 5, konkrete og handlingsrettede)
+Simulate this scenario and provide:
+1. Immediate consequences (next 6 hours)
+2. Cascading effects (next 24-72 hours)
+3. Quantified impact: backlog (TEU), delayed turnaround (hours), estimated cost (EUR)
+4. Prioritized mitigation actions (top 5, concrete and action-oriented)
 5. Recovery plan
 
-Svar på dansk. Vær præcis og kvantificér effekter.`;
+Be precise and quantify effects.`;
 
     const res = await base44.integrations.Core.InvokeLLM({
       prompt,
@@ -78,8 +78,8 @@ Svar på dansk. Vær præcis og kvantificér effekter.`;
 
   const severityColor = (sev) => {
     if (!sev) return "#94a3b8";
-    if (sev.toLowerCase().includes("kritisk")) return "#f43f5e";
-    if (sev.toLowerCase().includes("høj")) return "#f59e0b";
+    if (sev.toLowerCase().includes("critical")) return "#f43f5e";
+    if (sev.toLowerCase().includes("high")) return "#f59e0b";
     return "#10b981";
   };
 
@@ -87,7 +87,7 @@ Svar på dansk. Vær præcis og kvantificér effekter.`;
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-[10px] font-bold tracking-[0.3em] uppercase" style={{ color: "#f43f5e" }}>SCENARIO & RESILIENCE ENGINE</h2>
-        <p className="text-[9px]" style={{ color: "rgba(100,116,139,0.4)" }}>Simulér forstyrrelser og se konsekvenser i realtid</p>
+        <p className="text-[9px]" style={{ color: "rgba(100,116,139,0.4)" }}>Simulate disruptions and see consequences in real time</p>
       </div>
 
       <div className="grid grid-cols-3 gap-3">
@@ -120,7 +120,7 @@ Svar på dansk. Vær præcis og kvantificér effekter.`;
         <input
           value={customScenario}
           onChange={e => setCustomScenario(e.target.value)}
-          placeholder="Beskriv dit eget scenarie, f.eks. 'Kaj 3 lukkes for vedligehold i 3 dage mens 2 store skibe venter'"
+          placeholder="Describe your own scenario, e.g. 'Berth 3 closed for maintenance 3 days while 2 large vessels waiting'"
           className="flex-1 px-4 py-2.5 rounded-xl text-xs text-white bg-slate-900 border border-slate-700 focus:outline-none focus:border-red-500 placeholder-slate-600"
         />
         <button
@@ -129,7 +129,7 @@ Svar på dansk. Vær præcis og kvantificér effekter.`;
           className="px-6 py-2.5 rounded-xl text-[10px] font-bold tracking-widest uppercase transition-all"
           style={{ background: "rgba(244,63,94,0.15)", border: "1px solid rgba(244,63,94,0.4)", color: "#f43f5e" }}
         >
-          KØR SCENARIE
+          RUN SCENARIO
         </button>
       </div>
 
@@ -141,7 +141,7 @@ Svar på dansk. Vær præcis og kvantificér effekter.`;
               <div key={i} className="w-1.5 h-6 rounded-full animate-pulse" style={{ background: "#f43f5e", animationDelay: `${i * 0.1}s` }} />
             ))}
           </div>
-          <p className="text-[10px] tracking-widest uppercase" style={{ color: "rgba(244,63,94,0.7)" }}>SIMULERER SCENARIE...</p>
+          <p className="text-[10px] tracking-widest uppercase" style={{ color: "rgba(244,63,94,0.7)" }}>SIMULATING SCENARIO...</p>
         </div>
       )}
 
@@ -149,7 +149,7 @@ Svar på dansk. Vær præcis og kvantificér effekter.`;
       {result && !loading && (
         <div className="rounded-xl overflow-hidden" style={{ border: "1px solid rgba(244,63,94,0.2)" }}>
           <div className="px-4 py-3 flex items-center justify-between" style={{ background: "rgba(244,63,94,0.08)" }}>
-            <p className="text-[9px] font-bold tracking-widest uppercase" style={{ color: "#f43f5e" }}>SIMULERINGSRESULTAT</p>
+            <p className="text-[9px] font-bold tracking-widest uppercase" style={{ color: "#f43f5e" }}>SIMULATION RESULT</p>
             {result.severity && (
               <span className="text-[8px] font-bold px-2 py-0.5 rounded uppercase tracking-widest"
                 style={{ background: `${severityColor(result.severity)}22`, color: severityColor(result.severity) }}>
@@ -163,8 +163,8 @@ Svar på dansk. Vær præcis og kvantificér effekter.`;
               <div className="grid grid-cols-3 gap-3">
                 {[
                   { label: "Backlog", value: `${result.quantified_impact.backlog_teu || 0} TEU`, color: "#f43f5e" },
-                  { label: "Forsinkelse", value: `${result.quantified_impact.delay_hours || 0}h`, color: "#f59e0b" },
-                  { label: "Estimeret tab", value: `€${(result.quantified_impact.cost_eur || 0).toLocaleString()}`, color: "#8b5cf6" },
+                  { label: "Delay", value: `${result.quantified_impact.delay_hours || 0}h`, color: "#f59e0b" },
+                  { label: "Estimated Loss", value: `€${(result.quantified_impact.cost_eur || 0).toLocaleString()}`, color: "#8b5cf6" },
                 ].map(kpi => (
                   <div key={kpi.label} className="rounded-lg p-3 text-center" style={{ background: `${kpi.color}10`, border: `1px solid ${kpi.color}22` }}>
                     <p className="text-[7px] uppercase tracking-widest" style={{ color: `${kpi.color}88` }}>{kpi.label}</p>
@@ -176,18 +176,18 @@ Svar på dansk. Vær præcis og kvantificér effekter.`;
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-[8px] font-bold uppercase tracking-widest mb-1" style={{ color: "#f43f5e" }}>DIREKTE KONSEKVENSER</p>
+                <p className="text-[8px] font-bold uppercase tracking-widest mb-1" style={{ color: "#f43f5e" }}>IMMEDIATE CONSEQUENCES</p>
                 <p className="text-xs text-slate-300 leading-relaxed">{result.immediate_impact}</p>
               </div>
               <div>
-                <p className="text-[8px] font-bold uppercase tracking-widest mb-1" style={{ color: "#f59e0b" }}>KASKADERING EFFEKTER</p>
+                <p className="text-[8px] font-bold uppercase tracking-widest mb-1" style={{ color: "#f59e0b" }}>CASCADING EFFECTS</p>
                 <p className="text-xs text-slate-300 leading-relaxed">{result.cascading_effects}</p>
               </div>
             </div>
 
             {result.mitigations?.length > 0 && (
               <div>
-                <p className="text-[8px] font-bold uppercase tracking-widest mb-2" style={{ color: "#10b981" }}>MITIGERINGSHANDLINGER</p>
+                <p className="text-[8px] font-bold uppercase tracking-widest mb-2" style={{ color: "#10b981" }}>MITIGATION ACTIONS</p>
                 <div className="space-y-1.5">
                   {result.mitigations.map((m, i) => (
                     <div key={i} className="flex items-start gap-2 p-2 rounded-lg" style={{ background: "rgba(16,185,129,0.06)", border: "1px solid rgba(16,185,129,0.15)" }}>

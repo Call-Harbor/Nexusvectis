@@ -74,15 +74,15 @@ Return JSON:
           </div>
           <div>
             <h2 className="text-[10px] font-black tracking-[0.3em] uppercase text-violet-400">GATE & STAND ALLOCATION AI</h2>
-            <p className="text-[9px] text-slate-500">{occupiedGates} optaget · {openGates} ledig · {maintenanceGates} vedligehold · {gates.length} i alt</p>
+            <p className="text-[9px] text-slate-500">{occupiedGates} occupied · {openGates} open · {maintenanceGates} maintenance · {gates.length} total</p>
           </div>
         </div>
         <div className="flex items-center gap-4">
           <div className="grid grid-cols-3 gap-3">
             {[
-              { label: "Udnyttelse", val: `${utilization}%`, color: utilization > 85 ? "#f43f5e" : utilization > 60 ? "#f59e0b" : "#10b981" },
-              { label: "Optaget", val: occupiedGates, color: "#f59e0b" },
-              { label: "Ledige", val: openGates, color: "#10b981" },
+              { label: "Utilization", val: `${utilization}%`, color: utilization > 85 ? "#f43f5e" : utilization > 60 ? "#f59e0b" : "#10b981" },
+              { label: "Occupied", val: occupiedGates, color: "#f59e0b" },
+              { label: "Open", val: openGates, color: "#10b981" },
             ].map(k => (
               <div key={k.label} className="text-center px-3 py-2 rounded-xl" style={{ background: `${k.color}08`, border: `1px solid ${k.color}20` }}>
                 <p className="text-[7px] uppercase text-slate-600">{k.label}</p>
@@ -93,7 +93,7 @@ Return JSON:
           <button onClick={runAllocation} disabled={loading}
             className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all active:scale-95"
             style={{ background: "rgba(139,92,246,0.15)", border: "1.5px solid rgba(139,92,246,0.4)", color: "#8b5cf6" }}>
-            {loading ? <><Loader2 className="w-3.5 h-3.5 animate-spin" />Optimerer...</> : <><RefreshCw className="w-3.5 h-3.5" />Kør AI Optimizer</>}
+            {loading ? <><Loader2 className="w-3.5 h-3.5 animate-spin" />Optimizing...</> : <><RefreshCw className="w-3.5 h-3.5" />Run AI Optimizer</>}
           </button>
         </div>
       </div>
@@ -102,7 +102,7 @@ Return JSON:
       <div className="rounded-2xl p-4" style={{ border: "1px solid rgba(30,41,59,0.6)", background: "rgba(0,8,20,0.9)" }}>
         <p className="text-[9px] font-black tracking-widest uppercase text-slate-500 mb-3">GATE STATUS GRID</p>
         {gates.length === 0 ? (
-          <p className="text-slate-600 text-xs text-center py-6">Ingen gates konfigureret — gå til Infrastructure</p>
+          <p className="text-slate-600 text-xs text-center py-6">No gates configured — go to Infrastructure</p>
         ) : (
           <div className="flex flex-wrap gap-2">
             {gates.map(g => {
@@ -133,9 +133,9 @@ Return JSON:
           <div className="grid grid-cols-4 gap-3">
             {[
               { label: "Efficiency Score", val: plan.efficiency_score, color: plan.efficiency_score > 70 ? "#10b981" : plan.efficiency_score > 50 ? "#f59e0b" : "#f43f5e", suffix: "/100" },
-              { label: "Udnyttelse", val: plan.utilization_pct, color: "#8b5cf6", suffix: "%" },
-              { label: "Konflikter", val: plan.conflicts?.length || 0, color: (plan.conflicts?.length || 0) > 0 ? "#f43f5e" : "#10b981", suffix: "" },
-              { label: "Gates frigivet", val: plan.gates_freed_potential || 0, color: "#06b6d4", suffix: " mulige" },
+              { label: "Utilization", val: plan.utilization_pct, color: "#8b5cf6", suffix: "%" },
+              { label: "Conflicts", val: plan.conflicts?.length || 0, color: (plan.conflicts?.length || 0) > 0 ? "#f43f5e" : "#10b981", suffix: "" },
+              { label: "Gates Freed", val: plan.gates_freed_potential || 0, color: "#06b6d4", suffix: " possible" },
             ].map(k => (
               <div key={k.label} className="rounded-2xl p-3 text-center" style={{ border: `1px solid ${k.color}25`, background: `${k.color}08` }}>
                 <p className="text-[8px] uppercase tracking-widest text-slate-500">{k.label}</p>
@@ -150,7 +150,7 @@ Return JSON:
             {plan.conflicts?.length > 0 && (
               <div className="rounded-2xl p-4" style={{ border: "1px solid rgba(244,63,94,0.25)", background: "rgba(0,8,20,0.9)" }}>
                 <p className="text-[9px] font-black tracking-widest uppercase text-red-400 mb-3 flex items-center gap-1.5">
-                  <AlertTriangle className="w-3.5 h-3.5" />KONFLIKTER
+                   <AlertTriangle className="w-3.5 h-3.5" />CONFLICTS
                 </p>
                 <div className="space-y-2">
                   {plan.conflicts.map((c, i) => (
@@ -166,7 +166,7 @@ Return JSON:
             {plan.reassignments?.length > 0 && (
               <div className="rounded-2xl p-4" style={{ border: "1px solid rgba(139,92,246,0.25)", background: "rgba(0,8,20,0.9)" }}>
                 <p className="text-[9px] font-black tracking-widest uppercase text-violet-400 mb-3 flex items-center gap-1.5">
-                  <ArrowRight className="w-3.5 h-3.5" />FORESLÅEDE OMBYTNINGER
+                   <ArrowRight className="w-3.5 h-3.5" />SUGGESTED REASSIGNMENTS
                 </p>
                 <div className="space-y-2">
                   {plan.reassignments.map((r, i) => (
@@ -186,7 +186,7 @@ Return JSON:
           {plan.optimizations?.length > 0 && (
             <div className="rounded-2xl p-4" style={{ border: "1px solid rgba(16,185,129,0.2)", background: "rgba(0,8,20,0.9)" }}>
               <p className="text-[9px] font-black tracking-widest uppercase text-emerald-400 mb-3 flex items-center gap-1.5">
-                <Zap className="w-3.5 h-3.5" />OPTIMERINGSFORSLAG
+                <Zap className="w-3.5 h-3.5" />OPTIMIZATION SUGGESTIONS
               </p>
               <div className="grid grid-cols-2 gap-2">
                 {plan.optimizations.map((o, i) => (
