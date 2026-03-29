@@ -19,7 +19,7 @@ export default function PortBerthBoard({ berths, portCalls, vessels, cranes, onS
 
   const runAIBerthPlan = async () => {
     setAiLoading(true);
-    const prompt = `Du er port operations AI. Analyser følgende data og lav en optimal kajplan.
+    const prompt = `You are a port operations AI. Analyze the following data and create an optimal berth allocation plan.
     
 Kajer: ${JSON.stringify(berths.map(b => ({ name: b.name, length: b.length_m, draft: b.max_draft_m, status: b.status })))}
 Kommende anløb: ${JSON.stringify(portCalls.filter(p => p.status === "planned").slice(0, 10).map(p => {
@@ -27,7 +27,7 @@ Kommende anløb: ${JSON.stringify(portCalls.filter(p => p.status === "planned").
   return { eta: p.eta, vessel: v?.name, type: v?.type, length: v?.length_m, draft: v?.max_draft_m, moves: p.total_moves };
 }))}
 
-Giv 3 konkrete anbefalinger til kajallokering. Svar på dansk med præcise anbefalinger i JSON-format:
+Provide 3 concrete recommendations for berth allocation. Answer with precise recommendations in JSON format:
 { "recommendations": [{ "vessel": "navn", "berth": "kaj", "reason": "begrundelse", "savings": "besparelse" }], "summary": "overordnet vurdering" }`;
 
     const res = await base44.integrations.Core.InvokeLLM({
@@ -47,7 +47,7 @@ Giv 3 konkrete anbefalinger til kajallokering. Svar på dansk med præcise anbef
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-[10px] font-bold tracking-[0.3em] uppercase" style={{ color: "#06b6d4" }}>BERTH PLAN — KAJOVERSIGT</h2>
+        <h2 className="text-[10px] font-bold tracking-[0.3em] uppercase" style={{ color: "#06b6d4" }}>BERTH PLAN — OVERVIEW</h2>
         <button
           onClick={runAIBerthPlan}
           disabled={aiLoading}
@@ -55,7 +55,7 @@ Giv 3 konkrete anbefalinger til kajallokering. Svar på dansk med præcise anbef
           style={{ border: "1px solid rgba(139,92,246,0.4)", background: "rgba(139,92,246,0.08)", color: "#8b5cf6" }}
         >
           <Cpu className="w-3 h-3" />
-          {aiLoading ? "ANALYSERER..." : "AI KAJPLAN"}
+          {aiLoading ? "ANALYZING..." : "AI BERTH PLAN"}
         </button>
       </div>
 
@@ -64,8 +64,8 @@ Giv 3 konkrete anbefalinger til kajallokering. Svar på dansk med præcise anbef
         {berths.length === 0 && (
           <div className="text-center py-16 rounded-xl" style={{ border: "1px solid rgba(6,182,212,0.1)", color: "rgba(100,116,139,0.5)" }}>
             <Anchor className="w-12 h-12 mx-auto mb-3 opacity-20" />
-            <p className="text-xs tracking-widest uppercase">Ingen kajer konfigureret</p>
-            <p className="text-[10px] mt-1 opacity-60">Tilføj kajer for at se berth plan</p>
+            <p className="text-xs tracking-widest uppercase">No berths configured</p>
+            <p className="text-[10px] mt-1 opacity-60">Add berths to see berth plan</p>
           </div>
         )}
         {berths.map(berth => {
@@ -90,7 +90,7 @@ Giv 3 konkrete anbefalinger til kajallokering. Svar på dansk med præcise anbef
                   <div>
                     <p className="text-sm font-bold tracking-wider" style={{ color: STATUS_COLORS[berth.status] || "#94a3b8" }}>{berth.name}</p>
                     <p className="text-[8px] tracking-widest uppercase" style={{ color: "rgba(100,116,139,0.5)" }}>
-                      {berth.terminal} · {berth.length_m}m · {berth.max_draft_m}m dybgang · {berthCranesList.length} kraner
+                      {berth.terminal} · {berth.length_m}m · {berth.max_draft_m}m draft · {berthCranesList.length} cranes
                     </p>
                   </div>
                 </div>
@@ -125,7 +125,7 @@ Giv 3 konkrete anbefalinger til kajallokering. Svar på dansk med præcise anbef
                     <div>
                       <p className="text-[7px] uppercase tracking-widest" style={{ color: "rgba(100,116,139,0.4)" }}>ETD</p>
                       <p className="text-xs font-bold" style={{ color: "#f59e0b" }}>
-                        {currentCall.etd ? new Date(currentCall.etd).toLocaleTimeString("da-DK", { hour: "2-digit", minute: "2-digit" }) : "–"}
+                        {currentCall.etd ? new Date(currentCall.etd).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }) : "–"}
                       </p>
                     </div>
                     <div>
@@ -143,7 +143,7 @@ Giv 3 konkrete anbefalinger til kajallokering. Svar på dansk med præcise anbef
       {/* AI Plan Output */}
       {aiPlan && (
         <div className="rounded-xl p-4 space-y-3" style={{ border: "1px solid rgba(139,92,246,0.2)", background: "rgba(139,92,246,0.04)" }}>
-          <p className="text-[9px] font-bold tracking-widest uppercase" style={{ color: "#8b5cf6" }}>⬡ AI KAJPLAN ANBEFALING</p>
+          <p className="text-[9px] font-bold tracking-widest uppercase" style={{ color: "#8b5cf6" }}>⬡ AI BERTH PLAN RECOMMENDATION</p>
           <p className="text-xs text-slate-300">{aiPlan.summary}</p>
           <div className="space-y-2">
             {(aiPlan.recommendations || []).map((rec, i) => (
@@ -152,7 +152,7 @@ Giv 3 konkrete anbefalinger til kajallokering. Svar på dansk med præcise anbef
                 <div>
                   <p className="text-[10px] font-bold" style={{ color: "#c4b5fd" }}>{rec.vessel} → {rec.berth}</p>
                   <p className="text-[9px] text-slate-400 mt-0.5">{rec.reason}</p>
-                  {rec.savings && <p className="text-[9px] mt-0.5" style={{ color: "#10b981" }}>Besparelse: {rec.savings}</p>}
+                  {rec.savings && <p className="text-[9px] mt-0.5" style={{ color: "#10b981" }}>Savings: {rec.savings}</p>}
                 </div>
               </div>
             ))}
