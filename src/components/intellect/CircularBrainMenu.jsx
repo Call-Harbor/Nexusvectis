@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Brain, Building2, Newspaper, Shield, Satellite, Zap, Package, Route, Activity, Sparkles } from "lucide-react";
+import { Brain, Building2, Newspaper, Shield, Satellite, Zap, Package, Route, Activity, Sparkles, Plane, Ship } from "lucide-react";
 
 export default function CircularBrainMenu({ onAction, size = "md", isLogo = false, onMenuToggle }) {
   const [showMenu, setShowMenu] = useState(false);
@@ -21,6 +21,8 @@ export default function CircularBrainMenu({ onAction, size = "md", isLogo = fals
     { icon: Route, action: 'routes', label: 'Routes' },
     { icon: Activity, action: 'deep_analysis', label: 'Analysis' },
     { icon: Sparkles, action: 'image_generator', label: 'Image' },
+    { icon: Plane, action: 'airport_ops', label: 'Airport' },
+    { icon: Ship, action: 'port_command', label: 'Port' },
   ];
 
   const sizeConfig = {

@@ -53,6 +53,8 @@ export const WINDOW_META = {
   harbor_app_builder: { title: '⚡ H.A.R.B.O.R App Builder', icon: Cpu },
   fleet_store: { title: '🛒 Fleet Store', icon: Store },
   nexus_orbit: { title: '🛰️ Nexus Orbit', icon: Satellite },
+  airport_ops: { title: '✈️ Airport Ops Center', icon: Layers },
+  port_command: { title: '🚢 Port Command Center', icon: Layers },
 };
 
 export function getWindowMeta(type) {
