@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Building2, Key, User as UserIcon, Save, Loader2, Trash2, AlertTriangle, Plane, Ship, CheckCircle, XCircle, Package } from "lucide-react";
+import { Building2, Key, User as UserIcon, Save, Loader2, Trash2, AlertTriangle, Plane, Ship, CheckCircle, XCircle, Package, Bus } from "lucide-react";
 import { toast } from "sonner";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
@@ -831,7 +831,8 @@ export default function Settings() {
                   {[
                     { key: "addon_airport_ops", label: "Airport Ops Center", desc: "AI-powered airport operations command center with real-time flights, baggage tracking, security monitoring, and AI Co-Pilot.", icon: Plane, color: "#8b5cf6" },
                     { key: "addon_port_command", label: "Port Command Center", desc: "AI-powered port operations command center with live AIS tracking, crane scheduling, container tracking, and AI advisor.", icon: Ship, color: "#06b6d4" },
-                  ].map(addon => {
+                    { key: "addon_transit_control", label: "Transit Control", desc: "AI-powered transit operations command center with real-time bus tracking, demand forecasting, crowding prediction, and network optimization.", icon: Bus, color: "#8b5cf6" },
+                    ].map(addon => {
                     const active = organization?.[addon.key] === true;
                     const Icon = addon.icon;
                     return (
