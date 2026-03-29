@@ -18,7 +18,7 @@ Deno.serve(async (req) => {
   if (!username) {
     return Response.json({
       synced: 0,
-      message: "AISHUB_USERNAME ikke konfigureret. Registrer gratis på aishub.net og sæt AISHUB_USERNAME i secrets.",
+      message: "AISHUB_USERNAME not configured. Register free at aishub.net and set AISHUB_USERNAME in secrets.",
       no_key: true
     });
   }
@@ -41,7 +41,7 @@ Deno.serve(async (req) => {
     if (data[0]?.ERROR === false && Array.isArray(data[1])) {
       rawVessels = data[1].slice(0, 200);
     } else {
-      apiError = data[0]?.DESCRIPTION || "Intet data fra AISHub";
+      apiError = data[0]?.DESCRIPTION || "No data from AISHub";
     }
   } catch (e) {
     apiError = e.message;

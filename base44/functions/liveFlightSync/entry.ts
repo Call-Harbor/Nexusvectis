@@ -19,7 +19,7 @@ Deno.serve(async (req) => {
   const allFlights = depData.data || [];
 
   if (!allFlights.length) {
-    return Response.json({ synced: 0, message: "Ingen fly returneret fra API - tjek IATA kode og API plan", raw_error: depData.error });
+    return Response.json({ synced: 0, message: "No flights returned from API - check IATA code and API plan", raw_error: depData.error });
   }
 
   // Load existing flights and gates for this org
