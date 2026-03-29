@@ -14,8 +14,8 @@ const STATUS_COLOR = {
 };
 
 const STATUS_LABEL = {
-  pending: "AFVENTER", in_progress: "I GANG", completed: "FULDFØRT",
-  delayed: "FORSINKET", skipped: "SPRUNGET OVER"
+  pending: "PENDING", in_progress: "IN PROGRESS", completed: "COMPLETED",
+  delayed: "DELAYED", skipped: "SKIPPED"
 };
 
 export default function TurnaroundPanel({ flights, tasks }) {
@@ -48,7 +48,7 @@ export default function TurnaroundPanel({ flights, tasks }) {
           style={{ background: "rgba(15,23,42,0.8)", border: "1px solid rgba(139,92,246,0.3)", color: "#e2e8f0" }}
           value={activeFlight?.id || ""}
           onChange={e => setSelectedFlight(flights.find(f => f.id === e.target.value) || null)}>
-          <option value="">— Vælg fly —</option>
+          <option value="">— Select flight —</option>
           {flights.filter(f => f.flight_type !== "arrival" || f.status === "at_gate").map(f => (
             <option key={f.id} value={f.id}>{f.flight_number} · {f.status}</option>
           ))}
@@ -65,10 +65,10 @@ export default function TurnaroundPanel({ flights, tasks }) {
               {activeFlight.gate && <p className="text-[9px] text-cyan-400 mt-0.5">Gate {activeFlight.gate}</p>}
             </div>
             <div className="text-right">
-              <p className="text-[8px] text-slate-600 uppercase tracking-widest">Fremskridt</p>
+              <p className="text-[8px] text-slate-600 uppercase tracking-widest">Progress</p>
               <p className="text-2xl font-black" style={{ color: progressColor }}>{progress}%</p>
               {totalDelayMinutes > 0 && (
-                <p className="text-[9px] font-black text-red-400">+{totalDelayMinutes}m total forsinkelse</p>
+                <p className="text-[9px] font-black text-red-400">+{totalDelayMinutes}m total delay</p>
               )}
             </div>
           </div>
@@ -81,10 +81,10 @@ export default function TurnaroundPanel({ flights, tasks }) {
             </div>
             <div className="flex gap-3 text-[8px]">
               {[
-                { label: "Fuldført", count: completedCount, color: "#10b981" },
-                { label: "I gang", count: inProgressCount, color: "#06b6d4" },
-                { label: "Forsinket", count: delayedCount, color: "#f43f5e" },
-                { label: "Afventer", count: flightTasks.filter(t => t.status === "pending").length, color: "#475569" },
+                { label: "Completed", count: completedCount, color: "#10b981" },
+                { label: "In Progress", count: inProgressCount, color: "#06b6d4" },
+                { label: "Delayed", count: delayedCount, color: "#f43f5e" },
+                { label: "Pending", count: flightTasks.filter(t => t.status === "pending").length, color: "#475569" },
               ].map(s => (
                 <div key={s.label} className="flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full" style={{ background: s.color }} />
@@ -98,14 +98,14 @@ export default function TurnaroundPanel({ flights, tasks }) {
             <div className="flex items-center gap-2 px-3 py-2 rounded-xl"
               style={{ background: "rgba(244,63,94,0.08)", border: "1px solid rgba(244,63,94,0.25)" }}>
               <AlertTriangle className="w-3.5 h-3.5 text-red-400 flex-shrink-0 animate-pulse" />
-              <span className="text-[9px] text-red-300 font-bold">Forsinkelse opdaget — AI anbefaler re-sekvensering</span>
+              <span className="text-[9px] text-red-300 font-bold">Delay detected — AI recommends re-sequencing</span>
             </div>
           )}
 
           {/* Task list */}
           <div className="space-y-1.5 overflow-y-auto flex-1">
             {flightTasks.length === 0 && (
-              <p className="text-slate-600 text-xs text-center py-6">Ingen opgaver for dette fly</p>
+              <p className="text-slate-600 text-xs text-center py-6">No tasks for this flight</p>
             )}
             {flightTasks.map(task => {
               const color = STATUS_COLOR[task.status] || "#64748b";
@@ -134,7 +134,7 @@ export default function TurnaroundPanel({ flights, tasks }) {
       ) : (
         <div className="flex flex-col items-center justify-center flex-1 text-slate-700 p-6">
           <Activity className="w-8 h-8 mb-3" />
-          <p className="text-sm font-bold text-center">Vælg et fly for at tracke turnaround</p>
+          <p className="text-sm font-bold text-center">Select a flight to track turnaround</p>
         </div>
       )}
     </div>
