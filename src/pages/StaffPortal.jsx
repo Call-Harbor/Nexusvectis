@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import {
   Shield, Plane, Car, Clock, LogOut, Users, Zap,
@@ -222,7 +221,6 @@ function RoleSelector({ modality, onSelect, onBack, org }) {
           </div>
           );
           }
-}
 
 const TAB_PANELS = {
   gates: (props) => <GateAgentTab {...props} />,
