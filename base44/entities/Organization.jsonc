@@ -47,7 +47,7 @@
     "addon_transit_control": {
       "type": "boolean",
       "default": false,
-      "description": "Whether Transit Control module is activated (\u20ac200/month)"
+      "description": "Whether Transit Control module is activated (\u20ac2000/month)"
     }
   },
   "required": [
