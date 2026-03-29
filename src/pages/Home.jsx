@@ -554,154 +554,200 @@ export default function Home() {
               <div className="max-w-7xl mx-auto">
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-20"
-          >
-            <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-6 px-2">
-              Built on
-              <br />
-              <span className="bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent">
-                Cutting-Edge Technology
-              </span>
-            </h2>
-            <p className="text-base sm:text-lg md:text-xl text-slate-400 max-w-3xl mx-auto px-2">
-              Enterprise infrastructure that scales with your business
-            </p>
-          </motion.div>
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  className="text-center mb-20"
+                >
+                  <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-6 px-2">
+                    Pay Only for What You Use
+                    <br />
+                    <span className="bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent">
+                      Transparent Pricing
+                    </span>
+                  </h2>
+                  <p className="text-base sm:text-lg md:text-xl text-slate-400 max-w-3xl mx-auto px-2">
+                    Simple, usage-based billing. No hidden fees.
+                  </p>
+                </motion.div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              { icon: Globe, title: "Multi-Signal Tracking", desc: "GPS, AIS, ADS-B, LoRa" },
-              { icon: Brain, title: "Advanced AI Models", desc: "GPT-4, Claude, Mistral" },
-              { icon: Shield, title: "Bank-Level Security", desc: "SOC 2, ISO 27001" },
-              { icon: Zap, title: "Real-Time Processing", desc: "Sub-second updates" }
-            ].map((tech, idx) => {
-              const Icon = tech.icon;
-              return (
+                <div className="max-w-4xl mx-auto mb-16">
+                  <div className="grid md:grid-cols-2 gap-8">
+                    {[
+                      {
+                        icon: Truck,
+                        title: "Per Vehicle",
+                        price: "€15",
+                        unit: "/month",
+                        description: "Track each vehicle in your fleet with real-time monitoring"
+                      },
+                      {
+                        icon: Warehouse,
+                        title: "Per Resource",
+                        price: "€40",
+                        unit: "/month",
+                        description: "Monitor warehouses, fuel depots, charging stations and ports"
+                      },
+                      {
+                        icon: Sparkles,
+                        title: "FLEET AI Commands",
+                        price: "€5",
+                        unit: "/100 commands",
+                        description: "Natural language fleet operations executed through AI"
+                      },
+                      {
+                        icon: Radio,
+                        title: "API Calls",
+                        price: "€5",
+                        unit: "/100 calls",
+                        description: "Direct API access for custom integrations and automation"
+                      }
+                    ].map((item, idx) => {
+                      const Icon = item.icon;
+                      return (
+                        <motion.div
+                          key={idx}
+                          initial={{ opacity: 0, y: 30 }}
+                          whileInView={{ opacity: 1, y: 0 }}
+                          viewport={{ once: true }}
+                          transition={{ delay: idx * 0.1 }}
+                          whileHover={{ scale: 1.02 }}
+                          className="relative p-8 rounded-3xl bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl border border-white/10 hover:border-cyan-500/50 transition-all"
+                        >
+                          <div className="flex items-start justify-between mb-4">
+                            <Icon className="w-12 h-12 text-cyan-400" />
+                            <div className="text-right">
+                              <div className="text-4xl font-black bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent">
+                                {item.price}
+                              </div>
+                              <div className="text-sm text-slate-400">{item.unit}</div>
+                            </div>
+                          </div>
+                          <h3 className="text-xl font-bold text-white mb-2">{item.title}</h3>
+                          <p className="text-slate-400 text-sm">{item.description}</p>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                </div>
+
                 <motion.div
-                  key={idx}
                   initial={{ opacity: 0, y: 30 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  transition={{ delay: idx * 0.1 }}
-                  whileHover={{ scale: 1.05, rotateY: 5 }}
-                  className="relative p-8 rounded-3xl bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl border border-white/10 hover:border-cyan-500/50 transition-all group"
+                  className="max-w-2xl mx-auto rounded-3xl bg-gradient-to-br from-slate-900/50 to-slate-950/50 border border-slate-700/50 p-8 md:p-10 mb-16"
                 >
-                  <motion.div
-                    animate={{
-                      y: [0, -10, 0],
-                    }}
-                    transition={{ duration: 2, repeat: Infinity, delay: idx * 0.3 }}
-                  >
-                    <Icon className="w-12 h-12 text-cyan-400 mb-4" />
-                  </motion.div>
-                  <h3 className="text-xl font-bold text-white mb-2">{tech.title}</h3>
-                  <p className="text-slate-400 text-sm">{tech.desc}</p>
-                  
-                  <motion.div
-                    className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-violet-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity"
-                    animate={{
-                      scale: [1, 1.05, 1],
-                    }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  />
-                </motion.div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* Interactive Demo Section */}
-      <section className="relative py-20 sm:py-32 px-4 sm:px-6 z-10">
-        <div className="max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="relative rounded-[3rem] bg-gradient-to-br from-slate-900/50 to-slate-950/50 border border-cyan-500/30 p-12 md:p-16 overflow-hidden"
-          >
-            {/* Animated particles */}
-            <div className="absolute inset-0">
-              {[...Array(20)].map((_, i) => (
-                <motion.div
-                  key={i}
-                  className="absolute w-1 h-1 bg-cyan-400 rounded-full"
-                  style={{
-                    left: `${Math.random() * 100}%`,
-                    top: `${Math.random() * 100}%`,
-                  }}
-                  animate={{
-                    y: [0, -100, 0],
-                    opacity: [0, 1, 0],
-                  }}
-                  transition={{
-                    duration: 3 + Math.random() * 2,
-                    repeat: Infinity,
-                    delay: Math.random() * 2,
-                  }}
-                />
-              ))}
-            </div>
-
-            <div className="relative z-10 text-center">
-              <motion.div
-                animate={{
-                  scale: [1, 1.1, 1],
-                }}
-                transition={{ duration: 3, repeat: Infinity }}
-              >
-                <Sparkles className="w-16 h-16 text-cyan-400 mx-auto mb-8" />
-              </motion.div>
-              
-              <h2 className="text-4xl sm:text-5xl md:text-6xl font-black text-white mb-8 px-2">
-                See <span className="bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent">FLEET AI</span> in Action
-              </h2>
-
-              {/* Command Examples */}
-              <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto mt-12">
-                {[
-                  { cmd: "Show me all delayed shipments", response: "Found 3 delayed shipments. Vehicle 12 is 45min behind schedule..." },
-                  { cmd: "Optimize routes for minimal CO2", response: "Analyzed 47 routes. Reduced emissions by 18% through smart routing..." },
-                  { cmd: "Which vehicles need maintenance?", response: "Vehicle 8 requires service in 2 days. Predicted brake pad wear..." },
-                  { cmd: "Assign closest truck to new order", response: "Vehicle 23 assigned. ETA to pickup: 12 minutes. Route optimized..." }
-                ].map((example, idx) => (
-                  <motion.div
-                    key={idx}
-                    initial={{ opacity: 0, x: idx % 2 === 0 ? -30 : 30 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: idx * 0.2 }}
-                    whileHover={{ scale: 1.03 }}
-                    className="text-left p-6 rounded-2xl bg-slate-900/50 border border-slate-800 hover:border-cyan-500/50 transition-all"
-                  >
-                    <div className="flex items-start gap-3 mb-3">
-                      <motion.div
-                        animate={{ rotate: [0, 360] }}
-                        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                      >
-                        <Sparkles className="w-5 h-5 text-cyan-400 flex-shrink-0 mt-1" />
-                      </motion.div>
-                      <p className="text-white font-medium">"{example.cmd}"</p>
+                  <h3 className="text-2xl font-bold text-white mb-6">Example: Small Fleet Setup</h3>
+                  <div className="space-y-4 mb-6">
+                    <div className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10">
+                      <span className="text-slate-300">5 vehicles × €15</span>
+                      <span className="text-cyan-400 font-semibold">€75</span>
                     </div>
-                    <motion.div
-                      initial={{ width: 0 }}
-                      whileInView={{ width: "100%" }}
-                      viewport={{ once: true }}
-                      transition={{ delay: idx * 0.2 + 0.3, duration: 0.8 }}
-                      className="h-px bg-gradient-to-r from-cyan-500/50 to-transparent mb-3"
-                    />
-                    <p className="text-slate-400 text-sm leading-relaxed">{example.response}</p>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </section>
+                    <div className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10">
+                      <span className="text-slate-300">1 warehouse × €40</span>
+                      <span className="text-cyan-400 font-semibold">€40</span>
+                    </div>
+                    <div className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10">
+                      <span className="text-slate-300">2,000 FLEET AI commands (€5 per 100)</span>
+                      <span className="text-cyan-400 font-semibold">€100</span>
+                    </div>
+                    <div className="border-t border-slate-700/50 pt-4 flex items-center justify-between">
+                      <span className="text-white font-semibold">Monthly Total</span>
+                      <span className="text-3xl font-black bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent">
+                        €215
+                      </span>
+                    </div>
+                  </div>
+                </motion.div>
 
-      {/* Testimonial/Social Proof Section */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
+                  viewport={{ once: true }}
+                  className="text-center"
+                >
+                  <p className="text-slate-400 mb-6">Invoices are generated automatically every month. Cancel anytime.</p>
+                  <button
+                    onClick={() => base44.auth.redirectToLogin(createPageUrl("Dashboard"))}
+                    className="bg-gradient-to-r from-cyan-500 to-violet-500 text-white text-lg px-8 py-4 rounded-2xl font-semibold hover:shadow-lg hover:shadow-cyan-500/50 transition-all"
+                  >
+                    Get Started
+                  </button>
+                </motion.div>
+              </div>
+            </section>
+
+            {/* Technology Stack Section */}
+            <section className="relative py-20 sm:py-32 px-4 sm:px-6 z-10">
+              <div className="max-w-7xl mx-auto">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  className="text-center mb-20"
+                >
+                  <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-6 px-2">
+                    Built on
+                    <br />
+                    <span className="bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent">
+                      Cutting-Edge Technology
+                    </span>
+                  </h2>
+                  <p className="text-base sm:text-lg md:text-xl text-slate-400 max-w-3xl mx-auto px-2">
+                    Enterprise infrastructure that scales with your business
+                  </p>
+                </motion.div>
+
+                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {[
+                    { icon: Globe, title: "Multi-Signal Tracking", desc: "GPS, AIS, ADS-B, LoRa" },
+                    { icon: Brain, title: "Advanced AI Models", desc: "GPT-4, Claude, Mistral" },
+                    { icon: Shield, title: "Bank-Level Security", desc: "SOC 2, ISO 27001" },
+                    { icon: Zap, title: "Real-Time Processing", desc: "Sub-second updates" }
+                  ].map((tech, idx) => {
+                    const Icon = tech.icon;
+                    return (
+                      <motion.div
+                        key={idx}
+                        initial={{ opacity: 0, y: 30 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: idx * 0.1 }}
+                        whileHover={{ scale: 1.05, rotateY: 5 }}
+                        className="relative p-8 rounded-3xl bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl border border-white/10 hover:border-cyan-500/50 transition-all group"
+                      >
+                        <motion.div
+                          animate={{
+                            y: [0, -10, 0],
+                          }}
+                          transition={{ duration: 2, repeat: Infinity, delay: idx * 0.3 }}
+                        >
+                          <Icon className="w-12 h-12 text-cyan-400 mb-4" />
+                        </motion.div>
+                        <h3 className="text-xl font-bold text-white mb-2">{tech.title}</h3>
+                        <p className="text-slate-400 text-sm">{tech.desc}</p>
+
+                        <motion.div
+                          className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-violet-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity"
+                          animate={{
+                            scale: [1, 1.05, 1],
+                          }}
+                          transition={{ duration: 2, repeat: Infinity }}
+                        />
+                      </motion.div>
+                    );
+                  })}
+                </div>
+                </div>
+                </section>
+
+                {/* Interactive Demo Section */}
+                <section className="relative py-20 sm:py-32 px-4 sm:px-6 z-10">
+                <div className="max-w-7xl mx-auto">
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  className="relative rounded-[3rem] bg-gradient-to-br from-slate-900/50 to-slate-950/50 border border-cyan-500/30 p-12 md:p-16 overflow-hidden"
       <section className="relative py-20 sm:py-32 px-4 sm:px-6 z-10">
         <div className="max-w-7xl mx-auto">
           <motion.div
