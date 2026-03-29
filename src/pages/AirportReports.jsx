@@ -353,66 +353,66 @@ Return JSON:
     setExportingExcel(true);
     try {
       const rows = [
-        ["AIRPORT OPS CENTER — DAGLIG DRIFTSRAPPORT"],
-        [`Dato: ${moment(selectedDate).format("DD. MMMM YYYY")}`],
-        [`Genereret: ${moment().format("DD/MM/YYYY HH:mm")}`],
+        ["AIRPORT OPS CENTER — Daily Operations Report"],
+        [`Date: ${moment(selectedDate).format("DD. MMMM YYYY")}`],
+        [`Generated: ${moment().format("DD/MM/YYYY HH:mm")}`],
         [],
-        ["=== NØGLETAL ==="],
-        ["Metric", "Værdi"],
-        ["Total fly", metrics.todayFlights.length],
-        ["Til tiden", `${metrics.onTimeRate}%`],
-        ["Forsinkede fly", metrics.delayed.length],
-        ["Gns. forsinkelse (min)", metrics.avgDelay],
-        ["Aflyst", metrics.cancelled.length],
-        ["Total passagerer", metrics.totalPax],
-        ["Gns. PAX pr. fly", metrics.avgPax],
-        ["Security avg ventetid (min)", metrics.avgSecWait],
-        ["Security max ventetid (min)", metrics.maxSecWait],
-        ["Åbne security baner", metrics.openLanes],
-        ["Terminal energiforbrug (kWh/t)", metrics.totalEnergy],
-        ["Fly CO2 i dag (kg)", metrics.totalCO2],
-        ["Fuel uplift (kg)", metrics.totalFuel],
-        ["Ground tasks gennemført", `${metrics.completedTasks}/${tasks.length} (${metrics.taskRate}%)`],
-        ["Mishandlet bagage", `${metrics.mishandledBags} (${metrics.mishandledRate}%)`],
-        ["Personale udnyttelse", `${metrics.staffUtil}%`],
+        ["=== Key Indicators ==="],
+        ["Metric", "Value"],
+        ["Total Flights", metrics.todayFlights.length],
+        ["On-time", `${metrics.onTimeRate}%`],
+        ["Delayed Flights", metrics.delayed.length],
+        ["Avg Delay (min)", metrics.avgDelay],
+        ["Cancelled", metrics.cancelled.length],
+        ["Total Passengers", metrics.totalPax],
+        ["Avg PAX per Flight", metrics.avgPax],
+        ["Security Avg Wait (min)", metrics.avgSecWait],
+        ["Security Max Wait (min)", metrics.maxSecWait],
+        ["Open Security Lanes", metrics.openLanes],
+        ["Terminal Energy (kWh/h)", metrics.totalEnergy],
+        ["Flight CO2 Today (kg)", metrics.totalCO2],
+        ["Fuel Uplift (kg)", metrics.totalFuel],
+        ["Ground Tasks Completed", `${metrics.completedTasks}/${tasks.length} (${metrics.taskRate}%)`],
+        ["Mishandled Baggage", `${metrics.mishandledBags} (${metrics.mishandledRate}%)`],
+        ["Staff Utilization", `${metrics.staffUtil}%`],
         [],
-        ["=== ENERGIFORBRUG PR. SYSTEM ==="],
-        ["System", "kWh/t", "Besparelsespotentiale (kWh/t)"],
+        ["=== Energy Consumption by System ==="],
+        ["System", "kWh/h", "Savings Potential (kWh/h)"],
         ...ENERGY_SYSTEMS.map(e => [e.label, e.base_kwh, Math.round(e.base_kwh * 0.18)]),
         [],
-        ["=== TIMELIGT PASSAGERFLOW ==="],
-        ["Tidspunkt", "Passagerer", "Fly"],
+        ["=== Hourly Passenger Flow ==="],
+        ["Time", "Passengers", "Flights"],
         ...hourlyFlow.map(h => [h.time, h.pax, h.flights]),
         [],
-        ["=== FLYSTATUS FORDELING ==="],
-        ["Status", "Antal"],
+        ["=== Flight Status Distribution ==="],
+        ["Status", "Count"],
         ...statusBreakdown.map(s => [s.name, s.value]),
         [],
       ];
 
       if (aiReport) {
-        rows.push(["=== AI RAPPORT ==="], []);
-        rows.push(["Samlet vurdering", aiReport.performance_rating || "N/A"]);
-        rows.push(["Eksekutiv opsummering", aiReport.executive_summary || ""]);
+        rows.push(["=== AI Report ==="], []);
+        rows.push(["Overall Rating", aiReport.performance_rating || "N/A"]);
+        rows.push(["Executive Summary", aiReport.executive_summary || ""]);
         rows.push([]);
         if (aiReport.top_achievements?.length) {
-          rows.push(["TOP SUCCESER"]);
+          rows.push(["Top Achievements"]);
           aiReport.top_achievements.forEach((a, i) => rows.push([`${i+1}.`, a]));
           rows.push([]);
         }
         if (aiReport.key_issues?.length) {
-          rows.push(["NØGLEPROBLEMER"]);
+          rows.push(["Key Issues"]);
           aiReport.key_issues.forEach((a, i) => rows.push([`${i+1}.`, a]));
           rows.push([]);
         }
         if (aiReport.ai_recommendations?.length) {
-          rows.push(["AI ANBEFALINGER", "", "", ""]);
-          rows.push(["Kategori", "Anbefaling", "Prioritet", "Effekt"]);
+          rows.push(["AI Recommendations", "", "", ""]);
+          rows.push(["Category", "Recommendation", "Priority", "Impact"]);
           aiReport.ai_recommendations.forEach(r => rows.push([r.category, r.recommendation, r.priority, r.impact || ""]));
           rows.push([]);
         }
         if (aiReport.tomorrow_focus?.length) {
-          rows.push(["FOKUS I MORGEN"]);
+          rows.push(["Tomorrow's Focus"]);
           aiReport.tomorrow_focus.forEach((a, i) => rows.push([`${i+1}.`, a]));
         }
       }
@@ -440,9 +440,9 @@ Return JSON:
         <div>
           <div className="flex items-center gap-2 mb-1">
             <FileText className="w-5 h-5 text-violet-400" />
-            <h1 className="text-xl font-black tracking-widest text-white uppercase">Airport Driftsrapport</h1>
-          </div>
-          <p className="text-[10px] text-slate-500">Aggregeret data fra alle terminaler · PDF & Excel eksport</p>
+            <h1 className="text-xl font-black tracking-widest text-white uppercase">Airport Operations Report</h1>
+            </div>
+            <p className="text-[10px] text-slate-500">Aggregated data from all terminals • PDF & Excel export</p>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
           {/* Date picker */}
@@ -471,7 +471,7 @@ Return JSON:
 
       {isLoading ? (
         <div className="flex items-center justify-center py-24 gap-3 text-slate-500">
-          <Loader2 className="w-6 h-6 animate-spin" /><span>Indlæser driftsdata...</span>
+          <Loader2 className="w-6 h-6 animate-spin" /><span>Loading operations data...</span>
         </div>
       ) : (
         <>
@@ -537,7 +537,7 @@ Return JSON:
                     ))}
                   </div>
                 </>
-              ) : <p className="text-slate-600 text-xs text-center py-8">Ingen flydata</p>}
+              ) : <p className="text-slate-600 text-xs text-center py-8">No flight data</p>}
             </div>
           </div>
 
