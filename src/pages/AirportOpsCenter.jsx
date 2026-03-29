@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import AirportKPIBanner from "@/components/airport/AirportKPIBanner";
+import LiveFlightDashboard from "@/components/airport/LiveFlightDashboard";
 import FlightBoard from "@/components/airport/FlightBoard";
 import TurnaroundPanel from "@/components/airport/TurnaroundPanel";
 import SecurityMonitor from "@/components/airport/SecurityMonitor";
@@ -57,14 +58,14 @@ export default function AirportOpsCenter() {
     }).catch(() => setDataReady(true));
   }, []);
 
-  const qOpts = (key, fn) => ({ queryKey: [key], queryFn: fn, enabled: dataReady, refetchInterval: 30000 });
+  const qOpts = (key, fn) => ({ queryKey: [key, orgId], queryFn: fn, enabled: dataReady && !!orgId, refetchInterval: 30000 });
 
-  const { data: flights = [] } = useQuery(qOpts("flights_airport", () => base44.entities.Flight.list("-scheduled_time", 100)));
-  const { data: gates = [] } = useQuery(qOpts("airport_gates", () => base44.entities.AirportGate.list("-created_date", 50)));
-  const { data: securityLanes = [] } = useQuery(qOpts("security_lanes", () => base44.entities.SecurityLane.list("-created_date", 30)));
-  const { data: tasks = [] } = useQuery(qOpts("gh_tasks", () => base44.entities.GroundHandlingTask.list("-created_date", 200)));
-  const { data: bags = [] } = useQuery(qOpts("baggage_items", () => base44.entities.BaggageItem.list("-created_date", 500)));
-  const { data: staff = [] } = useQuery(qOpts("airport_staff", () => base44.entities.AirportStaff.list("-created_date", 200)));
+  const { data: flights = [] } = useQuery(qOpts("aoc_flights", () => base44.entities.Flight.filter({ organization_id: orgId }, "-created_date", 200)));
+  const { data: gates = [] } = useQuery(qOpts("aoc_gates", () => base44.entities.AirportGate.filter({ organization_id: orgId }, "gate_code", 80)));
+  const { data: securityLanes = [] } = useQuery(qOpts("aoc_lanes", () => base44.entities.SecurityLane.filter({ organization_id: orgId }, "name", 30)));
+  const { data: tasks = [] } = useQuery(qOpts("aoc_tasks", () => base44.entities.GroundHandlingTask.filter({ organization_id: orgId }, "-created_date", 200)));
+  const { data: bags = [] } = useQuery(qOpts("aoc_bags", () => base44.entities.BaggageItem.filter({ organization_id: orgId }, "-created_date", 500)));
+  const { data: staff = [] } = useQuery(qOpts("aoc_staff", () => base44.entities.AirportStaff.filter({ organization_id: orgId }, "-created_date", 200)));
 
   const activeFlights = flights.filter(f => !["scheduled", "completed", "cancelled"].includes(f.status));
   const delayedFlights = flights.filter(f => (f.delay_minutes || 0) > 15);
@@ -144,9 +145,7 @@ export default function AirportOpsCenter() {
       {/* Content */}
       <div className="flex-1 p-4 overflow-auto">
         {activeTab === "operations" && (
-          <div className="space-y-4">
-            <FlightBoard flights={flights} gates={gates} onSelect={setSelectedFlight} />
-          </div>
+          <LiveFlightDashboard orgId={orgId} />
         )}
 
         {activeTab === "ground" && (
