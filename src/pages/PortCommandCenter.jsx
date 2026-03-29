@@ -11,6 +11,7 @@ import PortScenarioEngine from "@/components/port/PortScenarioEngine";
 import PortAlertTicker from "@/components/port/PortAlertTicker";
 import PortNowPanel from "@/components/port/PortNowPanel";
 import PortFleetManager from "@/components/port/PortFleetManager";
+import LiveVesselDashboard from "@/components/port/LiveVesselDashboard";
 import { Ship, Anchor, Cpu, BarChart3, AlertTriangle, Leaf, Zap, Plus, Package, Map, Activity, GitBranch, Layers } from "lucide-react";
 import CraneSchedulingAI from "../components/port/CraneSchedulingAI";
 import ContainerTracker from "../components/port/ContainerTracker";
@@ -200,7 +201,7 @@ export default function PortCommandCenter() {
             <PortAlertTicker portCalls={portCalls} cranes={cranes} yardZones={yardZones} gates={gates} />
             <div className="flex gap-4">
               <div className="flex-1 min-w-0">
-                <PortBerthBoard berths={berths} portCalls={portCalls} vessels={vessels} cranes={cranes} onSelectPortCall={setSelectedPortCall} />
+                <LiveVesselDashboard orgId={orgId} portCalls={portCalls} vessels={vessels} />
               </div>
               <PortNowPanel portCalls={portCalls} cranes={cranes} yardZones={yardZones} gates={gates} />
             </div>
