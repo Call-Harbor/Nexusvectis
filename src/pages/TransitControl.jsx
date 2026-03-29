@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
+import AddonAccessGate from "@/components/shared/AddonAccessGate";
 import LiveTransitMap from "@/components/transit/LiveTransitMap";
 import NetworkDesignStudio from "@/components/transit/NetworkDesignStudio";
 import ScenarioSimulator from "@/components/transit/ScenarioSimulator";
@@ -60,7 +61,7 @@ const TABS = [
   { id: "advanced-ai", label: "ADVANCED", icon: Sparkles },
 ];
 
-export default function TransitControl() {
+function TransitControlContent() {
   const [selectedLine, setSelectedLine] = useState(null);
   const [selectedBus, setSelectedBus] = useState(null);
   const [activeTab, setActiveTab] = useState("operations");
@@ -424,5 +425,19 @@ export default function TransitControl() {
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+export default function TransitControl() {
+  return (
+    <AddonAccessGate
+      addonKey="addon_transit_control"
+      icon={Bus}
+      title="Transit Control"
+      description="AI-powered transit operations command center with real-time bus tracking, demand forecasting, crowding prediction, and network optimization."
+      color="#8b5cf6"
+    >
+      <TransitControlContent />
+    </AddonAccessGate>
   );
 }
