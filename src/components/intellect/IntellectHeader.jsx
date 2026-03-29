@@ -6,7 +6,7 @@ import {
   Brain, Sparkles, Zap, Activity, LayoutDashboard, Search,
   MessageSquare, FileText, BarChart3, Truck, AlertTriangle, Route,
   Package, Warehouse, Users, Satellite, ChevronDown, GraduationCap, FileCode, Globe, Image, X, Wrench, HardDrive, ListTodo, MonitorPlay, Building2, Newspaper, Shield, Cpu, Calculator, Store,
-  Map, Leaf, Car, ClipboardList, Bell, Bus, Layers, BarChart2, Settings, TrendingUp, BookOpen, Key, MonitorCheck, PieChart, Navigation, MapPin
+  Map, Leaf, Car, ClipboardList, Bell, Bus, Layers, BarChart2, Settings, TrendingUp, BookOpen, Key, MonitorCheck, PieChart, Navigation, MapPin, Plane, Ship
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -57,6 +57,8 @@ const APP_CATEGORIES = [
     ['transit_console', Bus, '🚌 Transit Control'],
     ['scenariostudio', Layers, '🎬 Scenario Studio'],
     ['nexus_orbit', Satellite, '🛰️ Nexus Orbit'],
+    ['airport_ops', Plane, '✈️ Airport Ops Center'],
+    ['port_command', Ship, '🚢 Port Command Center'],
   ]],
   ['Maintenance & Operations', [
     ['maintenance_management', Wrench, 'Maintenance'],
