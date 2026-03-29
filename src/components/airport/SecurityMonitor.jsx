@@ -33,7 +33,7 @@ function LaneCard({ lane }) {
         </div>
         <div className="flex items-center gap-3">
           <div className="text-right">
-            <p className="text-[8px] text-slate-600 uppercase tracking-widest">VENTETID</p>
+            <p className="text-[8px] text-slate-600 uppercase tracking-widest">WAIT TIME</p>
             <p className="text-lg font-black leading-none font-mono" style={{ color }}>{wait}m</p>
           </div>
         </div>
@@ -42,8 +42,8 @@ function LaneCard({ lane }) {
       {/* Queue bar */}
       <div className="mb-2">
         <div className="flex justify-between items-center mb-1">
-          <span className="text-[8px] text-slate-600 uppercase tracking-widest">KØ: {lane.queue_length || 0} pax</span>
-          <span className="text-[8px] font-bold" style={{ color }}>{Math.round(queuePct)}% kapacitet</span>
+          <span className="text-[8px] text-slate-600 uppercase tracking-widest">QUEUE: {lane.queue_length || 0} pax</span>
+            <span className="text-[8px] font-bold" style={{ color }}>{Math.round(queuePct)}% capacity</span>
         </div>
         <div className="h-2 rounded-full bg-slate-800 overflow-hidden">
           <div className="h-full rounded-full transition-all duration-500" style={{ width: `${queuePct}%`, background: color }} />
@@ -53,11 +53,11 @@ function LaneCard({ lane }) {
       {/* Stats row */}
       <div className="grid grid-cols-3 gap-2 mt-2">
         <div className="text-center px-2 py-1.5 rounded-lg" style={{ background: "rgba(6,182,212,0.08)" }}>
-          <p className="text-[7px] text-slate-600 uppercase tracking-widest">Gennemsats/t</p>
+          <p className="text-[7px] text-slate-600 uppercase tracking-widest">Throughput/h</p>
           <p className="text-sm font-black text-cyan-400">{lane.throughput_per_hour || 180}</p>
         </div>
         <div className="text-center px-2 py-1.5 rounded-lg" style={{ background: staffed ? "rgba(16,185,129,0.08)" : "rgba(244,63,94,0.08)" }}>
-          <p className="text-[7px] text-slate-600 uppercase tracking-widest">Personal</p>
+          <p className="text-[7px] text-slate-600 uppercase tracking-widest">Staff</p>
           <p className="text-sm font-black" style={{ color: staffed ? "#10b981" : "#f43f5e" }}>{lane.staff_assigned || 0}/{lane.staff_required || 2}</p>
         </div>
         <div className="text-center px-2 py-1.5 rounded-lg" style={{ background: "rgba(100,116,139,0.08)" }}>
@@ -100,14 +100,14 @@ export default function SecurityMonitor({ securityLanes, staff }) {
           <div className="flex items-center gap-2">
             {metrics.slaBreaches > 0 && (
               <span className="flex items-center gap-1 text-[8px] font-black px-2 py-1 rounded-lg"
-                style={{ background: "rgba(244,63,94,0.12)", color: "#f43f5e", border: "1px solid rgba(244,63,94,0.25)" }}>
-                <AlertTriangle className="w-2.5 h-2.5" />{metrics.slaBreaches} SLA BRUD
+              style={{ background: "rgba(244,63,94,0.12)", color: "#f43f5e", border: "1px solid rgba(244,63,94,0.25)" }}>
+              <AlertTriangle className="w-2.5 h-2.5" />{metrics.slaBreaches} SLA BREACH
               </span>
             )}
             {metrics.understaffed > 0 && (
               <span className="flex items-center gap-1 text-[8px] font-black px-2 py-1 rounded-lg"
-                style={{ background: "rgba(245,158,11,0.12)", color: "#f59e0b", border: "1px solid rgba(245,158,11,0.25)" }}>
-                <Users className="w-2.5 h-2.5" />{metrics.understaffed} UNDERBESAT
+              style={{ background: "rgba(245,158,11,0.12)", color: "#f59e0b", border: "1px solid rgba(245,158,11,0.25)" }}>
+              <Users className="w-2.5 h-2.5" />{metrics.understaffed} UNDERSTAFFED
               </span>
             )}
           </div>
@@ -116,11 +116,11 @@ export default function SecurityMonitor({ securityLanes, staff }) {
         {/* KPI Strip */}
         <div className="grid grid-cols-5 gap-2">
           {[
-            { label: "Kø Total", val: metrics.totalQueue, color: getColor(metrics.avgWait), sub: "pax" },
-            { label: "Avg Ventetid", val: `${metrics.avgWait}m`, color: getColor(metrics.avgWait), sub: `max ${metrics.maxWait}m` },
-            { label: "Åbne Baner", val: `${metrics.openLanes}/${securityLanes.length}`, color: "#06b6d4", sub: "aktive" },
-            { label: "Gennemsats", val: metrics.totalThroughput, color: "#8b5cf6", sub: "pax/t" },
-            { label: "Sec. Personal", val: securityStaff.filter(s => s.status === "on_duty" || s.status === "assigned").length, color: "#10b981", sub: `af ${securityStaff.length}` },
+            { label: "Queue Total", val: metrics.totalQueue, color: getColor(metrics.avgWait), sub: "pax" },
+              { label: "Avg Wait", val: `${metrics.avgWait}m`, color: getColor(metrics.avgWait), sub: `max ${metrics.maxWait}m` },
+              { label: "Open Lanes", val: `${metrics.openLanes}/${securityLanes.length}`, color: "#06b6d4", sub: "active" },
+              { label: "Throughput", val: metrics.totalThroughput, color: "#8b5cf6", sub: "pax/h" },
+              { label: "Sec. Staff", val: securityStaff.filter(s => s.status === "on_duty" || s.status === "assigned").length, color: "#10b981", sub: `of ${securityStaff.length}` },
           ].map(k => (
             <div key={k.label} className="text-center px-2 py-2 rounded-xl"
               style={{ background: `${k.color}09`, border: `1px solid ${k.color}20` }}>
@@ -137,8 +137,8 @@ export default function SecurityMonitor({ securityLanes, staff }) {
         {securityLanes.length === 0 && (
           <div className="flex flex-col items-center justify-center py-12 text-slate-700">
             <Shield className="w-8 h-8 mb-3" />
-            <p className="text-sm font-bold">Ingen sikkerhedsbaner konfigureret</p>
-            <p className="text-xs mt-1">Gå til Infrastructure for at tilføje baner</p>
+            <p className="text-sm font-bold">No security lanes configured</p>
+            <p className="text-xs mt-1">Go to Infrastructure to add lanes</p>
           </div>
         )}
         {securityLanes.map(lane => <LaneCard key={lane.id} lane={lane} />)}
@@ -148,7 +148,7 @@ export default function SecurityMonitor({ securityLanes, staff }) {
       {securityStaff.length > 0 && (
         <div className="px-4 pb-4 border-t border-slate-800/40 pt-3">
           <p className="text-[8px] tracking-widest uppercase text-slate-600 mb-2 flex items-center gap-1.5">
-            <Users className="w-3 h-3" /> SIKKERHEDSPERSONALE
+            <Users className="w-3 h-3" /> SECURITY STAFF
           </p>
           <div className="flex flex-wrap gap-1.5">
             {securityStaff.slice(0, 16).map(s => {

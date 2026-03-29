@@ -24,7 +24,7 @@ function TimelineBar({ f }) {
 
   return (
     <div className="space-y-2">
-      <p className="text-[9px] font-black uppercase tracking-widest text-slate-500">TIDSLINJE</p>
+      <p className="text-[9px] font-black uppercase tracking-widest text-slate-500">TIMELINE</p>
       <div className="flex items-center gap-2">
         {steps.map((s, i) => (
           <div key={i} className="flex items-center gap-2">
@@ -54,14 +54,14 @@ export default function FlightDetailPanel({ flight, onClose }) {
   const cfg = STATUS_CFG[flight.status] || STATUS_CFG.scheduled;
 
   const fields = [
-    { label: "FLYSELSKAB", val: flight.airline },
-    { label: "FLY-NR", val: flight.flight_number },
-    { label: "GATE", val: flight.gate },
-    { label: "FLY-TYPE", val: flight.aircraft_type },
-    { label: "PASSAGERER", val: flight.pax_total },
-    { label: "FORSINKELSE", val: flight.delay_minutes ? `${flight.delay_minutes} min` : "Ingen" },
-    { label: "OPRINDELSE", val: flight.origin },
-    { label: "DESTINATION", val: flight.destination },
+    { label: "AIRLINE", val: flight.airline },
+     { label: "FLIGHT #", val: flight.flight_number },
+     { label: "GATE", val: flight.gate },
+     { label: "AIRCRAFT", val: flight.aircraft_type },
+     { label: "PASSENGERS", val: flight.pax_total },
+     { label: "DELAY", val: flight.delay_minutes ? `${flight.delay_minutes} min` : "None" },
+     { label: "ORIGIN", val: flight.origin },
+     { label: "DESTINATION", val: flight.destination },
     { label: "SCH DEP", val: flight.scheduled_departure ? moment(flight.scheduled_departure).format("HH:mm DD/MM") : null },
     { label: "SCH ARR", val: flight.scheduled_arrival ? moment(flight.scheduled_arrival).format("HH:mm DD/MM") : null },
     { label: "EST DEP", val: flight.estimated_departure ? moment(flight.estimated_departure).format("HH:mm DD/MM") : null },
@@ -134,11 +134,11 @@ export default function FlightDetailPanel({ flight, onClose }) {
               <MapPin className="w-4 h-4 text-cyan-400" />
               <div>
                 <p className="text-[9px] text-slate-500 uppercase tracking-widest">GATE</p>
-                <p className="text-lg font-black font-mono" style={{ color: "#06b6d4" }}>{flight.gate}</p>
-              </div>
-              {flight.pax_total && (
-                <div className="ml-4">
-                  <p className="text-[9px] text-slate-500 uppercase tracking-widest">PASSAGERER</p>
+                 <p className="text-lg font-black font-mono" style={{ color: "#06b6d4" }}>{flight.gate}</p>
+                </div>
+                {flight.pax_total && (
+                 <div className="ml-4">
+                   <p className="text-[9px] text-slate-500 uppercase tracking-widest">PASSENGERS</p>
                   <p className="text-lg font-black font-mono text-white">{flight.pax_total}</p>
                 </div>
               )}

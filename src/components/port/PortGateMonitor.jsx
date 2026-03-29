@@ -13,7 +13,7 @@ export default function PortGateMonitor({ gates, railSlots }) {
         {gates.length === 0 ? (
           <div className="text-center py-16 rounded-xl" style={{ border: "1px solid rgba(245,158,11,0.1)", color: "rgba(100,116,139,0.4)" }}>
             <Truck className="w-10 h-10 mx-auto mb-3 opacity-20" />
-            <p className="text-xs tracking-widest">Ingen gates konfigureret</p>
+            <p className="text-xs tracking-widest">No gates configured</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -34,24 +34,24 @@ export default function PortGateMonitor({ gates, railSlots }) {
                   </div>
                   <div className="grid grid-cols-3 gap-3 mb-3">
                     <div>
-                      <p className="text-[7px] uppercase tracking-widest" style={{ color: "rgba(100,116,139,0.4)" }}>KØ</p>
+                      <p className="text-[7px] uppercase tracking-widest" style={{ color: "rgba(100,116,139,0.4)" }}>QUEUE</p>
                       <p className="text-xl font-bold" style={{ color: queueColor }}>{gate.queue_trucks}</p>
                       <p className="text-[7px]" style={{ color: "rgba(100,116,139,0.4)" }}>trucks</p>
                     </div>
                     <div>
                       <p className="text-[7px] uppercase tracking-widest" style={{ color: "rgba(100,116,139,0.4)" }}>LANES</p>
                       <p className="text-xl font-bold text-white">{gate.lanes_open}/{gate.lanes_total}</p>
-                      <p className="text-[7px]" style={{ color: "rgba(100,116,139,0.4)" }}>åbne</p>
+                      <p className="text-[7px]" style={{ color: "rgba(100,116,139,0.4)" }}>open</p>
                     </div>
                     <div>
-                      <p className="text-[7px] uppercase tracking-widest" style={{ color: "rgba(100,116,139,0.4)" }}>I DAG</p>
+                      <p className="text-[7px] uppercase tracking-widest" style={{ color: "rgba(100,116,139,0.4)" }}>TODAY</p>
                       <p className="text-xl font-bold" style={{ color: "#f59e0b" }}>{gate.trucks_today || 0}</p>
                       <p className="text-[7px]" style={{ color: "rgba(100,116,139,0.4)" }}>trucks</p>
                     </div>
                   </div>
                   <div>
                     <div className="flex justify-between mb-1">
-                      <p className="text-[7px] uppercase tracking-widest" style={{ color: "rgba(100,116,139,0.4)" }}>LANE KAPACITET</p>
+                      <p className="text-[7px] uppercase tracking-widest" style={{ color: "rgba(100,116,139,0.4)" }}>LANE CAPACITY</p>
                       <p className="text-[7px]" style={{ color: "#f59e0b" }}>{laneUtil}%</p>
                     </div>
                     <div className="h-1.5 rounded-full bg-slate-800 overflow-hidden">
@@ -60,8 +60,8 @@ export default function PortGateMonitor({ gates, railSlots }) {
                   </div>
                   {gate.avg_processing_min > 0 && (
                     <p className="text-[8px] mt-2" style={{ color: "rgba(100,116,139,0.5)" }}>
-                      Gns. behandlingstid: <span className="text-white font-bold">{gate.avg_processing_min} min</span>
-                      {gate.anpr_enabled && <span className="ml-2" style={{ color: "#10b981" }}>· ANPR aktiv</span>}
+                      Avg processing: <span className="text-white font-bold">{gate.avg_processing_min} min</span>
+                      {gate.anpr_enabled && <span className="ml-2" style={{ color: "#10b981" }}>· ANPR active</span>}
                     </p>
                   )}
                 </div>
@@ -73,11 +73,11 @@ export default function PortGateMonitor({ gates, railSlots }) {
 
       {/* Rail Section */}
       <div className="space-y-4">
-        <h2 className="text-[10px] font-bold tracking-[0.3em] uppercase" style={{ color: "#10b981" }}>JERNBANE SLOTS</h2>
+        <h2 className="text-[10px] font-bold tracking-[0.3em] uppercase" style={{ color: "#10b981" }}>RAIL SLOTS</h2>
         {upcomingRail.length === 0 ? (
           <div className="text-center py-16 rounded-xl" style={{ border: "1px solid rgba(16,185,129,0.1)", color: "rgba(100,116,139,0.4)" }}>
             <Train className="w-10 h-10 mx-auto mb-3 opacity-20" />
-            <p className="text-xs tracking-widest">Ingen togslots planlagt</p>
+            <p className="text-xs tracking-widest">No rail slots planned</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -91,7 +91,7 @@ export default function PortGateMonitor({ gates, railSlots }) {
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <Train className="w-4 h-4" style={{ color: statusColor }} />
-                      <p className="text-sm font-bold text-white">{slot.train_id || "Tog"} · Spor {slot.track}</p>
+                      <p className="text-sm font-bold text-white">{slot.train_id || "Train"} · Track {slot.track}</p>
                     </div>
                     <div className="flex items-center gap-2">
                       {slot.direction === "inbound" ? <ArrowRight className="w-3 h-3" style={{ color: "#10b981" }} /> : <ArrowLeft className="w-3 h-3" style={{ color: "#f43f5e" }} />}
@@ -101,15 +101,15 @@ export default function PortGateMonitor({ gates, railSlots }) {
                   </div>
                   <div className="grid grid-cols-3 gap-3 mb-2 text-center">
                     <div>
-                      <p className="text-[7px] uppercase tracking-widest" style={{ color: "rgba(100,116,139,0.4)" }}>ANKOMST</p>
+                      <p className="text-[7px] uppercase tracking-widest" style={{ color: "rgba(100,116,139,0.4)" }}>ARRIVAL</p>
                       <p className="text-[9px] font-bold text-white">{arrDate ? arrDate.toLocaleTimeString("da-DK", { hour: "2-digit", minute: "2-digit" }) : "–"}</p>
                     </div>
                     <div>
-                      <p className="text-[7px] uppercase tracking-widest" style={{ color: "rgba(100,116,139,0.4)" }}>AFGANG</p>
+                      <p className="text-[7px] uppercase tracking-widest" style={{ color: "rgba(100,116,139,0.4)" }}>DEPARTURE</p>
                       <p className="text-[9px] font-bold text-white">{depDate ? depDate.toLocaleTimeString("da-DK", { hour: "2-digit", minute: "2-digit" }) : "–"}</p>
                     </div>
                     <div>
-                      <p className="text-[7px] uppercase tracking-widest" style={{ color: "rgba(100,116,139,0.4)" }}>VOGNE</p>
+                      <p className="text-[7px] uppercase tracking-widest" style={{ color: "rgba(100,116,139,0.4)" }}>WAGONS</p>
                       <p className="text-[9px] font-bold text-white">{slot.wagons || "–"}</p>
                     </div>
                   </div>
@@ -124,7 +124,7 @@ export default function PortGateMonitor({ gates, railSlots }) {
                       </div>
                     </div>
                   )}
-                  {slot.operator && <p className="text-[7px] mt-1" style={{ color: "rgba(100,116,139,0.4)" }}>Operatør: {slot.operator}</p>}
+                  {slot.operator && <p className="text-[7px] mt-1" style={{ color: "rgba(100,116,139,0.4)" }}>Operator: {slot.operator}</p>}
                 </div>
               );
             })}

@@ -86,7 +86,7 @@ Return JSON with:
             </button>
           </div>
           <div className="space-y-1.5">
-            {cranes.length === 0 && <p className="text-slate-600 text-xs text-center py-4">Ingen kraner registreret</p>}
+            {cranes.length === 0 && <p className="text-slate-600 text-xs text-center py-4">No cranes registered</p>}
             {cranes.map(c => {
               const isSelected = selectedCrane?.id === c.id;
               return (
@@ -116,7 +116,7 @@ Return JSON with:
 
         {/* Crane detail */}
         <div className="rounded-xl p-4" style={{ border: "1px solid rgba(139,92,246,0.15)", background: "rgba(0,10,25,0.6)" }}>
-          <p className="text-[9px] font-bold tracking-widest uppercase text-violet-400 mb-3">CRANE DETALJER</p>
+          <p className="text-[9px] font-bold tracking-widest uppercase text-violet-400 mb-3">CRANE DETAILS</p>
           {selectedCrane ? (
             <div className="space-y-2 text-[10px]">
               <div className="flex items-center gap-3 mb-3">
@@ -137,7 +137,7 @@ Return JSON with:
                 { label: "Outreach (m)", val: selectedCrane.outreach_m || "—" },
                 { label: "Max lift (t)", val: selectedCrane.max_lift_tons || "—" },
                 { label: "Next maintenance", val: selectedCrane.next_maintenance || "—" },
-                { label: "Berth", val: berthMap[selectedCrane.berth_id]?.name || "Ikke tilknyttet" },
+                { label: "Berth", val: berthMap[selectedCrane.berth_id]?.name || "Unassigned" },
               ].map(row => (
                 <div key={row.label} className="flex justify-between">
                   <span className="text-slate-500">{row.label}</span>
@@ -145,33 +145,33 @@ Return JSON with:
                 </div>
               ))}
             </div>
-          ) : <p className="text-slate-600 text-xs text-center py-8">Vælg en kran for detaljer</p>}
+          ) : <p className="text-slate-600 text-xs text-center py-8">Select a crane for details</p>
         </div>
 
         {/* AI result */}
         <div className="rounded-xl p-4" style={{ border: "1px solid rgba(6,182,212,0.15)", background: "rgba(0,10,25,0.6)" }}>
-          <p className="text-[9px] font-bold tracking-widest uppercase text-cyan-400 mb-3">AI SCHEDULE RESULTAT</p>
+          <p className="text-[9px] font-bold tracking-widest uppercase text-cyan-400 mb-3">AI SCHEDULE RESULT</p>
           {loading && <div className="flex items-center justify-center py-10"><Loader2 className="w-5 h-5 text-cyan-400 animate-spin" /></div>}
-          {!loading && !schedule && <p className="text-slate-600 text-xs text-center py-8">Klik "AI Schedule" for at optimere</p>}
+          {!loading && !schedule && <p className="text-slate-600 text-xs text-center py-8">Click "AI Schedule" to optimize</p>
           {schedule && !loading && (
             <div className="space-y-3">
               <div className="rounded-lg p-3 text-center" style={{ border: "1px solid rgba(16,185,129,0.3)", background: "rgba(16,185,129,0.08)" }}>
-                <p className="text-[8px] uppercase text-slate-500">Throughput gevinst</p>
+                <p className="text-[8px] uppercase text-slate-500">Throughput Gain</p>
                 <p className="text-3xl font-bold text-emerald-400">+{schedule.overall_throughput_gain_pct}%</p>
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div className="rounded-lg p-2 text-center" style={{ border: "1px solid rgba(6,182,212,0.2)", background: "rgba(6,182,212,0.06)" }}>
-                  <p className="text-[7px] uppercase text-slate-500">Reposition. sparet</p>
+                  <p className="text-[7px] uppercase text-slate-500">Repositioning Saved</p>
                   <p className="text-lg font-bold text-cyan-400">{schedule.repositioning_savings}</p>
                 </div>
                 <div className="rounded-lg p-2 text-center" style={{ border: "1px solid rgba(16,185,129,0.2)", background: "rgba(16,185,129,0.06)" }}>
-                  <p className="text-[7px] uppercase text-slate-500">Energi sparet kWh</p>
+                  <p className="text-[7px] uppercase text-slate-500">Energy Saved kWh</p>
                   <p className="text-lg font-bold text-emerald-400">{schedule.energy_savings_kwh}</p>
                 </div>
               </div>
               {schedule.bottlenecks?.length > 0 && (
                 <div>
-                  <p className="text-[8px] uppercase tracking-widest text-red-400 mb-1">FLASKEHALSE</p>
+                  <p className="text-[8px] uppercase tracking-widest text-red-400 mb-1">BOTTLENECKS</p>
                   {schedule.bottlenecks.map((b, i) => (
                     <p key={i} className="text-[9px] text-slate-300 mb-0.5 flex gap-1"><AlertTriangle className="w-3 h-3 text-red-400 flex-shrink-0 mt-0.5" />{b}</p>
                   ))}
@@ -179,7 +179,7 @@ Return JSON with:
               )}
               {schedule.sequence_optimizations?.length > 0 && (
                 <div>
-                  <p className="text-[8px] uppercase tracking-widest text-emerald-400 mb-1">SEKVENS OPTIMERINGER</p>
+                  <p className="text-[8px] uppercase tracking-widest text-emerald-400 mb-1">SEQUENCE OPTIMIZATIONS</p>
                   {schedule.sequence_optimizations.map((s, i) => (
                     <p key={i} className="text-[9px] text-slate-300 mb-0.5 flex gap-1"><CheckCircle className="w-3 h-3 text-emerald-400 flex-shrink-0 mt-0.5" />{s}</p>
                   ))}
@@ -187,7 +187,7 @@ Return JSON with:
               )}
               {schedule.breakdown_contingency && (
                 <div className="rounded-lg p-2.5" style={{ border: "1px solid rgba(245,158,11,0.2)", background: "rgba(245,158,11,0.06)" }}>
-                  <p className="text-[8px] uppercase text-amber-400 mb-1">BREAKDOWN BEREDSKAB</p>
+                  <p className="text-[8px] uppercase text-amber-400 mb-1">BREAKDOWN CONTINGENCY</p>
                   <p className="text-[9px] text-slate-300">{schedule.breakdown_contingency}</p>
                 </div>
               )}
@@ -199,7 +199,7 @@ Return JSON with:
       {/* Assignments */}
       {schedule?.assignments?.length > 0 && (
         <div className="rounded-xl p-4" style={{ border: "1px solid rgba(6,182,212,0.15)", background: "rgba(0,10,25,0.6)" }}>
-          <p className="text-[9px] font-bold tracking-widest uppercase text-cyan-400 mb-3">OPTIMERET KRAN-TILDELING</p>
+          <p className="text-[9px] font-bold tracking-widest uppercase text-cyan-400 mb-3">OPTIMIZED CRANE ASSIGNMENTS</p>
           <div className="grid grid-cols-4 gap-2">
             {schedule.assignments.map((a, i) => (
               <div key={i} className="rounded-xl p-3" style={{ background: "rgba(15,23,42,0.7)", border: `1px solid ${prioColor[a.priority] || "#64748b"}25` }}>

@@ -57,14 +57,14 @@ export default function StaffResourcePanel({ staff }) {
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <Users className="w-4 h-4 text-emerald-400" />
-            <h2 className="text-[10px] font-black tracking-[0.3em] uppercase text-emerald-400">PERSONALE & RESSOURCER</h2>
+            <h2 className="text-[10px] font-black tracking-[0.3em] uppercase text-emerald-400">STAFF & RESOURCES</h2>
           </div>
           <div className="flex items-center gap-1.5">
             {["overview", "by_role", "assignments"].map(v => (
               <button key={v} onClick={() => setView(v)}
                 className="px-2.5 py-1 rounded text-[8px] font-black uppercase tracking-widest transition-all"
                 style={{ background: view === v ? "rgba(16,185,129,0.2)" : "transparent", color: view === v ? "#10b981" : "#334155", border: `1px solid ${view === v ? "rgba(16,185,129,0.4)" : "rgba(30,41,59,0.6)"}` }}>
-                {v === "overview" ? "OVERSIGT" : v === "by_role" ? "ROLLER" : "TILDELT"}
+                {v === "overview" ? "OVERVIEW" : v === "by_role" ? "ROLES" : "ASSIGNED"}
               </button>
             ))}
           </div>
@@ -74,7 +74,7 @@ export default function StaffResourcePanel({ staff }) {
         <div className="grid grid-cols-5 gap-2">
           <div className="col-span-1 rounded-xl p-2.5 flex flex-col items-center justify-center"
             style={{ background: "rgba(16,185,129,0.08)", border: "1px solid rgba(16,185,129,0.2)" }}>
-            <p className="text-[7px] text-slate-600 uppercase tracking-widest mb-0.5">UDNYTTELSE</p>
+            <p className="text-[7px] text-slate-600 uppercase tracking-widest mb-0.5">UTILIZATION</p>
             <p className="text-2xl font-black" style={{ color: utilization > 70 ? "#10b981" : utilization > 40 ? "#f59e0b" : "#f43f5e" }}>{utilization}%</p>
             <div className="w-full h-1 rounded-full bg-slate-800 mt-1 overflow-hidden">
               <div className="h-full rounded-full" style={{ width: `${utilization}%`, background: utilization > 70 ? "#10b981" : "#f59e0b" }} />
@@ -99,7 +99,7 @@ export default function StaffResourcePanel({ staff }) {
             style={{ background: "rgba(244,63,94,0.08)", border: "1px solid rgba(244,63,94,0.25)" }}>
             <AlertTriangle className="w-3.5 h-3.5 text-red-400 flex-shrink-0" />
             <p className="text-[9px] text-red-300 font-bold">
-              Ingen aktiv besætning: {criticalRoles.map(r => r.replace(/_/g, " ")).join(" · ")}
+              No active crew: {criticalRoles.map(r => r.replace(/_/g, " ")).join(" · ")}
             </p>
           </div>
         )}
@@ -109,7 +109,7 @@ export default function StaffResourcePanel({ staff }) {
         {staff.length === 0 && (
           <div className="flex flex-col items-center justify-center py-12 text-slate-700">
             <Users className="w-8 h-8 mb-3" />
-            <p className="text-sm font-bold">Ingen personaleregistreringer</p>
+            <p className="text-sm font-bold">No staff records</p>
           </div>
         )}
 
@@ -159,7 +159,7 @@ export default function StaffResourcePanel({ staff }) {
                       <p className="text-[10px] font-black capitalize" style={{ color }}>{role.replace(/_/g, " ")}</p>
                     </div>
                     <div className="flex items-center gap-3">
-                      <span className="text-[9px] font-bold text-slate-400">{active}/{members.length} aktive</span>
+                      <span className="text-[9px] font-bold text-slate-400">{active}/{members.length} active</span>
                       <span className="text-[9px] font-black" style={{ color }}>{utilPct}%</span>
                     </div>
                   </div>
@@ -187,7 +187,7 @@ export default function StaffResourcePanel({ staff }) {
         {view === "assignments" && (
           <div className="space-y-1.5">
             {staff.filter(s => s.assigned_to).length === 0 && (
-              <p className="text-slate-600 text-xs text-center py-6">Ingen tildelte medarbejdere</p>
+              <p className="text-slate-600 text-xs text-center py-6">No assigned staff</p>
             )}
             {staff.filter(s => s.assigned_to).map(s => {
               const rc = ROLE_COLOR[s.role] || "#64748b";
