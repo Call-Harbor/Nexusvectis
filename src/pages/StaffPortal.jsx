@@ -246,21 +246,35 @@ export default function StaffPortal() {
   const [orgId, setOrgId] = useState(null);
   const [org, setOrg] = useState(null);
   const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [time, setTime] = useState(new Date());
   const [showRequestModal, setShowRequestModal] = useState(false);
   const { log, add: logAdd } = useShiftLog();
 
   useEffect(() => {
-    base44.auth.me().then(async u => {
-      setUser(u);
-      if (u?.organization_id) {
-        setOrgId(u.organization_id);
-        const orgs = await base44.entities.Organization.filter({ id: u.organization_id });
-        setOrg(orgs[0] || null);
+    const loadUser = async () => {
+      try {
+        const isAuth = await base44.auth.isAuthenticated();
+        if (!isAuth) {
+          setUser(null);
+          setIsLoading(false);
+          return;
+        }
+        
+        const u = await base44.auth.me();
+        setUser(u);
+        if (u?.organization_id) {
+          setOrgId(u.organization_id);
+          const orgs = await base44.entities.Organization.filter({ id: u.organization_id });
+          setOrg(orgs[0] || null);
+        }
+      } catch (error) {
+        setUser(null);
+      } finally {
+        setIsLoading(false);
       }
-    }).catch(() => {
-      setUser(null);
-    });
+    };
+    loadUser();
     const t = setInterval(() => setTime(new Date()), 30000);
     return () => clearInterval(t);
   }, []);
@@ -271,23 +285,31 @@ export default function StaffPortal() {
     logAdd(`Shift started as ${r.label}`, "info");
   };
 
-  // Only allow access if logged in
+  // Loading state
+  if (isLoading) return (
+    <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+      <div className="text-center">
+        <div className="w-12 h-12 border-2 border-violet-500/30 border-t-violet-400 rounded-full animate-spin mx-auto mb-4" />
+        <p className="text-violet-400 text-sm tracking-widest">LOADING STAFF PORTAL...</p>
+      </div>
+    </div>
+  );
+
+  // Not authenticated - show request modal
   if (!user) return (
-    <div className="min-h-screen bg-slate-950 flex flex-col justify-center p-5">
-      <div className="max-w-sm mx-auto w-full">
-        <div className="text-center mb-10">
-          <div className="w-20 h-20 rounded-3xl bg-violet-600 flex items-center justify-center mx-auto mb-5 shadow-lg shadow-violet-900/50">
-            <Zap className="w-10 h-10 text-white" />
-          </div>
-          <h1 className="text-3xl font-black text-white">Staff Portal</h1>
-          <p className="text-slate-400 mt-2 text-sm">Anmod om adgang til at blive medarbejder</p>
+    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
+      <div className="max-w-md w-full p-8 rounded-2xl bg-slate-900/80 border border-violet-500/20 backdrop-blur-xl text-center">
+        <div className="p-3 rounded-xl bg-gradient-to-br from-violet-500/20 to-violet-500/10 border border-violet-500/30 w-fit mx-auto mb-6">
+          <Zap className="w-6 h-6 text-violet-400" />
         </div>
-        <button onClick={() => setShowRequestModal(true)}
+        <h1 className="text-white font-black text-xl mb-2">Staff Portal</h1>
+        <p className="text-violet-400/60 text-xs mb-6">Request Access</p>
+        <p className="text-slate-400 text-sm mb-6">Log in to request access to your organization's staff portal.</p>
+        <button onClick={() => base44.auth.redirectToLogin(window.location.pathname)}
           className="w-full py-3 px-4 rounded-xl bg-violet-500/20 border border-violet-500/40 text-violet-300 font-semibold hover:bg-violet-500/30 transition-all text-sm">
-          Anmod om adgang
+          Sign In
         </button>
       </div>
-      {showRequestModal && <StaffRequestModal org={null} onClose={() => setShowRequestModal(false)} />}
     </div>
   );
 
