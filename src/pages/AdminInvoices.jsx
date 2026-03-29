@@ -20,6 +20,7 @@ export default function AdminInvoices() {
   const [selectedOrgId, setSelectedOrgId] = useState("");
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [invoiceData, setInvoiceData] = useState({
+    isTest: true,
     vehicleCount: 5,
     resourceCount: 3,
     fleetaiCommands: 50,
@@ -98,7 +99,8 @@ export default function AdminInvoices() {
       if (!org) throw new Error("Organization not found");
       
       const now = new Date();
-      const invoiceNumber = `TEST-${Date.now()}`;
+      const prefix = invoiceData.isTest ? 'TEST-' : '';
+      const invoiceNumber = `${prefix}${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${org.id.slice(0, 8)}`;
       const periodMonth = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
       const dueDate = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
       
@@ -151,6 +153,35 @@ export default function AdminInvoices() {
       invoiceDataPayload.vat_amount = vatAmount;
       invoiceDataPayload.total_amount = totalAmount;
       
+      // Send email for real invoices
+      if (!invoiceData.isTest) {
+        try {
+          const subtotal = vehicleTotal + resourceTotal + fleetaiTotal + apiTotal + harborTotal + addonTotal;
+          const vatAmount = Math.round(subtotal * (invoiceDataPayload.vat_rate / 100) * 100) / 100;
+          const totalAmount = subtotal + vatAmount;
+          
+          await base44.integrations.Core.SendEmail({
+            to: org.admin_email,
+            subject: `New Invoice from NexusVectis - ${periodMonth}`,
+            body: `
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <h2 style="color: #0ea5e9;">New Invoice</h2>
+                <p>Hello ${org.name},</p>
+                <p>Your invoice for ${periodMonth} is ready.</p>
+                <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                  <p><strong>Invoice Number:</strong> ${invoiceNumber}</p>
+                  <p><strong>Total Amount:</strong> €${totalAmount.toFixed(2)}</p>
+                  <p><strong>Due Date:</strong> ${invoiceDataPayload.due_date}</p>
+                </div>
+                <p>Log in to your account to view the full invoice details.</p>
+              </div>
+            `
+          });
+        } catch (emailError) {
+          console.error(`Failed to send email to ${org.admin_email}:`, emailError);
+        }
+      }
+      
       return await base44.entities.Invoice.create(invoiceDataPayload);
     },
     onSuccess: () => {
@@ -158,6 +189,7 @@ export default function AdminInvoices() {
       setOpenCreateDialog(false);
       setSelectedOrgId("");
       setInvoiceData({
+        isTest: true,
         vehicleCount: 5,
         resourceCount: 3,
         fleetaiCommands: 50,
@@ -170,7 +202,7 @@ export default function AdminInvoices() {
         addonPortHours: 730,
         addonTransitHours: 730
       });
-      toast.success("Test invoice created successfully");
+      toast.success(`${invoiceData.isTest ? 'Test' : 'Invoice'} created successfully`);
     },
     onError: (error) => {
       toast.error("Failed to create test invoice: " + error.message);
@@ -214,17 +246,43 @@ export default function AdminInvoices() {
             <DialogTrigger asChild>
               <Button className="bg-violet-600 hover:bg-violet-700 text-white">
                 <Plus className="w-4 h-4 mr-2" />
-                Create Test Invoice
+                Create Invoice
               </Button>
             </DialogTrigger>
             <DialogContent className="bg-slate-900 border-slate-800 max-w-md">
               <DialogHeader>
-                <DialogTitle className="text-white">Create Test Invoice</DialogTitle>
+                <DialogTitle className="text-white">Create Invoice</DialogTitle>
                 <DialogDescription className="text-slate-400">
                   Configure products and quantities
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 max-h-[60vh] overflow-y-auto">
+                <div>
+                  <Label className="text-slate-300 mb-3 block">Invoice Type</Label>
+                  <div className="flex items-center gap-4">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        checked={invoiceData.isTest}
+                        onChange={() => setInvoiceData({...invoiceData, isTest: true})}
+                        className="w-4 h-4"
+                      />
+                      <span className="text-slate-300 text-sm">Test Invoice</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        checked={!invoiceData.isTest}
+                        onChange={() => setInvoiceData({...invoiceData, isTest: false})}
+                        className="w-4 h-4"
+                      />
+                      <span className="text-slate-300 text-sm">Real Invoice (sends email)</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div className="border-t border-slate-700"></div>
+
                 <div>
                   <Label className="text-slate-300 mb-2 block">Organization</Label>
                   <Select value={selectedOrgId} onValueChange={setSelectedOrgId}>
