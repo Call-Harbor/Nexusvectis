@@ -508,7 +508,7 @@ export default function CEODashboard() {
               {/* Latest Updates */}
               {(latest.algorithm_monitor.latest_updates || []).length > 0 && (
                 <div className="mb-4">
-                  <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-2">Seneste Google Opdateringer</p>
+                  <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-2">Latest Google Updates</p>
                   <div className="space-y-2">
                     {latest.algorithm_monitor.latest_updates.map((upd, i) => (
                       <div key={i} className={`p-3 rounded-lg border ${upd.impact_level === "high" ? "bg-red-500/10 border-red-500/30" : "bg-slate-900/40 border-slate-700/30"}`}>
@@ -531,7 +531,7 @@ export default function CEODashboard() {
                 {/* Immediate Actions */}
                 {(latest.algorithm_monitor.adaptation_plan?.immediate_actions || []).length > 0 && (
                   <div className="p-3 rounded-lg bg-emerald-500/5 border border-emerald-500/20">
-                    <p className="text-emerald-400 text-xs font-semibold mb-2">⚡ Øjeblikkelige Handlinger</p>
+                    <p className="text-emerald-400 text-xs font-semibold mb-2">⚡ Immediate Actions</p>
                     {latest.algorithm_monitor.adaptation_plan.immediate_actions.map((a, i) => (
                       <div key={i} className="flex items-start gap-1.5 text-xs text-slate-300 mb-1">
                         <span className="text-emerald-400 font-bold flex-shrink-0">{i + 1}.</span>{a}
@@ -542,7 +542,7 @@ export default function CEODashboard() {
                 {/* What to Avoid */}
                 {(latest.algorithm_monitor.adaptation_plan?.what_to_avoid || []).length > 0 && (
                   <div className="p-3 rounded-lg bg-red-500/5 border border-red-500/20">
-                    <p className="text-red-400 text-xs font-semibold mb-2">🚫 Undgå Dette</p>
+                    <p className="text-red-400 text-xs font-semibold mb-2">🚫 Avoid This</p>
                     {latest.algorithm_monitor.adaptation_plan.what_to_avoid.map((a, i) => (
                       <div key={i} className="flex items-start gap-1.5 text-xs text-slate-300 mb-1">
                         <span className="text-red-400 flex-shrink-0">✕</span>{a}
@@ -569,7 +569,7 @@ export default function CEODashboard() {
               {/* AI Overviews */}
               {latest.algorithm_monitor.ai_overview_strategy && (
                 <div className="mt-3 p-3 rounded-lg bg-cyan-500/5 border border-cyan-500/20">
-                  <p className="text-cyan-400 text-xs font-semibold mb-2">🤖 Google AI Overviews Strategi</p>
+                  <p className="text-cyan-400 text-xs font-semibold mb-2">🤖 Google AI Overviews Strategy</p>
                   <div className="space-y-1">
                     {(latest.algorithm_monitor.ai_overview_strategy.how_to_appear_in_ai_overviews || []).map((tip, i) => (
                       <div key={i} className="flex items-start gap-1.5 text-xs text-slate-400">
