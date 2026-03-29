@@ -46,17 +46,17 @@ export default function Settings() {
   }, []);
 
   const toggleAddon = async (addonKey, currentValue) => {
-    const orgId = user?.organization_id || user?.data?.organization_id;
+    const orgId = organization?.id;
     if (!orgId) { toast.error("Organization not found"); return; }
     if (user?.role !== 'admin') { toast.error("Only admins can manage add-ons"); return; }
     setAddonSaving(addonKey);
     try {
       await base44.entities.Organization.update(orgId, { [addonKey]: !currentValue });
-      const updated = await base44.entities.Organization.filter({ id: orgId });
-      if (updated[0]) setOrganization(updated[0]);
-      toast.success(!currentValue ? "Add-on aktiveret! Det tilføjes automatisk til din næste faktura." : "Add-on deaktiveret.");
+      setOrganization({...organization, [addonKey]: !currentValue});
+      toast.success(!currentValue ? "Add-on enabled! It will be added to your next invoice." : "Add-on disabled.");
     } catch (e) {
-      toast.error("Kunne ikke opdatere add-on");
+      console.error(e);
+      toast.error("Could not update add-on");
     } finally {
       setAddonSaving(null);
     }
@@ -823,13 +823,13 @@ export default function Settings() {
                 <CardHeader>
                   <CardTitle className="text-white">Module Add-ons</CardTitle>
                   <CardDescription className="text-slate-400">
-                    Aktivér premium moduler — faktureres automatisk på din månedlige faktura (€2.000/md. per modul)
+                    Enable premium modules — automatically billed on your monthly invoice (€2,000/month per module)
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {[
-                    { key: "addon_airport_ops", label: "Airport Ops Center", desc: "AI-drevet lufthavnsoperationscentral med realtidsflyvninger, bagagesporing, sikkerhedsmonitorering og AI Co-Pilot.", icon: Plane, color: "#8b5cf6" },
-                    { key: "addon_port_command", label: "Port Command Center", desc: "AI-drevet havneoperationscentral med live AIS-tracking, kranplanlægning, containertracking og AI-rådgiver.", icon: Ship, color: "#06b6d4" },
+                    { key: "addon_airport_ops", label: "Airport Ops Center", desc: "AI-powered airport operations command center with real-time flights, baggage tracking, security monitoring, and AI Co-Pilot.", icon: Plane, color: "#8b5cf6" },
+                    { key: "addon_port_command", label: "Port Command Center", desc: "AI-powered port operations command center with live AIS tracking, crane scheduling, container tracking, and AI advisor.", icon: Ship, color: "#06b6d4" },
                   ].map(addon => {
                     const active = organization?.[addon.key] === true;
                     const Icon = addon.icon;
@@ -842,8 +842,8 @@ export default function Settings() {
                           <div className="flex items-center gap-2 mb-1">
                             <h3 className="text-white font-semibold">{addon.label}</h3>
                             {active
-                              ? <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-semibold" style={{ background: `${addon.color}20`, color: addon.color }}><CheckCircle className="w-3 h-3" />AKTIV</span>
-                              : <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-semibold bg-slate-700/50 text-slate-400"><XCircle className="w-3 h-3" />INAKTIV</span>
+                              ? <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-semibold" style={{ background: `${addon.color}20`, color: addon.color }}><CheckCircle className="w-3 h-3" />ACTIVE</span>
+                              : <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-semibold bg-slate-700/50 text-slate-400"><XCircle className="w-3 h-3" />INACTIVE</span>
                             }
                           </div>
                           <p className="text-slate-400 text-sm mb-3">{addon.desc}</p>
@@ -858,10 +858,10 @@ export default function Settings() {
                                 style={!active ? { background: `linear-gradient(135deg, ${addon.color}80, #8b5cf690)`, color: "white" } : {}}
                               >
                                 {addonSaving === addon.key ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : null}
-                                {active ? "Deaktivér" : "Aktivér nu"}
+                                {active ? "Disable" : "Enable Now"}
                               </Button>
                             ) : (
-                              <span className="text-slate-500 text-xs">Kun admin kan ændre</span>
+                              <span className="text-slate-500 text-xs">Only admin can change</span>
                             )}
                           </div>
                         </div>
@@ -869,7 +869,7 @@ export default function Settings() {
                     );
                   })}
                   <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
-                    <p className="text-amber-400 text-xs">💡 Add-ons aktiveres øjeblikkeligt og tilføjes automatisk som linjer på din næste månedlige faktura. Du kan deaktivere dem igen til enhver tid.</p>
+                    <p className="text-amber-400 text-xs">💡 Add-ons are activated immediately and automatically added as line items to your next monthly invoice. You can disable them at any time.</p>
                   </div>
                 </CardContent>
               </Card>
