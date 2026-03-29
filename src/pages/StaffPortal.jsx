@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import {
   Shield, Plane, Car, Clock, LogOut, Users, Zap,
-  ChevronRight, Activity, AlertTriangle, Wrench
+  ChevronRight, Activity, AlertTriangle, Wrench, Map
 } from "lucide-react";
 import GateAgentTab from "@/components/staff/GateAgentTab";
+import StaffRequestModal from "@/components/staff/StaffRequestModal";
 import TerminalMapBuilder from "@/components/staff/TerminalMapBuilder";
-import { Map } from "lucide-react";
 import SecurityTab from "@/components/staff/SecurityTab";
 import LandsideTab from "@/components/staff/LandsideTab";
 import GroundHandlingTab from "@/components/staff/GroundHandlingTab";
@@ -177,7 +178,8 @@ function ModalitySelector({ onSelect }) {
   );
 }
 
-function RoleSelector({ modality, onSelect, onBack }) {
+function RoleSelector({ modality, onSelect, onBack, org }) {
+  const [showRequestModal, setShowRequestModal] = useState(false);
   const roles = MODALITIES[modality].roles;
   return (
     <div className="min-h-screen bg-slate-950 flex flex-col justify-center p-5">
@@ -207,10 +209,19 @@ function RoleSelector({ modality, onSelect, onBack }) {
               </button>
             );
           })}
-        </div>
-      </div>
-    </div>
-  );
+          </div>
+          <div className="mt-6 p-4 border-t border-slate-800/50 pt-6">
+          <p className="text-slate-500 text-xs text-center mb-3">Ny medarbejder?</p>
+          <button onClick={() => setShowRequestModal(true)}
+           className="w-full py-3 px-4 rounded-xl bg-violet-500/20 border border-violet-500/40 text-violet-300 font-semibold hover:bg-violet-500/30 transition-all text-sm">
+           Anmod om adgang
+          </button>
+          </div>
+          </div>
+          {showRequestModal && org && <StaffRequestModal org={org} onClose={() => setShowRequestModal(false)} />}
+          </div>
+          );
+          }
 }
 
 const TAB_PANELS = {
@@ -235,11 +246,18 @@ export default function StaffPortal() {
   const [role, setRole] = useState(null);
   const [activeTab, setActiveTab] = useState(null);
   const [orgId, setOrgId] = useState(null);
+  const [org, setOrg] = useState(null);
   const [time, setTime] = useState(new Date());
   const { log, add: logAdd } = useShiftLog();
 
   useEffect(() => {
-    base44.auth.me().then(u => setOrgId(u?.organization_id || null)).catch(() => {});
+    base44.auth.me().then(async u => {
+      if (u?.organization_id) {
+        setOrgId(u.organization_id);
+        const orgs = await base44.entities.Organization.filter({ id: u.organization_id });
+        setOrg(orgs[0] || null);
+      }
+    }).catch(() => {});
     const t = setInterval(() => setTime(new Date()), 30000);
     return () => clearInterval(t);
   }, []);
@@ -251,7 +269,7 @@ export default function StaffPortal() {
   };
 
   if (!modality) return <ModalitySelector onSelect={setModality} />;
-  if (!role) return <RoleSelector modality={modality} onSelect={selectRole} onBack={() => setModality(null)} />;
+  if (!role) return <RoleSelector modality={modality} onSelect={selectRole} onBack={() => setModality(null)} org={org} />;
 
   const RoleIcon = role.icon;
   const CurrentPanel = TAB_PANELS[activeTab];

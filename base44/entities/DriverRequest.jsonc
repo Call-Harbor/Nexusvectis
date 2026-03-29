@@ -1,0 +1,83 @@
+{
+  "name": "DriverRequest",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string",
+      "description": "Organization the driver is requesting to join"
+    },
+    "driver_email": {
+      "type": "string",
+      "description": "Email of driver requesting access"
+    },
+    "driver_name": {
+      "type": "string",
+      "description": "Full name of driver"
+    },
+    "driver_phone": {
+      "type": "string",
+      "description": "Phone number of driver"
+    },
+    "request_type": {
+      "type": "string",
+      "enum": [
+        "driver",
+        "staff"
+      ],
+      "default": "driver",
+      "description": "Type of request (driver for NexusOrbit, staff for StaffPortal)"
+    },
+    "requested_modalities": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "airport",
+          "port",
+          "transit"
+        ]
+      },
+      "description": "Requested modalities for staff portal (only for staff requests)"
+    },
+    "approved_modalities": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "airport",
+          "port",
+          "transit"
+        ]
+      },
+      "description": "Approved modalities for staff portal (set by coordinator)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "default": "pending",
+      "description": "Request status"
+    },
+    "approved_by": {
+      "type": "string",
+      "description": "Email of coordinator who approved/rejected"
+    },
+    "approved_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When request was approved/rejected"
+    },
+    "vehicle_assigned": {
+      "type": "string",
+      "description": "Vehicle ID assigned to driver after approval (driver requests only)"
+    }
+  },
+  "required": [
+    "organization_id",
+    "driver_email",
+    "driver_name"
+  ]
+}
