@@ -39,15 +39,30 @@
       "default": false,
       "description": "Whether Airport Ops Center module is activated (\u20ac2000/month)"
     },
+    "addon_airport_ops_activated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when Airport Ops Center was activated"
+    },
     "addon_port_command": {
       "type": "boolean",
       "default": false,
       "description": "Whether Port Command Center module is activated (\u20ac2000/month)"
     },
+    "addon_port_command_activated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when Port Command Center was activated"
+    },
     "addon_transit_control": {
       "type": "boolean",
       "default": false,
       "description": "Whether Transit Control module is activated (\u20ac2000/month)"
+    },
+    "addon_transit_control_activated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when Transit Control was activated"
     }
   },
   "required": [

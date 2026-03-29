@@ -87,8 +87,16 @@ export default function Settings() {
     setAddonSaving(addonKey);
     try {
       const newValue = !currentValue;
-      await base44.entities.Organization.update(organization.id, { [addonKey]: newValue });
-      setOrganization({ ...organization, [addonKey]: newValue });
+      const updates = { [addonKey]: newValue };
+      
+      // When enabling an addon, record the activation timestamp
+      if (newValue) {
+        const timestampKey = addonKey.replace('addon_', 'addon_') + '_activated_at';
+        updates[timestampKey] = new Date().toISOString();
+      }
+      
+      await base44.entities.Organization.update(organization.id, updates);
+      setOrganization({ ...organization, ...updates });
       toast.success(newValue ? "Add-on enabled! It will be added to your next invoice." : "Add-on disabled.");
     } catch (e) {
       console.error('Toggle addon error:', e);
