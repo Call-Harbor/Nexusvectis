@@ -1,6 +1,9 @@
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "../utils";
+import TransitControlModule from "../components/home/TransitControlModule";
+import PortCommandCenterModule from "../components/home/PortCommandCenterModule";
+import AirportOpsCenterModule from "../components/home/AirportOpsCenterModule";
 import { 
   Truck, Globe, Zap, Shield, TrendingUp, Satellite,
   BarChart3, MapPin, Radio, ArrowRight, CheckCircle2, Sparkles, Brain, Orbit, Package,
@@ -1604,6 +1607,11 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Module Sections */}
+      <TransitControlModule />
+      <PortCommandCenterModule />
+      <AirportOpsCenterModule />
 
       {/* CTA Section */}
       <section className="relative py-20 sm:py-32 px-4 sm:px-6 z-10">
