@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { motion, AnimatePresence } from "framer-motion";
 import { 
   Bus, MapPin, TrendingUp, AlertTriangle, Users, Clock, Zap,
   Radio, Shield, BarChart3, Sparkles, Globe, Network, Brain,
@@ -12,8 +11,9 @@ import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import LiveTransitMap from "@/components/transit/LiveTransitMap";
@@ -39,12 +39,38 @@ import DriverCopilot from "@/components/transit/DriverCopilot";
 import SmartTicketingPanel from "@/components/transit/SmartTicketingPanel";
 import MultiModalPanel from "@/components/transit/MultiModalPanel";
 
+const TABS = [
+  { id: "operations", label: "LIVE OPS", icon: Radio },
+  { id: "network", label: "NETWORK", icon: Network },
+  { id: "planning", label: "PLANNING", icon: Brain },
+  { id: "scenarios", label: "SCENARIOS", icon: Sparkles },
+  { id: "infrastructure", label: "FLEET", icon: Bus },
+  { id: "advanced-ai", label: "ADVANCED AI", icon: Zap },
+];
+
 export default function TransitControl() {
   const [selectedLine, setSelectedLine] = useState(null);
   const [selectedBus, setSelectedBus] = useState(null);
-  const [realtimeRecommendations, setRealtimeRecommendations] = useState(null);
-  const [assigningDriver, setAssigningDriver] = useState(null);
+  const [activeTab, setActiveTab] = useState("operations");
+  const [orgId, setOrgId] = useState(null);
+  const [dataReady, setDataReady] = useState(false);
+  const [clock, setClock] = useState("");
+  const [showAddLine, setShowAddLine] = useState(false);
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const tick = () => setClock(new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" }));
+    tick();
+    const t = setInterval(tick, 1000);
+    return () => clearInterval(t);
+  }, []);
+
+  useEffect(() => {
+    base44.auth.me().then(u => {
+      setOrgId(u?.organization_id || "__all__");
+      setDataReady(true);
+    }).catch(() => setDataReady(true));
+  }, []);
 
   const { data: user } = useQuery({
     queryKey: ['user'],
@@ -52,105 +78,83 @@ export default function TransitControl() {
   });
 
   const { data: lines = [] } = useQuery({
-    queryKey: ['busLines'],
+    queryKey: ['busLines', orgId],
     queryFn: async () => {
-      if (!user?.organization_id) return [];
-      return await base44.entities.BusLine.filter({ organization_id: user.organization_id });
+      if (!orgId || orgId === "__all__") return [];
+      return await base44.entities.BusLine.filter({ organization_id: orgId });
     },
-    enabled: !!user?.organization_id,
+    enabled: !!orgId && dataReady,
     refetchInterval: 30000,
   });
 
   const { data: stops = [] } = useQuery({
-    queryKey: ['busStops'],
+    queryKey: ['busStops', orgId],
     queryFn: async () => {
-      if (!user?.organization_id) return [];
+      if (!orgId || orgId === "__all__") return [];
       const allStops = await base44.entities.BusStop.list();
-      return allStops.filter(s => !s.organization_id || s.organization_id === user.organization_id);
+      return allStops.filter(s => !s.organization_id || s.organization_id === orgId);
     },
-    enabled: !!user?.organization_id,
+    enabled: !!orgId && dataReady,
   });
 
   const { data: activeTrips = [] } = useQuery({
-    queryKey: ['activeTrips'],
+    queryKey: ['activeTrips', orgId],
     queryFn: async () => {
-      if (!user?.organization_id) return [];
+      if (!orgId || orgId === "__all__") return [];
       return await base44.entities.BusTrip.filter({ 
-        organization_id: user.organization_id,
+        organization_id: orgId,
         status: 'in_progress'
       });
     },
-    enabled: !!user?.organization_id,
+    enabled: !!orgId && dataReady,
     refetchInterval: 10000,
   });
 
   const { data: activeBuses = [] } = useQuery({
-    queryKey: ['activeBuses'],
+    queryKey: ['activeBuses', orgId],
     queryFn: async () => {
-      if (!user?.organization_id) return [];
+      if (!orgId || orgId === "__all__") return [];
       return await base44.entities.Bus.filter({ 
-        organization_id: user.organization_id,
+        organization_id: orgId,
         status: 'in_service'
       });
     },
-    enabled: !!user?.organization_id,
+    enabled: !!orgId && dataReady,
     refetchInterval: 5000,
   });
 
   const { data: drivers = [] } = useQuery({
-    queryKey: ['busDrivers'],
+    queryKey: ['busDrivers', orgId],
     queryFn: async () => {
-      if (!user?.organization_id) return [];
-      return await base44.entities.BusDriver.filter({ organization_id: user.organization_id });
+      if (!orgId || orgId === "__all__") return [];
+      return await base44.entities.BusDriver.filter({ organization_id: orgId });
     },
-    enabled: !!user?.organization_id,
+    enabled: !!orgId && dataReady,
   });
 
   const { data: kpis = [] } = useQuery({
-    queryKey: ['transitKPIs'],
+    queryKey: ['transitKPIs', orgId],
     queryFn: async () => {
-      if (!user?.organization_id) return [];
+      if (!orgId || orgId === "__all__") return [];
       return await base44.entities.TransitKPI.filter({ 
-        organization_id: user.organization_id 
+        organization_id: orgId 
       }, '-date', 7);
     },
-    enabled: !!user?.organization_id,
+    enabled: !!orgId && dataReady,
     refetchInterval: 60000,
   });
 
   const { data: alerts = [] } = useQuery({
-    queryKey: ['transitAlerts'],
+    queryKey: ['transitAlerts', orgId],
     queryFn: async () => {
-      if (!user?.organization_id) return [];
+      if (!orgId || orgId === "__all__") return [];
       return await base44.entities.Alert.filter({ 
-        organization_id: user.organization_id,
+        organization_id: orgId,
         is_resolved: false
       });
     },
-    enabled: !!user?.organization_id,
+    enabled: !!orgId && dataReady,
     refetchInterval: 10000,
-  });
-
-  const realtimeControlMutation = useMutation({
-    mutationFn: () => base44.functions.invoke('transitRealtimeControl', {
-      organization_id: user.organization_id
-    }),
-    onSuccess: (response) => {
-      setRealtimeRecommendations(response.data);
-      toast.success('AI Control Analysis Complete');
-    },
-    onError: () => {
-      toast.error('Analysis failed');
-    },
-  });
-
-  const assignDriverMutation = useMutation({
-    mutationFn: ({ busId, driverId }) => base44.entities.Bus.update(busId, { driver_id: driverId }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['activeBuses'] });
-      toast.success('Driver assigned to bus');
-      setAssigningDriver(null);
-    },
   });
 
   const todayKPI = kpis[0] || {};
@@ -159,150 +163,118 @@ export default function TransitControl() {
     (b.passenger_count || 0) > (b.capacity_seated + b.capacity_standing) * 0.9
   );
 
-  useEffect(() => {
-    if (!user?.organization_id) return;
-    
-    const interval = setInterval(() => {
-      realtimeControlMutation.mutate();
-    }, 120000);
-
-    return () => clearInterval(interval);
-  }, [user?.organization_id]);
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950/30 to-slate-950 p-6 md:p-8 overflow-hidden">
-      {/* Modern animated background */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-40 left-1/3 w-[500px] h-[500px] bg-indigo-500/15 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-32 right-1/4 w-[400px] h-[400px] bg-cyan-500/12 rounded-full blur-3xl animate-pulse" style={{animationDelay: '2s'}}></div>
-        <div className="absolute top-1/2 right-1/3 w-[300px] h-[300px] bg-violet-500/10 rounded-full blur-3xl"></div>
-      </div>
-
-      <div className="relative z-10 max-w-[1900px] mx-auto">
-        {/* Header */}
-        <motion.div 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-10"
-        >
-          <div className="flex items-center gap-4 mb-3">
-            <div className="w-1 h-12 bg-gradient-to-b from-indigo-400 to-cyan-400 rounded-full"></div>
+    <div className="min-h-screen bg-slate-950 text-white flex flex-col" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+      {/* Header */}
+      <div className="relative border-b border-indigo-900/40" style={{ background: "linear-gradient(180deg, rgba(0,15,35,0.99) 0%, rgba(0,8,20,0.99) 100%)" }}>
+        <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, #8b5cf6, #06b6d4, transparent)" }} />
+        <div className="px-4 sm:px-6 py-3 sm:py-4 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="relative w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center">
+              <svg className="absolute" width="40" height="40" viewBox="0 0 40 40">
+                <polygon points="20,3 35,10 35,30 20,37 5,30 5,10" fill="rgba(139,92,246,0.08)" stroke="#8b5cf6" strokeWidth="1" />
+              </svg>
+              <Bus className="w-4 h-4 sm:w-5 sm:h-5 relative z-10" style={{ color: "#8b5cf6" }} />
+            </div>
             <div>
-              <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-white via-indigo-200 to-cyan-200 bg-clip-text text-transparent tracking-tight">Transit Control</h1>
-              <p className="text-slate-400 text-sm md:text-lg font-light mt-2">Intelligence-powered public transit management</p>
+              <h1 className="text-sm sm:text-lg font-bold tracking-[0.15em] sm:tracking-[0.25em] uppercase" style={{ color: "#8b5cf6", textShadow: "0 0 20px rgba(139,92,246,0.6)" }}>
+                NEXUSVECTIS TRANSIT
+              </h1>
+              <p className="text-[8px] sm:text-[9px] tracking-[0.2em] sm:tracking-[0.3em] uppercase hidden sm:block" style={{ color: "rgba(139,92,246,0.4)" }}>
+                AI-Powered Transit Operations Command Center
+              </p>
             </div>
           </div>
-        </motion.div>
-
-        {/* Key Metrics Grid */}
-        <motion.div 
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4 mb-8"
-        >
-          <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-500/25 to-emerald-500/5 backdrop-blur-2xl border border-emerald-500/40 shadow-lg hover:shadow-emerald-500/20 transition-shadow">
-            <p className="text-xs text-emerald-400 font-bold uppercase tracking-wide mb-2">Active Buses</p>
-            <p className="text-3xl font-bold text-white">{activeBuses.length}</p>
-            <p className="text-xs text-emerald-300/60 mt-1">In Service</p>
+          <div className="flex items-center flex-wrap gap-3 sm:gap-5">
+            {[
+              { label: "ACTIVE BUSES", val: activeBuses.length, color: "#8b5cf6" },
+              { label: "DELAYED", val: delayedTrips.length, color: delayedTrips.length > 0 ? "#f43f5e" : "#10b981" },
+              { label: "BUS LINES", val: lines.length, color: "#06b6d4" },
+              { label: "PUNCTUALITY", val: (todayKPI.on_time_performance ? Math.round(todayKPI.on_time_performance) : 0) + "%", color: "#10b981" },
+            ].map(k => (
+              <div key={k.label} className="text-center hidden sm:block">
+                <p className="text-[8px] tracking-widest uppercase" style={{ color: "rgba(139,92,246,0.4)" }}>{k.label}</p>
+                <p className="text-2xl font-bold" style={{ color: k.color }}>{k.val}</p>
+              </div>
+            ))}
+            <div className="text-right">
+              <p className="text-2xl font-black font-mono" style={{ color: "#06b6d4", textShadow: "0 0 20px rgba(6,182,212,0.4)" }}>{clock}</p>
+              <p className="text-[8px] tracking-widest" style={{ color: "rgba(6,182,212,0.4)" }}>{new Date().toLocaleDateString("en-GB", { weekday: "short", day: "2-digit", month: "short", year: "numeric" }).toUpperCase()}</p>
+            </div>
+            <button onClick={() => setShowAddLine(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded transition-all hover:opacity-80"
+              style={{ border: "1px solid rgba(139,92,246,0.4)", background: "rgba(139,92,246,0.1)", color: "#8b5cf6" }}>
+              <Plus className="w-3.5 h-3.5" />
+              <span className="text-[9px] tracking-widest uppercase">New Line</span>
+            </button>
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded" style={{ border: "1px solid rgba(16,185,129,0.3)", background: "rgba(16,185,129,0.06)" }}>
+              <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+              <span className="text-[9px] tracking-widest uppercase" style={{ color: "#10b981" }}>OPERATIONAL</span>
+            </div>
           </div>
-          <div className="p-4 rounded-2xl bg-gradient-to-br from-cyan-500/25 to-cyan-500/5 backdrop-blur-2xl border border-cyan-500/40 shadow-lg hover:shadow-cyan-500/20 transition-shadow">
-            <p className="text-xs text-cyan-400 font-bold uppercase tracking-wide mb-2">Bus Lines</p>
-            <p className="text-3xl font-bold text-white">{lines.length}</p>
-            <p className="text-xs text-cyan-300/60 mt-1">Network</p>
-          </div>
-          <div className="p-4 rounded-2xl bg-gradient-to-br from-violet-500/25 to-violet-500/5 backdrop-blur-2xl border border-violet-500/40 shadow-lg hover:shadow-violet-500/20 transition-shadow">
-            <p className="text-xs text-violet-400 font-bold uppercase tracking-wide mb-2">Live Trips</p>
-            <p className="text-3xl font-bold text-white">{activeTrips.length}</p>
-            <p className="text-xs text-violet-300/60 mt-1">In Progress</p>
-          </div>
-          <div className="p-4 rounded-2xl bg-gradient-to-br from-amber-500/25 to-amber-500/5 backdrop-blur-2xl border border-amber-500/40 shadow-lg hover:shadow-amber-500/20 transition-shadow">
-            <p className="text-xs text-amber-400 font-bold uppercase tracking-wide mb-2\">Punctuality</p>
-            <p className="text-3xl font-bold text-white">{todayKPI.on_time_performance ? Math.round(todayKPI.on_time_performance) : '--'}%</p>
-            <p className="text-xs text-amber-300/60 mt-1">On Time</p>
-          </div>
-          <div className="p-4 rounded-2xl bg-gradient-to-br from-rose-500/25 to-rose-500/5 backdrop-blur-2xl border border-rose-500/40 shadow-lg hover:shadow-rose-500/20 transition-shadow">
-            <p className="text-xs text-rose-400 font-bold uppercase tracking-wide mb-2">Alerts</p>
-            <p className="text-3xl font-bold text-white">{alerts.length}</p>
-            <p className="text-xs text-rose-300/60 mt-1">Unresolved</p>
-          </div>
-        </motion.div>
-
-        {/* KPI Banner */}
-        <div className="mb-10">
-          <TransitKPIBanner kpis={kpis} activeTrips={activeTrips} activeBuses={activeBuses} />
         </div>
+      </div>
 
-        {/* Alerts */}
-        {(delayedTrips.length > 0 || overloadedBuses.length > 0 || alerts.length > 0) && (
-          <div className="mb-10">
+      {/* KPI Banner */}
+      <TransitKPIBanner kpis={kpis} activeTrips={activeTrips} activeBuses={activeBuses} />
+
+      {/* Tabs */}
+      <div className="border-b border-slate-800/60 overflow-x-auto scrollbar-none">
+        <div className="flex px-3 sm:px-6 pt-2 min-w-max">
+        {TABS.map(tab => {
+          const Icon = tab.icon;
+          const active = activeTab === tab.id;
+          return (
+            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+              className="flex items-center gap-1.5 px-3 sm:px-4 py-2.5 text-[9px] sm:text-[10px] font-bold tracking-widest uppercase transition-all border-b-2 mr-1 whitespace-nowrap flex-shrink-0"
+              style={{
+                color: active ? "#8b5cf6" : "rgba(100,116,139,0.6)",
+                borderColor: active ? "#8b5cf6" : "transparent",
+                background: active ? "rgba(139,92,246,0.05)" : "transparent",
+                textShadow: active ? "0 0 8px rgba(139,92,246,0.4)" : "none",
+              }}>
+              <Icon className="w-3 h-3 sm:w-3.5 sm:h-3.5 flex-shrink-0" />
+              <span className="hidden sm:inline">{tab.label}</span>
+              <span className="sm:hidden">{tab.label.split(" ")[0]}</span>
+            </button>
+          );
+        })}
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 p-4 overflow-auto">
+        {activeTab === "operations" && (
+          <div className="space-y-4">
             <TransitAlertBar 
               delayedTrips={delayedTrips} 
               overloadedBuses={overloadedBuses} 
               alerts={alerts}
-              onAnalyze={() => realtimeControlMutation.mutate()}
-              isAnalyzing={realtimeControlMutation.isPending}
+              onAnalyze={() => {}}
+              isAnalyzing={false}
             />
-          </div>
-        )}
-
-        {/* Main Tabs */}
-        <Tabs defaultValue="operations" className="space-y-8">
-          <TabsList className="bg-gradient-to-r from-slate-900/60 to-slate-800/40 backdrop-blur-3xl border border-white/15 rounded-2xl p-2 shadow-2xl gap-1 flex-wrap">
-            <TabsTrigger value="operations" className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-cyan-600 data-[state=active]:text-white data-[state=active]:shadow-xl transition-all text-xs md:text-sm font-medium">
-              <Radio className="w-4 h-4 mr-2" />
-              <span className="hidden sm:inline">Live</span>
-            </TabsTrigger>
-            <TabsTrigger value="network" className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-cyan-600 data-[state=active]:text-white data-[state=active]:shadow-xl transition-all text-xs md:text-sm font-medium">
-              <Network className="w-4 h-4 mr-2" />
-              <span className="hidden sm:inline">Network</span>
-            </TabsTrigger>
-            <TabsTrigger value="planning" className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-cyan-600 data-[state=active]:text-white data-[state=active]:shadow-xl transition-all text-xs md:text-sm font-medium">
-              <Brain className="w-4 h-4 mr-2" />
-              <span className="hidden sm:inline">Planning</span>
-            </TabsTrigger>
-            <TabsTrigger value="scenarios" className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-cyan-600 data-[state=active]:text-white data-[state=active]:shadow-xl transition-all text-xs md:text-sm font-medium">
-              <Sparkles className="w-4 h-4 mr-2" />
-              <span className="hidden sm:inline">Scenarios</span>
-            </TabsTrigger>
-            <TabsTrigger value="infrastructure" className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-cyan-600 data-[state=active]:text-white data-[state=active]:shadow-xl transition-all text-xs md:text-sm font-medium">
-              <MapPin className="w-4 h-4 mr-2" />
-              <span className="hidden sm:inline">Fleet</span>
-            </TabsTrigger>
-            <TabsTrigger value="advanced-ai" className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-cyan-600 data-[state=active]:text-white data-[state=active]:shadow-xl transition-all text-xs md:text-sm font-medium">
-              <Sparkles className="w-4 h-4 mr-2" />
-              <span className="hidden sm:inline">Advanced AI</span>
-            </TabsTrigger>
-          </TabsList>
-
-          {/* OPERATIONS */}
-          <TabsContent value="operations" className="space-y-8 animate-in fade-in duration-300">
             <AdvancedAnalyticsDashboard 
               kpis={todayKPI} 
               activeTrips={activeTrips} 
               buses={activeBuses}
               trips={activeTrips}
             />
-
             <PredictiveCapacityOptimizer
               buses={activeBuses}
               trips={activeTrips}
               lines={lines}
             />
-
             <IncidentResponseCenter
               incidents={[]}
               buses={activeBuses}
               drivers={drivers}
             />
-
             <LiveTransitMap 
-              organizationId={user?.organization_id} 
+              organizationId={orgId} 
               buses={activeBuses}
               stops={stops}
               onBusClick={setSelectedBus}
             />
-
             <Card className="p-8 bg-gradient-to-br from-slate-800/70 to-slate-900/70 backdrop-blur-2xl border border-white/10 shadow-2xl rounded-2xl">
               <div className="flex items-center justify-between mb-8">
                 <h3 className="text-2xl font-bold bg-gradient-to-r from-white to-cyan-200 bg-clip-text text-transparent tracking-tight flex items-center gap-3">
@@ -319,13 +291,9 @@ export default function TransitControl() {
                   const tripLine = lines.find(l => l.id === trip.line_id);
                   const tripBus = activeBuses.find(b => b.id === trip.assigned_bus_id);
                   const isDelayed = (trip.delay_minutes || 0) > 5;
-
                   return (
-                    <motion.div
+                    <div
                       key={trip.id}
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: i * 0.02 }}
                       className={`p-5 rounded-xl border backdrop-blur-xl transition-all ${
                         isDelayed 
                           ? 'bg-gradient-to-br from-rose-500/20 to-rose-500/5 border-rose-500/30 hover:border-rose-400/50' 
@@ -355,88 +323,73 @@ export default function TransitControl() {
                           <span className="text-cyan-400 font-semibold">{tripBus?.passenger_count || 0}</span>
                         </div>
                       </div>
-                    </motion.div>
+                    </div>
                   );
                 })}
               </div>
             </Card>
-          </TabsContent>
-
-          {/* NETWORK */}
-          <TabsContent value="network" className="animate-in fade-in duration-300">
-            <NetworkDesignStudio organizationId={user?.organization_id} />
-          </TabsContent>
-
-          {/* PLANNING */}
-          <TabsContent value="planning" className="space-y-8 animate-in fade-in duration-300">
-            <FrequencyOptimizer organizationId={user?.organization_id} />
-            <PassengerExperiencePanel organizationId={user?.organization_id} />
-          </TabsContent>
-
-          {/* SCENARIOS */}
-          <TabsContent value="scenarios" className="animate-in fade-in duration-300">
-            <ScenarioSimulator organizationId={user?.organization_id} />
-          </TabsContent>
-
-          {/* INFRASTRUCTURE */}
-           <TabsContent value="infrastructure" className="space-y-8 animate-in fade-in duration-300">
-             <BusFleetManager organizationId={user?.organization_id} />
-             <BusStopManager organizationId={user?.organization_id} stops={stops} />
-             <BusLineManager organizationId={user?.organization_id} lines={lines} stops={stops} />
-           </TabsContent>
-
-          {/* ADVANCED AI */}
-           <TabsContent value="advanced-ai" className="space-y-8 animate-in fade-in duration-300">
-             <div className="grid md:grid-cols-2 gap-6">
-               <CrowdingDashboard />
-               <PassengerFlowPanel />
-             </div>
-             <div className="grid md:grid-cols-2 gap-6">
-               <DRTMonitor />
-               <SustainabilityPanel />
-             </div>
-             <TSPInterface organizationId={user?.organization_id} />
-             <DriverCopilot organizationId={user?.organization_id} />
-             <SmartTicketingPanel organizationId={user?.organization_id} />
-             <MultiModalPanel organizationId={user?.organization_id} />
-           </TabsContent>
-          </Tabs>
+          </div>
+        )}
+        {activeTab === "network" && (
+          <NetworkDesignStudio organizationId={orgId} />
+        )}
+        {activeTab === "planning" && (
+          <div className="space-y-8">
+            <FrequencyOptimizer organizationId={orgId} />
+            <PassengerExperiencePanel organizationId={orgId} />
+          </div>
+        )}
+        {activeTab === "scenarios" && (
+          <ScenarioSimulator organizationId={orgId} />
+        )}
+        {activeTab === "infrastructure" && (
+          <div className="space-y-8">
+            <BusFleetManager organizationId={orgId} />
+            <BusStopManager organizationId={orgId} stops={stops} />
+            <BusLineManager organizationId={orgId} lines={lines} stops={stops} />
+          </div>
+        )}
+        {activeTab === "advanced-ai" && (
+          <div className="space-y-8">
+            <div className="grid md:grid-cols-2 gap-6">
+              <CrowdingDashboard />
+              <PassengerFlowPanel />
+            </div>
+            <div className="grid md:grid-cols-2 gap-6">
+              <DRTMonitor />
+              <SustainabilityPanel />
+            </div>
+            <TSPInterface organizationId={orgId} />
+            <DriverCopilot organizationId={orgId} />
+            <SmartTicketingPanel organizationId={orgId} />
+            <MultiModalPanel organizationId={orgId} />
+          </div>
+        )}
       </div>
 
-      {/* Driver Assignment Dialog */}
-      <Dialog open={!!assigningDriver} onOpenChange={() => setAssigningDriver(null)}>
-        <DialogContent className="bg-gradient-to-br from-slate-900 to-slate-950 border-white/10 text-white backdrop-blur-2xl shadow-2xl">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold bg-gradient-to-r from-white to-indigo-200 bg-clip-text text-transparent">Assign Driver to {assigningDriver?.bus_number}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <label className="text-sm text-slate-400 mb-2 block font-semibold">Select Driver</label>
-              <Select 
-                value={assigningDriver?.driver_id || ""} 
-                onValueChange={(driverId) => {
-                  assignDriverMutation.mutate({ 
-                    busId: assigningDriver.id, 
-                    driverId: driverId 
-                  });
-                }}
-              >
-                <SelectTrigger className="bg-slate-800/50 border-white/10 backdrop-blur-xl">
-                  <SelectValue placeholder="Choose driver..." />
-                </SelectTrigger>
-                <SelectContent className="bg-slate-900 border-white/10">
-                  <SelectItem value={null}>No driver (unassign)</SelectItem>
-                  {drivers.filter(d => d.status === 'active').map(driver => (
-                    <SelectItem key={driver.driver_id} value={driver.driver_id}>
-                      {driver.first_name} {driver.last_name} - #{driver.employee_number}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+      {/* Add Bus Line Dialog */}
+      <Dialog open={showAddLine} onOpenChange={() => setShowAddLine(false)}>
+        <DialogContent className="bg-slate-900 border-slate-700 text-white">
+          <DialogHeader><DialogTitle>New Bus Line</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="col-span-2"><Label>Line Name *</Label><Input className="bg-slate-800 border-slate-700" placeholder="Line 1A" /></div>
+              <div><Label>Line Number</Label><Input className="bg-slate-800 border-slate-700" placeholder="1" /></div>
+              <div><Label>Status</Label>
+                <Select defaultValue="planned">
+                  <SelectTrigger className="bg-slate-800 border-slate-700"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="planned">Planned</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            <p className="text-xs text-slate-500">
-              Driver will be able to access this bus from Nexus Orbit and receive route assignments.
-            </p>
+            <button
+              className="w-full py-2 rounded-lg font-semibold text-sm transition-all"
+              style={{ background: "rgba(139,92,246,0.2)", border: "1px solid rgba(139,92,246,0.4)", color: "#8b5cf6" }}>
+              Create Line
+            </button>
           </div>
         </DialogContent>
       </Dialog>
