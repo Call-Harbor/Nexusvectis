@@ -13,42 +13,111 @@ import GroundHandlingTab from "@/components/staff/GroundHandlingTab";
 import IncidentTab from "@/components/staff/IncidentTab";
 import SupervisorTab from "@/components/staff/SupervisorTab";
 
-const ROLES = [
-  {
-    id: "gate_agent", label: "Gate Agent", icon: Plane, color: "#06b6d4", desc: "Gates, boarding & flight status",
-    tabs: [
-      { id: "gates", label: "Gates", icon: Plane },
-      { id: "ground", label: "Handling", icon: Wrench },
-      { id: "incidents", label: "Incidents", icon: AlertTriangle },
+const MODALITIES = {
+  airport: {
+    name: "Airport",
+    roles: [
+      {
+        id: "gate_agent", label: "Gate Agent", icon: Plane, color: "#06b6d4", desc: "Gates, boarding & flight status",
+        tabs: [
+          { id: "gates", label: "Gates", icon: Plane },
+          { id: "ground", label: "Handling", icon: Wrench },
+          { id: "incidents", label: "Incidents", icon: AlertTriangle },
+        ]
+      },
+      {
+        id: "security_officer", label: "Security", icon: Shield, color: "#f59e0b", desc: "Lanes, queues & wait times",
+        tabs: [
+          { id: "security", label: "Lanes", icon: Shield },
+          { id: "incidents", label: "Incidents", icon: AlertTriangle },
+        ]
+      },
+      {
+        id: "landside_staff", label: "Landside", icon: Car, color: "#8b5cf6", desc: "Zones & departures",
+        tabs: [
+          { id: "landside", label: "Zones", icon: Car },
+          { id: "incidents", label: "Incidents", icon: AlertTriangle },
+        ]
+      },
+      {
+        id: "supervisor", label: "Supervisor", icon: Users, color: "#f43f5e", desc: "Full overview & AI insights",
+        tabs: [
+          { id: "supervisor", label: "Overview", icon: Zap },
+          { id: "map", label: "Terminal Map", icon: Map },
+          { id: "gates", label: "Gates", icon: Plane },
+          { id: "security", label: "Security", icon: Shield },
+          { id: "landside", label: "Landside", icon: Car },
+          { id: "ground", label: "Handling", icon: Wrench },
+          { id: "incidents", label: "Incidents", icon: AlertTriangle },
+        ]
+      },
     ]
   },
-  {
-    id: "security_officer", label: "Security", icon: Shield, color: "#f59e0b", desc: "Lanes, queues & wait times",
-    tabs: [
-      { id: "security", label: "Lanes", icon: Shield },
-      { id: "incidents", label: "Incidents", icon: AlertTriangle },
+  port: {
+    name: "Port",
+    roles: [
+      {
+        id: "gate_operator", label: "Gate Operator", icon: Car, color: "#10b981", desc: "Gate checks & vehicle tracking",
+        tabs: [
+          { id: "gates", label: "Gates", icon: Car },
+          { id: "incidents", label: "Incidents", icon: AlertTriangle },
+        ]
+      },
+      {
+        id: "crane_operator", label: "Crane Operator", icon: Wrench, color: "#f59e0b", desc: "Crane scheduling & loading",
+        tabs: [
+          { id: "ground", label: "Crane Ops", icon: Wrench },
+          { id: "incidents", label: "Incidents", icon: AlertTriangle },
+        ]
+      },
+      {
+        id: "yard_staff", label: "Yard Staff", icon: Car, color: "#8b5cf6", desc: "Container yard & zones",
+        tabs: [
+          { id: "landside", label: "Yard", icon: Car },
+          { id: "incidents", label: "Incidents", icon: AlertTriangle },
+        ]
+      },
+      {
+        id: "port_supervisor", label: "Supervisor", icon: Users, color: "#f43f5e", desc: "Full operations overview",
+        tabs: [
+          { id: "supervisor", label: "Overview", icon: Zap },
+          { id: "gates", label: "Gates", icon: Car },
+          { id: "ground", label: "Crane Ops", icon: Wrench },
+          { id: "landside", label: "Yard", icon: Car },
+          { id: "incidents", label: "Incidents", icon: AlertTriangle },
+        ]
+      },
     ]
   },
-  {
-    id: "bus_driver", label: "Transport", icon: Car, color: "#8b5cf6", desc: "Landside zones & departures",
-    tabs: [
-      { id: "landside", label: "Zones", icon: Car },
-      { id: "incidents", label: "Incidents", icon: AlertTriangle },
+  transit: {
+    name: "Transit",
+    roles: [
+      {
+        id: "bus_driver", label: "Bus Driver", icon: Car, color: "#06b6d4", desc: "Route & passenger updates",
+        tabs: [
+          { id: "landside", label: "Routes", icon: Car },
+          { id: "incidents", label: "Incidents", icon: AlertTriangle },
+        ]
+      },
+      {
+        id: "depot_staff", label: "Depot Staff", icon: Wrench, color: "#f59e0b", desc: "Maintenance & fleet checks",
+        tabs: [
+          { id: "ground", label: "Fleet", icon: Wrench },
+          { id: "incidents", label: "Incidents", icon: AlertTriangle },
+        ]
+      },
+      {
+        id: "control_center", label: "Control Center", icon: Users, color: "#f43f5e", desc: "Network oversight & AI insights",
+        tabs: [
+          { id: "supervisor", label: "Overview", icon: Zap },
+          { id: "landside", label: "Routes", icon: Car },
+          { id: "ground", label: "Fleet", icon: Wrench },
+          { id: "incidents", label: "Incidents", icon: AlertTriangle },
+        ]
+      },
     ]
-  },
-  {
-    id: "supervisor", label: "Supervisor", icon: Users, color: "#f43f5e", desc: "Full overview & AI insights",
-    tabs: [
-      { id: "supervisor", label: "Overview", icon: Zap },
-      { id: "map", label: "Terminal Map", icon: Map },
-      { id: "gates", label: "Gates", icon: Plane },
-      { id: "security", label: "Security", icon: Shield },
-      { id: "landside", label: "Landside", icon: Car },
-      { id: "ground", label: "Handling", icon: Wrench },
-      { id: "incidents", label: "Incidents", icon: AlertTriangle },
-    ]
-  },
-];
+  }
+};
 
 function useShiftLog() {
   const [log, setLog] = useState([]);
@@ -76,7 +145,7 @@ function ShiftLog({ log }) {
   );
 }
 
-function RoleSelector({ onSelect }) {
+function ModalitySelector({ onSelect }) {
   return (
     <div className="min-h-screen bg-slate-950 flex flex-col justify-center p-5">
       <div className="max-w-sm mx-auto w-full">
@@ -85,10 +154,43 @@ function RoleSelector({ onSelect }) {
             <Zap className="w-10 h-10 text-white" />
           </div>
           <h1 className="text-3xl font-black text-white">Staff Portal</h1>
-           <p className="text-slate-400 mt-2 text-sm">Select your role for the shift</p>
+          <p className="text-slate-400 mt-2 text-sm">Select your operation type</p>
         </div>
         <div className="space-y-3">
-          {ROLES.map(r => {
+          {Object.entries(MODALITIES).map(([key, mod]) => (
+            <button key={key} onClick={() => onSelect(key)}
+              className="w-full flex items-center gap-4 p-5 rounded-2xl active:scale-98 transition-all"
+              style={{ background: "#06b6d410", border: "2px solid #06b6d430" }}>
+              <div className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ background: "#06b6d425" }}>
+                <Zap className="w-7 h-7 text-cyan-500" />
+              </div>
+              <div className="text-left flex-1">
+                <p className="font-bold text-white text-lg">{mod.name}</p>
+                <p className="text-sm text-slate-400">{mod.roles.length} roles available</p>
+              </div>
+              <ChevronRight className="w-5 h-5 text-slate-600" />
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RoleSelector({ modality, onSelect, onBack }) {
+  const roles = MODALITIES[modality].roles;
+  return (
+    <div className="min-h-screen bg-slate-950 flex flex-col justify-center p-5">
+      <div className="max-w-sm mx-auto w-full">
+        <div className="text-center mb-10">
+          <button onClick={onBack} className="mx-auto mb-4 text-slate-400 hover:text-slate-300 flex items-center gap-1 justify-center text-sm">
+            ← Back
+          </button>
+          <h1 className="text-3xl font-black text-white">{MODALITIES[modality].name}</h1>
+          <p className="text-slate-400 mt-2 text-sm">Select your role for the shift</p>
+        </div>
+        <div className="space-y-3">
+          {roles.map(r => {
             const Icon = r.icon;
             return (
               <button key={r.id} onClick={() => onSelect(r)}
@@ -122,6 +224,7 @@ const TAB_PANELS = {
 };
 
 export default function StaffPortal() {
+  const [modality, setModality] = useState(null);
   const [role, setRole] = useState(null);
   const [activeTab, setActiveTab] = useState(null);
   const [orgId, setOrgId] = useState(null);
@@ -140,7 +243,8 @@ export default function StaffPortal() {
     logAdd(`Shift started as ${r.label}`, "info");
   };
 
-  if (!role) return <RoleSelector onSelect={selectRole} />;
+  if (!modality) return <ModalitySelector onSelect={setModality} />;
+  if (!role) return <RoleSelector modality={modality} onSelect={selectRole} onBack={() => setModality(null)} />;
 
   const RoleIcon = role.icon;
   const CurrentPanel = TAB_PANELS[activeTab];
