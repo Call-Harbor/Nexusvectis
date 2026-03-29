@@ -9,7 +9,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Building2, Key, User as UserIcon, Save, Loader2, Trash2, AlertTriangle, Plane, Ship, CheckCircle, XCircle, Package } from "lucide-react";
 import { toast } from "sonner";
-import { toast } from "sonner";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 export default function Settings() {
