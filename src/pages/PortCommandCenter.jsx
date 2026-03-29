@@ -8,7 +8,10 @@ import PortYardOverview from "@/components/port/PortYardOverview";
 import PortGateMonitor from "@/components/port/PortGateMonitor";
 import PortAIAdvisor from "@/components/port/PortAIAdvisor";
 import PortScenarioEngine from "@/components/port/PortScenarioEngine";
-import { Ship, Anchor, Cpu, BarChart3, AlertTriangle, Leaf, Settings, Zap, Plus, Package } from "lucide-react";
+import PortAlertTicker from "@/components/port/PortAlertTicker";
+import PortNowPanel from "@/components/port/PortNowPanel";
+import PortFleetManager from "@/components/port/PortFleetManager";
+import { Ship, Anchor, Cpu, BarChart3, AlertTriangle, Leaf, Zap, Plus, Package, Map, Activity, GitBranch, Layers } from "lucide-react";
 import CraneSchedulingAI from "../components/port/CraneSchedulingAI";
 import ContainerTracker from "../components/port/ContainerTracker";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -17,24 +20,34 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const TABS = [
+  { id: "operations", label: "LIVE OPS", icon: Activity },
   { id: "berth", label: "BERTH PLAN", icon: Anchor },
   { id: "crane_ai", label: "CRANE AI", icon: Zap },
   { id: "containers", label: "CONTAINERE", icon: Package },
   { id: "yard", label: "YARD", icon: BarChart3 },
-  { id: "gate", label: "GATE & RAIL", icon: Zap },
+  { id: "gate", label: "GATE & RAIL", icon: Layers },
+  { id: "fleet", label: "FLEET MGR", icon: Ship },
   { id: "ai", label: "AI ADVISOR", icon: Cpu },
   { id: "scenario", label: "SCENARIER", icon: AlertTriangle },
   { id: "sustainability", label: "CO₂", icon: Leaf },
 ];
 
 export default function PortCommandCenter() {
-  const [activeTab, setActiveTab] = useState("berth");
+  const [activeTab, setActiveTab] = useState("operations");
   const [orgId, setOrgId] = useState(null);
   const [selectedPortCall, setSelectedPortCall] = useState(null);
   const [dataReady, setDataReady] = useState(false);
   const [showAddPortCall, setShowAddPortCall] = useState(false);
   const [showAddGate, setShowAddGate] = useState(false);
   const [showAddRailSlot, setShowAddRailSlot] = useState(false);
+  const [clock, setClock] = useState("");
+
+  useEffect(() => {
+    const tick = () => setClock(new Date().toLocaleTimeString("da-DK", { hour: "2-digit", minute: "2-digit", second: "2-digit" }));
+    tick();
+    const t = setInterval(tick, 1000);
+    return () => clearInterval(t);
+  }, []);
 
   useEffect(() => {
     base44.auth.me().then(u => {
@@ -99,53 +112,55 @@ export default function PortCommandCenter() {
 
   const activeCalls = portCalls.filter(pc => ["approaching", "berthed", "operations"].includes(pc.status));
   const plannedCalls = portCalls.filter(pc => pc.status === "planned");
+  const delayedCalls = portCalls.filter(pc => (pc.delay_minutes || 0) > 30);
 
   return (
     <div className="min-h-screen bg-slate-950 text-white flex flex-col" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
       {/* Header */}
-      <div className="relative border-b border-cyan-900/40" style={{ background: "linear-gradient(180deg, rgba(0,20,40,0.98) 0%, rgba(0,10,25,0.98) 100%)" }}>
+      <div className="relative border-b border-cyan-900/40" style={{ background: "linear-gradient(180deg, rgba(0,15,35,0.99) 0%, rgba(0,8,20,0.99) 100%)" }}>
         <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, #06b6d4, #8b5cf6, transparent)" }} />
-        <div className="px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="relative w-10 h-10 flex items-center justify-center">
+        <div className="px-4 sm:px-6 py-3 sm:py-4 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="relative w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center">
               <svg className="absolute" width="40" height="40" viewBox="0 0 40 40">
                 <polygon points="20,3 35,10 35,30 20,37 5,30 5,10" fill="rgba(6,182,212,0.08)" stroke="#06b6d4" strokeWidth="1" />
               </svg>
-              <Ship className="w-5 h-5 relative z-10" style={{ color: "#06b6d4" }} />
+              <Ship className="w-4 h-4 sm:w-5 sm:h-5 relative z-10" style={{ color: "#06b6d4" }} />
             </div>
             <div>
-              <h1 className="text-lg font-bold tracking-[0.25em] uppercase" style={{ color: "#06b6d4", textShadow: "0 0 20px rgba(6,182,212,0.6)" }}>
+              <h1 className="text-sm sm:text-lg font-bold tracking-[0.15em] sm:tracking-[0.25em] uppercase" style={{ color: "#06b6d4", textShadow: "0 0 20px rgba(6,182,212,0.6)" }}>
                 NEXUSVECTIS PORT
               </h1>
-              <p className="text-[9px] tracking-[0.3em] uppercase" style={{ color: "rgba(6,182,212,0.4)" }}>
+              <p className="text-[8px] sm:text-[9px] tracking-[0.2em] sm:tracking-[0.3em] uppercase hidden sm:block" style={{ color: "rgba(6,182,212,0.4)" }}>
                 AI-DREVET PORT OPERATIONS COMMAND CENTER
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-6">
-            <div className="text-center">
-              <p className="text-[8px] tracking-widest uppercase" style={{ color: "rgba(6,182,212,0.4)" }}>ACTIVE CALLS</p>
-              <p className="text-2xl font-bold" style={{ color: "#06b6d4", textShadow: "0 0 10px rgba(6,182,212,0.5)" }}>{activeCalls.length}</p>
+          <div className="flex items-center flex-wrap gap-3 sm:gap-5">
+            {[
+              { label: "AKTIVE ANLØB", val: activeCalls.length, color: "#06b6d4" },
+              { label: "FORSINKEDE", val: delayedCalls.length, color: delayedCalls.length > 0 ? "#f43f5e" : "#10b981" },
+              { label: "KRANER AKTIVE", val: cranes.filter(c => c.status === "working").length, color: "#f59e0b" },
+              { label: "PLANLAGTE", val: plannedCalls.length, color: "#8b5cf6" },
+            ].map(k => (
+              <div key={k.label} className="text-center hidden sm:block">
+                <p className="text-[8px] tracking-widest uppercase" style={{ color: "rgba(6,182,212,0.4)" }}>{k.label}</p>
+                <p className="text-2xl font-bold" style={{ color: k.color }}>{k.val}</p>
+              </div>
+            ))}
+            <div className="text-right">
+              <p className="text-2xl font-black font-mono" style={{ color: "#06b6d4", textShadow: "0 0 20px rgba(6,182,212,0.4)" }}>{clock}</p>
+              <p className="text-[8px] tracking-widest" style={{ color: "rgba(6,182,212,0.4)" }}>{new Date().toLocaleDateString("da-DK", { weekday: "short", day: "2-digit", month: "short", year: "numeric" }).toUpperCase()}</p>
             </div>
-            <div className="text-center">
-              <p className="text-[8px] tracking-widest uppercase" style={{ color: "rgba(6,182,212,0.4)" }}>PLANNED</p>
-              <p className="text-2xl font-bold" style={{ color: "#8b5cf6" }}>{plannedCalls.length}</p>
-            </div>
-            <div className="text-center">
-              <p className="text-[8px] tracking-widest uppercase" style={{ color: "rgba(6,182,212,0.4)" }}>CRANES TOTAL</p>
-              <p className="text-2xl font-bold" style={{ color: "#10b981" }}>{cranes.length}</p>
-            </div>
-            <button
-              onClick={() => setShowAddPortCall(true)}
+            <button onClick={() => setShowAddPortCall(true)}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded transition-all hover:opacity-80"
-              style={{ border: "1px solid rgba(6,182,212,0.4)", background: "rgba(6,182,212,0.1)" }}
-            >
-              <Plus className="w-3.5 h-3.5" style={{ color: "#06b6d4" }} />
-              <span className="text-[9px] tracking-widest uppercase" style={{ color: "#06b6d4" }}>NEW PORT CALL</span>
+              style={{ border: "1px solid rgba(6,182,212,0.4)", background: "rgba(6,182,212,0.1)", color: "#06b6d4" }}>
+              <Plus className="w-3.5 h-3.5" />
+              <span className="text-[9px] tracking-widest uppercase">NY PORT CALL</span>
             </button>
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded" style={{ border: "1px solid rgba(16,185,129,0.3)", background: "rgba(16,185,129,0.06)" }}>
               <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-              <span className="text-[9px] tracking-widest uppercase" style={{ color: "#10b981" }}>OPERATIONAL</span>
+              <span className="text-[9px] tracking-widest uppercase" style={{ color: "#10b981" }}>OPERATIONEL</span>
             </div>
           </div>
         </div>
@@ -155,38 +170,46 @@ export default function PortCommandCenter() {
       <PortKPIBanner portCalls={portCalls} cranes={cranes} yardZones={yardZones} gates={gates} equipment={equipment} />
 
       {/* Tabs */}
-      <div className="flex border-b border-slate-800/60 px-6 pt-2">
+      <div className="border-b border-slate-800/60 overflow-x-auto scrollbar-none">
+        <div className="flex px-3 sm:px-6 pt-2 min-w-max">
         {TABS.map(tab => {
           const Icon = tab.icon;
           const active = activeTab === tab.id;
           return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className="flex items-center gap-2 px-4 py-2.5 text-[10px] font-bold tracking-widest uppercase transition-all border-b-2 mr-1"
+            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+              className="flex items-center gap-1.5 px-3 sm:px-4 py-2.5 text-[9px] sm:text-[10px] font-bold tracking-widest uppercase transition-all border-b-2 mr-1 whitespace-nowrap flex-shrink-0"
               style={{
                 color: active ? "#06b6d4" : "rgba(100,116,139,0.6)",
                 borderColor: active ? "#06b6d4" : "transparent",
                 background: active ? "rgba(6,182,212,0.05)" : "transparent",
                 textShadow: active ? "0 0 8px rgba(6,182,212,0.4)" : "none",
-              }}
-            >
-              <Icon className="w-3.5 h-3.5" />
-              {tab.label}
+              }}>
+              <Icon className="w-3 h-3 sm:w-3.5 sm:h-3.5 flex-shrink-0" />
+              <span className="hidden sm:inline">{tab.label}</span>
+              <span className="sm:hidden">{tab.label.split(" ")[0]}</span>
             </button>
           );
         })}
+        </div>
       </div>
 
       {/* Main Content */}
       <div className="flex-1 p-4 overflow-auto">
+        {activeTab === "operations" && (
+          <div className="space-y-4">
+            <PortAlertTicker portCalls={portCalls} cranes={cranes} yardZones={yardZones} gates={gates} />
+            <div className="flex gap-4">
+              <div className="flex-1 min-w-0">
+                <PortBerthBoard berths={berths} portCalls={portCalls} vessels={vessels} cranes={cranes} onSelectPortCall={setSelectedPortCall} />
+              </div>
+              <PortNowPanel portCalls={portCalls} cranes={cranes} yardZones={yardZones} gates={gates} />
+            </div>
+          </div>
+        )}
         {activeTab === "berth" && (
           <div className="grid grid-cols-3 gap-4">
             <div className="col-span-2">
-              <PortBerthBoard
-                berths={berths} portCalls={portCalls} vessels={vessels} cranes={cranes}
-                onSelectPortCall={setSelectedPortCall}
-              />
+              <PortBerthBoard berths={berths} portCalls={portCalls} vessels={vessels} cranes={cranes} onSelectPortCall={setSelectedPortCall} />
             </div>
             <div>
               <PortVesselQueue portCalls={portCalls} vessels={vessels} onSelectPortCall={setSelectedPortCall} />
@@ -205,23 +228,22 @@ export default function PortCommandCenter() {
         {activeTab === "gate" && (
           <div className="space-y-3">
             <div className="flex gap-2">
-              <button
-                onClick={() => setShowAddGate(true)}
+              <button onClick={() => setShowAddGate(true)}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded transition-all hover:opacity-80 text-[9px] tracking-widest uppercase font-bold"
-                style={{ border: "1px solid rgba(6,182,212,0.4)", background: "rgba(6,182,212,0.1)", color: "#06b6d4" }}
-              >
+                style={{ border: "1px solid rgba(6,182,212,0.4)", background: "rgba(6,182,212,0.1)", color: "#06b6d4" }}>
                 <Plus className="w-3.5 h-3.5" /> New Gate
               </button>
-              <button
-                onClick={() => setShowAddRailSlot(true)}
+              <button onClick={() => setShowAddRailSlot(true)}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded transition-all hover:opacity-80 text-[9px] tracking-widest uppercase font-bold"
-                style={{ border: "1px solid rgba(139,92,246,0.4)", background: "rgba(139,92,246,0.1)", color: "#8b5cf6" }}
-              >
+                style={{ border: "1px solid rgba(139,92,246,0.4)", background: "rgba(139,92,246,0.1)", color: "#8b5cf6" }}>
                 <Plus className="w-3.5 h-3.5" /> New Rail Slot
               </button>
             </div>
             <PortGateMonitor gates={gates} railSlots={railSlots} />
           </div>
+        )}
+        {activeTab === "fleet" && (
+          <PortFleetManager />
         )}
         {activeTab === "ai" && (
           <PortAIAdvisor portCalls={portCalls} vessels={vessels} cranes={cranes} yardZones={yardZones} gates={gates} orgId={orgId} />
