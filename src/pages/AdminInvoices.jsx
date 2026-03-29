@@ -27,7 +27,10 @@ export default function AdminInvoices() {
     harborCalls: 10,
     addonAirport: false,
     addonPort: false,
-    addonTransit: false
+    addonTransit: false,
+    addonAirportHours: 730,
+    addonPortHours: 730,
+    addonTransitHours: 730
   });
   const queryClient = useQueryClient();
 
@@ -113,9 +116,9 @@ export default function AdminInvoices() {
         addon_airport_ops: invoiceData.addonAirport && org.addon_airport_ops ? true : false,
         addon_port_command: invoiceData.addonPort && org.addon_port_command ? true : false,
         addon_transit_control: invoiceData.addonTransit && org.addon_transit_control ? true : false,
-        addon_airport_ops_price: invoiceData.addonAirport && org.addon_airport_ops ? 2000 : 0,
-        addon_port_command_price: invoiceData.addonPort && org.addon_port_command ? 2000 : 0,
-        addon_transit_control_price: invoiceData.addonTransit && org.addon_transit_control ? 2000 : 0,
+        addon_airport_ops_price: invoiceData.addonAirport && org.addon_airport_ops ? Math.round((2000 / 730) * parseInt(invoiceData.addonAirportHours) * 100) / 100 : 0,
+        addon_port_command_price: invoiceData.addonPort && org.addon_port_command ? Math.round((2000 / 730) * parseInt(invoiceData.addonPortHours) * 100) / 100 : 0,
+        addon_transit_control_price: invoiceData.addonTransit && org.addon_transit_control ? Math.round((2000 / 730) * parseInt(invoiceData.addonTransitHours) * 100) / 100 : 0,
         status: 'pending',
         due_date: dueDate.toISOString().split('T')[0],
         issue_date: now.toISOString().split('T')[0],
@@ -162,7 +165,10 @@ export default function AdminInvoices() {
         harborCalls: 10,
         addonAirport: false,
         addonPort: false,
-        addonTransit: false
+        addonTransit: false,
+        addonAirportHours: 730,
+        addonPortHours: 730,
+        addonTransitHours: 730
       });
       toast.success("Test invoice created successfully");
     },
@@ -292,35 +298,82 @@ export default function AdminInvoices() {
                 </div>
 
                 <div className="border-t border-slate-700 pt-4">
-                  <p className="text-slate-300 font-semibold mb-3 text-sm">Add-ons (€2000/month)</p>
-                  <div className="space-y-2">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={invoiceData.addonAirport}
-                        onChange={(e) => setInvoiceData({...invoiceData, addonAirport: e.target.checked})}
-                        className="rounded"
-                      />
-                      <span className="text-slate-300 text-sm">Airport Ops Center</span>
-                    </label>
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={invoiceData.addonPort}
-                        onChange={(e) => setInvoiceData({...invoiceData, addonPort: e.target.checked})}
-                        className="rounded"
-                      />
-                      <span className="text-slate-300 text-sm">Port Command Center</span>
-                    </label>
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={invoiceData.addonTransit}
-                        onChange={(e) => setInvoiceData({...invoiceData, addonTransit: e.target.checked})}
-                        className="rounded"
-                      />
-                      <span className="text-slate-300 text-sm">Transit Control</span>
-                    </label>
+                  <p className="text-slate-300 font-semibold mb-3 text-sm">Add-ons (€2000/month = €2.73/hour)</p>
+                  <div className="space-y-3">
+                    <div className="space-y-1">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={invoiceData.addonAirport}
+                          onChange={(e) => setInvoiceData({...invoiceData, addonAirport: e.target.checked})}
+                          className="rounded"
+                        />
+                        <span className="text-slate-300 text-sm">Airport Ops Center</span>
+                      </label>
+                      {invoiceData.addonAirport && (
+                        <div className="ml-6 flex items-center gap-2">
+                          <Input
+                            type="number"
+                            min="0"
+                            max="730"
+                            value={invoiceData.addonAirportHours}
+                            onChange={(e) => setInvoiceData({...invoiceData, addonAirportHours: e.target.value})}
+                            className="bg-slate-700 border-slate-600 text-white text-sm w-20"
+                          />
+                          <span className="text-slate-400 text-xs">hours (€{(Math.round((2000 / 730) * parseInt(invoiceData.addonAirportHours) * 100) / 100).toFixed(2)})</span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={invoiceData.addonPort}
+                          onChange={(e) => setInvoiceData({...invoiceData, addonPort: e.target.checked})}
+                          className="rounded"
+                        />
+                        <span className="text-slate-300 text-sm">Port Command Center</span>
+                      </label>
+                      {invoiceData.addonPort && (
+                        <div className="ml-6 flex items-center gap-2">
+                          <Input
+                            type="number"
+                            min="0"
+                            max="730"
+                            value={invoiceData.addonPortHours}
+                            onChange={(e) => setInvoiceData({...invoiceData, addonPortHours: e.target.value})}
+                            className="bg-slate-700 border-slate-600 text-white text-sm w-20"
+                          />
+                          <span className="text-slate-400 text-xs">hours (€{(Math.round((2000 / 730) * parseInt(invoiceData.addonPortHours) * 100) / 100).toFixed(2)})</span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={invoiceData.addonTransit}
+                          onChange={(e) => setInvoiceData({...invoiceData, addonTransit: e.target.checked})}
+                          className="rounded"
+                        />
+                        <span className="text-slate-300 text-sm">Transit Control</span>
+                      </label>
+                      {invoiceData.addonTransit && (
+                        <div className="ml-6 flex items-center gap-2">
+                          <Input
+                            type="number"
+                            min="0"
+                            max="730"
+                            value={invoiceData.addonTransitHours}
+                            onChange={(e) => setInvoiceData({...invoiceData, addonTransitHours: e.target.value})}
+                            className="bg-slate-700 border-slate-600 text-white text-sm w-20"
+                          />
+                          <span className="text-slate-400 text-xs">hours (€{(Math.round((2000 / 730) * parseInt(invoiceData.addonTransitHours) * 100) / 100).toFixed(2)})</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
 
