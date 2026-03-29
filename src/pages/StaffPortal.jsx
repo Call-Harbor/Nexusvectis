@@ -57,9 +57,9 @@ const MODALITIES = {
     name: "Port",
     roles: [
       {
-        id: "gate_operator", label: "Gate Operator", icon: Car, color: "#10b981", desc: "Gate checks & vehicle tracking",
+        id: "berth_operator", label: "Berth Operator", icon: Car, color: "#10b981", desc: "Berth management & vessel docking",
         tabs: [
-          { id: "gates", label: "Gates", icon: Car },
+          { id: "gates", label: "Berths", icon: Car },
           { id: "incidents", label: "Incidents", icon: AlertTriangle },
         ]
       },
@@ -223,6 +223,13 @@ const TAB_PANELS = {
   map: ({ orgId }) => <TerminalMapBuilder orgId={orgId} />,
 };
 
+const getModality = (roleId) => {
+  if (roleId.includes('airport') || roleId.includes('gate_agent') || roleId.includes('security')) return 'airport';
+  if (roleId.includes('port') || roleId.includes('berth') || roleId.includes('crane') || roleId.includes('yard')) return 'port';
+  if (roleId.includes('transit') || roleId.includes('bus') || roleId.includes('depot') || roleId.includes('control')) return 'transit';
+  return 'airport';
+};
+
 export default function StaffPortal() {
   const [modality, setModality] = useState(null);
   const [role, setRole] = useState(null);
@@ -300,7 +307,7 @@ export default function StaffPortal() {
 
       {/* Content */}
       <div className="px-4 pt-4 pb-24 max-w-lg mx-auto">
-        {CurrentPanel && <CurrentPanel orgId={orgId} logAdd={logAdd} />}
+        {CurrentPanel && <CurrentPanel orgId={orgId} logAdd={logAdd} modality={modality} />}
         <ShiftLog log={log} />
       </div>
     </div>
