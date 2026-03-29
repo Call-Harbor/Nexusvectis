@@ -284,17 +284,21 @@ Deno.serve(async (req) => {
 
       generatedInvoices.push(invoice);
       
-      // Deactivate add-ons that didn't reach 48 hours (no access in next period)
+      // Deactivate add-ons immediately if they didn't reach 48 hours
+      // Add-ons that reached 48 hours stay active, will be deactivated next period
       const updateData = {};
       
       if (org.addon_airport_ops_activated_at && !addonAirportOps) {
         updateData.addon_airport_ops = false;
+        updateData.addon_airport_ops_activated_at = null;
       }
       if (org.addon_port_command_activated_at && !addonPortCommand) {
         updateData.addon_port_command = false;
+        updateData.addon_port_command_activated_at = null;
       }
       if (org.addon_transit_control_activated_at && !addonTransitControl) {
         updateData.addon_transit_control = false;
+        updateData.addon_transit_control_activated_at = null;
       }
       
       if (Object.keys(updateData).length > 0) {
