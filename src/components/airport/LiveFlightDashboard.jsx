@@ -268,13 +268,13 @@ export default function LiveFlightDashboard({ orgId }) {
       <div className="grid grid-cols-4 lg:grid-cols-8 gap-2">
         {[
           { label: "TOTAL",     val: kpis.total,       color: "#8b5cf6", sub: null },
-          { label: "TIL TIDEN", val: kpis.onTime,      color: "#10b981", sub: `${kpis.onTimeRate}%` },
-          { label: "FORSINKET", val: kpis.delayed,     color: kpis.delayed > 0 ? "#f59e0b" : "#10b981", sub: kpis.avgDelay > 0 ? `⌀ ${kpis.avgDelay}m` : null },
+          { label: "ON TIME", val: kpis.onTime,      color: "#10b981", sub: `${kpis.onTimeRate}%` },
+          { label: "DELAYED", val: kpis.delayed,     color: kpis.delayed > 0 ? "#f59e0b" : "#10b981", sub: kpis.avgDelay > 0 ? `⌀ ${kpis.avgDelay}m` : null },
           { label: "BOARDING",  val: kpis.boarding,    color: "#06b6d4", sub: null },
-          { label: "AFREJST",   val: kpis.departed,    color: "#a78bfa", sub: null },
-          { label: "LANDET",    val: kpis.landed,      color: "#22d3ee", sub: null },
-          { label: "AFLYST",    val: kpis.cancelled,   color: kpis.cancelled > 0 ? "#f43f5e" : "#334155", sub: null },
-          { label: "M/GATE",    val: kpis.withGate,    color: "#f59e0b", sub: `${kpis.total > 0 ? Math.round((kpis.withGate / kpis.total) * 100) : 0}%` },
+          { label: "DEPARTED",   val: kpis.departed,    color: "#a78bfa", sub: null },
+          { label: "LANDED",    val: kpis.landed,      color: "#22d3ee", sub: null },
+          { label: "CANCELLED",    val: kpis.cancelled,   color: kpis.cancelled > 0 ? "#f43f5e" : "#334155", sub: null },
+          { label: "W/ GATE",    val: kpis.withGate,    color: "#f59e0b", sub: `${kpis.total > 0 ? Math.round((kpis.withGate / kpis.total) * 100) : 0}%` },
         ].map(k => (
           <div key={k.label} className="rounded-2xl px-3 py-3 flex flex-col"
             style={{ background: `${k.color}08`, border: `1.5px solid ${k.color}18` }}>
@@ -299,7 +299,7 @@ export default function LiveFlightDashboard({ orgId }) {
           <AlertTriangle className="w-4 h-4 text-red-400 flex-shrink-0 animate-pulse" />
           <div className="flex-1">
             <p className="text-xs font-black text-red-300">
-              {flights.filter(f => (f.delay_minutes || 0) > 60).length} FLY MED KRITISK FORSINKELSE (&gt;60 MIN)
+              {flights.filter(f => (f.delay_minutes || 0) > 60).length} FLIGHTS WITH CRITICAL DELAY (&gt;60 MIN)
             </p>
             <p className="text-[10px] text-slate-500 mt-0.5">
               {flights.filter(f => (f.delay_minutes || 0) > 60).slice(0, 4).map(f => `${f.flight_number} (+${f.delay_minutes}m)`).join(" · ")}
@@ -313,9 +313,9 @@ export default function LiveFlightDashboard({ orgId }) {
         {/* View toggle */}
         <div className="flex items-center rounded-xl overflow-hidden" style={{ border: "1px solid rgba(51,65,85,0.5)" }}>
           {[
-            { id: "all", label: "ALLE", Icon: Plane },
-            { id: "departures", label: "AFG", Icon: ArrowUp },
-            { id: "arrivals", label: "ANK", Icon: ArrowDown },
+            { id: "all", label: "ALL", Icon: Plane },
+            { id: "departures", label: "DEP", Icon: ArrowUp },
+            { id: "arrivals", label: "ARR", Icon: ArrowDown },
           ].map(v => {
             const active = view === v.id;
             return (
@@ -334,7 +334,7 @@ export default function LiveFlightDashboard({ orgId }) {
             const active = filterStatus === s;
             const cfg = STATUS_CFG[s];
             const color = cfg?.color || "#64748b";
-            const label = cfg?.label || "ALLE";
+            const label = cfg?.label || "ALL";
             return (
               <button key={s} onClick={() => setFilterStatus(s)}
                 className="px-2.5 py-1 rounded-lg text-[9px] font-black tracking-wider uppercase transition-all"
@@ -348,12 +348,12 @@ export default function LiveFlightDashboard({ orgId }) {
         {/* Search */}
         <div className="flex items-center gap-2 flex-1 min-w-[160px] px-3 py-2 rounded-xl" style={{ background: "rgba(0,8,20,0.8)", border: "1px solid rgba(51,65,85,0.4)" }}>
           <Search className="w-3.5 h-3.5 text-slate-600 flex-shrink-0" />
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Søg fly, selskab, gate..."
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search flight, airline, gate..."
             className="flex-1 bg-transparent text-xs text-white placeholder-slate-700 outline-none font-mono" />
           {search && <button onClick={() => setSearch("")} className="text-slate-600 hover:text-slate-400 text-xs">✕</button>}
         </div>
 
-        <p className="text-[9px] text-slate-600 font-mono ml-auto">{filtered.length} FLY</p>
+        <p className="text-[9px] text-slate-600 font-mono ml-auto">{filtered.length} FLIGHTS</p>
       </div>
 
       {/* Flight Table */}
@@ -361,7 +361,7 @@ export default function LiveFlightDashboard({ orgId }) {
         {/* Column Headers */}
         <div className="grid gap-2 px-3 py-2.5 text-[8px] font-black uppercase tracking-widest text-slate-600 border-b border-slate-800/50"
           style={{ gridTemplateColumns: "56px 28px 1fr 64px 56px 52px 100px" }}>
-          <span>TID</span><span></span><span>RUTE</span>
+          <span>TIME</span><span></span><span>ROUTE</span>
           <span className="text-center">GATE</span>
           <span className="text-center">A/C</span>
           <span className="text-center">PAX</span>
@@ -372,14 +372,14 @@ export default function LiveFlightDashboard({ orgId }) {
         <div className="max-h-[56vh] overflow-y-auto">
           {isLoading && (
             <div className="flex items-center justify-center py-16 text-slate-600 gap-2">
-              <RefreshCw className="w-4 h-4 animate-spin" /> Indlæser flydata...
+              <RefreshCw className="w-4 h-4 animate-spin" /> Loading flight data...
             </div>
           )}
           {!isLoading && filtered.length === 0 && (
             <div className="text-center py-16">
               <Plane className="w-8 h-8 mx-auto mb-3 text-slate-800" />
               <p className="text-sm text-slate-700 font-bold">
-                {flights.length === 0 ? `Ingen fly. Klik "SYNC NU" for at hente live data fra ${airportIata}.` : "Ingen fly matcher filteret."}
+                {flights.length === 0 ? `No flights. Click "SYNC NOW" to fetch live data from ${airportIata}.` : "No flights match filter."}
               </p>
             </div>
           )}

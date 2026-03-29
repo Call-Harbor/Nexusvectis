@@ -278,13 +278,13 @@ export default function LiveVesselDashboard({ orgId, portCalls = [], vessels = [
       <div className="grid grid-cols-4 lg:grid-cols-8 gap-2">
         {[
           { label: "TOTAL",    val: kpis.total,     color: "#06b6d4" },
-          { label: "AKTIVE",   val: kpis.active,    color: "#10b981" },
-          { label: "PLANLAGT", val: kpis.planned,   color: "#8b5cf6" },
-          { label: "FORTØJET", val: kpis.berthed,   color: "#22d3ee" },
-          { label: "FORSINKET",val: kpis.delayed,   color: kpis.delayed > 0 ? "#f43f5e" : "#10b981" },
-          { label: "AFSLUTTET",val: kpis.completed, color: "#64748b" },
+          { label: "ACTIVE",   val: kpis.active,    color: "#10b981" },
+          { label: "PLANNED", val: kpis.planned,   color: "#8b5cf6" },
+          { label: "BERTHED", val: kpis.berthed,   color: "#22d3ee" },
+          { label: "DELAYED",val: kpis.delayed,   color: kpis.delayed > 0 ? "#f43f5e" : "#10b981" },
+          { label: "COMPLETED",val: kpis.completed, color: "#64748b" },
           { label: "TOTAL TEU",val: kpis.totalTEU.toLocaleString(), color: "#f59e0b" },
-          { label: "KRITISKE", val: kpis.critical,  color: kpis.critical > 0 ? "#f43f5e" : "#334155" },
+          { label: "CRITICAL", val: kpis.critical,  color: kpis.critical > 0 ? "#f43f5e" : "#334155" },
         ].map(k => (
           <div key={k.label} className="rounded-2xl px-3 py-3 flex flex-col"
             style={{ background: `${k.color}08`, border: `1.5px solid ${k.color}18` }}>
@@ -307,7 +307,7 @@ export default function LiveVesselDashboard({ orgId, portCalls = [], vessels = [
         <div className="flex items-center gap-3 px-4 py-3 rounded-xl" style={{ background: "rgba(244,63,94,0.08)", border: "1px solid rgba(244,63,94,0.25)" }}>
           <AlertTriangle className="w-4 h-4 text-red-400 flex-shrink-0 animate-pulse" />
           <p className="text-xs font-black text-red-300">
-            {portCalls.filter(pc => (pc.delay_minutes || 0) > 120).length} PORT CALLS MED KRITISK FORSINKELSE (&gt;120 MIN)
+            {portCalls.filter(pc => (pc.delay_minutes || 0) > 120).length} PORT CALLS WITH CRITICAL DELAY (&gt;120 MIN)
           </p>
         </div>
       )}
@@ -319,7 +319,7 @@ export default function LiveVesselDashboard({ orgId, portCalls = [], vessels = [
             const active = filterStatus === s;
             const cfg = STATUS_CFG[s];
             const color = cfg?.color || "#64748b";
-            const label = s === "all" ? "ALLE" : cfg?.label || s.toUpperCase();
+            const label = s === "all" ? "ALL" : cfg?.label || s.toUpperCase();
             return (
               <button key={s} onClick={() => setFilterStatus(s)}
                 className="px-2.5 py-1.5 text-[9px] font-black tracking-wider uppercase transition-all"
@@ -336,7 +336,7 @@ export default function LiveVesselDashboard({ orgId, portCalls = [], vessels = [
 
         <div className="flex items-center gap-2 flex-1 min-w-[160px] px-3 py-2 rounded-xl" style={{ background: "rgba(0,8,20,0.8)", border: "1px solid rgba(51,65,85,0.4)" }}>
           <Search className="w-3.5 h-3.5 text-slate-600 flex-shrink-0" />
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Søg skib, agent, type..."
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search vessel, agent, type..."
             className="flex-1 bg-transparent text-xs text-white placeholder-slate-700 outline-none font-mono" />
           {search && <button onClick={() => setSearch("")} className="text-slate-600 hover:text-slate-400 text-xs">✕</button>}
         </div>
@@ -347,10 +347,10 @@ export default function LiveVesselDashboard({ orgId, portCalls = [], vessels = [
       <div className="rounded-2xl overflow-hidden" style={{ background: "rgba(0,8,20,0.85)", border: "1px solid rgba(51,65,85,0.35)" }}>
         <div className="grid gap-2 px-3 py-2.5 text-[8px] font-black uppercase tracking-widest text-slate-600 border-b border-slate-800/50"
           style={{ gridTemplateColumns: "60px 28px 1fr 72px 70px 80px 110px" }}>
-          <span>ETA</span><span></span><span>SKIB</span>
-          <span className="text-center">KAJ</span>
+          <span>ETA</span><span></span><span>VESSEL</span>
+          <span className="text-center">BERTH</span>
           <span className="text-center">TEU</span>
-          <span className="text-center">PRIORITET</span>
+          <span className="text-center">PRIORITY</span>
           <span className="text-right">STATUS</span>
         </div>
         <div className="max-h-[56vh] overflow-y-auto">
@@ -358,7 +358,7 @@ export default function LiveVesselDashboard({ orgId, portCalls = [], vessels = [
             <div className="text-center py-16">
               <Ship className="w-8 h-8 mx-auto mb-3 text-slate-800" />
               <p className="text-sm text-slate-700 font-bold">
-                {portCalls.length === 0 ? 'Ingen port calls. Klik "SYNC AIS" for live data eller tilføj manuelt.' : "Ingen matcher filteret."}
+                {portCalls.length === 0 ? 'No port calls. Click "SYNC AIS" for live data or add manually.' : "No matches filter."}
               </p>
             </div>
           )}
@@ -387,8 +387,8 @@ export default function LiveVesselDashboard({ orgId, portCalls = [], vessels = [
               { label: "IMPORT TEU", val: selectedCall.import_teu ?? "–" },
               { label: "EXPORT TEU", val: selectedCall.export_teu ?? "–" },
               { label: "AGENT", val: selectedCall.agent || "–" },
-              { label: "FORSINKELSE", val: selectedCall.delay_minutes ? `${selectedCall.delay_minutes} min` : "Ingen" },
-              { label: "PRIORITET", val: selectedCall.priority?.toUpperCase() || "NORMAL" },
+              { label: "DELAY", val: selectedCall.delay_minutes ? `${selectedCall.delay_minutes} min` : "None" },
+              { label: "PRIORITY", val: selectedCall.priority?.toUpperCase() || "NORMAL" },
             ].map(row => (
               <div key={row.label} className="flex justify-between items-center py-2 border-b border-slate-800/40">
                 <p className="text-[9px] uppercase tracking-widest text-slate-600">{row.label}</p>

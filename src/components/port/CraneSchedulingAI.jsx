@@ -152,7 +152,7 @@ Return JSON with:
         <div className="rounded-xl p-4" style={{ border: "1px solid rgba(6,182,212,0.15)", background: "rgba(0,10,25,0.6)" }}>
           <p className="text-[9px] font-bold tracking-widest uppercase text-cyan-400 mb-3">AI SCHEDULE RESULT</p>
           {loading && <div className="flex items-center justify-center py-10"><Loader2 className="w-5 h-5 text-cyan-400 animate-spin" /></div>}
-          {!loading && !schedule && <p className="text-slate-600 text-xs text-center py-8">Click "AI Schedule" to optimize</p>
+          {!loading && !schedule && <p className="text-slate-600 text-xs text-center py-8">Click "AI Schedule" to optimize</p>}
           {schedule && !loading && (
             <div className="space-y-3">
               <div className="rounded-lg p-3 text-center" style={{ border: "1px solid rgba(16,185,129,0.3)", background: "rgba(16,185,129,0.08)" }}>
