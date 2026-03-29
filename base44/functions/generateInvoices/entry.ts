@@ -283,6 +283,23 @@ Deno.serve(async (req) => {
       });
 
       generatedInvoices.push(invoice);
+      
+      // Deactivate add-ons that didn't reach 48 hours (no access in next period)
+      const updateData = {};
+      
+      if (org.addon_airport_ops_activated_at && !addonAirportOps) {
+        updateData.addon_airport_ops = false;
+      }
+      if (org.addon_port_command_activated_at && !addonPortCommand) {
+        updateData.addon_port_command = false;
+      }
+      if (org.addon_transit_control_activated_at && !addonTransitControl) {
+        updateData.addon_transit_control = false;
+      }
+      
+      if (Object.keys(updateData).length > 0) {
+        await base44.asServiceRole.entities.Organization.update(org.id, updateData);
+      }
 
       // Send email notification to organization admin
       try {
