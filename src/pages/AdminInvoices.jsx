@@ -113,12 +113,12 @@ export default function AdminInvoices() {
         fleetai_commands: parseInt(invoiceData.fleetaiCommands) || 0,
         api_calls: parseInt(invoiceData.apiCalls) || 0,
         harbor_intelligence_calls: parseInt(invoiceData.harborCalls) || 0,
-        addon_airport_ops: invoiceData.addonAirport && org.addon_airport_ops ? true : false,
-        addon_port_command: invoiceData.addonPort && org.addon_port_command ? true : false,
-        addon_transit_control: invoiceData.addonTransit && org.addon_transit_control ? true : false,
-        addon_airport_ops_price: invoiceData.addonAirport && org.addon_airport_ops ? Math.round((2000 / 730) * parseInt(invoiceData.addonAirportHours) * 100) / 100 : 0,
-        addon_port_command_price: invoiceData.addonPort && org.addon_port_command ? Math.round((2000 / 730) * parseInt(invoiceData.addonPortHours) * 100) / 100 : 0,
-        addon_transit_control_price: invoiceData.addonTransit && org.addon_transit_control ? Math.round((2000 / 730) * parseInt(invoiceData.addonTransitHours) * 100) / 100 : 0,
+        addon_airport_ops: invoiceData.addonAirport && org.addon_airport_ops && parseInt(invoiceData.addonAirportHours) >= 48 ? true : false,
+        addon_port_command: invoiceData.addonPort && org.addon_port_command && parseInt(invoiceData.addonPortHours) >= 48 ? true : false,
+        addon_transit_control: invoiceData.addonTransit && org.addon_transit_control && parseInt(invoiceData.addonTransitHours) >= 48 ? true : false,
+        addon_airport_ops_price: invoiceData.addonAirport && org.addon_airport_ops && parseInt(invoiceData.addonAirportHours) >= 48 ? Math.round((2000 / 730) * parseInt(invoiceData.addonAirportHours) * 100) / 100 : 0,
+        addon_port_command_price: invoiceData.addonPort && org.addon_port_command && parseInt(invoiceData.addonPortHours) >= 48 ? Math.round((2000 / 730) * parseInt(invoiceData.addonPortHours) * 100) / 100 : 0,
+        addon_transit_control_price: invoiceData.addonTransit && org.addon_transit_control && parseInt(invoiceData.addonTransitHours) >= 48 ? Math.round((2000 / 730) * parseInt(invoiceData.addonTransitHours) * 100) / 100 : 0,
         status: 'pending',
         due_date: dueDate.toISOString().split('T')[0],
         issue_date: now.toISOString().split('T')[0],
@@ -320,7 +320,12 @@ export default function AdminInvoices() {
                             onChange={(e) => setInvoiceData({...invoiceData, addonAirportHours: e.target.value})}
                             className="bg-slate-700 border-slate-600 text-white text-sm w-20"
                           />
-                          <span className="text-slate-400 text-xs">hours (€{(Math.round((2000 / 730) * parseInt(invoiceData.addonAirportHours) * 100) / 100).toFixed(2)})</span>
+                          <span className="text-slate-400 text-xs">
+                            {parseInt(invoiceData.addonAirportHours) >= 48 
+                              ? `€${(Math.round((2000 / 730) * parseInt(invoiceData.addonAirportHours) * 100) / 100).toFixed(2)}`
+                              : '€0 (< 48 hours)'
+                            }
+                          </span>
                         </div>
                       )}
                     </div>
@@ -345,7 +350,12 @@ export default function AdminInvoices() {
                             onChange={(e) => setInvoiceData({...invoiceData, addonPortHours: e.target.value})}
                             className="bg-slate-700 border-slate-600 text-white text-sm w-20"
                           />
-                          <span className="text-slate-400 text-xs">hours (€{(Math.round((2000 / 730) * parseInt(invoiceData.addonPortHours) * 100) / 100).toFixed(2)})</span>
+                          <span className="text-slate-400 text-xs">
+                            {parseInt(invoiceData.addonPortHours) >= 48 
+                              ? `€${(Math.round((2000 / 730) * parseInt(invoiceData.addonPortHours) * 100) / 100).toFixed(2)}`
+                              : '€0 (< 48 hours)'
+                            }
+                          </span>
                         </div>
                       )}
                     </div>
@@ -370,7 +380,12 @@ export default function AdminInvoices() {
                             onChange={(e) => setInvoiceData({...invoiceData, addonTransitHours: e.target.value})}
                             className="bg-slate-700 border-slate-600 text-white text-sm w-20"
                           />
-                          <span className="text-slate-400 text-xs">hours (€{(Math.round((2000 / 730) * parseInt(invoiceData.addonTransitHours) * 100) / 100).toFixed(2)})</span>
+                          <span className="text-slate-400 text-xs">
+                            {parseInt(invoiceData.addonTransitHours) >= 48 
+                              ? `€${(Math.round((2000 / 730) * parseInt(invoiceData.addonTransitHours) * 100) / 100).toFixed(2)}`
+                              : '€0 (< 48 hours)'
+                            }
+                          </span>
                         </div>
                       )}
                     </div>
