@@ -41,6 +41,41 @@ export default function Settings() {
   const [invoiceSettingsId, setInvoiceSettingsId] = useState(null);
   const queryClient = useQueryClient();
 
+  const loadUserData = async () => {
+    try {
+      const currentUser = await base44.auth.me();
+      setUser(currentUser);
+      
+      const orgId = currentUser.organization_id || currentUser.data?.organization_id;
+      if (orgId) {
+        const org = await base44.entities.Organization.filter({ id: orgId });
+        if (org.length > 0) {
+          setOrganization(org[0]);
+          setOrgName(org[0].name);
+        }
+      }
+      
+      // Load invoice settings
+      const settings = await base44.entities.InvoiceSettings.list();
+      if (settings.length > 0) {
+        const s = settings[0];
+        setInvoiceSettings(s);
+        setInvoiceSettingsId(s.id);
+        
+        // Load accounting defaults if they exist
+        setAccountingDefaults({
+          accounting_account: s.accounting_account || "",
+          cost_center: s.cost_center || "",
+          project_number: s.project_number || "",
+          reference_number: s.reference_number || "",
+          accounting_notes: s.accounting_notes || ""
+        });
+      }
+    } catch (error) {
+      console.error("Error loading user data:", error);
+    }
+  };
+
   useEffect(() => {
     loadUserData();
   }, []);
