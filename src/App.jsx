@@ -11,6 +11,7 @@ import HolographicInterface from './pages/HolographicInterface';
 import BlogPostDetail from './pages/BlogPostDetail';
 import BlogAIAnalysis from './pages/BlogAIAnalysis';
 import CEODashboard from './pages/CEODashboard';
+import BillingDashboard from './pages/BillingDashboard';
 import NexusOrbit from './pages/NexusOrbit';
 import TransitControl from './pages/TransitControl';
 import ScenarioStudio from './pages/ScenarioStudio';
@@ -150,6 +151,14 @@ const AuthenticatedApp = () => {
         }
       />
       <Route path="/StaffManagement" element={<StaffManagement />} />
+      <Route
+        path="/BillingDashboard"
+        element={
+          <LayoutWrapper currentPageName="BillingDashboard">
+            <BillingDashboard />
+          </LayoutWrapper>
+        }
+      />
 
       <Route path="*" element={<PageNotFound />} />
     </Routes>
