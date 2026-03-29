@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { Plane, Shield, Package, Users, AlertTriangle, Cpu, BarChart3, Leaf, Plus, Zap, Map, GitBranch, Car, Activity } from "lucide-react";
@@ -85,31 +85,31 @@ export default function AirportOpsCenter() {
       {/* Header */}
       <div className="relative border-b border-cyan-900/40" style={{ background: "linear-gradient(180deg, rgba(0,15,35,0.99) 0%, rgba(0,8,20,0.99) 100%)" }}>
         <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, #8b5cf6, #06b6d4, transparent)" }} />
-        <div className="px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="relative w-10 h-10 flex items-center justify-center">
+        <div className="px-4 sm:px-6 py-3 sm:py-4 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="relative w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center">
               <svg className="absolute" width="40" height="40" viewBox="0 0 40 40">
                 <polygon points="20,3 35,10 35,30 20,37 5,30 5,10" fill="rgba(139,92,246,0.08)" stroke="#8b5cf6" strokeWidth="1" />
               </svg>
-              <Plane className="w-5 h-5 relative z-10" style={{ color: "#8b5cf6" }} />
+              <Plane className="w-4 h-4 sm:w-5 sm:h-5 relative z-10" style={{ color: "#8b5cf6" }} />
             </div>
             <div>
-              <h1 className="text-lg font-bold tracking-[0.25em] uppercase" style={{ color: "#8b5cf6", textShadow: "0 0 20px rgba(139,92,246,0.6)" }}>
+              <h1 className="text-sm sm:text-lg font-bold tracking-[0.15em] sm:tracking-[0.25em] uppercase" style={{ color: "#8b5cf6", textShadow: "0 0 20px rgba(139,92,246,0.6)" }}>
                 NEXUSVECTIS AIRPORT OPS
               </h1>
-              <p className="text-[9px] tracking-[0.3em] uppercase" style={{ color: "rgba(139,92,246,0.4)" }}>
+              <p className="text-[8px] sm:text-[9px] tracking-[0.2em] sm:tracking-[0.3em] uppercase hidden sm:block" style={{ color: "rgba(139,92,246,0.4)" }}>
                 AI-POWERED AIRPORT OPERATIONS COMMAND CENTER
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-5">
+          <div className="flex items-center flex-wrap gap-3 sm:gap-5">
             {[
               { label: "ACTIVE FLIGHTS", val: activeFlights.length, color: "#8b5cf6" },
               { label: "DELAYED", val: delayedFlights.length, color: delayedFlights.length > 0 ? "#f43f5e" : "#10b981" },
               { label: "SEC LANES", val: securityLanes.filter(l => l.status === "open").length, color: "#06b6d4" },
               { label: "STAFF ON DUTY", val: staff.filter(s => ["on_duty","assigned"].includes(s.status)).length, color: "#10b981" },
             ].map(k => (
-              <div key={k.label} className="text-center">
+              <div key={k.label} className="text-center hidden sm:block">
                 <p className="text-[8px] tracking-widest uppercase" style={{ color: "rgba(139,92,246,0.4)" }}>{k.label}</p>
                 <p className="text-2xl font-bold" style={{ color: k.color }}>{k.val}</p>
               </div>
@@ -136,24 +136,27 @@ export default function AirportOpsCenter() {
       <AirportKPIBanner flights={flights} securityLanes={securityLanes} gates={gates} tasks={tasks} bags={bags} staff={staff} />
 
       {/* Tabs */}
-      <div className="flex border-b border-slate-800/60 px-6 pt-2">
+      <div className="border-b border-slate-800/60 overflow-x-auto scrollbar-none">
+        <div className="flex px-3 sm:px-6 pt-2 min-w-max">
         {TABS.map(tab => {
           const Icon = tab.icon;
           const active = activeTab === tab.id;
           return (
             <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-              className="flex items-center gap-2 px-4 py-2.5 text-[10px] font-bold tracking-widest uppercase transition-all border-b-2 mr-1"
+              className="flex items-center gap-1.5 px-3 sm:px-4 py-2.5 text-[9px] sm:text-[10px] font-bold tracking-widest uppercase transition-all border-b-2 mr-1 whitespace-nowrap flex-shrink-0"
               style={{
                 color: active ? "#8b5cf6" : "rgba(100,116,139,0.6)",
                 borderColor: active ? "#8b5cf6" : "transparent",
                 background: active ? "rgba(139,92,246,0.05)" : "transparent",
                 textShadow: active ? "0 0 8px rgba(139,92,246,0.4)" : "none",
               }}>
-              <Icon className="w-3.5 h-3.5" />
-              {tab.label}
+              <Icon className="w-3 h-3 sm:w-3.5 sm:h-3.5 flex-shrink-0" />
+              <span className="hidden sm:inline">{tab.label}</span>
+              <span className="sm:hidden">{tab.label.split(" ")[0]}</span>
             </button>
           );
         })}
+        </div>
       </div>
 
       {/* Content */}
