@@ -570,36 +570,32 @@ export default function Home() {
                   </p>
                 </motion.div>
 
-                <div className="max-w-4xl mx-auto mb-16">
-                  <div className="grid md:grid-cols-2 gap-8">
+                <div className="max-w-5xl mx-auto mb-16">
+                  <div className="grid md:grid-cols-3 gap-8">
                     {[
                       {
-                        icon: Truck,
-                        title: "Per Vehicle",
-                        price: "€15",
-                        unit: "/month",
-                        description: "Track each vehicle in your fleet with real-time monitoring"
-                      },
-                      {
-                        icon: Warehouse,
-                        title: "Per Resource",
-                        price: "€40",
-                        unit: "/month",
-                        description: "Monitor warehouses, fuel depots, charging stations and ports"
-                      },
-                      {
                         icon: Sparkles,
-                        title: "FLEET AI Commands",
-                        price: "€5",
-                        unit: "/100 commands",
-                        description: "Natural language fleet operations executed through AI"
+                        title: "Airport Ops Center",
+                        price: "€2,000",
+                        unit: "/month",
+                        description: "AI-powered airport operations, gate allocation, security monitoring, ground handling, baggage tracking, and passenger flow optimization",
+                        color: "from-cyan-500 to-blue-500"
                       },
                       {
-                        icon: Radio,
-                        title: "API Calls",
-                        price: "€5",
-                        unit: "/100 calls",
-                        description: "Direct API access for custom integrations and automation"
+                        icon: Satellite,
+                        title: "Port Command Center",
+                        price: "€2,000",
+                        unit: "/month",
+                        description: "Maritime operations with berth optimization, vessel queue management, crane scheduling, container tracking, and port infrastructure control",
+                        color: "from-blue-500 to-violet-500"
+                      },
+                      {
+                        icon: Orbit,
+                        title: "Transit Control",
+                        price: "€2,000",
+                        unit: "/month",
+                        description: "Public transit management with passenger analytics, crowding prediction, network optimization, demand forecasting, and sustainability tracking",
+                        color: "from-emerald-500 to-cyan-500"
                       }
                     ].map((item, idx) => {
                       const Icon = item.icon;
@@ -627,282 +623,25 @@ export default function Home() {
                         </motion.div>
                       );
                     })}
-                  </div>
-                </div>
+                    </div>
+                    </div>
 
-                <motion.div
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  className="max-w-2xl mx-auto rounded-3xl bg-gradient-to-br from-slate-900/50 to-slate-950/50 border border-slate-700/50 p-8 md:p-10 mb-16"
-                >
-                  <h3 className="text-2xl font-bold text-white mb-6">Example: Small Fleet Setup</h3>
-                  <div className="space-y-4 mb-6">
-                    <div className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10">
-                      <span className="text-slate-300">5 vehicles × €15</span>
-                      <span className="text-cyan-400 font-semibold">€75</span>
-                    </div>
-                    <div className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10">
-                      <span className="text-slate-300">1 warehouse × €40</span>
-                      <span className="text-cyan-400 font-semibold">€40</span>
-                    </div>
-                    <div className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10">
-                      <span className="text-slate-300">2,000 FLEET AI commands (€5 per 100)</span>
-                      <span className="text-cyan-400 font-semibold">€100</span>
-                    </div>
-                    <div className="border-t border-slate-700/50 pt-4 flex items-center justify-between">
-                      <span className="text-white font-semibold">Monthly Total</span>
-                      <span className="text-3xl font-black bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent">
-                        €215
-                      </span>
-                    </div>
-                  </div>
-                </motion.div>
-
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  viewport={{ once: true }}
-                  className="text-center"
-                >
-                  <p className="text-slate-400 mb-6">Invoices are generated automatically every month. Cancel anytime.</p>
-                  <button
+                    <motion.div
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
+                    viewport={{ once: true }}
+                    className="text-center mt-12"
+                    >
+                    <p className="text-slate-400 mb-6">Activate premium modules to unlock advanced fleet operations. Cancel anytime.</p>
+                    <button
                     onClick={() => base44.auth.redirectToLogin(createPageUrl("Dashboard"))}
                     className="bg-gradient-to-r from-cyan-500 to-violet-500 text-white text-lg px-8 py-4 rounded-2xl font-semibold hover:shadow-lg hover:shadow-cyan-500/50 transition-all"
-                  >
-                    Get Started
-                  </button>
-                </motion.div>
-              </div>
-            </section>
-
-            {/* Technology Stack Section */}
-            <section className="relative py-20 sm:py-32 px-4 sm:px-6 z-10">
-              <div className="max-w-7xl mx-auto">
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  className="text-center mb-20"
-                >
-                  <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-6 px-2">
-                    Built on
-                    <br />
-                    <span className="bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent">
-                      Cutting-Edge Technology
-                    </span>
-                  </h2>
-                  <p className="text-base sm:text-lg md:text-xl text-slate-400 max-w-3xl mx-auto px-2">
-                    Enterprise infrastructure that scales with your business
-                  </p>
-                </motion.div>
-
-                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-                  {[
-                    { icon: Globe, title: "Multi-Signal Tracking", desc: "GPS, AIS, ADS-B, LoRa" },
-                    { icon: Brain, title: "Advanced AI Models", desc: "GPT-4, Claude, Mistral" },
-                    { icon: Shield, title: "Bank-Level Security", desc: "SOC 2, ISO 27001" },
-                    { icon: Zap, title: "Real-Time Processing", desc: "Sub-second updates" }
-                  ].map((tech, idx) => {
-                    const Icon = tech.icon;
-                    return (
-                      <motion.div
-                        key={idx}
-                        initial={{ opacity: 0, y: 30 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: idx * 0.1 }}
-                        whileHover={{ scale: 1.05, rotateY: 5 }}
-                        className="relative p-8 rounded-3xl bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl border border-white/10 hover:border-cyan-500/50 transition-all group"
-                      >
-                        <motion.div
-                          animate={{
-                            y: [0, -10, 0],
-                          }}
-                          transition={{ duration: 2, repeat: Infinity, delay: idx * 0.3 }}
-                        >
-                          <Icon className="w-12 h-12 text-cyan-400 mb-4" />
-                        </motion.div>
-                        <h3 className="text-xl font-bold text-white mb-2">{tech.title}</h3>
-                        <p className="text-slate-400 text-sm">{tech.desc}</p>
-
-                        <motion.div
-                          className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-violet-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity"
-                          animate={{
-                            scale: [1, 1.05, 1],
-                          }}
-                          transition={{ duration: 2, repeat: Infinity }}
-                        />
-                      </motion.div>
-                    );
-                  })}
-                </div>
-                </div>
-                </section>
-
-                {/* Swarm Intelligence Section */}
-      <section className="relative py-20 sm:py-32 px-4 sm:px-6 z-10">
-        <div className="max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <motion.div
-              animate={{ rotate: [0, 360] }}
-              transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-              className="inline-block mb-6"
-            >
-              <Network className="w-12 h-12 text-emerald-400" />
-            </motion.div>
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/30 mb-6">
-              <Bug className="w-3.5 h-3.5 text-emerald-400" />
-              <span className="text-emerald-300 text-sm font-semibold">Next-Gen Technology</span>
-            </div>
-            <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-6 leading-tight px-2">
-              Swarm Intelligence
-              <br />
-              <span className="bg-gradient-to-r from-emerald-400 via-cyan-400 to-violet-400 bg-clip-text text-transparent">
-                Coordination
-              </span>
-            </h2>
-            <p className="text-base sm:text-lg md:text-xl text-slate-400 max-w-3xl mx-auto leading-relaxed px-2">
-              Mimicking nature's collective intelligence from ants, bees and bird flocks — 
-              each vehicle operates as an autonomous agent coordinating with the fleet via edge computing, with no central brain required.
-            </p>
-          </motion.div>
-
-          {/* Nature Principles */}
-          <div className="grid md:grid-cols-3 gap-6 mb-16">
-            {[
-              {
-                icon: Bug,
-                color: "emerald",
-                title: "Ants & Pheromones",
-                description: "Ants find optimal routes by leaving pheromone trails — in NexusVectis this translates to digital signals. Agents share real-time data like traffic and weather via mesh networks, enabling the entire fleet to self-adjust collectively."
-              },
-              {
-                icon: Wifi,
-                color: "cyan",
-                title: "Emergent Behaviour",
-                description: "No single failure paralyses the system — other agents compensate automatically. The result is emergent fleet behaviour: resilience and self-healing without manual intervention."
-              },
-              {
-                icon: Dna,
-                color: "violet",
-                title: "Genetic Learning",
-                description: "The swarm \"evolves\" over time based on past trips via genetic algorithms — becoming smarter for European weather conditions, seasonal variations and demand spikes."
-              }
-            ].map((item, idx) => {
-              const Icon = item.icon;
-              return (
-                <motion.div
-                  key={idx}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: idx * 0.15 }}
-                  whileHover={{ scale: 1.03, y: -8 }}
-                  className={`relative p-8 rounded-3xl bg-gradient-to-br from-${item.color}-500/10 to-${item.color}-500/5 border border-${item.color}-500/30 hover:border-${item.color}-400/50 transition-all overflow-hidden group`}
-                >
-                  <motion.div
-                    animate={{ scale: [1, 1.4, 1], opacity: [0.2, 0.4, 0.2] }}
-                    transition={{ duration: 4, repeat: Infinity, delay: idx * 0.8 }}
-                    className={`absolute -top-8 -right-8 w-32 h-32 bg-${item.color}-500/20 rounded-full blur-2xl`}
-                  />
-                  <div className={`w-14 h-14 rounded-2xl bg-${item.color}-500/20 border border-${item.color}-500/30 flex items-center justify-center mb-5`}>
-                    <Icon className={`w-7 h-7 text-${item.color}-400`} />
-                  </div>
-                  <h3 className="text-xl font-bold text-white mb-3">{item.title}</h3>
-                  <p className="text-slate-400 leading-relaxed text-sm">{item.description}</p>
-                </motion.div>
-              );
-            })}
-          </div>
-
-          {/* Technical Components */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="rounded-[2.5rem] bg-gradient-to-br from-slate-900/70 to-slate-950/70 border border-slate-700/50 p-10 md:p-14 mb-16 overflow-hidden relative"
-          >
-            <div className="absolute inset-0 bg-[linear-gradient(rgba(16,185,129,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(16,185,129,0.03)_1px,transparent_1px)] bg-[size:60px_60px]" />
-            <div className="relative z-10">
-              <h3 className="text-3xl font-bold text-white text-center mb-10">Technical Components</h3>
-              <div className="grid md:grid-cols-3 gap-6">
-                {[
-                  {
-                    icon: Cpu,
-                    title: "Edge AI on every node",
-                    tech: "5G · LoRaWAN · Neural nets",
-                    description: "Each vehicle runs lightweight neural networks for local decision-making — e.g. rerouting in traffic chaos — while data syncs with nearby nodes."
-                  },
-                  {
-                    icon: GitBranch,
-                    title: "Stigmergy communication",
-                    tech: "PSO · ACO · P2P mesh",
-                    description: "Indirect environmental signals — updated maps, load data — guide the fleet. Supplemented with direct peer-to-peer messages for complex tasks like load balancing."
-                  },
-                  {
-                    icon: Network,
-                    title: "Self-organisation",
-                    tech: "Particle Swarm · Ant Colony",
-                    description: "Algorithms like PSO and ACO simulate dynamic routes. Nodes autonomously balance sessions under peak load without manual intervention."
-                  }
-                ].map((comp, idx) => {
-                  const Icon = comp.icon;
-                  return (
-                    <motion.div
-                      key={idx}
-                      initial={{ opacity: 0 }}
-                      whileInView={{ opacity: 1 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: idx * 0.1 }}
-                      className="p-6 rounded-2xl bg-slate-800/40 border border-slate-700/50 hover:border-emerald-500/30 transition-all group"
                     >
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center">
-                          <Icon className="w-5 h-5 text-emerald-400" />
-                        </div>
-                        <div>
-                          <p className="text-white font-semibold text-sm">{comp.title}</p>
-                          <p className="text-emerald-400/70 text-[10px] font-mono">{comp.tech}</p>
-                        </div>
-                      </div>
-                      <p className="text-slate-400 text-sm leading-relaxed">{comp.description}</p>
+                    Get Started
+                    </button>
                     </motion.div>
-                  );
-                })}
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Impact Stats */}
-          <div className="grid md:grid-cols-3 gap-6">
-            {[
-              { value: "30%", label: "Fewer Delays", desc: "Collective route optimisation in traffic chaos reduces delays in simulations" },
-              { value: "∞", label: "Scalability", desc: "Eliminates single points of failure — the swarm scales infinitely with the fleet" },
-              { value: "0", label: "Central Control Needed", desc: "Agents coordinate autonomously — no central brain that can fail" },
-            ].map((stat, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.15 }}
-                whileHover={{ scale: 1.05, y: -5 }}
-                className="text-center p-8 rounded-2xl bg-gradient-to-br from-emerald-500/10 to-cyan-500/5 border border-emerald-500/20 hover:border-emerald-400/40 transition-all"
-              >
-                <div className="text-5xl font-black bg-gradient-to-br from-emerald-400 to-cyan-400 bg-clip-text text-transparent mb-2">{stat.value}</div>
-                <p className="text-white font-bold mb-2">{stat.label}</p>
-                <p className="text-slate-400 text-sm leading-relaxed">{stat.desc}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
+                    </div>
+                    </section>
 
       {/* Digital Twin Federation Section */}
       <section className="relative py-20 sm:py-32 px-4 sm:px-6 z-10">
