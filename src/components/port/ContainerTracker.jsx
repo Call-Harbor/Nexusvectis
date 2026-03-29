@@ -55,11 +55,11 @@ export default function ContainerTracker({ orgId }) {
     <div className="space-y-4">
       <div className="grid grid-cols-5 gap-3">
         {[
-          { label: "Total Containere", val: containers.length, color: "#06b6d4" },
+          { label: "Total Containers", val: containers.length, color: "#06b6d4" },
           { label: "Reefer", val: reeferCount, color: "#8b5cf6" },
-          { label: "Farligt gods", val: dgCount, color: "#f43f5e" },
-          { label: "Toldhold", val: customsHold, color: customsHold > 0 ? "#f43f5e" : "#10b981" },
-          { label: "Lang opbev. (>5d)", val: longDwell, color: longDwell > 10 ? "#f59e0b" : "#10b981" },
+          { label: "Dangerous Goods", val: dgCount, color: "#f43f5e" },
+          { label: "Customs Hold", val: customsHold, color: customsHold > 0 ? "#f43f5e" : "#10b981" },
+          { label: "Long Storage (>5d)", val: longDwell, color: longDwell > 10 ? "#f59e0b" : "#10b981" },
         ].map(k => (
           <div key={k.label} className="rounded-xl p-3 text-center" style={{ border: `1px solid ${k.color}25`, background: `${k.color}08` }}>
             <p className="text-[8px] uppercase tracking-widest mb-1" style={{ color: `${k.color}70` }}>{k.label}</p>
@@ -82,7 +82,7 @@ export default function ContainerTracker({ orgId }) {
                 background: filterStatus === s ? `${STATUS_COLOR[s] || "rgba(6,182,212,0.2)"}20` : "rgba(15,23,42,0.5)",
                 border: `1px solid ${filterStatus === s ? (STATUS_COLOR[s] || "#06b6d4") + "60" : "rgba(30,41,59,0.6)"}`,
                 color: filterStatus === s ? STATUS_COLOR[s] || "#06b6d4" : "#64748b"
-              }}>{s === "all" ? "Alle" : s.replace(/_/g, " ")}</button>
+              }}>{s === "all" ? "All" : s.replace(/_/g, " ")}</button>
           ))}
         </div>
         <div className="flex gap-1">
@@ -93,7 +93,7 @@ export default function ContainerTracker({ orgId }) {
                 background: filterType === t ? `${TYPE_COLOR[t] || "rgba(139,92,246,0.2)"}20` : "rgba(15,23,42,0.5)",
                 border: `1px solid ${filterType === t ? (TYPE_COLOR[t] || "#8b5cf6") + "60" : "rgba(30,41,59,0.6)"}`,
                 color: filterType === t ? TYPE_COLOR[t] || "#8b5cf6" : "#64748b"
-              }}>{t === "all" ? "Alle typer" : t.replace(/_/g, " ")}</button>
+              }}>{t === "all" ? "All types" : t.replace(/_/g, " ")}</button>
           ))}
         </div>
         <span className="text-[9px] text-slate-500 ml-auto">{filtered.length} / {containers.length}</span>
@@ -106,10 +106,10 @@ export default function ContainerTracker({ orgId }) {
           <span>Position</span><span>Dwell</span><span>Næste move</span><span>Cut-off</span>
         </div>
         <div className="overflow-y-auto" style={{ maxHeight: "400px" }}>
-          {isLoading && <div className="text-center py-8 text-slate-600 text-xs">Loader...</div>}
+          {isLoading && <div className="text-center py-8 text-slate-600 text-xs">Loading...</div>}
           {!isLoading && filtered.length === 0 && (
             <div className="text-center py-8 text-slate-600 text-xs">
-              {containers.length === 0 ? "Ingen containere registreret" : "Ingen resultater"}
+              {containers.length === 0 ? "No containers registered" : "No results"}
             </div>
           )}
           {filtered.map((c, i) => {
@@ -140,7 +140,7 @@ export default function ContainerTracker({ orgId }) {
                   ) : <span className="text-slate-700">—</span>}
                 </span>
                 <span className={`self-center text-[9px] ${isCutoffSoon ? "text-red-400 font-bold" : "text-slate-500"}`}>
-                  {c.cutoff ? new Date(c.cutoff).toLocaleDateString("da-DK", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "—"}
+                  {c.cutoff ? new Date(c.cutoff).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "—"}
                 </span>
               </div>
             );

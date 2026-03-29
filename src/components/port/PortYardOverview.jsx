@@ -28,9 +28,9 @@ export default function PortYardOverview({ yardZones, equipment, orgId }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-[10px] font-bold tracking-[0.3em] uppercase" style={{ color: "#06b6d4" }}>YARD OVERBLIK</h2>
+        <h2 className="text-[10px] font-bold tracking-[0.3em] uppercase" style={{ color: "#06b6d4" }}>YARD OVERVIEW</h2>
         <div className="flex items-center gap-2 text-[9px]" style={{ color: "rgba(100,116,139,0.5)" }}>
-          <span>Total belægning:</span>
+          <span>Total occupancy:</span>
           <span className="font-bold" style={{ color: overallOcc > 85 ? "#f43f5e" : overallOcc > 70 ? "#f59e0b" : "#10b981" }}>{overallOcc}%</span>
           <span>({totalOccupied}/{totalSlots} slots)</span>
         </div>
@@ -39,10 +39,10 @@ export default function PortYardOverview({ yardZones, equipment, orgId }) {
       {/* Summary Cards */}
       <div className="grid grid-cols-4 gap-3">
         {[
-          { label: "Reefer Containere", value: reeferContainers, color: "#3b82f6", icon: Thermometer },
-          { label: "Farligt Gods", value: dgContainers, color: "#f43f5e", icon: AlertTriangle },
-          { label: "Dwell > 5 dage", value: dwellOver5, color: "#f59e0b", icon: Package },
-          { label: "Udstyr i Yard", value: equipment.filter(e => e.status === "working").length, color: "#10b981", icon: Package },
+          { label: "Reefer Containers", value: reeferContainers, color: "#3b82f6", icon: Thermometer },
+          { label: "Dangerous Goods", value: dgContainers, color: "#f43f5e", icon: AlertTriangle },
+          { label: "Dwell > 5 days", value: dwellOver5, color: "#f59e0b", icon: Package },
+          { label: "Equipment in Yard", value: equipment.filter(e => e.status === "working").length, color: "#10b981", icon: Package },
         ].map(item => {
           const Icon = item.icon;
           return (
@@ -62,7 +62,7 @@ export default function PortYardOverview({ yardZones, equipment, orgId }) {
         {yardZones.length === 0 && (
           <div className="col-span-3 text-center py-16 rounded-xl" style={{ border: "1px solid rgba(6,182,212,0.1)", color: "rgba(100,116,139,0.4)" }}>
             <Package className="w-12 h-12 mx-auto mb-3 opacity-20" />
-            <p className="text-xs tracking-widest uppercase">Ingen yard-zoner konfigureret</p>
+            <p className="text-xs tracking-widest uppercase">No yard zones configured</p>
           </div>
         )}
         {yardZones.map(zone => {
@@ -89,7 +89,7 @@ export default function PortYardOverview({ yardZones, equipment, orgId }) {
               {/* Occupancy Bar */}
               <div className="mb-3">
                 <div className="flex justify-between mb-1">
-                  <p className="text-[7px] uppercase tracking-widest" style={{ color: "rgba(100,116,139,0.4)" }}>BELÆGNING</p>
+                  <p className="text-[7px] uppercase tracking-widest" style={{ color: "rgba(100,116,139,0.4)" }}>OCCUPANCY</p>
                   <p className="text-[9px] font-bold" style={{ color: occ > 85 ? "#f43f5e" : occ > 70 ? "#f59e0b" : zColor }}>{occ}%</p>
                 </div>
                 <div className="h-2 rounded-full bg-slate-800 overflow-hidden">
@@ -119,7 +119,7 @@ export default function PortYardOverview({ yardZones, equipment, orgId }) {
       {/* Equipment Status */}
       {equipment.length > 0 && (
         <div>
-          <p className="text-[9px] font-bold tracking-[0.25em] uppercase mb-3" style={{ color: "rgba(100,116,139,0.6)" }}>UDSTYRSSTATUS</p>
+          <p className="text-[9px] font-bold tracking-[0.25em] uppercase mb-3" style={{ color: "rgba(100,116,139,0.6)" }}>EQUIPMENT STATUS</p>
           <div className="grid grid-cols-6 gap-2">
             {equipment.map(eq => (
               <div key={eq.id} className="rounded-lg p-3 text-center" style={{
