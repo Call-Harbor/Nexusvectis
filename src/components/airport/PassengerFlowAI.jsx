@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Users, TrendingUp, Loader2, AlertCircle } from "lucide-react";
+import SecurityPeakTimeline from "./SecurityPeakTimeline";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 
 const CHECKPOINTS = [
@@ -79,35 +80,10 @@ Return JSON with:
 
   return (
     <div className="space-y-4">
-      {/* Header */}
-      <div className="rounded-xl p-4 flex items-center justify-between" style={{ border: "1px solid rgba(6,182,212,0.2)", background: "rgba(0,10,25,0.6)" }}>
-        <div className="flex items-center gap-3">
-          <Users className="w-5 h-5 text-cyan-400" />
-          <div>
-            <h2 className="text-[10px] font-bold tracking-[0.3em] uppercase text-cyan-400">PASSENGER FLOW & QUEUE AI</h2>
-            <p className="text-[9px] text-slate-500">Predictive queue management · {totalPaxNext2h.toLocaleString()} PAX in next 2h</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            <span className="text-[9px] text-slate-500 uppercase tracking-widest">Horizon</span>
-            {[15, 30, 60].map(h => (
-              <button key={h} onClick={() => setHorizon(h)}
-                className="px-2.5 py-1 rounded text-[9px] font-bold transition-all"
-                style={{ background: horizon === h ? "rgba(6,182,212,0.2)" : "rgba(15,23,42,0.5)", border: `1px solid ${horizon === h ? "rgba(6,182,212,0.5)" : "rgba(30,41,59,0.8)"}`, color: horizon === h ? "#06b6d4" : "#64748b" }}>
-                +{h}m
-              </button>
-            ))}
-          </div>
-          <button onClick={runPrediction} disabled={loading}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-[9px] font-bold uppercase tracking-widest transition-all"
-            style={{ background: "rgba(6,182,212,0.15)", border: "1px solid rgba(6,182,212,0.4)", color: "#06b6d4" }}>
-            {loading ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Predicting...</> : <><TrendingUp className="w-3.5 h-3.5" /> Run AI Prediction</>}
-          </button>
-        </div>
-      </div>
+      {/* Security Peak Timeline — 60 min forecast */}
+      <SecurityPeakTimeline flights={flights} securityLanes={securityLanes} />
 
-      {/* Live checkpoint cards */}
+      {/* Header */}
       <div className="grid grid-cols-5 gap-3">
         {CHECKPOINTS.map(cp => {
           const lane = securityLanes.find(l => l.name?.toLowerCase().includes(cp.id)) || null;
