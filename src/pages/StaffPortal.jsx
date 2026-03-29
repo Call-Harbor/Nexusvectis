@@ -247,9 +247,15 @@ export default function StaffPortal() {
   const [org, setOrg] = useState(null);
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [staffRequest, setStaffRequest] = useState(null);
+  const [requestSubmitted, setRequestSubmitted] = useState(false);
+  const [selectedOrgId, setSelectedOrgId] = useState("");
+  const [staffName, setStaffName] = useState("");
+  const [staffPhone, setStaffPhone] = useState("");
+  const [allOrgs, setAllOrgs] = useState([]);
   const [time, setTime] = useState(new Date());
-  const [showRequestModal, setShowRequestModal] = useState(false);
   const { log, add: logAdd } = useShiftLog();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     const loadUser = async () => {
@@ -263,10 +269,29 @@ export default function StaffPortal() {
         
         const u = await base44.auth.me();
         setUser(u);
-        if (u?.organization_id) {
-          setOrgId(u.organization_id);
-          const orgs = await base44.entities.Organization.filter({ id: u.organization_id });
-          setOrg(orgs[0] || null);
+        
+        // Fetch all organizations
+        const orgs = await base44.entities.Organization.list("-created_date", 100);
+        setAllOrgs(orgs);
+        
+        // Check for staff request
+        if (u?.email) {
+          const requests = await base44.entities.DriverRequest.filter({
+            driver_email: u.email,
+            request_type: "staff"
+          }, "-created_date", 1);
+          if (requests.length > 0) {
+            setStaffRequest(requests[0]);
+          }
+          
+          // If approved, set organization
+          if (requests.length > 0 && requests[0].status === "approved") {
+            const orgData = await base44.entities.Organization.filter({ id: requests[0].organization_id });
+            if (orgData.length > 0) {
+              setOrg(orgData[0]);
+              setOrgId(orgData[0].id);
+            }
+          }
         }
       } catch (error) {
         setUser(null);
@@ -278,6 +303,26 @@ export default function StaffPortal() {
     const t = setInterval(() => setTime(new Date()), 30000);
     return () => clearInterval(t);
   }, []);
+
+  const submitRequestMutation = useMutation({
+    mutationFn: (data) => base44.entities.DriverRequest.create(data),
+    onSuccess: () => {
+      setRequestSubmitted(true);
+      queryClient.invalidateQueries({ queryKey: ["staff-request", user?.email] });
+    },
+  });
+
+  const handleSubmitRequest = () => {
+    if (!selectedOrgId || !staffName.trim() || !user?.email) return;
+    submitRequestMutation.mutate({
+      organization_id: selectedOrgId,
+      driver_email: user.email,
+      driver_name: staffName.trim(),
+      driver_phone: staffPhone.trim() || null,
+      request_type: "staff",
+      status: "pending"
+    });
+  };
 
   const selectRole = (r) => {
     setRole(r);
@@ -295,7 +340,7 @@ export default function StaffPortal() {
     </div>
   );
 
-  // Not authenticated - show request modal
+  // Not authenticated - show sign in
   if (!user) return (
     <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
       <div className="max-w-md w-full p-8 rounded-2xl bg-slate-900/80 border border-violet-500/20 backdrop-blur-xl text-center">
@@ -313,6 +358,124 @@ export default function StaffPortal() {
     </div>
   );
 
+  // Pending or rejected request state
+  if (staffRequest && staffRequest.status === "pending") {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
+        <div className="max-w-md w-full p-8 rounded-2xl bg-slate-900/80 border border-amber-500/20 backdrop-blur-xl text-center">
+          <Clock className="w-16 h-16 text-amber-400 mx-auto mb-4 animate-pulse" />
+          <h1 className="text-white font-black text-xl mb-2">Request Pending</h1>
+          <p className="text-slate-400 text-sm mb-2">
+            Your request to join <span className="text-violet-400 font-semibold">{allOrgs.find(o => o.id === staffRequest.organization_id)?.name || "organization"}</span> is awaiting approval.
+          </p>
+          <p className="text-slate-600 text-xs">You'll be notified once an administrator approves your request.</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (staffRequest && staffRequest.status === "rejected") {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
+        <div className="max-w-md w-full p-8 rounded-2xl bg-slate-900/80 border border-red-500/20 backdrop-blur-xl text-center">
+          <AlertCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
+          <h1 className="text-white font-black text-xl mb-2">Request Rejected</h1>
+          <p className="text-slate-400 text-sm mb-6">
+            Your request to join {allOrgs.find(o => o.id === staffRequest.organization_id)?.name || "the organization"} was not approved.
+          </p>
+          <button onClick={() => setStaffRequest(null)}
+            className="w-full py-3 px-4 rounded-xl bg-violet-500/20 border border-violet-500/40 text-violet-300 font-semibold hover:bg-violet-500/30 transition-all text-sm">
+            Request Another Organization
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // No request yet - show form
+  if (!staffRequest) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="max-w-md w-full"
+        >
+          <div className="p-8 rounded-2xl bg-slate-900/80 border border-violet-500/20 backdrop-blur-xl">
+            <div className="p-3 rounded-xl bg-gradient-to-br from-violet-500/20 to-violet-500/10 border border-violet-500/30 w-fit mb-6">
+              <Zap className="w-6 h-6 text-violet-400" />
+            </div>
+            <h1 className="text-white font-black text-xl mb-1">Staff Portal</h1>
+            <p className="text-violet-400/60 text-xs mb-6">Request Organization Access</p>
+
+            {requestSubmitted ? (
+              <div className="text-center py-6">
+                <CheckCircle2 className="w-16 h-16 text-emerald-400 mx-auto mb-4" />
+                <p className="text-white font-bold text-lg mb-2">Request Submitted!</p>
+                <p className="text-slate-400 text-sm">
+                  Your request has been sent to the organization. You'll receive access once approved.
+                </p>
+              </div>
+            ) : (
+              <>
+                <p className="text-slate-400 text-sm mb-6">
+                  To use Staff Portal, request access to your organization. An administrator will approve your request.
+                </p>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-slate-300 text-sm mb-2 block">Your Full Name</label>
+                    <input
+                      type="text"
+                      value={staffName}
+                      onChange={(e) => setStaffName(e.target.value)}
+                      placeholder="John Doe"
+                      className="w-full px-4 py-3 rounded-xl bg-slate-800/60 border border-slate-700/50 text-white placeholder-slate-600 focus:outline-none focus:border-violet-500/40"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-slate-300 text-sm mb-2 block">Phone Number (Optional)</label>
+                    <input
+                      type="tel"
+                      value={staffPhone}
+                      onChange={(e) => setStaffPhone(e.target.value)}
+                      placeholder="+45 12 34 56 78"
+                      className="w-full px-4 py-3 rounded-xl bg-slate-800/60 border border-slate-700/50 text-white placeholder-slate-600 focus:outline-none focus:border-violet-500/40"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-slate-300 text-sm mb-2 block">Select Organization</label>
+                    <select
+                      value={selectedOrgId}
+                      onChange={(e) => setSelectedOrgId(e.target.value)}
+                      className="w-full px-4 py-3 rounded-xl bg-slate-800/60 border border-slate-700/50 text-white focus:outline-none focus:border-violet-500/40"
+                    >
+                      <option value="">Choose organization...</option>
+                      {allOrgs.map((org) => (
+                        <option key={org.id} value={org.id}>{org.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <button
+                    onClick={handleSubmitRequest}
+                    disabled={!selectedOrgId || !staffName.trim() || submitRequestMutation.isPending}
+                    className="w-full py-3 rounded-xl bg-violet-500/20 border border-violet-500/40 text-violet-300 font-semibold hover:bg-violet-500/30 disabled:opacity-50 transition-all"
+                  >
+                    {submitRequestMutation.isPending ? "Submitting..." : "Request Access"}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
+  // Approved - show modality selector
   if (!modality) return <ModalitySelector onSelect={setModality} />;
   if (!role) return <RoleSelector modality={modality} onSelect={selectRole} onBack={() => setModality(null)} org={org} />;
 
