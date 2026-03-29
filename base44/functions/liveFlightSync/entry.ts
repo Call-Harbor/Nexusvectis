@@ -42,9 +42,8 @@ Deno.serve(async (req) => {
   const gateByCode = {};
   existingGates.forEach(g => { if (g.gate_code) gateByCode[g.gate_code.toUpperCase()] = g; });
 
-  let synced = 0;
-  let created = 0;
-  let updated = 0;
+  const toCreate = [];
+  const toUpdate = []; // [{id, data}]
   const gateUpdates = {};
 
   for (const raw of allFlights) {
@@ -52,9 +51,7 @@ Deno.serve(async (req) => {
     if (!fn) continue;
 
     const isDep = raw.departure?.iata === airport_iata;
-    const isArr = raw.arrival?.iata === airport_iata;
 
-    // Map AviationStack status → our status
     const statusMap = {
       "scheduled": "on_time",
       "active": isDep ? "boarding" : "on_time",
@@ -66,24 +63,16 @@ Deno.serve(async (req) => {
     };
     const status = statusMap[raw.flight_status] || "on_time";
 
-    // Parse delay
     let delayMinutes = 0;
     if (isDep && raw.departure?.delay) delayMinutes = parseInt(raw.departure.delay) || 0;
-    if (isArr && raw.arrival?.delay) delayMinutes = parseInt(raw.arrival.delay) || 0;
-    if (delayMinutes > 0 && status === "on_time") {}  // keep delayed implicit from delay_minutes
+    if (!isDep && raw.arrival?.delay) delayMinutes = parseInt(raw.arrival.delay) || 0;
 
-    // Gate
     const gateCode = isDep ? (raw.departure?.gate || null) : (raw.arrival?.gate || null);
-
-    // ETA/ETD
-    const eta = isArr
-      ? (raw.arrival?.estimated || raw.arrival?.actual || raw.arrival?.scheduled)
-      : (raw.departure?.estimated || raw.departure?.actual || raw.departure?.scheduled);
 
     const flightData = {
       flight_number: fn,
       airline: raw.airline?.name || "",
-      origin: isArr ? (raw.departure?.iata || raw.departure?.airport || "") : airport_iata,
+      origin: (!isDep) ? (raw.departure?.iata || raw.departure?.airport || "") : airport_iata,
       destination: isDep ? (raw.arrival?.iata || raw.arrival?.airport || "") : airport_iata,
       status,
       delay_minutes: delayMinutes,
@@ -100,31 +89,38 @@ Deno.serve(async (req) => {
 
     const existing = flightByNumber[fn];
     if (existing) {
-      await base44.asServiceRole.entities.Flight.update(existing.id, flightData);
-      updated++;
-      // Update gate assignment if gate is known
+      toUpdate.push({ id: existing.id, data: flightData });
       if (gateCode) {
-        const gc = gateCode.toUpperCase();
-        const gate = gateByCode[gc];
-        if (gate && gate.current_flight_id !== existing.id) {
-          gateUpdates[gate.id] = { current_flight_id: existing.id, status: "occupied" };
-        }
+        const gate = gateByCode[gateCode.toUpperCase()];
+        if (gate) gateUpdates[gate.id] = { current_flight_id: existing.id, status: "occupied" };
       }
     } else {
-      const newFlight = await base44.asServiceRole.entities.Flight.create(flightData);
-      created++;
-      if (gateCode) {
-        const gc = gateCode.toUpperCase();
-        const gate = gateByCode[gc];
-        if (gate) gateUpdates[gate.id] = { current_flight_id: newFlight.id, status: "occupied" };
-      }
+      toCreate.push(flightData);
     }
-    synced++;
   }
 
+  // Bulk create new flights
+  let created = 0;
+  if (toCreate.length > 0) {
+    await base44.asServiceRole.entities.Flight.bulkCreate(toCreate);
+    created = toCreate.length;
+  }
+
+  // Batch update existing (in chunks of 20 to avoid rate limits)
+  let updated = 0;
+  const CHUNK = 20;
+  for (let i = 0; i < toUpdate.length; i += CHUNK) {
+    const chunk = toUpdate.slice(i, i + CHUNK);
+    await Promise.all(chunk.map(({ id, data }) => base44.asServiceRole.entities.Flight.update(id, data)));
+    updated += chunk.length;
+    if (i + CHUNK < toUpdate.length) await new Promise(r => setTimeout(r, 300));
+  }
+
+  const synced = created + updated;
+
   // Apply gate updates
-  for (const [gateId, data] of Object.entries(gateUpdates)) {
-    await base44.asServiceRole.entities.AirportGate.update(gateId, data);
+  if (Object.keys(gateUpdates).length > 0) {
+    await Promise.all(Object.entries(gateUpdates).map(([gid, d]) => base44.asServiceRole.entities.AirportGate.update(gid, d)));
   }
 
   return Response.json({
