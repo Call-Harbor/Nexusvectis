@@ -147,41 +147,41 @@ export default function AirportReports() {
     setLoadingAI(true);
     try {
       const res = await base44.integrations.Core.InvokeLLM({
-        prompt: `Du er Airport Operations Rapport AI. Generer en professionel dansk daglig driftsrapport.
+        prompt: `You are an Airport Operations Report AI. Generate a professional daily operations report.
 
-Data for ${moment(selectedDate).format("DD. MMMM YYYY")}:
+Data for ${moment(selectedDate).format("DD/MM/YYYY")}:
 
-FLY:
-- Total fly: ${metrics.todayFlights.length}
-- Til tiden: ${metrics.onTime.length} (${metrics.onTimeRate}%)
-- Forsinkede: ${metrics.delayed.length}, gns. forsinkelse ${metrics.avgDelay} min
-- Aflyst: ${metrics.cancelled.length}
-- Total passagerer: ${metrics.totalPax.toLocaleString()}
-- Gns. pax/fly: ${metrics.avgPax}
+FLIGHTS:
+- Total flights: ${metrics.todayFlights.length}
+- On-time: ${metrics.onTime.length} (${metrics.onTimeRate}%)
+- Delayed: ${metrics.delayed.length}, avg delay ${metrics.avgDelay} min
+- Cancelled: ${metrics.cancelled.length}
+- Total passengers: ${metrics.totalPax.toLocaleString()}
+- Avg pax per flight: ${metrics.avgPax}
 
 SECURITY:
-- Åbne baner: ${metrics.openLanes}/${securityLanes.length}
-- Gns. ventetid: ${metrics.avgSecWait} min
-- Max ventetid: ${metrics.maxSecWait} min
+- Open lanes: ${metrics.openLanes}/${securityLanes.length}
+- Avg wait time: ${metrics.avgSecWait} min
+- Max wait time: ${metrics.maxSecWait} min
 
-ENERGI:
-- Samlet forbrug: ${metrics.totalEnergy} kWh/t
-- Fly CO₂: ${(metrics.totalCO2 / 1000).toFixed(1)} t
-- Brændstof uplift: ${(metrics.totalFuel / 1000).toFixed(1)} t
+ENERGY:
+- Total consumption: ${metrics.totalEnergy} kWh/h
+- Flight CO₂: ${(metrics.totalCO2 / 1000).toFixed(1)} t
+- Fuel uplift: ${(metrics.totalFuel / 1000).toFixed(1)} t
 
 GROUND HANDLING:
-- Opgaver gennemført: ${metrics.completedTasks}/${tasks.length} (${metrics.taskRate}%)
-- Mishandlet bagage: ${metrics.mishandledBags} (${metrics.mishandledRate}%)
-- Personale udnyttelse: ${metrics.staffUtil}%
+- Tasks completed: ${metrics.completedTasks}/${tasks.length} (${metrics.taskRate}%)
+- Mishandled baggage: ${metrics.mishandledBags} (${metrics.mishandledRate}%)
+- Staff utilization: ${metrics.staffUtil}%
 
 Return JSON:
-- executive_summary: string (3-4 sætninger, professionel tone)
-- performance_rating: "Fremragende"|"God"|"Acceptabel"|"Under standard"
-- top_achievements: array of 3 strings (dagens succeser)
-- key_issues: array of 3 strings (problemer der kræver opmærksomhed)
-- ai_recommendations: array of 5 {category: string, recommendation: string, priority: "høj"|"medium"|"lav", impact: string}
-- tomorrow_focus: array of 3 strings (prioriteter til i morgen)
-- benchmark_vs_industry: string (sammenligning med branchestandard)`,
+- executive_summary: string (3-4 sentences, professional tone)
+- performance_rating: "Excellent"|"Good"|"Acceptable"|"Below Standard"
+- top_achievements: array of 3 strings (today's successes)
+- key_issues: array of 3 strings (issues requiring attention)
+- ai_recommendations: array of 5 {category: string, recommendation: string, priority: "high"|"medium"|"low", impact: string}
+- tomorrow_focus: array of 3 strings (priorities for tomorrow)
+- benchmark_vs_industry: string (comparison to industry standard)`,
         response_json_schema: {
           type: "object",
           properties: {
