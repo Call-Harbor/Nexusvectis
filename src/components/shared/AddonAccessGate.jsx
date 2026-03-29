@@ -49,7 +49,7 @@ export default function AddonAccessGate({ addonKey, icon: Icon, title, descripti
 
         <h1 className="text-3xl font-bold text-white mb-3">{title}</h1>
         <p className="text-slate-400 mb-2 leading-relaxed">{description}</p>
-        <p className="text-slate-500 text-sm mb-8">Dette modul kræver en aktiv licens og faktureres automatisk på din månedlige faktura.</p>
+        <p className="text-slate-500 text-sm mb-8">This module requires an active license and will be automatically billed on your monthly invoice.</p>
 
         {/* Pricing card */}
         <div className="rounded-2xl p-6 mb-8 text-left" style={{ background: `${accentColor}08`, border: `1px solid ${accentColor}25` }}>
@@ -59,11 +59,11 @@ export default function AddonAccessGate({ addonKey, icon: Icon, title, descripti
           </div>
           <ul className="space-y-2">
             {[
-              "Fuld AI-drevet operationscentral",
-              "Realtidsdata & live tracking",
-              "AI Co-Pilot & scenarieanalyse",
-              "Automatisk fakturering via månedsfaktura",
-              "Kan deaktiveres til enhver tid fra Settings"
+              "Full AI-powered operations command center",
+                "Real-time data & live tracking",
+                "AI Co-Pilot & scenario analysis",
+                "Automatic billing via monthly invoice",
+                "Can be disabled anytime from Settings"
             ].map((feat, i) => (
               <li key={i} className="flex items-center gap-2 text-sm text-slate-300">
                 <CheckCircle className="w-4 h-4 flex-shrink-0" style={{ color: accentColor }} />
@@ -78,11 +78,11 @@ export default function AddonAccessGate({ addonKey, icon: Icon, title, descripti
           className="inline-flex items-center gap-2 px-8 py-3 rounded-xl font-semibold text-sm transition-all hover:opacity-90"
           style={{ background: `linear-gradient(135deg, ${accentColor}, #8b5cf6)`, color: "white" }}
         >
-          Aktivér i Settings
+          Enable in Settings
           <ArrowRight className="w-4 h-4" />
         </Link>
 
-        <p className="text-slate-600 text-xs mt-4">Kun administratorer kan aktivere add-ons</p>
+        <p className="text-slate-600 text-xs mt-4">Only administrators can enable add-ons</p>
       </div>
     </div>
   );
