@@ -93,19 +93,25 @@ Deno.serve(async (req) => {
       const fleetAIPricePer100 = 5;
       const apiPricePer100 = 5;
       const harborPricePerCall = 0.25;
+      const addonPrice = 2000;
+
+      const addonAirportOps = org.addon_airport_ops === true;
+      const addonPortCommand = org.addon_port_command === true;
       
       const vehicleTotal = vehicleCount * vehiclePriceEuro;
       const resourceTotal = resourceCount * resourcePriceEuro;
       const fleetAITotal = Math.ceil(fleetAICommands / 100) * fleetAIPricePer100;
       const apiTotal = Math.ceil(apiCalls / 100) * apiPricePer100;
       const harborTotal = harborCalls * harborPricePerCall;
+      const airportOpsTotal = addonAirportOps ? addonPrice : 0;
+      const portCommandTotal = addonPortCommand ? addonPrice : 0;
       
       // Determine tax rules based on buyer country
       const buyerCountry = org.headquarters_country || 'Denmark';
       const taxRules = TAX_RULES[buyerCountry] || TAX_RULES['Denmark'];
 
       // Calculate VAT
-      const subtotal = vehicleTotal + resourceTotal + fleetAITotal + apiTotal + harborTotal;
+      const subtotal = vehicleTotal + resourceTotal + fleetAITotal + apiTotal + harborTotal + airportOpsTotal + portCommandTotal;
       const isEUCrossBorder = buyerCountry !== 'Denmark' && taxRules.requires_vat_id;
       const reverseCharge = isEUCrossBorder; // EU B2B reverse charge
       const vatRate = reverseCharge ? 0 : taxRules.vat_rate;
@@ -159,6 +165,22 @@ Deno.serve(async (req) => {
           total: harborTotal
         });
       }
+      if (addonAirportOps) {
+        lineItems.push({
+          description: 'Airport Ops Center — Månedslicens (Add-on)',
+          quantity: 1,
+          unit_price: addonPrice,
+          total: airportOpsTotal
+        });
+      }
+      if (addonPortCommand) {
+        lineItems.push({
+          description: 'Port Command Center — Månedslicens (Add-on)',
+          quantity: 1,
+          unit_price: addonPrice,
+          total: portCommandTotal
+        });
+      }
       
       // Legal notes based on country
       let legalNotes = '';
@@ -200,6 +222,10 @@ Deno.serve(async (req) => {
         api_price_per_100: apiPricePer100,
         harbor_intelligence_calls: harborCalls,
         harbor_intelligence_price_per_call: harborPricePerCall,
+        addon_airport_ops: addonAirportOps,
+        addon_port_command: addonPortCommand,
+        addon_airport_ops_price: airportOpsTotal,
+        addon_port_command_price: portCommandTotal,
         subtotal: subtotal,
         vat_rate: vatRate,
         vat_amount: vatAmount,

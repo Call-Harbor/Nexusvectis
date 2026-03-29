@@ -7,7 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Building2, Key, User as UserIcon, Save, Loader2, Trash2, AlertTriangle } from "lucide-react";
+import { Building2, Key, User as UserIcon, Save, Loader2, Trash2, AlertTriangle, Plane, Ship, CheckCircle, XCircle, Package } from "lucide-react";
+import { toast } from "sonner";
 import { toast } from "sonner";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
@@ -19,6 +20,7 @@ export default function Settings() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [saving, setSaving] = useState(false);
+  const [addonSaving, setAddonSaving] = useState(null);
   const [invoiceSettings, setInvoiceSettings] = useState({
     company_name: "NexusVectis ApS",
     vat_number: "",
@@ -43,6 +45,23 @@ export default function Settings() {
   useEffect(() => {
     loadUserData();
   }, []);
+
+  const toggleAddon = async (addonKey, currentValue) => {
+    const orgId = user?.organization_id || user?.data?.organization_id;
+    if (!orgId) { toast.error("Organization not found"); return; }
+    if (user?.role !== 'admin') { toast.error("Only admins can manage add-ons"); return; }
+    setAddonSaving(addonKey);
+    try {
+      await base44.entities.Organization.update(orgId, { [addonKey]: !currentValue });
+      const updated = await base44.entities.Organization.filter({ id: orgId });
+      if (updated[0]) setOrganization(updated[0]);
+      toast.success(!currentValue ? "Add-on aktiveret! Det tilføjes automatisk til din næste faktura." : "Add-on deaktiveret.");
+    } catch (e) {
+      toast.error("Kunne ikke opdatere add-on");
+    } finally {
+      setAddonSaving(null);
+    }
+  };
 
   const loadUserData = async () => {
     try {
@@ -225,6 +244,10 @@ export default function Settings() {
                 Invoice Settings
               </TabsTrigger>
             )}
+            <TabsTrigger value="addons" className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400">
+              <Package className="w-4 h-4 mr-2" />
+              Add-ons
+            </TabsTrigger>
             <TabsTrigger value="security" className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400">
               <Key className="w-4 h-4 mr-2" />
               Security
@@ -793,6 +816,65 @@ export default function Settings() {
                 </Button>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="addons">
+            <div className="space-y-4">
+              <Card className="bg-slate-900/50 border-slate-800">
+                <CardHeader>
+                  <CardTitle className="text-white">Module Add-ons</CardTitle>
+                  <CardDescription className="text-slate-400">
+                    Aktivér premium moduler — faktureres automatisk på din månedlige faktura (€2.000/md. per modul)
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {[
+                    { key: "addon_airport_ops", label: "Airport Ops Center", desc: "AI-drevet lufthavnsoperationscentral med realtidsflyvninger, bagagesporing, sikkerhedsmonitorering og AI Co-Pilot.", icon: Plane, color: "#8b5cf6" },
+                    { key: "addon_port_command", label: "Port Command Center", desc: "AI-drevet havneoperationscentral med live AIS-tracking, kranplanlægning, containertracking og AI-rådgiver.", icon: Ship, color: "#06b6d4" },
+                  ].map(addon => {
+                    const active = organization?.[addon.key] === true;
+                    const Icon = addon.icon;
+                    return (
+                      <div key={addon.key} className="flex items-start gap-4 p-4 rounded-xl border transition-all" style={{ borderColor: active ? `${addon.color}40` : "rgba(100,116,139,0.2)", background: active ? `${addon.color}08` : "rgba(15,23,42,0.4)" }}>
+                        <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: `${addon.color}15`, border: `1px solid ${addon.color}30` }}>
+                          <Icon className="w-6 h-6" style={{ color: addon.color }} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="text-white font-semibold">{addon.label}</h3>
+                            {active
+                              ? <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-semibold" style={{ background: `${addon.color}20`, color: addon.color }}><CheckCircle className="w-3 h-3" />AKTIV</span>
+                              : <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-semibold bg-slate-700/50 text-slate-400"><XCircle className="w-3 h-3" />INAKTIV</span>
+                            }
+                          </div>
+                          <p className="text-slate-400 text-sm mb-3">{addon.desc}</p>
+                          <div className="flex items-center justify-between">
+                            <span className="text-white font-bold">€2.000 <span className="text-slate-500 font-normal text-sm">/md.</span></span>
+                            {user?.role === 'admin' ? (
+                              <Button
+                                onClick={() => toggleAddon(addon.key, active)}
+                                disabled={addonSaving === addon.key}
+                                size="sm"
+                                className={active ? "bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-600/30" : ""}
+                                style={!active ? { background: `linear-gradient(135deg, ${addon.color}80, #8b5cf690)`, color: "white" } : {}}
+                              >
+                                {addonSaving === addon.key ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : null}
+                                {active ? "Deaktivér" : "Aktivér nu"}
+                              </Button>
+                            ) : (
+                              <span className="text-slate-500 text-xs">Kun admin kan ændre</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                    <p className="text-amber-400 text-xs">💡 Add-ons aktiveres øjeblikkeligt og tilføjes automatisk som linjer på din næste månedlige faktura. Du kan deaktivere dem igen til enhver tid.</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           <TabsContent value="security">

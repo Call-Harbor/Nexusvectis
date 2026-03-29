@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { Plane, Shield, Package, Users, AlertTriangle, Cpu, BarChart3, Leaf, Plus, Zap, Map, GitBranch, Car, Activity } from "lucide-react";
+import AddonAccessGate from "@/components/shared/AddonAccessGate";
 import moment from "moment";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -46,7 +47,7 @@ const TABS = [
   { id: "infra", label: "INFRASTRUCTURE", icon: Plus },
 ];
 
-export default function AirportOpsCenter() {
+function AirportOpsCenterContent() {
   const [activeTab, setActiveTab] = useState("operations");
   const [orgId, setOrgId] = useState(null);
   const [dataReady, setDataReady] = useState(false);
@@ -170,7 +171,6 @@ export default function AirportOpsCenter() {
             <NowPanel flights={flights} securityLanes={securityLanes} gates={gates} />
           </div>
         )}
-
         {activeTab === "ground" && (
           <div className="space-y-4">
             <TurnaroundAI flights={flights} tasks={tasks} />
@@ -196,62 +196,32 @@ export default function AirportOpsCenter() {
             </div>
           </div>
         )}
-
         {activeTab === "security" && (
           <div className="grid grid-cols-2 gap-4">
             <SecurityMonitor securityLanes={securityLanes} staff={staff} />
             <GateMap gates={gates} flights={flights} />
           </div>
         )}
-
         {activeTab === "baggage" && (
           <div className="space-y-4">
             <SmartBaggageAI bags={bags} flights={flights} />
             <BaggageTracker bags={bags} flights={flights} />
           </div>
         )}
-
-        {activeTab === "staff" && (
-          <StaffResourcePanel staff={staff} />
-        )}
-
+        {activeTab === "staff" && <StaffResourcePanel staff={staff} />}
         {activeTab === "ai" && (
           <div className="h-[600px]">
             <AirportAIAdvisor flights={flights} securityLanes={securityLanes} gates={gates} tasks={tasks} bags={bags} />
           </div>
         )}
-
-        {activeTab === "heatmap" && (
-          <TerminalHeatmap flights={flights} securityLanes={securityLanes} bags={bags} gates={gates} />
-        )}
-
-        {activeTab === "terminal2d" && (
-          <Terminal2DLayout flights={flights} gates={gates} securityLanes={securityLanes} bags={bags} />
-        )}
-
-        {activeTab === "landside" && (
-          <LandsideMonitor flights={flights} orgId={orgId} />
-        )}
-
-        {activeTab === "pax_flow" && (
-          <PassengerFlowAI flights={flights} securityLanes={securityLanes} staff={staff} />
-        )}
-
-        {activeTab === "gate_ai" && (
-          <GateAllocationAI gates={gates} flights={flights} />
-        )}
-
-        {activeTab === "scenario" && (
-          <AirportScenarioEngine flights={flights} gates={gates} securityLanes={securityLanes} />
-        )}
-
-        {activeTab === "sustainability" && (
-          <AirportSustainability flights={flights} tasks={tasks} />
-        )}
-
-        {activeTab === "infra" && (
-          <AirportInfraManager />
-        )}
+        {activeTab === "heatmap" && <TerminalHeatmap flights={flights} securityLanes={securityLanes} bags={bags} gates={gates} />}
+        {activeTab === "terminal2d" && <Terminal2DLayout flights={flights} gates={gates} securityLanes={securityLanes} bags={bags} />}
+        {activeTab === "landside" && <LandsideMonitor flights={flights} orgId={orgId} />}
+        {activeTab === "pax_flow" && <PassengerFlowAI flights={flights} securityLanes={securityLanes} staff={staff} />}
+        {activeTab === "gate_ai" && <GateAllocationAI gates={gates} flights={flights} />}
+        {activeTab === "scenario" && <AirportScenarioEngine flights={flights} gates={gates} securityLanes={securityLanes} />}
+        {activeTab === "sustainability" && <AirportSustainability flights={flights} tasks={tasks} />}
+        {activeTab === "infra" && <AirportInfraManager />}
       </div>
 
       <AddFlightDialog
@@ -262,6 +232,20 @@ export default function AirportOpsCenter() {
         onSuccess={() => queryClient.invalidateQueries({ queryKey: ["flights_airport"] })}
       />
     </div>
+  );
+}
+
+export default function AirportOpsCenter() {
+  return (
+    <AddonAccessGate
+      addonKey="addon_airport_ops"
+      icon={Plane}
+      title="Airport Ops Center"
+      description="AI-drevet lufthavnsoperationscentral med realtidsflyvninger, bagagesporing, sikkerhedsmonitorering og AI Co-Pilot."
+      color="#8b5cf6"
+    >
+      <AirportOpsCenterContent />
+    </AddonAccessGate>
   );
 }
 

@@ -13,6 +13,7 @@ import PortNowPanel from "@/components/port/PortNowPanel";
 import PortFleetManager from "@/components/port/PortFleetManager";
 import LiveVesselDashboard from "@/components/port/LiveVesselDashboard";
 import { Ship, Anchor, Cpu, BarChart3, AlertTriangle, Leaf, Zap, Plus, Package, Map, Activity, GitBranch, Layers } from "lucide-react";
+import AddonAccessGate from "@/components/shared/AddonAccessGate";
 import CraneSchedulingAI from "../components/port/CraneSchedulingAI";
 import ContainerTracker from "../components/port/ContainerTracker";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -33,7 +34,7 @@ const TABS = [
   { id: "sustainability", label: "CO₂", icon: Leaf },
 ];
 
-export default function PortCommandCenter() {
+function PortCommandCenterContent() {
   const [activeTab, setActiveTab] = useState("operations");
   const [orgId, setOrgId] = useState(null);
   const [selectedPortCall, setSelectedPortCall] = useState(null);
@@ -268,6 +269,20 @@ export default function PortCommandCenter() {
         onSuccess={() => queryClient.invalidateQueries({queryKey: ["portCalls"]})}
       />
     </div>
+  );
+}
+
+export default function PortCommandCenter() {
+  return (
+    <AddonAccessGate
+      addonKey="addon_port_command"
+      icon={Ship}
+      title="Port Command Center"
+      description="AI-drevet havneoperationscentral med live AIS-tracking, kranplanlægning, containertracking og AI-rådgiver."
+      color="#06b6d4"
+    >
+      <PortCommandCenterContent />
+    </AddonAccessGate>
   );
 }
 

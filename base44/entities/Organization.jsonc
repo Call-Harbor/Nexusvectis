@@ -1,0 +1,54 @@
+{
+  "name": "Organization",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Organization name"
+    },
+    "admin_email": {
+      "type": "string",
+      "description": "Email of organization admin"
+    },
+    "headquarters_country": {
+      "type": "string",
+      "description": "Country where headquarters is located"
+    },
+    "headquarters_city": {
+      "type": "string",
+      "description": "City where headquarters is located"
+    },
+    "address": {
+      "type": "string",
+      "description": "Full business address"
+    },
+    "vat_number": {
+      "type": "string",
+      "description": "VAT/CVR registration number"
+    },
+    "company_registration": {
+      "type": "string",
+      "description": "Company registration number (CVR, VAT, etc.)"
+    },
+    "settings": {
+      "type": "object",
+      "description": "Organization settings"
+    },
+    "addon_airport_ops": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether Airport Ops Center module is activated (\u20ac2000/month)"
+    },
+    "addon_port_command": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether Port Command Center module is activated (\u20ac2000/month)"
+    }
+  },
+  "required": [
+    "name",
+    "admin_email",
+    "address",
+    "vat_number"
+  ]
+}

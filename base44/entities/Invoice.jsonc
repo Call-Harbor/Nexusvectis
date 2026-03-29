@@ -1,0 +1,250 @@
+{
+  "name": "Invoice",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string",
+      "description": "Organization this invoice belongs to"
+    },
+    "invoice_number": {
+      "type": "string",
+      "description": "Unique invoice number"
+    },
+    "period_month": {
+      "type": "string",
+      "description": "Month period (YYYY-MM)"
+    },
+    "vehicle_count": {
+      "type": "number",
+      "description": "Number of vehicles"
+    },
+    "resource_count": {
+      "type": "number",
+      "description": "Number of resources"
+    },
+    "vehicle_price_euro": {
+      "type": "number",
+      "default": 15,
+      "description": "Price per vehicle in EUR"
+    },
+    "resource_price_euro": {
+      "type": "number",
+      "default": 40,
+      "description": "Price per resource in EUR"
+    },
+    "fleetai_commands": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of FLEET AI commands executed through IntellectMode"
+    },
+    "fleetai_price_per_100": {
+      "type": "number",
+      "default": 5,
+      "description": "Price per 100 FLEET AI commands in EUR"
+    },
+    "api_calls": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of direct API calls made (standard rate)"
+    },
+    "api_price_per_100": {
+      "type": "number",
+      "default": 5,
+      "description": "Price per 100 API calls in EUR"
+    },
+    "harbor_intelligence_calls": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of Harbor Core Intelligence API calls (premium)"
+    },
+    "harbor_intelligence_price_per_call": {
+      "type": "number",
+      "default": 0.25,
+      "description": "Price per Harbor Core Intelligence call in EUR"
+    },
+    "addon_airport_ops": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether Airport Ops Center addon was active this period"
+    },
+    "addon_port_command": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether Port Command Center addon was active this period"
+    },
+    "addon_airport_ops_price": {
+      "type": "number",
+      "default": 0,
+      "description": "Airport Ops Center monthly fee in EUR"
+    },
+    "addon_port_command_price": {
+      "type": "number",
+      "default": 0,
+      "description": "Port Command Center monthly fee in EUR"
+    },
+    "total_amount": {
+      "type": "number",
+      "description": "Total amount in EUR"
+    },
+    "subtotal": {
+      "type": "number",
+      "description": "Subtotal before tax"
+    },
+    "vat_rate": {
+      "type": "number",
+      "description": "VAT rate as percentage (e.g., 25 for 25%)"
+    },
+    "vat_amount": {
+      "type": "number",
+      "description": "VAT amount"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "paid",
+        "overdue",
+        "cancelled"
+      ],
+      "default": "pending",
+      "description": "Invoice status"
+    },
+    "due_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Payment due date"
+    },
+    "paid_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date when invoice was paid"
+    },
+    "issue_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Invoice issue date"
+    },
+    "seller_name": {
+      "type": "string",
+      "description": "Seller company name"
+    },
+    "seller_vat_number": {
+      "type": "string",
+      "description": "Seller VAT registration number"
+    },
+    "seller_address": {
+      "type": "string",
+      "description": "Seller full address"
+    },
+    "seller_country": {
+      "type": "string",
+      "description": "Seller country"
+    },
+    "buyer_name": {
+      "type": "string",
+      "description": "Buyer company name"
+    },
+    "buyer_vat_number": {
+      "type": "string",
+      "description": "Buyer VAT registration number"
+    },
+    "buyer_address": {
+      "type": "string",
+      "description": "Buyer full address"
+    },
+    "buyer_country": {
+      "type": "string",
+      "description": "Buyer country"
+    },
+    "payment_terms": {
+      "type": "string",
+      "description": "Payment terms (e.g., Net 14 days)"
+    },
+    "currency": {
+      "type": "string",
+      "default": "EUR",
+      "description": "Invoice currency"
+    },
+    "line_items": {
+      "type": "array",
+      "description": "Detailed invoice line items",
+      "items": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "unit_price": {
+            "type": "number"
+          },
+          "total": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "reverse_charge": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether reverse charge VAT mechanism applies (B2B cross-border)"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes or legal text"
+    },
+    "accounting_account": {
+      "type": "string"
+    },
+    "cost_center": {
+      "type": "string"
+    },
+    "project_number": {
+      "type": "string"
+    },
+    "reference_number": {
+      "type": "string"
+    },
+    "accounting_notes": {
+      "type": "string"
+    },
+    "purchase_order_number": {
+      "type": "string"
+    },
+    "contract_reference": {
+      "type": "string"
+    },
+    "department": {
+      "type": "string"
+    },
+    "payment_method": {
+      "type": "string"
+    },
+    "discount_percentage": {
+      "type": "number"
+    },
+    "discount_amount": {
+      "type": "number"
+    },
+    "tax_exempt_reason": {
+      "type": "string"
+    },
+    "custom_field_1": {
+      "type": "string"
+    },
+    "custom_field_2": {
+      "type": "string"
+    },
+    "custom_field_3": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "organization_id",
+    "invoice_number",
+    "period_month",
+    "total_amount"
+  ]
+}
