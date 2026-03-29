@@ -1,12 +1,15 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import { Plane, Shield, Package, Users, AlertTriangle, Cpu, BarChart3, Leaf, Plus, Zap, Map, GitBranch, Car } from "lucide-react";
+import { Plane, Shield, Package, Users, AlertTriangle, Cpu, BarChart3, Leaf, Plus, Zap, Map, GitBranch, Car, Activity } from "lucide-react";
+import moment from "moment";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import AirportKPIBanner from "@/components/airport/AirportKPIBanner";
+import OpsAlertTicker from "@/components/airport/OpsAlertTicker";
+import NowPanel from "@/components/airport/NowPanel";
 import LiveFlightDashboard from "@/components/airport/LiveFlightDashboard";
 import FlightBoard from "@/components/airport/FlightBoard";
 import TurnaroundPanel from "@/components/airport/TurnaroundPanel";
@@ -70,6 +73,13 @@ export default function AirportOpsCenter() {
   const activeFlights = flights.filter(f => !["scheduled", "completed", "cancelled"].includes(f.status));
   const delayedFlights = flights.filter(f => (f.delay_minutes || 0) > 15);
 
+  // Live clock
+  const [clock, setClock] = useState(moment().format("HH:mm:ss"));
+  useEffect(() => {
+    const t = setInterval(() => setClock(moment().format("HH:mm:ss")), 1000);
+    return () => clearInterval(t);
+  }, []);
+
   return (
     <div className="min-h-screen bg-slate-950 text-white flex flex-col" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
       {/* Header */}
@@ -104,6 +114,10 @@ export default function AirportOpsCenter() {
                 <p className="text-2xl font-bold" style={{ color: k.color }}>{k.val}</p>
               </div>
             ))}
+            <div className="text-right">
+              <p className="text-2xl font-black font-mono" style={{ color: "#06b6d4", textShadow: "0 0 20px rgba(6,182,212,0.4)" }}>{clock}</p>
+              <p className="text-[8px] tracking-widest" style={{ color: "rgba(6,182,212,0.4)" }}>{moment().format("ddd DD MMM YYYY").toUpperCase()}</p>
+            </div>
             <button onClick={() => setShowAddFlight(true)}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded transition-all hover:opacity-80"
               style={{ border: "1px solid rgba(139,92,246,0.4)", background: "rgba(139,92,246,0.1)", color: "#8b5cf6" }}>
@@ -119,7 +133,7 @@ export default function AirportOpsCenter() {
       </div>
 
       {/* KPI Banner */}
-      <AirportKPIBanner flights={flights} securityLanes={securityLanes} gates={gates} tasks={tasks} />
+      <AirportKPIBanner flights={flights} securityLanes={securityLanes} gates={gates} tasks={tasks} bags={bags} staff={staff} />
 
       {/* Tabs */}
       <div className="flex border-b border-slate-800/60 px-6 pt-2">
@@ -145,7 +159,13 @@ export default function AirportOpsCenter() {
       {/* Content */}
       <div className="flex-1 p-4 overflow-auto">
         {activeTab === "operations" && (
-          <LiveFlightDashboard orgId={orgId} />
+          <div className="flex gap-4">
+            <div className="flex-1 min-w-0 space-y-4">
+              <OpsAlertTicker flights={flights} securityLanes={securityLanes} tasks={tasks} gates={gates} bags={bags} />
+              <LiveFlightDashboard orgId={orgId} />
+            </div>
+            <NowPanel flights={flights} securityLanes={securityLanes} gates={gates} />
+          </div>
         )}
 
         {activeTab === "ground" && (
