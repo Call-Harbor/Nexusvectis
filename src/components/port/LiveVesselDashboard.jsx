@@ -111,7 +111,7 @@ function ClassBreakdown({ portCalls, vessels }) {
   return (
     <div className="rounded-2xl p-4" style={{ background: "rgba(0,8,20,0.6)", border: "1px solid rgba(51,65,85,0.3)" }}>
       <p className="text-[9px] font-black uppercase tracking-widest text-slate-500 mb-3 flex items-center gap-1.5">
-        <Activity className="w-3 h-3" />SKIBSTYPER
+        <Activity className="w-3 h-3" />VESSEL TYPES
       </p>
       <div className="space-y-2">
         {sorted.map(([cls, count], i) => (
@@ -143,7 +143,7 @@ function TEUHistogram({ portCalls }) {
   return (
     <div className="rounded-2xl p-4" style={{ background: "rgba(0,8,20,0.6)", border: "1px solid rgba(51,65,85,0.3)" }}>
       <p className="text-[9px] font-black uppercase tracking-widest text-slate-500 mb-3 flex items-center gap-1.5">
-        <TrendingDown className="w-3 h-3" />TEU FORDELING
+      <TrendingDown className="w-3 h-3" />TEU DISTRIBUTION
       </p>
       <div className="flex items-end gap-2 h-16">
         {buckets.map((b, i) => {
@@ -248,15 +248,15 @@ export default function LiveVesselDashboard({ orgId, portCalls = [], vessels = [
         {syncStatus && (
           <div className="flex items-center gap-3 text-xs">
             {syncStatus.no_key ? (
-              <span className="text-amber-400 font-bold">⚠ Sæt AISHUB_USERNAME i secrets</span>
+              <span className="text-amber-400 font-bold">⚠ Set AISHUB_USERNAME in secrets</span>
             ) : syncStatus.error ? (
               <span className="text-red-400 font-bold">✗ {syncStatus.error}</span>
             ) : (
               <>
                 <span className="flex items-center gap-1 font-bold" style={{ color: "#10b981" }}>
-                  <CheckCircle className="w-3 h-3" />{syncStatus.synced} skibe synket
+                  <CheckCircle className="w-3 h-3" />{syncStatus.synced} vessels synced
                 </span>
-                <span className="text-slate-500">+{syncStatus.vessels_created} nye · {syncStatus.vessels_updated} opdateret</span>
+                <span className="text-slate-500">+{syncStatus.vessels_created} new · {syncStatus.vessels_updated} updated</span>
                 <span className="text-slate-600 font-mono">{syncStatus.timestamp ? moment(syncStatus.timestamp).format("HH:mm:ss") : ""}</span>
               </>
             )}
@@ -265,7 +265,7 @@ export default function LiveVesselDashboard({ orgId, portCalls = [], vessels = [
         <div className="ml-auto flex items-center gap-4">
           <button onClick={() => setShowCharts(!showCharts)} className="text-[9px] font-black uppercase tracking-widest transition-all"
             style={{ color: showCharts ? "#06b6d4" : "#475569" }}>
-            {showCharts ? "▼ SKJUL ANALYSE" : "▲ VIS ANALYSE"}
+            {showCharts ? "▼ HIDE ANALYSIS" : "▲ SHOW ANALYSIS"}
           </button>
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
