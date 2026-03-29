@@ -4,19 +4,19 @@ import { Cpu, Send, Loader2, Zap, AlertTriangle, CheckCircle } from "lucide-reac
 import ReactMarkdown from "react-markdown";
 
 const QUICK_PROMPTS = [
-  { label: "🔒 Security kø", prompt: "Hvorfor overskrider sikkerhedskøerne 20 minutter? Hvad skal gøres nu?" },
-  { label: "🧳 Bagage forbindelser", prompt: "Giv 3 konkrete handlinger for at reducere mistede bagageforbindelser" },
-  { label: "⚠️ Risikoflight", prompt: "Hvilke fly er i størst forsinkelsesrisiko lige nu?" },
-  { label: "🛬 Gate optimering", prompt: "Optimer gate-tildeling for de næste 2 timer" },
-  { label: "🔄 Turnaround forsinkelse", prompt: "Hvad forårsager turnaround-forsinkelsen? Hvad er den kritiske sti?" },
-  { label: "🌿 Energibesparelse", prompt: "Hvordan kan vi reducere terminalenergiforbruget 10% i dag?" },
-  { label: "👥 Personaledækning", prompt: "Er der personale-underdækning i kritiske zoner?" },
-  { label: "📊 Status rapport", prompt: "Giv en komplet driftstatus-rapport for den nuværende dag" },
+  { label: "🔒 Security queue", prompt: "Why are security queues exceeding 20 minutes? What should we do now?" },
+  { label: "🧳 Baggage connections", prompt: "Give me 3 concrete actions to reduce missed baggage connections" },
+  { label: "⚠️ Risk flights", prompt: "Which flights are at highest delay risk right now?" },
+  { label: "🛬 Gate optimization", prompt: "Optimize gate allocation for the next 2 hours" },
+  { label: "🔄 Turnaround delays", prompt: "What's causing turnaround delays? What's the critical path?" },
+  { label: "🌿 Energy savings", prompt: "How can we reduce terminal energy consumption 10% today?" },
+  { label: "👥 Staff coverage", prompt: "Is there staff shortage in critical zones?" },
+  { label: "📊 Status report", prompt: "Give me a complete operations status report for today" },
 ];
 
 export default function AirportAIAdvisor({ flights, securityLanes, gates, tasks, bags }) {
   const [messages, setMessages] = useState([
-    { role: "assistant", content: "**Airport AI Co-pilot online.** 🛫\n\nJeg har fuldt overblik over fly, gates, sikkerhed, bagage og ground handling. Hvad vil du analysere?" }
+    { role: "assistant", content: "**Airport AI Co-pilot online.** 🛫\n\nI have full visibility over flights, gates, security, baggage, and ground handling. What would you like to analyze?" }
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -31,15 +31,15 @@ export default function AirportAIAdvisor({ flights, securityLanes, gates, tasks,
     const secAlert = securityLanes.filter(l => (l.wait_minutes || 0) > 15);
     const rushBags = bags.filter(b => b.is_rush || (b.connection_time_minutes || 999) < 45);
     const openTasks = tasks.filter(t => t.status === "pending" || t.status === "delayed");
-    return `AIRPORT OPERATIONS SNAPSHOT (${new Date().toLocaleTimeString("da-DK")}):
-- Total fly: ${flights.length} | Forsinket (>15m): ${delayed.length} | Boarding: ${flights.filter(f => f.status === "boarding").length}
-- Forsinkede fly: ${delayed.slice(0,5).map(f => `${f.flight_number} +${f.delay_minutes}m`).join(", ") || "ingen"}
-- Security: ${securityLanes.length} baner, avg ${securityLanes.length > 0 ? Math.round(securityLanes.reduce((s, l) => s + (l.wait_minutes || 0), 0) / securityLanes.length) : 0}m ventetid
-- Security alerts: ${secAlert.map(l => `${l.name}: ${l.wait_minutes}m`).join(", ") || "ingen"}
-- Gates: ${gates.filter(g => g.status === "occupied").length}/${gates.length} optaget
-- Rush bagage: ${rushBags.length} | Mishandled: ${bags.filter(b => b.status === "mishandled").length}
-- Åbne/forsinkede ground opgaver: ${openTasks.length}
-- Høj-risiko fly: ${flights.filter(f => (f.ai_risk_score || 0) > 70).map(f => f.flight_number).join(", ") || "ingen"}`;
+    return `AIRPORT OPERATIONS SNAPSHOT (${new Date().toLocaleTimeString("en-GB")}):
+    - Total flights: ${flights.length} | Delayed (>15m): ${delayed.length} | Boarding: ${flights.filter(f => f.status === "boarding").length}
+    - Delayed flights: ${delayed.slice(0,5).map(f => `${f.flight_number} +${f.delay_minutes}m`).join(", ") || "none"}
+    - Security: ${securityLanes.length} lanes, avg ${securityLanes.length > 0 ? Math.round(securityLanes.reduce((s, l) => s + (l.wait_minutes || 0), 0) / securityLanes.length) : 0}m wait time
+    - Security alerts: ${secAlert.map(l => `${l.name}: ${l.wait_minutes}m`).join(", ") || "none"}
+    - Gates: ${gates.filter(g => g.status === "occupied").length}/${gates.length} occupied
+    - Rush baggage: ${rushBags.length} | Mishandled: ${bags.filter(b => b.status === "mishandled").length}
+    - Open/delayed ground tasks: ${openTasks.length}
+    - High-risk flights: ${flights.filter(f => (f.ai_risk_score || 0) > 70).map(f => f.flight_number).join(", ") || "none"}`;
   };
 
   const send = async (prompt) => {
@@ -50,14 +50,14 @@ export default function AirportAIAdvisor({ flights, securityLanes, gates, tasks,
     setLoading(true);
     try {
       const res = await base44.integrations.Core.InvokeLLM({
-        prompt: `Du er en ekspert Airport Operations AI Co-pilot for NexusVectis Airport Ops. Svar på dansk.
+        prompt: `You are an expert Airport Operations AI Co-pilot for NexusVectis Airport Ops. Answer in English.
 ${buildContext()}
-Bruger spørgsmål: ${text}
-Giv et præcist, handlingsorienteret svar med specifikke anbefalinger. Brug bullet points. Max 250 ord. Vær konkret og brug tal fra konteksten.`,
+User question: ${text}
+Provide a precise, action-oriented answer with specific recommendations. Use bullet points. Max 250 words. Be concrete and use numbers from the context.`,
       });
       setMessages(m => [...m, { role: "assistant", content: typeof res === "string" ? res : res.response || JSON.stringify(res) }]);
     } catch {
-      setMessages(m => [...m, { role: "assistant", content: "AI midlertidigt utilgængelig. Prøv igen." }]);
+      setMessages(m => [...m, { role: "assistant", content: "AI temporarily unavailable. Try again." }]);
     }
     setLoading(false);
   };
@@ -75,13 +75,13 @@ Giv et præcist, handlingsorienteret svar med specifikke anbefalinger. Brug bull
           </div>
           <div>
             <h2 className="text-[10px] font-black tracking-[0.3em] uppercase text-violet-400">AI OPERATIONS CO-PILOT</h2>
-            <p className="text-[8px] text-slate-600">{flights.length} fly · {gates.length} gates · {securityLanes.length} sec.baner</p>
+            <p className="text-[8px] text-slate-600">{flights.length} flights · {gates.length} gates · {securityLanes.length} sec lanes</p>
           </div>
         </div>
         {criticalAlerts > 0 && (
           <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl animate-pulse" style={{ background: "rgba(244,63,94,0.1)", border: "1px solid rgba(244,63,94,0.3)" }}>
             <AlertTriangle className="w-3 h-3 text-red-400" />
-            <span className="text-[9px] font-black text-red-400">{criticalAlerts} KRITISKE</span>
+            <span className="text-[9px] font-black text-red-400">{criticalAlerts} CRITICAL</span>
           </div>
         )}
       </div>
@@ -89,7 +89,7 @@ Giv et præcist, handlingsorienteret svar med specifikke anbefalinger. Brug bull
       <div className="flex flex-1 overflow-hidden">
         {/* Quick prompts sidebar */}
         <div className="w-44 border-r border-slate-800/50 p-3 space-y-1.5 overflow-y-auto flex-shrink-0" style={{ background: "rgba(0,6,15,0.6)" }}>
-          <p className="text-[8px] tracking-widest uppercase text-slate-600 mb-2">HURTIG ANALYSE</p>
+          <p className="text-[8px] tracking-widest uppercase text-slate-600 mb-2">QUICK ANALYSIS</p>
           {QUICK_PROMPTS.map((q, i) => (
             <button key={i} onClick={() => send(q.prompt)} disabled={loading}
               className="w-full text-left text-[9px] px-2.5 py-2 rounded-xl transition-all hover:text-white font-bold leading-tight"
@@ -152,7 +152,7 @@ Giv et præcist, handlingsorienteret svar med specifikke anbefalinger. Brug bull
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={e => e.key === "Enter" && !e.shiftKey && send()}
-              placeholder="Spørg om drift, forsinkelser, kø-optimering..."
+              placeholder="Ask about operations, delays, queue optimization..."
               className="flex-1 text-[11px] rounded-xl px-3 py-2.5 text-white outline-none"
               style={{ background: "rgba(15,23,42,0.8)", border: "1px solid rgba(51,65,85,0.5)" }}
             />

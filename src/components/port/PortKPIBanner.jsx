@@ -14,13 +14,13 @@ export default function PortKPIBanner({ portCalls, cranes, yardZones, gates, equ
   const eqWorking = equipment.filter(e => e.status === "working").length;
 
   const kpis = [
-    { label: "AKTIVE SKIBE", value: active.length, unit: "", color: "#06b6d4" },
+    { label: "ACTIVE VESSELS", value: active.length, unit: "", color: "#06b6d4" },
     { label: "TURNAROUND", value: avgTurnaround, unit: "h", color: "#8b5cf6" },
-    { label: "CRANE MOVES I DAG", value: craneMoves, unit: "mv", color: "#10b981" },
+    { label: "CRANE MOVES TODAY", value: craneMoves, unit: "mv", color: "#10b981" },
     { label: "CRANE RATE", value: avgCraneRate, unit: "mv/h", color: "#10b981" },
-    { label: "YARD BELÆGNING", value: yardOcc === "–" ? "–" : `${yardOcc}%`, unit: "", color: yardOcc > 85 ? "#f43f5e" : yardOcc > 70 ? "#f59e0b" : "#10b981" },
-    { label: "TRUCK KØLÆNGDE", value: totalQueue, unit: "trucks", color: totalQueue > 20 ? "#f43f5e" : "#f59e0b" },
-    { label: "UDSTYR AKTIVT", value: eqWorking, unit: `/${equipment.length}`, color: "#06b6d4" },
+    { label: "YARD OCCUPANCY", value: yardOcc === "–" ? "–" : `${yardOcc}%`, unit: "", color: yardOcc > 85 ? "#f43f5e" : yardOcc > 70 ? "#f59e0b" : "#10b981" },
+    { label: "TRUCK QUEUE", value: totalQueue, unit: "trucks", color: totalQueue > 20 ? "#f43f5e" : "#f59e0b" },
+    { label: "EQUIPMENT ACTIVE", value: eqWorking, unit: `/${equipment.length}`, color: "#06b6d4" },
   ];
 
   return (

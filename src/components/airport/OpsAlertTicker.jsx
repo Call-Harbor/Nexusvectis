@@ -8,12 +8,12 @@ export default function OpsAlertTicker({ flights, securityLanes, tasks, gates, b
 
     // Critical delays
     flights.filter(f => (f.delay_minutes || 0) > 45).forEach(f => {
-      list.push({ type: "critical", icon: AlertTriangle, color: "#f43f5e", msg: `${f.flight_number} FORSINKET +${f.delay_minutes}m · ${f.origin}→${f.destination}`, time: new Date() });
+      list.push({ type: "critical", icon: AlertTriangle, color: "#f43f5e", msg: `${f.flight_number} DELAYED +${f.delay_minutes}m · ${f.origin}→${f.destination}`, time: new Date() });
     });
 
     // Cancelled flights
     flights.filter(f => f.status === "cancelled").forEach(f => {
-      list.push({ type: "critical", icon: AlertTriangle, color: "#f43f5e", msg: `${f.flight_number} AFLYST · ${f.origin}→${f.destination}`, time: new Date() });
+      list.push({ type: "critical", icon: AlertTriangle, color: "#f43f5e", msg: `${f.flight_number} CANCELLED · ${f.origin}→${f.destination}`, time: new Date() });
     });
 
     // Boarding now
@@ -23,17 +23,17 @@ export default function OpsAlertTicker({ flights, securityLanes, tasks, gates, b
 
     // High security wait
     securityLanes.filter(l => (l.wait_minutes || 0) > 20).forEach(l => {
-      list.push({ type: "warning", icon: AlertTriangle, color: "#f59e0b", msg: `SEC LANE "${l.name}": ${l.wait_minutes}min ventetid · ${l.queue_length || 0} i kø`, time: new Date() });
+      list.push({ type: "warning", icon: AlertTriangle, color: "#f59e0b", msg: `SEC LANE "${l.name}": ${l.wait_minutes}min wait time · ${l.queue_length || 0} in queue`, time: new Date() });
     });
 
     // Delayed tasks
     tasks.filter(t => t.status === "delayed").slice(0, 3).forEach(t => {
-      list.push({ type: "warning", icon: AlertTriangle, color: "#f97316", msg: `GROUND OP FORSINKET: ${t.task_type || t.title || "Opgave"} · ${t.aircraft_registration || ""}`, time: new Date() });
+      list.push({ type: "warning", icon: AlertTriangle, color: "#f97316", msg: `GROUND OP DELAYED: ${t.task_type || t.title || "Task"} · ${t.aircraft_registration || ""}`, time: new Date() });
     });
 
     // Missing bags
     (bags || []).filter(b => b.status === "missing").slice(0, 3).forEach(b => {
-      list.push({ type: "critical", icon: AlertTriangle, color: "#f43f5e", msg: `BAGAGE MANGLER: ${b.tag_number || b.id?.slice(0,8)} · Fly ${b.flight_number || "?"}`, time: new Date() });
+      list.push({ type: "critical", icon: AlertTriangle, color: "#f43f5e", msg: `BAGGAGE MISSING: ${b.tag_number || b.id?.slice(0,8)} · Flight ${b.flight_number || "?"}`, time: new Date() });
     });
 
     // Gate conflicts (multiple flights at same gate)
@@ -42,11 +42,11 @@ export default function OpsAlertTicker({ flights, securityLanes, tasks, gates, b
       gateCounts[f.gate] = (gateCounts[f.gate] || []).concat(f);
     });
     Object.entries(gateCounts).filter(([, fs]) => fs.length > 1).forEach(([gate, fs]) => {
-      list.push({ type: "warning", icon: AlertTriangle, color: "#f59e0b", msg: `GATE KONFLIKT: Gate ${gate} · ${fs.map(f => f.flight_number).join(" & ")} tildelt samme gate`, time: new Date() });
+      list.push({ type: "warning", icon: AlertTriangle, color: "#f59e0b", msg: `GATE CONFLICT: Gate ${gate} · ${fs.map(f => f.flight_number).join(" & ")} assigned same gate`, time: new Date() });
     });
 
     if (list.length === 0) {
-      list.push({ type: "ok", icon: CheckCircle, color: "#10b981", msg: "Alle systemer operative · Ingen aktive alarmer", time: new Date() });
+      list.push({ type: "ok", icon: CheckCircle, color: "#10b981", msg: "All systems operational · No active alarms", time: new Date() });
     }
 
     return list;
@@ -67,8 +67,8 @@ export default function OpsAlertTicker({ flights, securityLanes, tasks, gates, b
           </span>
         </div>
         <div className="flex items-center gap-3">
-          {critical > 0 && <span className="text-[9px] font-black text-red-400">{critical} KRITISKE</span>}
-          {warnings > 0 && <span className="text-[9px] font-black text-amber-400">{warnings} ADVARSLER</span>}
+          {critical > 0 && <span className="text-[9px] font-black text-red-400">{critical} CRITICAL</span>}
+          {warnings > 0 && <span className="text-[9px] font-black text-amber-400">{warnings} WARNINGS</span>}
           <span className="text-[8px] text-slate-700 font-mono">{moment().format("HH:mm:ss")}</span>
         </div>
       </div>

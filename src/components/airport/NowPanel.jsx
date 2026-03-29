@@ -63,12 +63,12 @@ export default function NowPanel({ flights, securityLanes, gates }) {
         <div className="px-3 py-2.5 flex items-center gap-2 border-b border-slate-800/50"
           style={{ background: "rgba(139,92,246,0.07)" }}>
           <span className="w-2 h-2 rounded-full animate-pulse bg-violet-500" />
-          <span className="text-[9px] font-black uppercase tracking-widest text-violet-400">BOARDING NU</span>
-          <span className="ml-auto text-[8px] text-slate-700 font-mono">{boardingNow.length} fly</span>
+          <span className="text-[9px] font-black uppercase tracking-widest text-violet-400">BOARDING NOW</span>
+          <span className="ml-auto text-[8px] text-slate-700 font-mono">{boardingNow.length} flights</span>
         </div>
         <div className="divide-y divide-slate-800/30">
           {boardingNow.length === 0 && (
-            <p className="px-3 py-3 text-[10px] text-slate-700 text-center">Ingen boarding i øjeblikket</p>
+            <p className="px-3 py-3 text-[10px] text-slate-700 text-center">No boarding currently</p>
           )}
           {boardingNow.map(f => (
             <div key={f.id} className="flex items-center gap-3 px-3 py-2.5">
@@ -92,11 +92,11 @@ export default function NowPanel({ flights, securityLanes, gates }) {
         <div className="px-3 py-2.5 flex items-center gap-2 border-b border-slate-800/50"
           style={{ background: "rgba(6,182,212,0.05)" }}>
           <Clock className="w-3 h-3 text-cyan-500" />
-          <span className="text-[9px] font-black uppercase tracking-widest text-cyan-500">NÆSTE 90 MIN</span>
+          <span className="text-[9px] font-black uppercase tracking-widest text-cyan-500">NEXT 90 MIN</span>
         </div>
         <div className="divide-y divide-slate-800/20 max-h-52 overflow-y-auto">
           {upcomingDepartures.length === 0 && (
-            <p className="px-3 py-3 text-[10px] text-slate-700 text-center">Ingen planlagte afgange</p>
+            <p className="px-3 py-3 text-[10px] text-slate-700 text-center">No scheduled departures</p>
           )}
           {upcomingDepartures.map(f => {
             const dep = f.scheduled_departure || f.scheduled_time;
@@ -148,7 +148,7 @@ export default function NowPanel({ flights, securityLanes, gates }) {
                   <div className="h-1.5 rounded-full bg-slate-800 overflow-hidden">
                     <div className="h-full rounded-full" style={{ width: `${Math.min(100, (l.wait_minutes / 45) * 100)}%`, background: color }} />
                   </div>
-                  <p className="text-[8px] text-slate-600 mt-0.5">{l.queue_length || 0} i kø · {l.lane_type}</p>
+                  <p className="text-[8px] text-slate-600 mt-0.5">{l.queue_length || 0} in queue · {l.lane_type}</p>
                 </div>
               );
             })}
@@ -162,7 +162,7 @@ export default function NowPanel({ flights, securityLanes, gates }) {
           <div className="px-3 py-2.5 flex items-center gap-2 border-b border-slate-800/50"
             style={{ background: "rgba(244,63,94,0.06)" }}>
             <AlertTriangle className="w-3 h-3 text-red-400 animate-pulse" />
-            <span className="text-[9px] font-black uppercase tracking-widest text-red-400">GATE KONFLIKTER</span>
+            <span className="text-[9px] font-black uppercase tracking-widest text-red-400">GATE CONFLICTS</span>
           </div>
           <div className="divide-y divide-slate-800/30">
             {gateConflicts.map(([gate, fs]) => (
