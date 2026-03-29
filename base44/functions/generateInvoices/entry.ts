@@ -95,8 +95,28 @@ Deno.serve(async (req) => {
       const harborPricePerCall = 0.25;
       const addonPrice = 2000;
 
-      const addonAirportOps = org.addon_airport_ops === true;
-      const addonPortCommand = org.addon_port_command === true;
+      // Check if add-ons have been active for 48+ hours
+      const HOURS_48_MS = 48 * 60 * 60 * 1000;
+      const now = new Date();
+      
+      let addonAirportOps = false;
+      let addonPortCommand = false;
+      let addonTransitControl = false;
+      
+      if (org.addon_airport_ops === true && org.addon_airport_ops_activated_at) {
+        const activatedAt = new Date(org.addon_airport_ops_activated_at);
+        addonAirportOps = (now - activatedAt) >= HOURS_48_MS;
+      }
+      
+      if (org.addon_port_command === true && org.addon_port_command_activated_at) {
+        const activatedAt = new Date(org.addon_port_command_activated_at);
+        addonPortCommand = (now - activatedAt) >= HOURS_48_MS;
+      }
+      
+      if (org.addon_transit_control === true && org.addon_transit_control_activated_at) {
+        const activatedAt = new Date(org.addon_transit_control_activated_at);
+        addonTransitControl = (now - activatedAt) >= HOURS_48_MS;
+      }
       
       const vehicleTotal = vehicleCount * vehiclePriceEuro;
       const resourceTotal = resourceCount * resourcePriceEuro;
@@ -105,13 +125,14 @@ Deno.serve(async (req) => {
       const harborTotal = harborCalls * harborPricePerCall;
       const airportOpsTotal = addonAirportOps ? addonPrice : 0;
       const portCommandTotal = addonPortCommand ? addonPrice : 0;
+      const transitControlTotal = addonTransitControl ? addonPrice : 0;
       
       // Determine tax rules based on buyer country
       const buyerCountry = org.headquarters_country || 'Denmark';
       const taxRules = TAX_RULES[buyerCountry] || TAX_RULES['Denmark'];
 
       // Calculate VAT
-      const subtotal = vehicleTotal + resourceTotal + fleetAITotal + apiTotal + harborTotal + airportOpsTotal + portCommandTotal;
+      const subtotal = vehicleTotal + resourceTotal + fleetAITotal + apiTotal + harborTotal + airportOpsTotal + portCommandTotal + transitControlTotal;
       const isEUCrossBorder = buyerCountry !== 'Denmark' && taxRules.requires_vat_id;
       const reverseCharge = isEUCrossBorder; // EU B2B reverse charge
       const vatRate = reverseCharge ? 0 : taxRules.vat_rate;
@@ -181,6 +202,14 @@ Deno.serve(async (req) => {
           total: portCommandTotal
         });
       }
+      if (addonTransitControl) {
+        lineItems.push({
+          description: 'Transit Control — Månedslicens (Add-on)',
+          quantity: 1,
+          unit_price: addonPrice,
+          total: transitControlTotal
+        });
+      }
       
       // Legal notes based on country
       let legalNotes = '';
@@ -224,8 +253,10 @@ Deno.serve(async (req) => {
         harbor_intelligence_price_per_call: harborPricePerCall,
         addon_airport_ops: addonAirportOps,
         addon_port_command: addonPortCommand,
+        addon_transit_control: addonTransitControl,
         addon_airport_ops_price: airportOpsTotal,
         addon_port_command_price: portCommandTotal,
+        addon_transit_control_price: transitControlTotal,
         subtotal: subtotal,
         vat_rate: vatRate,
         vat_amount: vatAmount,
