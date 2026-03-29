@@ -5,7 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { FileText, CheckCircle, XCircle, Ban, AlertTriangle, Search, Mail, Loader2 } from "lucide-react";
+import { FileText, CheckCircle, XCircle, Ban, AlertTriangle, Search, Mail, Loader2, Plus } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import AdminLayout from "@/components/admin/AdminLayout";
 import moment from "moment";
 import { toast } from "sonner";
@@ -13,6 +16,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 
 export default function AdminInvoices() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [openCreateDialog, setOpenCreateDialog] = useState(false);
+  const [selectedOrgId, setSelectedOrgId] = useState("");
   const queryClient = useQueryClient();
 
   const { data: invoices = [], isLoading } = useQuery({
@@ -73,6 +78,78 @@ export default function AdminInvoices() {
     }
   });
 
+  const createTestInvoiceMutation = useMutation({
+    mutationFn: async (orgId) => {
+      const org = organizations.find(o => o.id === orgId);
+      if (!org) throw new Error("Organization not found");
+      
+      const now = new Date();
+      const invoiceNumber = `TEST-${Date.now()}`;
+      const periodMonth = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+      const dueDate = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
+      
+      const invoiceData = {
+        organization_id: orgId,
+        invoice_number: invoiceNumber,
+        period_month: periodMonth,
+        vehicle_count: Math.floor(Math.random() * 10) + 1,
+        resource_count: Math.floor(Math.random() * 5) + 1,
+        vehicle_price_euro: 15,
+        resource_price_euro: 40,
+        fleetai_commands: Math.floor(Math.random() * 100),
+        api_calls: Math.floor(Math.random() * 200),
+        harbor_intelligence_calls: Math.floor(Math.random() * 50),
+        addon_airport_ops: org.addon_airport_ops ? true : false,
+        addon_port_command: org.addon_port_command ? true : false,
+        addon_transit_control: org.addon_transit_control ? true : false,
+        addon_airport_ops_price: org.addon_airport_ops ? 2000 : 0,
+        addon_port_command_price: org.addon_port_command ? 2000 : 0,
+        addon_transit_control_price: org.addon_transit_control ? 2000 : 0,
+        status: 'pending',
+        due_date: dueDate.toISOString().split('T')[0],
+        issue_date: now.toISOString().split('T')[0],
+        seller_name: 'NexusVectis ApS',
+        seller_vat_number: 'DK12345678',
+        seller_address: 'Vesterbrogade 123, 1620 København V, Denmark',
+        seller_country: 'Denmark',
+        buyer_name: org.name,
+        buyer_vat_number: org.vat_number,
+        buyer_address: org.address,
+        buyer_country: org.headquarters_country,
+        payment_terms: 'Net 14 days',
+        vat_rate: 25,
+        currency: 'EUR'
+      };
+      
+      // Calculate totals
+      const vehicleTotal = invoiceData.vehicle_count * invoiceData.vehicle_price_euro;
+      const resourceTotal = invoiceData.resource_count * invoiceData.resource_price_euro;
+      const fleetaiTotal = Math.floor(invoiceData.fleetai_commands / 100) * 5;
+      const apiTotal = Math.floor(invoiceData.api_calls / 100) * 5;
+      const harborTotal = invoiceData.harbor_intelligence_calls * 0.25;
+      const addonTotal = invoiceData.addon_airport_ops_price + invoiceData.addon_port_command_price + invoiceData.addon_transit_control_price;
+      
+      const subtotal = vehicleTotal + resourceTotal + fleetaiTotal + apiTotal + harborTotal + addonTotal;
+      const vatAmount = Math.round(subtotal * (invoiceData.vat_rate / 100) * 100) / 100;
+      const totalAmount = subtotal + vatAmount;
+      
+      invoiceData.subtotal = Math.round(subtotal * 100) / 100;
+      invoiceData.vat_amount = vatAmount;
+      invoiceData.total_amount = totalAmount;
+      
+      return await base44.entities.Invoice.create(invoiceData);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['admin-invoices']);
+      setOpenCreateDialog(false);
+      setSelectedOrgId("");
+      toast.success("Test invoice created successfully");
+    },
+    onError: (error) => {
+      toast.error("Failed to create test invoice: " + error.message);
+    }
+  });
+
   const filteredInvoices = invoices.filter(inv => {
     const org = organizations.find(o => o.id === inv.organization_id);
     return (
@@ -101,9 +178,67 @@ export default function AdminInvoices() {
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6">
 
       <div className="max-w-7xl mx-auto">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-white mb-2">Invoice Management</h1>
-          <p className="text-slate-400">Manage all platform invoices and payments</p>
+        <div className="mb-6 flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-white mb-2">Invoice Management</h1>
+            <p className="text-slate-400">Manage all platform invoices and payments</p>
+          </div>
+          <Dialog open={openCreateDialog} onOpenChange={setOpenCreateDialog}>
+            <DialogTrigger asChild>
+              <Button className="bg-violet-600 hover:bg-violet-700 text-white">
+                <Plus className="w-4 h-4 mr-2" />
+                Create Test Invoice
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="bg-slate-900 border-slate-800">
+              <DialogHeader>
+                <DialogTitle className="text-white">Create Test Invoice</DialogTitle>
+                <DialogDescription className="text-slate-400">
+                  Generate a test invoice with random data for testing purposes
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-slate-300 mb-2 block">Organization</Label>
+                  <Select value={selectedOrgId} onValueChange={setSelectedOrgId}>
+                    <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                      <SelectValue placeholder="Select an organization" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-slate-800 border-slate-700">
+                      {organizations.map(org => (
+                        <SelectItem key={org.id} value={org.id} className="text-white">
+                          {org.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex gap-2 justify-end pt-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => setOpenCreateDialog(false)}
+                    className="bg-slate-800 border-slate-700 text-white"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={() => createTestInvoiceMutation.mutate(selectedOrgId)}
+                    disabled={!selectedOrgId || createTestInvoiceMutation.isPending}
+                    className="bg-violet-600 hover:bg-violet-700 text-white"
+                  >
+                    {createTestInvoiceMutation.isPending ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Creating...
+                      </>
+                    ) : (
+                      'Create Invoice'
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
 
         {/* Stats */}
