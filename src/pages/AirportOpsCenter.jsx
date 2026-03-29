@@ -99,7 +99,7 @@ function AirportOpsCenterContent() {
                 NEXUSVECTIS AIRPORT OPS
               </h1>
               <p className="text-[8px] sm:text-[9px] tracking-[0.2em] sm:tracking-[0.3em] uppercase hidden sm:block" style={{ color: "rgba(139,92,246,0.4)" }}>
-                AI-POWERED AIRPORT OPERATIONS COMMAND CENTER
+                AI-Powered Airport Operations Command Center
               </p>
             </div>
           </div>
