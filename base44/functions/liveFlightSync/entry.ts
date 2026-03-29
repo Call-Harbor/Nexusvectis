@@ -13,21 +13,13 @@ Deno.serve(async (req) => {
   const orgId = organization_id || user.organization_id;
   const apiKey = Deno.env.get("AVIATIONSTACK_API_KEY");
 
-  // Fetch both arrivals and departures from AviationStack
-  const [arrRes, depRes] = await Promise.all([
-    fetch(`http://api.aviationstack.com/v1/flights?access_key=${apiKey}&arr_iata=${airport_iata}&flight_status=active&limit=50`),
-    fetch(`http://api.aviationstack.com/v1/flights?access_key=${apiKey}&dep_iata=${airport_iata}&limit=100`)
-  ]);
-
-  const [arrData, depData] = await Promise.all([arrRes.json(), depRes.json()]);
-
-  const allFlights = [
-    ...(arrData.data || []),
-    ...(depData.data || [])
-  ];
+  // Fetch departures only (free plan supports one endpoint)
+  const depRes = await fetch(`http://api.aviationstack.com/v1/flights?access_key=${apiKey}&dep_iata=${airport_iata}&limit=50`);
+  const depData = await depRes.json();
+  const allFlights = depData.data || [];
 
   if (!allFlights.length) {
-    return Response.json({ synced: 0, message: "Ingen fly returneret fra API - tjek IATA kode og API plan", raw_error: arrData.error || depData.error });
+    return Response.json({ synced: 0, message: "Ingen fly returneret fra API - tjek IATA kode og API plan", raw_error: depData.error });
   }
 
   // Load existing flights and gates for this org
@@ -42,9 +34,12 @@ Deno.serve(async (req) => {
   const gateByCode = {};
   existingGates.forEach(g => { if (g.gate_code) gateByCode[g.gate_code.toUpperCase()] = g; });
 
-  const toCreate = [];
-  const toUpdate = []; // [{id, data}]
+  let synced = 0;
+  let created = 0;
+  let updated = 0;
   const gateUpdates = {};
+  const toCreate = [];
+  const toUpdate = [];
 
   for (const raw of allFlights) {
     const fn = raw.flight?.iata || raw.flight?.icao;
@@ -65,14 +60,14 @@ Deno.serve(async (req) => {
 
     let delayMinutes = 0;
     if (isDep && raw.departure?.delay) delayMinutes = parseInt(raw.departure.delay) || 0;
-    if (!isDep && raw.arrival?.delay) delayMinutes = parseInt(raw.arrival.delay) || 0;
+    else if (raw.arrival?.delay) delayMinutes = parseInt(raw.arrival.delay) || 0;
 
     const gateCode = isDep ? (raw.departure?.gate || null) : (raw.arrival?.gate || null);
 
     const flightData = {
       flight_number: fn,
       airline: raw.airline?.name || "",
-      origin: (!isDep) ? (raw.departure?.iata || raw.departure?.airport || "") : airport_iata,
+      origin: isDep ? airport_iata : (raw.departure?.iata || raw.departure?.airport || ""),
       destination: isDep ? (raw.arrival?.iata || raw.arrival?.airport || "") : airport_iata,
       status,
       delay_minutes: delayMinutes,
@@ -89,7 +84,7 @@ Deno.serve(async (req) => {
 
     const existing = flightByNumber[fn];
     if (existing) {
-      toUpdate.push({ id: existing.id, data: flightData });
+      toUpdate.push({ id: existing.id, ...flightData });
       if (gateCode) {
         const gate = gateByCode[gateCode.toUpperCase()];
         if (gate) gateUpdates[gate.id] = { current_flight_id: existing.id, status: "occupied" };
@@ -97,30 +92,30 @@ Deno.serve(async (req) => {
     } else {
       toCreate.push(flightData);
     }
+    synced++;
   }
 
-  // Bulk create new flights
-  let created = 0;
-  if (toCreate.length > 0) {
-    await base44.asServiceRole.entities.Flight.bulkCreate(toCreate);
-    created = toCreate.length;
+  const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+  // Bulk create new flights in batches of 10
+  for (let i = 0; i < toCreate.length; i += 10) {
+    const batch = toCreate.slice(i, i + 10);
+    await base44.asServiceRole.entities.Flight.bulkCreate(batch);
+    created += batch.length;
+    if (i + 10 < toCreate.length) await sleep(300);
   }
 
-  // Batch update existing (in chunks of 20 to avoid rate limits)
-  let updated = 0;
-  const CHUNK = 20;
-  for (let i = 0; i < toUpdate.length; i += CHUNK) {
-    const chunk = toUpdate.slice(i, i + CHUNK);
-    await Promise.all(chunk.map(({ id, data }) => base44.asServiceRole.entities.Flight.update(id, data)));
-    updated += chunk.length;
-    if (i + CHUNK < toUpdate.length) await new Promise(r => setTimeout(r, 300));
+  // Update changed flights one by one with small delay
+  for (let i = 0; i < toUpdate.length; i++) {
+    const { id, ...d } = toUpdate[i];
+    await base44.asServiceRole.entities.Flight.update(id, d);
+    updated++;
+    if (i % 5 === 4) await sleep(200);
   }
-
-  const synced = created + updated;
 
   // Apply gate updates
-  if (Object.keys(gateUpdates).length > 0) {
-    await Promise.all(Object.entries(gateUpdates).map(([gid, d]) => base44.asServiceRole.entities.AirportGate.update(gid, d)));
+  for (const [gateId, data] of Object.entries(gateUpdates)) {
+    await base44.asServiceRole.entities.AirportGate.update(gateId, data);
   }
 
   return Response.json({
