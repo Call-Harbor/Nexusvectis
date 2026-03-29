@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import FlightSyncPanel from "./FlightSyncPanel";
 import { base44 } from "@/api/base44Client";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { Stepper, Chips, StatusGrid, SaveBtn, Field, Card, Loader, Empty } from "./StaffShared";
@@ -43,10 +44,11 @@ export default function GateAgentTab({ orgId, logAdd }) {
   };
 
   if (isLoading) return <Loader />;
-  if (!gates.length) return <Empty text="Ingen gates oprettet endnu" />;
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-4">
+      <FlightSyncPanel orgId={orgId} logAdd={logAdd} />
+      {!gates.length && <Empty text="Ingen gates oprettet endnu" />}
       {gates.map(g => {
         const isOpen = openId === g.id;
         const d = drafts[g.id] || g;

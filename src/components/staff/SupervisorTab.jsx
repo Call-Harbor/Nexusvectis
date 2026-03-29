@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import FlightSyncPanel from "./FlightSyncPanel";
 import { base44 } from "@/api/base44Client";
 import { AlertTriangle, Zap, RefreshCw, Users } from "lucide-react";
 import { KPI, AlertPill, Loader } from "./StaffShared";
@@ -79,6 +80,7 @@ export default function SupervisorTab({ orgId, logAdd }) {
 
   return (
     <div className="space-y-5">
+      <FlightSyncPanel orgId={orgId} logAdd={logAdd} />
       {/* KPIs */}
       <div className="grid grid-cols-4 gap-2">
         <KPI label="Aktive gates" value={gates.filter(g => g.status !== "closed").length} unit={`/${gates.length}`} color="#06b6d4" />
