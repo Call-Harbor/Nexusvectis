@@ -5,8 +5,8 @@ import {
   Bus, MapPin, TrendingUp, AlertTriangle, Users, Clock, Zap,
   Radio, Shield, BarChart3, Sparkles, Globe, Network, Brain,
   ChevronRight, Play, Settings, MessageSquare, Maximize2, Activity,
-  Battery, Fuel, Plus, TrendingDown, Wifi, Target, Gauge
-} from "lucide-react";
+  Battery, Fuel, Plus, TrendingDown, Wifi, Target, Gauge, Leaf
+ } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -38,6 +38,12 @@ import TSPInterface from "@/components/transit/TSPInterface";
 import DriverCopilot from "@/components/transit/DriverCopilot";
 import SmartTicketingPanel from "@/components/transit/SmartTicketingPanel";
 import MultiModalPanel from "@/components/transit/MultiModalPanel";
+import TransitAIAdvisor from "@/components/transit/TransitAIAdvisor";
+import Transit3DGISMap from "@/components/transit/Transit3DGISMap";
+import TransitSustainabilityDashboard from "@/components/transit/TransitSustainabilityDashboard";
+import TransitPerformanceAnalytics from "@/components/transit/TransitPerformanceAnalytics";
+import CrowdingPredictionDashboard from "@/components/transit/CrowdingPredictionDashboard";
+import NetworkOptimizationEngine from "@/components/transit/NetworkOptimizationEngine";
 
 const TABS = [
   { id: "operations", label: "LIVE OPS", icon: Radio },
@@ -45,7 +51,13 @@ const TABS = [
   { id: "planning", label: "PLANNING", icon: Brain },
   { id: "scenarios", label: "SCENARIOS", icon: Sparkles },
   { id: "infrastructure", label: "FLEET", icon: Bus },
-  { id: "advanced-ai", label: "ADVANCED AI", icon: Zap },
+  { id: "ai-advisor", label: "AI ADVISOR", icon: Sparkles },
+  { id: "3d-gis", label: "3D MAP", icon: Globe },
+  { id: "sustainability", label: "CO₂", icon: Leaf },
+  { id: "performance", label: "PERFORMANCE", icon: BarChart3 },
+  { id: "crowding", label: "CROWDING", icon: Users },
+  { id: "network-opt", label: "OPTIMIZE", icon: Zap },
+  { id: "advanced-ai", label: "ADVANCED", icon: Sparkles },
 ];
 
 export default function TransitControl() {
@@ -348,6 +360,24 @@ export default function TransitControl() {
             <BusStopManager organizationId={orgId} stops={stops} />
             <BusLineManager organizationId={orgId} lines={lines} stops={stops} />
           </div>
+        )}
+        {activeTab === "ai-advisor" && (
+          <TransitAIAdvisor buses={activeBuses} trips={activeTrips} lines={lines} />
+        )}
+        {activeTab === "3d-gis" && (
+          <Transit3DGISMap buses={activeBuses} stops={stops} lines={lines} />
+        )}
+        {activeTab === "sustainability" && (
+          <TransitSustainabilityDashboard buses={activeBuses} trips={activeTrips} />
+        )}
+        {activeTab === "performance" && (
+          <TransitPerformanceAnalytics trips={activeTrips} buses={activeBuses} />
+        )}
+        {activeTab === "crowding" && (
+          <CrowdingPredictionDashboard buses={activeBuses} trips={activeTrips} />
+        )}
+        {activeTab === "network-opt" && (
+          <NetworkOptimizationEngine lines={lines} buses={activeBuses} trips={activeTrips} />
         )}
         {activeTab === "advanced-ai" && (
           <div className="space-y-8">
