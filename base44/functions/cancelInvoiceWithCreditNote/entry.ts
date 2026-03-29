@@ -33,7 +33,17 @@ Deno.serve(async (req) => {
       status: 'cancelled' 
     });
 
-    // Send credit note email
+    // Skip email for test invoices (invoice numbers starting with 'TEST-')
+    if (inv.invoice_number.startsWith('TEST-')) {
+      return Response.json({ 
+        success: true, 
+        message: 'Test invoice cancelled (no email sent)',
+        invoice_id,
+        credited_amount: inv.total_amount
+      });
+    }
+
+    // Send credit note email only for real invoices
     await base44.asServiceRole.integrations.Core.SendEmail({
       to: org.admin_email,
       subject: `Credit Note: Invoice ${inv.invoice_number} Cancelled`,
