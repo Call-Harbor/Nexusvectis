@@ -4,8 +4,8 @@ import { createPageUrl } from "../utils";
 import { 
   Truck, Globe, Zap, Shield, TrendingUp, Satellite,
   BarChart3, MapPin, Radio, ArrowRight, CheckCircle2, Sparkles, Brain, Orbit, Package,
-  Network, Cpu, Wifi, GitBranch, Dna, Bug, AlertCircle, Warehouse
-} from "lucide-react";
+  Network, Cpu, Wifi, GitBranch, Dna, Bug, AlertCircle, Warehouse, Plane
+ } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useEffect, useState, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -141,6 +141,24 @@ export default function Home() {
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
   const features = [
+    {
+      icon: Globe,
+      title: "Transit Control",
+      description: "Real-time monitoring of public transit networks, buses, passenger flow and network optimization with AI",
+      link: "TransitControl"
+    },
+    {
+      icon: Truck,
+      title: "Port Command Center",
+      description: "Advanced port operations dashboard with vessel tracking, berth planning, crane scheduling and sustainability insights",
+      link: "PortCommandCenter"
+    },
+    {
+      icon: Plane,
+      title: "Airport Operations Center",
+      description: "Comprehensive airport management with flight tracking, baggage handling, security monitoring and ground handling coordination",
+      link: "AirportOpsCenter"
+    },
     {
       icon: Globe,
       title: "Live Fleet Monitoring",
@@ -532,7 +550,8 @@ export default function Home() {
                   viewport={{ once: true }}
                   transition={{ delay: idx * 0.1, duration: 0.5 }}
                   whileHover={{ scale: 1.05, y: -10 }}
-                  className="relative p-8 rounded-3xl bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl border border-white/10 hover:border-cyan-500/50 transition-all group overflow-hidden"
+                  className="relative p-8 rounded-3xl bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl border border-white/10 hover:border-cyan-500/50 transition-all group overflow-hidden cursor-pointer"
+                  onClick={() => feature.link && base44.auth.redirectToLogin(createPageUrl(feature.link))}
                 >
                   <motion.div 
                     className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-violet-500/5 opacity-0 group-hover:opacity-100 transition-opacity"
@@ -552,6 +571,15 @@ export default function Home() {
                     </motion.div>
                     <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-cyan-400 transition-colors">{feature.title}</h3>
                     <p className="text-slate-400 leading-relaxed text-base">{feature.description}</p>
+                    {feature.link && (
+                      <motion.div 
+                        className="absolute bottom-0 right-0 text-cyan-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                        animate={{ x: [0, 5, 0] }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                      >
+                        <ArrowRight className="w-5 h-5" />
+                      </motion.div>
+                    )}
                   </div>
                   
                   <motion.div 
