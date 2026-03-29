@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import {
   Shield, Plane, Car, Clock, LogOut, Users, Zap,
-  ChevronRight, Activity, AlertTriangle, Wrench, Map
+  ChevronRight, Activity, AlertTriangle, Wrench, Map, AlertCircle, CheckCircle2
 } from "lucide-react";
 import GateAgentTab from "@/components/staff/GateAgentTab";
 import StaffRequestModal from "@/components/staff/StaffRequestModal";
