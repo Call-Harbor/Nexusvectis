@@ -72,6 +72,11 @@
       "default": false,
       "description": "Whether Port Command Center addon was active this period"
     },
+    "addon_transit_control": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether Transit Control addon was active this period"
+    },
     "addon_airport_ops_price": {
       "type": "number",
       "default": 0,
@@ -81,6 +86,11 @@
       "type": "number",
       "default": 0,
       "description": "Port Command Center monthly fee in EUR"
+    },
+    "addon_transit_control_price": {
+      "type": "number",
+      "default": 0,
+      "description": "Transit Control monthly fee in EUR"
     },
     "total_amount": {
       "type": "number",
