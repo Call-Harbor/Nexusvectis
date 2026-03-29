@@ -1434,6 +1434,11 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Module Sections */}
+      <TransitControlModule />
+      <PortCommandCenterModule />
+      <AirportOpsCenterModule />
+
       {/* Latest Blog Posts Section */}
       <section className="relative py-20 sm:py-32 px-4 sm:px-6 z-10">
         <div className="max-w-7xl mx-auto">
@@ -1536,82 +1541,6 @@ export default function Home() {
           </motion.div>
         </div>
       </section>
-
-      {/* FAQ Section */}
-      <section className="relative py-20 sm:py-32 px-4 sm:px-6 z-10">
-        <div className="max-w-4xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-6 px-2">
-              Frequently Asked
-              <br />
-              <span className="bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent">
-                Questions
-              </span>
-            </h2>
-            <p className="text-base sm:text-lg text-slate-400 max-w-2xl mx-auto">
-              Everything you need to know about NexusVectis fleet management platform
-            </p>
-          </motion.div>
-
-          <div className="space-y-4">
-            {[
-              {
-                q: "What is NexusVectis and what does it do?",
-                a: "NexusVectis is an AI-powered fleet management and logistics intelligence platform. It provides real-time tracking of vehicles, ships, drones and aircraft, AI-driven route optimization, predictive maintenance, shipment management, and natural language fleet control through our FLEET AI system."
-              },
-              {
-                q: "How does FLEET AI route optimization work?",
-                a: "FLEET AI uses advanced machine learning algorithms to analyze traffic patterns, weather data, fuel costs, and delivery windows in real-time. It continuously recalculates optimal routes for your entire fleet simultaneously, reducing fuel consumption by up to 35% and improving on-time delivery rates."
-              },
-              {
-                q: "What types of vehicles and transport modes does NexusVectis support?",
-                a: "NexusVectis supports all major transport modes: trucks (GPS tracking), ships (AIS signals), aircraft (ADS-B), drones (LoRa), and trains. Our multi-signal tracking platform integrates all transport types into a single unified dashboard."
-              },
-              {
-                q: "How does predictive maintenance work?",
-                a: "Our AI continuously monitors vehicle sensor data and compares it against learned failure patterns. Using anomaly detection and machine learning models, NexusVectis predicts component failures days or weeks before they happen, allowing you to schedule maintenance proactively and avoid costly breakdowns."
-              },
-              {
-                q: "What is the pricing model?",
-                a: "NexusVectis uses transparent, usage-based pricing: EUR 15/month per vehicle, EUR 40/month per resource (warehouse, fuel depot, port), EUR 5 per 100 FLEET AI commands, and EUR 5 per 100 direct API calls. No setup fees, no hidden costs - cancel anytime."
-              },
-              {
-                q: "Is NexusVectis suitable for small fleets?",
-                a: "Yes. NexusVectis scales from single-vehicle operators to global enterprise fleets with thousands of assets. Our usage-based pricing means small fleets only pay for what they use - a 5-vehicle fleet with one warehouse costs as little as EUR 115/month."
-              },
-              {
-                q: "How secure is the platform?",
-                a: "NexusVectis uses bank-level security with SOC 2 compliance, ISO 27001 standards, full audit logging, and our unique Digital Twin Federation technology that detects GPS spoofing, cyber attacks, and unauthorized rerouting in real-time."
-              }
-            ].map((item, idx) => (
-              <motion.details
-                key={idx}
-                initial={{ opacity: 0, y: 10 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.05 }}
-                className="group p-6 rounded-2xl bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 hover:border-cyan-500/30 transition-all cursor-pointer"
-              >
-                <summary className="flex items-center justify-between text-white font-semibold text-lg list-none">
-                  <span>{item.q}</span>
-                  <span className="text-cyan-400 ml-4 flex-shrink-0 text-2xl leading-none group-open:rotate-45 transition-transform">+</span>
-                </summary>
-                <p className="mt-4 text-slate-400 leading-relaxed">{item.a}</p>
-              </motion.details>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Module Sections */}
-      <TransitControlModule />
-      <PortCommandCenterModule />
-      <AirportOpsCenterModule />
 
       {/* CTA Section */}
       <section className="relative py-20 sm:py-32 px-4 sm:px-6 z-10">
