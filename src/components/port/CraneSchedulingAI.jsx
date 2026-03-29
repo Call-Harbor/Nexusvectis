@@ -146,7 +146,8 @@ Return JSON with:
               ))}
             </div>
           ) : <p className="text-slate-600 text-xs text-center py-8">Select a crane for details</p>
-        </div>
+          }
+          </div>
 
         {/* AI result */}
         <div className="rounded-xl p-4" style={{ border: "1px solid rgba(6,182,212,0.15)", background: "rgba(0,10,25,0.6)" }}>
