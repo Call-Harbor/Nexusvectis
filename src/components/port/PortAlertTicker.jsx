@@ -12,39 +12,39 @@ function buildAlerts(portCalls, cranes, yardZones, gates) {
   const alerts = [];
 
   portCalls.filter(pc => (pc.delay_minutes || 0) > 60).forEach(pc =>
-    alerts.push({ id: `delay-${pc.id}`, sev: "critical", text: `Port call ${pc.id?.slice(-4)} forsinket ${pc.delay_minutes}min — kritisk forsinkelse` })
+    alerts.push({ id: `delay-${pc.id}`, sev: "critical", text: `Port call ${pc.id?.slice(-4)} delayed ${pc.delay_minutes}min — critical delay` })
   );
 
   portCalls.filter(pc => pc.status === "approaching").forEach(pc =>
-    alerts.push({ id: `approach-${pc.id}`, sev: "info", text: `Skib nærmer sig — ETA ${pc.eta ? new Date(pc.eta).toLocaleTimeString("da-DK", {hour:"2-digit",minute:"2-digit"}) : "ukendt"}` })
+    alerts.push({ id: `approach-${pc.id}`, sev: "info", text: `Vessel approaching — ETA ${pc.eta ? new Date(pc.eta).toLocaleTimeString("en-US", {hour:"2-digit",minute:"2-digit"}) : "unknown"}` })
   );
 
   portCalls.filter(pc => pc.status === "berthed" || pc.status === "operations").forEach(pc =>
-    alerts.push({ id: `ops-${pc.id}`, sev: "ok", text: `Aktiv havneoperaton — fortøjet ved kaj` })
+    alerts.push({ id: `ops-${pc.id}`, sev: "ok", text: `Active port operation — moored at berth` })
   );
 
   cranes.filter(c => c.status === "breakdown").forEach(c =>
-    alerts.push({ id: `crane-${c.id}`, sev: "critical", text: `KRAN NEDBRUD: ${c.name} — øjeblikkelig service påkrævet` })
+    alerts.push({ id: `crane-${c.id}`, sev: "critical", text: `CRANE BREAKDOWN: ${c.name} — immediate service required` })
   );
 
   cranes.filter(c => c.status === "maintenance").forEach(c =>
-    alerts.push({ id: `maint-${c.id}`, sev: "warning", text: `Kran ${c.name} i vedligeholdelse — reduceret kapacitet` })
+    alerts.push({ id: `maint-${c.id}`, sev: "warning", text: `Crane ${c.name} in maintenance — reduced capacity` })
   );
 
   yardZones.filter(z => (z.utilization_pct || 0) > 90).forEach(z =>
-    alerts.push({ id: `yard-${z.id}`, sev: "critical", text: `YARD ZONE ${z.name} KRITISK: ${z.utilization_pct}% kapacitet — omfordel containere` })
+    alerts.push({ id: `yard-${z.id}`, sev: "critical", text: `YARD ZONE ${z.name} CRITICAL: ${z.utilization_pct}% capacity — redistribute containers` })
   );
 
   yardZones.filter(z => (z.utilization_pct || 0) > 75 && (z.utilization_pct || 0) <= 90).forEach(z =>
-    alerts.push({ id: `yardhigh-${z.id}`, sev: "warning", text: `Yard zone ${z.name} høj belastning (${z.utilization_pct}%)` })
+    alerts.push({ id: `yardhigh-${z.id}`, sev: "warning", text: `Yard zone ${z.name} high load (${z.utilization_pct}%)` })
   );
 
   gates.filter(g => g.status === "closed").forEach(g =>
-    alerts.push({ id: `gate-${g.id}`, sev: "warning", text: `Port gate ${g.name} lukket — trafik omdirigeret` })
+    alerts.push({ id: `gate-${g.id}`, sev: "warning", text: `Port gate ${g.name} closed — traffic redirected` })
   );
 
   if (alerts.length === 0) {
-    alerts.push({ id: "all-clear", sev: "ok", text: "Alle systemer operationelle — ingen aktive advarsler" });
+    alerts.push({ id: "all-clear", sev: "ok", text: "All systems operational — no active alerts" });
   }
 
   return alerts;
@@ -73,19 +73,19 @@ export default function PortAlertTicker({ portCalls = [], cranes = [], yardZones
       <div className="flex items-center gap-2 flex-shrink-0">
         <Icon className="w-4 h-4 animate-pulse" style={{ color: cfg.color }} />
         <span className="text-[9px] font-black tracking-widest uppercase" style={{ color: cfg.color }}>
-          {current.sev === "critical" ? "KRITISK" : current.sev === "warning" ? "ADVARSEL" : current.sev === "ok" ? "OK" : "INFO"}
+          {current.sev === "critical" ? "CRITICAL" : current.sev === "warning" ? "WARNING" : current.sev === "ok" ? "OK" : "INFO"}
         </span>
       </div>
       <div className="flex-1 text-xs font-semibold text-white truncate">{current.text}</div>
       <div className="flex items-center gap-3 flex-shrink-0">
         {criticals > 0 && (
           <span className="text-[9px] font-black px-2 py-0.5 rounded-md" style={{ background: "rgba(244,63,94,0.15)", color: "#f43f5e", border: "1px solid rgba(244,63,94,0.3)" }}>
-            {criticals} KRITISK
+            {criticals} CRITICAL
           </span>
         )}
         {warnings > 0 && (
           <span className="text-[9px] font-black px-2 py-0.5 rounded-md" style={{ background: "rgba(245,158,11,0.12)", color: "#f59e0b", border: "1px solid rgba(245,158,11,0.25)" }}>
-            {warnings} ADVARSEL
+            {warnings} WARNING
           </span>
         )}
         <div className="flex gap-1">

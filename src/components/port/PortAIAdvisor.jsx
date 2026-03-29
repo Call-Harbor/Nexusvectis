@@ -3,20 +3,20 @@ import { base44 } from "@/api/base44Client";
 import { Cpu, Zap, TrendingUp, AlertTriangle, Leaf, Send } from "lucide-react";
 
 const QUICK_PROMPTS = [
-  { label: "Optimér kajtildeling", icon: "⚓", prompt: "Analysér alle planlagte anløb og foreslå optimal kajtildeling baseret på størrelse, dybgang og krantilgængelighed." },
-  { label: "Kran-sekvensering", icon: "🏗️", prompt: "Optimér kransekvens og udstyrsbrug for alle aktive operationer for at minimere turnaround-tid." },
-  { label: "Yard stowage plan", icon: "📦", prompt: "Analysér yard-belægning og foreslå optimal placering af indkommende containere for at minimere interne flytninger." },
-  { label: "Gate flow peak", icon: "🚛", prompt: "Forudsig truck-flow peaks de næste 8 timer og foreslå gate-tilpasninger for at undgå kø." },
-  { label: "CO₂ reduktion", icon: "🌱", prompt: "Identificér de 3 største CO₂-besparelsesmuligheder i havnen lige nu og estimer potentiel reduktion." },
-  { label: "Backlog analyse", icon: "📊", prompt: "Analysér nuværende backlog og foreslå konkrete tiltag der reducerer forsinkelser inden for 24 timer." },
+  { label: "Optimize berth allocation", icon: "⚓", prompt: "Analyze all planned calls and suggest optimal berth allocation based on size, draft, and crane availability." },
+  { label: "Crane sequencing", icon: "🏗️", prompt: "Optimize crane sequence and equipment usage for all active operations to minimize turnaround time." },
+  { label: "Yard stowage plan", icon: "📦", prompt: "Analyze yard occupancy and suggest optimal placement of incoming containers to minimize internal moves." },
+  { label: "Gate flow peak", icon: "🚛", prompt: "Predict truck-flow peaks in the next 8 hours and suggest gate adjustments to avoid queues." },
+  { label: "CO₂ reduction", icon: "🌱", prompt: "Identify the 3 largest CO₂ savings opportunities at the port right now and estimate potential reduction." },
+  { label: "Backlog analysis", icon: "📊", prompt: "Analyze current backlog and suggest concrete actions to reduce delays within 24 hours." },
 ];
 
 export default function PortAIAdvisor({ portCalls, vessels, cranes, yardZones, gates, orgId }) {
   const [messages, setMessages] = useState([
     {
       role: "assistant",
-      content: "Hej! Jeg er din Port Operations AI. Jeg har adgang til alle live data fra havnen — kajer, kraner, yard, gate og skibe. Hvad kan jeg hjælpe med?",
-      ts: new Date().toLocaleTimeString("da-DK", { hour: "2-digit", minute: "2-digit" })
+      content: "Hi! I'm your Port Operations AI. I have access to all live data from the port — berths, cranes, yard, gates and vessels. What can I help with?",
+      ts: new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })
     }
   ]);
   const [input, setInput] = useState("");
@@ -25,39 +25,39 @@ export default function PortAIAdvisor({ portCalls, vessels, cranes, yardZones, g
   const buildContext = () => {
     const active = portCalls.filter(p => ["operations", "berthed", "approaching"].includes(p.status));
     const totalMoves = cranes.reduce((s, c) => s + (c.total_moves_today || 0), 0);
-    const avgYardOcc = yardZones.length ? (yardZones.reduce((s, z) => s + (z.occupancy_pct || 0), 0) / yardZones.length).toFixed(0) : "ukendt";
+    const avgYardOcc = yardZones.length ? (yardZones.reduce((s, z) => s + (z.occupancy_pct || 0), 0) / yardZones.length).toFixed(0) : "unknown";
     const totalQueue = gates.reduce((s, g) => s + (g.queue_trucks || 0), 0);
-    return `PORT STATUS OVERBLIK:
-- Aktive anløb: ${active.length} (${portCalls.filter(p => p.status === "planned").length} planlagte)
-- Aktive kraner: ${cranes.filter(c => c.status === "working").length}/${cranes.length} · Samlet moves i dag: ${totalMoves}
-- Yard belægning: ${avgYardOcc}% gns. · Zoner: ${yardZones.length}
-- Truck-kø ved gate: ${totalQueue} trucks
-- Kritiske anløb: ${portCalls.filter(p => p.priority === "critical").length}
-- Forsinkede anløb: ${portCalls.filter(p => p.status === "delayed").length}`;
+    return `PORT STATUS OVERVIEW:
+- Active calls: ${active.length} (${portCalls.filter(p => p.status === "planned").length} planned)
+- Active cranes: ${cranes.filter(c => c.status === "working").length}/${cranes.length} · Total moves today: ${totalMoves}
+- Yard occupancy: ${avgYardOcc}% avg. · Zones: ${yardZones.length}
+- Truck queue at gate: ${totalQueue} trucks
+- Critical calls: ${portCalls.filter(p => p.priority === "critical").length}
+- Delayed calls: ${portCalls.filter(p => p.status === "delayed").length}`;
   };
 
   const sendMessage = async (text) => {
     if (!text.trim() || loading) return;
-    const userMsg = { role: "user", content: text, ts: new Date().toLocaleTimeString("da-DK", { hour: "2-digit", minute: "2-digit" }) };
+    const userMsg = { role: "user", content: text, ts: new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }) };
     setMessages(prev => [...prev, userMsg]);
     setInput("");
     setLoading(true);
 
     const ctx = buildContext();
     const res = await base44.integrations.Core.InvokeLLM({
-      prompt: `Du er en erfaren Port Operations AI for NexusVectis Port. Svar præcist og handlingsorienteret på dansk.
+      prompt: `You are an experienced Port Operations AI for NexusVectis Port. Answer precisely and action-oriented in English.
 
 ${ctx}
 
-Bruger spørger: ${text}
+User asks: ${text}
 
-Giv konkrete, tallede anbefalinger. Inkludér estimerede effekter (tidsbesparelse, omkostning, CO₂) hvor relevant. Max 250 ord.`,
+Provide concrete, numbered recommendations. Include estimated effects (time savings, cost, CO₂) where relevant. Max 250 words.`,
     });
 
     setMessages(prev => [...prev, {
       role: "assistant",
       content: res,
-      ts: new Date().toLocaleTimeString("da-DK", { hour: "2-digit", minute: "2-digit" })
+      ts: new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })
     }]);
     setLoading(false);
   };
@@ -66,7 +66,7 @@ Giv konkrete, tallede anbefalinger. Inkludér estimerede effekter (tidsbesparels
     <div className="grid grid-cols-3 gap-4 h-[calc(100vh-280px)]">
       {/* Quick Prompts */}
       <div className="space-y-3">
-        <p className="text-[9px] font-bold tracking-[0.3em] uppercase" style={{ color: "rgba(139,92,246,0.7)" }}>HURTIGE AI-ANALYSER</p>
+        <p className="text-[9px] font-bold tracking-[0.3em] uppercase" style={{ color: "rgba(139,92,246,0.7)" }}>QUICK AI ANALYSIS</p>
         {QUICK_PROMPTS.map(qp => (
           <button
             key={qp.label}
@@ -123,7 +123,7 @@ Giv konkrete, tallede anbefalinger. Inkludér estimerede effekter (tidsbesparels
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === "Enter" && sendMessage(input)}
-            placeholder="Spørg port AI om operationer, optimering, planlægning..."
+            placeholder="Ask port AI about operations, optimization, planning..."
             className="flex-1 px-3 py-2 rounded-lg text-xs text-white bg-slate-900 border border-slate-700 focus:outline-none focus:border-purple-500 placeholder-slate-600"
           />
           <button
