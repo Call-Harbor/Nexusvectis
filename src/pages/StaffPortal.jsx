@@ -5,6 +5,8 @@ import {
   ChevronRight, Activity, AlertTriangle, Wrench
 } from "lucide-react";
 import GateAgentTab from "@/components/staff/GateAgentTab";
+import TerminalMapBuilder from "@/components/staff/TerminalMapBuilder";
+import { Map } from "lucide-react";
 import SecurityTab from "@/components/staff/SecurityTab";
 import LandsideTab from "@/components/staff/LandsideTab";
 import GroundHandlingTab from "@/components/staff/GroundHandlingTab";
@@ -38,6 +40,7 @@ const ROLES = [
     id: "supervisor", label: "Supervisor", icon: Users, color: "#f43f5e", desc: "Fuldt overblik & AI analyse",
     tabs: [
       { id: "supervisor", label: "Overblik", icon: Zap },
+      { id: "map", label: "Kortoverblik", icon: Map },
       { id: "gates", label: "Gates", icon: Plane },
       { id: "security", label: "Security", icon: Shield },
       { id: "landside", label: "Landside", icon: Car },
@@ -115,6 +118,7 @@ const TAB_PANELS = {
   ground: (props) => <GroundHandlingTab {...props} />,
   incidents: (props) => <IncidentTab {...props} />,
   supervisor: (props) => <SupervisorTab {...props} />,
+  map: ({ orgId }) => <TerminalMapBuilder orgId={orgId} />,
 };
 
 export default function StaffPortal() {
