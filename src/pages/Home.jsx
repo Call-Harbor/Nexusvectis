@@ -540,67 +540,20 @@ export default function Home() {
             <p className="text-base sm:text-lg md:text-xl text-slate-400 max-w-3xl mx-auto px-2">
               Beyond FLEET AI - a comprehensive platform with every tool you need for modern logistics
             </p>
-          </motion.div>
+            </motion.div>
+            </div>
+            </section>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Module Sections */}
+            <TransitControlModule />
+            <PortCommandCenterModule />
+            <AirportOpsCenterModule />
+
+            {/* Features Grid Section */}
+            <section className="relative py-20 sm:py-32 px-4 sm:px-6 z-10">
+            <div className="max-w-7xl mx-auto">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {features.map((feature, idx) => {
-              const Icon = feature.icon;
-              return (
-                <motion.div
-                  key={idx}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: idx * 0.1, duration: 0.5 }}
-                  whileHover={{ scale: 1.05, y: -10 }}
-                  className="relative p-8 rounded-3xl bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl border border-white/10 hover:border-cyan-500/50 transition-all group overflow-hidden cursor-pointer"
-                  onClick={() => feature.link && base44.auth.redirectToLogin(createPageUrl(feature.link))}
-                >
-                  <motion.div 
-                    className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-violet-500/5 opacity-0 group-hover:opacity-100 transition-opacity"
-                    animate={{
-                      scale: [1, 1.1, 1],
-                    }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  />
-                  
-                  <div className="relative">
-                    <motion.div 
-                      whileHover={{ rotate: 360 }}
-                      transition={{ duration: 0.6 }}
-                      className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500/20 via-violet-500/20 to-fuchsia-500/20 flex items-center justify-center mb-6 shadow-lg shadow-cyan-500/20"
-                    >
-                      <Icon className="w-8 h-8 text-cyan-400" />
-                    </motion.div>
-                    <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-cyan-400 transition-colors">{feature.title}</h3>
-                    <p className="text-slate-400 leading-relaxed text-base">{feature.description}</p>
-                    {feature.link && (
-                      <motion.div 
-                        className="absolute bottom-0 right-0 text-cyan-400 opacity-0 group-hover:opacity-100 transition-opacity"
-                        animate={{ x: [0, 5, 0] }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                      >
-                        <ArrowRight className="w-5 h-5" />
-                      </motion.div>
-                    )}
-                  </div>
-                  
-                  <motion.div 
-                    className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-cyan-500/10 to-transparent rounded-full blur-2xl -z-10"
-                    animate={{
-                      scale: [1, 1.5, 1],
-                      opacity: [0.3, 0.6, 0.3],
-                    }}
-                    transition={{ duration: 3, repeat: Infinity, delay: idx * 0.2 }}
-                  />
-                </motion.div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* Pricing Section */}
       <section className="relative py-20 sm:py-32 px-4 sm:px-6 z-10">
         <div className="max-w-7xl mx-auto">
           <motion.div
@@ -1433,11 +1386,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      {/* Module Sections */}
-      <TransitControlModule />
-      <PortCommandCenterModule />
-      <AirportOpsCenterModule />
 
       {/* Latest Blog Posts Section */}
       <section className="relative py-20 sm:py-32 px-4 sm:px-6 z-10">
