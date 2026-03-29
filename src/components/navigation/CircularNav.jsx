@@ -33,16 +33,11 @@ const menuCategories = [
       { name: "GPS Integration", icon: Satellite, page: "GPSIntegration" },
     ]
   },
-  {
-    name: "Apps", icon: Zap, color: "cyan",
-    items: [
-      { name: "Port Command Center", icon: Anchor, page: "PortCommandCenter", badge: "ADD-ON" },
-      { name: "Airport Ops Center", icon: Plane, page: "AirportOpsCenter", badge: "ADD-ON" },
-    ]
-  },
   { 
     name: "Logistics", icon: Route, color: "violet",
     items: [
+      { name: "Port Command", icon: Anchor, page: "PortCommandCenter" },
+      { name: "Airport Ops", icon: Plane, page: "AirportOpsCenter" },
       { name: "Shipments", icon: Package, page: "Shipments" },
       { name: "Routes", icon: Route, page: "Routes" },
       { name: "Resources", icon: Warehouse, page: "Resources" },
