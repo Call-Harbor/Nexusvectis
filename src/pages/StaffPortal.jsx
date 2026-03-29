@@ -255,7 +255,9 @@ export default function StaffPortal() {
         const orgs = await base44.entities.Organization.filter({ id: u.organization_id });
         setOrg(orgs[0] || null);
       }
-    }).catch(() => {});
+    }).catch(() => {
+      // User not logged in - allow to request access
+    });
     const t = setInterval(() => setTime(new Date()), 30000);
     return () => clearInterval(t);
   }, []);
