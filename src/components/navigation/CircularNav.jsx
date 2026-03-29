@@ -18,7 +18,6 @@ const menuCategories = [
     items: [
       { name: "Dashboard", icon: Home, page: "Dashboard" },
       { name: "Alerts", icon: AlertCircle, page: "Alerts" },
-      { name: "Transit Control", icon: Bus, page: "TransitControl" },
       { name: "Scenario Studio", icon: GitBranch, page: "ScenarioStudio" },
       { name: "Map Monitor", icon: MapPin, page: "MapMonitor" },
     ]
@@ -38,6 +37,7 @@ const menuCategories = [
     items: [
       { name: "Port Command", icon: Anchor, page: "PortCommandCenter" },
       { name: "Airport Ops", icon: Plane, page: "AirportOpsCenter" },
+      { name: "Transit Control", icon: Bus, page: "TransitControl" },
       { name: "Shipments", icon: Package, page: "Shipments" },
       { name: "Routes", icon: Route, page: "Routes" },
       { name: "Resources", icon: Warehouse, page: "Resources" },
