@@ -19,6 +19,16 @@ export default function AdminInvoices() {
   const [openCreateDialog, setOpenCreateDialog] = useState(false);
   const [selectedOrgId, setSelectedOrgId] = useState("");
   const [selectedInvoice, setSelectedInvoice] = useState(null);
+  const [invoiceData, setInvoiceData] = useState({
+    vehicleCount: 5,
+    resourceCount: 3,
+    fleetaiCommands: 50,
+    apiCalls: 100,
+    harborCalls: 10,
+    addonAirport: false,
+    addonPort: false,
+    addonTransit: false
+  });
   const queryClient = useQueryClient();
 
   const { data: invoices = [], isLoading } = useQuery({
@@ -89,23 +99,23 @@ export default function AdminInvoices() {
       const periodMonth = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
       const dueDate = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
       
-      const invoiceData = {
+      const invoiceDataPayload = {
         organization_id: orgId,
         invoice_number: invoiceNumber,
         period_month: periodMonth,
-        vehicle_count: Math.floor(Math.random() * 10) + 1,
-        resource_count: Math.floor(Math.random() * 5) + 1,
+        vehicle_count: parseInt(invoiceData.vehicleCount) || 0,
+        resource_count: parseInt(invoiceData.resourceCount) || 0,
         vehicle_price_euro: 15,
         resource_price_euro: 40,
-        fleetai_commands: Math.floor(Math.random() * 100),
-        api_calls: Math.floor(Math.random() * 200),
-        harbor_intelligence_calls: Math.floor(Math.random() * 50),
-        addon_airport_ops: org.addon_airport_ops ? true : false,
-        addon_port_command: org.addon_port_command ? true : false,
-        addon_transit_control: org.addon_transit_control ? true : false,
-        addon_airport_ops_price: org.addon_airport_ops ? 2000 : 0,
-        addon_port_command_price: org.addon_port_command ? 2000 : 0,
-        addon_transit_control_price: org.addon_transit_control ? 2000 : 0,
+        fleetai_commands: parseInt(invoiceData.fleetaiCommands) || 0,
+        api_calls: parseInt(invoiceData.apiCalls) || 0,
+        harbor_intelligence_calls: parseInt(invoiceData.harborCalls) || 0,
+        addon_airport_ops: invoiceData.addonAirport && org.addon_airport_ops ? true : false,
+        addon_port_command: invoiceData.addonPort && org.addon_port_command ? true : false,
+        addon_transit_control: invoiceData.addonTransit && org.addon_transit_control ? true : false,
+        addon_airport_ops_price: invoiceData.addonAirport && org.addon_airport_ops ? 2000 : 0,
+        addon_port_command_price: invoiceData.addonPort && org.addon_port_command ? 2000 : 0,
+        addon_transit_control_price: invoiceData.addonTransit && org.addon_transit_control ? 2000 : 0,
         status: 'pending',
         due_date: dueDate.toISOString().split('T')[0],
         issue_date: now.toISOString().split('T')[0],
@@ -123,27 +133,37 @@ export default function AdminInvoices() {
       };
       
       // Calculate totals
-      const vehicleTotal = invoiceData.vehicle_count * invoiceData.vehicle_price_euro;
-      const resourceTotal = invoiceData.resource_count * invoiceData.resource_price_euro;
-      const fleetaiTotal = Math.floor(invoiceData.fleetai_commands / 100) * 5;
-      const apiTotal = Math.floor(invoiceData.api_calls / 100) * 5;
-      const harborTotal = invoiceData.harbor_intelligence_calls * 0.25;
-      const addonTotal = invoiceData.addon_airport_ops_price + invoiceData.addon_port_command_price + invoiceData.addon_transit_control_price;
+      const vehicleTotal = invoiceDataPayload.vehicle_count * invoiceDataPayload.vehicle_price_euro;
+      const resourceTotal = invoiceDataPayload.resource_count * invoiceDataPayload.resource_price_euro;
+      const fleetaiTotal = Math.floor(invoiceDataPayload.fleetai_commands / 100) * 5;
+      const apiTotal = Math.floor(invoiceDataPayload.api_calls / 100) * 5;
+      const harborTotal = invoiceDataPayload.harbor_intelligence_calls * 0.25;
+      const addonTotal = invoiceDataPayload.addon_airport_ops_price + invoiceDataPayload.addon_port_command_price + invoiceDataPayload.addon_transit_control_price;
       
       const subtotal = vehicleTotal + resourceTotal + fleetaiTotal + apiTotal + harborTotal + addonTotal;
-      const vatAmount = Math.round(subtotal * (invoiceData.vat_rate / 100) * 100) / 100;
+      const vatAmount = Math.round(subtotal * (invoiceDataPayload.vat_rate / 100) * 100) / 100;
       const totalAmount = subtotal + vatAmount;
       
-      invoiceData.subtotal = Math.round(subtotal * 100) / 100;
-      invoiceData.vat_amount = vatAmount;
-      invoiceData.total_amount = totalAmount;
+      invoiceDataPayload.subtotal = Math.round(subtotal * 100) / 100;
+      invoiceDataPayload.vat_amount = vatAmount;
+      invoiceDataPayload.total_amount = totalAmount;
       
-      return await base44.entities.Invoice.create(invoiceData);
+      return await base44.entities.Invoice.create(invoiceDataPayload);
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['admin-invoices']);
       setOpenCreateDialog(false);
       setSelectedOrgId("");
+      setInvoiceData({
+        vehicleCount: 5,
+        resourceCount: 3,
+        fleetaiCommands: 50,
+        apiCalls: 100,
+        harborCalls: 10,
+        addonAirport: false,
+        addonPort: false,
+        addonTransit: false
+      });
       toast.success("Test invoice created successfully");
     },
     onError: (error) => {
@@ -191,14 +211,14 @@ export default function AdminInvoices() {
                 Create Test Invoice
               </Button>
             </DialogTrigger>
-            <DialogContent className="bg-slate-900 border-slate-800">
+            <DialogContent className="bg-slate-900 border-slate-800 max-w-md">
               <DialogHeader>
                 <DialogTitle className="text-white">Create Test Invoice</DialogTitle>
                 <DialogDescription className="text-slate-400">
-                  Generate a test invoice with random data for testing purposes
+                  Configure products and quantities
                 </DialogDescription>
               </DialogHeader>
-              <div className="space-y-4">
+              <div className="space-y-4 max-h-[60vh] overflow-y-auto">
                 <div>
                   <Label className="text-slate-300 mb-2 block">Organization</Label>
                   <Select value={selectedOrgId} onValueChange={setSelectedOrgId}>
@@ -214,7 +234,97 @@ export default function AdminInvoices() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="flex gap-2 justify-end pt-4">
+
+                <div className="border-t border-slate-700 pt-4">
+                  <p className="text-slate-300 font-semibold mb-3 text-sm">Products & Services</p>
+                  <div className="space-y-3">
+                    <div>
+                      <Label className="text-slate-400 text-sm mb-1 block">Vehicles (€15 each)</Label>
+                      <Input
+                        type="number"
+                        min="0"
+                        value={invoiceData.vehicleCount}
+                        onChange={(e) => setInvoiceData({...invoiceData, vehicleCount: e.target.value})}
+                        className="bg-slate-800 border-slate-700 text-white"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-slate-400 text-sm mb-1 block">Resources (€40 each)</Label>
+                      <Input
+                        type="number"
+                        min="0"
+                        value={invoiceData.resourceCount}
+                        onChange={(e) => setInvoiceData({...invoiceData, resourceCount: e.target.value})}
+                        className="bg-slate-800 border-slate-700 text-white"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-slate-400 text-sm mb-1 block">FLEET AI Commands (€5 per 100)</Label>
+                      <Input
+                        type="number"
+                        min="0"
+                        value={invoiceData.fleetaiCommands}
+                        onChange={(e) => setInvoiceData({...invoiceData, fleetaiCommands: e.target.value})}
+                        className="bg-slate-800 border-slate-700 text-white"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-slate-400 text-sm mb-1 block">API Calls (€5 per 100)</Label>
+                      <Input
+                        type="number"
+                        min="0"
+                        value={invoiceData.apiCalls}
+                        onChange={(e) => setInvoiceData({...invoiceData, apiCalls: e.target.value})}
+                        className="bg-slate-800 border-slate-700 text-white"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-slate-400 text-sm mb-1 block">Harbor Intelligence (€0.25 each)</Label>
+                      <Input
+                        type="number"
+                        min="0"
+                        value={invoiceData.harborCalls}
+                        onChange={(e) => setInvoiceData({...invoiceData, harborCalls: e.target.value})}
+                        className="bg-slate-800 border-slate-700 text-white"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="border-t border-slate-700 pt-4">
+                  <p className="text-slate-300 font-semibold mb-3 text-sm">Add-ons (€2000/month)</p>
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={invoiceData.addonAirport}
+                        onChange={(e) => setInvoiceData({...invoiceData, addonAirport: e.target.checked})}
+                        className="rounded"
+                      />
+                      <span className="text-slate-300 text-sm">Airport Ops Center</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={invoiceData.addonPort}
+                        onChange={(e) => setInvoiceData({...invoiceData, addonPort: e.target.checked})}
+                        className="rounded"
+                      />
+                      <span className="text-slate-300 text-sm">Port Command Center</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={invoiceData.addonTransit}
+                        onChange={(e) => setInvoiceData({...invoiceData, addonTransit: e.target.checked})}
+                        className="rounded"
+                      />
+                      <span className="text-slate-300 text-sm">Transit Control</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div className="flex gap-2 justify-end pt-4 border-t border-slate-700">
                   <Button
                     variant="outline"
                     onClick={() => setOpenCreateDialog(false)}
