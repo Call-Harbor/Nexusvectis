@@ -117,7 +117,7 @@ function AirportOpsCenterContent() {
             ))}
             <div className="text-right">
               <p className="text-2xl font-black font-mono" style={{ color: "#06b6d4", textShadow: "0 0 20px rgba(6,182,212,0.4)" }}>{clock}</p>
-              <p className="text-[8px] tracking-widest" style={{ color: "rgba(6,182,212,0.4)" }}>{moment().format("ddd DD MMM YYYY").toUpperCase()}</p>
+              <p className="text-[8px] tracking-widest" style={{ color: "rgba(6,182,212,0.4)" }}>{moment().format("ddd DD MMM YYYY", "en").toUpperCase()}</p>
             </div>
             <button onClick={() => setShowAddFlight(true)}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded transition-all hover:opacity-80"

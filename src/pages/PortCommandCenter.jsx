@@ -45,7 +45,7 @@ function PortCommandCenterContent() {
   const [clock, setClock] = useState("");
 
   useEffect(() => {
-    const tick = () => setClock(new Date().toLocaleTimeString("da-DK", { hour: "2-digit", minute: "2-digit", second: "2-digit" }));
+    const tick = () => setClock(new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" }));
     tick();
     const t = setInterval(tick, 1000);
     return () => clearInterval(t);
@@ -134,7 +134,7 @@ function PortCommandCenterContent() {
                 NEXUSVECTIS PORT
               </h1>
               <p className="text-[8px] sm:text-[9px] tracking-[0.2em] sm:tracking-[0.3em] uppercase hidden sm:block" style={{ color: "rgba(6,182,212,0.4)" }}>
-                AI-DREVET PORT OPERATIONS COMMAND CENTER
+                AI-Powered Port Operations Command Center
               </p>
             </div>
           </div>
@@ -425,7 +425,7 @@ function AddRailSlotDialog({ open, onClose, orgId, yardZones, onSuccess }) {
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <div><Label>Train ID</Label><Input value={f.train_id} onChange={e => setF({...f, train_id: e.target.value})} className="bg-slate-800 border-slate-700" placeholder="IC123" /></div>
-            <div><Label>Track *</Label><Input value={f.track} onChange={e => setF({...f, track: e.target.value})} className="bg-slate-800 border-slate-700" placeholder="Spor 1" /></div>
+            <div><Label>Track *</Label><Input value={f.track} onChange={e => setF({...f, track: e.target.value})} className="bg-slate-800 border-slate-700" placeholder="Track 1" /></div>
             <div><Label>Direction</Label>
               <Select value={f.direction} onValueChange={v => setF({...f, direction: v})}>
                 <SelectTrigger className="bg-slate-800 border-slate-700"><SelectValue /></SelectTrigger>
