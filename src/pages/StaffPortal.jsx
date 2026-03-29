@@ -147,7 +147,7 @@ function ShiftLog({ log }) {
   );
 }
 
-function ModalitySelector({ onSelect }) {
+function ModalitySelector({ onSelect, modalities = MODALITIES }) {
   return (
     <div className="min-h-screen bg-slate-950 flex flex-col justify-center p-5">
       <div className="max-w-sm mx-auto w-full">
@@ -159,7 +159,7 @@ function ModalitySelector({ onSelect }) {
           <p className="text-slate-400 mt-2 text-sm">Select your operation type</p>
         </div>
         <div className="space-y-3">
-          {Object.entries(MODALITIES).map(([key, mod]) => (
+          {Object.entries(modalities).map(([key, mod]) => (
             <button key={key} onClick={() => onSelect(key)}
               className="w-full flex items-center gap-4 p-5 rounded-2xl active:scale-98 transition-all"
               style={{ background: "#06b6d410", border: "2px solid #06b6d430" }}>
@@ -477,8 +477,24 @@ export default function StaffPortal() {
     );
   }
 
-  // Approved - show modality selector
-  if (!modality) return <ModalitySelector onSelect={setModality} />;
+  // Approved - show modality selector with filtered options
+  const getApprovedModalities = () => {
+    if (!org || !staffRequest) return [];
+    const addonMap = {
+      airport: org.addon_airport_ops,
+      port: org.addon_port_command,
+      transit: org.addon_transit_control
+    };
+    // Only show modalities that are approved AND have active add-on
+    return (staffRequest.approved_modalities || []).filter(m => addonMap[m]);
+  };
+
+  const approvedModalities = getApprovedModalities();
+  const filteredModalities = Object.fromEntries(
+    Object.entries(MODALITIES).filter(([key]) => approvedModalities.includes(key))
+  );
+
+  if (!modality) return <ModalitySelector onSelect={setModality} modalities={filteredModalities} />;
   if (!role) return <RoleSelector modality={modality} onSelect={selectRole} onBack={() => setModality(null)} org={org} />;
 
   const RoleIcon = role.icon;
