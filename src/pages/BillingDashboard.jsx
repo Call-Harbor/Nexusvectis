@@ -76,6 +76,30 @@ export default function BillingDashboard() {
     enabled: isAdmin
   });
 
+  const { data: allVehicles = [] } = useQuery({
+    queryKey: ['billing-vehicles'],
+    queryFn: () => base44.entities.Vehicle.list(),
+    enabled: isAdmin
+  });
+
+  const { data: allResources = [] } = useQuery({
+    queryKey: ['billing-resources'],
+    queryFn: () => base44.entities.Resource.list(),
+    enabled: isAdmin
+  });
+
+  const { data: allFleetAI = [] } = useQuery({
+    queryKey: ['billing-fleetai'],
+    queryFn: () => base44.entities.FleetAIUsage.list('-created_date', 500),
+    enabled: isAdmin
+  });
+
+  const { data: allAPIUsage = [] } = useQuery({
+    queryKey: ['billing-api'],
+    queryFn: () => base44.entities.APIUsage.list('-created_date', 500),
+    enabled: isAdmin
+  });
+
   const analytics = useMemo(() => {
     if (!organizations.length) return null;
 
@@ -220,7 +244,7 @@ export default function BillingDashboard() {
       activeAddonOrgs: organizations.filter(o => o.addon_airport_ops || o.addon_port_command || o.addon_transit_control).length,
       addonRevMRR: Math.round((organizations.filter(o => o.addon_airport_ops).length + organizations.filter(o => o.addon_port_command).length + organizations.filter(o => o.addon_transit_control).length) * 2000)
     };
-  }, [invoices, organizations]);
+  }, [invoices, organizations, allVehicles, allResources, allFleetAI, allAPIUsage]);
 
   const filteredOrgs = analytics?.orgLeaderboard?.filter(o =>
     o.name?.toLowerCase().includes(orgSearch.toLowerCase()) ||
