@@ -77,7 +77,7 @@ export default function BillingDashboard() {
   });
 
   const analytics = useMemo(() => {
-    if (!invoices.length || !organizations.length) return null;
+    if (!organizations.length) return null;
 
     const paidInvoices = invoices.filter(i => i.status === 'paid');
     const pendingInvoices = invoices.filter(i => i.status === 'pending');
@@ -159,17 +159,40 @@ export default function BillingDashboard() {
     });
     Object.values(orgRevMap).forEach(o => o.avgInvoice = o.invoiceCount > 0 ? Math.round(o.revenue / o.invoiceCount) : 0);
 
+    // Per-org current asset counts for estimated MRR
+    const orgVehicleCount = {};
+    const orgResourceCount = {};
+    const orgFleetAICount = {};
+    const orgAPICount = {};
+    allVehicles.forEach(v => { orgVehicleCount[v.organization_id] = (orgVehicleCount[v.organization_id] || 0) + 1; });
+    allResources.forEach(r => { orgResourceCount[r.organization_id] = (orgResourceCount[r.organization_id] || 0) + 1; });
+    allFleetAI.filter(f => f.success).forEach(f => { orgFleetAICount[f.organization_id] = (orgFleetAICount[f.organization_id] || 0) + 1; });
+    allAPIUsage.filter(a => a.status_code < 400).forEach(a => { orgAPICount[a.organization_id] = (orgAPICount[a.organization_id] || 0) + 1; });
+
     const orgLeaderboard = organizations
-      .map(org => ({
-        ...org,
-        revenue: orgRevMap[org.id]?.revenue || 0,
-        invoiceCount: orgRevMap[org.id]?.invoiceCount || 0,
-        avgInvoice: orgRevMap[org.id]?.avgInvoice || 0,
-        lastInvoice: orgRevMap[org.id]?.lastInvoice,
-        hasAddons: org.addon_airport_ops || org.addon_port_command || org.addon_transit_control,
-        activeAddons: [org.addon_airport_ops, org.addon_port_command, org.addon_transit_control].filter(Boolean).length
-      }))
-      .sort((a, b) => b.revenue - a.revenue);
+      .map(org => {
+        const vCount = orgVehicleCount[org.id] || 0;
+        const rCount = orgResourceCount[org.id] || 0;
+        const aiCount = orgFleetAICount[org.id] || 0;
+        const apiCount = orgAPICount[org.id] || 0;
+        const addonCount = [org.addon_airport_ops, org.addon_port_command, org.addon_transit_control].filter(Boolean).length;
+        const estimatedMRR = (vCount * 15) + (rCount * 40) + (Math.ceil(aiCount / 100) * 5) + (Math.ceil(apiCount / 100) * 5) + (addonCount * 2000);
+        return {
+          ...org,
+          revenue: orgRevMap[org.id]?.revenue || 0,
+          invoiceCount: orgRevMap[org.id]?.invoiceCount || 0,
+          avgInvoice: orgRevMap[org.id]?.avgInvoice || 0,
+          lastInvoice: orgRevMap[org.id]?.lastInvoice,
+          hasAddons: org.addon_airport_ops || org.addon_port_command || org.addon_transit_control,
+          activeAddons: addonCount,
+          estimatedMRR,
+          vehicleCount: vCount,
+          resourceCount: rCount,
+          fleetAICount: aiCount,
+          apiCount
+        };
+      })
+      .sort((a, b) => (b.revenue || b.estimatedMRR) - (a.revenue || a.estimatedMRR));
 
     // Churn / status health
     const collectionRate = invoices.length > 0 ? Math.round((paidInvoices.length / invoices.length) * 100) : 0;
@@ -436,8 +459,11 @@ export default function BillingDashboard() {
                           <th className="px-4 py-3 text-left">Organization</th>
                           <th className="px-4 py-3 text-left">Country</th>
                           <th className="px-4 py-3 text-right">Total Revenue</th>
+                          <th className="px-4 py-3 text-right">Est. MRR</th>
                           <th className="px-4 py-3 text-right">Invoices</th>
-                          <th className="px-4 py-3 text-right">Avg Invoice</th>
+                          <th className="px-4 py-3 text-right">Vehicles</th>
+                          <th className="px-4 py-3 text-right">Resources</th>
+                          <th className="px-4 py-3 text-right">AI / API</th>
                           <th className="px-4 py-3 text-right">Add-ons</th>
                           <th className="px-4 py-3 text-right">Last Invoice</th>
                         </tr>
@@ -454,8 +480,14 @@ export default function BillingDashboard() {
                             </td>
                             <td className="px-4 py-3 text-slate-300">{org.headquarters_country || '—'}</td>
                             <td className="px-4 py-3 text-right text-cyan-400 font-semibold">€{Math.round(org.revenue).toLocaleString()}</td>
+                            <td className="px-4 py-3 text-right">
+                              <span className="text-emerald-400 font-semibold">€{Math.round(org.estimatedMRR).toLocaleString()}</span>
+                              <span className="text-slate-600 text-xs block">estimated</span>
+                            </td>
                             <td className="px-4 py-3 text-right text-slate-300">{org.invoiceCount}</td>
-                            <td className="px-4 py-3 text-right text-slate-300">€{org.avgInvoice.toLocaleString()}</td>
+                            <td className="px-4 py-3 text-right text-slate-300">{org.vehicleCount}</td>
+                            <td className="px-4 py-3 text-right text-slate-300">{org.resourceCount}</td>
+                            <td className="px-4 py-3 text-right text-slate-400 text-xs">{org.fleetAICount} / {org.apiCount}</td>
                             <td className="px-4 py-3 text-right">
                               {org.activeAddons > 0
                                 ? <Badge className="bg-violet-500/20 text-violet-300 border-violet-500/30">{org.activeAddons} active</Badge>
