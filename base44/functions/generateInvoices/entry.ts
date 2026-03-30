@@ -62,25 +62,35 @@ Deno.serve(async (req) => {
         organization_id: org.id
       });
 
-      // Count FLEET AI usage for current period
-      const periodStart = new Date(lastMonth);
-      const periodEnd = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+      // Find last invoice for this organization to determine billing window
+      const existingInvoicesForOrg = await base44.asServiceRole.entities.Invoice.filter({
+        organization_id: org.id
+      });
+      const sortedPrevInvoices = existingInvoicesForOrg
+        .filter(i => i.status !== 'cancelled')
+        .sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
+      const lastInvoiceDate = sortedPrevInvoices.length > 0
+        ? new Date(sortedPrevInvoices[0].created_date)
+        : new Date(0); // All time if no previous invoice
+
+      const periodStart = lastInvoiceDate;
+      const periodEnd = currentDate;
       
       const allFleetAIUsage = await base44.asServiceRole.entities.FleetAIUsage.filter({ 
         organization_id: org.id 
       });
       const fleetAICommands = allFleetAIUsage.filter(usage => {
         const usageDate = new Date(usage.created_date);
-        return usageDate >= periodStart && usageDate < periodEnd && usage.success;
+        return usageDate > periodStart && usageDate <= periodEnd && usage.success;
       }).length;
 
-      // Count API calls for current period (split standard vs Harbor premium)
+      // Count API calls since last invoice (split standard vs Harbor premium)
       const allAPIUsage = await base44.asServiceRole.entities.APIUsage.filter({ 
         organization_id: org.id 
       });
       const periodAPIUsage = allAPIUsage.filter(usage => {
         const usageDate = new Date(usage.created_date);
-        return usageDate >= periodStart && usageDate < periodEnd && usage.status_code < 400;
+        return usageDate > periodStart && usageDate <= periodEnd && usage.status_code < 400;
       });
       const harborCalls = periodAPIUsage.filter(u => u.endpoint && u.endpoint.includes('/harbor/intelligence')).length;
       const apiCalls = periodAPIUsage.filter(u => !u.endpoint || !u.endpoint.includes('/harbor/intelligence')).length;
@@ -225,16 +235,17 @@ Deno.serve(async (req) => {
         legalNotes = 'No VAT applied - service provided to non-EU entity.';
       }
 
-      // Check if invoice already exists for this period
-      const existingInvoices = await base44.asServiceRole.entities.Invoice.filter({
-        organization_id: org.id,
-        period_month: periodMonth
-      });
-
-      if (existingInvoices.length > 0) {
-        console.log(`Invoice already exists for ${org.name} for ${periodMonth}`);
+      // Skip if last invoice was less than 1 day ago (prevent double-billing)
+      const hoursSinceLastInvoice = (currentDate - lastInvoiceDate) / (1000 * 60 * 60);
+      if (hoursSinceLastInvoice < 24 && sortedPrevInvoices.length > 0) {
+        console.log(`Invoice generated too recently for ${org.name}, skipping`);
         continue;
       }
+
+      // Period label: from last invoice date (or epoch) to now
+      const periodLabel = sortedPrevInvoices.length > 0
+        ? `${lastInvoiceDate.toISOString().split('T')[0]} – ${currentDate.toISOString().split('T')[0]}`
+        : `All time – ${currentDate.toISOString().split('T')[0]}`;
 
       // Generate invoice number with year prefix (legal requirement in many countries)
       const invoiceNumber = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${org.id.slice(0, 8)}`;
@@ -243,7 +254,7 @@ Deno.serve(async (req) => {
       const invoice = await base44.asServiceRole.entities.Invoice.create({
         organization_id: org.id,
         invoice_number: invoiceNumber,
-        period_month: periodMonth,
+        period_month: periodLabel,
         issue_date: issueDate,
         vehicle_count: vehicleCount,
         resource_count: resourceCount,
