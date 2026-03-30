@@ -558,6 +558,10 @@ export default function Home() {
                   viewport={{ once: true }}
                   className="text-center mb-20"
                 >
+                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-500/10 border border-cyan-500/30 mb-6">
+                    <Zap className="w-3.5 h-3.5 text-cyan-400" />
+                    <span className="text-cyan-300 text-sm font-semibold">Usage-Based Pricing</span>
+                  </div>
                   <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-6 px-2">
                     Pay Only for What You Use
                     <br />
@@ -566,36 +570,182 @@ export default function Home() {
                     </span>
                   </h2>
                   <p className="text-base sm:text-lg md:text-xl text-slate-400 max-w-3xl mx-auto px-2">
-                    Simple, usage-based billing. No hidden fees.
+                    Simple, resource-based billing with no hidden fees. Scale up or down at any time.
                   </p>
                 </motion.div>
 
-                <div className="max-w-5xl mx-auto mb-16">
-                  <div className="grid md:grid-cols-3 gap-8">
+                {/* Core Usage Pricing */}
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  className="mb-16 rounded-[2.5rem] bg-gradient-to-br from-slate-900/80 to-slate-950/80 border border-slate-700/50 overflow-hidden"
+                >
+                  <div className="p-8 md:p-12">
+                    <div className="flex items-center gap-3 mb-8">
+                      <div className="w-10 h-10 rounded-xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center">
+                        <Package className="w-5 h-5 text-cyan-400" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold text-white">Core Platform — Usage-Based</h3>
+                        <p className="text-slate-400 text-sm">Billed monthly based on your actual resource usage</p>
+                      </div>
+                    </div>
+
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {[
+                        {
+                          icon: Truck,
+                          label: "Vehicles",
+                          price: "€15",
+                          unit: "/ vehicle / month",
+                          desc: "Each tracked vehicle — trucks, ships, drones, trains, aircraft. Includes GPS, AIS, ADS-B tracking, telemetry, and digital twin.",
+                          color: "cyan",
+                          examples: ["Cargo truck", "Container ship", "Cargo drone", "Freight aircraft"]
+                        },
+                        {
+                          icon: Warehouse,
+                          label: "Resources",
+                          price: "€40",
+                          unit: "/ resource / month",
+                          desc: "Logistics infrastructure — warehouses, fuel depots, ports, charging stations, maintenance hubs.",
+                          color: "violet",
+                          examples: ["Warehouse", "Fuel depot", "Port terminal", "Charging station"]
+                        },
+                        {
+                          icon: Brain,
+                          label: "FLEET AI Commands",
+                          price: "€5",
+                          unit: "/ 100 commands",
+                          desc: "Natural language AI commands via IntellectMode. Each command triggers analysis, routing, or automation.",
+                          color: "fuchsia",
+                          examples: ["Optimize route", "Predict maintenance", "Analyze fleet", "Reroute vehicle"]
+                        },
+                        {
+                          icon: Network,
+                          label: "REST API Calls",
+                          price: "€5",
+                          unit: "/ 100 API calls",
+                          desc: "Direct API integration for external systems, TMS connectors, ERP sync, and custom automations.",
+                          color: "emerald",
+                          examples: ["GET /vehicles", "POST /routes", "PUT /shipments", "Webhooks"]
+                        },
+                        {
+                          icon: Satellite,
+                          label: "Harbor Intelligence API",
+                          price: "€0.25",
+                          unit: "/ call",
+                          desc: "Premium AI inference via H.A.R.B.O.R. — advanced analytics, predictive models, and deep intelligence queries.",
+                          color: "amber",
+                          badge: "PREMIUM",
+                          examples: ["Anomaly detection", "Predictive ETA", "Risk scoring", "Swarm control"]
+                        },
+                      ].map((item, idx) => {
+                        const Icon = item.icon;
+                        return (
+                          <motion.div
+                            key={idx}
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: idx * 0.08 }}
+                            className={`p-6 rounded-2xl bg-${item.color}-500/5 border border-${item.color}-500/20 hover:border-${item.color}-500/40 transition-all group`}
+                          >
+                            <div className="flex items-start justify-between mb-4">
+                              <div className={`w-10 h-10 rounded-xl bg-${item.color}-500/15 border border-${item.color}-500/25 flex items-center justify-center`}>
+                                <Icon className={`w-5 h-5 text-${item.color}-400`} />
+                              </div>
+                              {item.badge && (
+                                <span className="text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-full">{item.badge}</span>
+                              )}
+                            </div>
+                            <div className="mb-3">
+                              <div className={`text-2xl font-black text-${item.color}-400`}>{item.price}</div>
+                              <div className="text-slate-500 text-xs">{item.unit}</div>
+                            </div>
+                            <p className="text-white font-semibold text-sm mb-2">{item.label}</p>
+                            <p className="text-slate-400 text-xs leading-relaxed mb-4">{item.desc}</p>
+                            <div className="flex flex-wrap gap-1.5">
+                              {item.examples.map((ex, i) => (
+                                <span key={i} className={`text-[10px] bg-${item.color}-500/10 text-${item.color}-300/70 border border-${item.color}-500/15 px-2 py-0.5 rounded-full`}>{ex}</span>
+                              ))}
+                            </div>
+                          </motion.div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </motion.div>
+
+                {/* Premium Add-on Modules */}
+                <div className="mb-8">
+                  <div className="flex items-center gap-3 mb-8">
+                    <div className="flex-1 h-px bg-gradient-to-r from-transparent via-violet-500/30 to-transparent" />
+                    <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-violet-500/10 border border-violet-500/30">
+                      <Sparkles className="w-3.5 h-3.5 text-violet-400" />
+                      <span className="text-violet-300 text-sm font-semibold">Premium Operations Modules</span>
+                    </div>
+                    <div className="flex-1 h-px bg-gradient-to-r from-transparent via-violet-500/30 to-transparent" />
+                  </div>
+
+                  <div className="grid md:grid-cols-3 gap-6">
                     {[
                       {
-                        icon: Sparkles,
+                        icon: Plane,
                         title: "Airport Ops Center",
                         price: "€2,000",
                         unit: "/month",
-                        description: "AI-powered airport operations, gate allocation, security monitoring, ground handling, baggage tracking, and passenger flow optimization",
-                        color: "from-cyan-500 to-blue-500"
+                        color: "from-cyan-500 to-blue-500",
+                        borderColor: "border-cyan-500/30",
+                        glowColor: "cyan",
+                        includes: [
+                          "Flight tracking & gate allocation",
+                          "Baggage handling & tracking",
+                          "Security lane monitoring",
+                          "Ground handling coordination",
+                          "Passenger flow AI",
+                          "Turnaround management",
+                          "AI operational advisor",
+                          "Airport sustainability reports"
+                        ]
                       },
                       {
                         icon: Satellite,
                         title: "Port Command Center",
                         price: "€2,000",
                         unit: "/month",
-                        description: "Maritime operations with berth optimization, vessel queue management, crane scheduling, container tracking, and port infrastructure control",
-                        color: "from-blue-500 to-violet-500"
+                        color: "from-blue-500 to-violet-500",
+                        borderColor: "border-violet-500/30",
+                        glowColor: "violet",
+                        includes: [
+                          "Vessel queue & berth planning",
+                          "Crane scheduling AI",
+                          "Container yard tracking",
+                          "Port gate management",
+                          "Rail slot coordination",
+                          "Live AIS vessel data",
+                          "Port AI advisor",
+                          "CO₂ & sustainability metrics"
+                        ]
                       },
                       {
                         icon: Orbit,
                         title: "Transit Control",
                         price: "€2,000",
                         unit: "/month",
-                        description: "Public transit management with passenger analytics, crowding prediction, network optimization, demand forecasting, and sustainability tracking",
-                        color: "from-emerald-500 to-cyan-500"
+                        color: "from-emerald-500 to-cyan-500",
+                        borderColor: "border-emerald-500/30",
+                        glowColor: "emerald",
+                        includes: [
+                          "Bus fleet & line management",
+                          "Real-time passenger analytics",
+                          "Crowding prediction AI",
+                          "Demand-responsive transit (DRT)",
+                          "Network optimization engine",
+                          "Traffic signal priority (TSP)",
+                          "Driver app & copilot",
+                          "Transit sustainability dashboard"
+                        ]
                       }
                     ].map((item, idx) => {
                       const Icon = item.icon;
@@ -606,42 +756,51 @@ export default function Home() {
                           whileInView={{ opacity: 1, y: 0 }}
                           viewport={{ once: true }}
                           transition={{ delay: idx * 0.1 }}
-                          whileHover={{ scale: 1.02 }}
-                          className="relative p-8 rounded-3xl bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl border border-white/10 hover:border-cyan-500/50 transition-all"
+                          whileHover={{ scale: 1.02, y: -5 }}
+                          className={`relative p-8 rounded-3xl bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl border ${item.borderColor} hover:shadow-lg hover:shadow-${item.glowColor}-500/10 transition-all`}
                         >
-                          <div className="flex items-start justify-between mb-4">
-                            <Icon className="w-12 h-12 text-cyan-400" />
+                          <div className="flex items-start justify-between mb-6">
+                            <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${item.color} bg-opacity-20 flex items-center justify-center`} style={{background: 'rgba(255,255,255,0.05)'}}>
+                              <Icon className={`w-6 h-6 text-${item.glowColor}-400`} />
+                            </div>
                             <div className="text-right">
-                              <div className="text-4xl font-black bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent">
+                              <div className={`text-3xl font-black bg-gradient-to-r ${item.color} bg-clip-text text-transparent`}>
                                 {item.price}
                               </div>
-                              <div className="text-sm text-slate-400">{item.unit}</div>
+                              <div className="text-xs text-slate-500">{item.unit}</div>
                             </div>
                           </div>
-                          <h3 className="text-xl font-bold text-white mb-2">{item.title}</h3>
-                          <p className="text-slate-400 text-sm">{item.description}</p>
+                          <h3 className="text-xl font-bold text-white mb-5">{item.title}</h3>
+                          <ul className="space-y-2.5">
+                            {item.includes.map((inc, i) => (
+                              <li key={i} className="flex items-start gap-2.5">
+                                <CheckCircle2 className={`w-4 h-4 text-${item.glowColor}-400 flex-shrink-0 mt-0.5`} />
+                                <span className="text-slate-300 text-sm">{inc}</span>
+                              </li>
+                            ))}
+                          </ul>
                         </motion.div>
                       );
-                      })}
-                      </div>
-                      </div>
+                    })}
+                  </div>
+                </div>
 
-                      <motion.div
-                      initial={{ opacity: 0 }}
-                      whileInView={{ opacity: 1 }}
-                      viewport={{ once: true }}
-                      className="text-center mt-12"
-                      >
-                      <p className="text-slate-400 mb-6">Activate premium modules to unlock advanced fleet operations. Cancel anytime.</p>
-                      <button
-                      onClick={() => base44.auth.redirectToLogin(createPageUrl("Dashboard"))}
-                      className="bg-gradient-to-r from-cyan-500 to-violet-500 text-white text-lg px-8 py-4 rounded-2xl font-semibold hover:shadow-lg hover:shadow-cyan-500/50 transition-all"
-                      >
-                      Get Started
-                      </button>
-                      </motion.div>
-                      </div>
-                      </section>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
+                  viewport={{ once: true }}
+                  className="text-center mt-12"
+                >
+                  <p className="text-slate-400 mb-6">Activate premium modules to unlock advanced operations. Cancel anytime after the first 48 hours.</p>
+                  <button
+                    onClick={() => base44.auth.redirectToLogin(createPageUrl("Dashboard"))}
+                    className="bg-gradient-to-r from-cyan-500 to-violet-500 text-white text-lg px-8 py-4 rounded-2xl font-semibold hover:shadow-lg hover:shadow-cyan-500/50 transition-all"
+                  >
+                    Get Started
+                  </button>
+                </motion.div>
+              </div>
+            </section>
 
       {/* Digital Twin Federation Section */}
       <section className="relative py-20 sm:py-32 px-4 sm:px-6 z-10">
