@@ -244,7 +244,14 @@ export default function RegulatoryIntelligence() {
 
   const { data: currentUser } = useQuery({ queryKey: ["reg-me"], queryFn: () => base44.auth.me() });
 
-  const checks = MOCK_CHECKS.map(c => ({ ...c, status: repairedIds.has(c.id) ? "compliant" : c.status }));
+  const { data: savedChecks = [], refetch: refetchChecks } = useQuery({
+    queryKey: ["compliance-checks"],
+    queryFn: () => base44.entities.ComplianceCheck.filter({ module: "cross_module" }),
+  });
+
+  const repairedEntityIds = new Set(savedChecks.filter(c => c.auto_repaired).map(c => c.entity_id));
+
+  const checks = MOCK_CHECKS.map(c => ({ ...c, status: repairedEntityIds.has(c.id) ? "compliant" : c.status }));
   const filteredChecks = domainFilter === "all" ? checks : checks.filter(c => c.domain === domainFilter);
 
   const stats = useMemo(() => ({
@@ -257,8 +264,23 @@ export default function RegulatoryIntelligence() {
 
   const handleRepair = async (check) => {
     setRepairing(true);
-    await new Promise(r => setTimeout(r, 2000));
-    setRepairedIds(prev => new Set([...prev, check.id]));
+    await new Promise(r => setTimeout(r, 1500));
+    await base44.entities.ComplianceCheck.create({
+      organization_id: currentUser?.email || "system",
+      entity_id: check.id,
+      entity_name: check.entity_name,
+      entity_type: check.entity_type,
+      domain: check.domain,
+      module: "cross_module",
+      status: "compliant",
+      severity: check.severity,
+      auto_repaired: true,
+      repair_suggestion: check.repair_suggestion,
+      checked_at: new Date().toISOString(),
+      resolved_at: new Date().toISOString(),
+      legal_basis: check.legal_basis,
+    });
+    await refetchChecks();
     setRepairing(false);
     setSelectedCheck(null);
   };
