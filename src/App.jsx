@@ -22,6 +22,7 @@ import AirportReports from './pages/AirportReports';
 import StaffManagement from './pages/StaffManagement';
 import RegulatoryIntelligence from './pages/RegulatoryIntelligence';
 import EnergyOpsCenter from './pages/EnergyOpsCenter';
+import GridManagement from './pages/GridManagement';
 
 
 const { Pages, Layout, mainPage } = pagesConfig;
@@ -158,6 +159,14 @@ const AuthenticatedApp = () => {
         element={
           <LayoutWrapper currentPageName="RegulatoryIntelligence">
             <RegulatoryIntelligence />
+          </LayoutWrapper>
+        }
+      />
+      <Route
+        path="/GridManagement"
+        element={
+          <LayoutWrapper currentPageName="GridManagement">
+            <GridManagement />
           </LayoutWrapper>
         }
       />

@@ -39,6 +39,7 @@ const menuCategories = [
       { name: "Airport Ops", icon: Plane, page: "AirportOpsCenter" },
       { name: "Transit Control", icon: Bus, page: "TransitControl" },
       { name: "Energy & Utilities", icon: Zap, page: "EnergyOpsCenter", badge: "NEW" },
+      { name: "Grid Management", icon: Battery, page: "GridManagement" },
       { name: "Regulatory AI", icon: Scale, page: "RegulatoryIntelligence" },
       { name: "Shipments", icon: Package, page: "Shipments" },
       { name: "Routes", icon: Route, page: "Routes" },
