@@ -1,0 +1,95 @@
+{
+  "name": "GridAsset",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string",
+      "description": "Asset name/identifier"
+    },
+    "asset_type": {
+      "type": "string",
+      "enum": [
+        "line",
+        "transformer",
+        "substation",
+        "generator",
+        "battery",
+        "solar",
+        "wind",
+        "load_node"
+      ],
+      "description": "Type of grid asset"
+    },
+    "voltage_kv": {
+      "type": "number",
+      "description": "Voltage level in kV"
+    },
+    "capacity_mw": {
+      "type": "number",
+      "description": "Rated capacity in MW"
+    },
+    "current_load_mw": {
+      "type": "number",
+      "description": "Current load/output in MW"
+    },
+    "load_percent": {
+      "type": "number",
+      "description": "Load as % of capacity"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "online",
+        "offline",
+        "maintenance",
+        "fault",
+        "standby"
+      ],
+      "default": "online"
+    },
+    "location": {
+      "type": "string"
+    },
+    "latitude": {
+      "type": "number"
+    },
+    "longitude": {
+      "type": "number"
+    },
+    "co2_kg_per_mwh": {
+      "type": "number",
+      "description": "CO\u2082 intensity if generator"
+    },
+    "is_flexible": {
+      "type": "boolean",
+      "default": false,
+      "description": "Can be dispatched as flexibility resource"
+    },
+    "linked_module": {
+      "type": "string",
+      "enum": [
+        "port",
+        "airport",
+        "transit",
+        "none"
+      ],
+      "description": "Linked NexusVectis module if applicable"
+    },
+    "next_maintenance": {
+      "type": "string",
+      "format": "date"
+    },
+    "last_reading_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "organization_id",
+    "name",
+    "asset_type"
+  ]
+}

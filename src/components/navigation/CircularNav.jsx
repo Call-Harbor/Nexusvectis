@@ -7,7 +7,7 @@ import {
   Truck, Route, Warehouse, Sparkles, 
   Settings, Users, Shield, FileText, Package, 
   DollarSign, Target, Menu, X, Zap, Home, AlertCircle, Code2, BarChart2, Brain, Bus,
-  Wrench, Receipt, BarChart3, Leaf, Satellite, Bell, TrendingUp, GitBranch, Box, GraduationCap, MapPin, ChevronRight, Anchor, Plane, Scale
+  Wrench, Receipt, BarChart3, Leaf, Satellite, Bell, TrendingUp, GitBranch, Box, GraduationCap, MapPin, ChevronRight, Anchor, Plane, Scale, Wind, Battery
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import NotificationCenter from "../notifications/NotificationCenter";
@@ -38,6 +38,7 @@ const menuCategories = [
       { name: "Port Command", icon: Anchor, page: "PortCommandCenter" },
       { name: "Airport Ops", icon: Plane, page: "AirportOpsCenter" },
       { name: "Transit Control", icon: Bus, page: "TransitControl" },
+      { name: "Energy & Utilities", icon: Zap, page: "EnergyOpsCenter", badge: "NEW" },
       { name: "Regulatory AI", icon: Scale, page: "RegulatoryIntelligence" },
       { name: "Shipments", icon: Package, page: "Shipments" },
       { name: "Routes", icon: Route, page: "Routes" },
