@@ -264,25 +264,138 @@ export default function RegulatoryIntelligence() {
 
   const handleRepair = async (check) => {
     setRepairing(true);
-    await new Promise(r => setTimeout(r, 1500));
-    await base44.entities.ComplianceCheck.create({
-      organization_id: currentUser?.email || "system",
-      entity_id: check.id,
-      entity_name: check.entity_name,
-      entity_type: check.entity_type,
-      domain: check.domain,
-      module: "cross_module",
-      status: "compliant",
-      severity: check.severity,
-      auto_repaired: true,
-      repair_suggestion: check.repair_suggestion,
-      checked_at: new Date().toISOString(),
-      resolved_at: new Date().toISOString(),
-      legal_basis: check.legal_basis,
-    });
-    await refetchChecks();
-    setRepairing(false);
-    setSelectedCheck(null);
+    const orgId = currentUser?.email || "system";
+
+    try {
+      // === DRIVER violations: send OrbitMessage + email ===
+      if (check.entity_type === "driver") {
+        // Find driver by name match
+        const allDrivers = await base44.entities.Driver.list();
+        const nameParts = check.entity_name.replace(/\s*\(.*\)/, "").trim().toLowerCase().split(" ");
+        const driver = allDrivers.find(d =>
+          nameParts.some(p => (d.first_name + " " + d.last_name).toLowerCase().includes(p))
+        );
+
+        const msgText = `🚨 REGULATORY ALERT — ${check.legal_basis}\n\n${check.violation_detail}\n\nAI-anbefalet handling: ${check.repair_suggestion}\n\nVenligst bekræft modtagelse og følg instrukserne.`;
+
+        // Send OrbitMessage
+        await base44.entities.OrbitMessage.create({
+          organization_id: orgId,
+          sender_email: currentUser?.email || "system@nexusvectis.com",
+          sender_name: "Regulatory Intellect AI",
+          sender_role: "coordinator",
+          recipient_email: driver?.email || "operations@nexusvectis.com",
+          message: msgText,
+          message_type: "alert",
+          vehicle_id: driver?.current_vehicle_id || undefined,
+        });
+
+        // Send email
+        if (driver?.email) {
+          await base44.integrations.Core.SendEmail({
+            to: driver.email,
+            subject: `⚠️ Compliance Alert: ${check.entity_name} — ${check.legal_basis}`,
+            body: msgText,
+            from_name: "NexusVectis Regulatory Intellect",
+          });
+        }
+
+        // Create system Alert
+        await base44.entities.Alert.create({
+          organization_id: orgId,
+          title: `AI Repair Applied: ${check.entity_name}`,
+          message: `Regulatory violation resolved via AI Repair. ${check.repair_suggestion}`,
+          type: "info",
+          category: "system",
+        });
+      }
+
+      // === FLIGHT violations: update Flight record + Alert ===
+      else if (check.entity_type === "flight") {
+        const allFlights = await base44.entities.Flight.list();
+        const flightNumber = check.entity_name.split(" ")[0]; // e.g. "AF8812"
+        const flight = allFlights.find(f =>
+          f.flight_number === flightNumber ||
+          (f.flight_number || "").includes(flightNumber) ||
+          check.entity_name.toLowerCase().includes((f.flight_number || "").toLowerCase())
+        );
+
+        if (flight) {
+          // For ground handling violations: extend scheduled time
+          if (check.id === "c6") {
+            const newEta = flight.scheduled_departure
+              ? new Date(new Date(flight.scheduled_departure).getTime() + 6 * 60000).toISOString()
+              : undefined;
+            await base44.entities.Flight.update(flight.id, {
+              status: "delayed",
+              ...(newEta ? { scheduled_departure: newEta } : {}),
+            });
+          }
+          // For customs/ICS2 violations: flag the flight
+          if (check.id === "c4") {
+            await base44.entities.Flight.update(flight.id, {
+              status: "on_hold",
+            });
+          }
+        }
+
+        await base44.entities.Alert.create({
+          organization_id: orgId,
+          title: `AI Repair: ${check.entity_name}`,
+          message: check.repair_suggestion,
+          type: check.severity === "critical" ? "critical" : "warning",
+          category: "system",
+        });
+
+        // Email ops team
+        await base44.integrations.Core.SendEmail({
+          to: currentUser?.email || "ops@nexusvectis.com",
+          subject: `✈️ Flight Compliance Fix Applied: ${check.entity_name}`,
+          body: `AI Repair applied for ${check.entity_name}\n\nViolation: ${check.violation_detail}\n\nAction taken: ${check.repair_suggestion}\n\nLegal basis: ${check.legal_basis}`,
+          from_name: "NexusVectis Regulatory Intellect",
+        });
+      }
+
+      // === VEHICLE/ROUTE/VESSEL: create Alert + notify ops ===
+      else {
+        await base44.entities.Alert.create({
+          organization_id: orgId,
+          title: `Compliance Action Required: ${check.entity_name}`,
+          message: `${check.violation_detail}\n\nAI Suggestion: ${check.repair_suggestion}`,
+          type: check.severity === "critical" ? "critical" : "warning",
+          category: "route",
+        });
+
+        await base44.integrations.Core.SendEmail({
+          to: currentUser?.email || "ops@nexusvectis.com",
+          subject: `🔧 Compliance Action: ${check.entity_name} — ${check.legal_basis}`,
+          body: `Violation detected: ${check.violation_detail}\n\nAI recommended action: ${check.repair_suggestion}\n\nPlease action immediately.`,
+          from_name: "NexusVectis Regulatory Intellect",
+        });
+      }
+
+      // Save repair to DB
+      await base44.entities.ComplianceCheck.create({
+        organization_id: orgId,
+        entity_id: check.id,
+        entity_name: check.entity_name,
+        entity_type: check.entity_type,
+        domain: check.domain,
+        module: "cross_module",
+        status: "compliant",
+        severity: check.severity,
+        auto_repaired: true,
+        repair_suggestion: check.repair_suggestion,
+        checked_at: new Date().toISOString(),
+        resolved_at: new Date().toISOString(),
+        legal_basis: check.legal_basis,
+      });
+
+      await refetchChecks();
+    } finally {
+      setRepairing(false);
+      setSelectedCheck(null);
+    }
   };
 
   const handleGenerateReport = async () => {
