@@ -1,11 +1,11 @@
 import { useState, useMemo } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
+import {
   Shield, AlertTriangle, CheckCircle2, XCircle, Brain, Zap, ChevronRight,
   BookOpen, Scale, Truck, Globe, Plane, Satellite, Leaf, RefreshCw,
-  FileText, TrendingUp, Activity, Filter, Sparkles, ArrowRight, Lock
+  FileText, Filter, Sparkles
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
