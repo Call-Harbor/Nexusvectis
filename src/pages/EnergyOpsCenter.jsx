@@ -1,5 +1,7 @@
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
+import ResiliencePanel from "@/components/energy/ResiliencePanel";
+import OutagePlanner from "@/components/energy/OutagePlanner";
 import { base44 } from "@/api/base44Client";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -226,6 +228,8 @@ Vær specifik med tal og tidsrammer.`,
     ["events", `Events (${liveEvents.length})`],
     ["forecast", "Load Forecast"],
     ["dispatch", "AI Dispatch"],
+    ["resilience", "Resilience & Islanding"],
+    ["outage", "Outage Planner"],
     ["co2", "CO₂ Optimizer"],
   ];
 
@@ -436,6 +440,16 @@ Vær specifik med tal og tidsrammer.`,
               )}
             </AnimatePresence>
           </div>
+        )}
+
+        {/* RESILIENCE & ISLANDING */}
+        {activeTab === "resilience" && (
+          <ResiliencePanel />
+        )}
+
+        {/* OUTAGE PLANNER */}
+        {activeTab === "outage" && (
+          <OutagePlanner />
         )}
 
         {/* CO2 OPTIMIZER */}

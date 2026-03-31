@@ -313,9 +313,10 @@ export default function IntellectMode() {
      openHarborAppBuilder: () => { openWindow('harbor_app_builder', { x: 60, y: 50 }, { installedAppIds, onInstall: (appId) => updateInstalledApps(new Set([...installedAppIds, appId])), vehicles, routes, shipments, alerts, customers, currentUser, orgId }); setMessages(prev => [...prev, { role: "system", content: "⚡ H.A.R.B.O.R App Builder activated — Entity-first design workflow" }]); },
      openFleetStore: () => { openWindow('fleet_store', { x: 100, y: 80 }, { installedAppIds, onInstall: (appId) => { const next = new Set([...installedAppIds, appId]); updateInstalledApps(next); window.dispatchEvent(new CustomEvent('harbor_install_app', { detail: { appId, orgId } })); openWindow('harbor_app_builder', { x: 60, y: 50 }, { installedAppIds: next, onInstall: (id) => updateInstalledApps(new Set([...next, id])), vehicles, routes, shipments, alerts, customers, currentUser, orgId }); toast.success("App installeret — tjek App Builder!"); }, onUninstall: async (appId) => { const next = new Set(installedAppIds); next.delete(appId); updateInstalledApps(next); } }); setMessages(prev => [...prev, { role: "system", content: "Fleet Store opened" }]); },
      openTransitConsole: () => { navigate('/TransitControl'); setMessages(prev => [...prev, { role: "system", content: "🚌 Transit Console opened — Manage bus lines, stops, drivers and real-time operations" }]); },
-     openAirportOps: () => { openWindow('airport_ops', { x: 60, y: 50 }); setMessages(prev => [...prev, { role: "system", content: "✈️ Airport Ops Center opened as hologram — Full AI-powered airport operations" }]); },
-     openPortCommand: () => { openWindow('port_command', { x: 80, y: 60 }); setMessages(prev => [...prev, { role: "system", content: "🚢 Port Command Center opened as hologram — Full AI-powered port operations" }]); },
-     };
+      openAirportOps: () => { openWindow('airport_ops', { x: 60, y: 50 }); setMessages(prev => [...prev, { role: "system", content: "✈️ Airport Ops Center opened as hologram — Full AI-powered airport operations" }]); },
+      openPortCommand: () => { openWindow('port_command', { x: 80, y: 60 }); setMessages(prev => [...prev, { role: "system", content: "🚢 Port Command Center opened as hologram — Full AI-powered port operations" }]); },
+      openEnergyOps: () => { navigate('/EnergyOpsCenter'); setMessages(prev => [...prev, { role: "system", content: "⚡ Energy & Utilities Ops opened — Neural grid control, load forecast, AI dispatch and resilience simulation" }]); },
+      };
      actionMap[action]?.();
      }, [openWindow, vehicles, routes, setMessages, installedAppIds]);
 
@@ -844,6 +845,15 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
       setMessages(prev => [...prev, { role: "user", content: currentCommand }]);
       setInput("");
       handleQuickAction('openAirportOps');
+      return;
+    }
+
+    // Energy Ops detection
+    const energyMatch = currentCommand.match(/(?:energy|energi|grid|elnet|utilities|dispatch grid|load forecast|islanding|outage planner|power grid|strøm|el-net)/i);
+    if (energyMatch) {
+      setMessages(prev => [...prev, { role: "user", content: currentCommand }]);
+      setInput("");
+      handleQuickAction('openEnergyOps');
       return;
     }
 
