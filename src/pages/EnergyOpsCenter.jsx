@@ -14,20 +14,6 @@ import { Badge } from "@/components/ui/badge";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
 import moment from "moment";
 
-// Mock real-time grid data (replaced by DB when GridAssets are created)
-const MOCK_ASSETS = [
-  { id: "g1", name: "Vindpark Øresund", asset_type: "wind", capacity_mw: 220, current_load_mw: 187, load_percent: 85, status: "online", co2_kg_per_mwh: 0, is_flexible: true, linked_module: "port" },
-  { id: "g2", name: "Solpark CPH-Nord", asset_type: "solar", capacity_mw: 80, current_load_mw: 52, load_percent: 65, status: "online", co2_kg_per_mwh: 0, is_flexible: true, linked_module: "airport" },
-  { id: "g3", name: "Batterilager Kastrup", asset_type: "battery", capacity_mw: 60, current_load_mw: 38, load_percent: 63, status: "online", co2_kg_per_mwh: 0, is_flexible: true, linked_module: "airport" },
-  { id: "g4", name: "132kV Linje Rødby-CPH", asset_type: "line", capacity_mw: 400, current_load_mw: 371, load_percent: 93, status: "online", co2_kg_per_mwh: null, is_flexible: false, linked_module: "none" },
-  { id: "g5", name: "Transformerstation Nordhavn", asset_type: "transformer", capacity_mw: 150, current_load_mw: 121, load_percent: 81, status: "online", co2_kg_per_mwh: null, is_flexible: false, linked_module: "port" },
-  { id: "g6", name: "Gaskraftværk Avedøre", asset_type: "generator", capacity_mw: 500, current_load_mw: 180, load_percent: 36, status: "standby", co2_kg_per_mwh: 420, is_flexible: true, linked_module: "none" },
-  { id: "g7", name: "Shore Power Pier 7", asset_type: "load_node", capacity_mw: 30, current_load_mw: 28, load_percent: 93, status: "online", co2_kg_per_mwh: null, is_flexible: true, linked_module: "port" },
-  { id: "g8", name: "Busdepot Ladepark Valby", asset_type: "load_node", capacity_mw: 24, current_load_mw: 9, load_percent: 38, status: "online", co2_kg_per_mwh: null, is_flexible: true, linked_module: "transit" },
-  { id: "g9", name: "Terminal 2 HVAC + Lys", asset_type: "load_node", capacity_mw: 18, current_load_mw: 16, load_percent: 89, status: "online", co2_kg_per_mwh: null, is_flexible: true, linked_module: "airport" },
-  { id: "g10", name: "PtX Elektrolyse Esbjerg", asset_type: "battery", capacity_mw: 100, current_load_mw: 0, load_percent: 0, status: "maintenance", co2_kg_per_mwh: 0, is_flexible: false, linked_module: "none" },
-];
-
 const MOCK_EVENTS = [
   { id: "e1", event_type: "overload", asset_name: "132kV Linje Rødby-CPH", severity: "critical", description: "Belastning på 93% — kritisk grænse er 90%. Vejrprognose viser yderligere 8% stigning om 40 min.", ai_recommendation: "Aktiver batterilager Kastrup (+22 MW) og send flex-anmodning til Shore Power Pier 7 (−5 MW i 20 min). Forventet reduktion: 7%.", status: "open", detected_at: new Date(Date.now() - 8e5).toISOString(), linked_module: "port" },
   { id: "e2", event_type: "flex_request", asset_name: "Busdepot Ladepark Valby", severity: "info", description: "Nettet har overskud fra vindpark (87% kapacitet). Fordel lade-vindue til transit-depotet nu.", ai_recommendation: "Flyt 6 busser til hurtiglading i næste 45 min. Spar 12% på natuafgift. Koordineret med TransitControl lade-plan.", status: "open", detected_at: new Date(Date.now() - 2e6).toISOString(), linked_module: "transit" },
@@ -176,8 +162,7 @@ export default function EnergyOpsCenter() {
     queryFn: () => base44.entities.GridEvent.filter({ status: "open" }),
   });
 
-  // Use DB data if available, otherwise mock
-  const assets = dbAssets.length > 0 ? dbAssets : MOCK_ASSETS;
+  const assets = dbAssets;
   const liveEvents = [
     ...MOCK_EVENTS.filter(e => !ackedEvents.has(e.id)),
     ...dbEvents,
