@@ -9,7 +9,6 @@ import {
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import AdminLayout from "@/components/admin/AdminLayout";
 import moment from "moment";
 
 const DOMAIN_CONFIG = {
@@ -244,9 +243,6 @@ export default function RegulatoryIntelligence() {
   const [aiReport, setAiReport] = useState(null);
 
   const { data: currentUser } = useQuery({ queryKey: ["reg-me"], queryFn: () => base44.auth.me() });
-  const { data: organizations = [] } = useQuery({ queryKey: ["reg-orgs"], queryFn: () => base44.entities.Organization.list(), enabled: currentUser?.role === "admin" });
-
-  const isAdmin = currentUser?.role === "admin";
 
   const checks = MOCK_CHECKS.map(c => ({ ...c, status: repairedIds.has(c.id) ? "compliant" : c.status }));
   const filteredChecks = domainFilter === "all" ? checks : checks.filter(c => c.domain === domainFilter);
@@ -285,22 +281,8 @@ Write a professional 3-paragraph regulatory story suitable for management and re
 
   const tabs = ["cockpit", "rule_packs", "report"];
 
-  if (!isAdmin) {
-    return (
-      <AdminLayout currentPage="RegulatoryIntelligence">
-        <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6">
-          <div className="text-center">
-            <Lock className="w-16 h-16 text-red-400 mx-auto mb-4" />
-            <h2 className="text-white font-bold text-xl mb-2">Admin Access Required</h2>
-            <p className="text-slate-400 text-sm">Regulatory Intelligence is restricted to NexusVectis administrators.</p>
-          </div>
-        </div>
-      </AdminLayout>
-    );
-  }
-
   return (
-    <AdminLayout currentPage="RegulatoryIntelligence">
+    <div>
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6">
         <div className="max-w-7xl mx-auto">
 
@@ -483,6 +465,6 @@ Write a professional 3-paragraph regulatory story suitable for management and re
           </>
         )}
       </AnimatePresence>
-    </AdminLayout>
+    </div>
   );
 }
