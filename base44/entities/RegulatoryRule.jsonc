@@ -1,0 +1,111 @@
+{
+  "name": "RegulatoryRule",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string",
+      "description": "Organization this rule applies to (null = global rule)"
+    },
+    "rule_id": {
+      "type": "string",
+      "description": "Unique rule identifier (e.g. EU-561/2006-Art8)"
+    },
+    "domain": {
+      "type": "string",
+      "enum": [
+        "road_transport",
+        "transit",
+        "port",
+        "airport",
+        "customs",
+        "environment",
+        "labor",
+        "safety"
+      ],
+      "description": "Regulatory domain"
+    },
+    "module": {
+      "type": "string",
+      "enum": [
+        "logistics",
+        "transit_control",
+        "port_command",
+        "airport_ops",
+        "cross_module"
+      ],
+      "description": "Platform module this rule applies to"
+    },
+    "region": {
+      "type": "string",
+      "description": "Geographic scope (EU, DK, DE, Global, etc.)"
+    },
+    "title": {
+      "type": "string",
+      "description": "Short rule title"
+    },
+    "description": {
+      "type": "string",
+      "description": "Full rule description"
+    },
+    "legal_basis": {
+      "type": "string",
+      "description": "Legal reference (Regulation, Directive, Article)"
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "info",
+        "warning",
+        "critical"
+      ],
+      "default": "warning",
+      "description": "Default breach severity"
+    },
+    "rule_type": {
+      "type": "string",
+      "enum": [
+        "hard_limit",
+        "soft_limit",
+        "reporting",
+        "documentation",
+        "environmental"
+      ],
+      "description": "Type of constraint"
+    },
+    "constraint_value": {
+      "type": "number",
+      "description": "Numeric constraint value (e.g. 9 for 9 hours driving)"
+    },
+    "constraint_unit": {
+      "type": "string",
+      "description": "Unit of constraint (hours, km, tons, ppm, etc.)"
+    },
+    "applies_to": {
+      "type": "string",
+      "description": "What entity type this rule applies to (driver, vehicle, vessel, flight, container)"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    },
+    "rule_pack": {
+      "type": "string",
+      "description": "Rule pack name (EU Road, DK Bus, EU Port, Airport ICAO, CO2/ESG)"
+    },
+    "auto_repair_possible": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether AI can auto-repair violations of this rule"
+    },
+    "repair_strategy": {
+      "type": "string",
+      "description": "How AI should repair violations (e.g. insert_break, swap_driver, delay_departure)"
+    }
+  },
+  "required": [
+    "title",
+    "domain",
+    "legal_basis",
+    "severity"
+  ]
+}

@@ -1,0 +1,112 @@
+{
+  "name": "ComplianceCheck",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string",
+      "description": "Organization this check belongs to"
+    },
+    "rule_id": {
+      "type": "string",
+      "description": "Reference to RegulatoryRule"
+    },
+    "domain": {
+      "type": "string",
+      "enum": [
+        "road_transport",
+        "transit",
+        "port",
+        "airport",
+        "customs",
+        "environment",
+        "labor",
+        "safety"
+      ]
+    },
+    "module": {
+      "type": "string",
+      "enum": [
+        "logistics",
+        "transit_control",
+        "port_command",
+        "airport_ops",
+        "cross_module"
+      ]
+    },
+    "entity_type": {
+      "type": "string",
+      "description": "Type of entity checked (driver, vehicle, vessel, flight, route, etc.)"
+    },
+    "entity_id": {
+      "type": "string",
+      "description": "ID of the entity being checked"
+    },
+    "entity_name": {
+      "type": "string",
+      "description": "Human-readable name of the entity"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "compliant",
+        "warning",
+        "violation",
+        "pending"
+      ],
+      "default": "pending",
+      "description": "Compliance status"
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "info",
+        "warning",
+        "critical"
+      ],
+      "default": "warning"
+    },
+    "violation_detail": {
+      "type": "string",
+      "description": "AI-generated explanation of the violation"
+    },
+    "current_value": {
+      "type": "number",
+      "description": "Current measured value"
+    },
+    "limit_value": {
+      "type": "number",
+      "description": "Regulatory limit value"
+    },
+    "unit": {
+      "type": "string",
+      "description": "Unit of measurement"
+    },
+    "repair_suggestion": {
+      "type": "string",
+      "description": "AI-generated repair suggestion"
+    },
+    "auto_repaired": {
+      "type": "boolean",
+      "default": false
+    },
+    "checked_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this check was run"
+    },
+    "resolved_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "legal_basis": {
+      "type": "string",
+      "description": "Specific law/regulation/article"
+    }
+  },
+  "required": [
+    "organization_id",
+    "domain",
+    "entity_type",
+    "status"
+  ]
+}

@@ -20,6 +20,7 @@ import AirportOpsCenter from './pages/AirportOpsCenter';
 import StaffPortal from './pages/StaffPortal';
 import AirportReports from './pages/AirportReports';
 import StaffManagement from './pages/StaffManagement';
+import RegulatoryIntelligence from './pages/RegulatoryIntelligence';
 
 
 const { Pages, Layout, mainPage } = pagesConfig;
@@ -151,6 +152,14 @@ const AuthenticatedApp = () => {
         }
       />
       <Route path="/StaffManagement" element={<StaffManagement />} />
+      <Route
+        path="/RegulatoryIntelligence"
+        element={
+          <LayoutWrapper currentPageName="RegulatoryIntelligence">
+            <RegulatoryIntelligence />
+          </LayoutWrapper>
+        }
+      />
       <Route
         path="/BillingDashboard"
         element={
