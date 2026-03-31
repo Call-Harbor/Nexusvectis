@@ -7,17 +7,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 const SCENARIOS = [
   {
     id: "line_fault",
-    title: "132kV Linjefejl Rødby-CPH",
+    title: "132kV Line Fault Rødby-CPH",
     icon: Zap,
     color: "red",
-    trigger: "Lynnedslag / kabelfejl på 132kV-forbindelsen",
-    impact: "371 MW afbrudt transmission — 4 transformerstationer påvirket",
-    affected: ["Transformerstation Nordhavn", "Shore Power Pier 7", "Terminal 2 HVAC"],
+    trigger: "Lightning strike / cable fault on 132kV transmission line",
+    impact: "371 MW interrupted transmission — 4 substations affected",
+    affected: ["Substation Nordhavn", "Shore Power Pier 7", "Terminal 2 HVAC"],
     reconfiguration: [
-      "Automatisk omkobling via 60kV ring-net (45 sek)",
-      "Batterilager Kastrup dækker 38 MW gap øjeblikkeligt",
-      "Vindpark Øresund øger output +15 MW via rampe",
-      "Shore Power Pier 7 reduceres til 50% (service-kritisk minimum)",
+      "Automatic switching via 60kV ring network (45 sec)",
+      "Battery storage Kastrup covers 38 MW gap immediately",
+      "Wind farm Øresund ramps up output +15 MW",
+      "Shore Power Pier 7 reduced to 50% (service-critical minimum)",
     ],
     load_shed_mw: 42,
     recovery_min: 12,
@@ -25,17 +25,17 @@ const SCENARIOS = [
   },
   {
     id: "heatwave",
-    title: "Varmebølge + Spidslast",
+    title: "Heatwave + Peak Load",
     icon: Activity,
     color: "amber",
-    trigger: "+8°C over norm i 3 dage — kølebehov eksploderer",
-    impact: "Forventet lastspids på 940 MW — 15% over kapacitet",
-    affected: ["Alle load-noder", "132kV Linje Rødby-CPH (>98%)", "PtX stopper"],
+    trigger: "+8°C above norm for 3 days — cooling demand spikes",
+    impact: "Expected peak load of 940 MW — 15% above capacity",
+    affected: ["All load nodes", "132kV Line Rødby-CPH (>98%)", "PtX halted"],
     reconfiguration: [
-      "Gaskraftværk Avedøre aktiveres til 100% (500 MW)",
-      "Flex-anmodning til Airport: −8 MW HVAC i 4 timer",
-      "Flex-anmodning til Transit: udskyd lade-cyklus til nat",
-      "Nødaftale: import fra Sverige via Storebælt (max 200 MW)",
+      "Gas power plant Avedøre activated to 100% (500 MW)",
+      "Flex-request to Airport: −8 MW HVAC for 4 hours",
+      "Flex-request to Transit: defer charging cycle to night",
+      "Emergency agreement: import from Sweden via Storebælt (max 200 MW)",
     ],
     load_shed_mw: 0,
     recovery_min: 0,
@@ -43,17 +43,17 @@ const SCENARIOS = [
   },
   {
     id: "storm",
-    title: "Stormfront — Multifejl",
+    title: "Storm Front — Multi-fault",
     icon: Wind,
     color: "violet",
-    trigger: "Vindstød >35 m/s — 3 linjer nede simultant",
-    impact: "Østjylland og Bornholm i ørislands-tilstand (islanding)",
-    affected: ["3 x 132kV-linjer", "2 transformerstationer offline", "Vindpark Øresund nedlukket (fejlsikring)"],
+    trigger: "Wind gusts >35 m/s — 3 lines down simultaneously",
+    impact: "East Jutland and Bornholm in islanding mode",
+    affected: ["3 x 132kV lines", "2 substations offline", "Wind farm Øresund shut down (protection)"],
     reconfiguration: [
-      "Ørislands-drift aktiveret for Bornholm: lokal PtX + diesel backup",
-      "Automatisk load shedding: industri-klynger (50 MW) prioriteres ned",
-      "Krise-kobling til Sydnorge via HVDC (Skagerrak) anmodes",
-      "Alle fleksible noder sænkes til 20% ikke-kritisk forbrug",
+      "Islanding mode activated for Bornholm: local PtX + diesel backup",
+      "Automatic load shedding: industrial clusters (50 MW) deprioritized",
+      "Emergency tie to South Norway via HVDC (Skagerrak) requested",
+      "All flexible nodes reduced to 20% non-critical consumption",
     ],
     load_shed_mw: 120,
     recovery_min: 45,
@@ -61,17 +61,17 @@ const SCENARIOS = [
   },
   {
     id: "flood",
-    title: "Oversvømmelse — Nordhavn Station",
+    title: "Flooding — Nordhavn Substation",
     icon: Waves,
     color: "blue",
-    trigger: "Havvandsstigning 1.8m — Nordhavn transformer kritisk",
-    impact: "121 MW nord-CPH risikerer total blackout inden 2 timer",
-    affected: ["Transformerstation Nordhavn", "Shore Power Pier 7", "Havne-kraner"],
+    trigger: "Sea level rise 1.8m — Nordhavn transformer critical",
+    impact: "121 MW north-CPH risks total blackout within 2 hours",
+    affected: ["Substation Nordhavn", "Shore Power Pier 7", "Port cranes"],
     reconfiguration: [
-      "Planlagt ordnet nedlukning af Nordhavn station (forebygger eksplosion)",
-      "Rerouting via Valby-stationen (60kV, 80% kapacitet)",
-      "Port Command: alle kraner og shore power nedlukket ordnet",
-      "Havneoperationer overgår til dieselgeneratorer (nødplan A)",
+      "Planned orderly shutdown of Nordhavn station (prevents explosion)",
+      "Rerouting via Valby substation (60kV, 80% capacity)",
+      "Port Command: all cranes and shore power shut down in order",
+      "Port operations transfer to diesel generators (emergency plan A)",
     ],
     load_shed_mw: 80,
     recovery_min: 180,
@@ -81,11 +81,10 @@ const SCENARIOS = [
 
 function ScenarioCard({ scenario, onSimulate, simulating, result }) {
   const Icon = scenario.icon;
-  const colors = { red: "red", amber: "amber", violet: "violet", blue: "blue" };
-  const c = colors[scenario.color];
+  const c = scenario.color;
 
   return (
-    <Card className={`bg-slate-900/60 border-slate-800 overflow-hidden`}>
+    <Card className="bg-slate-900/60 border-slate-800 overflow-hidden">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-3 text-white text-sm">
           <div className={`w-9 h-9 rounded-lg bg-${c}-500/15 border border-${c}-500/30 flex items-center justify-center flex-shrink-0`}>
@@ -135,7 +134,7 @@ function ScenarioCard({ scenario, onSimulate, simulating, result }) {
           className="w-full bg-gradient-to-r from-slate-700 to-slate-600 hover:from-cyan-700 hover:to-violet-700 text-white py-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition-all disabled:opacity-50"
         >
           {simulating ? <RefreshCw className="w-3 h-3 animate-spin" /> : <GitBranch className="w-3 h-3" />}
-          {simulating ? "Simulerer..." : "Kør AI-simulation"}
+          {simulating ? "Simulating..." : "Run AI Simulation"}
         </button>
 
         <AnimatePresence>
@@ -143,7 +142,7 @@ function ScenarioCard({ scenario, onSimulate, simulating, result }) {
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="bg-cyan-500/5 border border-cyan-500/25 rounded-lg p-3">
               <div className="flex items-center gap-1.5 mb-1.5">
                 <Sparkles className="w-3 h-3 text-cyan-400" />
-                <span className="text-cyan-400 text-[10px] font-semibold">SIMULATION RESULTAT</span>
+                <span className="text-cyan-400 text-[10px] font-semibold">SIMULATION RESULT</span>
               </div>
               <p className="text-slate-200 text-xs leading-relaxed whitespace-pre-line">{result}</p>
             </motion.div>
@@ -161,23 +160,23 @@ export default function ResiliencePanel() {
   const handleSimulate = async (scenario) => {
     setSimulating(scenario.id);
     const result = await base44.integrations.Core.InvokeLLM({
-      prompt: `Du er NexusVectis Grid Resilience AI. Simuler denne gridhændelse detaljeret:
+      prompt: `You are NexusVectis Grid Resilience AI. Simulate this grid event in detail:
 
-HÆNDELSE: ${scenario.title}
+EVENT: ${scenario.title}
 TRIGGER: ${scenario.trigger}
 IMPACT: ${scenario.impact}
-BERØRTE ASSETS: ${scenario.affected.join(", ")}
-PLANLAGT REKONFIGURATION: ${scenario.reconfiguration.join(" | ")}
-KPI: Load shed ${scenario.load_shed_mw} MW, Recovery ${scenario.recovery_min} min, SAIDI ${scenario.saidi_impact} min
+AFFECTED ASSETS: ${scenario.affected.join(", ")}
+PLANNED RECONFIGURATION: ${scenario.reconfiguration.join(" | ")}
+KPIs: Load shed ${scenario.load_shed_mw} MW, Recovery ${scenario.recovery_min} min, SAIDI ${scenario.saidi_impact} min
 
-Generer en detaljeret trin-for-trin simulationsrapport med:
-1. T+0 til T+${scenario.recovery_min}: Tidslinje for hændelsesforløb
-2. Kritiske beslutningspunkter og automationssvar
-3. SAIDI/SAIFI påvirkning og regulatorisk compliance (ENTSO-E)
-4. Restrisici der kræver operatørindgreb
-5. Læringspoint til at forbedre planen
+Generate a detailed step-by-step simulation report with:
+1. T+0 to T+${scenario.recovery_min}: Event timeline
+2. Critical decision points and automation responses
+3. SAIDI/SAIFI impact and regulatory compliance (ENTSO-E)
+4. Residual risks requiring operator intervention
+5. Lessons learned to improve the plan
 
-Hold det præcist og teknisk relevant for en grid operator.`,
+Keep it precise and technically relevant for a grid operator.`,
     });
     setResults(prev => ({ ...prev, [scenario.id]: result }));
     setSimulating(null);
@@ -191,7 +190,7 @@ Hold det præcist og teknisk relevant for en grid operator.`,
         </div>
         <div>
           <h2 className="text-white font-bold">Resilience & Islanding AI</h2>
-          <p className="text-slate-500 text-xs">Simuler fejlscenarier og generer AI-rekonfigurationsplaner</p>
+          <p className="text-slate-500 text-xs">Simulate fault scenarios and generate AI reconfiguration plans</p>
         </div>
       </div>
 
