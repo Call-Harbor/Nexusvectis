@@ -2,7 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { Plane, Shield, Package, Users, AlertTriangle, Cpu, BarChart3, Leaf, Plus, Zap, Map, GitBranch, Car, Activity } from "lucide-react";
+import { Plane, Shield, Package, Users, AlertTriangle, Cpu, BarChart3, Leaf, Plus, Zap, Map, GitBranch, Car, Activity, Scale } from "lucide-react";
+import ComplianceCockpitPanel from "@/components/shared/ComplianceCockpitPanel";
 import AddonAccessGate from "@/components/shared/AddonAccessGate";
 import moment from "moment";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -46,6 +47,7 @@ const TABS = [
   { id: "scenario", label: "SCENARIOS", icon: AlertTriangle },
   { id: "sustainability", label: "CO₂ & ENERGY", icon: Leaf },
   { id: "infra", label: "INFRASTRUCTURE", icon: Plus },
+  { id: "compliance", label: "COMPLIANCE", icon: Scale },
 ];
 
 function AirportOpsCenterContent() {
@@ -237,6 +239,9 @@ function AirportOpsCenterContent() {
         {activeTab === "scenario" && <AirportScenarioEngine flights={flights} gates={gates} securityLanes={securityLanes} />}
         {activeTab === "sustainability" && <AirportSustainability flights={flights} tasks={tasks} />}
         {activeTab === "infra" && <AirportInfraManager />}
+        {activeTab === "compliance" && (
+          <ComplianceCockpitPanel module="airport" accentColor="#8b5cf6" />
+        )}
       </div>
 
       <AddFlightDialog

@@ -4,10 +4,11 @@ import { createPageUrl } from "../utils";
 import TransitControlModule from "../components/home/TransitControlModule";
 import PortCommandCenterModule from "../components/home/PortCommandCenterModule";
 import AirportOpsCenterModule from "../components/home/AirportOpsCenterModule";
+import RegulatoryIntellectModule from "../components/home/RegulatoryIntellectModule";
 import { 
   Truck, Globe, Zap, Shield, TrendingUp, Satellite,
   BarChart3, MapPin, Radio, ArrowRight, CheckCircle2, Sparkles, Brain, Orbit, Package,
-  Network, Cpu, Wifi, GitBranch, Dna, Bug, AlertCircle, Warehouse, Plane
+  Network, Cpu, Wifi, GitBranch, Dna, Bug, AlertCircle, Warehouse, Plane, Scale
  } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useEffect, useState, useRef } from "react";
@@ -549,6 +550,8 @@ export default function Home() {
             <PortCommandCenterModule />
             <AirportOpsCenterModule />
 
+            <RegulatoryIntellectModule />
+
             {/* Pricing Section */}
             <section className="relative py-20 sm:py-32 px-4 sm:px-6 z-10">
               <div className="max-w-7xl mx-auto">
@@ -572,6 +575,29 @@ export default function Home() {
                   <p className="text-base sm:text-lg md:text-xl text-slate-400 max-w-3xl mx-auto px-2">
                     Simple, resource-based billing with no hidden fees. Scale up or down at any time.
                   </p>
+                </motion.div>
+
+                {/* Regulatory Intellect add-on callout */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  className="mb-10 p-6 rounded-2xl bg-gradient-to-r from-violet-500/10 to-cyan-500/5 border border-violet-500/25 flex flex-col md:flex-row items-center gap-5"
+                >
+                  <div className="w-12 h-12 rounded-2xl bg-violet-500/20 border border-violet-500/30 flex items-center justify-center flex-shrink-0">
+                    <Scale className="w-6 h-6 text-violet-400" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-white font-bold">Regulatory Intellect Layer</span>
+                      <span className="text-[10px] bg-violet-500/20 text-violet-300 border border-violet-500/30 px-2 py-0.5 rounded-full font-semibold">ADD-ON</span>
+                    </div>
+                    <p className="text-slate-400 text-sm">Neural compliance engine across all modules — EU road, port, airport, transit, CO₂/ESG. Live rule checks, AI explanations, and auto-repair. Sold as a rule-pack bundle per region/domain.</p>
+                  </div>
+                  <div className="flex-shrink-0 text-center">
+                    <div className="text-2xl font-black text-violet-400">Contact us</div>
+                    <div className="text-slate-500 text-xs">Custom pricing</div>
+                  </div>
                 </motion.div>
 
                 {/* Core Usage Pricing */}

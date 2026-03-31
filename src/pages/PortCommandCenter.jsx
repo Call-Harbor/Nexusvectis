@@ -13,7 +13,8 @@ import PortAlertTicker from "@/components/port/PortAlertTicker";
 import PortNowPanel from "@/components/port/PortNowPanel";
 import PortFleetManager from "@/components/port/PortFleetManager";
 import LiveVesselDashboard from "@/components/port/LiveVesselDashboard";
-import { Ship, Anchor, Cpu, BarChart3, AlertTriangle, Leaf, Zap, Plus, Package, Map, Activity, GitBranch, Layers, Users } from "lucide-react";
+import { Ship, Anchor, Cpu, BarChart3, AlertTriangle, Leaf, Zap, Plus, Package, Map, Activity, GitBranch, Layers, Users, Scale } from "lucide-react";
+import ComplianceCockpitPanel from "@/components/shared/ComplianceCockpitPanel";
 import AddonAccessGate from "@/components/shared/AddonAccessGate";
 import CraneSchedulingAI from "../components/port/CraneSchedulingAI";
 import ContainerTracker from "../components/port/ContainerTracker";
@@ -33,6 +34,7 @@ const TABS = [
    { id: "ai", label: "AI ADVISOR", icon: Cpu },
    { id: "scenario", label: "Scenarios", icon: AlertTriangle },
    { id: "sustainability", label: "CO₂", icon: Leaf },
+  { id: "compliance", label: "COMPLIANCE", icon: Scale },
 ];
 
 function PortCommandCenterContent() {
@@ -270,6 +272,9 @@ function PortCommandCenterContent() {
         )}
         {activeTab === "sustainability" && (
           <PortSustainability portCalls={portCalls} equipment={equipment} cranes={cranes} />
+        )}
+        {activeTab === "compliance" && (
+          <ComplianceCockpitPanel module="port" accentColor="#06b6d4" />
         )}
       </div>
 

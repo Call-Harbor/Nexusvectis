@@ -6,8 +6,9 @@ import {
   Bus, MapPin, TrendingUp, AlertTriangle, Users, Clock, Zap,
   Radio, Shield, BarChart3, Sparkles, Globe, Network, Brain,
   ChevronRight, Play, Settings, MessageSquare, Maximize2, Activity,
-  Battery, Fuel, Plus, TrendingDown, Wifi, Target, Gauge, Leaf
+  Battery, Fuel, Plus, TrendingDown, Wifi, Target, Gauge, Leaf, Scale
  } from "lucide-react";
+import ComplianceCockpitPanel from "@/components/shared/ComplianceCockpitPanel";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -60,6 +61,7 @@ const TABS = [
   { id: "crowding", label: "CROWDING", icon: Users },
   { id: "network-opt", label: "OPTIMIZE", icon: Zap },
   { id: "advanced-ai", label: "ADVANCED", icon: Sparkles },
+  { id: "compliance", label: "COMPLIANCE", icon: Scale },
 ];
 
 function TransitControlContent() {
@@ -392,6 +394,9 @@ function TransitControlContent() {
         )}
         {activeTab === "network-opt" && (
           <NetworkOptimizationEngine lines={lines} buses={activeBuses} trips={activeTrips} />
+        )}
+        {activeTab === "compliance" && (
+          <ComplianceCockpitPanel module="transit" accentColor="#8b5cf6" />
         )}
         {activeTab === "advanced-ai" && (
           <div className="space-y-8">
