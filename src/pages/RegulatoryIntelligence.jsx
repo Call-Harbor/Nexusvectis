@@ -94,14 +94,7 @@ const RULE_PACKS = [
   },
 ];
 
-const MOCK_CHECKS = [
-  { id: "c1", domain: "road_transport", entity_type: "driver", entity_name: "Klaus Møller", status: "violation", severity: "critical", violation_detail: "Klaus Møller has driven 10h 45min without a mandatory 45-minute break.", legal_basis: "EC 561/2006 Art. 4(c)", current_value: 10.75, limit_value: 4.5, unit: "hours", repair_suggestion: "Insert 45-minute break at Hamburg depot (next 12 min). Adjust delivery ETA by 1h 02min.", checked_at: new Date(Date.now() - 8e5).toISOString() },
-  { id: "c2", domain: "environment", entity_type: "vehicle", entity_name: "Fleet Route DK-41", status: "warning", severity: "warning", violation_detail: "Monthly CO₂ emissions on DK-41 are trending 18% above quarterly ESG target.", legal_basis: "EU CSRD 2022/2464 + internal ESG policy", current_value: 118, limit_value: 100, unit: "% of target", repair_suggestion: "Reroute 3 loads to electric vehicles. Estimated savings: 4.2t CO₂/month.", checked_at: new Date(Date.now() - 2e6).toISOString() },
-  { id: "c3", domain: "transit", entity_type: "driver", entity_name: "Amina Osei (Bus 47)", status: "warning", severity: "warning", violation_detail: "Scheduled shift ends at 23:45 — exceeds the average night hours cap over 4-month reference period.", legal_basis: "BEK nr. 1408/2016 + Arbejdstidsloven §4", current_value: 8.4, limit_value: 8, unit: "hours avg", repair_suggestion: "Swap last trip (23:05–23:45) with driver Lars Bonde who has capacity.", checked_at: new Date(Date.now() - 3e6).toISOString() },
-  { id: "c4", domain: "customs", entity_type: "flight", entity_name: "AF8812 CDG→CPH", status: "violation", severity: "critical", violation_detail: "Entry Summary Declaration missing fields: commodity codes (Box 31), net mass (Box 35), dangerous goods indicator. Cut-off in 47 minutes.", legal_basis: "EU ICS2 / UCC Art. 127", current_value: 0, limit_value: 4, unit: "hours remaining", repair_suggestion: "Auto-fill from cargo manifest: 6 fields pre-populated. 3 require shipper confirmation. Send automated request now.", checked_at: new Date(Date.now() - 1e5).toISOString() },
-  { id: "c5", domain: "port", entity_type: "vessel", entity_name: "MSC GAIA — Berth 7", status: "compliant", severity: "info", violation_detail: null, legal_basis: "ISPS Code / MARPOL Annex VI", current_value: 0.08, limit_value: 0.1, unit: "% sulphur", repair_suggestion: null, checked_at: new Date(Date.now() - 5e6).toISOString() },
-  { id: "c6", domain: "airport", entity_type: "flight", entity_name: "SK903 Turnaround", status: "warning", severity: "warning", violation_detail: "Scheduled ground handling window is 19 minutes — below the 25-minute EASA minimum for this aircraft type (A320).", legal_basis: "EASA Ground Ops / Reg. 2021/664", current_value: 19, limit_value: 25, unit: "minutes", repair_suggestion: "Delay pushback by 6 minutes. Gate B12 slot available. Downstream connection SK1240 has 18-minute buffer.", checked_at: new Date(Date.now() - 9e5).toISOString() },
-];
+// Real checks are generated from DB data below
 
 function StatusDot({ status }) {
   const cfg = STATUS_CONFIG[status];
@@ -249,9 +242,176 @@ export default function RegulatoryIntelligence() {
     queryFn: () => base44.entities.ComplianceCheck.filter({ module: "cross_module" }),
   });
 
+  const { data: drivers = [] } = useQuery({ queryKey: ["reg-drivers"], queryFn: () => base44.entities.Driver.list() });
+  const { data: flights = [] } = useQuery({ queryKey: ["reg-flights"], queryFn: () => base44.entities.Flight.list() });
+  const { data: vehicles = [] } = useQuery({ queryKey: ["reg-vehicles"], queryFn: () => base44.entities.Vehicle.list() });
+
   const repairedEntityIds = new Set(savedChecks.filter(c => c.auto_repaired).map(c => c.entity_id));
 
-  const checks = MOCK_CHECKS.map(c => ({ ...c, status: repairedEntityIds.has(c.id) ? "compliant" : c.status }));
+  // Generate real compliance checks from DB data
+  const checks = useMemo(() => {
+    const result = [];
+    const today = new Date();
+
+    // --- DRIVERS ---
+    drivers.forEach(d => {
+      const fullName = `${d.first_name} ${d.last_name}`;
+      const id = `driver-hours-${d.id}`;
+      const repaired = repairedEntityIds.has(id);
+
+      // Daily driving hours > 9
+      if (d.total_hours_worked > 9) {
+        result.push({
+          id,
+          domain: "road_transport",
+          entity_type: "driver",
+          entity_name: fullName,
+          entity_id: d.id,
+          status: repaired ? "compliant" : d.total_hours_worked > 10 ? "violation" : "warning",
+          severity: d.total_hours_worked > 10 ? "critical" : "warning",
+          violation_detail: `${fullName} har registreret ${d.total_hours_worked}h arbejdstid — overskrider grænsen på 9h daglig kørsel.`,
+          legal_basis: "EC 561/2006 Art. 6",
+          current_value: d.total_hours_worked,
+          limit_value: 9,
+          unit: "hours",
+          repair_suggestion: `Indsæt obligatorisk 45-minutters pause for ${fullName}. Juster leveringsplan og opdater køretidsregistrering.`,
+          checked_at: new Date().toISOString(),
+        });
+      }
+
+      // License expiry within 30 days
+      if (d.license_expiry) {
+        const expiry = new Date(d.license_expiry);
+        const daysLeft = Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
+        const licId = `driver-license-${d.id}`;
+        const licRepaired = repairedEntityIds.has(licId);
+        if (daysLeft < 30) {
+          result.push({
+            id: licId,
+            domain: "labor",
+            entity_type: "driver",
+            entity_name: fullName,
+            entity_id: d.id,
+            status: licRepaired ? "compliant" : daysLeft < 0 ? "violation" : "warning",
+            severity: daysLeft < 0 ? "critical" : "warning",
+            violation_detail: daysLeft < 0
+              ? `${fullName}s kørekort udløb for ${Math.abs(daysLeft)} dage siden (${d.license_expiry}). Kørsel er ulovlig.`
+              : `${fullName}s kørekort udløber om ${daysLeft} dage (${d.license_expiry}).`,
+            legal_basis: "EU Directive 2006/126/EC",
+            current_value: daysLeft,
+            limit_value: 0,
+            unit: "days remaining",
+            repair_suggestion: `Igangsæt fornyelse af kørekort for ${fullName} øjeblikkeligt. Suspender kørselsopgaver til fornyet certifikat foreligger.`,
+            checked_at: new Date().toISOString(),
+          });
+        }
+      }
+    });
+
+    // --- FLIGHTS ---
+    flights.forEach(f => {
+      if (!f.scheduled_departure || !f.actual_departure) return;
+      const scheduled = new Date(f.scheduled_departure);
+      const actual = new Date(f.actual_departure);
+      const groundMin = Math.abs((scheduled - actual) / 60000);
+      const fId = `flight-ground-${f.id}`;
+      const repaired = repairedEntityIds.has(fId);
+      if (groundMin < 25 && groundMin > 0) {
+        result.push({
+          id: fId,
+          domain: "airport",
+          entity_type: "flight",
+          entity_name: `${f.flight_number || "Flight"} ${f.origin || ""}→${f.destination || ""}`,
+          entity_id: f.id,
+          status: repaired ? "compliant" : "warning",
+          severity: "warning",
+          violation_detail: `Ground handling vinduet er ${Math.round(groundMin)} min — under EASA-minimum på 25 min for dette fly.`,
+          legal_basis: "EASA Ground Ops / Reg. 2021/664",
+          current_value: Math.round(groundMin),
+          limit_value: 25,
+          unit: "minutes",
+          repair_suggestion: `Forsink pushback med ${25 - Math.round(groundMin)} minutter. Kontroller downstream forbindelsestider.`,
+          checked_at: new Date().toISOString(),
+        });
+      }
+
+      // Delayed flights
+      const delayId = `flight-delay-${f.id}`;
+      const delayRepaired = repairedEntityIds.has(delayId);
+      if (f.status === "delayed") {
+        result.push({
+          id: delayId,
+          domain: "airport",
+          entity_type: "flight",
+          entity_name: `${f.flight_number || "Flight"} ${f.origin || ""}→${f.destination || ""}`,
+          entity_id: f.id,
+          status: delayRepaired ? "compliant" : "warning",
+          severity: "warning",
+          violation_detail: `Fly ${f.flight_number} er markeret som forsinket — A-CDM TOBT skal opdateres inden 5 minutter.`,
+          legal_basis: "ICAO Doc 9971 / Eurocontrol A-CDM",
+          current_value: null,
+          limit_value: 5,
+          unit: "minutes",
+          repair_suggestion: `Opdater TOBT for ${f.flight_number} i A-CDM systemet og notificér tårnkontrol.`,
+          checked_at: new Date().toISOString(),
+        });
+      }
+    });
+
+    // --- VEHICLES ---
+    vehicles.forEach(v => {
+      // Overdue maintenance
+      if (v.next_maintenance) {
+        const nextMaint = new Date(v.next_maintenance);
+        const overdueDays = Math.ceil((today - nextMaint) / (1000 * 60 * 60 * 24));
+        const mId = `vehicle-maint-${v.id}`;
+        const repaired = repairedEntityIds.has(mId);
+        if (overdueDays > 0) {
+          result.push({
+            id: mId,
+            domain: "safety",
+            entity_type: "vehicle",
+            entity_name: v.name,
+            entity_id: v.id,
+            status: repaired ? "compliant" : overdueDays > 14 ? "violation" : "warning",
+            severity: overdueDays > 14 ? "critical" : "warning",
+            violation_detail: `${v.name} er ${overdueDays} dag(e) forsinket på planlagt vedligehold (forfaldsdato: ${v.next_maintenance}).`,
+            legal_basis: "EU Regulation 2014/47/EU (Roadworthiness)",
+            current_value: overdueDays,
+            limit_value: 0,
+            unit: "days overdue",
+            repair_suggestion: `Book ${v.name} til vedligehold øjeblikkeligt. Suspender operative ruter hvis overdue > 14 dage.`,
+            checked_at: new Date().toISOString(),
+          });
+        }
+      }
+
+      // Low fuel on active vehicle
+      if (v.fuel_level !== undefined && v.fuel_level < 15 && v.status === "active") {
+        const fId = `vehicle-fuel-${v.id}`;
+        const repaired = repairedEntityIds.has(fId);
+        result.push({
+          id: fId,
+          domain: "safety",
+          entity_type: "vehicle",
+          entity_name: v.name,
+          entity_id: v.id,
+          status: repaired ? "compliant" : "warning",
+          severity: "warning",
+          violation_detail: `${v.name} har kun ${v.fuel_level}% brændstof og er aktiv på rute — risiko for havari under transport.`,
+          legal_basis: "Interne driftssikkerhedsregler / EU 2014/47/EU",
+          current_value: v.fuel_level,
+          limit_value: 15,
+          unit: "% fuel",
+          repair_suggestion: `Omdiriger ${v.name} til nærmeste tankstation på ruten. Notificer chauffør.`,
+          checked_at: new Date().toISOString(),
+        });
+      }
+    });
+
+    return result;
+  }, [drivers, flights, vehicles, repairedEntityIds]);
+
   const filteredChecks = domainFilter === "all" ? checks : checks.filter(c => c.domain === domainFilter);
 
   const stats = useMemo(() => ({
@@ -269,28 +429,22 @@ export default function RegulatoryIntelligence() {
     try {
       // === DRIVER violations: send OrbitMessage + email ===
       if (check.entity_type === "driver") {
-        // Find driver by name match
-        const allDrivers = await base44.entities.Driver.list();
-        const nameParts = check.entity_name.replace(/\s*\(.*\)/, "").trim().toLowerCase().split(" ");
-        const driver = allDrivers.find(d =>
-          nameParts.some(p => (d.first_name + " " + d.last_name).toLowerCase().includes(p))
-        );
+        // Use entity_id from the real check directly
+        const driver = drivers.find(d => d.id === check.entity_id);
 
         const msgText = `🚨 REGULATORY ALERT — ${check.legal_basis}\n\n${check.violation_detail}\n\nAI-anbefalet handling: ${check.repair_suggestion}\n\nVenligst bekræft modtagelse og følg instrukserne.`;
 
-        // Send OrbitMessage
         await base44.entities.OrbitMessage.create({
-          organization_id: orgId,
+          organization_id: currentUser?.email || "system",
           sender_email: currentUser?.email || "system@nexusvectis.com",
           sender_name: "Regulatory Intellect AI",
           sender_role: "coordinator",
-          recipient_email: driver?.email || "operations@nexusvectis.com",
+          recipient_email: driver?.email || currentUser?.email || "ops@nexusvectis.com",
           message: msgText,
           message_type: "alert",
           vehicle_id: driver?.current_vehicle_id || undefined,
         });
 
-        // Send email
         if (driver?.email) {
           await base44.integrations.Core.SendEmail({
             to: driver.email,
@@ -312,13 +466,7 @@ export default function RegulatoryIntelligence() {
 
       // === FLIGHT violations: update Flight record + Alert ===
       else if (check.entity_type === "flight") {
-        const allFlights = await base44.entities.Flight.list();
-        const flightNumber = check.entity_name.split(" ")[0]; // e.g. "AF8812"
-        const flight = allFlights.find(f =>
-          f.flight_number === flightNumber ||
-          (f.flight_number || "").includes(flightNumber) ||
-          check.entity_name.toLowerCase().includes((f.flight_number || "").toLowerCase())
-        );
+        const flight = flights.find(f => f.id === check.entity_id);
 
         if (flight) {
           // For ground handling violations: extend scheduled time
@@ -374,10 +522,10 @@ export default function RegulatoryIntelligence() {
         });
       }
 
-      // Save repair to DB
+      // Save repair to DB — use check.entity_id (real DB id) as the key
       await base44.entities.ComplianceCheck.create({
         organization_id: orgId,
-        entity_id: check.id,
+        entity_id: check.id, // check.id is the unique compound key (e.g. driver-hours-abc123)
         entity_name: check.entity_name,
         entity_type: check.entity_type,
         domain: check.domain,
