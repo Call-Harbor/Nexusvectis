@@ -2,7 +2,8 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
-  const user = await base44.auth.me();
+  let user = null;
+  try { user = await base44.auth.me(); } catch(e) { console.log('[auth] me() failed:', e.message); }
   if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
   const body = await req.json().catch(() => ({}));
@@ -37,11 +38,14 @@ Deno.serve(async (req) => {
 
       ws.addEventListener("open", () => {
         wsStatus = "open";
-        const sub = JSON.stringify({
-          APIKey: apiKey,
+        console.log("[aisstream] API key length:", apiKey.length, "prefix:", apiKey.slice(0, 6));
+        const subObj = {
+          APIKey: apiKey.trim(),
           BoundingBoxes: [[[latMin, lonMin], [latMax, lonMax]]],
           FilterMessageTypes: ["PositionReport", "ShipStaticData"]
-        });
+        };
+        const sub = JSON.stringify(subObj);
+        console.log("[aisstream] sending sub:", sub.slice(0, 200));
         ws.send(sub);
         console.log("[aisstream] subscribed, waiting for data...");
       });
