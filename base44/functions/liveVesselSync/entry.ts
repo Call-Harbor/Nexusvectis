@@ -41,7 +41,7 @@ Deno.serve(async (req) => {
     if (data[0]?.ERROR === false && Array.isArray(data[1])) {
       rawVessels = data[1].slice(0, 200);
     } else {
-      apiError = data[0]?.DESCRIPTION || "No data from AISHub";
+      apiError = JSON.stringify(data[0]) || "No data from AISHub";
     }
   } catch (e) {
     apiError = e.message;
