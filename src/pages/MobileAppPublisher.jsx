@@ -11,7 +11,7 @@ const APPS = [
     description: "Employee app for airport/port/transit staff — shift schedules, tasks, incidents and real-time updates.",
     packageName: "com.nexusvectis.staffportal",
     bundleId: "com.nexusvectis.staffportal",
-    version: "1.0.0",
+    version: "1.0.1",
     buildDate: "2026-04-03",
     color: "cyan",
     icon: "👷",
@@ -24,7 +24,7 @@ const APPS = [
     description: "Communication and coordination app for field forces — messaging, maps and live fleet status.",
     packageName: "com.nexusvectis.nexusorbit",
     bundleId: "com.nexusvectis.nexusorbit",
-    version: "1.0.0",
+    version: "1.0.1",
     buildDate: "2026-04-03",
     color: "violet",
     icon: "🛰️",
@@ -119,8 +119,10 @@ function AppCard({ app, onBuildGenerated }) {
       theme_color: app.color === "cyan" ? "#06b6d4" : "#8b5cf6",
       background_color: "#020617",
       icons: [{ src: "/icon-512.png", sizes: "512x512", type: "image/png" }],
-      note: "Build with Bubblewrap CLI: npx @bubblewrap/cli init --manifest=this_file.json",
-      build_command: "npx @bubblewrap/cli build",
+      shortcuts: [{ name: app.name, url: `${window.location.origin}${app.route}`, icons: [{ src: "/icon-192.png", sizes: "192x192" }] }],
+      categories: ["productivity"],
+      orientation: "portrait-primary",
+      build_steps: "1. npm install -g @bubblewrap/cli && bubblewrap init --manifest=this_file.json && bubblewrap build 2. Upload app-release-bundle.aab to Play Console",
     };
     downloadJSON(twaConfig, `${app.id}-twa-config.json`, app, "android", onBuildGenerated);
   };
@@ -148,9 +150,10 @@ function AppCard({ app, onBuildGenerated }) {
           androidScaleType: "CENTER_CROP",
         },
         PushNotifications: { presentationOptions: ["badge", "sound", "alert"] },
+        LocalNotifications: { smallIcon: "ic_stat_icon_config_sample", iconColor: "#8b5cf6" },
       },
-      note: "Run: npm install @capacitor/cli @capacitor/core @capacitor/ios → npx cap init → npx cap add ios → npx cap open ios",
-      xcode_requirements: "Requires macOS + Xcode 15+ + Apple Developer Account",
+      build_steps: "1. npm install @capacitor/cli @capacitor/core @capacitor/ios && npx cap init && npx cap add ios && npx cap open ios 2. Select team & signing in Xcode 3. Product > Archive > Validate > Distribute",
+      xcode_requirements: "Requires macOS, Xcode 15+, Apple Developer Account ($99/year), and provisioning profile setup",
     };
     downloadJSON(capacitorConfig, `${app.id}-capacitor-config.json`, app, "ios", onBuildGenerated);
   };
@@ -218,13 +221,20 @@ function AppCard({ app, onBuildGenerated }) {
 }
 
 function downloadJSON(config, filename, app, platform, onBuildGenerated) {
-  const blob = new Blob([JSON.stringify(config, null, 2)], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  a.click();
-  onBuildGenerated(app, blob, filename, platform);
+  try {
+    const jsonStr = JSON.stringify(config, null, 2);
+    if (!jsonStr || jsonStr.length === 0) throw new Error("Config is empty");
+    const blob = new Blob([jsonStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 100);
+    onBuildGenerated(app, blob, filename, platform);
+  } catch (err) {
+    alert(`Download failed: ${err.message}`);
+  }
 }
 
 function BuildHistory({ history, onClear }) {
