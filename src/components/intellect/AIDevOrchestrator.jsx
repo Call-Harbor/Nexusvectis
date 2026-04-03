@@ -6,8 +6,64 @@ import {
   Code2, Terminal, GitBranch, Play, Square, Plus, X, Copy, Download, Upload,
   Cpu, Zap, ChevronRight, ChevronDown, Folder, FolderOpen, FileCode, Package,
   RefreshCw, Check, AlertCircle, Loader2, Settings, Database, Cloud, Lock,
-  ArrowRight, Activity, Network, Bot, Layers, LayoutGrid, Save, Search, Bug
+  ArrowRight, Activity, Network, Bot, Layers, LayoutGrid, Save, Search, Bug,
+  FolderArchive, GitCommit, BarChart3, Edit3, Trash2
 } from "lucide-react";
+
+// ── Pure-JS ZIP builder (no external dependency) ─────────────────────────────
+function buildZip(fileMap) {
+  // fileMap: { "filename": "content string" }
+  const encoder = new TextEncoder();
+  const localHeaders = [];
+  const centralDir = [];
+  let offset = 0;
+
+  const u32 = (n) => { const b = new Uint8Array(4); new DataView(b.buffer).setUint32(0, n, true); return b; };
+  const u16 = (n) => { const b = new Uint8Array(2); new DataView(b.buffer).setUint16(0, n, true); return b; };
+
+  // CRC-32
+  const crcTable = (() => { const t = new Uint32Array(256); for (let i = 0; i < 256; i++) { let c = i; for (let j = 0; j < 8; j++) c = (c & 1) ? (0xedb88320 ^ (c >>> 1)) : (c >>> 1); t[i] = c; } return t; })();
+  const crc32 = (data) => { let c = 0xffffffff; for (const b of data) c = crcTable[(c ^ b) & 0xff] ^ (c >>> 8); return (c ^ 0xffffffff) >>> 0; };
+
+  const concat = (...arrays) => { const len = arrays.reduce((s, a) => s + a.length, 0); const out = new Uint8Array(len); let i = 0; for (const a of arrays) { out.set(a, i); i += a.length; } return out; };
+
+  for (const [name, content] of Object.entries(fileMap)) {
+    const nameBytes = encoder.encode(name);
+    const dataBytes = encoder.encode(content);
+    const crc = crc32(dataBytes);
+    const local = concat(
+      new Uint8Array([0x50,0x4b,0x03,0x04]),  // local sig
+      u16(20), u16(0), u16(0),               // version, flags, method (stored)
+      u16(0), u16(0),                         // mod time, mod date
+      u32(crc), u32(dataBytes.length), u32(dataBytes.length),
+      u16(nameBytes.length), u16(0),          // name len, extra len
+      nameBytes, dataBytes
+    );
+    const central = concat(
+      new Uint8Array([0x50,0x4b,0x01,0x02]),  // central sig
+      u16(20), u16(20), u16(0), u16(0),
+      u16(0), u16(0),                         // method stored
+      u16(0), u16(0),
+      u32(crc), u32(dataBytes.length), u32(dataBytes.length),
+      u16(nameBytes.length), u16(0), u16(0), u16(0), u16(0),
+      u32(0), u32(offset),
+      nameBytes
+    );
+    localHeaders.push(local);
+    centralDir.push(central);
+    offset += local.length;
+  }
+
+  const centralBlob = concat(...centralDir);
+  const eocd = concat(
+    new Uint8Array([0x50,0x4b,0x05,0x06]),
+    u16(0), u16(0),
+    u16(centralDir.length), u16(centralDir.length),
+    u32(centralBlob.length), u32(offset),
+    u16(0)
+  );
+  return new Blob([concat(...localHeaders, centralBlob, eocd)], { type: "application/zip" });
+}
 
 // ── Language definitions ──────────────────────────────────────────────────────
 const LANG_MAP = {
@@ -295,7 +351,7 @@ function PipelineVisualizer({ activeStage, stageStatus }) {
 }
 
 // ── File Explorer ─────────────────────────────────────────────────────────────
-function FileExplorer({ files, activeFileId, onSelect, onNew, onDelete }) {
+function FileExplorer({ files, activeFileId, onSelect, onNew, onDelete, onRename }) {
   const langDot = (lang) => {
     const color = LANG_COLORS[lang] || "#94a3b8";
     return <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: color }} />;
@@ -323,12 +379,22 @@ function FileExplorer({ files, activeFileId, onSelect, onNew, onDelete }) {
           >
             {langDot(f.lang)}
             <span className="text-[11px] flex-1 truncate font-mono">{f.name}</span>
+            <div className="opacity-0 group-hover:opacity-100 flex items-center gap-1 ml-auto">
             <button
-              className="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-400 transition-all ml-auto"
-              onClick={(e) => { e.stopPropagation(); onDelete(f.id); }}
+              className="text-slate-600 hover:text-cyan-400 transition-all"
+              onClick={(e) => { e.stopPropagation(); onRename(f.id); }}
+              title="Rename"
             >
-              <X className="w-2.5 h-2.5" />
+              <Edit3 className="w-2.5 h-2.5" />
             </button>
+            <button
+              className="text-slate-600 hover:text-red-400 transition-all"
+              onClick={(e) => { e.stopPropagation(); onDelete(f.id); }}
+              title="Delete"
+            >
+              <Trash2 className="w-2.5 h-2.5" />
+            </button>
+          </div>
           </div>
         ))}
       </div>
@@ -366,6 +432,12 @@ export default function AIDevOrchestrator({ onClose }) {
   const [bottomPanel, setBottomPanel] = useState("terminal"); // terminal | problems | output
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearch, setShowSearch] = useState(false);
+  const [showStats, setShowStats] = useState(false);
+  const [gitLog, setGitLog] = useState([
+    { hash: "a3f8c12", msg: "Initial fleet orchestrator setup", author: "Fleet AI", time: "2 min ago" },
+    { hash: "b7d2e91", msg: "Add anomaly detection pipeline", author: "Fleet AI", time: "5 min ago" },
+    { hash: "c9a1f44", msg: "Configure Kubernetes deployment", author: "Fleet AI", time: "12 min ago" },
+  ]);
   const [orchestratorTasks, setOrchestratorTasks] = useState([
     { id: 1, name: "Fleet telemetry sync", status: "completed", agent: "DataAgent", duration: "1.2s" },
     { id: 2, name: "Anomaly detection run", status: "completed", agent: "AIAgent", duration: "3.4s" },
@@ -594,6 +666,30 @@ Return ONLY the improved code as a raw string (no markdown, no explanation, just
     a.click();
   };
 
+  const downloadZip = () => {
+    if (files.length === 0) return;
+    const fileMap = {};
+    files.forEach(f => { fileMap[f.name] = f.content; });
+    // Add a README
+    fileMap["README.md"] = `# NexusVectis Fleet AI Project\n\nGenerated by Fleet AI IDE & DevOps Orchestrator\n\n## Files\n${files.map(f => `- \`${f.name}\` (${f.lang})`).join("\n")}\n\n## Getting Started\n\nSee individual files for setup instructions.\n`;
+    const blob = buildZip(fileMap);
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "nexusvectis-fleet-ai-project.zip";
+    a.click();
+    toast.success(`Downloaded ${files.length + 1} files as ZIP`);
+  };
+
+  const renameFile = (id) => {
+    const file = files.find(f => f.id === id);
+    if (!file) return;
+    const newName = prompt("New filename:", file.name);
+    if (newName && newName.trim()) {
+      const ext = newName.split(".").pop();
+      setFiles(prev => prev.map(f => f.id === id ? { ...f, name: newName.trim(), lang: LANG_MAP[ext] || f.lang } : f));
+    }
+  };
+
   const highlightedContent = useCallback((content) => {
     if (!content) return "";
     // Basic syntax highlighting via CSS classes — color keywords
@@ -636,14 +732,23 @@ Return ONLY the improved code as a raw string (no markdown, no explanation, just
         <div className="flex-1" />
 
         {/* Action buttons */}
-        <button onClick={() => setShowSearch(!showSearch)} className="p-1.5 rounded text-slate-500 hover:text-slate-300 hover:bg-slate-800 transition-all">
+        <button onClick={() => setShowSearch(!showSearch)} className="p-1.5 rounded text-slate-500 hover:text-slate-300 hover:bg-slate-800 transition-all" title="Search in file">
           <Search className="w-3.5 h-3.5" />
         </button>
-        <button onClick={copyCode} className="p-1.5 rounded text-slate-500 hover:text-slate-300 hover:bg-slate-800 transition-all">
+        <button onClick={() => setShowStats(!showStats)} className={`p-1.5 rounded transition-all ${showStats ? "text-cyan-400 bg-cyan-500/10" : "text-slate-500 hover:text-slate-300 hover:bg-slate-800"}`} title="Project stats">
+          <BarChart3 className="w-3.5 h-3.5" />
+        </button>
+        <button onClick={copyCode} className="p-1.5 rounded text-slate-500 hover:text-slate-300 hover:bg-slate-800 transition-all" title="Copy file">
           <Copy className="w-3.5 h-3.5" />
         </button>
-        <button onClick={downloadFile} className="p-1.5 rounded text-slate-500 hover:text-slate-300 hover:bg-slate-800 transition-all">
+        <button onClick={downloadFile} className="p-1.5 rounded text-slate-500 hover:text-slate-300 hover:bg-slate-800 transition-all" title="Download current file">
           <Download className="w-3.5 h-3.5" />
+        </button>
+        <button onClick={downloadZip}
+          className="flex items-center gap-1.5 px-3 py-1 rounded text-xs font-medium bg-cyan-700 hover:bg-cyan-600 text-white transition-all"
+          title="Download all files as ZIP">
+          <FolderArchive className="w-3 h-3" />
+          ZIP
         </button>
         <button onClick={runFile} disabled={isRunning}
           className={`flex items-center gap-1.5 px-3 py-1 rounded text-xs font-medium transition-all ${
@@ -717,6 +822,41 @@ Return ONLY the improved code as a raw string (no markdown, no explanation, just
         </div>
       )}
 
+      {/* ── Project Stats Panel ────────────────────────────────────── */}
+      {showStats && (
+        <div className="flex gap-4 px-4 py-3 bg-slate-900 border-b border-slate-800 flex-shrink-0 flex-wrap">
+          <div className="flex flex-col">
+            <span className="text-[10px] text-slate-500 uppercase tracking-widest">Files</span>
+            <span className="text-lg font-bold text-cyan-400 font-mono">{files.length}</span>
+          </div>
+          <div className="flex flex-col">
+            <span className="text-[10px] text-slate-500 uppercase tracking-widest">Total Lines</span>
+            <span className="text-lg font-bold text-violet-400 font-mono">{files.reduce((s, f) => s + f.content.split("\n").length, 0)}</span>
+          </div>
+          <div className="flex flex-col">
+            <span className="text-[10px] text-slate-500 uppercase tracking-widest">Size</span>
+            <span className="text-lg font-bold text-green-400 font-mono">{(files.reduce((s, f) => s + f.content.length, 0) / 1024).toFixed(1)}KB</span>
+          </div>
+          <div className="flex flex-col">
+            <span className="text-[10px] text-slate-500 uppercase tracking-widest">Languages</span>
+            <span className="text-lg font-bold text-amber-400 font-mono">{[...new Set(files.map(f => f.lang))].length}</span>
+          </div>
+          <div className="flex-1 border-l border-slate-700 ml-2 pl-4">
+            <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-1.5">Git Log</p>
+            <div className="space-y-1">
+              {gitLog.map(c => (
+                <div key={c.hash} className="flex items-center gap-2 text-[10px] font-mono">
+                  <GitCommit className="w-2.5 h-2.5 text-green-400 flex-shrink-0" />
+                  <span className="text-slate-600">{c.hash}</span>
+                  <span className="text-slate-300">{c.msg}</span>
+                  <span className="text-slate-600 ml-auto">{c.time}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── Main area ─────────────────────────────────────────────── */}
       <div className="flex flex-1 min-h-0">
         {/* File explorer */}
@@ -726,6 +866,7 @@ Return ONLY the improved code as a raw string (no markdown, no explanation, just
           onSelect={setActiveFileId}
           onNew={addNewFile}
           onDelete={deleteFile}
+          onRename={renameFile}
         />
 
         {/* Editor + bottom panel */}
@@ -821,7 +962,7 @@ Return ONLY the improved code as a raw string (no markdown, no explanation, just
 
           {/* Bottom panel tabs */}
           <div className="flex items-center gap-1 px-3 border-t border-slate-800 bg-slate-900 flex-shrink-0">
-            {["terminal", "problems", "output"].map(tab => (
+            {["terminal", "problems", "output", "git"].map(tab => (
               <button key={tab}
                 onClick={() => setBottomPanel(tab)}
                 className={`px-3 py-1.5 text-[10px] uppercase tracking-widest font-bold transition-colors ${
@@ -858,6 +999,27 @@ Return ONLY the improved code as a raw string (no markdown, no explanation, just
                 <p className="text-slate-600">[AI IDE] Output ready</p>
                 <p className="text-cyan-400">Fleet AI Orchestrator v2.0 initialized</p>
                 <p className="text-slate-500">Organization: NexusVectis</p>
+              </div>
+            )}
+            {bottomPanel === "git" && (
+              <div className="h-full bg-slate-950 p-3 font-mono text-xs overflow-auto space-y-1.5">
+                <p className="text-slate-500 mb-2">On branch <span className="text-green-400">main</span> · {files.length} files tracked</p>
+                {gitLog.map(c => (
+                  <div key={c.hash} className="flex items-center gap-3">
+                    <span className="text-amber-400">{c.hash}</span>
+                    <span className="text-slate-300">{c.msg}</span>
+                    <span className="text-slate-600 ml-auto">{c.author} · {c.time}</span>
+                  </div>
+                ))}
+                <div className="pt-2 border-t border-slate-800">
+                  {files.map(f => (
+                    <div key={f.id} className="flex items-center gap-2 text-[10px]">
+                      <span className="text-green-400">M</span>
+                      <span className="text-slate-400">{f.name}</span>
+                      <span className="text-slate-600">+{f.content.split("\n").length} lines</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>
