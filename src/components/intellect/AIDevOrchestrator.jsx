@@ -309,6 +309,10 @@ export default function AIDevOrchestrator({ onClose }) {
     { id: 3, name: "Route optimization", status: "running", agent: "RouteAgent", duration: "..." },
     { id: 4, name: "Report generation", status: "pending", agent: "ReportAgent", duration: "-" },
   ]);
+  const [devopsTab, setDevopsTab] = useState("iac");
+  const [devopsInput, setDevopsInput] = useState("");
+  const [devopsResult, setDevopsResult] = useState(null);
+  const [devopsLoading, setDevopsLoading] = useState(false);
 
   const activeFile = files.find(f => f.id === activeFileId);
   const log = (text, type = "default") => setTerminalOutput(prev => [...prev, { text, type }]);
@@ -541,6 +545,7 @@ Generate 4-6 files covering: main logic, API/interface, config/docker, tests, an
           { id: "editor", label: "Editor", icon: Code2 },
           { id: "pipeline", label: "Pipeline", icon: GitBranch },
           { id: "orchestrator", label: "Orchestrator", icon: Layers },
+          { id: "devops", label: "DevOps & Arkitektur", icon: Network },
         ].map(({ id, label, icon: Icon }) => (
           <button key={id} onClick={() => setActivePanel(id)}
             className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs transition-all ${activePanel === id ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/40" : "text-slate-500 hover:text-slate-300"}`}>
@@ -606,6 +611,187 @@ Generate 4-6 files covering: main logic, API/interface, config/docker, tests, an
                 <div className="flex-1 min-w-0"><p className="text-slate-200 truncate">{task.name}</p><p className="text-slate-500 text-[10px]">{task.agent} · {task.duration}</p></div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {activePanel === "devops" && (
+        <div className="flex flex-col bg-slate-900 border-b border-slate-800 flex-shrink-0" style={{ maxHeight: 420, minHeight: 420 }}>
+          {/* DevOps tab bar */}
+          <div className="flex items-center gap-1 px-3 pt-2 border-b border-slate-800 overflow-x-auto flex-shrink-0">
+            {[
+              { id: "iac", label: "IaC Generator", emoji: "🏗️" },
+              { id: "k8s", label: "Kubernetes", emoji: "☸️" },
+              { id: "docker", label: "Docker", emoji: "🐳" },
+              { id: "arch", label: "Arkitektur", emoji: "🗺️" },
+              { id: "network", label: "Netværk", emoji: "🌐" },
+              { id: "cost", label: "Cost Analysis", emoji: "💰" },
+              { id: "runbook", label: "Runbook", emoji: "📖" },
+            ].map(t => (
+              <button key={t.id} onClick={() => { setDevopsTab(t.id); setDevopsResult(null); setDevopsInput(""); }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest whitespace-nowrap transition-all border-b-2 ${
+                  devopsTab === t.id ? "text-cyan-300 border-cyan-500" : "text-slate-500 border-transparent hover:text-slate-300"
+                }`}>
+                <span>{t.emoji}</span>{t.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex flex-1 min-h-0">
+            {/* Left: input */}
+            <div className="flex flex-col w-72 border-r border-slate-800 flex-shrink-0">
+              <div className="flex-1 p-3 overflow-auto">
+                {devopsTab === "iac" && (
+                  <>
+                    <p className="text-xs text-slate-400 mb-2 font-bold">Terraform / Pulumi / CloudFormation</p>
+                    <p className="text-[10px] text-slate-500 mb-3">Beskriv din infrastruktur og Fleet AI genererer IaC-kode klar til deployment.</p>
+                    <div className="space-y-2">
+                      {["AWS EKS cluster med 3 node groups og autoscaling", "Azure AKS + PostgreSQL Flexible Server + Redis Cache", "GCP Cloud Run + Pub/Sub + BigQuery pipeline"].map(ex => (
+                        <button key={ex} onClick={() => setDevopsInput(ex)} className="w-full text-left text-[10px] text-slate-400 hover:text-cyan-300 bg-slate-800 hover:bg-slate-700 px-2.5 py-1.5 rounded border border-slate-700 transition-all">{ex}</button>
+                      ))}
+                    </div>
+                  </>
+                )}
+                {devopsTab === "k8s" && (
+                  <>
+                    <p className="text-xs text-slate-400 mb-2 font-bold">Kubernetes Manifests</p>
+                    <p className="text-[10px] text-slate-500 mb-3">Generer Deployment, Service, Ingress, HPA, ConfigMap og mere.</p>
+                    <div className="space-y-2">
+                      {["Fleet AI microservice med HPA og rolling update", "Redis Cluster med PersistentVolume", "NexusVectis ingress med TLS og rate-limiting"].map(ex => (
+                        <button key={ex} onClick={() => setDevopsInput(ex)} className="w-full text-left text-[10px] text-slate-400 hover:text-cyan-300 bg-slate-800 hover:bg-slate-700 px-2.5 py-1.5 rounded border border-slate-700 transition-all">{ex}</button>
+                      ))}
+                    </div>
+                  </>
+                )}
+                {devopsTab === "docker" && (
+                  <>
+                    <p className="text-xs text-slate-400 mb-2 font-bold">Docker & Compose</p>
+                    <p className="text-[10px] text-slate-500 mb-3">Multi-stage Dockerfiles og docker-compose til hele stacken.</p>
+                    <div className="space-y-2">
+                      {["Python Flask app med multi-stage build og health check", "Node.js microservice med pnpm og distroless", "Full stack: React + FastAPI + PostgreSQL + Redis"].map(ex => (
+                        <button key={ex} onClick={() => setDevopsInput(ex)} className="w-full text-left text-[10px] text-slate-400 hover:text-cyan-300 bg-slate-800 hover:bg-slate-700 px-2.5 py-1.5 rounded border border-slate-700 transition-all">{ex}</button>
+                      ))}
+                    </div>
+                  </>
+                )}
+                {devopsTab === "arch" && (
+                  <>
+                    <p className="text-xs text-slate-400 mb-2 font-bold">Systemarkitektur Diagram</p>
+                    <p className="text-[10px] text-slate-500 mb-3">ASCII + Mermaid diagram med komponent-relationer og dataflow.</p>
+                    <div className="space-y-2">
+                      {["NexusVectis fleet management platform arkitektur", "Microservices med event-driven kommunikation via Kafka", "CQRS + Event Sourcing pattern for fleet telemetry"].map(ex => (
+                        <button key={ex} onClick={() => setDevopsInput(ex)} className="w-full text-left text-[10px] text-slate-400 hover:text-cyan-300 bg-slate-800 hover:bg-slate-700 px-2.5 py-1.5 rounded border border-slate-700 transition-all">{ex}</button>
+                      ))}
+                    </div>
+                  </>
+                )}
+                {devopsTab === "network" && (
+                  <>
+                    <p className="text-xs text-slate-400 mb-2 font-bold">Netværkstopologi</p>
+                    <p className="text-[10px] text-slate-500 mb-3">VPC-design, subnets, security groups, firewall-regler og DNS-konfiguration.</p>
+                    <div className="space-y-2">
+                      {["AWS VPC med public/private subnets og NAT gateway", "Zero-trust netværk med mTLS og service mesh (Istio)", "Multi-region failover med Route53 og health checks"].map(ex => (
+                        <button key={ex} onClick={() => setDevopsInput(ex)} className="w-full text-left text-[10px] text-slate-400 hover:text-cyan-300 bg-slate-800 hover:bg-slate-700 px-2.5 py-1.5 rounded border border-slate-700 transition-all">{ex}</button>
+                      ))}
+                    </div>
+                  </>
+                )}
+                {devopsTab === "cost" && (
+                  <>
+                    <p className="text-xs text-slate-400 mb-2 font-bold">Cloud Cost Analysis</p>
+                    <p className="text-[10px] text-slate-500 mb-3">Estimér månedlige cloud-omkostninger og optimeringspotentiale.</p>
+                    <div className="space-y-2">
+                      {["EKS cluster: 10 t3.medium nodes + RDS + ElastiCache", "Azure: AKS + Cosmos DB + Service Bus + CDN", "Sammenlign AWS vs Azure vs GCP for fleet platform"].map(ex => (
+                        <button key={ex} onClick={() => setDevopsInput(ex)} className="w-full text-left text-[10px] text-slate-400 hover:text-cyan-300 bg-slate-800 hover:bg-slate-700 px-2.5 py-1.5 rounded border border-slate-700 transition-all">{ex}</button>
+                      ))}
+                    </div>
+                  </>
+                )}
+                {devopsTab === "runbook" && (
+                  <>
+                    <p className="text-xs text-slate-400 mb-2 font-bold">Runbook Generator</p>
+                    <p className="text-[10px] text-slate-500 mb-3">Generer SRE runbooks, incident response og disaster recovery procedurer.</p>
+                    <div className="space-y-2">
+                      {["Database failover procedure for PostgreSQL primary", "K8s pod crash loop incident response", "Fleet AI service degradation runbook med eskalering"].map(ex => (
+                        <button key={ex} onClick={() => setDevopsInput(ex)} className="w-full text-left text-[10px] text-slate-400 hover:text-cyan-300 bg-slate-800 hover:bg-slate-700 px-2.5 py-1.5 rounded border border-slate-700 transition-all">{ex}</button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+              <div className="p-2 border-t border-slate-800 flex-shrink-0">
+                <textarea
+                  value={devopsInput}
+                  onChange={e => setDevopsInput(e.target.value)}
+                  placeholder="Beskriv hvad du vil generere..."
+                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-2 text-xs text-white placeholder-slate-500 outline-none focus:border-cyan-500 resize-none"
+                  rows={3}
+                />
+                <button
+                  onClick={async () => {
+                    if (!devopsInput.trim() || devopsLoading) return;
+                    setDevopsLoading(true); setDevopsResult(null);
+                    const tabPrompts = {
+                      iac: `Du er en ekspert cloud arkitekt. Generer production-ready Terraform (HCL) kode for: "${devopsInput}". Inkluder: provider config, variables, modules, outputs og security best practices. Forklar kort hvad hver sektion gør.`,
+                      k8s: `Du er en Kubernetes ekspert. Generer komplette K8s YAML manifests for: "${devopsInput}". Inkluder alle nødvendige ressourcer (Deployment, Service, Ingress, HPA, ConfigMap, Secrets som placeholder). Brug best practices for labels, resources limits og health probes.`,
+                      docker: `Du er en Docker ekspert. Generer optimeret multi-stage Dockerfile og docker-compose.yml for: "${devopsInput}". Inkluder: non-root user, health checks, .dockerignore indhold, build args og environment variables.`,
+                      arch: `Du er en software arkitekt. Generer et detaljeret systemarkitektur diagram (ASCII art) OG Mermaid diagram kode for: "${devopsInput}". Inkluder: komponenter, dataflow, API-grænser, databaser, message queues og ekstern integration. Tilføj arkitektur-forklaring.`,
+                      network: `Du er en netværks- og cloud-sikkerhedsekspert. Design og beskriv netværkstopologien for: "${devopsInput}". Inkluder: ASCII diagram over netværk, CIDR ranges, routing tables, security group regler, og Terraform kode til netværket.`,
+                      cost: `Du er en FinOps-ekspert. Lav en detaljeret cloud cost analyse for: "${devopsInput}". Inkluder: estimerede månedlige omkostninger per komponent, total pris, sammenligninger på tværs af cloud providers (AWS/Azure/GCP), og 5 konkrete besparelsesforslag med estimeret besparelse i %.`,
+                      runbook: `Du er en Senior SRE. Generer en komplet, produktionsklar runbook for: "${devopsInput}". Inkluder: 1) Symptom-identifikation, 2) Triage trin (step-by-step med kommandoer), 3) Root cause analyse procedure, 4) Remediation steps, 5) Eskaleringsmatrix, 6) Post-incident actions og 7) Præventive tiltag.`,
+                    };
+                    try {
+                      const res = await base44.integrations.Core.InvokeLLM({ prompt: tabPrompts[devopsTab], model: "claude_sonnet_4_6" });
+                      setDevopsResult(typeof res === "string" ? res : JSON.stringify(res, null, 2));
+                    } catch(e) { setDevopsResult("Fejl: " + e.message); }
+                    setDevopsLoading(false);
+                  }}
+                  disabled={!devopsInput.trim() || devopsLoading}
+                  className="mt-1.5 w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 disabled:opacity-40 text-white text-xs font-bold transition-all">
+                  {devopsLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Zap className="w-3 h-3" />}
+                  {devopsLoading ? "Genererer..." : "Generer"}
+                </button>
+              </div>
+            </div>
+
+            {/* Right: result */}
+            <div className="flex-1 flex flex-col min-w-0">
+              {devopsResult ? (
+                <>
+                  <div className="flex items-center justify-between px-3 py-1.5 border-b border-slate-800 flex-shrink-0">
+                    <span className="text-[10px] text-slate-500 uppercase tracking-widest">Output</span>
+                    <div className="flex gap-1.5">
+                      <button onClick={() => { const f = { id: `devops_${Date.now()}`, name: `devops_${devopsTab}_${Date.now()}.${devopsTab === 'k8s' ? 'yaml' : devopsTab === 'iac' ? 'tf' : devopsTab === 'docker' ? 'dockerfile' : 'md'}`, lang: devopsTab === 'k8s' ? 'yaml' : devopsTab === 'iac' ? 'yaml' : 'markdown', content: devopsResult }; setFiles(prev => [...prev, f]); setActiveFileId(f.id); setActivePanel('editor'); toast.success('Åbnet i editor'); }}
+                        className="flex items-center gap-1 px-2 py-1 rounded bg-violet-700 hover:bg-violet-600 text-white text-[10px] transition-all">
+                        <Code2 className="w-2.5 h-2.5" />Åbn i Editor
+                      </button>
+                      <button onClick={() => navigator.clipboard.writeText(devopsResult).then(() => toast.success('Kopieret'))}
+                        className="flex items-center gap-1 px-2 py-1 rounded bg-slate-700 hover:bg-slate-600 text-slate-300 text-[10px] transition-all">
+                        <Copy className="w-2.5 h-2.5" />Kopier
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex-1 overflow-auto p-3 font-mono text-xs text-slate-200 whitespace-pre-wrap leading-relaxed">
+                    {devopsResult}
+                  </div>
+                </>
+              ) : (
+                <div className="flex-1 flex flex-col items-center justify-center text-center p-6">
+                  {devopsLoading ? (
+                    <>
+                      <Loader2 className="w-8 h-8 text-cyan-400 animate-spin mb-3" />
+                      <p className="text-sm text-slate-400">Fleet AI genererer...</p>
+                    </>
+                  ) : (
+                    <>
+                      <div className="text-4xl mb-3">{["🏗️","☸️","🐳","🗺️","🌐","💰","📖"][['iac','k8s','docker','arch','network','cost','runbook'].indexOf(devopsTab)]}</div>
+                      <p className="text-sm text-slate-400 mb-1">Vælg et eksempel eller beskriv din infrastruktur</p>
+                      <p className="text-[10px] text-slate-600">Fleet AI genererer production-ready kode</p>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
