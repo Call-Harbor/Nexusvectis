@@ -249,7 +249,9 @@ export default function IntellectMode() {
       x: position.x + existingCount * 30,
       y: position.y + existingCount * 30
     };
-    setActiveWindows(prev => [...prev, { type, id: Date.now(), position: allowMultiple ? offsetPosition : position, data }]);
+    const newId = Date.now();
+    setActiveWindows(prev => [...prev, { type, id: newId, position: allowMultiple ? offsetPosition : position, data }]);
+    setFocusedWindow(newId);
   }, [activeWindows]);
 
   const closeWindow = useCallback((id) => {
