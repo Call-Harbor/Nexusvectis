@@ -248,9 +248,7 @@ export default function IntellectHeader({ orgId, openWindow, executePrompt, setS
   const navigate = useNavigate();
 
   const handleAppSelect = (type) => {
-    if (type === 'company_analysis') {
-      setShowCompanyAnalysis?.(true);
-    } else if (type === 'fleetai_trainer') {
+    if (type === 'fleetai_trainer') {
       openWindow('fleet_ai_trainer');
     } else if (type === 'advanced_intelligence') {
       setShowAdvancedPanel?.(true);
