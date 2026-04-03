@@ -176,6 +176,7 @@ function DownloadAppDropdown() {
   const [open, setOpen] = useState(false);
   const deferredPrompt = useRef(null);
   const [canInstall, setCanInstall] = useState(false);
+  const [installed, setInstalled] = useState(false);
 
   useEffect(() => {
     const handler = (e) => {
@@ -187,10 +188,13 @@ function DownloadAppDropdown() {
     return () => window.removeEventListener('beforeinstallprompt', handler);
   }, []);
 
-  const installPWA = async () => {
+  const installNativeApp = async () => {
     if (deferredPrompt.current) {
       deferredPrompt.current.prompt();
-      await deferredPrompt.current.userChoice;
+      const { outcome } = await deferredPrompt.current.userChoice;
+      if (outcome === 'accepted') {
+        setInstalled(true);
+      }
       deferredPrompt.current = null;
       setCanInstall(false);
     }
@@ -200,7 +204,7 @@ function DownloadAppDropdown() {
   const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
   const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
   const isAndroid = /android/i.test(navigator.userAgent);
-  const appUrl = window.location.origin;
+  const appUrl = window.location.origin + '/IntellectMode';
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
@@ -211,59 +215,66 @@ function DownloadAppDropdown() {
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="bg-slate-900 border-slate-800 w-72">
-        <DropdownMenuLabel className="text-[10px] text-cyan-400 font-mono tracking-widest uppercase">Install Fleet AI Platform</DropdownMenuLabel>
+        <DropdownMenuLabel className="text-[10px] text-cyan-400 font-mono tracking-widest uppercase">📱 IntellectMode Native App</DropdownMenuLabel>
         <DropdownMenuSeparator className="bg-slate-800" />
 
+        {installed && (
+          <div className="px-3 py-2 bg-green-500/10 border border-green-500/30 rounded m-2">
+            <p className="text-[10px] text-green-400 font-bold">✓ App installed successfully!</p>
+            <p className="text-[10px] text-slate-400 mt-1">Look for IntellectMode on your desktop or app drawer</p>
+          </div>
+        )}
+
         {/* Chrome/Edge PWA install */}
-        {canInstall && (
-          <DropdownMenuItem onClick={installPWA} className="text-slate-300 hover:text-white hover:bg-slate-800 cursor-pointer gap-3 py-3">
-            <Monitor className="w-5 h-5 text-green-400 flex-shrink-0" />
+        {canInstall && !installed && (
+          <DropdownMenuItem onClick={installNativeApp} className="text-slate-300 hover:text-white hover:bg-slate-800 cursor-pointer gap-3 py-3">
+            <Download className="w-5 h-5 text-green-400 flex-shrink-0" />
             <div>
-              <div className="text-sm font-bold text-white">Install on this device</div>
+              <div className="text-sm font-bold text-white">Install as Native App</div>
               <div className="text-[10px] text-slate-400">Windows / Mac / Linux / Android</div>
             </div>
           </DropdownMenuItem>
         )}
 
         {/* iOS Safari */}
-        {(isIOS || isSafari) && (
-          <div className="px-3 py-3 flex gap-3">
-            <Apple className="w-5 h-5 text-slate-400 flex-shrink-0 mt-0.5" />
+        {(isIOS || isSafari) && !installed && (
+          <DropdownMenuItem className="text-slate-300 gap-3 py-3 cursor-default">
+            <Apple className="w-5 h-5 text-slate-400 flex-shrink-0" />
             <div>
               <div className="text-sm font-bold text-white">iPhone / iPad</div>
-              <div className="text-[10px] text-slate-400 mt-0.5">Tryk på <span className="text-cyan-400">Del</span> → <span className="text-cyan-400">Føj til hjemmeskærm</span></div>
+              <div className="text-[10px] text-slate-400 mt-0.5"><span className="text-cyan-400 font-bold">Del</span> → <span className="text-cyan-400 font-bold">Føj til hjemmeskærm</span></div>
             </div>
-          </div>
+          </DropdownMenuItem>
         )}
 
         {/* Android manual */}
-        {isAndroid && !canInstall && (
-          <div className="px-3 py-3 flex gap-3">
-            <Download className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+        {isAndroid && !canInstall && !installed && (
+          <DropdownMenuItem className="text-slate-300 gap-3 py-3 cursor-default">
+            <Download className="w-5 h-5 text-green-400 flex-shrink-0" />
             <div>
-              <div className="text-sm font-bold text-white">Android</div>
-              <div className="text-[10px] text-slate-400 mt-0.5">Tryk på menu (⋮) → <span className="text-cyan-400">Tilføj til startskærm</span></div>
+              <div className="text-sm font-bold text-white">Android Device</div>
+              <div className="text-[10px] text-slate-400 mt-0.5">Menu (<span className="text-cyan-400 font-bold">⋮</span>) → <span className="text-cyan-400 font-bold">Tilføj til startskærm</span></div>
             </div>
-          </div>
+          </DropdownMenuItem>
         )}
 
         {/* Desktop browsers without PWA prompt */}
-        {!canInstall && !isIOS && !isSafari && (
-          <div className="px-3 py-3 flex gap-3">
-            <Monitor className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+        {!canInstall && !isIOS && !isSafari && !installed && (
+          <DropdownMenuItem className="text-slate-300 gap-3 py-3 cursor-default">
+            <Monitor className="w-5 h-5 text-blue-400 flex-shrink-0" />
             <div>
-              <div className="text-sm font-bold text-white">Desktop (Chrome / Edge)</div>
-              <div className="text-[10px] text-slate-400 mt-0.5">Klik på <span className="text-cyan-400">⊕</span> i adresselinjen for at installere</div>
+              <div className="text-sm font-bold text-white">Chrome / Edge</div>
+              <div className="text-[10px] text-slate-400 mt-0.5">Klik <span className="text-cyan-400 font-bold">⊕</span> i adresselinjen</div>
             </div>
-          </div>
+          </DropdownMenuItem>
         )}
 
         <DropdownMenuSeparator className="bg-slate-800" />
-        <div className="px-3 py-2">
-          <p className="text-[10px] text-slate-500 mb-1">Del app-link</p>
-          <div className="flex items-center gap-2 bg-slate-800 rounded px-2 py-1.5">
-            <span className="text-[10px] text-slate-400 font-mono truncate flex-1">{appUrl}</span>
-            <button onClick={() => { navigator.clipboard.writeText(appUrl); setOpen(false); }} className="text-cyan-400 hover:text-cyan-300 text-[10px] font-bold flex-shrink-0">COPY</button>
+        <div className="px-3 py-3 bg-slate-800/50 rounded m-2">
+          <p className="text-[10px] text-slate-500 mb-2 font-bold">Share app link</p>
+          <div className="flex items-center gap-2 bg-slate-900 rounded px-2.5 py-2 border border-slate-700">
+            <span className="text-[10px] text-slate-400 font-mono truncate flex-1" title={appUrl}>{appUrl}</span>
+            <button onClick={() => { navigator.clipboard.writeText(appUrl); }} className="text-cyan-400 hover:text-cyan-300 text-[10px] font-bold whitespace-nowrap flex-shrink-0 transition-colors">📋 COPY</button>
           </div>
         </div>
       </DropdownMenuContent>
