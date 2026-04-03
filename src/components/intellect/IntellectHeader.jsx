@@ -174,8 +174,8 @@ function AppSearchDropdown({ onSelect, children }) {
 
 function DownloadAppDropdown() {
   const [open, setOpen] = useState(false);
-  const [deferredPrompt, setDeferredPrompt] = React.useRef(null);
-  const [canInstall, setCanInstall] = React.useState(false);
+  const deferredPrompt = useRef(null);
+  const [canInstall, setCanInstall] = useState(false);
 
   React.useEffect(() => {
     const handler = (e) => {
