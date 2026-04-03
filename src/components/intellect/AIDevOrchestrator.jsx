@@ -623,8 +623,8 @@ Generate 4-6 files covering: main logic, API/interface, config/docker, tests, an
               { id: "iac", label: "IaC Generator", emoji: "🏗️" },
               { id: "k8s", label: "Kubernetes", emoji: "☸️" },
               { id: "docker", label: "Docker", emoji: "🐳" },
-              { id: "arch", label: "Arkitektur", emoji: "🗺️" },
-              { id: "network", label: "Netværk", emoji: "🌐" },
+              { id: "arch", label: "Architecture", emoji: "🗺️" },
+              { id: "network", label: "Network", emoji: "🌐" },
               { id: "cost", label: "Cost Analysis", emoji: "💰" },
               { id: "runbook", label: "Runbook", emoji: "📖" },
             ].map(t => (
@@ -644,9 +644,9 @@ Generate 4-6 files covering: main logic, API/interface, config/docker, tests, an
                 {devopsTab === "iac" && (
                   <>
                     <p className="text-xs text-slate-400 mb-2 font-bold">Terraform / Pulumi / CloudFormation</p>
-                    <p className="text-[10px] text-slate-500 mb-3">Beskriv din infrastruktur og Fleet AI genererer IaC-kode klar til deployment.</p>
+                    <p className="text-[10px] text-slate-500 mb-3">Describe your infrastructure and Fleet AI generates production-ready IaC code.</p>
                     <div className="space-y-2">
-                      {["AWS EKS cluster med 3 node groups og autoscaling", "Azure AKS + PostgreSQL Flexible Server + Redis Cache", "GCP Cloud Run + Pub/Sub + BigQuery pipeline"].map(ex => (
+                      {["AWS EKS cluster with 3 node groups and autoscaling", "Azure AKS + PostgreSQL Flexible Server + Redis Cache", "GCP Cloud Run + Pub/Sub + BigQuery pipeline"].map(ex => (
                         <button key={ex} onClick={() => setDevopsInput(ex)} className="w-full text-left text-[10px] text-slate-400 hover:text-cyan-300 bg-slate-800 hover:bg-slate-700 px-2.5 py-1.5 rounded border border-slate-700 transition-all">{ex}</button>
                       ))}
                     </div>
@@ -655,9 +655,9 @@ Generate 4-6 files covering: main logic, API/interface, config/docker, tests, an
                 {devopsTab === "k8s" && (
                   <>
                     <p className="text-xs text-slate-400 mb-2 font-bold">Kubernetes Manifests</p>
-                    <p className="text-[10px] text-slate-500 mb-3">Generer Deployment, Service, Ingress, HPA, ConfigMap og mere.</p>
+                    <p className="text-[10px] text-slate-500 mb-3">Generate Deployment, Service, Ingress, HPA, ConfigMap and more.</p>
                     <div className="space-y-2">
-                      {["Fleet AI microservice med HPA og rolling update", "Redis Cluster med PersistentVolume", "NexusVectis ingress med TLS og rate-limiting"].map(ex => (
+                      {["Fleet AI microservice with HPA and rolling update", "Redis Cluster with PersistentVolume", "NexusVectis ingress with TLS and rate-limiting"].map(ex => (
                         <button key={ex} onClick={() => setDevopsInput(ex)} className="w-full text-left text-[10px] text-slate-400 hover:text-cyan-300 bg-slate-800 hover:bg-slate-700 px-2.5 py-1.5 rounded border border-slate-700 transition-all">{ex}</button>
                       ))}
                     </div>
@@ -666,9 +666,9 @@ Generate 4-6 files covering: main logic, API/interface, config/docker, tests, an
                 {devopsTab === "docker" && (
                   <>
                     <p className="text-xs text-slate-400 mb-2 font-bold">Docker & Compose</p>
-                    <p className="text-[10px] text-slate-500 mb-3">Multi-stage Dockerfiles og docker-compose til hele stacken.</p>
+                    <p className="text-[10px] text-slate-500 mb-3">Multi-stage Dockerfiles and docker-compose for the full stack.</p>
                     <div className="space-y-2">
-                      {["Python Flask app med multi-stage build og health check", "Node.js microservice med pnpm og distroless", "Full stack: React + FastAPI + PostgreSQL + Redis"].map(ex => (
+                      {["Python Flask app with multi-stage build and health check", "Node.js microservice with pnpm and distroless", "Full stack: React + FastAPI + PostgreSQL + Redis"].map(ex => (
                         <button key={ex} onClick={() => setDevopsInput(ex)} className="w-full text-left text-[10px] text-slate-400 hover:text-cyan-300 bg-slate-800 hover:bg-slate-700 px-2.5 py-1.5 rounded border border-slate-700 transition-all">{ex}</button>
                       ))}
                     </div>
@@ -676,10 +676,10 @@ Generate 4-6 files covering: main logic, API/interface, config/docker, tests, an
                 )}
                 {devopsTab === "arch" && (
                   <>
-                    <p className="text-xs text-slate-400 mb-2 font-bold">Systemarkitektur Diagram</p>
-                    <p className="text-[10px] text-slate-500 mb-3">ASCII + Mermaid diagram med komponent-relationer og dataflow.</p>
+                    <p className="text-xs text-slate-400 mb-2 font-bold">System Architecture Diagram</p>
+                    <p className="text-[10px] text-slate-500 mb-3">ASCII + Mermaid diagram with component relationships and data flow.</p>
                     <div className="space-y-2">
-                      {["NexusVectis fleet management platform arkitektur", "Microservices med event-driven kommunikation via Kafka", "CQRS + Event Sourcing pattern for fleet telemetry"].map(ex => (
+                      {["NexusVectis fleet management platform architecture", "Microservices with event-driven communication via Kafka", "CQRS + Event Sourcing pattern for fleet telemetry"].map(ex => (
                         <button key={ex} onClick={() => setDevopsInput(ex)} className="w-full text-left text-[10px] text-slate-400 hover:text-cyan-300 bg-slate-800 hover:bg-slate-700 px-2.5 py-1.5 rounded border border-slate-700 transition-all">{ex}</button>
                       ))}
                     </div>
@@ -687,10 +687,10 @@ Generate 4-6 files covering: main logic, API/interface, config/docker, tests, an
                 )}
                 {devopsTab === "network" && (
                   <>
-                    <p className="text-xs text-slate-400 mb-2 font-bold">Netværkstopologi</p>
-                    <p className="text-[10px] text-slate-500 mb-3">VPC-design, subnets, security groups, firewall-regler og DNS-konfiguration.</p>
+                    <p className="text-xs text-slate-400 mb-2 font-bold">Network Topology</p>
+                    <p className="text-[10px] text-slate-500 mb-3">VPC design, subnets, security groups, firewall rules and DNS configuration.</p>
                     <div className="space-y-2">
-                      {["AWS VPC med public/private subnets og NAT gateway", "Zero-trust netværk med mTLS og service mesh (Istio)", "Multi-region failover med Route53 og health checks"].map(ex => (
+                      {["AWS VPC with public/private subnets and NAT gateway", "Zero-trust network with mTLS and service mesh (Istio)", "Multi-region failover with Route53 and health checks"].map(ex => (
                         <button key={ex} onClick={() => setDevopsInput(ex)} className="w-full text-left text-[10px] text-slate-400 hover:text-cyan-300 bg-slate-800 hover:bg-slate-700 px-2.5 py-1.5 rounded border border-slate-700 transition-all">{ex}</button>
                       ))}
                     </div>
@@ -699,9 +699,9 @@ Generate 4-6 files covering: main logic, API/interface, config/docker, tests, an
                 {devopsTab === "cost" && (
                   <>
                     <p className="text-xs text-slate-400 mb-2 font-bold">Cloud Cost Analysis</p>
-                    <p className="text-[10px] text-slate-500 mb-3">Estimér månedlige cloud-omkostninger og optimeringspotentiale.</p>
+                    <p className="text-[10px] text-slate-500 mb-3">Estimate monthly cloud costs and optimization potential.</p>
                     <div className="space-y-2">
-                      {["EKS cluster: 10 t3.medium nodes + RDS + ElastiCache", "Azure: AKS + Cosmos DB + Service Bus + CDN", "Sammenlign AWS vs Azure vs GCP for fleet platform"].map(ex => (
+                      {["EKS cluster: 10 t3.medium nodes + RDS + ElastiCache", "Azure: AKS + Cosmos DB + Service Bus + CDN", "Compare AWS vs Azure vs GCP for fleet platform"].map(ex => (
                         <button key={ex} onClick={() => setDevopsInput(ex)} className="w-full text-left text-[10px] text-slate-400 hover:text-cyan-300 bg-slate-800 hover:bg-slate-700 px-2.5 py-1.5 rounded border border-slate-700 transition-all">{ex}</button>
                       ))}
                     </div>
@@ -710,9 +710,9 @@ Generate 4-6 files covering: main logic, API/interface, config/docker, tests, an
                 {devopsTab === "runbook" && (
                   <>
                     <p className="text-xs text-slate-400 mb-2 font-bold">Runbook Generator</p>
-                    <p className="text-[10px] text-slate-500 mb-3">Generer SRE runbooks, incident response og disaster recovery procedurer.</p>
+                    <p className="text-[10px] text-slate-500 mb-3">Generate SRE runbooks, incident response and disaster recovery procedures.</p>
                     <div className="space-y-2">
-                      {["Database failover procedure for PostgreSQL primary", "K8s pod crash loop incident response", "Fleet AI service degradation runbook med eskalering"].map(ex => (
+                      {["Database failover procedure for PostgreSQL primary", "K8s pod crash loop incident response", "Fleet AI service degradation runbook with escalation"].map(ex => (
                         <button key={ex} onClick={() => setDevopsInput(ex)} className="w-full text-left text-[10px] text-slate-400 hover:text-cyan-300 bg-slate-800 hover:bg-slate-700 px-2.5 py-1.5 rounded border border-slate-700 transition-all">{ex}</button>
                       ))}
                     </div>
@@ -723,7 +723,7 @@ Generate 4-6 files covering: main logic, API/interface, config/docker, tests, an
                 <textarea
                   value={devopsInput}
                   onChange={e => setDevopsInput(e.target.value)}
-                  placeholder="Beskriv hvad du vil generere..."
+                  placeholder="Describe what you want to generate..."
                   className="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-2 text-xs text-white placeholder-slate-500 outline-none focus:border-cyan-500 resize-none"
                   rows={3}
                 />
@@ -732,24 +732,24 @@ Generate 4-6 files covering: main logic, API/interface, config/docker, tests, an
                     if (!devopsInput.trim() || devopsLoading) return;
                     setDevopsLoading(true); setDevopsResult(null);
                     const tabPrompts = {
-                      iac: `Du er en ekspert cloud arkitekt. Generer production-ready Terraform (HCL) kode for: "${devopsInput}". Inkluder: provider config, variables, modules, outputs og security best practices. Forklar kort hvad hver sektion gør.`,
-                      k8s: `Du er en Kubernetes ekspert. Generer komplette K8s YAML manifests for: "${devopsInput}". Inkluder alle nødvendige ressourcer (Deployment, Service, Ingress, HPA, ConfigMap, Secrets som placeholder). Brug best practices for labels, resources limits og health probes.`,
-                      docker: `Du er en Docker ekspert. Generer optimeret multi-stage Dockerfile og docker-compose.yml for: "${devopsInput}". Inkluder: non-root user, health checks, .dockerignore indhold, build args og environment variables.`,
-                      arch: `Du er en software arkitekt. Generer et detaljeret systemarkitektur diagram (ASCII art) OG Mermaid diagram kode for: "${devopsInput}". Inkluder: komponenter, dataflow, API-grænser, databaser, message queues og ekstern integration. Tilføj arkitektur-forklaring.`,
-                      network: `Du er en netværks- og cloud-sikkerhedsekspert. Design og beskriv netværkstopologien for: "${devopsInput}". Inkluder: ASCII diagram over netværk, CIDR ranges, routing tables, security group regler, og Terraform kode til netværket.`,
-                      cost: `Du er en FinOps-ekspert. Lav en detaljeret cloud cost analyse for: "${devopsInput}". Inkluder: estimerede månedlige omkostninger per komponent, total pris, sammenligninger på tværs af cloud providers (AWS/Azure/GCP), og 5 konkrete besparelsesforslag med estimeret besparelse i %.`,
-                      runbook: `Du er en Senior SRE. Generer en komplet, produktionsklar runbook for: "${devopsInput}". Inkluder: 1) Symptom-identifikation, 2) Triage trin (step-by-step med kommandoer), 3) Root cause analyse procedure, 4) Remediation steps, 5) Eskaleringsmatrix, 6) Post-incident actions og 7) Præventive tiltag.`,
+                      iac: `You are an expert cloud architect. Generate production-ready Terraform (HCL) code for: "${devopsInput}". Include: provider config, variables, modules, outputs and security best practices. Briefly explain what each section does.`,
+                      k8s: `You are a Kubernetes expert. Generate complete K8s YAML manifests for: "${devopsInput}". Include all required resources (Deployment, Service, Ingress, HPA, ConfigMap, Secrets as placeholder). Use best practices for labels, resource limits and health probes.`,
+                      docker: `You are a Docker expert. Generate an optimized multi-stage Dockerfile and docker-compose.yml for: "${devopsInput}". Include: non-root user, health checks, .dockerignore content, build args and environment variables.`,
+                      arch: `You are a software architect. Generate a detailed system architecture diagram (ASCII art) AND Mermaid diagram code for: "${devopsInput}". Include: components, data flow, API boundaries, databases, message queues and external integrations. Add an architecture explanation.`,
+                      network: `You are a network and cloud security expert. Design and describe the network topology for: "${devopsInput}". Include: ASCII network diagram, CIDR ranges, routing tables, security group rules, and Terraform code for the network.`,
+                      cost: `You are a FinOps expert. Provide a detailed cloud cost analysis for: "${devopsInput}". Include: estimated monthly costs per component, total price, comparisons across cloud providers (AWS/Azure/GCP), and 5 concrete savings suggestions with estimated savings in %.`,
+                      runbook: `You are a Senior SRE. Generate a complete, production-ready runbook for: "${devopsInput}". Include: 1) Symptom identification, 2) Triage steps (step-by-step with commands), 3) Root cause analysis procedure, 4) Remediation steps, 5) Escalation matrix, 6) Post-incident actions and 7) Preventive measures.`,
                     };
                     try {
                       const res = await base44.integrations.Core.InvokeLLM({ prompt: tabPrompts[devopsTab], model: "claude_sonnet_4_6" });
                       setDevopsResult(typeof res === "string" ? res : JSON.stringify(res, null, 2));
-                    } catch(e) { setDevopsResult("Fejl: " + e.message); }
+                    } catch(e) { setDevopsResult("Error: " + e.message); }
                     setDevopsLoading(false);
                   }}
                   disabled={!devopsInput.trim() || devopsLoading}
                   className="mt-1.5 w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 disabled:opacity-40 text-white text-xs font-bold transition-all">
                   {devopsLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Zap className="w-3 h-3" />}
-                  {devopsLoading ? "Genererer..." : "Generer"}
+                  {devopsLoading ? "Generating..." : "Generate"}
                 </button>
               </div>
             </div>
@@ -761,13 +761,13 @@ Generate 4-6 files covering: main logic, API/interface, config/docker, tests, an
                   <div className="flex items-center justify-between px-3 py-1.5 border-b border-slate-800 flex-shrink-0">
                     <span className="text-[10px] text-slate-500 uppercase tracking-widest">Output</span>
                     <div className="flex gap-1.5">
-                      <button onClick={() => { const f = { id: `devops_${Date.now()}`, name: `devops_${devopsTab}_${Date.now()}.${devopsTab === 'k8s' ? 'yaml' : devopsTab === 'iac' ? 'tf' : devopsTab === 'docker' ? 'dockerfile' : 'md'}`, lang: devopsTab === 'k8s' ? 'yaml' : devopsTab === 'iac' ? 'yaml' : 'markdown', content: devopsResult }; setFiles(prev => [...prev, f]); setActiveFileId(f.id); setActivePanel('editor'); toast.success('Åbnet i editor'); }}
+                      <button onClick={() => { const f = { id: `devops_${Date.now()}`, name: `devops_${devopsTab}_${Date.now()}.${devopsTab === 'k8s' ? 'yaml' : devopsTab === 'iac' ? 'tf' : devopsTab === 'docker' ? 'dockerfile' : 'md'}`, lang: devopsTab === 'k8s' ? 'yaml' : devopsTab === 'iac' ? 'yaml' : 'markdown', content: devopsResult }; setFiles(prev => [...prev, f]); setActiveFileId(f.id); setActivePanel('editor'); toast.success('Opened in editor'); }}
                         className="flex items-center gap-1 px-2 py-1 rounded bg-violet-700 hover:bg-violet-600 text-white text-[10px] transition-all">
-                        <Code2 className="w-2.5 h-2.5" />Åbn i Editor
+                        <Code2 className="w-2.5 h-2.5" />Open in Editor
                       </button>
-                      <button onClick={() => navigator.clipboard.writeText(devopsResult).then(() => toast.success('Kopieret'))}
+                      <button onClick={() => navigator.clipboard.writeText(devopsResult).then(() => toast.success('Copied'))}
                         className="flex items-center gap-1 px-2 py-1 rounded bg-slate-700 hover:bg-slate-600 text-slate-300 text-[10px] transition-all">
-                        <Copy className="w-2.5 h-2.5" />Kopier
+                        <Copy className="w-2.5 h-2.5" />Copy
                       </button>
                     </div>
                   </div>
@@ -780,13 +780,13 @@ Generate 4-6 files covering: main logic, API/interface, config/docker, tests, an
                   {devopsLoading ? (
                     <>
                       <Loader2 className="w-8 h-8 text-cyan-400 animate-spin mb-3" />
-                      <p className="text-sm text-slate-400">Fleet AI genererer...</p>
+                      <p className="text-sm text-slate-400">Fleet AI is generating...</p>
                     </>
                   ) : (
                     <>
                       <div className="text-4xl mb-3">{["🏗️","☸️","🐳","🗺️","🌐","💰","📖"][['iac','k8s','docker','arch','network','cost','runbook'].indexOf(devopsTab)]}</div>
-                      <p className="text-sm text-slate-400 mb-1">Vælg et eksempel eller beskriv din infrastruktur</p>
-                      <p className="text-[10px] text-slate-600">Fleet AI genererer production-ready kode</p>
+                      <p className="text-sm text-slate-400 mb-1">Select an example or describe your infrastructure</p>
+                      <p className="text-[10px] text-slate-600">Fleet AI generates production-ready code</p>
                     </>
                   )}
                 </div>
