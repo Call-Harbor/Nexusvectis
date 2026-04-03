@@ -190,6 +190,17 @@ function DownloadAppDropdown() {
   const isAndroid = /android/i.test(navigator.userAgent);
   const appUrl = window.location.origin + '/IntellectMode';
 
+  const downloadFile = (url, filename) => {
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setOpen(false);
+  };
+
   const installNativeApp = async () => {
     if (deferredPrompt.current) {
       deferredPrompt.current.prompt();
@@ -261,15 +272,7 @@ function DownloadAppDropdown() {
             <DropdownMenuLabel className="text-[10px] text-cyan-400 font-mono tracking-widest uppercase mt-3">💻 Desktop Installers</DropdownMenuLabel>
             
             <DropdownMenuItem 
-              onClick={() => {
-                const link = document.createElement('a');
-                link.href = installerLinks.windows;
-                link.download = 'IntellectMode-Setup.exe';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                setOpen(false);
-              }}
+              onClick={() => downloadFile(installerLinks.windows, 'IntellectMode-Setup.exe')}
               className="text-slate-300 hover:text-white hover:bg-slate-800 cursor-pointer gap-3 py-3"
             >
               <Download className="w-5 h-5 text-blue-400 flex-shrink-0" />
@@ -280,15 +283,7 @@ function DownloadAppDropdown() {
             </DropdownMenuItem>
 
             <DropdownMenuItem 
-              onClick={() => {
-                const link = document.createElement('a');
-                link.href = installerLinks.mac;
-                link.download = 'IntellectMode.dmg';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                setOpen(false);
-              }}
+              onClick={() => downloadFile(installerLinks.mac, 'IntellectMode.dmg')}
               className="text-slate-300 hover:text-white hover:bg-slate-800 cursor-pointer gap-3 py-3"
             >
               <Download className="w-5 h-5 text-gray-400 flex-shrink-0" />
@@ -299,15 +294,7 @@ function DownloadAppDropdown() {
             </DropdownMenuItem>
 
             <DropdownMenuItem 
-              onClick={() => {
-                const link = document.createElement('a');
-                link.href = installerLinks.linux;
-                link.download = 'IntellectMode-x86_64.AppImage';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                setOpen(false);
-              }}
+              onClick={() => downloadFile(installerLinks.linux, 'IntellectMode-x86_64.AppImage')}
               className="text-slate-300 hover:text-white hover:bg-slate-800 cursor-pointer gap-3 py-3"
             >
               <Download className="w-5 h-5 text-orange-400 flex-shrink-0" />
