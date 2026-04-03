@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "../../utils";
 import { motion, AnimatePresence } from "framer-motion";
@@ -174,83 +174,29 @@ function AppSearchDropdown({ onSelect, children }) {
 
 function DownloadAppDropdown() {
   const [open, setOpen] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = React.useRef(null);
+  const [canInstall, setCanInstall] = React.useState(false);
 
-  const downloadForPlatform = (platform) => {
-    const appUrl = window.location.origin + '/IntellectMode';
-    const scripts = {
-      windows: {
-        filename: 'FleetAI-IntellectMode-Windows.bat',
-        content: `@echo off
-title Fleet AI - IntellectMode
-echo.
-echo  ███████╗██╗     ███████╗███████╗████████╗ █████╗ ██╗
-echo  ██╔════╝██║     ██╔════╝██╔════╝╚══██╔══╝██╔══██╗██║
-echo  █████╗  ██║     █████╗  █████╗     ██║   ███████║██║
-echo  ██╔══╝  ██║     ██╔══╝  ██╔══╝     ██║   ██╔══██║██║
-echo  ██║     ███████╗███████╗███████╗   ██║   ██║  ██║██║
-echo  ╚═╝     ╚══════╝╚══════╝╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝
-echo.
-echo  IntellectMode - Neural Logistics Intelligence Platform
-echo  Launching...
-echo.
-start msedge --app="${appUrl}" --window-size=1600,900 2>nul
-if %errorlevel% neq 0 (
-  start chrome --app="${appUrl}" --window-size=1600,900 2>nul
-)
-if %errorlevel% neq 0 (
-  start "" "${appUrl}"
-)
-`,
-        mime: 'text/plain'
-      },
-      mac: {
-        filename: 'FleetAI-IntellectMode-Mac.command',
-        content: `#!/bin/bash
-APP_URL="${appUrl}"
-echo "🧠 Fleet AI — IntellectMode"
-echo "Launching app..."
-
-# Try to open as PWA in Chrome first, fallback to Safari
-if open -a "Google Chrome" --args --app="$APP_URL" --window-size=1600,900 2>/dev/null; then
-  echo "✅ Opened in Chrome"
-elif open -a "Safari" "$APP_URL" 2>/dev/null; then
-  echo "✅ Opened in Safari"
-else
-  open "$APP_URL"
-fi
-`,
-        mime: 'text/plain'
-      },
-      linux: {
-        filename: 'FleetAI-IntellectMode-Linux.sh',
-        content: `#!/bin/bash
-APP_URL="${appUrl}"
-echo "🧠 Fleet AI — IntellectMode"
-echo "Launching app..."
-
-# Try Chromium, Chrome, Firefox in order
-if command -v chromium-browser &>/dev/null; then
-  chromium-browser --app="$APP_URL" --window-size=1600,900 &
-elif command -v google-chrome &>/dev/null; then
-  google-chrome --app="$APP_URL" --window-size=1600,900 &
-elif command -v firefox &>/dev/null; then
-  firefox "$APP_URL" &
-else
-  xdg-open "$APP_URL"
-fi
-`,
-        mime: 'text/plain'
-      }
+  React.useEffect(() => {
+    const handler = (e) => {
+      e.preventDefault();
+      deferredPrompt.current = e;
+      setCanInstall(true);
     };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
 
-    const { filename, content, mime } = scripts[platform];
-    const blob = new Blob([content], { type: mime });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.click();
-    URL.revokeObjectURL(url);
+  const installApp = async () => {
+    if (deferredPrompt.current) {
+      deferredPrompt.current.prompt();
+      await deferredPrompt.current.userChoice;
+      deferredPrompt.current = null;
+      setCanInstall(false);
+    } else {
+      // Fallback: guide the user
+      alert('To install:\n\nChrome/Edge: Click the ⊕ or install icon in the address bar.\nSafari (Mac/iOS): Share → Add to Home Screen.');
+    }
     setOpen(false);
   };
 
@@ -262,35 +208,22 @@ fi
           <Download className="w-3.5 h-3.5 inline mr-2" />DOWNLOAD<ChevronDown className="w-3.5 h-3.5 inline ml-2" />
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="bg-slate-900 border-slate-800 w-56">
-        <DropdownMenuLabel className="text-[10px] text-cyan-400 font-mono tracking-widest uppercase">Download IntellectMode</DropdownMenuLabel>
+      <DropdownMenuContent align="end" className="bg-slate-900 border-slate-800 w-64">
+        <DropdownMenuLabel className="text-[10px] text-cyan-400 font-mono tracking-widest uppercase">Install Fleet AI App</DropdownMenuLabel>
         <DropdownMenuSeparator className="bg-slate-800" />
-        <DropdownMenuItem onClick={() => downloadForPlatform('windows')}
-          className="text-slate-300 hover:text-white hover:bg-slate-800 cursor-pointer gap-2">
-          <Monitor className="w-4 h-4 text-blue-400" />
+        <DropdownMenuItem onClick={installApp} className="text-slate-300 hover:text-white hover:bg-slate-800 cursor-pointer gap-2 py-3">
+          <Download className="w-5 h-5 text-green-400 flex-shrink-0" />
           <div>
-            <div className="text-xs font-medium">Windows</div>
-            <div className="text-[10px] text-slate-500">.bat launcher</div>
-          </div>
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => downloadForPlatform('mac')}
-          className="text-slate-300 hover:text-white hover:bg-slate-800 cursor-pointer gap-2">
-          <Apple className="w-4 h-4 text-slate-300" />
-          <div>
-            <div className="text-xs font-medium">macOS</div>
-            <div className="text-[10px] text-slate-500">.command launcher</div>
-          </div>
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => downloadForPlatform('linux')}
-          className="text-slate-300 hover:text-white hover:bg-slate-800 cursor-pointer gap-2">
-          <Monitor className="w-4 h-4 text-amber-400" />
-          <div>
-            <div className="text-xs font-medium">Linux</div>
-            <div className="text-[10px] text-slate-500">.sh launcher</div>
+            <div className="text-sm font-bold text-white">Install App</div>
+            <div className="text-[10px] text-slate-400">Works on Windows, Mac, Linux & mobile</div>
           </div>
         </DropdownMenuItem>
         <DropdownMenuSeparator className="bg-slate-800" />
-        <div className="px-2 py-2 text-[9px] text-slate-500 leading-relaxed">Opens as standalone app window using your installed browser.</div>
+        <div className="px-3 py-2 text-[10px] text-slate-500 leading-relaxed space-y-1">
+          <p className="text-slate-400 font-medium">Manual install:</p>
+          <p>Chrome/Edge: click ⊕ in the address bar</p>
+          <p>Safari: Share → Add to Home Screen</p>
+        </div>
       </DropdownMenuContent>
     </DropdownMenu>
   );
