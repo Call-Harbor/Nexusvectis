@@ -135,7 +135,7 @@ function PipelineVisualizer({ activeStage, stageStatus }) {
 
 function FileExplorer({ files, activeFileId, onSelect, onNew, onDelete, onRename }) {
   return (
-    <div className="h-full bg-slate-950 border-r border-slate-800 flex flex-col" style={{ minWidth: 148, maxWidth: 148 }}>
+    <div className="h-full bg-slate-950 border-r border-slate-800 flex flex-col" style={{ width: 148, minWidth: 148, maxWidth: 148 }}>
       <div className="flex items-center justify-between px-2 py-1.5 border-b border-slate-800">
         <span className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Files</span>
         <button onClick={onNew} className="text-slate-500 hover:text-cyan-400 transition-colors"><Plus className="w-3.5 h-3.5" /></button>
@@ -646,61 +646,65 @@ Generate 4-6 files covering: main logic, API/interface, config/docker, tests, an
   return (
     <div className="flex flex-col h-full bg-slate-950 text-white overflow-hidden">
       {/* ── Top toolbar ───────────────────────────────────────────── */}
-      <div className="flex items-center gap-2 px-3 py-1.5 border-b border-slate-800 bg-slate-900 flex-shrink-0">
-        <div className="flex items-center gap-2 mr-2">
+      <div className="flex items-center gap-1 px-2 py-1.5 border-b border-slate-800 bg-slate-900 flex-shrink-0 flex-wrap">
+        <div className="flex items-center gap-1.5 mr-1">
           <Bot className="w-4 h-4 text-cyan-400" />
-          <span className="text-xs font-bold text-cyan-400 tracking-widest uppercase font-mono">Fleet AI IDE</span>
+          <span className="text-xs font-bold text-cyan-400 tracking-widest uppercase font-mono hidden sm:inline">Fleet AI IDE</span>
         </div>
+        <div className="flex items-center gap-1 flex-wrap">
         {[
           { id: "editor", label: "Editor", icon: Code2 },
           { id: "pipeline", label: "Pipeline", icon: GitBranch },
-          { id: "orchestrator", label: "Orchestrator", icon: Layers },
+          { id: "orchestrator", label: "Agents", icon: Layers },
           { id: "devops", label: "DevOps", icon: Network },
           { id: "secrets", label: "Secrets", icon: KeyRound },
-          { id: "packages", label: "Packages", icon: Package },
+          { id: "packages", label: "Pkgs", icon: Package },
           { id: "preview", label: "Preview", icon: Globe },
-          { id: "api", label: "API Tester", icon: Link },
+          { id: "api", label: "API", icon: Link },
         ].map(({ id, label, icon: Icon }) => (
           <button key={id} onClick={() => setActivePanel(id)}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs transition-all ${activePanel === id ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/40" : "text-slate-500 hover:text-slate-300"}`}>
-            <Icon className="w-3 h-3" />{label}
+            className={`flex items-center gap-1 px-2 py-1 rounded text-[10px] transition-all ${activePanel === id ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/40" : "text-slate-500 hover:text-slate-300"}`}>
+            <Icon className="w-3 h-3" /><span className="hidden sm:inline">{label}</span>
           </button>
         ))}
-        <div className="flex-1" />
+        </div>
+        <div className="flex-1 min-w-0" />
+        <div className="flex items-center gap-1 flex-wrap">
         <button onClick={() => { setShowSearch(!showSearch); setShowReplace(false); setShowImport(false); }} className={`p-1.5 rounded transition-all ${showSearch && !showReplace ? "text-cyan-400 bg-cyan-500/10" : "text-slate-500 hover:text-slate-300 hover:bg-slate-800"}`} title="Search"><Search className="w-3.5 h-3.5" /></button>
         <button onClick={() => { setShowReplace(!showReplace); setShowSearch(true); setShowImport(false); }} className={`p-1.5 rounded transition-all ${showReplace ? "text-amber-400 bg-amber-500/10" : "text-slate-500 hover:text-slate-300 hover:bg-slate-800"}`} title="Find & Replace"><Replace className="w-3.5 h-3.5" /></button>
         <button onClick={() => { setShowImport(!showImport); setShowSearch(false); setShowReplace(false); }} className={`p-1.5 rounded transition-all ${showImport ? "text-green-400 bg-green-500/10" : "text-slate-500 hover:text-slate-300 hover:bg-slate-800"}`} title="Import from URL/GitHub"><Import className="w-3.5 h-3.5" /></button>
         <button onClick={() => setShowStats(!showStats)} className={`p-1.5 rounded transition-all ${showStats ? "text-cyan-400 bg-cyan-500/10" : "text-slate-500 hover:text-slate-300 hover:bg-slate-800"}`} title="Stats"><BarChart3 className="w-3.5 h-3.5" /></button>
         <button onClick={() => setShowChat(!showChat)} className={`p-1.5 rounded transition-all ${showChat ? "text-violet-400 bg-violet-500/10" : "text-slate-500 hover:text-slate-300 hover:bg-slate-800"}`} title="AI Chat"><MessageSquare className="w-3.5 h-3.5" /></button>
-        <button onClick={() => setShowProjectGen(true)} className="flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium bg-amber-600/80 hover:bg-amber-500 text-white transition-all" title="Generate entire project">
-          <Sparkles className="w-3 h-3" />Project Gen
+        <button onClick={() => setShowProjectGen(true)} className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-medium bg-amber-600/80 hover:bg-amber-500 text-white transition-all" title="Generate entire project">
+          <Sparkles className="w-3 h-3" /><span className="hidden sm:inline">Project</span>
         </button>
         <button onClick={downloadFile} className="p-1.5 rounded text-slate-500 hover:text-slate-300 hover:bg-slate-800" title="Download file"><Download className="w-3.5 h-3.5" /></button>
-        <button onClick={downloadZip} className="flex items-center gap-1.5 px-3 py-1 rounded text-xs font-medium bg-cyan-700 hover:bg-cyan-600 text-white transition-all">
-          <FolderArchive className="w-3 h-3" />ZIP
+        <button onClick={downloadZip} className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-medium bg-cyan-700 hover:bg-cyan-600 text-white transition-all">
+          <FolderArchive className="w-3 h-3" /><span className="hidden sm:inline">ZIP</span>
         </button>
-        <button onClick={runFile} disabled={isRunning} className={`flex items-center gap-1.5 px-3 py-1 rounded text-xs font-medium transition-all ${isRunning ? "bg-slate-700 text-slate-500" : "bg-green-600 hover:bg-green-500 text-white"}`}>
-          {isRunning ? <Loader2 className="w-3 h-3 animate-spin" /> : <Play className="w-3 h-3" />}Run
+        <button onClick={runFile} disabled={isRunning} className={`flex items-center gap-1 px-2 py-1 rounded text-[10px] font-medium transition-all ${isRunning ? "bg-slate-700 text-slate-500" : "bg-green-600 hover:bg-green-500 text-white"}`}>
+          {isRunning ? <Loader2 className="w-3 h-3 animate-spin" /> : <Play className="w-3 h-3" />}<span className="hidden sm:inline">Run</span>
         </button>
-        <button onClick={runPipeline} disabled={isRunning} className={`flex items-center gap-1.5 px-3 py-1 rounded text-xs font-medium transition-all ${isRunning ? "bg-slate-700 text-slate-500" : "bg-violet-600 hover:bg-violet-500 text-white"}`}>
-          <Cloud className="w-3 h-3" />Deploy
+        <button onClick={runPipeline} disabled={isRunning} className={`flex items-center gap-1 px-2 py-1 rounded text-[10px] font-medium transition-all ${isRunning ? "bg-slate-700 text-slate-500" : "bg-violet-600 hover:bg-violet-500 text-white"}`}>
+          <Cloud className="w-3 h-3" /><span className="hidden sm:inline">Deploy</span>
         </button>
+        </div>
       </div>
 
       {/* ── AI Features toolbar ────────────────────────────────────── */}
-      <div className="flex items-center gap-1 px-3 py-1.5 border-b border-slate-800 bg-slate-900/80 overflow-x-auto flex-shrink-0">
+      <div className="flex items-center gap-1 px-2 py-1 border-b border-slate-800 bg-slate-900/80 overflow-x-auto flex-shrink-0">
         <span className="text-[10px] text-slate-600 uppercase tracking-widest mr-1 flex-shrink-0">AI:</span>
         {AI_FEATURES.map(f => {
           const Icon = f.icon;
           const isActive = activeFeature === f.id;
           return (
             <button key={f.id} onClick={() => runAIFeature(f)} disabled={isGenerating} title={f.desc}
-              className={`flex items-center gap-1 px-2 py-1 rounded text-[10px] font-medium whitespace-nowrap transition-all border flex-shrink-0 ${
+              className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium whitespace-nowrap transition-all border flex-shrink-0 ${
                 isActive ? "text-white border-opacity-60" : "text-slate-400 border-slate-800 hover:border-slate-600 hover:text-slate-200"
               }`}
               style={isActive ? { background: `${f.color}22`, borderColor: f.color, color: f.color } : {}}>
               {isActive && isGenerating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Icon className="w-3 h-3" style={{ color: isActive ? f.color : undefined }} />}
-              {f.label}
+              <span className="hidden md:inline">{f.label}</span>
             </button>
           );
         })}
@@ -1224,8 +1228,10 @@ Generate 4-6 files covering: main logic, API/interface, config/docker, tests, an
       </AnimatePresence>
 
       {/* ── Main area ─────────────────────────────────────────────── */}
-      <div className="flex flex-1 min-h-0">
-        <FileExplorer files={files} activeFileId={activeFileId} onSelect={setActiveFileId} onNew={addNewFile} onDelete={deleteFile} onRename={renameFile} />
+      <div className="flex flex-1 min-h-0 overflow-hidden">
+        <div className="hidden sm:flex flex-shrink-0">
+          <FileExplorer files={files} activeFileId={activeFileId} onSelect={setActiveFileId} onNew={addNewFile} onDelete={deleteFile} onRename={renameFile} />
+        </div>
 
         {/* Editor + bottom panel */}
         <div className="flex flex-col flex-1 min-w-0 relative">
@@ -1333,7 +1339,7 @@ Generate 4-6 files covering: main logic, API/interface, config/docker, tests, an
         {/* AI Chat sidebar */}
         <AnimatePresence>
           {showChat && (
-            <motion.div initial={{ width: 0, opacity: 0 }} animate={{ width: 280, opacity: 1 }} exit={{ width: 0, opacity: 0 }} className="flex-shrink-0 overflow-hidden">
+            <motion.div initial={{ width: 0, opacity: 0 }} animate={{ width: 260, opacity: 1 }} exit={{ width: 0, opacity: 0 }} className="flex-shrink-0 overflow-hidden hidden sm:flex">
               <AIChatSidebar files={files} activeFile={activeFile} />
             </motion.div>
           )}
