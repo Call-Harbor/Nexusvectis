@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Smartphone, Download, CheckCircle, AlertCircle, Info, ExternalLink, Package } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Smartphone, Download, CheckCircle, AlertCircle, Info, ExternalLink, Package, History, Trash2, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import AdminLayout from "../components/admin/AdminLayout";
 
@@ -48,8 +48,43 @@ const colorMap = {
   },
 };
 
-function AppCard({ app }) {
-  const [generated, setGenerated] = useState(false);
+const STORAGE_KEY = "nv_build_history";
+
+function useBuildHistory() {
+  const [history, setHistory] = useState(() => {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); } catch { return []; }
+  });
+
+  const addBuild = (app, configBlob, filename) => {
+    const entry = {
+      id: Date.now(),
+      appId: app.id,
+      appName: app.name,
+      appIcon: app.icon,
+      packageName: app.packageName,
+      version: app.version,
+      filename,
+      generatedAt: new Date().toISOString(),
+      status: "config_ready",
+      blobUrl: URL.createObjectURL(configBlob),
+    };
+    const updated = [entry, ...history].slice(0, 20); // keep last 20
+    setHistory(updated);
+    // Store without blobUrl (not serializable)
+    const toStore = updated.map(({ blobUrl, ...rest }) => rest);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(toStore));
+    return entry;
+  };
+
+  const clearHistory = () => {
+    setHistory([]);
+    localStorage.removeItem(STORAGE_KEY);
+  };
+
+  return { history, addBuild, clearHistory };
+}
+
+function AppCard({ app, onBuildGenerated }) {
   const c = colorMap[app.color];
 
   const handleDownload = () => {
@@ -66,13 +101,13 @@ function AppCard({ app }) {
       build_command: "npx @bubblewrap/cli build",
     };
     const blob = new Blob([JSON.stringify(twaConfig, null, 2)], { type: "application/json" });
+    const filename = `${app.id}-twa-config.json`;
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${app.id}-twa-config.json`;
+    a.download = filename;
     a.click();
-    URL.revokeObjectURL(url);
-    setGenerated(true);
+    onBuildGenerated(app, blob, filename);
   };
 
   return (
@@ -114,18 +149,86 @@ function AppCard({ app }) {
           Åbn Google Play Console
         </a>
       </div>
+    </div>
+  );
+}
 
-      {generated && (
-        <div className="flex items-center gap-2 text-emerald-400 text-xs bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-3">
-          <CheckCircle className="w-4 h-4 flex-shrink-0" />
-          Konfiguration genereret — download og følg build-guiden nedenfor.
-        </div>
-      )}
+function BuildHistory({ history, onClear }) {
+  if (history.length === 0) {
+    return (
+      <div className="bg-slate-900/60 border border-slate-700/50 rounded-2xl p-6">
+        <h2 className="text-white font-semibold text-lg mb-1 flex items-center gap-2">
+          <History className="w-5 h-5 text-slate-400" />
+          Build History
+        </h2>
+        <p className="text-slate-500 text-sm mt-4 text-center py-8">Ingen builds endnu — download en TWA-konfiguration for at starte.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-slate-900/60 border border-slate-700/50 rounded-2xl p-6">
+      <div className="flex items-center justify-between mb-5">
+        <h2 className="text-white font-semibold text-lg flex items-center gap-2">
+          <History className="w-5 h-5 text-slate-400" />
+          Build History
+          <span className="text-xs font-normal text-slate-500 ml-1">({history.length} builds)</span>
+        </h2>
+        <button onClick={onClear} className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-red-400 transition-colors">
+          <Trash2 className="w-3.5 h-3.5" />
+          Ryd historik
+        </button>
+      </div>
+
+      <div className="space-y-3">
+        {history.map((entry, idx) => {
+          const isLatest = idx === 0;
+          const date = new Date(entry.generatedAt);
+          const formatted = date.toLocaleString("da-DK", { dateStyle: "medium", timeStyle: "short" });
+          const appColor = APPS.find(a => a.id === entry.appId)?.color || "cyan";
+          const c = colorMap[appColor];
+
+          return (
+            <div key={entry.id} className={`flex items-center gap-4 rounded-xl p-4 border ${isLatest ? "border-emerald-500/30 bg-emerald-500/5" : "border-slate-700/40 bg-slate-800/40"}`}>
+              <div className={`w-10 h-10 rounded-xl ${c.bg} border ${c.border} flex items-center justify-center text-lg flex-shrink-0`}>
+                {entry.appIcon}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <span className="text-white text-sm font-medium">{entry.appName}</span>
+                  <span className="text-slate-500 text-xs">v{entry.version}</span>
+                  {isLatest && <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/40 text-[10px]">LATEST</Badge>}
+                </div>
+                <div className="flex items-center gap-3 text-xs text-slate-500">
+                  <span className="font-mono truncate">{entry.filename}</span>
+                  <span>•</span>
+                  <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{formatted}</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 flex-shrink-0">
+                <div className="flex items-center gap-1.5 text-xs text-emerald-400">
+                  <CheckCircle className="w-3.5 h-3.5" />
+                  Config klar
+                </div>
+                {entry.blobUrl && (
+                  <a href={entry.blobUrl} download={entry.filename}
+                    className="flex items-center gap-1.5 text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white px-3 py-1.5 rounded-lg transition-all">
+                    <Download className="w-3.5 h-3.5" />
+                    Genhent
+                  </a>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
 
 export default function MobileAppPublisher() {
+  const { history, addBuild, clearHistory } = useBuildHistory();
+
   return (
     <AdminLayout currentPage="MobileAppPublisher">
       <div className="text-white p-6 md:p-10">
@@ -149,9 +252,17 @@ export default function MobileAppPublisher() {
           </div>
 
           <div className="grid md:grid-cols-2 gap-6 mb-10">
-            {APPS.map((app) => <AppCard key={app.id} app={app} />)}
+            {APPS.map((app) => (
+              <AppCard key={app.id} app={app} onBuildGenerated={(a, blob, filename) => addBuild(a, blob, filename)} />
+            ))}
           </div>
 
+          {/* Build History */}
+          <div className="mb-10">
+            <BuildHistory history={history} onClear={clearHistory} />
+          </div>
+
+          {/* Build Guide */}
           <div className="bg-slate-900/60 border border-slate-700/50 rounded-2xl p-6">
             <h2 className="text-white font-semibold text-lg mb-1 flex items-center gap-2">
               <Package className="w-5 h-5 text-amber-400" />
