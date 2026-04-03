@@ -11,7 +11,9 @@ import {
   FolderArchive, GitCommit, BarChart3, Edit3, Trash2,
   Shield, FileText, TestTube, RefreshCw, BookOpen,
   Wand2, MessageSquare, Network, Eye, Gauge, Bug,
-  Boxes, Sparkles, ChevronDown, Send
+  Boxes, Sparkles, ChevronDown, Send, KeyRound,
+  Globe, Replace, Import, EyeOff, Database,
+  Link, Cpu as CpuIcon
 } from "lucide-react";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -314,6 +316,48 @@ export default function AIDevOrchestrator({ onClose }) {
   const [devopsResult, setDevopsResult] = useState(null);
   const [devopsLoading, setDevopsLoading] = useState(false);
 
+  // Secrets
+  const [secrets, setSecrets] = useState([
+    { id: 1, key: "DATABASE_URL", value: "postgresql://user:pass@localhost/fleetdb", masked: true },
+    { id: 2, key: "FLEET_AI_KEY", value: "sk-fleetai-prod-xxx", masked: true },
+    { id: 3, key: "NODE_ENV", value: "development", masked: false },
+    { id: 4, key: "REDIS_URL", value: "redis://localhost:6379", masked: true },
+  ]);
+  const [showSecretValues, setShowSecretValues] = useState({});
+  const [newSecretKey, setNewSecretKey] = useState("");
+  const [newSecretValue, setNewSecretValue] = useState("");
+
+  // Packages
+  const [packages, setPackages] = useState([
+    { id: 1, name: "fastapi", version: "0.104.0", lang: "python", status: "installed" },
+    { id: 2, name: "asyncpg", version: "0.29.0", lang: "python", status: "installed" },
+    { id: 3, name: "pydantic", version: "2.5.0", lang: "python", status: "installed" },
+    { id: 4, name: "express", version: "4.18.2", lang: "node", status: "installed" },
+    { id: 5, name: "axios", version: "1.6.0", lang: "node", status: "installed" },
+  ]);
+  const [packageInput, setPackageInput] = useState("");
+  const [packageLang, setPackageLang] = useState("python");
+  const [packageInstalling, setPackageInstalling] = useState(false);
+
+  // API Tester
+  const [apiUrl, setApiUrl] = useState("https://httpbin.org/get");
+  const [apiMethod, setApiMethod] = useState("GET");
+  const [apiBody, setApiBody] = useState('{"key": "value"}');
+  const [apiHeaders, setApiHeaders] = useState('{"Content-Type": "application/json"}');
+  const [apiResponse, setApiResponse] = useState(null);
+  const [apiLoading, setApiLoading] = useState(false);
+  const [apiTab, setApiTab] = useState("response");
+
+  // Find & Replace
+  const [findText, setFindText] = useState("");
+  const [replaceText, setReplaceText] = useState("");
+  const [showReplace, setShowReplace] = useState(false);
+
+  // Import from URL
+  const [importUrl, setImportUrl] = useState("");
+  const [showImport, setShowImport] = useState(false);
+  const [importLoading, setImportLoading] = useState(false);
+
   const activeFile = files.find(f => f.id === activeFileId);
   const log = (text, type = "default") => setTerminalOutput(prev => [...prev, { text, type }]);
 
@@ -529,9 +573,75 @@ Generate 4-6 files covering: main logic, API/interface, config/docker, tests, an
     if (newName?.trim()) { const ext = newName.split(".").pop(); setFiles(prev => prev.map(f => f.id === id ? { ...f, name: newName.trim(), lang: LANG_MAP[ext] || f.lang } : f)); }
   };
 
-  const filteredContent = showSearch && searchQuery
+  const filteredContent = showSearch && searchQuery && !showReplace
     ? activeFile?.content?.split("\n").map((line, i) => line.toLowerCase().includes(searchQuery.toLowerCase()) ? `${String(i + 1).padStart(4)} ${line}` : null).filter(Boolean).join("\n")
     : null;
+
+  const doReplace = () => {
+    if (!findText || !activeFile) return;
+    const newContent = activeFile.content.replaceAll(findText, replaceText);
+    setFiles(prev => prev.map(f => f.id === activeFileId ? { ...f, content: newContent } : f));
+    const count = (activeFile.content.split(findText).length - 1);
+    toast.success(`Replaced ${count} occurrence${count !== 1 ? "s" : ""}`);
+  };
+
+  const installPackage = async () => {
+    if (!packageInput.trim() || packageInstalling) return;
+    setPackageInstalling(true);
+    log(`$ ${packageLang === 'python' ? 'pip install' : 'npm install'} ${packageInput}`, "system");
+    setBottomPanel("terminal");
+    await new Promise(r => setTimeout(r, 1500));
+    const newPkg = { id: Date.now(), name: packageInput.trim(), version: "latest", lang: packageLang, status: "installed" };
+    setPackages(prev => [...prev, newPkg]);
+    log(`✓ Successfully installed ${packageInput}`, "success");
+    toast.success(`Installed: ${packageInput}`);
+    setPackageInput("");
+    setPackageInstalling(false);
+  };
+
+  const sendApiRequest = async () => {
+    if (!apiUrl || apiLoading) return;
+    setApiLoading(true); setApiResponse(null); setApiTab("response");
+    try {
+      const headers = (() => { try { return JSON.parse(apiHeaders); } catch { return {}; } })();
+      const opts = { method: apiMethod, headers };
+      if (["POST","PUT","PATCH"].includes(apiMethod)) opts.body = apiBody;
+      const t0 = Date.now();
+      const res = await fetch(apiUrl, opts);
+      const duration = Date.now() - t0;
+      const text = await res.text();
+      let parsed; try { parsed = JSON.parse(text); } catch { parsed = text; }
+      setApiResponse({ status: res.status, statusText: res.statusText, duration, body: typeof parsed === "object" ? JSON.stringify(parsed, null, 2) : parsed, headers: Object.fromEntries(res.headers.entries()) });
+    } catch(e) {
+      setApiResponse({ status: 0, statusText: "Network Error", duration: 0, body: e.message, headers: {} });
+    }
+    setApiLoading(false);
+  };
+
+  const importFromUrl = async () => {
+    if (!importUrl.trim() || importLoading) return;
+    setImportLoading(true);
+    try {
+      // Convert github.com URLs to raw
+      let url = importUrl.trim();
+      if (url.includes("github.com") && !url.includes("raw.githubusercontent")) {
+        url = url.replace("github.com", "raw.githubusercontent.com").replace("/blob/", "/");
+      }
+      const res = await fetch(url);
+      const text = await res.text();
+      const filename = url.split("/").pop() || "imported.txt";
+      const ext = filename.split(".").pop();
+      const newFile = { id: `import_${Date.now()}`, name: filename, lang: LANG_MAP[ext] || "javascript", content: text };
+      setFiles(prev => [...prev, newFile]);
+      setActiveFileId(newFile.id);
+      setShowImport(false);
+      setImportUrl("");
+      toast.success(`Imported: ${filename}`);
+    } catch(e) {
+      toast.error(`Import failed: ${e.message}`);
+    }
+    setImportLoading(false);
+  };
 
   return (
     <div className="flex flex-col h-full bg-slate-950 text-white overflow-hidden">
@@ -545,7 +655,11 @@ Generate 4-6 files covering: main logic, API/interface, config/docker, tests, an
           { id: "editor", label: "Editor", icon: Code2 },
           { id: "pipeline", label: "Pipeline", icon: GitBranch },
           { id: "orchestrator", label: "Orchestrator", icon: Layers },
-          { id: "devops", label: "DevOps & Arkitektur", icon: Network },
+          { id: "devops", label: "DevOps", icon: Network },
+          { id: "secrets", label: "Secrets", icon: KeyRound },
+          { id: "packages", label: "Packages", icon: Package },
+          { id: "preview", label: "Preview", icon: Globe },
+          { id: "api", label: "API Tester", icon: Link },
         ].map(({ id, label, icon: Icon }) => (
           <button key={id} onClick={() => setActivePanel(id)}
             className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs transition-all ${activePanel === id ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/40" : "text-slate-500 hover:text-slate-300"}`}>
@@ -553,7 +667,9 @@ Generate 4-6 files covering: main logic, API/interface, config/docker, tests, an
           </button>
         ))}
         <div className="flex-1" />
-        <button onClick={() => setShowSearch(!showSearch)} className="p-1.5 rounded text-slate-500 hover:text-slate-300 hover:bg-slate-800" title="Search"><Search className="w-3.5 h-3.5" /></button>
+        <button onClick={() => { setShowSearch(!showSearch); setShowReplace(false); setShowImport(false); }} className={`p-1.5 rounded transition-all ${showSearch && !showReplace ? "text-cyan-400 bg-cyan-500/10" : "text-slate-500 hover:text-slate-300 hover:bg-slate-800"}`} title="Search"><Search className="w-3.5 h-3.5" /></button>
+        <button onClick={() => { setShowReplace(!showReplace); setShowSearch(true); setShowImport(false); }} className={`p-1.5 rounded transition-all ${showReplace ? "text-amber-400 bg-amber-500/10" : "text-slate-500 hover:text-slate-300 hover:bg-slate-800"}`} title="Find & Replace"><Replace className="w-3.5 h-3.5" /></button>
+        <button onClick={() => { setShowImport(!showImport); setShowSearch(false); setShowReplace(false); }} className={`p-1.5 rounded transition-all ${showImport ? "text-green-400 bg-green-500/10" : "text-slate-500 hover:text-slate-300 hover:bg-slate-800"}`} title="Import from URL/GitHub"><Import className="w-3.5 h-3.5" /></button>
         <button onClick={() => setShowStats(!showStats)} className={`p-1.5 rounded transition-all ${showStats ? "text-cyan-400 bg-cyan-500/10" : "text-slate-500 hover:text-slate-300 hover:bg-slate-800"}`} title="Stats"><BarChart3 className="w-3.5 h-3.5" /></button>
         <button onClick={() => setShowChat(!showChat)} className={`p-1.5 rounded transition-all ${showChat ? "text-violet-400 bg-violet-500/10" : "text-slate-500 hover:text-slate-300 hover:bg-slate-800"}`} title="AI Chat"><MessageSquare className="w-3.5 h-3.5" /></button>
         <button onClick={() => setShowProjectGen(true)} className="flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium bg-amber-600/80 hover:bg-amber-500 text-white transition-all" title="Generate entire project">
@@ -590,7 +706,7 @@ Generate 4-6 files covering: main logic, API/interface, config/docker, tests, an
         })}
       </div>
 
-      {/* ── Pipeline / Orchestrator panels ────────────────────────── */}
+      {/* ── Pipeline / Orchestrator / Secrets / Packages / Preview / API panels ── */}
       {activePanel === "pipeline" && <PipelineVisualizer activeStage={activeStage} stageStatus={stageStatus} />}
       {activePanel === "orchestrator" && (
         <div className="p-4 bg-slate-900 border-b border-slate-800 flex-shrink-0">
@@ -611,6 +727,225 @@ Generate 4-6 files covering: main logic, API/interface, config/docker, tests, an
                 <div className="flex-1 min-w-0"><p className="text-slate-200 truncate">{task.name}</p><p className="text-slate-500 text-[10px]">{task.agent} · {task.duration}</p></div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── Secrets Manager ──────────────────────────────────────── */}
+      {activePanel === "secrets" && (
+        <div className="flex flex-col bg-slate-900 border-b border-slate-800 flex-shrink-0" style={{ maxHeight: 400, minHeight: 400 }}>
+          <div className="flex items-center gap-2 px-4 py-2.5 border-b border-slate-800">
+            <KeyRound className="w-4 h-4 text-amber-400" />
+            <p className="text-sm font-bold text-white">Secrets & Environment Variables</p>
+            <div className="ml-auto flex items-center gap-1.5 text-xs text-slate-500"><Lock className="w-3 h-3" />Encrypted at rest</div>
+          </div>
+          <div className="flex-1 overflow-auto p-4">
+            <div className="space-y-2 mb-4">
+              {secrets.map(s => (
+                <div key={s.id} className="flex items-center gap-3 bg-slate-800/60 border border-slate-700/50 rounded-lg px-3 py-2">
+                  <div className="w-2 h-2 rounded-full bg-green-400 flex-shrink-0" />
+                  <span className="text-xs font-mono text-amber-300 w-40 flex-shrink-0">{s.key}</span>
+                  <span className="flex-1 text-xs font-mono text-slate-300 truncate">
+                    {showSecretValues[s.id] ? s.value : "•".repeat(Math.min(s.value.length, 24))}
+                  </span>
+                  <button onClick={() => setShowSecretValues(prev => ({ ...prev, [s.id]: !prev[s.id] }))} className="text-slate-600 hover:text-slate-300 flex-shrink-0">
+                    {showSecretValues[s.id] ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                  </button>
+                  <button onClick={() => navigator.clipboard.writeText(s.value).then(() => toast.success("Copied"))} className="text-slate-600 hover:text-slate-300 flex-shrink-0">
+                    <Copy className="w-3.5 h-3.5" />
+                  </button>
+                  <button onClick={() => setSecrets(prev => prev.filter(x => x.id !== s.id))} className="text-slate-600 hover:text-red-400 flex-shrink-0">
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ))}
+            </div>
+            <div className="border border-dashed border-slate-700 rounded-lg p-3">
+              <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-2">Add New Secret</p>
+              <div className="flex gap-2">
+                <input value={newSecretKey} onChange={e => setNewSecretKey(e.target.value.toUpperCase().replace(/ /g, "_"))} placeholder="KEY_NAME" className="flex-1 bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-xs text-white font-mono placeholder-slate-500 outline-none focus:border-amber-500" />
+                <input value={newSecretValue} onChange={e => setNewSecretValue(e.target.value)} placeholder="value" className="flex-1 bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-xs text-white font-mono placeholder-slate-500 outline-none focus:border-amber-500" />
+                <button onClick={() => { if (!newSecretKey || !newSecretValue) return; setSecrets(prev => [...prev, { id: Date.now(), key: newSecretKey, value: newSecretValue, masked: true }]); setNewSecretKey(""); setNewSecretValue(""); toast.success("Secret added"); }} className="px-3 py-1.5 rounded bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold transition-all">
+                  Add
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Package Manager ───────────────────────────────────────── */}
+      {activePanel === "packages" && (
+        <div className="flex flex-col bg-slate-900 border-b border-slate-800 flex-shrink-0" style={{ maxHeight: 400, minHeight: 400 }}>
+          <div className="flex items-center gap-2 px-4 py-2.5 border-b border-slate-800">
+            <Package className="w-4 h-4 text-violet-400" />
+            <p className="text-sm font-bold text-white">Package Manager</p>
+            <div className="ml-auto flex gap-2">
+              {["python", "node"].map(l => (
+                <button key={l} onClick={() => setPackageLang(l)} className={`px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest transition-all ${packageLang === l ? "bg-violet-500/20 text-violet-300 border border-violet-500/40" : "text-slate-500 hover:text-slate-300"}`}>
+                  {l === "python" ? "🐍 pip" : "📦 npm"}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="flex gap-2 px-4 pt-3 pb-2 flex-shrink-0">
+            <input value={packageInput} onChange={e => setPackageInput(e.target.value)} onKeyDown={e => e.key === "Enter" && installPackage()} placeholder={`Search and install ${packageLang === "python" ? "pip" : "npm"} packages...`} className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 outline-none focus:border-violet-500" />
+            <button onClick={installPackage} disabled={packageInstalling || !packageInput.trim()} className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white text-sm font-medium transition-all">
+              {packageInstalling ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+              Install
+            </button>
+          </div>
+          <div className="flex-1 overflow-auto px-4 pb-3">
+            <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-2">Installed ({packages.filter(p => p.lang === packageLang).length})</p>
+            <div className="space-y-1.5">
+              {packages.filter(p => p.lang === packageLang).map(pkg => (
+                <div key={pkg.id} className="flex items-center gap-3 bg-slate-800/50 border border-slate-700/40 rounded-lg px-3 py-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-green-400 flex-shrink-0" />
+                  <span className="text-sm text-white font-mono">{pkg.name}</span>
+                  <span className="text-xs text-slate-500 font-mono">v{pkg.version}</span>
+                  <div className="ml-auto flex items-center gap-2">
+                    <span className="text-[10px] bg-green-500/10 text-green-400 border border-green-500/20 rounded px-1.5 py-0.5">✓ installed</span>
+                    <button onClick={() => { setPackages(prev => prev.filter(p => p.id !== pkg.id)); log(`$ ${packageLang === "python" ? "pip uninstall" : "npm uninstall"} ${pkg.name}`, "system"); log(`✓ Uninstalled ${pkg.name}`, "warn"); setBottomPanel("terminal"); }} className="text-slate-600 hover:text-red-400 transition-colors">
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Live Preview ─────────────────────────────────────────── */}
+      {activePanel === "preview" && (
+        <div className="flex flex-col bg-slate-900 border-b border-slate-800 flex-shrink-0" style={{ maxHeight: 420, minHeight: 420 }}>
+          <div className="flex items-center gap-2 px-4 py-2.5 border-b border-slate-800">
+            <Globe className="w-4 h-4 text-cyan-400" />
+            <p className="text-sm font-bold text-white">Live Preview</p>
+            <span className="text-xs text-slate-500">— {activeFile?.name}</span>
+            <div className="ml-auto flex items-center gap-2">
+              <div className="flex gap-1">
+                {["desktop", "tablet", "mobile"].map(v => (
+                  <button key={v} onClick={() => {}} className="px-2 py-1 rounded text-[10px] text-slate-500 hover:text-slate-300 hover:bg-slate-800 transition-all capitalize">{v}</button>
+                ))}
+              </div>
+            </div>
+          </div>
+          <div className="flex-1 flex items-center justify-center bg-slate-950">
+            {activeFile?.lang === "html" || activeFile?.content?.includes("<!DOCTYPE") || activeFile?.content?.includes("<html") ? (
+              <iframe
+                srcDoc={activeFile.content}
+                className="w-full h-full border-0"
+                sandbox="allow-scripts"
+                title="Live Preview"
+              />
+            ) : (
+              <div className="text-center">
+                <Globe className="w-10 h-10 text-slate-700 mx-auto mb-3" />
+                <p className="text-slate-400 text-sm mb-1">Preview requires an HTML file</p>
+                <p className="text-slate-600 text-xs mb-3">Use AI to generate an HTML file from your current code</p>
+                <button onClick={async () => {
+                  setIsGenerating(true);
+                  try {
+                    const res = await base44.integrations.Core.InvokeLLM({
+                      prompt: `Convert this ${activeFile?.lang} code/concept into a standalone HTML page with embedded CSS and JS that visually demonstrates or documents it. Return only the complete HTML file.\n\n${activeFile?.content?.slice(0,800)}`,
+                      model: "claude_sonnet_4_6"
+                    });
+                    const html = typeof res === "string" ? res.replace(/^```html\n?/, "").replace(/\n?```$/, "") : res.toString();
+                    const f = { id: `preview_${Date.now()}`, name: `preview_${activeFile?.name?.split(".")[0]}.html`, lang: "html", content: html };
+                    setFiles(prev => [...prev, f]);
+                    setActiveFileId(f.id);
+                    toast.success("HTML preview generated!");
+                  } catch(e) { toast.error(e.message); }
+                  setIsGenerating(false);
+                }} disabled={isGenerating} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-white text-sm font-medium mx-auto transition-all">
+                  {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                  Generate HTML Preview
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── API Tester ───────────────────────────────────────────── */}
+      {activePanel === "api" && (
+        <div className="flex flex-col bg-slate-900 border-b border-slate-800 flex-shrink-0" style={{ maxHeight: 420, minHeight: 420 }}>
+          <div className="flex items-center gap-2 px-4 py-2.5 border-b border-slate-800">
+            <Link className="w-4 h-4 text-green-400" />
+            <p className="text-sm font-bold text-white">API Tester</p>
+            <span className="text-xs text-slate-500">— Like Postman, built-in</span>
+          </div>
+          <div className="flex-1 flex min-h-0">
+            {/* Left config */}
+            <div className="w-80 flex-shrink-0 border-r border-slate-800 flex flex-col p-3 gap-2 overflow-auto">
+              <div className="flex gap-2">
+                <select value={apiMethod} onChange={e => setApiMethod(e.target.value)} className="bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-xs text-white outline-none font-mono font-bold">
+                  {["GET","POST","PUT","PATCH","DELETE","HEAD","OPTIONS"].map(m => <option key={m} value={m}>{m}</option>)}
+                </select>
+                <input value={apiUrl} onChange={e => setApiUrl(e.target.value)} onKeyDown={e => e.key === "Enter" && sendApiRequest()} placeholder="https://api.example.com/endpoint" className="flex-1 bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-xs text-white placeholder-slate-500 outline-none focus:border-green-500 font-mono min-w-0" />
+              </div>
+              <button onClick={sendApiRequest} disabled={apiLoading} className="flex items-center justify-center gap-1.5 py-2 rounded-lg bg-green-600 hover:bg-green-500 disabled:opacity-50 text-white text-xs font-bold transition-all">
+                {apiLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Zap className="w-3.5 h-3.5" />}
+                {apiLoading ? "Sending..." : "Send Request"}
+              </button>
+              <div>
+                <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">Headers (JSON)</p>
+                <textarea value={apiHeaders} onChange={e => setApiHeaders(e.target.value)} rows={4} className="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-xs text-white font-mono placeholder-slate-500 outline-none focus:border-green-500 resize-none" />
+              </div>
+              {["POST","PUT","PATCH"].includes(apiMethod) && (
+                <div>
+                  <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">Body (JSON)</p>
+                  <textarea value={apiBody} onChange={e => setApiBody(e.target.value)} rows={5} className="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-xs text-white font-mono placeholder-slate-500 outline-none focus:border-green-500 resize-none" />
+                </div>
+              )}
+              <div>
+                <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-1.5">Quick Examples</p>
+                {[
+                  { label: "GET httpbin", method: "GET", url: "https://httpbin.org/get" },
+                  { label: "POST httpbin", method: "POST", url: "https://httpbin.org/post" },
+                  { label: "JSONPlaceholder", method: "GET", url: "https://jsonplaceholder.typicode.com/posts/1" },
+                ].map(ex => (
+                  <button key={ex.label} onClick={() => { setApiMethod(ex.method); setApiUrl(ex.url); }} className="w-full text-left text-[10px] text-slate-400 hover:text-green-300 bg-slate-800 hover:bg-slate-700 px-2 py-1.5 rounded border border-slate-700 mb-1 transition-all">{ex.method} {ex.label}</button>
+                ))}
+              </div>
+            </div>
+            {/* Right response */}
+            <div className="flex-1 flex flex-col min-w-0">
+              {apiResponse ? (
+                <>
+                  <div className="flex items-center gap-3 px-3 py-2 border-b border-slate-800 flex-shrink-0">
+                    <span className={`text-sm font-bold ${apiResponse.status >= 200 && apiResponse.status < 300 ? "text-green-400" : "text-red-400"}`}>{apiResponse.status} {apiResponse.statusText}</span>
+                    <span className="text-xs text-slate-500">{apiResponse.duration}ms</span>
+                    <div className="ml-auto flex gap-1">
+                      {["response", "headers"].map(t => (
+                        <button key={t} onClick={() => setApiTab(t)} className={`px-2 py-1 rounded text-[10px] uppercase tracking-widest font-bold transition-all ${apiTab === t ? "text-green-300 bg-green-500/10" : "text-slate-500 hover:text-slate-300"}`}>{t}</button>
+                      ))}
+                    </div>
+                    <button onClick={() => navigator.clipboard.writeText(apiResponse.body).then(() => toast.success("Copied"))} className="text-slate-600 hover:text-slate-300"><Copy className="w-3.5 h-3.5" /></button>
+                  </div>
+                  <div className="flex-1 overflow-auto p-3">
+                    {apiTab === "response" ? (
+                      <pre className="text-xs text-green-300 font-mono whitespace-pre-wrap">{apiResponse.body}</pre>
+                    ) : (
+                      <div className="space-y-1">
+                        {Object.entries(apiResponse.headers).map(([k,v]) => (
+                          <div key={k} className="flex gap-2 text-xs"><span className="text-slate-400 font-mono w-48 flex-shrink-0">{k}</span><span className="text-slate-200 font-mono">{v}</span></div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <div className="flex-1 flex flex-col items-center justify-center text-center p-6">
+                  {apiLoading ? (
+                    <><Loader2 className="w-8 h-8 text-green-400 animate-spin mb-3" /><p className="text-slate-400 text-sm">Sending request...</p></>
+                  ) : (
+                    <><Globe className="w-10 h-10 text-slate-700 mb-3" /><p className="text-slate-400 text-sm">Configure and send an API request</p></>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -821,12 +1156,38 @@ Generate 4-6 files covering: main logic, API/interface, config/docker, tests, an
         </div>
       )}
 
-      {/* ── Search bar ────────────────────────────────────────────── */}
-      {showSearch && (
+      {/* ── Search / Replace bar ───────────────────────────────── */}
+      {showSearch && !showReplace && (
         <div className="flex items-center gap-2 px-3 py-2 bg-slate-900 border-b border-slate-800">
           <Search className="w-3.5 h-3.5 text-slate-500" />
           <input autoFocus value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search in file..." className="flex-1 bg-transparent text-sm text-white placeholder-slate-600 outline-none font-mono" />
           {searchQuery && <span className="text-xs text-slate-500">{activeFile?.content?.split("\n").filter(l => l.toLowerCase().includes(searchQuery.toLowerCase())).length} matches</span>}
+          <button onClick={() => { setShowSearch(false); setSearchQuery(""); }} className="text-slate-600 hover:text-slate-400"><X className="w-3.5 h-3.5" /></button>
+        </div>
+      )}
+      {showReplace && (
+        <div className="flex flex-col gap-1.5 px-3 py-2 bg-slate-900 border-b border-slate-800">
+          <div className="flex items-center gap-2">
+            <Search className="w-3.5 h-3.5 text-slate-500 flex-shrink-0" />
+            <input autoFocus value={findText} onChange={e => setFindText(e.target.value)} placeholder="Find..." className="flex-1 bg-slate-800 border border-slate-700 rounded px-2 py-1 text-xs text-white placeholder-slate-500 outline-none font-mono" />
+            {findText && <span className="text-[10px] text-slate-500 whitespace-nowrap">{(activeFile?.content?.split(findText).length || 1) - 1} matches</span>}
+          </div>
+          <div className="flex items-center gap-2">
+            <Replace className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
+            <input value={replaceText} onChange={e => setReplaceText(e.target.value)} placeholder="Replace with..." className="flex-1 bg-slate-800 border border-slate-700 rounded px-2 py-1 text-xs text-white placeholder-slate-500 outline-none font-mono" />
+            <button onClick={doReplace} className="px-3 py-1 rounded bg-amber-600 hover:bg-amber-500 text-white text-xs font-medium">Replace All</button>
+            <button onClick={() => { setShowReplace(false); setShowSearch(false); }} className="text-slate-600 hover:text-slate-400"><X className="w-3.5 h-3.5" /></button>
+          </div>
+        </div>
+      )}
+      {showImport && (
+        <div className="flex items-center gap-2 px-3 py-2 bg-slate-900 border-b border-slate-800">
+          <Import className="w-3.5 h-3.5 text-green-400 flex-shrink-0" />
+          <input autoFocus value={importUrl} onChange={e => setImportUrl(e.target.value)} onKeyDown={e => e.key === "Enter" && importFromUrl()} placeholder="GitHub URL or raw file URL (e.g. https://github.com/user/repo/blob/main/file.py)" className="flex-1 bg-slate-800 border border-slate-700 rounded px-2 py-1 text-xs text-white placeholder-slate-500 outline-none font-mono" />
+          <button onClick={importFromUrl} disabled={importLoading || !importUrl.trim()} className="flex items-center gap-1.5 px-3 py-1 rounded bg-green-600 hover:bg-green-500 disabled:opacity-50 text-white text-xs font-medium transition-all">
+            {importLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Import className="w-3 h-3" />}Import
+          </button>
+          <button onClick={() => setShowImport(false)} className="text-slate-600 hover:text-slate-400"><X className="w-3.5 h-3.5" /></button>
         </div>
       )}
 
