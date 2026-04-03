@@ -93,6 +93,115 @@ function useBuildHistory() {
   return { history, addBuild, clearHistory };
 }
 
+function PhoneMockup({ app, isActive }) {
+  const c = colorMap[app.color];
+  const previewUrl = window.location.origin + app.route + "?hologram=true";
+
+  return (
+    <div className={`flex flex-col items-center transition-all duration-300 ${isActive ? "opacity-100 scale-100" : "opacity-0 scale-95 pointer-events-none absolute"}`}>
+      <div className="relative">
+        {/* Phone frame */}
+        <div className="relative w-[220px] h-[440px] rounded-[36px] bg-slate-800 border-4 border-slate-600 shadow-2xl shadow-black/60 overflow-hidden">
+          {/* Notch */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-20 h-5 bg-slate-800 rounded-b-xl z-10" />
+          {/* Screen */}
+          <div className="w-full h-full bg-slate-950 overflow-hidden">
+            <iframe
+              src={previewUrl}
+              title={`${app.name} preview`}
+              className="w-[375px] h-[667px] origin-top-left pointer-events-none"
+              style={{ transform: "scale(0.587)", transformOrigin: "top left" }}
+              sandbox="allow-same-origin allow-scripts"
+            />
+          </div>
+          {/* Home indicator */}
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-16 h-1 bg-slate-500 rounded-full" />
+        </div>
+        {/* Glow */}
+        <div className={`absolute inset-0 rounded-[36px] blur-xl -z-10 opacity-30 ${c.bg}`} />
+      </div>
+      <p className={`mt-3 text-sm font-medium ${c.text}`}>{app.name}</p>
+      <p className="text-xs text-slate-500 font-mono">{app.packageName}</p>
+    </div>
+  );
+}
+
+function AppPreview() {
+  const [activeApp, setActiveApp] = useState(0);
+
+  return (
+    <div className="bg-slate-900/60 border border-slate-700/50 rounded-2xl p-6 mb-10">
+      <h2 className="text-white font-semibold text-lg mb-1 flex items-center gap-2">
+        <Smartphone className="w-5 h-5 text-cyan-400" />
+        App Preview
+      </h2>
+      <p className="text-slate-400 text-sm mb-6">Live preview af hvordan appen ser ud på en mobilskærm med den downloadede konfiguration.</p>
+
+      <div className="flex gap-2 mb-8">
+        {APPS.map((app, idx) => {
+          const c = colorMap[app.color];
+          return (
+            <button
+              key={app.id}
+              onClick={() => setActiveApp(idx)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all border ${
+                activeApp === idx
+                  ? `${c.bg} ${c.border} ${c.text}`
+                  : "bg-slate-800 border-slate-700 text-slate-400 hover:text-white"
+              }`}
+            >
+              <span>{app.icon}</span>
+              {app.name}
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="flex flex-col md:flex-row items-center md:items-start gap-10">
+        {/* Phone mockups */}
+        <div className="relative w-[220px] h-[440px] flex-shrink-0">
+          {APPS.map((app, idx) => (
+            <PhoneMockup key={app.id} app={app} isActive={activeApp === idx} />
+          ))}
+        </div>
+
+        {/* App info */}
+        <div className="flex-1">
+          {APPS.map((app, idx) => {
+            const c = colorMap[app.color];
+            if (activeApp !== idx) return null;
+            return (
+              <div key={app.id}>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className={`w-12 h-12 rounded-2xl ${c.bg} border ${c.border} flex items-center justify-center text-2xl`}>{app.icon}</div>
+                  <div>
+                    <h3 className="text-white font-semibold text-lg">{app.name}</h3>
+                    <p className={`text-xs font-mono ${c.text}`}>{app.bundleId}</p>
+                  </div>
+                </div>
+                <p className="text-slate-400 text-sm leading-relaxed mb-5">{app.description}</p>
+                <div className="space-y-2 mb-5">
+                  <p className="text-xs text-slate-500 uppercase tracking-wider">Inkluderede features</p>
+                  {app.features.map(f => (
+                    <div key={f} className="flex items-center gap-2 text-sm text-slate-300">
+                      <CheckCircle className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                      {f}
+                    </div>
+                  ))}
+                </div>
+                <div className="flex items-center gap-2 text-xs text-amber-300 bg-amber-500/10 border border-amber-500/30 rounded-lg p-3">
+                  <Info className="w-4 h-4 flex-shrink-0" />
+                  Preview kører i en sandboxet iframe — nogle features (push notifikationer, kamera) kræver native app.
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function AppCard({ app, onBuildGenerated }) {
   const c = colorMap[app.color];
 
@@ -170,7 +279,6 @@ function AppCard({ app, onBuildGenerated }) {
         <span>Build: {app.buildDate}</span><span>•</span><span>TWA / Capacitor</span><span>•</span><span>Android 8+ / iOS 14+</span>
       </div>
 
-      {/* Platform download buttons */}
       <div className="grid grid-cols-2 gap-2">
         <div className="flex flex-col gap-2">
           <p className="text-xs text-slate-500 flex items-center gap-1.5">
@@ -378,6 +486,9 @@ export default function MobileAppPublisher() {
               iOS bygges via Capacitor, der wrapper PWA'en i en native Xcode-app til App Store. Download den ønskede konfigurationsfil og følg build-guiden nedenfor.
             </div>
           </div>
+
+          {/* App Preview */}
+          <AppPreview />
 
           <div className="grid md:grid-cols-2 gap-6 mb-10">
             {APPS.map((app) => (
