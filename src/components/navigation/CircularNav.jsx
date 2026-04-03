@@ -85,7 +85,6 @@ const menuCategories = [
   {
     name: "Developer", icon: Code2, color: "violet",
     items: [
-      { name: "Mobile App Publisher", icon: Smartphone, page: "MobileAppPublisher", badge: "NEW" },
       { name: "API Docs", icon: FileText, page: "APIDocumentation" },
       { name: "API Metrics", icon: BarChart2, page: "APIMetrics" },
     ]

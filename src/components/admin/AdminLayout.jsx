@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
-import { LayoutDashboard, FileText, Mail, Globe, Loader2, ShieldAlert, Brain, BarChart2 } from "lucide-react";
+import { LayoutDashboard, FileText, Mail, Globe, Loader2, ShieldAlert, Brain, BarChart2, Smartphone } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const adminNavItems = [
@@ -13,6 +13,7 @@ const adminNavItems = [
   { name: "Messages", icon: Mail, page: "AdminMessages" },
   { name: "Monitor", icon: Globe, page: "AdminMonitor" },
   { name: "Intelligence", icon: Brain, page: "CEODashboard" },
+  { name: "Mobile Publisher", icon: Smartphone, page: "MobileAppPublisher" },
 ];
 
 export default function AdminLayout({ children, currentPage }) {
