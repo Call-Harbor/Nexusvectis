@@ -404,7 +404,7 @@ export default function WindowContentRenderer({ type, data, vehicles, routes, sh
   if (type === 'global_search') return <GlobalSearch orgId={data?.orgId} onOpenWindow={(entityType) => openWindow(entityType, { x: 200, y: 150 })} onOpenPageWindow={(page) => openWindow(page.toLowerCase(), { x: 200, y: 150 })} />;
   if (type === 'web_browser') return <WebBrowser />;
   // profile_search is handled above as PeopleIntelligenceHologram
-  if (type === 'company_analytics') return <CompanyAnalysisHologram onClose={data?.onClose} onSendToScreen={null} embedded={true} />;
+  if (type === 'company_analytics' || type === 'company_analysis') return <CompanyAnalysisHologram onClose={data?.onClose} onSendToScreen={null} embedded={true} />;
   if (type === 'profile_search') return <PeopleIntelligenceHologram onClose={data?.onClose} onSendToScreen={null} embedded={true} />;
   if (type === 'satellite_weather') return <SatelliteWeatherIntelligence routes={routes} vehicles={vehicles} onRouteSelect={(routeId) => setInput(`Analyzing route ${routeId}`)} />;
   if (type === 'news_intelligence') return <NewsIntelligence openWindow={openWindow} />;
