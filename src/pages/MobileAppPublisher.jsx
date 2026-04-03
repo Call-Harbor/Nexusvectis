@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { base44 } from "@/api/base44Client";
 import { Smartphone, Download, RefreshCw, CheckCircle, AlertCircle, Info, ExternalLink, Package, Zap } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
@@ -178,6 +179,25 @@ function AppCard({ app }) {
 }
 
 export default function MobileAppPublisher() {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    base44.auth.me().then(u => { setUser(u); setLoading(false); }).catch(() => setLoading(false));
+  }, []);
+
+  if (loading) return <div className="min-h-screen bg-slate-950 flex items-center justify-center"><div className="w-8 h-8 border-4 border-slate-700 border-t-cyan-400 rounded-full animate-spin" /></div>;
+
+  if (!user || user.role !== 'admin') return (
+    <div className="min-h-screen bg-slate-950 flex items-center justify-center text-center p-8">
+      <div>
+        <div className="text-4xl mb-4">🔒</div>
+        <h2 className="text-white text-xl font-semibold mb-2">Adgang nægtet</h2>
+        <p className="text-slate-400 text-sm">Denne side kræver admin-rettigheder.</p>
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-slate-950 text-white p-6 md:p-10">
       {/* Header */}
