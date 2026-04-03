@@ -178,15 +178,17 @@ function DownloadAppDropdown() {
   const [canInstall, setCanInstall] = useState(false);
   const [installed, setInstalled] = useState(false);
 
-  useEffect(() => {
-    const handler = (e) => {
-      e.preventDefault();
-      deferredPrompt.current = e;
-      setCanInstall(true);
-    };
-    window.addEventListener('beforeinstallprompt', handler);
-    return () => window.removeEventListener('beforeinstallprompt', handler);
-  }, []);
+  // Installer download URLs (update these to match your hosting)
+  const installerLinks = {
+    windows: '/downloads/IntellectMode-Setup.exe',
+    mac: '/downloads/IntellectMode.dmg',
+    linux: '/downloads/IntellectMode-x86_64.AppImage'
+  };
+
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+  const isAndroid = /android/i.test(navigator.userAgent);
+  const appUrl = window.location.origin + '/IntellectMode';
 
   const installNativeApp = async () => {
     if (deferredPrompt.current) {
@@ -200,11 +202,6 @@ function DownloadAppDropdown() {
     }
     setOpen(false);
   };
-
-  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-  const isAndroid = /android/i.test(navigator.userAgent);
-  const appUrl = window.location.origin + '/IntellectMode';
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
@@ -260,13 +257,42 @@ function DownloadAppDropdown() {
 
         {/* Desktop browsers without PWA prompt */}
         {!canInstall && !isIOS && !isSafari && !installed && (
-          <DropdownMenuItem className="text-slate-300 gap-3 py-3 cursor-default">
-            <Monitor className="w-5 h-5 text-blue-400 flex-shrink-0" />
-            <div>
-              <div className="text-sm font-bold text-white">Chrome / Edge</div>
-              <div className="text-[10px] text-slate-400 mt-0.5">Klik <span className="text-cyan-400 font-bold">⊕</span> i adresselinjen</div>
-            </div>
-          </DropdownMenuItem>
+          <>
+            <DropdownMenuLabel className="text-[10px] text-cyan-400 font-mono tracking-widest uppercase mt-3">💻 Desktop Installers</DropdownMenuLabel>
+            
+            <DropdownMenuItem 
+              onClick={() => window.open(installerLinks.windows)}
+              className="text-slate-300 hover:text-white hover:bg-slate-800 cursor-pointer gap-3 py-3"
+            >
+              <Download className="w-5 h-5 text-blue-400 flex-shrink-0" />
+              <div>
+                <div className="text-sm font-bold text-white">Windows</div>
+                <div className="text-[10px] text-slate-400">Download .exe installer</div>
+              </div>
+            </DropdownMenuItem>
+
+            <DropdownMenuItem 
+              onClick={() => window.open(installerLinks.mac)}
+              className="text-slate-300 hover:text-white hover:bg-slate-800 cursor-pointer gap-3 py-3"
+            >
+              <Download className="w-5 h-5 text-gray-400 flex-shrink-0" />
+              <div>
+                <div className="text-sm font-bold text-white">macOS</div>
+                <div className="text-[10px] text-slate-400">Download .dmg installer</div>
+              </div>
+            </DropdownMenuItem>
+
+            <DropdownMenuItem 
+              onClick={() => window.open(installerLinks.linux)}
+              className="text-slate-300 hover:text-white hover:bg-slate-800 cursor-pointer gap-3 py-3"
+            >
+              <Download className="w-5 h-5 text-orange-400 flex-shrink-0" />
+              <div>
+                <div className="text-sm font-bold text-white">Linux</div>
+                <div className="text-[10px] text-slate-400">Download AppImage</div>
+              </div>
+            </DropdownMenuItem>
+          </>
         )}
 
         <DropdownMenuSeparator className="bg-slate-800" />
