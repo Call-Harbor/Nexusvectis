@@ -180,9 +180,9 @@ function DownloadAppDropdown() {
 
   // Installer download URLs (update these to match your hosting)
   const installerLinks = {
-    windows: '/downloads/IntellectMode-Setup.exe',
-    mac: '/downloads/IntellectMode.dmg',
-    linux: '/downloads/IntellectMode-x86_64.AppImage'
+    windows: `${window.location.origin}/downloads/IntellectMode-Setup.exe`,
+    mac: `${window.location.origin}/downloads/IntellectMode.dmg`,
+    linux: `${window.location.origin}/downloads/IntellectMode-x86_64.AppImage`
   };
 
   const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
