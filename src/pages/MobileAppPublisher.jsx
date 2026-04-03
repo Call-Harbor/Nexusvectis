@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Smartphone, Download, CheckCircle, AlertCircle, Info, ExternalLink, Package, History, Trash2, Clock } from "lucide-react";
+import { useState } from "react";
+import { Smartphone, Download, CheckCircle, AlertCircle, Info, ExternalLink, Package, History, Trash2, Clock, Apple } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import AdminLayout from "../components/admin/AdminLayout";
 
@@ -9,6 +9,7 @@ const APPS = [
     name: "Staff Portal",
     description: "Medarbejder-app til airport/port/transit staff — skifteplaner, opgaver, incidents og real-time opdateringer.",
     packageName: "com.nexusvectis.staffportal",
+    bundleId: "com.nexusvectis.staffportal",
     version: "1.0.0",
     buildDate: "2026-04-03",
     color: "cyan",
@@ -21,6 +22,7 @@ const APPS = [
     name: "Nexus Orbit",
     description: "Kommunikations- og koordinations-app til feltstyrker — messaging, maps og live fleet status.",
     packageName: "com.nexusvectis.nexusorbit",
+    bundleId: "com.nexusvectis.nexusorbit",
     version: "1.0.0",
     buildDate: "2026-04-03",
     color: "violet",
@@ -30,11 +32,18 @@ const APPS = [
   },
 ];
 
-const STEPS = [
-  { step: 1, title: "Download APK", desc: "Download den genererede APK-fil via knappen nedenfor." },
+const ANDROID_STEPS = [
+  { step: 1, title: "Download Config", desc: "Download TWA JSON-konfigurationsfilen via knappen nedenfor." },
   { step: 2, title: "Google Play Console", desc: "Gå til play.google.com/console og vælg din app." },
   { step: 3, title: "Upload til Play", desc: "Under 'Production' → 'Create new release' → upload APK/AAB filen." },
   { step: 4, title: "Udrulning", desc: "Vælg rollout-procent (fx 100%) og klik 'Save & Publish'." },
+];
+
+const IOS_STEPS = [
+  { step: 1, title: "Download Config", desc: "Download Capacitor JSON-konfigurationsfilen via knappen nedenfor." },
+  { step: 2, title: "Installer Capacitor", desc: "Kør npm install @capacitor/cli @capacitor/core @capacitor/ios i dit projekt." },
+  { step: 3, title: "Byg iOS app", desc: "Kør npx cap init → npx cap add ios → npx cap open ios for at åbne i Xcode." },
+  { step: 4, title: "App Store Connect", desc: "Arkivér i Xcode → upload via Organizer → udgiv på appstoreconnect.apple.com." },
 ];
 
 const colorMap = {
@@ -55,7 +64,7 @@ function useBuildHistory() {
     try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); } catch { return []; }
   });
 
-  const addBuild = (app, configBlob, filename) => {
+  const addBuild = (app, configBlob, filename, platform) => {
     const entry = {
       id: Date.now(),
       appId: app.id,
@@ -64,13 +73,13 @@ function useBuildHistory() {
       packageName: app.packageName,
       version: app.version,
       filename,
+      platform,
       generatedAt: new Date().toISOString(),
       status: "config_ready",
       blobUrl: URL.createObjectURL(configBlob),
     };
-    const updated = [entry, ...history].slice(0, 20); // keep last 20
+    const updated = [entry, ...history].slice(0, 20);
     setHistory(updated);
-    // Store without blobUrl (not serializable)
     const toStore = updated.map(({ blobUrl, ...rest }) => rest);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(toStore));
     return entry;
@@ -87,7 +96,7 @@ function useBuildHistory() {
 function AppCard({ app, onBuildGenerated }) {
   const c = colorMap[app.color];
 
-  const handleDownload = () => {
+  const handleAndroidDownload = () => {
     const twaConfig = {
       app_name: app.name,
       package_name: app.packageName,
@@ -100,14 +109,37 @@ function AppCard({ app, onBuildGenerated }) {
       note: "Build med Bubblewrap CLI: npx @bubblewrap/cli init --manifest=this_file.json",
       build_command: "npx @bubblewrap/cli build",
     };
-    const blob = new Blob([JSON.stringify(twaConfig, null, 2)], { type: "application/json" });
-    const filename = `${app.id}-twa-config.json`;
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    a.click();
-    onBuildGenerated(app, blob, filename);
+    downloadJSON(twaConfig, `${app.id}-twa-config.json`, app, "android", onBuildGenerated);
+  };
+
+  const handleIOSDownload = () => {
+    const capacitorConfig = {
+      appId: app.bundleId,
+      appName: app.name,
+      webDir: "dist",
+      server: {
+        url: `https://app.nexusvectis.com${app.route}`,
+        cleartext: false,
+      },
+      ios: {
+        scheme: app.name,
+        backgroundColor: "#020617",
+        contentInset: "automatic",
+        preferredContentMode: "mobile",
+      },
+      plugins: {
+        SplashScreen: {
+          launchShowDuration: 2000,
+          backgroundColor: "#020617",
+          androidSplashResourceName: "splash",
+          androidScaleType: "CENTER_CROP",
+        },
+        PushNotifications: { presentationOptions: ["badge", "sound", "alert"] },
+      },
+      note: "Kør: npm install @capacitor/cli @capacitor/core @capacitor/ios → npx cap init → npx cap add ios → npx cap open ios",
+      xcode_requirements: "Kræver macOS + Xcode 15+ + Apple Developer Account",
+    };
+    downloadJSON(capacitorConfig, `${app.id}-capacitor-config.json`, app, "ios", onBuildGenerated);
   };
 
   return (
@@ -135,22 +167,52 @@ function AppCard({ app, onBuildGenerated }) {
       </div>
 
       <div className="flex items-center gap-4 text-xs text-slate-500 border-t border-slate-700/50 pt-4">
-        <span>Build: {app.buildDate}</span><span>•</span><span>TWA / PWA</span><span>•</span><span>Android 8.0+</span>
+        <span>Build: {app.buildDate}</span><span>•</span><span>TWA / Capacitor</span><span>•</span><span>Android 8+ / iOS 14+</span>
       </div>
 
-      <div className="flex flex-col gap-2">
-        <button onClick={handleDownload} className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl text-white text-sm font-medium transition-all ${c.btn}`}>
-          <Download className="w-4 h-4" />
-          Download TWA Config (JSON)
-        </button>
-        <a href="https://play.google.com/console" target="_blank" rel="noopener noreferrer"
-          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-slate-300 text-sm border border-slate-700 hover:bg-slate-800 transition-all">
-          <ExternalLink className="w-4 h-4" />
-          Åbn Google Play Console
-        </a>
+      {/* Platform download buttons */}
+      <div className="grid grid-cols-2 gap-2">
+        <div className="flex flex-col gap-2">
+          <p className="text-xs text-slate-500 flex items-center gap-1.5">
+            <span className="text-green-400">🤖</span> Android
+          </p>
+          <button onClick={handleAndroidDownload} className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-white text-xs font-medium transition-all ${c.btn}`}>
+            <Download className="w-3.5 h-3.5" />
+            TWA Config
+          </button>
+          <a href="https://play.google.com/console" target="_blank" rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2 py-2 rounded-xl text-slate-300 text-xs border border-slate-700 hover:bg-slate-800 transition-all">
+            <ExternalLink className="w-3.5 h-3.5" />
+            Play Console
+          </a>
+        </div>
+        <div className="flex flex-col gap-2">
+          <p className="text-xs text-slate-500 flex items-center gap-1.5">
+            <Apple className="w-3.5 h-3.5 text-slate-400" /> iOS
+          </p>
+          <button onClick={handleIOSDownload} className="flex items-center justify-center gap-2 py-2.5 rounded-xl text-white text-xs font-medium transition-all bg-slate-700 hover:bg-slate-600">
+            <Download className="w-3.5 h-3.5" />
+            Capacitor Config
+          </button>
+          <a href="https://appstoreconnect.apple.com" target="_blank" rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2 py-2 rounded-xl text-slate-300 text-xs border border-slate-700 hover:bg-slate-800 transition-all">
+            <ExternalLink className="w-3.5 h-3.5" />
+            App Store Connect
+          </a>
+        </div>
       </div>
     </div>
   );
+}
+
+function downloadJSON(config, filename, app, platform, onBuildGenerated) {
+  const blob = new Blob([JSON.stringify(config, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  onBuildGenerated(app, blob, filename, platform);
 }
 
 function BuildHistory({ history, onClear }) {
@@ -161,7 +223,7 @@ function BuildHistory({ history, onClear }) {
           <History className="w-5 h-5 text-slate-400" />
           Build History
         </h2>
-        <p className="text-slate-500 text-sm mt-4 text-center py-8">Ingen builds endnu — download en TWA-konfiguration for at starte.</p>
+        <p className="text-slate-500 text-sm mt-4 text-center py-8">Ingen builds endnu — download en konfiguration for at starte.</p>
       </div>
     );
   }
@@ -187,6 +249,7 @@ function BuildHistory({ history, onClear }) {
           const formatted = date.toLocaleString("da-DK", { dateStyle: "medium", timeStyle: "short" });
           const appColor = APPS.find(a => a.id === entry.appId)?.color || "cyan";
           const c = colorMap[appColor];
+          const isIOS = entry.platform === "ios";
 
           return (
             <div key={entry.id} className={`flex items-center gap-4 rounded-xl p-4 border ${isLatest ? "border-emerald-500/30 bg-emerald-500/5" : "border-slate-700/40 bg-slate-800/40"}`}>
@@ -197,6 +260,9 @@ function BuildHistory({ history, onClear }) {
                 <div className="flex items-center gap-2 mb-0.5">
                   <span className="text-white text-sm font-medium">{entry.appName}</span>
                   <span className="text-slate-500 text-xs">v{entry.version}</span>
+                  <Badge className={`text-[10px] ${isIOS ? "bg-slate-700 text-slate-300 border-slate-600" : "bg-green-900/40 text-green-300 border-green-700/50"}`}>
+                    {isIOS ? "iOS" : "Android"}
+                  </Badge>
                   {isLatest && <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/40 text-[10px]">LATEST</Badge>}
                 </div>
                 <div className="flex items-center gap-3 text-xs text-slate-500">
@@ -226,8 +292,70 @@ function BuildHistory({ history, onClear }) {
   );
 }
 
+function BuildGuide({ platform }) {
+  const steps = platform === "android" ? ANDROID_STEPS : IOS_STEPS;
+  const isAndroid = platform === "android";
+
+  return (
+    <div className="bg-slate-900/60 border border-slate-700/50 rounded-2xl p-6">
+      <h2 className="text-white font-semibold text-lg mb-1 flex items-center gap-2">
+        <Package className="w-5 h-5 text-amber-400" />
+        {isAndroid ? "Android: Upload til Google Play" : "iOS: Upload til Apple App Store"}
+      </h2>
+      <p className="text-slate-400 text-sm mb-6">Følg disse trin for at udgive eller opdatere appen.</p>
+
+      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        {steps.map((s) => (
+          <div key={s.step} className="bg-slate-800/60 rounded-xl p-4 border border-slate-700/40">
+            <div className="w-8 h-8 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-400 text-sm font-bold flex items-center justify-center mb-3">{s.step}</div>
+            <p className="text-white text-sm font-medium mb-1">{s.title}</p>
+            <p className="text-slate-400 text-xs leading-relaxed">{s.desc}</p>
+          </div>
+        ))}
+      </div>
+
+      {isAndroid ? (
+        <div>
+          <p className="text-slate-400 text-xs uppercase tracking-wider mb-3">Build kommandoer (terminal)</p>
+          <div className="bg-slate-950 rounded-xl p-4 font-mono text-xs space-y-2 border border-slate-700/50">
+            <p><span className="text-slate-500"># Installer Bubblewrap CLI</span></p>
+            <p><span className="text-cyan-400">npm install</span> <span className="text-white">-g @bubblewrap/cli</span></p>
+            <p className="pt-1"><span className="text-slate-500"># Initialiser med din config fil</span></p>
+            <p><span className="text-cyan-400">bubblewrap init</span> <span className="text-white">--manifest=staffportal-twa-config.json</span></p>
+            <p className="pt-1"><span className="text-cyan-400">bubblewrap build</span></p>
+            <p className="pt-1"><span className="text-slate-500"># Output: app-release-bundle.aab → upload til Play Console</span></p>
+          </div>
+          <div className="mt-4 flex items-start gap-2 text-xs text-amber-300 bg-amber-500/10 border border-amber-500/30 rounded-lg p-3">
+            <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+            <span>Kræver Java 11+ og Android SDK. Se <a href="https://developer.chrome.com/docs/android/trusted-web-activity/" target="_blank" className="underline">Chrome TWA dokumentation</a>.</span>
+          </div>
+        </div>
+      ) : (
+        <div>
+          <p className="text-slate-400 text-xs uppercase tracking-wider mb-3">Build kommandoer (terminal)</p>
+          <div className="bg-slate-950 rounded-xl p-4 font-mono text-xs space-y-2 border border-slate-700/50">
+            <p><span className="text-slate-500"># Installer Capacitor</span></p>
+            <p><span className="text-cyan-400">npm install</span> <span className="text-white">@capacitor/cli @capacitor/core @capacitor/ios</span></p>
+            <p className="pt-1"><span className="text-slate-500"># Initialiser projekt</span></p>
+            <p><span className="text-cyan-400">npx cap init</span></p>
+            <p className="pt-1"><span className="text-slate-500"># Tilføj iOS platform og åbn i Xcode</span></p>
+            <p><span className="text-cyan-400">npx cap add ios</span></p>
+            <p><span className="text-cyan-400">npx cap open ios</span></p>
+            <p className="pt-1"><span className="text-slate-500"># Arkivér i Xcode → Product → Archive → Upload til App Store</span></p>
+          </div>
+          <div className="mt-4 flex items-start gap-2 text-xs text-amber-300 bg-amber-500/10 border border-amber-500/30 rounded-lg p-3">
+            <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+            <span>Kræver macOS, Xcode 15+ og aktivt Apple Developer Program ($99/år). Se <a href="https://capacitorjs.com/docs/ios" target="_blank" className="underline">Capacitor iOS dokumentation</a>.</span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function MobileAppPublisher() {
   const { history, addBuild, clearHistory } = useBuildHistory();
+  const [guideTab, setGuideTab] = useState("android");
 
   return (
     <AdminLayout currentPage="MobileAppPublisher">
@@ -239,21 +367,21 @@ export default function MobileAppPublisher() {
             </div>
             <div>
               <h1 className="text-2xl font-bold text-white">Mobile App Publisher</h1>
-              <p className="text-slate-400 text-sm">Download og udgiv NexusVectis apps til Google Play</p>
+              <p className="text-slate-400 text-sm">Download og udgiv NexusVectis apps til Google Play & Apple App Store</p>
             </div>
           </div>
 
           <div className="mt-6 mb-8 flex items-start gap-3 bg-blue-500/10 border border-blue-500/30 rounded-xl p-4 text-sm text-blue-300">
             <Info className="w-5 h-5 flex-shrink-0 mt-0.5" />
             <div>
-              <strong className="text-blue-200">Trusted Web Activity (TWA)</strong> — Begge apps pakkes som native Android APK/AAB via Google's TWA-standard.
-              Download JSON-konfigurationen, kør <code className="bg-blue-900/40 px-1.5 py-0.5 rounded font-mono text-xs">npx @bubblewrap/cli build</code>, og upload den genererede <code className="bg-blue-900/40 px-1.5 py-0.5 rounded font-mono text-xs">.aab</code> fil til Google Play Console.
+              <strong className="text-blue-200">TWA (Android) + Capacitor (iOS)</strong> — Android bygges som native APK/AAB via Google's TWA-standard.
+              iOS bygges via Capacitor, der wrapper PWA'en i en native Xcode-app til App Store. Download den ønskede konfigurationsfil og følg build-guiden nedenfor.
             </div>
           </div>
 
           <div className="grid md:grid-cols-2 gap-6 mb-10">
             {APPS.map((app) => (
-              <AppCard key={app.id} app={app} onBuildGenerated={(a, blob, filename) => addBuild(a, blob, filename)} />
+              <AppCard key={app.id} app={app} onBuildGenerated={addBuild} />
             ))}
           </div>
 
@@ -262,47 +390,34 @@ export default function MobileAppPublisher() {
             <BuildHistory history={history} onClear={clearHistory} />
           </div>
 
-          {/* Build Guide */}
-          <div className="bg-slate-900/60 border border-slate-700/50 rounded-2xl p-6">
-            <h2 className="text-white font-semibold text-lg mb-1 flex items-center gap-2">
-              <Package className="w-5 h-5 text-amber-400" />
-              Trin-for-trin: Upload til Google Play
-            </h2>
-            <p className="text-slate-400 text-sm mb-6">Følg disse trin for at udgive eller opdatere en app.</p>
-
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-              {STEPS.map((s) => (
-                <div key={s.step} className="bg-slate-800/60 rounded-xl p-4 border border-slate-700/40">
-                  <div className="w-8 h-8 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-400 text-sm font-bold flex items-center justify-center mb-3">{s.step}</div>
-                  <p className="text-white text-sm font-medium mb-1">{s.title}</p>
-                  <p className="text-slate-400 text-xs leading-relaxed">{s.desc}</p>
-                </div>
-              ))}
+          {/* Build Guide with platform toggle */}
+          <div className="mb-10">
+            <div className="flex gap-2 mb-4">
+              <button
+                onClick={() => setGuideTab("android")}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${guideTab === "android" ? "bg-green-600 text-white" : "bg-slate-800 text-slate-400 hover:text-white"}`}
+              >
+                <span>🤖</span> Android Guide
+              </button>
+              <button
+                onClick={() => setGuideTab("ios")}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${guideTab === "ios" ? "bg-slate-600 text-white" : "bg-slate-800 text-slate-400 hover:text-white"}`}
+              >
+                <Apple className="w-4 h-4" /> iOS Guide
+              </button>
             </div>
-
-            <div>
-              <p className="text-slate-400 text-xs uppercase tracking-wider mb-3">Build kommandoer (terminal)</p>
-              <div className="bg-slate-950 rounded-xl p-4 font-mono text-xs space-y-2 border border-slate-700/50">
-                <p><span className="text-slate-500"># Installer Bubblewrap CLI</span></p>
-                <p><span className="text-cyan-400">npm install</span> <span className="text-white">-g @bubblewrap/cli</span></p>
-                <p className="pt-1"><span className="text-slate-500"># Initialiser med din config fil</span></p>
-                <p><span className="text-cyan-400">bubblewrap init</span> <span className="text-white">--manifest=staffportal-twa-config.json</span></p>
-                <p className="pt-1"><span className="text-slate-500"># Byg APK/AAB</span></p>
-                <p><span className="text-cyan-400">bubblewrap build</span></p>
-              </div>
-            </div>
-
-            <div className="mt-4 flex items-start gap-2 text-xs text-amber-300 bg-amber-500/10 border border-amber-500/30 rounded-lg p-3">
-              <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-              <span>Kræver Java 11+ og Android SDK installeret. Se <a href="https://developer.chrome.com/docs/android/trusted-web-activity/" target="_blank" className="underline">Chrome TWA dokumentation</a> for fuld opsætning.</span>
-            </div>
+            <BuildGuide platform={guideTab} />
           </div>
 
-          <div className="mt-6 grid grid-cols-2 md:grid-cols-3 gap-3">
+          {/* Quick links */}
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             {[
               { label: "Play Console", url: "https://play.google.com/console", icon: "🎮" },
+              { label: "App Store Connect", url: "https://appstoreconnect.apple.com", icon: "🍎" },
               { label: "TWA Dokumentation", url: "https://developer.chrome.com/docs/android/trusted-web-activity/", icon: "📚" },
+              { label: "Capacitor iOS Docs", url: "https://capacitorjs.com/docs/ios", icon: "📱" },
               { label: "Bubblewrap CLI", url: "https://github.com/GoogleChromeLabs/bubblewrap", icon: "🔧" },
+              { label: "Apple Developer", url: "https://developer.apple.com", icon: "🏗️" },
             ].map((link) => (
               <a key={link.label} href={link.url} target="_blank" rel="noopener noreferrer"
                 className="flex items-center gap-2 bg-slate-800/60 border border-slate-700/40 rounded-xl px-4 py-3 text-sm text-slate-300 hover:text-white hover:bg-slate-800 transition-all">
