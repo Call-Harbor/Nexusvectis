@@ -6,7 +6,7 @@ import {
   Brain, Sparkles, Zap, Activity, LayoutDashboard, Search,
   MessageSquare, FileText, BarChart3, Truck, AlertTriangle, Route,
   Package, Warehouse, Users, Satellite, ChevronDown, GraduationCap, FileCode, Globe, Image, X, Wrench, HardDrive, ListTodo, MonitorPlay, Building2, Newspaper, Shield, Cpu, Calculator, Store,
-  Map, Leaf, Car, ClipboardList, Bell, Bus, Layers, BarChart2, Settings, TrendingUp, BookOpen, Key, MonitorCheck, PieChart, Navigation, MapPin, Plane, Ship, Code2
+  Map, Leaf, Car, ClipboardList, Bell, Bus, Layers, BarChart2, Settings, TrendingUp, BookOpen, Key, MonitorCheck, PieChart, Navigation, MapPin, Plane, Ship, Code2, Download, Monitor, Apple
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -172,6 +172,130 @@ function AppSearchDropdown({ onSelect, children }) {
   );
 }
 
+function DownloadAppDropdown() {
+  const [open, setOpen] = useState(false);
+
+  const downloadForPlatform = (platform) => {
+    const appUrl = window.location.origin + '/IntellectMode';
+    const scripts = {
+      windows: {
+        filename: 'FleetAI-IntellectMode-Windows.bat',
+        content: `@echo off
+title Fleet AI - IntellectMode
+echo.
+echo  ███████╗██╗     ███████╗███████╗████████╗ █████╗ ██╗
+echo  ██╔════╝██║     ██╔════╝██╔════╝╚══██╔══╝██╔══██╗██║
+echo  █████╗  ██║     █████╗  █████╗     ██║   ███████║██║
+echo  ██╔══╝  ██║     ██╔══╝  ██╔══╝     ██║   ██╔══██║██║
+echo  ██║     ███████╗███████╗███████╗   ██║   ██║  ██║██║
+echo  ╚═╝     ╚══════╝╚══════╝╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝
+echo.
+echo  IntellectMode - Neural Logistics Intelligence Platform
+echo  Launching...
+echo.
+start msedge --app="${appUrl}" --window-size=1600,900 2>nul
+if %errorlevel% neq 0 (
+  start chrome --app="${appUrl}" --window-size=1600,900 2>nul
+)
+if %errorlevel% neq 0 (
+  start "" "${appUrl}"
+)
+`,
+        mime: 'text/plain'
+      },
+      mac: {
+        filename: 'FleetAI-IntellectMode-Mac.command',
+        content: `#!/bin/bash
+APP_URL="${appUrl}"
+echo "🧠 Fleet AI — IntellectMode"
+echo "Launching app..."
+
+# Try to open as PWA in Chrome first, fallback to Safari
+if open -a "Google Chrome" --args --app="$APP_URL" --window-size=1600,900 2>/dev/null; then
+  echo "✅ Opened in Chrome"
+elif open -a "Safari" "$APP_URL" 2>/dev/null; then
+  echo "✅ Opened in Safari"
+else
+  open "$APP_URL"
+fi
+`,
+        mime: 'text/plain'
+      },
+      linux: {
+        filename: 'FleetAI-IntellectMode-Linux.sh',
+        content: `#!/bin/bash
+APP_URL="${appUrl}"
+echo "🧠 Fleet AI — IntellectMode"
+echo "Launching app..."
+
+# Try Chromium, Chrome, Firefox in order
+if command -v chromium-browser &>/dev/null; then
+  chromium-browser --app="$APP_URL" --window-size=1600,900 &
+elif command -v google-chrome &>/dev/null; then
+  google-chrome --app="$APP_URL" --window-size=1600,900 &
+elif command -v firefox &>/dev/null; then
+  firefox "$APP_URL" &
+else
+  xdg-open "$APP_URL"
+fi
+`,
+        mime: 'text/plain'
+      }
+    };
+
+    const { filename, content, mime } = scripts[platform];
+    const blob = new Blob([content], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+    setOpen(false);
+  };
+
+  return (
+    <DropdownMenu open={open} onOpenChange={setOpen}>
+      <DropdownMenuTrigger asChild>
+        <button className="px-3 py-2 text-[10px] font-bold tracking-widest uppercase font-mono transition-all"
+          style={{ color: "#10b981", border: "1px solid rgba(16,185,129,0.3)", background: "rgba(16,185,129,0.08)", boxShadow: "0 0 12px rgba(16,185,129,0.1)" }}>
+          <Download className="w-3.5 h-3.5 inline mr-2" />DOWNLOAD<ChevronDown className="w-3.5 h-3.5 inline ml-2" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="bg-slate-900 border-slate-800 w-56">
+        <DropdownMenuLabel className="text-[10px] text-cyan-400 font-mono tracking-widest uppercase">Download IntellectMode</DropdownMenuLabel>
+        <DropdownMenuSeparator className="bg-slate-800" />
+        <DropdownMenuItem onClick={() => downloadForPlatform('windows')}
+          className="text-slate-300 hover:text-white hover:bg-slate-800 cursor-pointer gap-2">
+          <Monitor className="w-4 h-4 text-blue-400" />
+          <div>
+            <div className="text-xs font-medium">Windows</div>
+            <div className="text-[10px] text-slate-500">.bat launcher</div>
+          </div>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => downloadForPlatform('mac')}
+          className="text-slate-300 hover:text-white hover:bg-slate-800 cursor-pointer gap-2">
+          <Apple className="w-4 h-4 text-slate-300" />
+          <div>
+            <div className="text-xs font-medium">macOS</div>
+            <div className="text-[10px] text-slate-500">.command launcher</div>
+          </div>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => downloadForPlatform('linux')}
+          className="text-slate-300 hover:text-white hover:bg-slate-800 cursor-pointer gap-2">
+          <Monitor className="w-4 h-4 text-amber-400" />
+          <div>
+            <div className="text-xs font-medium">Linux</div>
+            <div className="text-[10px] text-slate-500">.sh launcher</div>
+          </div>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator className="bg-slate-800" />
+        <div className="px-2 py-2 text-[9px] text-slate-500 leading-relaxed">Opens as standalone app window using your installed browser.</div>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 function PromptSearchDropdown({ sections, onSelect, children }) {
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
@@ -317,6 +441,9 @@ export default function IntellectHeader({ orgId, openWindow, executePrompt, setS
                 <Sparkles className="w-3.5 h-3.5 inline mr-2" />COMMAND<ChevronDown className="w-3.5 h-3.5 inline ml-2" />
               </button>
             </PromptSearchDropdown>
+
+            {/* Download App Dropdown */}
+            <DownloadAppDropdown />
 
             <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 text-[8px] font-mono tracking-widest uppercase"
               style={{ color: "#10b981", border: "1px solid rgba(16,185,129,0.3)", background: "rgba(16,185,129,0.05)" }}>
