@@ -22,6 +22,7 @@ import AirportReports from './pages/AirportReports';
 import StaffManagement from './pages/StaffManagement';
 import RegulatoryIntelligence from './pages/RegulatoryIntelligence';
 import EnergyOpsCenter from './pages/EnergyOpsCenter';
+import MobileAppPublisher from './pages/MobileAppPublisher';
 import GridManagement from './pages/GridManagement';
 
 
@@ -175,6 +176,14 @@ const AuthenticatedApp = () => {
         element={
           <LayoutWrapper currentPageName="EnergyOpsCenter">
             <EnergyOpsCenter />
+          </LayoutWrapper>
+        }
+      />
+      <Route
+        path="/MobileAppPublisher"
+        element={
+          <LayoutWrapper currentPageName="MobileAppPublisher">
+            <MobileAppPublisher />
           </LayoutWrapper>
         }
       />

@@ -7,7 +7,7 @@ import {
   Truck, Route, Warehouse, Sparkles, 
   Settings, Users, Shield, FileText, Package, 
   DollarSign, Target, Menu, X, Zap, Home, AlertCircle, Code2, BarChart2, Brain, Bus,
-  Wrench, Receipt, BarChart3, Leaf, Satellite, Bell, TrendingUp, GitBranch, Box, GraduationCap, MapPin, ChevronRight, Anchor, Plane, Scale, Wind, Battery
+  Wrench, Receipt, BarChart3, Leaf, Satellite, Bell, TrendingUp, GitBranch, Box, GraduationCap, MapPin, ChevronRight, Anchor, Plane, Scale, Wind, Battery, Smartphone
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import NotificationCenter from "../notifications/NotificationCenter";
@@ -85,6 +85,7 @@ const menuCategories = [
   {
     name: "Developer", icon: Code2, color: "violet",
     items: [
+      { name: "Mobile App Publisher", icon: Smartphone, page: "MobileAppPublisher", badge: "NEW" },
       { name: "API Docs", icon: FileText, page: "APIDocumentation" },
       { name: "API Metrics", icon: BarChart2, page: "APIMetrics" },
     ]
