@@ -6,7 +6,7 @@ import {
   Brain, Sparkles, Zap, Activity, LayoutDashboard, Search,
   MessageSquare, FileText, BarChart3, Truck, AlertTriangle, Route,
   Package, Warehouse, Users, Satellite, ChevronDown, GraduationCap, FileCode, Globe, Image, X, Wrench, HardDrive, ListTodo, MonitorPlay, Building2, Newspaper, Shield, Cpu, Calculator, Store,
-  Map, Leaf, Car, ClipboardList, Bell, Bus, Layers, BarChart2, Settings, TrendingUp, BookOpen, Key, MonitorCheck, PieChart, Navigation, MapPin, Plane, Ship, Code2, Download, Monitor, Apple
+  Map, Leaf, Car, ClipboardList, Bell, Bus, Layers, BarChart2, Settings, TrendingUp, BookOpen, Key, MonitorCheck, PieChart, Navigation, MapPin, Plane, Ship, Code2, Monitor
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -172,152 +172,7 @@ function AppSearchDropdown({ onSelect, children }) {
   );
 }
 
-function DownloadAppDropdown() {
-  const [open, setOpen] = useState(false);
-  const deferredPrompt = useRef(null);
-  const [canInstall, setCanInstall] = useState(false);
-  const [installed, setInstalled] = useState(false);
 
-  // Installer download URLs (update these to match your hosting)
-  const installerLinks = {
-    windows: `${window.location.origin}/downloads/IntellectMode-Setup.exe`,
-    mac: `${window.location.origin}/downloads/IntellectMode.dmg`,
-    linux: `${window.location.origin}/downloads/IntellectMode-x86_64.AppImage`
-  };
-
-  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-  const isAndroid = /android/i.test(navigator.userAgent);
-  const appUrl = window.location.origin + '/IntellectMode';
-
-  const downloadFile = (url, filename) => {
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.style.display = 'none';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setOpen(false);
-  };
-
-  const installNativeApp = async () => {
-    if (deferredPrompt.current) {
-      deferredPrompt.current.prompt();
-      const { outcome } = await deferredPrompt.current.userChoice;
-      if (outcome === 'accepted') {
-        setInstalled(true);
-      }
-      deferredPrompt.current = null;
-      setCanInstall(false);
-    }
-    setOpen(false);
-  };
-
-  return (
-    <DropdownMenu open={open} onOpenChange={setOpen}>
-      <DropdownMenuTrigger asChild>
-        <button className="px-3 py-2 text-[10px] font-bold tracking-widest uppercase font-mono transition-all"
-          style={{ color: "#10b981", border: "1px solid rgba(16,185,129,0.3)", background: "rgba(16,185,129,0.08)", boxShadow: "0 0 12px rgba(16,185,129,0.1)" }}>
-          <Download className="w-3.5 h-3.5 inline mr-2" />INSTALL<ChevronDown className="w-3.5 h-3.5 inline ml-2" />
-        </button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="bg-slate-900 border-slate-800 w-72">
-        <DropdownMenuLabel className="text-[10px] text-cyan-400 font-mono tracking-widest uppercase">📱 IntellectMode Native App</DropdownMenuLabel>
-        <DropdownMenuSeparator className="bg-slate-800" />
-
-        {installed && (
-          <div className="px-3 py-2 bg-green-500/10 border border-green-500/30 rounded m-2">
-            <p className="text-[10px] text-green-400 font-bold">✓ App installed successfully!</p>
-            <p className="text-[10px] text-slate-400 mt-1">Look for IntellectMode on your desktop or app drawer</p>
-          </div>
-        )}
-
-        {/* Chrome/Edge PWA install */}
-        {canInstall && !installed && (
-          <DropdownMenuItem onClick={installNativeApp} className="text-slate-300 hover:text-white hover:bg-slate-800 cursor-pointer gap-3 py-3">
-            <Download className="w-5 h-5 text-green-400 flex-shrink-0" />
-            <div>
-              <div className="text-sm font-bold text-white">Install as Native App</div>
-              <div className="text-[10px] text-slate-400">Windows / Mac / Linux / Android</div>
-            </div>
-          </DropdownMenuItem>
-        )}
-
-        {/* iOS Safari */}
-        {(isIOS || isSafari) && !installed && (
-          <DropdownMenuItem className="text-slate-300 gap-3 py-3 cursor-default">
-            <Apple className="w-5 h-5 text-slate-400 flex-shrink-0" />
-            <div>
-              <div className="text-sm font-bold text-white">iPhone / iPad</div>
-              <div className="text-[10px] text-slate-400 mt-0.5"><span className="text-cyan-400 font-bold">Del</span> → <span className="text-cyan-400 font-bold">Føj til hjemmeskærm</span></div>
-            </div>
-          </DropdownMenuItem>
-        )}
-
-        {/* Android manual */}
-        {isAndroid && !canInstall && !installed && (
-          <DropdownMenuItem className="text-slate-300 gap-3 py-3 cursor-default">
-            <Download className="w-5 h-5 text-green-400 flex-shrink-0" />
-            <div>
-              <div className="text-sm font-bold text-white">Android Device</div>
-              <div className="text-[10px] text-slate-400 mt-0.5">Menu (<span className="text-cyan-400 font-bold">⋮</span>) → <span className="text-cyan-400 font-bold">Tilføj til startskærm</span></div>
-            </div>
-          </DropdownMenuItem>
-        )}
-
-        {/* Desktop browsers without PWA prompt */}
-        {!canInstall && !isIOS && !isSafari && !installed && (
-          <>
-            <DropdownMenuLabel className="text-[10px] text-cyan-400 font-mono tracking-widest uppercase mt-3">💻 Desktop Installers</DropdownMenuLabel>
-            
-            <DropdownMenuItem 
-              onClick={() => downloadFile(installerLinks.windows, 'IntellectMode-Setup.exe')}
-              className="text-slate-300 hover:text-white hover:bg-slate-800 cursor-pointer gap-3 py-3"
-            >
-              <Download className="w-5 h-5 text-blue-400 flex-shrink-0" />
-              <div>
-                <div className="text-sm font-bold text-white">Windows</div>
-                <div className="text-[10px] text-slate-400">Download .exe installer</div>
-              </div>
-            </DropdownMenuItem>
-
-            <DropdownMenuItem 
-              onClick={() => downloadFile(installerLinks.mac, 'IntellectMode.dmg')}
-              className="text-slate-300 hover:text-white hover:bg-slate-800 cursor-pointer gap-3 py-3"
-            >
-              <Download className="w-5 h-5 text-gray-400 flex-shrink-0" />
-              <div>
-                <div className="text-sm font-bold text-white">macOS</div>
-                <div className="text-[10px] text-slate-400">Download .dmg installer</div>
-              </div>
-            </DropdownMenuItem>
-
-            <DropdownMenuItem 
-              onClick={() => downloadFile(installerLinks.linux, 'IntellectMode-x86_64.AppImage')}
-              className="text-slate-300 hover:text-white hover:bg-slate-800 cursor-pointer gap-3 py-3"
-            >
-              <Download className="w-5 h-5 text-orange-400 flex-shrink-0" />
-              <div>
-                <div className="text-sm font-bold text-white">Linux</div>
-                <div className="text-[10px] text-slate-400">Download AppImage</div>
-              </div>
-            </DropdownMenuItem>
-          </>
-        )}
-
-        <DropdownMenuSeparator className="bg-slate-800" />
-        <div className="px-3 py-3 bg-slate-800/50 rounded m-2">
-          <p className="text-[10px] text-slate-500 mb-2 font-bold">Share app link</p>
-          <div className="flex items-center gap-2 bg-slate-900 rounded px-2.5 py-2 border border-slate-700">
-            <span className="text-[10px] text-slate-400 font-mono truncate flex-1" title={appUrl}>{appUrl}</span>
-            <button onClick={() => { navigator.clipboard.writeText(appUrl); }} className="text-cyan-400 hover:text-cyan-300 text-[10px] font-bold whitespace-nowrap flex-shrink-0 transition-colors">📋 COPY</button>
-          </div>
-        </div>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-}
 
 function PromptSearchDropdown({ sections, onSelect, children }) {
   const [search, setSearch] = useState("");
@@ -465,8 +320,7 @@ export default function IntellectHeader({ orgId, openWindow, executePrompt, setS
               </button>
             </PromptSearchDropdown>
 
-            {/* Download App Dropdown */}
-            <DownloadAppDropdown />
+
 
             <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 text-[8px] font-mono tracking-widest uppercase"
               style={{ color: "#10b981", border: "1px solid rgba(16,185,129,0.3)", background: "rgba(16,185,129,0.05)" }}>
