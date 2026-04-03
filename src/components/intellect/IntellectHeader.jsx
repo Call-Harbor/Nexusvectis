@@ -6,7 +6,7 @@ import {
   Brain, Sparkles, Zap, Activity, LayoutDashboard, Search,
   MessageSquare, FileText, BarChart3, Truck, AlertTriangle, Route,
   Package, Warehouse, Users, Satellite, ChevronDown, GraduationCap, FileCode, Globe, Image, X, Wrench, HardDrive, ListTodo, MonitorPlay, Building2, Newspaper, Shield, Cpu, Calculator, Store,
-  Map, Leaf, Car, ClipboardList, Bell, Bus, Layers, BarChart2, Settings, TrendingUp, BookOpen, Key, MonitorCheck, PieChart, Navigation, MapPin, Plane, Ship
+  Map, Leaf, Car, ClipboardList, Bell, Bus, Layers, BarChart2, Settings, TrendingUp, BookOpen, Key, MonitorCheck, PieChart, Navigation, MapPin, Plane, Ship, Code2
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -96,6 +96,7 @@ const APP_CATEGORIES = [
     ['vehicle_builder', Calculator, '🔧 Vehicle Builder'],
     ['harbor_app_builder', Zap, '⚡ H.A.R.B.O.R App Builder'],
     ['fleet_store', Store, '🛒 Fleet Store'],
+    ['ai_dev_ide', Code2, '🖥️ Fleet AI IDE & DevOps'],
   ]],
   ['Productivity', [
     ['document_editor', FileText, 'FleetDocs'],
