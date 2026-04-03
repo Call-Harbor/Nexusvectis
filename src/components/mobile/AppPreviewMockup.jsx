@@ -41,8 +41,8 @@ function StatusBar({ os, time }) {
 
 function IOSFrame({ app, landscape, children }) {
   const c = colorMap[app.color];
-  const w = landscape ? 480 : 260;
-  const h = landscape ? 260 : 520;
+  const w = landscape ? 520 : 280;
+  const h = landscape ? 280 : 560;
 
   return (
     <div className="relative flex items-center justify-center" style={{ width: w + 32, height: h + 32 }}>
@@ -85,8 +85,8 @@ function IOSFrame({ app, landscape, children }) {
 
 function AndroidFrame({ app, landscape, children }) {
   const c = colorMap[app.color];
-  const w = landscape ? 480 : 260;
-  const h = landscape ? 260 : 520;
+  const w = landscape ? 520 : 280;
+  const h = landscape ? 280 : 560;
 
   return (
     <div className="relative flex items-center justify-center" style={{ width: w + 32, height: h + 32 }}>
@@ -132,7 +132,7 @@ function DesktopFrame({ app, children }) {
     <div className="relative">
       {/* Monitor */}
       <div className="relative rounded-xl bg-slate-800 border border-slate-600/60 shadow-2xl overflow-hidden"
-        style={{ width: 500, height: 320 }}>
+        style={{ width: 580, height: 370 }}>
         {/* Title bar */}
         <div className="flex items-center gap-2 px-3 py-2 bg-slate-900 border-b border-slate-700/50">
           <div className="flex gap-1.5">
@@ -140,13 +140,13 @@ function DesktopFrame({ app, children }) {
             <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
             <div className="w-3 h-3 rounded-full bg-green-500/80" />
           </div>
-          <div className="flex-1 mx-4">
+      <div className="flex-1 mx-4">
             <div className="bg-slate-700/60 rounded-md px-3 py-0.5 text-[10px] text-slate-400 font-mono text-center">
               app.nexusvectis.com{app.route}
             </div>
           </div>
         </div>
-        <div className="w-full" style={{ height: 285 }}>
+        <div className="w-full" style={{ height: 340 }}>
           {children}
         </div>
       </div>
@@ -158,12 +158,19 @@ function DesktopFrame({ app, children }) {
 }
 
 function IframeContent({ url, device, landscape }) {
+  // Scale is computed so the iframe fills the visible screen area
+  // Container sizes (inner screen minus status bar):
+  //   phone portrait:  ~254 x 482  → scale = 254/375 = 0.677
+  //   phone landscape: ~474 x 222  → scale = 474/667 = 0.711
+  //   tablet portrait: ~334 x 490  → scale = 334/768 = 0.435
+  //   tablet landscape:~490 x 334  → scale = 490/1024 = 0.479
+  //   desktop:          500 x 285  → scale = 500/1280 = 0.390
   const scaleMap = {
-    phone_portrait: { iW: 375, iH: 667, scale: 0.59 },
-    phone_landscape: { iW: 667, iH: 375, scale: 0.65 },
-    tablet_portrait: { iW: 768, iH: 1024, scale: 0.42 },
-    tablet_landscape: { iW: 1024, iH: 768, scale: 0.42 },
-    desktop: { iW: 1280, iH: 800, scale: 0.36 },
+    phone_portrait:   { iW: 375,  iH: 812,  scale: 0.677 },
+    phone_landscape:  { iW: 667,  iH: 400,  scale: 0.711 },
+    tablet_portrait:  { iW: 768,  iH: 1124, scale: 0.435 },
+    tablet_landscape: { iW: 1024, iH: 698,  scale: 0.479 },
+    desktop:          { iW: 1280, iH: 730,  scale: 0.390 },
   };
 
   const key = device === "desktop" ? "desktop" : `${device}_${landscape ? "landscape" : "portrait"}`;
@@ -181,6 +188,7 @@ function IframeContent({ url, device, landscape }) {
           transformOrigin: "top left",
           pointerEvents: "none",
           border: "none",
+          display: "block",
         }}
         sandbox="allow-same-origin allow-scripts"
       />
@@ -201,6 +209,7 @@ export default function AppPreviewMockup({ apps }) {
   const FrameComponent = device === "desktop"
     ? DesktopFrame
     : os === "ios" ? IOSFrame : AndroidFrame;
+
 
   return (
     <div className="bg-slate-900/60 border border-slate-700/50 rounded-2xl overflow-hidden mb-10">
