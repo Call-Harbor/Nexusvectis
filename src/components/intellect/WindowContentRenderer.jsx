@@ -32,6 +32,7 @@ import Fleet3DViewer from "@/components/intellect/Fleet3DViewer";
 import VehicleBuilder from "@/components/intellect/VehicleBuilder";
 import HarborAppBuilderV3 from "@/components/intellect/HarborAppBuilderV3";
 import FleetStore from "@/components/intellect/FleetStore";
+import AIDevOrchestrator from "@/components/intellect/AIDevOrchestrator";
 import FleetAnalysisFormatter from "@/components/intellect/FleetAnalysisFormatter";
 import AdvancedFleetAnalysisHologram from "@/components/intellect/AdvancedFleetAnalysisHologram";
 
@@ -424,6 +425,7 @@ export default function WindowContentRenderer({ type, data, vehicles, routes, sh
   if (type === 'transit_console') return <iframe src={`${createPageUrl('TransitControl')}?hologram=true`} className="w-full h-full border-0" title="Transit Console" />;
   if (type === 'airport_ops') return <iframe src={`/AirportOpsCenter?hologram=true`} className="w-full h-full border-0" title="Airport Ops Center" />;
   if (type === 'port_command') return <iframe src={`/PortCommandCenter?hologram=true`} className="w-full h-full border-0" title="Port Command Center" />;
+  if (type === 'ai_dev_ide') return <AIDevOrchestrator onClose={data?.onClose} />;
   if (PAGE_MAP[type]) {
     return <iframe src={`${createPageUrl(PAGE_MAP[type])}?hologram=true`} className="w-full h-full border-0" title={PAGE_MAP[type]} />;
   }

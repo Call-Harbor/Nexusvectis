@@ -316,6 +316,7 @@ export default function IntellectMode() {
       openAirportOps: () => { openWindow('airport_ops', { x: 60, y: 50 }); setMessages(prev => [...prev, { role: "system", content: "✈️ Airport Ops Center opened as hologram — Full AI-powered airport operations" }]); },
       openPortCommand: () => { openWindow('port_command', { x: 80, y: 60 }); setMessages(prev => [...prev, { role: "system", content: "🚢 Port Command Center opened as hologram — Full AI-powered port operations" }]); },
       openEnergyOps: () => { navigate('/EnergyOpsCenter'); setMessages(prev => [...prev, { role: "system", content: "⚡ Energy & Utilities Ops opened — Neural grid control, load forecast, AI dispatch and resilience simulation" }]); },
+      openAIDevIDE: () => { openWindow('ai_dev_ide', { x: 40, y: 30 }); setMessages(prev => [...prev, { role: "system", content: "🖥️ Fleet AI IDE & DevOps Orchestrator activated — Advanced code generation, CI/CD pipelines and AI agent orchestration" }]); },
       };
      actionMap[action]?.();
      }, [openWindow, vehicles, routes, setMessages, installedAppIds]);
@@ -863,6 +864,15 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
       setMessages(prev => [...prev, { role: "user", content: currentCommand }]);
       setInput("");
       handleQuickAction('openPortCommand');
+      return;
+    }
+
+    // AI Dev IDE detection
+    const ideMatch = currentCommand.match(/(?:ide|code editor|devops|orchestrator|ai ide|fleet ide|deploy pipeline|ci.?cd|codegen|generate code|kode editor|skriv kode|byg pipeline)/i);
+    if (ideMatch) {
+      setMessages(prev => [...prev, { role: "user", content: currentCommand }]);
+      setInput("");
+      handleQuickAction('openAIDevIDE');
       return;
     }
 

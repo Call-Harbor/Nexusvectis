@@ -1,7 +1,7 @@
 import { 
   Truck, AlertTriangle, Route, Package, LayoutDashboard, Settings, Sparkles, 
   FileText, Warehouse, TrendingUp, Activity, Satellite, Network, Shield, 
-  Globe, MessageSquare, BarChart3, Zap, Users, Newspaper, Building2, Image, ListTodo, HardDrive, MonitorPlay, Cpu, Layers, Store
+  Globe, MessageSquare, BarChart3, Zap, Users, Newspaper, Building2, Image, ListTodo, HardDrive, MonitorPlay, Cpu, Layers, Store, Code2
 } from "lucide-react";
 
 export const WINDOW_META = {
@@ -55,6 +55,7 @@ export const WINDOW_META = {
   nexus_orbit: { title: '🛰️ Nexus Orbit', icon: Satellite },
   airport_ops: { title: '✈️ Airport Ops Center', icon: Layers },
   port_command: { title: '🚢 Port Command Center', icon: Layers },
+  ai_dev_ide: { title: '🖥️ Fleet AI IDE & DevOps', icon: Code2 },
 };
 
 export function getWindowMeta(type) {
