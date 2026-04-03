@@ -177,7 +177,7 @@ function DownloadAppDropdown() {
   const deferredPrompt = useRef(null);
   const [canInstall, setCanInstall] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const handler = (e) => {
       e.preventDefault();
       deferredPrompt.current = e;
@@ -187,42 +187,84 @@ function DownloadAppDropdown() {
     return () => window.removeEventListener('beforeinstallprompt', handler);
   }, []);
 
-  const installApp = async () => {
+  const installPWA = async () => {
     if (deferredPrompt.current) {
       deferredPrompt.current.prompt();
       await deferredPrompt.current.userChoice;
       deferredPrompt.current = null;
       setCanInstall(false);
-    } else {
-      // Fallback: guide the user
-      alert('To install:\n\nChrome/Edge: Click the ⊕ or install icon in the address bar.\nSafari (Mac/iOS): Share → Add to Home Screen.');
     }
     setOpen(false);
   };
+
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+  const isAndroid = /android/i.test(navigator.userAgent);
+  const appUrl = window.location.origin;
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
         <button className="px-3 py-2 text-[10px] font-bold tracking-widest uppercase font-mono transition-all"
           style={{ color: "#10b981", border: "1px solid rgba(16,185,129,0.3)", background: "rgba(16,185,129,0.08)", boxShadow: "0 0 12px rgba(16,185,129,0.1)" }}>
-          <Download className="w-3.5 h-3.5 inline mr-2" />DOWNLOAD<ChevronDown className="w-3.5 h-3.5 inline ml-2" />
+          <Download className="w-3.5 h-3.5 inline mr-2" />INSTALL<ChevronDown className="w-3.5 h-3.5 inline ml-2" />
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="bg-slate-900 border-slate-800 w-64">
-        <DropdownMenuLabel className="text-[10px] text-cyan-400 font-mono tracking-widest uppercase">Install Fleet AI App</DropdownMenuLabel>
+      <DropdownMenuContent align="end" className="bg-slate-900 border-slate-800 w-72">
+        <DropdownMenuLabel className="text-[10px] text-cyan-400 font-mono tracking-widest uppercase">Install Fleet AI Platform</DropdownMenuLabel>
         <DropdownMenuSeparator className="bg-slate-800" />
-        <DropdownMenuItem onClick={installApp} className="text-slate-300 hover:text-white hover:bg-slate-800 cursor-pointer gap-2 py-3">
-          <Download className="w-5 h-5 text-green-400 flex-shrink-0" />
-          <div>
-            <div className="text-sm font-bold text-white">Install App</div>
-            <div className="text-[10px] text-slate-400">Works on Windows, Mac, Linux & mobile</div>
+
+        {/* Chrome/Edge PWA install */}
+        {canInstall && (
+          <DropdownMenuItem onClick={installPWA} className="text-slate-300 hover:text-white hover:bg-slate-800 cursor-pointer gap-3 py-3">
+            <Monitor className="w-5 h-5 text-green-400 flex-shrink-0" />
+            <div>
+              <div className="text-sm font-bold text-white">Install on this device</div>
+              <div className="text-[10px] text-slate-400">Windows / Mac / Linux / Android</div>
+            </div>
+          </DropdownMenuItem>
+        )}
+
+        {/* iOS Safari */}
+        {(isIOS || isSafari) && (
+          <div className="px-3 py-3 flex gap-3">
+            <Apple className="w-5 h-5 text-slate-400 flex-shrink-0 mt-0.5" />
+            <div>
+              <div className="text-sm font-bold text-white">iPhone / iPad</div>
+              <div className="text-[10px] text-slate-400 mt-0.5">Tryk på <span className="text-cyan-400">Del</span> → <span className="text-cyan-400">Føj til hjemmeskærm</span></div>
+            </div>
           </div>
-        </DropdownMenuItem>
+        )}
+
+        {/* Android manual */}
+        {isAndroid && !canInstall && (
+          <div className="px-3 py-3 flex gap-3">
+            <Download className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+            <div>
+              <div className="text-sm font-bold text-white">Android</div>
+              <div className="text-[10px] text-slate-400 mt-0.5">Tryk på menu (⋮) → <span className="text-cyan-400">Tilføj til startskærm</span></div>
+            </div>
+          </div>
+        )}
+
+        {/* Desktop browsers without PWA prompt */}
+        {!canInstall && !isIOS && !isSafari && (
+          <div className="px-3 py-3 flex gap-3">
+            <Monitor className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+            <div>
+              <div className="text-sm font-bold text-white">Desktop (Chrome / Edge)</div>
+              <div className="text-[10px] text-slate-400 mt-0.5">Klik på <span className="text-cyan-400">⊕</span> i adresselinjen for at installere</div>
+            </div>
+          </div>
+        )}
+
         <DropdownMenuSeparator className="bg-slate-800" />
-        <div className="px-3 py-2 text-[10px] text-slate-500 leading-relaxed space-y-1">
-          <p className="text-slate-400 font-medium">Manual install:</p>
-          <p>Chrome/Edge: click ⊕ in the address bar</p>
-          <p>Safari: Share → Add to Home Screen</p>
+        <div className="px-3 py-2">
+          <p className="text-[10px] text-slate-500 mb-1">Del app-link</p>
+          <div className="flex items-center gap-2 bg-slate-800 rounded px-2 py-1.5">
+            <span className="text-[10px] text-slate-400 font-mono truncate flex-1">{appUrl}</span>
+            <button onClick={() => { navigator.clipboard.writeText(appUrl); setOpen(false); }} className="text-cyan-400 hover:text-cyan-300 text-[10px] font-bold flex-shrink-0">COPY</button>
+          </div>
         </div>
       </DropdownMenuContent>
     </DropdownMenu>
