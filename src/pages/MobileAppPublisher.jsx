@@ -102,7 +102,7 @@ function AppCard({ app, onBuildGenerated }) {
       app_name: app.name,
       package_name: app.packageName,
       version: app.version,
-      start_url: `https://app.nexusvectis.com${app.route}`,
+      start_url: `${window.location.origin}${app.route}`,
       display: "standalone",
       theme_color: app.color === "cyan" ? "#06b6d4" : "#8b5cf6",
       background_color: "#020617",
@@ -119,7 +119,7 @@ function AppCard({ app, onBuildGenerated }) {
       appName: app.name,
       webDir: "dist",
       server: {
-        url: `https://app.nexusvectis.com${app.route}`,
+        url: `${window.location.origin}${app.route}`,
         cleartext: false,
       },
       ios: {

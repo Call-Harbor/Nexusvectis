@@ -142,7 +142,7 @@ function DesktopFrame({ app, children }) {
           </div>
       <div className="flex-1 mx-4">
             <div className="bg-slate-700/60 rounded-md px-3 py-0.5 text-[10px] text-slate-400 font-mono text-center">
-              app.nexusvectis.com{app.route}
+              {window.location.host}{app.route}
             </div>
           </div>
         </div>
