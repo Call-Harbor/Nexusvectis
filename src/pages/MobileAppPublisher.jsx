@@ -65,6 +65,14 @@ function useBuildHistory() {
     try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); } catch { return []; }
   });
 
+  const revokeUrls = (entries) => {
+    entries.forEach(entry => {
+      if (entry.blobUrl) {
+        try { URL.revokeObjectURL(entry.blobUrl); } catch { }
+      }
+    });
+  };
+
   const addBuild = (app, configBlob, filename, platform) => {
     const entry = {
       id: Date.now(),
@@ -80,15 +88,19 @@ function useBuildHistory() {
       blobUrl: URL.createObjectURL(configBlob),
     };
     const updated = [entry, ...history].slice(0, 20);
+    if (updated.length < [entry, ...history].length) {
+      revokeUrls([entry, ...history].slice(20));
+    }
     setHistory(updated);
     const toStore = updated.map(({ blobUrl, ...rest }) => rest);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(toStore));
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(toStore)); } catch { }
     return entry;
   };
 
   const clearHistory = () => {
+    revokeUrls(history);
     setHistory([]);
-    localStorage.removeItem(STORAGE_KEY);
+    try { localStorage.removeItem(STORAGE_KEY); } catch { }
   };
 
   return { history, addBuild, clearHistory };
