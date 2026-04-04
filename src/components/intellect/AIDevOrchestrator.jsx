@@ -431,24 +431,28 @@ export default function AIDevOrchestrator({ onClose }) {
     }
   };
 
-  // ── Run file ────────────────────────────────────────────────────────────────
+  // ── Run file (real Deno execution via codeExecutor backend) ─────────────────
   const runFile = async () => {
     if (isRunning || !activeFile) return;
     setIsRunning(true); setBottomPanel("terminal");
     log(`$ run ${activeFile.name}`, "system");
-    for (const stage of PIPELINE_STAGES.slice(0, 3)) {
-      setActiveStage(stage.id); setStageStatus(prev => ({ ...prev, [stage.id]: "running" }));
-      await new Promise(r => setTimeout(r, 500));
-      setStageStatus(prev => ({ ...prev, [stage.id]: "success" }));
-    }
+    setActiveStage("code"); setStageStatus(prev => ({ ...prev, code: "running" }));
+    await new Promise(r => setTimeout(r, 150));
+    setStageStatus(prev => ({ ...prev, code: "success", test: "running" }));
+    setActiveStage("test");
     try {
-      const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Simulate running this ${activeFile.lang} code for NexusVectis fleet management. Return JSON: { "output": ["line1","line2",...], "exit_code": 0, "duration_ms": 1234 }\n\nCode:\n${activeFile.content.slice(0, 800)}`,
-        response_json_schema: { type: "object", properties: { output: { type: "array", items: { type: "string" } }, exit_code: { type: "number" }, duration_ms: { type: "number" } } }
+      const res = await base44.functions.invoke('codeExecutor', {
+        code: activeFile.content,
+        language: activeFile.lang,
+        filename: activeFile.name,
       });
-      (result.output || ["Done"]).forEach(line => log(line, line.includes("Error") ? "error" : line.includes("✓") ? "success" : "default"));
-      log(`Process exited with code ${result.exit_code ?? 0} in ${result.duration_ms ?? 800}ms`, result.exit_code === 0 ? "success" : "error");
-    } catch { log("Process exited with code 0", "success"); }
+      const result = res.data;
+      setStageStatus(prev => ({ ...prev, test: result.exit_code === 0 ? "success" : "error" }));
+      (result.output || []).forEach(line => log(line.text || line, line.type || 'default'));
+    } catch (e) {
+      setStageStatus(prev => ({ ...prev, test: "error" }));
+      log(`Runtime error: ${e.message}`, 'error');
+    }
     setIsRunning(false);
   };
 
