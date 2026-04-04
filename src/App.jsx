@@ -1,6 +1,8 @@
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
+import { useState, useEffect } from 'react';
+import { base44 } from '@/api/base44Client';
 import NavigationTracker from '@/lib/NavigationTracker'
 import { pagesConfig } from './pages.config'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
@@ -37,6 +39,34 @@ const LayoutWrapper = ({ children, currentPageName }) => Layout ?
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+  const [user, setUser] = useState(null);
+
+  // Gem token til LoginSession når Electron logger ind via web
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const electronSessionId = params.get('electron_session');
+    const token = localStorage.getItem('base44_access_token');
+
+    if (electronSessionId && token && !isLoadingAuth) {
+      base44.entities.LoginSession.create({
+        session_id: electronSessionId,
+        access_token: token,
+        device_type: 'web',
+        expires_at: new Date(Date.now() + 15 * 60 * 1000).toISOString() // 15 min
+      }).catch(err => console.error('Failed to save login session:', err));
+    }
+  }, [isLoadingAuth]);
+
+  // Fetch current user
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const currentUser = await base44.auth.me();
+        setUser(currentUser);
+      } catch {}
+    };
+    if (!authError) fetchUser();
+  }, [authError]);
 
   // Show loading spinner while checking app public settings or auth
   if (isLoadingPublicSettings || isLoadingAuth) {
