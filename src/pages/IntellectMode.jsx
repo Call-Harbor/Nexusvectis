@@ -112,7 +112,11 @@ export default function IntellectMode() {
   // ── Auth Guard ─────────────────────────────────────────────────────────────
   useEffect(() => {
     if (!isLoadingUser && !currentUser) {
-      base44.auth.redirectToLogin(window.location.pathname + window.location.search);
+      // In Electron/desktop, App.jsx already shows ElectronLoginHelper — don't web-redirect
+      const isElectron = !!window.__todesktop || navigator.userAgent.toLowerCase().includes('electron');
+      if (!isElectron) {
+        base44.auth.redirectToLogin(window.location.pathname + window.location.search);
+      }
     }
   }, [currentUser, isLoadingUser]);
 
