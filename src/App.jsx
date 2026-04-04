@@ -52,7 +52,7 @@ const AuthenticatedApp = () => {
     if (authError.type === 'user_not_registered') {
       return <UserNotRegisteredError />;
     } else if (authError.type === 'auth_required') {
-      const isElectron = typeof navigator !== 'undefined' && navigator.userAgent.toLowerCase().includes('electron');
+      const isElectron = typeof navigator !== 'undefined' && (navigator.userAgent.toLowerCase().includes('electron') || !!window.__todesktop);
       if (isElectron) {
         return <ElectronLoginHelper />;
       }

@@ -1,114 +1,102 @@
-import { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { useEffect, useState } from "react";
 import { appParams } from "@/lib/app-params";
-import { useAuth } from "@/lib/AuthContext";
+
+const CALLBACK_SCHEME = "nexusvectis://auth";
 
 export default function ElectronLoginHelper() {
-  const { checkAppState } = useAuth();
-  const [token, setToken] = useState("");
+  const [status, setStatus] = useState("idle"); // idle | waiting | error
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [step, setStep] = useState("prompt"); // prompt | paste
 
-  const openLoginInBrowser = () => {
-    // Open Base44 login in system browser — user will end up on the web app
-    // with the token visible in the URL bar
-    const loginUrl = `https://base44.com/login?app_id=${appParams.appId}`;
-    if (window.todesktop?.shell?.openExternal) {
-      window.todesktop.shell.openExternal(loginUrl);
-    } else if (window.__todesktop?.shell?.openExternal) {
+  const openLogin = () => {
+    const loginUrl = `https://base44.com/login?app_id=${appParams.appId}&from_url=${encodeURIComponent(CALLBACK_SCHEME)}`;
+
+    // Open in system browser via ToDesktop
+    if (window.__todesktop?.shell?.openExternal) {
       window.__todesktop.shell.openExternal(loginUrl);
     } else {
       window.open(loginUrl, "_blank");
     }
-    setStep("paste");
+
+    setStatus("waiting");
   };
 
-  const applyToken = async () => {
-    const raw = token.trim();
-    if (!raw) { setError("Indsæt venligst dit access token"); return; }
+  useEffect(() => {
+    if (status !== "waiting") return;
 
-    // Support both raw token and full URL with access_token= param
-    let accessToken = raw;
-    try {
-      const url = new URL(raw);
-      const param = url.searchParams.get("access_token");
-      if (param) accessToken = param;
-    } catch (_) {}
+    // Listen for the deep link callback from ToDesktop
+    const handleOpenUrl = (url) => {
+      try {
+        // url will be like: nexusvectis://auth?access_token=xxx
+        // Parse as a standard URL by replacing the scheme
+        const normalized = url.replace("nexusvectis://auth", "https://callback");
+        const parsed = new URL(normalized);
+        const token = parsed.searchParams.get("access_token");
+        if (token) {
+          localStorage.setItem("base44_access_token", token);
+          window.location.reload();
+        } else {
+          setError("Intet token modtaget. Prøv igen.");
+          setStatus("idle");
+        }
+      } catch (e) {
+        setError("Fejl ved behandling af login-link.");
+        setStatus("idle");
+      }
+    };
 
-    setLoading(true);
-    setError("");
-    try {
-      localStorage.setItem("base44_access_token", accessToken);
-      // Verify it works
-      await base44.auth.me();
-      checkAppState();
-      window.location.reload();
-    } catch (e) {
-      localStorage.removeItem("base44_access_token");
-      setError("Ugyldigt token. Prøv igen.");
+    // ToDesktop fires this event when the app is opened via custom protocol
+    if (window.__todesktop?.app?.on) {
+      window.__todesktop.app.on("open-url", handleOpenUrl);
     }
-    setLoading(false);
-  };
+
+    return () => {
+      if (window.__todesktop?.app?.off) {
+        window.__todesktop.app.off("open-url", handleOpenUrl);
+      }
+    };
+  }, [status]);
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black z-50">
-      <div className="bg-slate-900 border border-cyan-500/30 rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl">
-        <div className="text-center mb-6">
-          <div className="text-4xl mb-3">🔐</div>
-          <h2 className="text-xl font-bold text-white mb-2">Log ind på NexusVectis</h2>
-          <p className="text-slate-400 text-sm">
-            Google OAuth kan ikke køre direkte i desktop-appen. Brug nedenstående flow.
-          </p>
-        </div>
+    <div className="fixed inset-0 flex items-center justify-center bg-slate-950 z-50">
+      <div
+        className="bg-slate-900 border rounded-2xl p-8 max-w-sm w-full mx-4 shadow-2xl text-center"
+        style={{ borderColor: "rgba(6,182,212,0.3)" }}
+      >
+        <div className="text-5xl mb-4">🔐</div>
+        <h2 className="text-xl font-bold text-white mb-2">Log ind</h2>
 
-        {step === "prompt" && (
-          <div className="space-y-4">
+        {status === "idle" && (
+          <>
+            <p className="text-slate-400 text-sm mb-6">
+              Klik nedenfor for at logge ind via din webbrowser. Du sendes automatisk tilbage til appen bagefter.
+            </p>
+            {error && <p className="text-red-400 text-sm mb-4">{error}</p>}
             <button
-              onClick={openLoginInBrowser}
-              className="w-full py-3 rounded-xl font-bold text-white transition-all"
+              onClick={openLogin}
+              className="w-full py-3 rounded-xl font-bold text-white transition-all hover:opacity-90"
               style={{ background: "linear-gradient(135deg, #06b6d4, #8b5cf6)" }}
             >
               Åbn login i browser
             </button>
-            <p className="text-slate-500 text-xs text-center">
-              Logger ind via Google i din normale webbrowser
-            </p>
-          </div>
+          </>
         )}
 
-        {step === "paste" && (
-          <div className="space-y-4">
-            <div className="bg-slate-800 rounded-xl p-4 text-sm text-slate-300 space-y-2">
-              <p><span className="text-cyan-400 font-bold">1.</span> Log ind med Google i browseren</p>
-              <p><span className="text-cyan-400 font-bold">2.</span> Når du er logget ind, kopiér URL'en fra adresselinjen</p>
-              <p><span className="text-cyan-400 font-bold">3.</span> Indsæt den herunder</p>
+        {status === "waiting" && (
+          <>
+            <p className="text-slate-400 text-sm mb-6">
+              Fuldfør login i din webbrowser. Appen opdateres automatisk, når du er logget ind.
+            </p>
+            <div className="flex items-center justify-center gap-3 text-cyan-400">
+              <div className="w-5 h-5 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin" />
+              <span className="text-sm font-mono">Venter på login...</span>
             </div>
-            <textarea
-              value={token}
-              onChange={e => setToken(e.target.value)}
-              placeholder="Indsæt URL eller access_token her..."
-              className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 outline-none focus:border-cyan-500 resize-none font-mono"
-              rows={3}
-            />
-            {error && <p className="text-red-400 text-sm">{error}</p>}
-            <div className="flex gap-3">
-              <button
-                onClick={() => setStep("prompt")}
-                className="flex-1 py-2.5 rounded-xl border border-slate-700 text-slate-400 hover:text-white text-sm transition-all"
-              >
-                Tilbage
-              </button>
-              <button
-                onClick={applyToken}
-                disabled={loading || !token.trim()}
-                className="flex-1 py-2.5 rounded-xl font-bold text-white text-sm disabled:opacity-50 transition-all"
-                style={{ background: "linear-gradient(135deg, #06b6d4, #8b5cf6)" }}
-              >
-                {loading ? "Bekræfter..." : "Log ind"}
-              </button>
-            </div>
-          </div>
+            <button
+              onClick={() => setStatus("idle")}
+              className="mt-6 text-slate-600 hover:text-slate-400 text-xs transition-all"
+            >
+              Annuller
+            </button>
+          </>
         )}
       </div>
     </div>
