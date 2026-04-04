@@ -124,7 +124,12 @@ export const AuthProvider = ({ children }) => {
   };
 
   const navigateToLogin = () => {
-    // Use the SDK's redirectToLogin method
+    const isElectron = typeof navigator !== 'undefined' && navigator.userAgent.toLowerCase().includes('electron');
+    if (isElectron && window.__todesktop?.shell?.openExternal) {
+      const loginUrl = `https://base44.com/login?app_id=${appParams.appId}&from_url=${encodeURIComponent('nexusvectis://auth')}`;
+      window.__todesktop.shell.openExternal(loginUrl);
+      return;
+    }
     base44.auth.redirectToLogin(window.location.href);
   };
 

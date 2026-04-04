@@ -8,5 +8,11 @@
     "dist/**/*",
     "public/electron.js",
     "public/preload.js"
+  ],
+  "protocols": [
+    {
+      "name": "NexusVectis",
+      "schemes": ["nexusvectis"]
+    }
   ]
 }
