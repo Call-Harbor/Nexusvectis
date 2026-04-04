@@ -271,6 +271,7 @@ export default function HarborSuperAgentChat({ onClose }) {
     try { return new Set(JSON.parse(localStorage.getItem('harbor_deleted_convs') || '[]')); }
     catch { return new Set(); }
   });
+  const [orgId, setOrgId] = useState(null);
   const [conversations, setConversations] = useState([]);
   const [activeConversation, setActiveConversation] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -289,9 +290,19 @@ export default function HarborSuperAgentChat({ onClose }) {
   const fileInputRef = useRef(null);
   const unsubscribeRef = useRef(null);
 
-  // Load conversations
+  // Load user org + conversations
   useEffect(() => {
-    loadConversations();
+    const init = async () => {
+      try {
+        const user = await base44.auth.me();
+        const members = await base44.entities.OrganizationMember.filter({ user_email: user.email });
+        if (members?.length > 0) setOrgId(members[0].organization_id);
+      } catch (e) {
+        console.warn('Could not load org:', e);
+      }
+      await loadConversations();
+    };
+    init();
     return () => { unsubscribeRef.current?.(); };
   }, []);
 
@@ -342,6 +353,13 @@ export default function HarborSuperAgentChat({ onClose }) {
     setActiveConversation(conv);
     setMessages([]);
     subscribeToConversation(conv.id);
+    // Inject org context silently
+    if (orgId) {
+      await base44.agents.addMessage(conv, {
+        role: 'system',
+        content: `SYSTEM CONTEXT: The user's organization_id is "${orgId}". ALWAYS filter all entity queries by organization_id = "${orgId}". Never show data from other organizations.`
+      });
+    }
   };
 
   const renameConversation = async (convId, newName) => {
