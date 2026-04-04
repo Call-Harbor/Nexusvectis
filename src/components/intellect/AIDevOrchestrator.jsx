@@ -449,34 +449,8 @@ export default function AIDevOrchestrator({ onClose }) {
   const [dbResult, setDbResult] = useState(null);
   const [dbLoading, setDbLoading] = useState(false);
 
-  // Auto-save
-  const [autoSaveStatus, setAutoSaveStatus] = useState(null); // null | 'saving' | 'saved'
-  const autoSaveTimer = useRef(null);
-  useEffect(() => {
-    if (files === DEFAULT_FILES) return;
-    setAutoSaveStatus('saving');
-    clearTimeout(autoSaveTimer.current);
-    autoSaveTimer.current = setTimeout(async () => {
-      try {
-        const user = await base44.auth.me();
-        const projectData = { files, savedAt: new Date().toISOString(), projectName: files[0]?.name?.split('.')[0] || 'project' };
-        const blob = new Blob([JSON.stringify(projectData)], { type: 'application/json' });
-        const file = new File([blob], `${projectData.projectName}.nexuside`, { type: 'application/json' });
-        const { file_url } = await base44.integrations.Core.UploadFile({ file });
-        await base44.entities.FleetDriveFile.create({
-          organization_id: user?.organization_id,
-          name: `${projectData.projectName} (IDE Project)`,
-          file_type: 'other', file_url,
-          folder: 'ide_projects_autosave',
-          description: `${files.length} files · Auto-saved`,
-          source: 'document_editor', tags: ['ide', 'autosave'],
-        });
-        setAutoSaveStatus('saved');
-        setTimeout(() => setAutoSaveStatus(null), 2000);
-      } catch { setAutoSaveStatus(null); }
-    }, 3000);
-    return () => clearTimeout(autoSaveTimer.current);
-  }, [files]);
+  // Auto-save status (manual only — no background polling to avoid rate limits)
+  const [autoSaveStatus, setAutoSaveStatus] = useState(null);
 
   // ── Run file (real execution via codeExecutor backend) ─────────────────
   const runFile = async () => {
