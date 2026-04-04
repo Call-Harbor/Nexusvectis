@@ -1,9 +1,24 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { appParams } from "@/lib/app-params";
 
 export default function ElectronLoginHelper() {
   const [token, setToken] = useState("");
   const [error, setError] = useState("");
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+
+  // Monitorér localStorage for token fra browser-login
+  useEffect(() => {
+    if (isLoggingIn) {
+      const checkInterval = setInterval(() => {
+        const storedToken = localStorage.getItem("base44_access_token");
+        if (storedToken) {
+          clearInterval(checkInterval);
+          window.location.reload();
+        }
+      }, 500);
+      return () => clearInterval(checkInterval);
+    }
+  }, [isLoggingIn]);
 
   const connect = () => {
     const raw = token.trim();
@@ -16,7 +31,8 @@ export default function ElectronLoginHelper() {
   };
 
   const openWebApp = () => {
-    const url = `https://${appParams.appId}.base44.app/DesktopConnect`;
+    setIsLoggingIn(true);
+    const url = `https://${appParams.appId}.base44.app`;
     if (window.__todesktop?.shell?.openExternal) {
       window.__todesktop.shell.openExternal(url);
     } else {
@@ -40,10 +56,11 @@ export default function ElectronLoginHelper() {
 
         <button
           onClick={openWebApp}
-          className="w-full py-2.5 rounded-xl font-semibold text-white text-sm mb-5 transition-all hover:opacity-90"
-          style={{ background: "linear-gradient(135deg, #06b6d4, #8b5cf6)" }}
+          className="w-full py-2.5 rounded-xl font-semibold text-white text-sm mb-5 transition-all hover:opacity-90 disabled:opacity-50"
+          style={{ background: isLoggingIn ? "linear-gradient(135deg, #10b981, #06b6d4)" : "linear-gradient(135deg, #06b6d4, #8b5cf6)" }}
+          disabled={isLoggingIn}
         >
-          1. Hent mit forbindelses-ID →
+          {isLoggingIn ? "Venter på login..." : "1. Log ind i browser →"}
         </button>
 
         <div className="mb-1">
@@ -58,14 +75,17 @@ export default function ElectronLoginHelper() {
         </div>
 
         {error && <p className="text-red-400 text-xs mb-3">{error}</p>}
+        {isLoggingIn && <p className="text-green-400 text-xs mb-3">✓ Browser åbnet — login og vend tilbage hertil automatisk</p>}
 
-        <button
-          onClick={connect}
-          className="w-full py-3 rounded-xl font-bold text-white transition-all hover:opacity-90 mt-2"
-          style={{ background: token ? "linear-gradient(135deg, #10b981, #06b6d4)" : "#334155" }}
-        >
-          Forbind
-        </button>
+        {!isLoggingIn && (
+          <button
+            onClick={connect}
+            className="w-full py-3 rounded-xl font-bold text-white transition-all hover:opacity-90 mt-2"
+            style={{ background: token ? "linear-gradient(135deg, #10b981, #06b6d4)" : "#334155" }}
+          >
+            Forbind
+          </button>
+        )}
       </div>
     </div>
   );
