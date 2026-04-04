@@ -4,9 +4,9 @@ import { base44 } from "@/api/base44Client";
 import ReactMarkdown from "react-markdown";
 import {
   Brain, Send, X, Plus, Trash2, MessageSquare, Loader2,
-  Sparkles, ChevronDown, Zap, Activity, Bot, User,
-  Copy, CheckCheck, AlertCircle, Minimize2, Maximize2,
-  Clock, RefreshCw, Pencil, Check
+  Sparkles, User, Copy, CheckCheck, Minimize2, Maximize2,
+  Pencil, Paperclip, Image, Film, FileText, Download,
+  ImagePlus, Wand2, XCircle
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -36,6 +36,30 @@ function TypingIndicator() {
   );
 }
 
+function FileAttachment({ url }) {
+  const ext = url.split('?')[0].split('.').pop().toLowerCase();
+  const isImage = ['jpg','jpeg','png','gif','webp','svg'].includes(ext);
+  const isVideo = ['mp4','mov','webm','avi'].includes(ext);
+  const isPdf = ext === 'pdf';
+  if (isImage) return (
+    <a href={url} target="_blank" rel="noopener noreferrer" className="block mt-2">
+      <img src={url} alt="attachment" className="max-w-xs max-h-64 rounded-xl object-cover border border-cyan-500/20 hover:border-cyan-500/50 transition-all" />
+    </a>
+  );
+  if (isVideo) return (
+    <video src={url} controls className="mt-2 max-w-xs rounded-xl border border-cyan-500/20" style={{ maxHeight: 200 }} />
+  );
+  return (
+    <a href={url} target="_blank" rel="noopener noreferrer"
+      className="mt-2 flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-mono transition-all inline-flex"
+      style={{ color: "#06b6d4", background: "rgba(6,182,212,0.08)", border: "1px solid rgba(6,182,212,0.2)" }}>
+      <FileText className="w-3.5 h-3.5" />
+      {url.split('/').pop().split('?')[0]}
+      <Download className="w-3 h-3 ml-1" />
+    </a>
+  );
+}
+
 function MessageBubble({ message }) {
   const isUser = message.role === "user";
   const isSystem = message.role === "system";
@@ -48,6 +72,10 @@ function MessageBubble({ message }) {
   };
 
   if (isSystem) return null;
+
+  // Detect generated image URLs in AI content
+  const imageUrlRegex = /(https?:\/\/[^\s]+\.(?:jpg|jpeg|png|gif|webp)(?:\?[^\s]*)?)/gi;
+  const generatedImages = !isUser && message.content ? [...message.content.matchAll(imageUrlRegex)].map(m => m[0]) : [];
 
   return (
     <motion.div
@@ -69,19 +97,26 @@ function MessageBubble({ message }) {
           </div>
         )}
 
-        <div className={`rounded-2xl px-4 py-3 text-sm leading-relaxed relative ${
-          isUser
-            ? "bg-gradient-to-br from-cyan-500/20 to-violet-500/20 border border-cyan-500/30 text-white"
-            : "text-slate-200"
-        }`}
-          style={!isUser ? {
-            background: "rgba(15,23,42,0.8)",
-            border: "1px solid rgba(6,182,212,0.15)",
-            backdropFilter: "blur(10px)"
-          } : {}}>
+        {/* Attachments sent by user */}
+        {isUser && message.file_urls?.length > 0 && (
+          <div className="flex flex-col gap-1 items-end mb-1">
+            {message.file_urls.map((url, i) => <FileAttachment key={i} url={url} />)}
+          </div>
+        )}
 
-          {message.content ? (
-            isUser ? (
+        {message.content && (
+          <div className={`rounded-2xl px-4 py-3 text-sm leading-relaxed relative ${
+            isUser
+              ? "bg-gradient-to-br from-cyan-500/20 to-violet-500/20 border border-cyan-500/30 text-white"
+              : "text-slate-200"
+          }`}
+            style={!isUser ? {
+              background: "rgba(15,23,42,0.8)",
+              border: "1px solid rgba(6,182,212,0.15)",
+              backdropFilter: "blur(10px)"
+            } : {}}>
+
+            {isUser ? (
               <p>{message.content}</p>
             ) : (
               <ReactMarkdown
@@ -91,30 +126,51 @@ function MessageBubble({ message }) {
                     <a href={href} target="_blank" rel="noopener noreferrer" className="text-cyan-400 underline hover:text-cyan-300">
                       {children}
                     </a>
+                  ),
+                  img: ({ src, alt }) => (
+                    <a href={src} target="_blank" rel="noopener noreferrer">
+                      <img src={src} alt={alt} className="max-w-sm rounded-xl border border-cyan-500/30 my-2" />
+                    </a>
                   )
                 }}
               >
                 {message.content}
               </ReactMarkdown>
-            )
-          ) : (
-            <TypingIndicator />
-          )}
+            )}
 
-          {/* Tool calls */}
-          {message.tool_calls?.length > 0 && (
-            <div className="mt-3 space-y-1.5 border-t border-slate-700/50 pt-3">
-              {message.tool_calls.map((tc, i) => (
-                <div key={i} className="flex items-center gap-2 text-[10px] font-mono">
-                  <div className={`w-1.5 h-1.5 rounded-full ${tc.status === 'completed' ? 'bg-green-400' : tc.status === 'running' ? 'bg-yellow-400 animate-pulse' : 'bg-slate-500'}`} />
-                  <span className="text-slate-400">{tc.name?.replace(/_/g, ' ')}</span>
-                  {tc.status === 'running' && <Loader2 className="w-3 h-3 text-yellow-400 animate-spin ml-auto" />}
-                  {tc.status === 'completed' && <CheckCheck className="w-3 h-3 text-green-400 ml-auto" />}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+            {/* Tool calls */}
+            {message.tool_calls?.length > 0 && (
+              <div className="mt-3 space-y-1.5 border-t border-slate-700/50 pt-3">
+                {message.tool_calls.map((tc, i) => (
+                  <div key={i} className="flex items-center gap-2 text-[10px] font-mono">
+                    <div className={`w-1.5 h-1.5 rounded-full ${tc.status === 'completed' ? 'bg-green-400' : tc.status === 'running' ? 'bg-yellow-400 animate-pulse' : 'bg-slate-500'}`} />
+                    <span className="text-slate-400">{tc.name?.replace(/_/g, ' ')}</span>
+                    {tc.status === 'running' && <Loader2 className="w-3 h-3 text-yellow-400 animate-spin ml-auto" />}
+                    {tc.status === 'completed' && <CheckCheck className="w-3 h-3 text-green-400 ml-auto" />}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Inline generated images from AI */}
+        {generatedImages.length > 0 && (
+          <div className="flex flex-wrap gap-2 mt-1">
+            {generatedImages.map((url, i) => (
+              <a key={i} href={url} target="_blank" rel="noopener noreferrer">
+                <img src={url} alt={`generated-${i}`} className="max-w-xs rounded-xl border border-violet-500/30 hover:border-violet-500 transition-all" style={{ maxHeight: 280 }} />
+              </a>
+            ))}
+          </div>
+        )}
+
+        {/* AI attachments */}
+        {!isUser && message.file_urls?.length > 0 && (
+          <div className="flex flex-col gap-1 mt-1">
+            {message.file_urls.map((url, i) => <FileAttachment key={i} url={url} />)}
+          </div>
+        )}
 
         {/* Copy button */}
         {!isUser && message.content && (
@@ -219,8 +275,14 @@ export default function HarborSuperAgentChat({ onClose }) {
   const [isLoading, setIsLoading] = useState(true);
   const [showSidebar, setShowSidebar] = useState(true);
   const [isMaximized, setIsMaximized] = useState(false);
+  const [attachments, setAttachments] = useState([]); // {url, name, type}
+  const [isUploading, setIsUploading] = useState(false);
+  const [showImageGen, setShowImageGen] = useState(false);
+  const [imageGenPrompt, setImageGenPrompt] = useState("");
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+  const fileInputRef = useRef(null);
   const unsubscribeRef = useRef(null);
 
   // Load conversations
@@ -293,27 +355,75 @@ export default function HarborSuperAgentChat({ onClose }) {
     setConversations(prev => prev.filter(c => c.id !== convId));
   };
 
+  const handleFileUpload = async (e) => {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+    setIsUploading(true);
+    for (const file of files) {
+      try {
+        const { file_url } = await base44.integrations.Core.UploadFile({ file });
+        const type = file.type.startsWith('image') ? 'image' : file.type.startsWith('video') ? 'video' : 'file';
+        setAttachments(prev => [...prev, { url: file_url, name: file.name, type }]);
+      } catch {
+        toast.error(`Failed to upload ${file.name}`);
+      }
+    }
+    setIsUploading(false);
+    e.target.value = "";
+  };
+
+  const generateImage = async () => {
+    if (!imageGenPrompt.trim() || !activeConversation) return;
+    setIsGeneratingImage(true);
+    const prompt = imageGenPrompt.trim();
+    setImageGenPrompt("");
+    setShowImageGen(false);
+    // Add user message first
+    await base44.agents.addMessage(activeConversation, {
+      role: "user",
+      content: `Generate a high-quality image: ${prompt}`
+    });
+    try {
+      const { url } = await base44.integrations.Core.GenerateImage({ prompt });
+      // Show it as an assistant message
+      await base44.agents.addMessage(activeConversation, {
+        role: "assistant",
+        content: `Here is your generated image:\n\n![${prompt}](${url})`,
+        file_urls: [url]
+      });
+    } catch {
+      toast.error("Image generation failed");
+    }
+    setIsGeneratingImage(false);
+  };
+
   const sendMessage = useCallback(async (text) => {
     const msg = (text || input).trim();
-    if (!msg || !activeConversation || isSending) return;
+    if ((!msg && attachments.length === 0) || !activeConversation || isSending) return;
+    const fileUrls = attachments.map(a => a.url);
     setInput("");
+    setAttachments([]);
     setIsSending(true);
 
     // Auto-name the conversation from the first user message
     const isFirstMessage = visibleMessages.filter(m => m.role === "user").length === 0;
-    if (isFirstMessage) {
+    if (isFirstMessage && msg) {
       const autoName = msg.length > 40 ? msg.slice(0, 40).trimEnd() + "…" : msg;
       renameConversation(activeConversation.id, autoName);
     }
 
     try {
-      await base44.agents.addMessage(activeConversation, { role: "user", content: msg });
+      await base44.agents.addMessage(activeConversation, {
+        role: "user",
+        content: msg || "(attached files)",
+        file_urls: fileUrls.length > 0 ? fileUrls : undefined
+      });
     } catch {
       toast.error("Message could not be sent");
     }
     setIsSending(false);
     inputRef.current?.focus();
-  }, [input, activeConversation, isSending, visibleMessages]);
+  }, [input, attachments, activeConversation, isSending, visibleMessages]);
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -522,8 +632,67 @@ export default function HarborSuperAgentChat({ onClose }) {
 
               {/* Input */}
               <div className="flex-shrink-0 p-4" style={{ borderTop: "1px solid rgba(6,182,212,0.1)" }}>
-                <div className="relative flex items-end gap-3 rounded-2xl p-3"
+
+                {/* Image generation panel */}
+                {showImageGen && (
+                  <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+                    className="mb-3 rounded-2xl p-3 flex items-center gap-2"
+                    style={{ background: "rgba(139,92,246,0.08)", border: "1px solid rgba(139,92,246,0.3)" }}>
+                    <Wand2 className="w-4 h-4 flex-shrink-0" style={{ color: "#8b5cf6" }} />
+                    <input
+                      autoFocus
+                      value={imageGenPrompt}
+                      onChange={e => setImageGenPrompt(e.target.value)}
+                      onKeyDown={e => { if (e.key === "Enter") generateImage(); if (e.key === "Escape") setShowImageGen(false); }}
+                      placeholder="Describe the image to generate... (Enter)"
+                      className="flex-1 bg-transparent text-sm text-white placeholder-violet-400/40 outline-none font-light"
+                    />
+                    {isGeneratingImage
+                      ? <Loader2 className="w-4 h-4 animate-spin" style={{ color: "#8b5cf6" }} />
+                      : <button onClick={generateImage} className="text-[10px] font-mono px-2 py-1 rounded-lg" style={{ color: "#8b5cf6", background: "rgba(139,92,246,0.15)" }}>Generate</button>
+                    }
+                    <button onClick={() => setShowImageGen(false)}><XCircle className="w-4 h-4 text-slate-500 hover:text-red-400" /></button>
+                  </motion.div>
+                )}
+
+                {/* Attachment previews */}
+                {attachments.length > 0 && (
+                  <div className="mb-2 flex flex-wrap gap-2">
+                    {attachments.map((a, i) => (
+                      <div key={i} className="relative group flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[10px] font-mono"
+                        style={{ background: "rgba(6,182,212,0.08)", border: "1px solid rgba(6,182,212,0.2)", color: "#06b6d4" }}>
+                        {a.type === 'image' ? <Image className="w-3 h-3" /> : a.type === 'video' ? <Film className="w-3 h-3" /> : <FileText className="w-3 h-3" />}
+                        <span className="max-w-[120px] truncate">{a.name}</span>
+                        <button onClick={() => setAttachments(prev => prev.filter((_, j) => j !== i))}
+                          className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <XCircle className="w-3 h-3 text-red-400" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <input ref={fileInputRef} type="file" multiple accept="image/*,video/*,.pdf,.csv,.xlsx,.xls,.docx,.txt,.json" className="hidden" onChange={handleFileUpload} />
+
+                <div className="relative flex items-end gap-2 rounded-2xl p-3"
                   style={{ background: "rgba(15,23,42,0.8)", border: "1px solid rgba(6,182,212,0.2)", boxShadow: "0 0 20px rgba(6,182,212,0.05)" }}>
+
+                  {/* Left tools */}
+                  <div className="flex items-center gap-1 flex-shrink-0 pb-0.5">
+                    <button onClick={() => fileInputRef.current?.click()} disabled={isUploading}
+                      title="Attach file, image or video"
+                      className="w-7 h-7 rounded-lg flex items-center justify-center transition-all hover:bg-slate-700/60 disabled:opacity-40"
+                      style={{ color: isUploading ? "#06b6d4" : "#475569" }}>
+                      {isUploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Paperclip className="w-3.5 h-3.5" />}
+                    </button>
+                    <button onClick={() => setShowImageGen(!showImageGen)}
+                      title="Generate AI image"
+                      className="w-7 h-7 rounded-lg flex items-center justify-center transition-all hover:bg-violet-500/20"
+                      style={{ color: showImageGen ? "#8b5cf6" : "#475569" }}>
+                      <ImagePlus className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
                   <textarea
                     ref={inputRef}
                     value={input}
@@ -541,13 +710,13 @@ export default function HarborSuperAgentChat({ onClose }) {
                   />
                   <button
                     onClick={() => sendMessage()}
-                    disabled={!input.trim() || isSending}
+                    disabled={(!input.trim() && attachments.length === 0) || isSending}
                     className="flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center transition-all disabled:opacity-30 disabled:cursor-not-allowed"
                     style={{
-                      background: input.trim() && !isSending
+                      background: (input.trim() || attachments.length > 0) && !isSending
                         ? "linear-gradient(135deg, #06b6d4, #8b5cf6)"
                         : "rgba(6,182,212,0.1)",
-                      boxShadow: input.trim() && !isSending ? "0 0 20px rgba(6,182,212,0.3)" : "none"
+                      boxShadow: (input.trim() || attachments.length > 0) && !isSending ? "0 0 20px rgba(6,182,212,0.3)" : "none"
                     }}>
                     {isSending
                       ? <Loader2 className="w-4 h-4 text-white animate-spin" />
@@ -556,7 +725,7 @@ export default function HarborSuperAgentChat({ onClose }) {
                   </button>
                 </div>
                 <p className="text-[9px] font-mono text-slate-600 text-center mt-2 tracking-wider">
-                  H.A.R.B.O.R has access to all platform entities and modules
+                  Attach files, images & videos • Generate AI images • Full platform access
                 </p>
               </div>
             </>
