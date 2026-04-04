@@ -6,11 +6,26 @@ export default function ElectronLoginHelper() {
   const [error, setError] = useState("");
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
-  // Monitorér localStorage for token fra browser-login
+  // Lytte på deep links og localStorage token fra browser-login
   useEffect(() => {
+    // Handle ToDesktop deep link (nexusvectis://auth?token=xxx)
+    if (window.__todesktop?.deepLink) {
+      window.__todesktop.deepLink.addEventListener('url', (url) => {
+        if (url && url.startsWith('nexusvectis://')) {
+          const urlParams = new URL(url.replace('nexusvectis://', 'http://localhost/')).searchParams;
+          const token = urlParams.get('token');
+          if (token) {
+            localStorage.setItem('base44_access_token', token);
+            window.location.reload();
+          }
+        }
+      });
+    }
+
+    // Fallback: monitor localStorage fra browser-login
     if (isLoggingIn) {
       const checkInterval = setInterval(() => {
-        const storedToken = localStorage.getItem("base44_access_token");
+        const storedToken = localStorage.getItem('base44_access_token');
         if (storedToken) {
           clearInterval(checkInterval);
           window.location.reload();
@@ -32,7 +47,8 @@ export default function ElectronLoginHelper() {
 
   const openWebApp = () => {
     setIsLoggingIn(true);
-    const url = `https://${appParams.appId}.base44.app`;
+    const returnUrl = encodeURIComponent('nexusvectis://auth');
+    const url = `https://${appParams.appId}.base44.app?return_to=${returnUrl}`;
     if (window.__todesktop?.shell?.openExternal) {
       window.__todesktop.shell.openExternal(url);
     } else {
@@ -60,7 +76,7 @@ export default function ElectronLoginHelper() {
           style={{ background: isLoggingIn ? "linear-gradient(135deg, #10b981, #06b6d4)" : "linear-gradient(135deg, #06b6d4, #8b5cf6)" }}
           disabled={isLoggingIn}
         >
-          {isLoggingIn ? "Venter på login..." : "1. Log ind i browser →"}
+          {isLoggingIn ? "Åbner browser... Log ind og vent på automatisk synkronisering" : "1. Log ind i browser →"}
         </button>
 
         <div className="mb-1">
@@ -77,13 +93,12 @@ export default function ElectronLoginHelper() {
         {error && <p className="text-red-400 text-xs mb-3">{error}</p>}
         {isLoggingIn && <p className="text-green-400 text-xs mb-3">✓ Browser åbnet — login og vend tilbage hertil automatisk</p>}
 
-        {!isLoggingIn && (
+        {!isLoggingIn && token && (
           <button
             onClick={connect}
-            className="w-full py-3 rounded-xl font-bold text-white transition-all hover:opacity-90 mt-2"
-            style={{ background: token ? "linear-gradient(135deg, #10b981, #06b6d4)" : "#334155" }}
+            className="w-full py-3 rounded-xl font-bold text-white transition-all hover:opacity-90 mt-2 bg-gradient-to-r from-green-600 to-cyan-600"
           >
-            Forbind
+            Forbind manuelt
           </button>
         )}
       </div>
