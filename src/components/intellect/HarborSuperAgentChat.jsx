@@ -300,9 +300,9 @@ export default function HarborSuperAgentChat({ onClose }) {
     setIsLoading(true);
     try {
       const convs = await base44.agents.listConversations({ agent_name: AGENT_NAME });
-      console.log('[LOAD] All conversations from server:', convs?.length, convs?.map(c => ({ id: c.id, name: c.metadata?.name, deleted: c.metadata?.deleted })));
+      console.log('[LOAD] Raw conversations:', JSON.stringify(convs?.map(c => ({ id: c.id, metadata: c.metadata })), null, 2));
       const active = (convs || []).filter(c => !c.metadata?.deleted);
-      console.log('[LOAD] Active after filter:', active?.length);
+      console.log('[LOAD] After filter:', active.length, 'of', convs?.length);
       setConversations(active);
       if (active.length > 0) {
         await selectConversation(active[0]);
@@ -350,10 +350,16 @@ export default function HarborSuperAgentChat({ onClose }) {
   };
 
   const deleteConversation = async (convId) => {
-    console.log('[DELETE] Attempting to delete conversation:', convId);
+    const conv = conversations.find(c => c.id === convId);
+    console.log('[DELETE] Conv to delete:', convId, 'current metadata:', JSON.stringify(conv?.metadata));
+    const newMeta = { ...(conv?.metadata || {}), deleted: true };
+    console.log('[DELETE] Setting metadata to:', JSON.stringify(newMeta));
     try {
-      const result = await base44.entities.ChatSession.delete(convId);
-      console.log('[DELETE] Success:', result);
+      const result = await base44.agents.updateConversation(convId, { metadata: newMeta });
+      console.log('[DELETE] updateConversation result:', JSON.stringify(result));
+      // Verify it stuck
+      const check = await base44.agents.getConversation(convId);
+      console.log('[DELETE] Verification - metadata after update:', JSON.stringify(check?.metadata));
     } catch (err) {
       console.error('[DELETE] Failed:', err);
     }
