@@ -1,0 +1,12 @@
+{
+  "id": "2604041lbmklc",
+  "icon": "./desktop-icon.png",
+  "appPath": ".",
+  "schemaVersion": 1,
+  "nodeVersion": "22.11.0",
+  "appFiles": [
+    "dist/**/*",
+    "public/electron.js",
+    "public/preload.js"
+  ]
+}
