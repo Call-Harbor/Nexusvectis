@@ -1,105 +1,71 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { appParams } from "@/lib/app-params";
 
-const CALLBACK_SCHEME = "nexusvectis://auth";
-
 export default function ElectronLoginHelper() {
-  const [status, setStatus] = useState("idle"); // idle | waiting
+  const [token, setToken] = useState("");
   const [error, setError] = useState("");
 
-  const openLogin = () => {
-    const loginUrl = `https://base44.com/login?app_id=${appParams.appId}&from_url=${encodeURIComponent(CALLBACK_SCHEME)}`;
-
-    // Open in system browser via ToDesktop shell API
-    if (window.__todesktop?.shell?.openExternal) {
-      window.__todesktop.shell.openExternal(loginUrl);
-    } else {
-      window.open(loginUrl, "_blank");
+  const connect = () => {
+    const raw = token.trim();
+    if (!raw) {
+      setError("Indsæt venligst dit personlige forbindelses-ID.");
+      return;
     }
-
-    setStatus("waiting");
+    localStorage.setItem("base44_access_token", raw);
+    window.location.reload();
   };
 
-  useEffect(() => {
-    if (status !== "waiting") return;
-
-    // ToDesktop/Electron calls handler as (event, url) where event is an Electron event object.
-    // We accept both signatures to be safe.
-    const handleOpenUrl = (eventOrUrl, maybeUrl) => {
-      const url = typeof eventOrUrl === "string" ? eventOrUrl : (maybeUrl ?? "");
-      if (!url || !url.startsWith("nexusvectis://")) return;
-
-      try {
-        const normalized = url.replace("nexusvectis://auth", "https://callback");
-        const parsed = new URL(normalized);
-        const token = parsed.searchParams.get("access_token");
-        if (token) {
-          localStorage.setItem("base44_access_token", token);
-          window.location.reload();
-        } else {
-          setError("Intet token modtaget fra login. Prøv igen.");
-          setStatus("idle");
-        }
-      } catch (e) {
-        setError("Fejl ved behandling af login-link.");
-        setStatus("idle");
-      }
-    };
-
-    // Register listener on the ToDesktop app object
-    if (window.__todesktop?.app?.on) {
-      window.__todesktop.app.on("open-url", handleOpenUrl);
+  const openWebApp = () => {
+    const url = `https://${appParams.appId}.base44.app/DesktopConnect`;
+    if (window.__todesktop?.shell?.openExternal) {
+      window.__todesktop.shell.openExternal(url);
+    } else {
+      window.open(url, "_blank");
     }
-
-    return () => {
-      if (window.__todesktop?.app?.off) {
-        window.__todesktop.app.off("open-url", handleOpenUrl);
-      }
-    };
-  }, [status]);
+  };
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-slate-950 z-50">
       <div
-        className="bg-slate-900 border rounded-2xl p-8 max-w-sm w-full mx-4 shadow-2xl text-center"
+        className="bg-slate-900 border rounded-2xl p-8 max-w-sm w-full mx-4 shadow-2xl"
         style={{ borderColor: "rgba(6,182,212,0.3)" }}
       >
-        <div className="text-5xl mb-4">🔐</div>
-        <h2 className="text-xl font-bold text-white mb-2">Log ind på NexusVectis</h2>
+        <div className="text-center mb-6">
+          <div className="text-5xl mb-3">🔗</div>
+          <h2 className="text-xl font-bold text-white">Forbind desktop-appen</h2>
+          <p className="text-slate-400 text-sm mt-2">
+            Log ind på platformen i din browser og hent dit personlige ID.
+          </p>
+        </div>
 
-        {status === "idle" && (
-          <>
-            <p className="text-slate-400 text-sm mb-6">
-              Klik nedenfor for at logge ind via din webbrowser. Du sendes automatisk tilbage til appen bagefter.
-            </p>
-            {error && <p className="text-red-400 text-sm mb-4">{error}</p>}
-            <button
-              onClick={openLogin}
-              className="w-full py-3 rounded-xl font-bold text-white transition-all hover:opacity-90"
-              style={{ background: "linear-gradient(135deg, #06b6d4, #8b5cf6)" }}
-            >
-              Åbn login i browser
-            </button>
-          </>
-        )}
+        <button
+          onClick={openWebApp}
+          className="w-full py-2.5 rounded-xl font-semibold text-white text-sm mb-5 transition-all hover:opacity-90"
+          style={{ background: "linear-gradient(135deg, #06b6d4, #8b5cf6)" }}
+        >
+          1. Hent mit forbindelses-ID →
+        </button>
 
-        {status === "waiting" && (
-          <>
-            <p className="text-slate-400 text-sm mb-6">
-              Fuldfør login i din webbrowser. Appen opdateres automatisk, når du er logget ind.
-            </p>
-            <div className="flex items-center justify-center gap-3 text-cyan-400">
-              <div className="w-5 h-5 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin" />
-              <span className="text-sm font-mono">Venter på login...</span>
-            </div>
-            <button
-              onClick={() => setStatus("idle")}
-              className="mt-6 text-slate-600 hover:text-slate-400 text-xs transition-all"
-            >
-              Annuller
-            </button>
-          </>
-        )}
+        <div className="mb-1">
+          <label className="text-slate-400 text-xs font-mono mb-1 block">2. Indsæt dit ID her</label>
+          <textarea
+            value={token}
+            onChange={(e) => { setToken(e.target.value); setError(""); }}
+            placeholder="Indsæt dit personlige forbindelses-ID..."
+            className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-white text-xs font-mono resize-none focus:outline-none focus:border-cyan-500"
+            rows={3}
+          />
+        </div>
+
+        {error && <p className="text-red-400 text-xs mb-3">{error}</p>}
+
+        <button
+          onClick={connect}
+          className="w-full py-3 rounded-xl font-bold text-white transition-all hover:opacity-90 mt-2"
+          style={{ background: token ? "linear-gradient(135deg, #10b981, #06b6d4)" : "#334155" }}
+        >
+          Forbind
+        </button>
       </div>
     </div>
   );

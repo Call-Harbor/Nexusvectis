@@ -8,6 +8,7 @@ import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ElectronLoginHelper from '@/components/ElectronLoginHelper';
+import DesktopConnect from './pages/DesktopConnect';
 import HolographicInterface from './pages/HolographicInterface';
 import BlogPostDetail from './pages/BlogPostDetail';
 import BlogAIAnalysis from './pages/BlogAIAnalysis';
@@ -200,6 +201,7 @@ const AuthenticatedApp = () => {
         }
       />
 
+      <Route path="/DesktopConnect" element={<DesktopConnect />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
