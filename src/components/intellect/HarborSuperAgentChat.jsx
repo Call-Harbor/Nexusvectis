@@ -378,14 +378,12 @@ export default function HarborSuperAgentChat({ onClose }) {
     const prompt = imageGenPrompt.trim();
     setImageGenPrompt("");
     setShowImageGen(false);
-    // Add user message first
     await base44.agents.addMessage(activeConversation, {
       role: "user",
       content: `Generate a high-quality image: ${prompt}`
     });
     try {
       const { url } = await base44.integrations.Core.GenerateImage({ prompt });
-      // Show it as an assistant message
       await base44.agents.addMessage(activeConversation, {
         role: "assistant",
         content: `Here is your generated image:\n\n![${prompt}](${url})`,
@@ -405,8 +403,7 @@ export default function HarborSuperAgentChat({ onClose }) {
     setAttachments([]);
     setIsSending(true);
 
-    // Auto-name the conversation from the first user message
-    const isFirstMessage = visibleMessages.filter(m => m.role === "user").length === 0;
+    const isFirstMessage = messages.filter(m => m.role === "user").length === 0;
     if (isFirstMessage && msg) {
       const autoName = msg.length > 40 ? msg.slice(0, 40).trimEnd() + "…" : msg;
       renameConversation(activeConversation.id, autoName);
@@ -423,7 +420,7 @@ export default function HarborSuperAgentChat({ onClose }) {
     }
     setIsSending(false);
     inputRef.current?.focus();
-  }, [input, attachments, activeConversation, isSending, visibleMessages]);
+  }, [input, attachments, activeConversation, isSending, messages]);
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -432,6 +429,7 @@ export default function HarborSuperAgentChat({ onClose }) {
     }
   };
 
+  // NOTE: these must be declared before sendMessage to avoid TDZ error
   const visibleMessages = messages.filter(m => m.role !== "system");
   const isThinking = messages.length > 0 && messages[messages.length - 1]?.role === "user" && isSending;
 
