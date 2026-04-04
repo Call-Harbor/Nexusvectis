@@ -4,13 +4,13 @@ import { appParams } from "@/lib/app-params";
 const CALLBACK_SCHEME = "nexusvectis://auth";
 
 export default function ElectronLoginHelper() {
-  const [status, setStatus] = useState("idle"); // idle | waiting | error
+  const [status, setStatus] = useState("idle"); // idle | waiting
   const [error, setError] = useState("");
 
   const openLogin = () => {
     const loginUrl = `https://base44.com/login?app_id=${appParams.appId}&from_url=${encodeURIComponent(CALLBACK_SCHEME)}`;
 
-    // Open in system browser via ToDesktop
+    // Open in system browser via ToDesktop shell API
     if (window.__todesktop?.shell?.openExternal) {
       window.__todesktop.shell.openExternal(loginUrl);
     } else {
@@ -23,11 +23,13 @@ export default function ElectronLoginHelper() {
   useEffect(() => {
     if (status !== "waiting") return;
 
-    // Listen for the deep link callback from ToDesktop
-    const handleOpenUrl = (url) => {
+    // ToDesktop/Electron calls handler as (event, url) where event is an Electron event object.
+    // We accept both signatures to be safe.
+    const handleOpenUrl = (eventOrUrl, maybeUrl) => {
+      const url = typeof eventOrUrl === "string" ? eventOrUrl : (maybeUrl ?? "");
+      if (!url || !url.startsWith("nexusvectis://")) return;
+
       try {
-        // url will be like: nexusvectis://auth?access_token=xxx
-        // Parse as a standard URL by replacing the scheme
         const normalized = url.replace("nexusvectis://auth", "https://callback");
         const parsed = new URL(normalized);
         const token = parsed.searchParams.get("access_token");
@@ -35,7 +37,7 @@ export default function ElectronLoginHelper() {
           localStorage.setItem("base44_access_token", token);
           window.location.reload();
         } else {
-          setError("Intet token modtaget. Prøv igen.");
+          setError("Intet token modtaget fra login. Prøv igen.");
           setStatus("idle");
         }
       } catch (e) {
@@ -44,7 +46,7 @@ export default function ElectronLoginHelper() {
       }
     };
 
-    // ToDesktop fires this event when the app is opened via custom protocol
+    // Register listener on the ToDesktop app object
     if (window.__todesktop?.app?.on) {
       window.__todesktop.app.on("open-url", handleOpenUrl);
     }
@@ -63,7 +65,7 @@ export default function ElectronLoginHelper() {
         style={{ borderColor: "rgba(6,182,212,0.3)" }}
       >
         <div className="text-5xl mb-4">🔐</div>
-        <h2 className="text-xl font-bold text-white mb-2">Log ind</h2>
+        <h2 className="text-xl font-bold text-white mb-2">Log ind på NexusVectis</h2>
 
         {status === "idle" && (
           <>
