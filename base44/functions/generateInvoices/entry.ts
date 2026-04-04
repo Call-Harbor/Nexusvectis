@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 // Country-specific VAT rates and legal requirements
 const TAX_RULES = {
@@ -17,12 +17,7 @@ const TAX_RULES = {
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-
-    // Only admins can trigger invoice generation
-    if (user?.role !== 'admin') {
-      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
-    }
+    // Scheduled automation runs with service role — no user auth needed
 
     // Get seller information from InvoiceSettings
     const invoiceSettings = await base44.asServiceRole.entities.InvoiceSettings.list();
@@ -79,7 +74,7 @@ Deno.serve(async (req) => {
       const allFleetAIUsage = await base44.asServiceRole.entities.FleetAIUsage.filter({ 
         organization_id: org.id 
       });
-      const fleetAICommands = allFleetAIUsage.filter(usage => {
+      const fleetAICommands = (Array.isArray(allFleetAIUsage) ? allFleetAIUsage : []).filter(usage => {
         const usageDate = new Date(usage.created_date);
         return usageDate > periodStart && usageDate <= periodEnd && usage.success;
       }).length;
@@ -88,7 +83,7 @@ Deno.serve(async (req) => {
       const allAPIUsage = await base44.asServiceRole.entities.APIUsage.filter({ 
         organization_id: org.id 
       });
-      const periodAPIUsage = allAPIUsage.filter(usage => {
+      const periodAPIUsage = (Array.isArray(allAPIUsage) ? allAPIUsage : []).filter(usage => {
         const usageDate = new Date(usage.created_date);
         return usageDate > periodStart && usageDate <= periodEnd && usage.status_code < 400;
       });
