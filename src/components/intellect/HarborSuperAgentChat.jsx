@@ -349,11 +349,10 @@ export default function HarborSuperAgentChat({ onClose }) {
   };
 
   const deleteConversation = async (convId) => {
-    // Soft-delete on server so it stays gone after reload
+    // Permanently delete from database
     try {
-      await base44.agents.updateConversation(convId, { metadata: { deleted: true } });
-    } catch { /* ignore */ }
-    // Remove from local state
+      await base44.agents.deleteConversation(convId);
+    } catch { /* ignore if API unavailable */ }
     setConversations(prev => {
       const remaining = prev.filter(c => c.id !== convId);
       if (activeConversation?.id === convId) {
