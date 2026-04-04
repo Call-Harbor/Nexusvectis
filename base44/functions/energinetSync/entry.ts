@@ -17,9 +17,13 @@ async function fetchEnerginetData() {
   const productionText = await productionRes.text();
   let productionData;
   try {
+    // Validate it's JSON before parsing
+    if (!productionText.trim().startsWith('{') && !productionText.trim().startsWith('[')) {
+      throw new Error(`Expected JSON but got HTML/plain text: ${productionText.slice(0, 100)}`);
+    }
     productionData = JSON.parse(productionText);
   } catch (e) {
-    throw new Error(`Invalid JSON from Energinet production API: ${productionText.slice(0, 100)}`);
+    throw new Error(`Invalid JSON from Energinet production API: ${e.message}`);
   }
   const latest = productionData?.records?.[0] || null;
 
@@ -34,9 +38,13 @@ async function fetchEnerginetData() {
   const co2Text = await co2Res.text();
   let co2Data;
   try {
+    // Validate it's JSON before parsing
+    if (!co2Text.trim().startsWith('{') && !co2Text.trim().startsWith('[')) {
+      throw new Error(`Expected JSON but got HTML/plain text: ${co2Text.slice(0, 100)}`);
+    }
     co2Data = JSON.parse(co2Text);
   } catch (e) {
-    throw new Error(`Invalid JSON from Energinet CO2 API: ${co2Text.slice(0, 100)}`);
+    throw new Error(`Invalid JSON from Energinet CO2 API: ${e.message}`);
   }
   const latestCO2 = co2Data?.records?.[0] || null;
 
