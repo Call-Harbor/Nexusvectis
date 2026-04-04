@@ -5,20 +5,39 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 async function fetchEnerginetData() {
   const now = new Date();
-  const start = new Date(now.getTime() - 2 * 60 * 60 * 1000); // last 2 hours
-  const startStr = start.toISOString().slice(0, 16);
-  const endStr = now.toISOString().slice(0, 16);
 
   // Fetch current production mix (wind, solar, etc.)
   const productionUrl = `https://api.energidataservice.dk/dataset/PowerSystemRightNow?limit=1&sort=Minutes5UTC desc&timezone=dk`;
   const productionRes = await fetch(productionUrl);
-  const productionData = await productionRes.json();
+  
+  if (!productionRes.ok) {
+    throw new Error(`Energinet API error: ${productionRes.status} ${productionRes.statusText}`);
+  }
+  
+  const productionText = await productionRes.text();
+  let productionData;
+  try {
+    productionData = JSON.parse(productionText);
+  } catch (e) {
+    throw new Error(`Invalid JSON from Energinet production API: ${productionText.slice(0, 100)}`);
+  }
   const latest = productionData?.records?.[0] || null;
 
   // Fetch CO2 emission intensity
   const co2Url = `https://api.energidataservice.dk/dataset/CO2Emis?limit=1&sort=Minutes5UTC desc&timezone=dk`;
   const co2Res = await fetch(co2Url);
-  const co2Data = await co2Res.json();
+  
+  if (!co2Res.ok) {
+    throw new Error(`Energinet CO2 API error: ${co2Res.status} ${co2Res.statusText}`);
+  }
+  
+  const co2Text = await co2Res.text();
+  let co2Data;
+  try {
+    co2Data = JSON.parse(co2Text);
+  } catch (e) {
+    throw new Error(`Invalid JSON from Energinet CO2 API: ${co2Text.slice(0, 100)}`);
+  }
   const latestCO2 = co2Data?.records?.[0] || null;
 
   return { latest, latestCO2 };
