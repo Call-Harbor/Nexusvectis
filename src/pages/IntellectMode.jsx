@@ -107,7 +107,14 @@ export default function IntellectMode() {
   const { executeCommand: advancedExecute, loading: advancedLoading, results: advancedResults, error: advancedError } = useAdvancedIntellect();
 
   // ── Data Fetching ──────────────────────────────────────────────────────────
-  const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: currentUser, isLoading: isLoadingUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+
+  // ── Auth Guard ─────────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!isLoadingUser && !currentUser) {
+      base44.auth.redirectToLogin(window.location.pathname + window.location.search);
+    }
+  }, [currentUser, isLoadingUser]);
 
   const orgId = currentUser?.organization_id || currentUser?.data?.organization_id;
 
@@ -1180,7 +1187,17 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
     addThinkingLog('result', 'Processing complete', null, 100);
   };
 
-  // ── Render ─────────────────────────────────────────────────────────────────
+  // ── Render ─────────────────────────────────────────────────────────────
+  if (isLoadingUser) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-black">
+        <div className="w-8 h-8 border-4 border-slate-800 border-t-cyan-500 rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!currentUser) return null;
+
   return (
     <div className="min-h-screen bg-black relative overflow-hidden">
       {/* Animated background */}
