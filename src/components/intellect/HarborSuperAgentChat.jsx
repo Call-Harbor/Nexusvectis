@@ -300,8 +300,9 @@ export default function HarborSuperAgentChat({ onClose }) {
     setIsLoading(true);
     try {
       const convs = await base44.agents.listConversations({ agent_name: AGENT_NAME });
-      // Filter out soft-deleted conversations
+      console.log('[LOAD] All conversations from server:', convs?.length, convs?.map(c => ({ id: c.id, name: c.metadata?.name, deleted: c.metadata?.deleted })));
       const active = (convs || []).filter(c => !c.metadata?.deleted);
+      console.log('[LOAD] Active after filter:', active?.length);
       setConversations(active);
       if (active.length > 0) {
         await selectConversation(active[0]);
@@ -349,10 +350,13 @@ export default function HarborSuperAgentChat({ onClose }) {
   };
 
   const deleteConversation = async (convId) => {
-    // Hard delete directly from database
+    console.log('[DELETE] Attempting to delete conversation:', convId);
     try {
-      await base44.entities.ChatSession.delete(convId);
-    } catch { /* ignore */ }
+      const result = await base44.entities.ChatSession.delete(convId);
+      console.log('[DELETE] Success:', result);
+    } catch (err) {
+      console.error('[DELETE] Failed:', err);
+    }
     setConversations(prev => {
       const remaining = prev.filter(c => c.id !== convId);
       if (activeConversation?.id === convId) {
