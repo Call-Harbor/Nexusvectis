@@ -1,0 +1,37 @@
+{
+  "name": "LoginSession",
+  "type": "object",
+  "properties": {
+    "session_id": {
+      "type": "string",
+      "description": "Unique session identifier (UUID)"
+    },
+    "access_token": {
+      "type": "string",
+      "description": "OAuth access token after successful login"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "User email who logged in"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this session expires"
+    },
+    "device_type": {
+      "type": "string",
+      "enum": [
+        "electron",
+        "web",
+        "mobile"
+      ],
+      "description": "Device requesting authentication"
+    }
+  },
+  "required": [
+    "session_id",
+    "access_token",
+    "expires_at"
+  ]
+}

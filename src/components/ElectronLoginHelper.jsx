@@ -1,39 +1,32 @@
 import { useState, useEffect } from "react";
 import { appParams } from "@/lib/app-params";
+import { base44 } from "@/api/base44Client";
 
 export default function ElectronLoginHelper() {
+  const [sessionId] = useState(() => crypto.randomUUID());
   const [token, setToken] = useState("");
   const [error, setError] = useState("");
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
-  // Lytte på deep links og localStorage token fra browser-login
+  // Polle database for login token
   useEffect(() => {
-    // Handle ToDesktop deep link (nexusvectis://auth?token=xxx)
-    if (window.__todesktop?.deepLink) {
-      window.__todesktop.deepLink.addEventListener('url', (url) => {
-        if (url && url.startsWith('nexusvectis://')) {
-          const urlParams = new URL(url.replace('nexusvectis://', 'http://localhost/')).searchParams;
-          const token = urlParams.get('token');
-          if (token) {
-            localStorage.setItem('base44_access_token', token);
-            window.location.reload();
-          }
-        }
-      });
-    }
+    if (!isLoggingIn) return;
 
-    // Fallback: monitor localStorage fra browser-login
-    if (isLoggingIn) {
-      const checkInterval = setInterval(() => {
-        const storedToken = localStorage.getItem('base44_access_token');
-        if (storedToken) {
-          clearInterval(checkInterval);
+    const pollInterval = setInterval(async () => {
+      try {
+        const sessions = await base44.entities.LoginSession.filter({ session_id: sessionId });
+        if (sessions.length > 0 && sessions[0].access_token) {
+          localStorage.setItem('base44_access_token', sessions[0].access_token);
+          clearInterval(pollInterval);
           window.location.reload();
         }
-      }, 500);
-      return () => clearInterval(checkInterval);
-    }
-  }, [isLoggingIn]);
+      } catch (err) {
+        console.error('Error polling login session:', err);
+      }
+    }, 500);
+
+    return () => clearInterval(pollInterval);
+  }, [isLoggingIn, sessionId]);
 
   const connect = () => {
     const raw = token.trim();
@@ -47,8 +40,7 @@ export default function ElectronLoginHelper() {
 
   const openWebApp = () => {
     setIsLoggingIn(true);
-    const returnUrl = encodeURIComponent('nexusvectis://auth');
-    const url = `https://${appParams.appId}.base44.app?return_to=${returnUrl}`;
+    const url = `https://${appParams.appId}.base44.app?electron_session=${sessionId}`;
     if (window.__todesktop?.shell?.openExternal) {
       window.__todesktop.shell.openExternal(url);
     } else {
