@@ -7,7 +7,7 @@ import {
   Truck, Route, Warehouse, Sparkles, 
   Settings, Users, Shield, FileText, Package, 
   DollarSign, Target, Menu, X, Zap, Home, AlertCircle, Code2, BarChart2, Brain, Bus,
-  Wrench, Receipt, BarChart3, Leaf, Satellite, Bell, TrendingUp, GitBranch, Box, GraduationCap, MapPin, ChevronRight, Anchor, Plane, Scale, Wind, Battery, Smartphone
+  Wrench, Receipt, BarChart3, Leaf, Satellite, Bell, TrendingUp, GitBranch, Box, GraduationCap, MapPin, ChevronRight, Anchor, Plane, Scale, Wind, Battery, Smartphone, Monitor
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import NotificationCenter from "../notifications/NotificationCenter";
@@ -79,7 +79,8 @@ const menuCategories = [
       { name: "Users", icon: Users, page: "UserManagement" },
       { name: "Security", icon: Shield, page: "Security" },
       { name: "Settings", icon: Settings, page: "Settings" },
-      { name: "Notifications", icon: Bell, page: "NotificationSettings" },
+        { name: "Notifications", icon: Bell, page: "NotificationSettings" },
+      { name: "Desktop Connect", icon: Monitor, page: "DesktopConnect" },
     ]
   },
   {
