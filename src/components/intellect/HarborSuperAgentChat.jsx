@@ -6,7 +6,7 @@ import {
   Brain, Send, X, Plus, Trash2, MessageSquare, Loader2,
   Sparkles, ChevronDown, Zap, Activity, Bot, User,
   Copy, CheckCheck, AlertCircle, Minimize2, Maximize2,
-  Clock, RefreshCw
+  Clock, RefreshCw, Pencil, Check
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -136,7 +136,21 @@ function MessageBubble({ message }) {
   );
 }
 
-function ConversationList({ conversations, activeId, onSelect, onCreate, onDelete }) {
+function ConversationList({ conversations, activeId, onSelect, onCreate, onDelete, onRename }) {
+  const [editingId, setEditingId] = useState(null);
+  const [editValue, setEditValue] = useState("");
+
+  const startEdit = (e, conv) => {
+    e.stopPropagation();
+    setEditingId(conv.id);
+    setEditValue(conv.metadata?.name || "Chat");
+  };
+
+  const commitEdit = (convId) => {
+    if (editValue.trim()) onRename(convId, editValue.trim());
+    setEditingId(null);
+  };
+
   return (
     <div className="flex flex-col h-full">
       <div className="p-3 border-b" style={{ borderColor: "rgba(6,182,212,0.15)" }}>
@@ -153,26 +167,42 @@ function ConversationList({ conversations, activeId, onSelect, onCreate, onDelet
         )}
         {conversations.map(conv => (
           <div key={conv.id}
-            onClick={() => onSelect(conv)}
+            onClick={() => editingId !== conv.id && onSelect(conv)}
             className={`group flex items-center justify-between px-3 py-2.5 rounded-xl cursor-pointer transition-all text-xs ${
-              activeId === conv.id
-                ? "text-white"
-                : "text-slate-400 hover:text-white"
+              activeId === conv.id ? "text-white" : "text-slate-400 hover:text-white"
             }`}
             style={activeId === conv.id ? {
               background: "rgba(6,182,212,0.1)",
               border: "1px solid rgba(6,182,212,0.25)"
             } : { border: "1px solid transparent" }}>
-            <div className="flex items-center gap-2 min-w-0">
+            <div className="flex items-center gap-2 min-w-0 flex-1">
               <MessageSquare className="w-3.5 h-3.5 flex-shrink-0 text-cyan-500" />
-              <span className="truncate font-mono text-[11px]">
-                {conv.metadata?.name || "Chat"}
-              </span>
+              {editingId === conv.id ? (
+                <input
+                  autoFocus
+                  value={editValue}
+                  onChange={e => setEditValue(e.target.value)}
+                  onBlur={() => commitEdit(conv.id)}
+                  onKeyDown={e => { if (e.key === "Enter") commitEdit(conv.id); if (e.key === "Escape") setEditingId(null); }}
+                  onClick={e => e.stopPropagation()}
+                  className="flex-1 bg-transparent border-b border-cyan-500/50 text-white text-[11px] font-mono outline-none py-0.5 min-w-0"
+                />
+              ) : (
+                <span className="truncate font-mono text-[11px]">
+                  {conv.metadata?.name || "Chat"}
+                </span>
+              )}
             </div>
-            <button onClick={(e) => { e.stopPropagation(); onDelete(conv.id); }}
-              className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-red-500/20 hover:text-red-400 flex-shrink-0">
-              <Trash2 className="w-3 h-3" />
-            </button>
+            <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+              <button onClick={(e) => startEdit(e, conv)}
+                className="p-1 rounded hover:bg-cyan-500/20 hover:text-cyan-400">
+                <Pencil className="w-3 h-3" />
+              </button>
+              <button onClick={(e) => { e.stopPropagation(); onDelete(conv.id); }}
+                className="p-1 rounded hover:bg-red-500/20 hover:text-red-400">
+                <Trash2 className="w-3 h-3" />
+              </button>
+            </div>
           </div>
         ))}
       </div>
@@ -246,6 +276,14 @@ export default function HarborSuperAgentChat({ onClose }) {
     subscribeToConversation(conv.id);
   };
 
+  const renameConversation = async (convId, newName) => {
+    await base44.agents.updateConversation(convId, { metadata: { name: newName } });
+    setConversations(prev => prev.map(c => c.id === convId ? { ...c, metadata: { ...c.metadata, name: newName } } : c));
+    if (activeConversation?.id === convId) {
+      setActiveConversation(prev => ({ ...prev, metadata: { ...prev.metadata, name: newName } }));
+    }
+  };
+
   const deleteConversation = async (convId) => {
     if (activeConversation?.id === convId) {
       const remaining = conversations.filter(c => c.id !== convId);
@@ -260,6 +298,14 @@ export default function HarborSuperAgentChat({ onClose }) {
     if (!msg || !activeConversation || isSending) return;
     setInput("");
     setIsSending(true);
+
+    // Auto-name the conversation from the first user message
+    const isFirstMessage = visibleMessages.filter(m => m.role === "user").length === 0;
+    if (isFirstMessage) {
+      const autoName = msg.length > 40 ? msg.slice(0, 40).trimEnd() + "…" : msg;
+      renameConversation(activeConversation.id, autoName);
+    }
+
     try {
       await base44.agents.addMessage(activeConversation, { role: "user", content: msg });
     } catch {
@@ -267,7 +313,7 @@ export default function HarborSuperAgentChat({ onClose }) {
     }
     setIsSending(false);
     inputRef.current?.focus();
-  }, [input, activeConversation, isSending]);
+  }, [input, activeConversation, isSending, visibleMessages]);
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -276,8 +322,8 @@ export default function HarborSuperAgentChat({ onClose }) {
     }
   };
 
-  const isThinking = messages.length > 0 && messages[messages.length - 1]?.role === "user" && isSending;
   const visibleMessages = messages.filter(m => m.role !== "system");
+  const isThinking = messages.length > 0 && messages[messages.length - 1]?.role === "user" && isSending;
 
   return (
     <motion.div
@@ -374,6 +420,7 @@ export default function HarborSuperAgentChat({ onClose }) {
                   onSelect={selectConversation}
                   onCreate={createNewConversation}
                   onDelete={deleteConversation}
+                  onRename={renameConversation}
                 />
               </div>
             </motion.div>
