@@ -439,6 +439,45 @@ export default function AIDevOrchestrator({ onClose }) {
   const [lintIssues, setLintIssues] = useState([]);
   const [lintScore, setLintScore] = useState(null);
 
+  // Backend Functions panel
+  const [funcInput, setFuncInput] = useState("");
+  const [funcResult, setFuncResult] = useState(null);
+  const [funcLoading, setFuncLoading] = useState(false);
+
+  // Database panel
+  const [dbInput, setDbInput] = useState("");
+  const [dbResult, setDbResult] = useState(null);
+  const [dbLoading, setDbLoading] = useState(false);
+
+  // Auto-save
+  const [autoSaveStatus, setAutoSaveStatus] = useState(null); // null | 'saving' | 'saved'
+  const autoSaveTimer = useRef(null);
+  useEffect(() => {
+    if (files === DEFAULT_FILES) return;
+    setAutoSaveStatus('saving');
+    clearTimeout(autoSaveTimer.current);
+    autoSaveTimer.current = setTimeout(async () => {
+      try {
+        const user = await base44.auth.me();
+        const projectData = { files, savedAt: new Date().toISOString(), projectName: files[0]?.name?.split('.')[0] || 'project' };
+        const blob = new Blob([JSON.stringify(projectData)], { type: 'application/json' });
+        const file = new File([blob], `${projectData.projectName}.nexuside`, { type: 'application/json' });
+        const { file_url } = await base44.integrations.Core.UploadFile({ file });
+        await base44.entities.FleetDriveFile.create({
+          organization_id: user?.organization_id,
+          name: `${projectData.projectName} (IDE Project)`,
+          file_type: 'other', file_url,
+          folder: 'ide_projects_autosave',
+          description: `${files.length} files · Auto-saved`,
+          source: 'document_editor', tags: ['ide', 'autosave'],
+        });
+        setAutoSaveStatus('saved');
+        setTimeout(() => setAutoSaveStatus(null), 2000);
+      } catch { setAutoSaveStatus(null); }
+    }, 3000);
+    return () => clearTimeout(autoSaveTimer.current);
+  }, [files]);
+
   // ── Run file (real execution via codeExecutor backend) ─────────────────
   const runFile = async () => {
     if (isRunning || !activeFile) return;
@@ -810,6 +849,8 @@ Generate 4-6 files covering: main logic, API/interface, config/docker, tests, an
           { id: "pipeline", label: "Pipeline", icon: GitBranch },
           { id: "orchestrator", label: "Agents", icon: Layers },
           { id: "devops", label: "DevOps", icon: Network },
+          { id: "functions", label: "Functions", icon: Zap },
+          { id: "database", label: "Database", icon: Database },
           { id: "secrets", label: "Secrets", icon: KeyRound },
           { id: "packages", label: "Pkgs", icon: Package },
           { id: "preview", label: "Preview", icon: Globe },
@@ -822,6 +863,11 @@ Generate 4-6 files covering: main logic, API/interface, config/docker, tests, an
         ))}
         </div>
         <div className="flex-1 min-w-0" />
+        {autoSaveStatus && (
+          <span className={`text-[10px] font-mono mr-1 ${autoSaveStatus === 'saved' ? 'text-green-400' : 'text-slate-500 animate-pulse'}`}>
+            {autoSaveStatus === 'saving' ? '● auto-saving...' : '✓ auto-saved'}
+          </span>
+        )}
         <div className="flex items-center gap-1 flex-wrap">
         <button onClick={() => { setShowSearch(!showSearch); setShowReplace(false); setShowImport(false); }} className={`p-1.5 rounded transition-all ${showSearch && !showReplace ? "text-cyan-400 bg-cyan-500/10" : "text-slate-500 hover:text-slate-300 hover:bg-slate-800"}`} title="Search"><Search className="w-3.5 h-3.5" /></button>
         <button onClick={() => { setShowReplace(!showReplace); setShowSearch(true); setShowImport(false); }} className={`p-1.5 rounded transition-all ${showReplace ? "text-amber-400 bg-amber-500/10" : "text-slate-500 hover:text-slate-300 hover:bg-slate-800"}`} title="Find & Replace"><Replace className="w-3.5 h-3.5" /></button>
@@ -1115,6 +1161,180 @@ Generate 4-6 files covering: main logic, API/interface, config/docker, tests, an
                 </div>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Backend Functions Panel ───────────────────────────────── */}
+      {activePanel === "functions" && (
+        <div className="flex bg-slate-900 border-b border-slate-800 flex-shrink-0" style={{ maxHeight: 420, minHeight: 420 }}>
+          <div className="w-72 flex-shrink-0 border-r border-slate-800 flex flex-col p-3 gap-2">
+            <div className="flex items-center gap-2 mb-1">
+              <Zap className="w-4 h-4 text-cyan-400" />
+              <p className="text-sm font-bold text-white">Backend Function Generator</p>
+            </div>
+            <p className="text-[10px] text-slate-500 leading-relaxed">Generates production-ready Deno/Base44 backend functions. Describe what the function should do, and Fleet AI writes the full handler code.</p>
+            <div className="space-y-1.5 mt-1">
+              {[
+                "CRUD API for Vehicle entity with auth",
+                "Webhook handler that sends email notification",
+                "Scheduled job that syncs fleet telemetry",
+                "AI-powered route optimization function",
+                "Export entities to PDF report",
+              ].map(ex => (
+                <button key={ex} onClick={() => setFuncInput(ex)} className="w-full text-left text-[10px] text-slate-400 hover:text-cyan-300 bg-slate-800 hover:bg-slate-700 px-2.5 py-1.5 rounded border border-slate-700 transition-all">{ex}</button>
+              ))}
+            </div>
+            <div className="mt-auto pt-2">
+              <textarea value={funcInput} onChange={e => setFuncInput(e.target.value)} placeholder="Describe the backend function..." className="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-2 text-xs text-white placeholder-slate-500 outline-none focus:border-cyan-500 resize-none" rows={3} />
+              <button onClick={async () => {
+                if (!funcInput.trim() || funcLoading) return;
+                setFuncLoading(true); setFuncResult(null);
+                try {
+                  const res = await base44.integrations.Core.InvokeLLM({
+                    prompt: `You are a Base44 platform expert. Generate a complete, production-ready Deno backend function for: "${funcInput}"
+
+Rules:
+- Use: import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+- Start with: Deno.serve(async (req) => { const base44 = createClientFromRequest(req); const user = await base44.auth.me(); if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 }); ... })
+- Use base44.entities.EntityName.list/filter/create/update/delete for DB operations
+- Use base44.asServiceRole for admin operations
+- Always return Response.json(...)
+- Include try/catch
+- Name the file appropriately (camelCase)
+
+Return JSON: { "filename": "myFunction.js", "description": "what it does", "code": "full deno function code", "usage": "how to call from frontend" }`,
+                    response_json_schema: { type: "object", properties: { filename: { type: "string" }, description: { type: "string" }, code: { type: "string" }, usage: { type: "string" } } },
+                    model: "claude_sonnet_4_6"
+                  });
+                  setFuncResult(res);
+                } catch(e) { setFuncResult({ error: e.message }); }
+                setFuncLoading(false);
+              }} disabled={!funcInput.trim() || funcLoading} className="mt-1.5 w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 disabled:opacity-40 text-white text-xs font-bold transition-all">
+                {funcLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Zap className="w-3 h-3" />}
+                {funcLoading ? "Generating..." : "Generate Function"}
+              </button>
+            </div>
+          </div>
+          <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+            {funcResult ? (
+              funcResult.error ? (
+                <div className="p-4 text-red-400 text-sm">{funcResult.error}</div>
+              ) : (
+                <>
+                  <div className="flex items-center justify-between px-3 py-2 border-b border-slate-800 flex-shrink-0">
+                    <div>
+                      <span className="text-xs font-bold text-cyan-300">{funcResult.filename}</span>
+                      <p className="text-[10px] text-slate-500 mt-0.5">{funcResult.description}</p>
+                    </div>
+                    <div className="flex gap-1.5">
+                      <button onClick={() => { const f = { id: `func_${Date.now()}`, name: funcResult.filename, lang: 'javascript', content: funcResult.code }; setFiles(prev => [...prev, f]); setActiveFileId(f.id); setActivePanel('editor'); toast.success('Opened in editor'); }} className="flex items-center gap-1 px-2 py-1 rounded bg-violet-700 hover:bg-violet-600 text-white text-[10px] transition-all"><Code2 className="w-2.5 h-2.5" />Open in Editor</button>
+                      <button onClick={() => navigator.clipboard.writeText(funcResult.code).then(() => toast.success('Copied!'))} className="flex items-center gap-1 px-2 py-1 rounded bg-slate-700 hover:bg-slate-600 text-slate-300 text-[10px] transition-all"><Copy className="w-2.5 h-2.5" />Copy</button>
+                      <button onClick={() => { const b = new Blob([funcResult.code], { type: 'text/plain' }); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = funcResult.filename; a.click(); }} className="flex items-center gap-1 px-2 py-1 rounded bg-slate-700 hover:bg-slate-600 text-slate-300 text-[10px] transition-all"><Download className="w-2.5 h-2.5" />Download</button>
+                    </div>
+                  </div>
+                  <div className="flex-1 overflow-auto p-3 font-mono text-xs text-slate-200 whitespace-pre-wrap leading-relaxed">{funcResult.code}</div>
+                  {funcResult.usage && (
+                    <div className="border-t border-slate-800 px-3 py-2 flex-shrink-0">
+                      <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">Frontend usage</p>
+                      <p className="text-[10px] font-mono text-cyan-300">{funcResult.usage}</p>
+                    </div>
+                  )}
+                </>
+              )
+            ) : (
+              <div className="flex-1 flex flex-col items-center justify-center text-center p-6">
+                {funcLoading ? <><Loader2 className="w-8 h-8 text-cyan-400 animate-spin mb-3" /><p className="text-sm text-slate-400">Fleet AI is writing your function...</p></> : <><Zap className="w-10 h-10 text-slate-700 mb-3" /><p className="text-sm text-slate-400 mb-1">Describe your backend function</p><p className="text-[10px] text-slate-600">Fleet AI generates production-ready Deno/Base44 code</p></>}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── Database / Entity Schema Panel ───────────────────────── */}
+      {activePanel === "database" && (
+        <div className="flex bg-slate-900 border-b border-slate-800 flex-shrink-0" style={{ maxHeight: 420, minHeight: 420 }}>
+          <div className="w-72 flex-shrink-0 border-r border-slate-800 flex flex-col p-3 gap-2">
+            <div className="flex items-center gap-2 mb-1">
+              <Database className="w-4 h-4 text-emerald-400" />
+              <p className="text-sm font-bold text-white">Database Schema Generator</p>
+            </div>
+            <p className="text-[10px] text-slate-500 leading-relaxed">Describe your data model and Fleet AI generates a complete Base44 entity JSON schema ready to use.</p>
+            <div className="space-y-1.5 mt-1">
+              {[
+                "Customer orders with products and shipping",
+                "Fleet vehicles with telemetry and maintenance",
+                "User tasks with priorities, tags and due dates",
+                "Invoice with line items, VAT and payment status",
+                "Employee with department, salary and leave",
+              ].map(ex => (
+                <button key={ex} onClick={() => setDbInput(ex)} className="w-full text-left text-[10px] text-slate-400 hover:text-emerald-300 bg-slate-800 hover:bg-slate-700 px-2.5 py-1.5 rounded border border-slate-700 transition-all">{ex}</button>
+              ))}
+            </div>
+            <div className="mt-auto pt-2">
+              <textarea value={dbInput} onChange={e => setDbInput(e.target.value)} placeholder="Describe your data model..." className="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-2 text-xs text-white placeholder-slate-500 outline-none focus:border-emerald-500 resize-none" rows={3} />
+              <button onClick={async () => {
+                if (!dbInput.trim() || dbLoading) return;
+                setDbLoading(true); setDbResult(null);
+                try {
+                  const res = await base44.integrations.Core.InvokeLLM({
+                    prompt: `You are a Base44 database architect. Generate a complete entity JSON schema for: "${dbInput}"
+
+Base44 entity schema format:
+- Root object MUST have: "name" (PascalCase), "type": "object", "properties": {...}, "required": [...]
+- Built-in fields (DO NOT include): id, created_date, updated_date, created_by
+- Property types: string, number, boolean, array, object
+- String enums: { "type": "string", "enum": ["a", "b"] }
+- Include "description" on each field
+- Use "format": "date" or "date-time" for dates
+- Include sensible "default" values where appropriate
+
+Return JSON: { "entityName": "PascalCase", "schema": { ...the complete entity JSON schema... }, "suggestedRelations": ["e.g. links to User via user_id field"], "sampleData": [{...}, {...}] }`,
+                    response_json_schema: { type: "object", properties: { entityName: { type: "string" }, schema: { type: "object" }, suggestedRelations: { type: "array", items: { type: "string" } }, sampleData: { type: "array", items: { type: "object" } } } },
+                    model: "claude_sonnet_4_6"
+                  });
+                  setDbResult(res);
+                } catch(e) { setDbResult({ error: e.message }); }
+                setDbLoading(false);
+              }} disabled={!dbInput.trim() || dbLoading} className="mt-1.5 w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 text-white text-xs font-bold transition-all">
+                {dbLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Database className="w-3 h-3" />}
+                {dbLoading ? "Generating..." : "Generate Schema"}
+              </button>
+            </div>
+          </div>
+          <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+            {dbResult ? (
+              dbResult.error ? (
+                <div className="p-4 text-red-400 text-sm">{dbResult.error}</div>
+              ) : (
+                <>
+                  <div className="flex items-center justify-between px-3 py-2 border-b border-slate-800 flex-shrink-0">
+                    <div>
+                      <span className="text-xs font-bold text-emerald-300">entities/{dbResult.entityName}.json</span>
+                      {dbResult.suggestedRelations?.length > 0 && (
+                        <p className="text-[10px] text-slate-500 mt-0.5">Relations: {dbResult.suggestedRelations.join(' · ')}</p>
+                      )}
+                    </div>
+                    <div className="flex gap-1.5">
+                      <button onClick={() => { const content = JSON.stringify(dbResult.schema, null, 2); const f = { id: `db_${Date.now()}`, name: `${dbResult.entityName}.json`, lang: 'json', content }; setFiles(prev => [...prev, f]); setActiveFileId(f.id); setActivePanel('editor'); toast.success('Opened in editor'); }} className="flex items-center gap-1 px-2 py-1 rounded bg-violet-700 hover:bg-violet-600 text-white text-[10px] transition-all"><Code2 className="w-2.5 h-2.5" />Open in Editor</button>
+                      <button onClick={() => navigator.clipboard.writeText(JSON.stringify(dbResult.schema, null, 2)).then(() => toast.success('Schema copied!'))} className="flex items-center gap-1 px-2 py-1 rounded bg-slate-700 hover:bg-slate-600 text-slate-300 text-[10px] transition-all"><Copy className="w-2.5 h-2.5" />Copy Schema</button>
+                      <button onClick={() => { const b = new Blob([JSON.stringify(dbResult.schema, null, 2)], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `${dbResult.entityName}.json`; a.click(); }} className="flex items-center gap-1 px-2 py-1 rounded bg-slate-700 hover:bg-slate-600 text-slate-300 text-[10px] transition-all"><Download className="w-2.5 h-2.5" />Download</button>
+                    </div>
+                  </div>
+                  <div className="flex-1 overflow-auto p-3 font-mono text-xs text-slate-200 whitespace-pre-wrap leading-relaxed">{JSON.stringify(dbResult.schema, null, 2)}</div>
+                  {dbResult.sampleData?.length > 0 && (
+                    <div className="border-t border-slate-800 px-3 py-2 flex-shrink-0">
+                      <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">Sample records</p>
+                      <p className="text-[10px] font-mono text-emerald-300 truncate">{JSON.stringify(dbResult.sampleData[0])}</p>
+                    </div>
+                  )}
+                </>
+              )
+            ) : (
+              <div className="flex-1 flex flex-col items-center justify-center text-center p-6">
+                {dbLoading ? <><Loader2 className="w-8 h-8 text-emerald-400 animate-spin mb-3" /><p className="text-sm text-slate-400">Fleet AI is designing your schema...</p></> : <><Database className="w-10 h-10 text-slate-700 mb-3" /><p className="text-sm text-slate-400 mb-1">Describe your data model</p><p className="text-[10px] text-slate-600">Generates a Base44-ready entity JSON schema</p></>}
+              </div>
+            )}
           </div>
         </div>
       )}
