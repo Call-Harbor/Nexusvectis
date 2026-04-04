@@ -300,9 +300,11 @@ export default function HarborSuperAgentChat({ onClose }) {
     setIsLoading(true);
     try {
       const convs = await base44.agents.listConversations({ agent_name: AGENT_NAME });
-      setConversations(convs || []);
-      if (convs?.length > 0) {
-        await selectConversation(convs[0]);
+      // Filter out soft-deleted conversations
+      const active = (convs || []).filter(c => !c.metadata?.deleted);
+      setConversations(active);
+      if (active.length > 0) {
+        await selectConversation(active[0]);
       } else {
         await createNewConversation();
       }
@@ -347,12 +349,19 @@ export default function HarborSuperAgentChat({ onClose }) {
   };
 
   const deleteConversation = async (convId) => {
-    if (activeConversation?.id === convId) {
-      const remaining = conversations.filter(c => c.id !== convId);
-      if (remaining.length > 0) await selectConversation(remaining[0]);
-      else await createNewConversation();
-    }
-    setConversations(prev => prev.filter(c => c.id !== convId));
+    // Soft-delete on server so it stays gone after reload
+    try {
+      await base44.agents.updateConversation(convId, { metadata: { deleted: true } });
+    } catch { /* ignore */ }
+    // Remove from local state
+    setConversations(prev => {
+      const remaining = prev.filter(c => c.id !== convId);
+      if (activeConversation?.id === convId) {
+        if (remaining.length > 0) selectConversation(remaining[0]);
+        else createNewConversation();
+      }
+      return remaining;
+    });
   };
 
   const handleFileUpload = async (e) => {
