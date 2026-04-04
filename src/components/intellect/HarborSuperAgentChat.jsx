@@ -349,12 +349,9 @@ export default function HarborSuperAgentChat({ onClose }) {
   };
 
   const deleteConversation = async (convId) => {
-    // Soft-delete: preserve existing metadata and add deleted flag
-    const conv = conversations.find(c => c.id === convId);
+    // Hard delete directly from database
     try {
-      await base44.agents.updateConversation(convId, {
-        metadata: { ...(conv?.metadata || {}), deleted: true }
-      });
+      await base44.entities.ChatSession.delete(convId);
     } catch { /* ignore */ }
     setConversations(prev => {
       const remaining = prev.filter(c => c.id !== convId);
