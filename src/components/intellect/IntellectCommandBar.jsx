@@ -69,14 +69,13 @@ export default function IntellectCommandBar({
         <div className="max-w-4xl mx-auto">
         {/* Messages */}
         <div className="mb-3 sm:mb-4 max-h-32 sm:max-h-48 overflow-y-auto space-y-1.5 sm:space-y-2 pr-2">
-          {messages.slice(-5).map((msg, idx) => (
+          {messages.filter(m => m.role !== 'system').slice(-5).map((msg, idx) => (
             <motion.div key={idx} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="space-y-1">
               <div className={`text-sm p-2.5 sm:p-3 rounded-lg backdrop-blur-md font-mono text-[11px] sm:text-sm ${
                 msg.role === 'user' ? 'bg-cyan-500/8 border border-cyan-500/25 text-cyan-200 ml-8' :
-                msg.role === 'system' ? 'bg-emerald-500/8 border border-emerald-500/25 text-emerald-200' :
                 'bg-slate-800/30 border border-slate-700/40 text-slate-100'
               }`}>
-                <span className="font-semibold mr-1">{msg.role === 'user' ? '>' : msg.role === 'system' ? '⚡' : '🧠'}</span>
+                <span className="font-semibold mr-1">{msg.role === 'user' ? '>' : '🧠'}</span>
                 {msg.streaming ? <span className="animate-pulse">{msg.content || 'Thinking...'}</span>
                   : msg.role === 'assistant' ? <MessageFormatter content={msg.content} isAssistant={true} />
                   : msg.content}
