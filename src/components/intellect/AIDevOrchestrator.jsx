@@ -431,29 +431,108 @@ export default function AIDevOrchestrator({ onClose }) {
     }
   };
 
-  // ── Run file (real Deno execution via codeExecutor backend) ─────────────────
+  // ── REPL state ──────────────────────────────────────────────────────────────
+  const [replHistory, setReplHistory] = useState([{ type: 'info', text: 'Fleet AI REPL ready. Type JavaScript and press Enter.' }]);
+  const [replInput, setReplInput] = useState('');
+  const [replContext, setReplContext] = useState('');
+  const [replRunning, setReplRunning] = useState(false);
+  const [lintIssues, setLintIssues] = useState([]);
+  const [lintScore, setLintScore] = useState(null);
+
+  // ── Run file (real execution via codeExecutor backend) ─────────────────
   const runFile = async () => {
     if (isRunning || !activeFile) return;
-    setIsRunning(true); setBottomPanel("terminal");
-    log(`$ run ${activeFile.name}`, "system");
-    setActiveStage("code"); setStageStatus(prev => ({ ...prev, code: "running" }));
-    await new Promise(r => setTimeout(r, 150));
-    setStageStatus(prev => ({ ...prev, code: "success", test: "running" }));
-    setActiveStage("test");
+    setIsRunning(true); setBottomPanel('terminal');
+    log(`$ run ${activeFile.name}`, 'system');
+    setActiveStage('code'); setStageStatus(prev => ({ ...prev, code: 'running' }));
+    await new Promise(r => setTimeout(r, 100));
+    setStageStatus(prev => ({ ...prev, code: 'success', test: 'running' }));
+    setActiveStage('test');
     try {
       const res = await base44.functions.invoke('codeExecutor', {
+        mode: 'run',
         code: activeFile.content,
         language: activeFile.lang,
         filename: activeFile.name,
       });
       const result = res.data;
-      setStageStatus(prev => ({ ...prev, test: result.exit_code === 0 ? "success" : "error" }));
-      (result.output || []).forEach(line => log(line.text || line, line.type || 'default'));
+      setStageStatus(prev => ({ ...prev, test: result.exit_code === 0 ? 'success' : 'error' }));
+      (result.output || []).forEach(line => log(line.text || String(line), line.type || 'default'));
     } catch (e) {
-      setStageStatus(prev => ({ ...prev, test: "error" }));
+      setStageStatus(prev => ({ ...prev, test: 'error' }));
       log(`Runtime error: ${e.message}`, 'error');
     }
     setIsRunning(false);
+  };
+
+  // ── Lint file ────────────────────────────────────────────────────
+  const lintFile = async () => {
+    if (!activeFile || isRunning) return;
+    setIsRunning(true); setBottomPanel('problems');
+    log(`$ lint ${activeFile.name}`, 'system');
+    try {
+      const res = await base44.functions.invoke('codeExecutor', {
+        mode: 'lint',
+        code: activeFile.content,
+        language: activeFile.lang,
+        filename: activeFile.name,
+      });
+      const result = res.data;
+      setLintIssues(result.issues || []);
+      setLintScore(result.score ?? 100);
+      (result.output || []).forEach(line => log(line.text || String(line), line.type || 'default'));
+    } catch (e) {
+      log(`Lint error: ${e.message}`, 'error');
+    }
+    setIsRunning(false);
+  };
+
+  // ── Bundle analysis ──────────────────────────────────────────────
+  const runBundleAnalysis = async () => {
+    if (isRunning) return;
+    setIsRunning(true); setBottomPanel('output');
+    log(`$ bundle-analyzer --project (${files.length} files)`, 'system');
+    try {
+      const res = await base44.functions.invoke('codeExecutor', {
+        mode: 'bundle',
+        files: files.map(f => ({ name: f.name, lang: f.lang, content: f.content })),
+      });
+      const result = res.data;
+      (result.output || []).forEach(line => log(line.text || String(line), line.type || 'default'));
+      if (result.dependencies?.length) {
+        log('', 'default');
+        log('Dependencies:', 'info');
+        result.dependencies.forEach(d => log(`  ${d.from} → ${d.to} (${d.type})`, 'default'));
+      }
+    } catch (e) {
+      log(`Bundle error: ${e.message}`, 'error');
+    }
+    setIsRunning(false);
+  };
+
+  // ── REPL submit ────────────────────────────────────────────────────
+  const submitREPL = async () => {
+    if (!replInput.trim() || replRunning) return;
+    const expr = replInput.trim();
+    setReplInput('');
+    setReplRunning(true);
+    setReplHistory(prev => [...prev, { type: 'system', text: '> ' + expr }]);
+    try {
+      const res = await base44.functions.invoke('codeExecutor', {
+        mode: 'repl',
+        expression: expr,
+        language: activeFile?.lang || 'javascript',
+        context: replContext,
+      });
+      const result = res.data;
+      setReplContext(prev => prev + '\n' + expr);
+      (result.output || []).slice(0,-1).forEach(line =>
+        setReplHistory(prev => [...prev, { type: line.type || 'default', text: line.text || String(line) }])
+      );
+    } catch (e) {
+      setReplHistory(prev => [...prev, { type: 'error', text: e.message }]);
+    }
+    setReplRunning(false);
   };
 
   // ── Deploy pipeline ─────────────────────────────────────────────────────────
@@ -761,6 +840,12 @@ Generate 4-6 files covering: main logic, API/interface, config/docker, tests, an
         </button>
         <button onClick={openProjectBrowser} className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-medium bg-slate-600 hover:bg-slate-500 text-white transition-all" title="Open project from Nexus Cloud">
           <FolderGit2 className="w-3 h-3" /><span className="hidden sm:inline">Open</span>
+        </button>
+        <button onClick={lintFile} disabled={isRunning} className={`flex items-center gap-1 px-2 py-1 rounded text-[10px] font-medium transition-all ${isRunning ? 'bg-slate-700 text-slate-500' : 'bg-amber-600 hover:bg-amber-500 text-white'}`} title="Lint / static analysis">
+          {isRunning ? <Loader2 className="w-3 h-3 animate-spin" /> : <AlertCircle className="w-3 h-3" />}<span className="hidden sm:inline">Lint</span>
+        </button>
+        <button onClick={runBundleAnalysis} disabled={isRunning} className={`flex items-center gap-1 px-2 py-1 rounded text-[10px] font-medium transition-all ${isRunning ? 'bg-slate-700 text-slate-500' : 'bg-blue-700 hover:bg-blue-600 text-white'}`} title="Bundle analysis">
+          {isRunning ? <Loader2 className="w-3 h-3 animate-spin" /> : <Boxes className="w-3 h-3" />}<span className="hidden sm:inline">Bundle</span>
         </button>
         <button onClick={runFile} disabled={isRunning} className={`flex items-center gap-1 px-2 py-1 rounded text-[10px] font-medium transition-all ${isRunning ? "bg-slate-700 text-slate-500" : "bg-green-600 hover:bg-green-500 text-white"}`}>
           {isRunning ? <Loader2 className="w-3 h-3 animate-spin" /> : <Play className="w-3 h-3" />}<span className="hidden sm:inline">Run</span>
@@ -1410,13 +1495,14 @@ Generate 4-6 files covering: main logic, API/interface, config/docker, tests, an
 
           {/* Bottom panel tabs */}
           <div className="flex items-center gap-1 px-3 border-t border-slate-800 bg-slate-900 flex-shrink-0">
-            {["terminal", "problems", "output", "git"].map(tab => (
+            {["terminal", "problems", "output", "git", "repl"].map(tab => (
               <button key={tab} onClick={() => setBottomPanel(tab)}
                 className={`px-3 py-1.5 text-[10px] uppercase tracking-widest font-bold transition-colors ${bottomPanel === tab ? "text-cyan-400 border-b-2 border-cyan-500" : "text-slate-600 hover:text-slate-400"}`}>
-                {tab}
+                {tab}{tab === 'problems' && lintIssues.length > 0 && <span className="ml-1 px-1 rounded bg-red-500/20 text-red-400 text-[9px]">{lintIssues.length}</span>}
               </button>
             ))}
             <div className="flex-1" />
+            {lintScore !== null && <span className={`text-[10px] font-mono mr-2 ${lintScore >= 90 ? 'text-green-400' : lintScore >= 70 ? 'text-amber-400' : 'text-red-400'}`}>Score: {lintScore}/100</span>}
             <span className="text-[10px] text-slate-600 font-mono">{activeFile?.lang} · {activeFile?.content?.split("\n").length || 0} lines</span>
           </div>
 
@@ -1424,14 +1510,24 @@ Generate 4-6 files covering: main logic, API/interface, config/docker, tests, an
           <div className="flex-shrink-0" style={{ height: 160 }}>
             {bottomPanel === "terminal" && <TerminalEmulator output={terminalOutput} isRunning={isRunning} onClear={() => setTerminalOutput([])} />}
             {bottomPanel === "problems" && (
-              <div className="h-full bg-slate-950 p-3 font-mono text-xs flex items-center justify-center">
-                <div className="flex items-center gap-2 text-green-400"><Check className="w-4 h-4" />No problems detected</div>
+              <div className="h-full bg-slate-950 overflow-auto p-2 font-mono text-xs">
+                {lintIssues.length === 0 ? (
+                  <div className="flex items-center gap-2 text-green-400 p-2"><Check className="w-4 h-4" />No issues — run Lint to check</div>
+                ) : lintIssues.map((issue, i) => (
+                  <div key={i} className={`flex items-start gap-2 px-2 py-1 hover:bg-slate-800/50 rounded ${issue.severity === 'error' ? 'text-red-400' : issue.severity === 'warning' ? 'text-amber-400' : 'text-blue-400'}`}>
+                    <span className="flex-shrink-0 text-[9px] uppercase mt-0.5">{issue.severity}</span>
+                    <span className="text-slate-500 flex-shrink-0">L{issue.line}:{issue.col}</span>
+                    <span className="text-slate-400 flex-shrink-0">[{issue.rule}]</span>
+                    <span className="text-slate-200">{issue.message}</span>
+                    {issue.fix && <span className="text-green-400 ml-auto text-[10px]">→ {issue.fix}</span>}
+                  </div>
+                ))}
               </div>
             )}
             {bottomPanel === "output" && (
               <div className="h-full bg-slate-950 p-3 font-mono text-xs overflow-auto">
-                <p className="text-slate-600">[Fleet AI IDE v3.0] Ready</p>
-                <p className="text-cyan-400">12 AI features · {files.length} files · {files.reduce((s,f) => s + f.content.split("\n").length, 0)} lines</p>
+                <p className="text-slate-600">[Fleet AI IDE v3.0] Real JS execution • Python/bash simulated • Lint • Bundle analysis</p>
+                <p className="text-cyan-400">{files.length} files · {files.reduce((s,f) => s + f.content.split("\n").length, 0)} lines total</p>
               </div>
             )}
             {bottomPanel === "git" && (
@@ -1452,6 +1548,38 @@ Generate 4-6 files covering: main logic, API/interface, config/docker, tests, an
                       <span className="text-slate-600">+{f.content.split("\n").length} lines</span>
                     </div>
                   ))}
+                </div>
+              </div>
+            )}
+            {bottomPanel === "repl" && (
+              <div className="h-full bg-slate-950 flex flex-col">
+                <div className="flex-1 overflow-auto p-2 font-mono text-xs space-y-0.5">
+                  {replHistory.map((line, i) => (
+                    <div key={i} className={`leading-5 ${
+                      line.type === 'system' ? 'text-cyan-400' :
+                      line.type === 'error'  ? 'text-red-400' :
+                      line.type === 'warn'   ? 'text-amber-400' :
+                      line.type === 'info'   ? 'text-blue-400' :
+                      line.type === 'success'? 'text-green-400' : 'text-slate-200'
+                    }`}>{line.text}</div>
+                  ))}
+                  {replRunning && <div className="text-cyan-400 animate-pulse">computing...</div>}
+                </div>
+                <div className="flex items-center gap-2 px-2 py-1.5 border-t border-slate-800 bg-slate-900 flex-shrink-0">
+                  <span className="text-cyan-400 font-mono text-xs flex-shrink-0">{'>'}</span>
+                  <input
+                    autoFocus
+                    value={replInput}
+                    onChange={e => setReplInput(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); submitREPL(); } }}
+                    placeholder={`${activeFile?.lang || 'js'} expression... (Enter)`}
+                    className="flex-1 bg-transparent text-xs text-white font-mono outline-none placeholder-slate-600"
+                  />
+                  {replRunning
+                    ? <Loader2 className="w-3 h-3 text-cyan-400 animate-spin flex-shrink-0" />
+                    : <button onClick={submitREPL} className="text-cyan-600 hover:text-cyan-400 flex-shrink-0"><ChevronRight className="w-3.5 h-3.5" /></button>
+                  }
+                  <button onClick={() => { setReplHistory([{ type: 'info', text: 'REPL cleared.' }]); setReplContext(''); }} className="text-slate-600 hover:text-slate-400 text-[10px]">clear</button>
                 </div>
               </div>
             )}
