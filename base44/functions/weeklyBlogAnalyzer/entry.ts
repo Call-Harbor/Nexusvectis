@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 /**
  * Weekly Blog Post Analyzer
@@ -9,14 +9,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
 
-  try {
-    const user = await base44.auth.me();
-    if (user && user.role !== 'admin') {
-      return Response.json({ error: 'Forbidden' }, { status: 403 });
-    }
-  } catch (_) {
-    // Automation / service role — proceed
-  }
+  // Scheduled automation runs with service role — no user auth needed
 
   const today = new Date().toISOString().split('T')[0];
 
@@ -32,7 +25,10 @@ Deno.serve(async (req) => {
   let analyzed = 0;
   const results = [];
 
-  for (const post of posts) {
+  // Analyze only top 20 posts to avoid timeout
+  const postsToAnalyze = posts.slice(0, 20);
+
+  for (const post of postsToAnalyze) {
     // Build a compact summary of the post to send to AI (avoid sending full HTML)
     const postSummary = `
 Title: ${post.title}
