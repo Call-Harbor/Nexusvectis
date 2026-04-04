@@ -124,12 +124,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   const navigateToLogin = () => {
-    const isElectron = typeof navigator !== 'undefined' && navigator.userAgent.toLowerCase().includes('electron');
-    if (isElectron && window.__todesktop?.shell?.openExternal) {
-      const loginUrl = `https://base44.com/login?app_id=${appParams.appId}&from_url=${encodeURIComponent('nexusvectis://auth')}`;
-      window.__todesktop.shell.openExternal(loginUrl);
-      return;
-    }
+    // In Electron we use ElectronLoginHelper component rendered in App.jsx
+    // This function is only called for web — Electron auth is handled separately
     base44.auth.redirectToLogin(window.location.href);
   };
 
