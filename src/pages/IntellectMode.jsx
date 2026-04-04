@@ -46,6 +46,7 @@ import VideoCallHologram from "@/components/intellect/VideoCallHologram";
 import ParallelTaskProcessor from "@/components/intellect/ParallelTaskProcessor";
 import ProcessThinkingTerminal from "@/components/intellect/ProcessThinkingTerminal";
 import AICoach from "@/components/intellect/AICoach";
+import HarborSuperAgentChat from "@/components/intellect/HarborSuperAgentChat";
 
 const INITIAL_MESSAGES = [
   { role: "system", content: "⚡ FLEET AI online. World's most advanced logistics intelligence system ready. I can: perform predictive maintenance analysis, forecast demand, optimize routes multi-modally, generate CO2 reports, detect anomalies, assess risks, benchmark performance, and execute any fleet operation. Command me." }
@@ -94,6 +95,7 @@ export default function IntellectMode() {
   const [parallelProcessorTasks, setParallelProcessorTasks] = useState([]);
   const [isCircularMenuOpen, setIsCircularMenuOpen] = useState(false);
   const [showFleetAITrainer, setShowFleetAITrainer] = useState(false);
+  const [showHarborAgentChat, setShowHarborAgentChat] = useState(false);
   const [installedAppIds, setInstalledAppIds] = useState(new Set());
 
   const messagesEndRef = useRef(null);
@@ -1555,6 +1557,32 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
       <AnimatePresence>
         {showMultiScreenManager && <MultiScreenManager onClose={() => setShowMultiScreenManager(false)} onWindowOpened={(label, winRef) => { trackDesktopWindow(label, winRef); }} />}
       </AnimatePresence>
+
+      {/* Harbor Super Agent Chat */}
+      <AnimatePresence>
+        {showHarborAgentChat && (
+          <HarborSuperAgentChat onClose={() => setShowHarborAgentChat(false)} />
+        )}
+      </AnimatePresence>
+
+      {/* Harbor Agent Button */}
+      <motion.button
+        onClick={() => setShowHarborAgentChat(prev => !prev)}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        className="fixed bottom-32 right-6 z-40 flex items-center gap-2.5 px-4 py-3 rounded-2xl font-mono font-bold text-xs tracking-widest uppercase transition-all"
+        style={{
+          background: showHarborAgentChat
+            ? "linear-gradient(135deg, rgba(6,182,212,0.3), rgba(139,92,246,0.3))"
+            : "linear-gradient(135deg, rgba(6,182,212,0.15), rgba(139,92,246,0.15))",
+          border: "1px solid rgba(6,182,212,0.5)",
+          color: "#06b6d4",
+          boxShadow: "0 0 30px rgba(6,182,212,0.2), 0 0 60px rgba(139,92,246,0.1)"
+        }}>
+        <Brain className="w-4 h-4" />
+        H.A.R.B.O.R Chat
+        <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+      </motion.button>
 
       {/* AI Coach */}
       <AICoach openWindows={activeWindows} fleetData={{ vehicles, routes, shipments, alerts }} courseSession={null} userLevel={currentUser?.role === 'admin' ? 4 : 2} performanceHistory={[]} />
