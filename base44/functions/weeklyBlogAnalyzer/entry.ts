@@ -25,10 +25,11 @@ Deno.serve(async (req) => {
   let analyzed = 0;
   const results = [];
 
-  // Analyze only top 20 posts to avoid timeout
-  const postsToAnalyze = posts.slice(0, 20);
+  // Analyze only top 5 posts to avoid timeout (each LLM call = ~15-30s)
+  const postsToAnalyze = posts.slice(0, 5);
 
   for (const post of postsToAnalyze) {
+    try {
     // Build a compact summary of the post to send to AI (avoid sending full HTML)
     const postSummary = `
 Title: ${post.title}
@@ -90,8 +91,11 @@ Return exactly 3 suggestions ordered by priority (high first).`,
       suggestions_generated_at: new Date().toISOString()
     });
 
-    results.push({ id: post.id, title: post.title, suggestions: topSuggestions.length });
-    analyzed++;
+      results.push({ id: post.id, title: post.title, suggestions: topSuggestions.length });
+      analyzed++;
+    } catch (err) {
+      results.push({ id: post.id, title: post.title, error: err.message });
+    }
   }
 
   return Response.json({
