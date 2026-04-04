@@ -267,6 +267,10 @@ function ConversationList({ conversations, activeId, onSelect, onCreate, onDelet
 }
 
 export default function HarborSuperAgentChat({ onClose }) {
+  const [deletedIds] = useState(() => {
+    try { return new Set(JSON.parse(localStorage.getItem('harbor_deleted_convs') || '[]')); }
+    catch { return new Set(); }
+  });
   const [conversations, setConversations] = useState([]);
   const [activeConversation, setActiveConversation] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -300,9 +304,8 @@ export default function HarborSuperAgentChat({ onClose }) {
     setIsLoading(true);
     try {
       const convs = await base44.agents.listConversations({ agent_name: AGENT_NAME });
-      console.log('[LOAD] Raw conversations:', JSON.stringify(convs?.map(c => ({ id: c.id, metadata: c.metadata })), null, 2));
-      const active = (convs || []).filter(c => !c.metadata?.deleted);
-      console.log('[LOAD] After filter:', active.length, 'of', convs?.length);
+      const active = (convs || []).filter(c => !deletedIds.has(c.id));
+      console.log('[LOAD] Total:', convs?.length, 'After blacklist filter:', active.length);
       setConversations(active);
       if (active.length > 0) {
         await selectConversation(active[0]);
@@ -350,19 +353,10 @@ export default function HarborSuperAgentChat({ onClose }) {
   };
 
   const deleteConversation = async (convId) => {
-    const conv = conversations.find(c => c.id === convId);
-    console.log('[DELETE] Conv to delete:', convId, 'current metadata:', JSON.stringify(conv?.metadata));
-    const newMeta = { ...(conv?.metadata || {}), deleted: true };
-    console.log('[DELETE] Setting metadata to:', JSON.stringify(newMeta));
-    try {
-      const result = await base44.agents.updateConversation(convId, { metadata: newMeta });
-      console.log('[DELETE] updateConversation result:', JSON.stringify(result));
-      // Verify it stuck
-      const check = await base44.agents.getConversation(convId);
-      console.log('[DELETE] Verification - metadata after update:', JSON.stringify(check?.metadata));
-    } catch (err) {
-      console.error('[DELETE] Failed:', err);
-    }
+    // Store in localStorage blacklist so it survives reloads
+    deletedIds.add(convId);
+    localStorage.setItem('harbor_deleted_convs', JSON.stringify([...deletedIds]));
+    console.log('[DELETE] Blacklisted:', convId, '— total blacklisted:', deletedIds.size);
     setConversations(prev => {
       const remaining = prev.filter(c => c.id !== convId);
       if (activeConversation?.id === convId) {
