@@ -96,6 +96,8 @@ export default function IntellectMode() {
   const [isCircularMenuOpen, setIsCircularMenuOpen] = useState(false);
   const [showFleetAITrainer, setShowFleetAITrainer] = useState(false);
   const [showHarborAgentChat, setShowHarborAgentChat] = useState(false);
+  const intellectConversationRef = useRef(null);
+  const intellectUnsubRef = useRef(null);
   const [installedAppIds, setInstalledAppIds] = useState(new Set());
 
   const messagesEndRef = useRef(null);
@@ -234,6 +236,23 @@ export default function IntellectMode() {
       setInstalledAppIds(new Set(currentUser.installed_harbor_apps));
     }
   }, [currentUser]);
+
+  // ── Init Harbor Intellect conversation ────────────────────────────────────
+  useEffect(() => {
+    const init = async () => {
+      try {
+        const conv = await base44.agents.createConversation({
+          agent_name: 'harbor_intellect',
+          metadata: { name: 'IntellectMode Session' }
+        });
+        intellectConversationRef.current = conv;
+      } catch (e) {
+        console.warn('Could not init harbor_intellect conversation:', e);
+      }
+    };
+    init();
+    return () => { intellectUnsubRef.current?.(); };
+  }, []);
 
   // ── Effects ────────────────────────────────────────────────────────────────
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, streamingMessage]);
@@ -948,247 +967,67 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
     setHistoryIndex(-1);
     base44.analytics.track({ eventName: "fleet_ai_command_sent", properties: { command_length: currentCommand.length, has_files: uploadedFiles.length > 0 } });
 
-    // Add to parallel processor
     setParallelProcessorTasks(prev => [...prev, currentCommand]);
-
     setMessages(prev => [...prev, { role: "user", content: currentCommand, files: uploadedFiles.length > 0 ? uploadedFiles : undefined }]);
     const currentFiles = [...uploadedFiles];
     setInput("");
     setUploadedFiles([]);
     setIsProcessing(true);
-    setThinkingLogs([]);
-    setShowThinkingTerminal(true);
-    addThinkingLog('parse', `Parsing command: "${currentCommand}"`, null, 0);
 
-    await processAdvancedCommand(currentCommand);
-
-    const maxRetries = 3;
-    let attempts = 0;
-    while (attempts < maxRetries) {
-      try {
-        const user = await base44.auth.me();
-        const userOrgId = user?.organization_id;
-        setMessages(prev => [...prev, { role: "system", content: "⚡ FLEET analyzing..." }]);
-        setStreamingMessage("");
-        setMessages(prev => [...prev, { role: "assistant", content: "", streaming: true }]);
-
-        const tokenCount = Math.ceil(currentCommand.length / 4);
-        addThinkingLog('parse', `Tokenizing input (${tokenCount} tokens)`, null, 80, 15);
-        addThinkingLog('analyze', 'Analyzing context and fleet data', { vehicles: vehicles.length, alerts: alerts.length, routes: routes.length, shipments: shipments.length }, 150, 25);
-
-        const fleetData = { vehicles, alerts, routes, shipments };
-        const contextAnalysis = AdvancedIntelligenceEngine.analyzeContext(fleetData);
-        const predictions = AdvancedIntelligenceEngine.predictiveReasoning(contextAnalysis, vehicles, shipments, routes);
-
-        addThinkingLog('analyze', 'Multi-perspective analysis across 6 dimensions', null, 180, 28);
-
-        const conversationHistory = messages.filter(m => (m.role === 'user' || m.role === 'assistant') && m.content && !m.streaming && m.role !== 'system').map(m => ({ role: m.role, content: m.content }));
-        const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        const userLocalTime = new Date().toLocaleString('en-GB', { timeZone: userTimezone, hour12: false });
-
-        let fileUrls = currentFiles.map(f => f.url);
-
-        const payload = {
-          message: currentCommand, conversation_history: conversationHistory,
-          context: { current_datetime: userLocalTime, user_timezone: userTimezone, vehicles_count: vehicles.length, alerts_count: alerts.length, routes_count: routes.length, shipments_count: shipments.length },
-          ...(fileUrls.length > 0 && { file_urls: fileUrls })
-        };
-
-        addThinkingLog('think', 'Initializing Mistral model inference', null, 50, 45);
-        const startTime = Date.now();
-        const microCalls = await executeParallelMicroAnalyses(currentCommand, payload);
-        const duration = Date.now() - startTime;
-        const mainCallResult = microCalls[0] || {};
-        const mistralResponse = (mainCallResult.data || mainCallResult) || { action: 'ANALYZE', parameters: {} };
-
-        addThinkingLog('think', `Model inference complete`, { action: mistralResponse.action, inference_time_ms: duration }, duration, 95);
-
-        try {
-          await base44.functions.invoke('fleetAICalculations', { calculation_type: 'FLEET_PERFORMANCE', params: { vehicles, alerts, routes, shipments } });
-        } catch {}
-
-        setMessages(prev => prev.filter(m => !m.streaming));
-        const { reply, action, parameters, message, open_window } = mistralResponse;
-
-        try {
-          await base44.entities.FleetAIUsage.create({ organization_id: userOrgId, user_email: user.email, command: currentCommand, action, success: true });
-        } catch {}
-
-        addThinkingLog('execute', `Executing action: ${action}`, parameters, 100, 75);
-
-        switch (action) {
-          case "OPEN_WINDOW": {
-            const validWindows = ['fleet', 'alerts', 'routes', 'shipments', 'dashboard', 'settings', 'aioptimization', 'invoices', 'apidocs', 'resources', 'warehouseautomation', 'demandforecasting', 'greentms', 'gpsintegration', 'assignment', 'routeeditor', 'document_editor', 'spreadsheet_editor', 'satellite_weather', 'deep_analysis', 'swarm_intelligence', 'neuro_risk', 'digital_twin'];
-            if (parameters.window_type && validWindows.includes(parameters.window_type)) {
-              openWindow(parameters.window_type);
-              setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
-            } else {
-              setMessages(prev => [...prev, { role: "system", content: `❌ Invalid window type` }]);
-            }
-            break;
-          }
-          case "OPEN_NEXUS_CHAT":
-            handleQuickAction('openNexusChat');
-            setMessages(prev => [...prev, { role: "system", content: `✅ ${message || "🛰️ Nexus Satellite Chat opened"}` }]);
-            break;
-          case "CLOSE_WINDOWS":
-            setActiveWindows([]);
-            setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
-            break;
-          case "CREATE_ROUTE": {
-            setMessages(prev => [...prev, { role: "system", content: "🔄 Planning route..." }]);
-            const routePlan = await base44.functions.invoke('planRoute', { origin: parameters.origin, destination: parameters.destination, transport_type: parameters.transport_type || 'ship' });
-            if (routePlan.data.success) {
-              await base44.entities.Route.create({ organization_id: userOrgId, name: `${parameters.origin} → ${parameters.destination}`, origin: parameters.origin, destination: parameters.destination, waypoints: routePlan.data.route_data.waypoints, distance_km: routePlan.data.route_data.distance_km, estimated_duration_hours: routePlan.data.route_data.estimated_duration_hours, transport_type: parameters.transport_type || 'ship', co2_estimate: routePlan.data.route_data.co2_estimate, ai_optimized: true, status: parameters.status || 'planned', priority: parameters.priority || 'normal' });
-              queryClient.invalidateQueries({ queryKey: ['routes-intellect'] });
-              setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
-              if (open_window) openWindow(open_window);
-            }
-            break;
-          }
-          case "CREATE_VEHICLE":
-            await base44.entities.Vehicle.create({ organization_id: userOrgId, name: parameters.name || `Vehicle-${Date.now()}`, type: parameters.type || 'truck', status: parameters.status || 'active', fuel_level: parameters.fuel_level || 100, driver: parameters.driver });
-            queryClient.invalidateQueries({ queryKey: ['vehicles-intellect'] });
-            setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
-            if (open_window) openWindow(open_window);
-            break;
-          case "CREATE_SHIPMENT":
-            await base44.entities.Shipment.create({ organization_id: userOrgId, tracking_number: `SHIP-${Date.now()}`, origin: parameters.origin, destination: parameters.destination, status: parameters.status || 'pending', priority: parameters.priority || 'normal', cargo_type: parameters.cargo_type || 'general', weight_kg: parameters.weight_kg });
-            queryClient.invalidateQueries({ queryKey: ['shipments-intellect'] });
-            setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
-            if (open_window) openWindow(open_window);
-            break;
-          case "CREATE_ALERT":
-            await base44.entities.Alert.create({ organization_id: userOrgId, title: parameters.title, message: parameters.message, type: parameters.alert_type || 'warning', category: parameters.category || 'system', is_read: false, is_resolved: false });
-            queryClient.invalidateQueries({ queryKey: ['alerts-intellect'] });
-            setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
-            if (open_window) openWindow(open_window);
-            break;
-          case "CREATE_CUSTOMER":
-            await base44.entities.Customer.create({ organization_id: userOrgId, name: parameters.name, email: parameters.email, phone: parameters.phone, company: parameters.company, address: parameters.address, city: parameters.city, country: parameters.country, customer_type: parameters.customer_type || 'individual', status: 'active' });
-            queryClient.invalidateQueries({ queryKey: ['customers'] });
-            setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
-            break;
-          case "UPDATE_ALERTS":
-            if (parameters.resolve_all) {
-              const unresolvedAlerts = alerts.filter(a => !a.is_resolved);
-              await Promise.all(unresolvedAlerts.map(alert => base44.entities.Alert.update(alert.id, { is_resolved: true, resolved_at: new Date().toISOString() })));
-              queryClient.invalidateQueries({ queryKey: ['alerts-intellect'] });
-              setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
-            }
-            break;
-          case "UPDATE_VEHICLES":
-            if (parameters.update_all) {
-              const targetVehicles = parameters.filter ? vehicles.filter(v => v.status === parameters.filter.status) : vehicles;
-              await Promise.all(targetVehicles.map(v => base44.entities.Vehicle.update(v.id, parameters.updates)));
-              queryClient.invalidateQueries({ queryKey: ['vehicles-intellect'] });
-            } else if (parameters.vehicle_name) {
-              const vehicle = vehicles.find(v => v.name.toLowerCase().includes(parameters.vehicle_name.toLowerCase()));
-              if (vehicle) await base44.entities.Vehicle.update(vehicle.id, parameters.updates);
-              queryClient.invalidateQueries({ queryKey: ['vehicles-intellect'] });
-            }
-            setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
-            if (open_window) openWindow(open_window);
-            break;
-          case "UPDATE_ROUTE":
-            if (parameters.route_name) {
-              const route = routes.find(r => r.name.toLowerCase().includes(parameters.route_name.toLowerCase()));
-              if (route) { await base44.entities.Route.update(route.id, parameters.updates); queryClient.invalidateQueries({ queryKey: ['routes-intellect'] }); }
-            } else if (parameters.route_id) {
-              await base44.entities.Route.update(parameters.route_id, parameters.updates);
-              queryClient.invalidateQueries({ queryKey: ['routes-intellect'] });
-            }
-            setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
-            if (open_window) openWindow(open_window);
-            break;
-          case "UPDATE_ROUTES":
-            if (parameters.update_all) {
-              const targetRoutes = routes.filter(r => !parameters.current_status || r.status === parameters.current_status);
-              await Promise.all(targetRoutes.map(r => base44.entities.Route.update(r.id, parameters.updates)));
-              queryClient.invalidateQueries({ queryKey: ['routes-intellect'] });
-            }
-            setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
-            if (open_window) openWindow(open_window);
-            break;
-          case "UPDATE_SHIPMENTS":
-            if (parameters.tracking_number) {
-              const shipment = shipments.find(s => s.tracking_number === parameters.tracking_number);
-              if (shipment) { await base44.entities.Shipment.update(shipment.id, parameters.updates); queryClient.invalidateQueries({ queryKey: ['shipments-intellect'] }); }
-            }
-            setMessages(prev => [...prev, { role: "system", content: `✅ ${message}` }]);
-            if (open_window) openWindow(open_window);
-            break;
-          case "DELETE_ROUTES":
-            if (parameters.delete_all) {
-              await Promise.all(routes.map(r => base44.entities.Route.delete(r.id)));
-              queryClient.invalidateQueries({ queryKey: ['routes-intellect'] });
-              setMessages(prev => [...prev, { role: "system", content: `✅ Deleted ${routes.length} routes` }]);
-            }
-            break;
-          case "DELETE_VEHICLES":
-            if (parameters.delete_all) {
-              await Promise.all(vehicles.map(v => base44.entities.Vehicle.delete(v.id)));
-              queryClient.invalidateQueries({ queryKey: ['vehicles-intellect'] });
-              setMessages(prev => [...prev, { role: "system", content: `✅ Deleted ${vehicles.length} vehicles` }]);
-            }
-            break;
-          case "QUERY_DATA":
-          case "ANSWER":
-            setMessages(prev => [...prev, { role: "assistant", content: reply || message || "Analysis complete." }]);
-            if (open_window) openWindow(open_window);
-            break;
-          case "SHOW_ANALYSIS":
-          case "VISUALIZE_DATA":
-            setMessages(prev => [...prev, { role: "assistant", content: message || reply || "Analysis complete." }]);
-            {
-              const chartCfg = parameters.chart_config || parameters;
-              const chartDat = parameters.chart_data || chartCfg?.chart_data || [];
-              openWindow(`chart_${Date.now()}`, { x: 80, y: 60 }, { chartData: chartDat, chartConfig: chartCfg });
-            }
-            break;
-          case "SHOW_3D":
-            setMessages(prev => [...prev, { role: "assistant", content: message }]);
-            if (parameters.visualization_type) setShow3DVisualization({ type: parameters.type, vehicles, routes, resources });
-            break;
-          case "CREATE_DOCUMENT":
-            openWindow('document_editor', { x: 80, y: 60 }, {
-              initialContent: parameters.content_html,
-              initialTitle: parameters.title
-            });
-            setMessages(prev => [...prev, { role: "assistant", content: `📄 **${parameters.title}** — ${parameters.description || 'Document created and ready to edit.'}` }]);
-            break;
-          case "CREATE_SPREADSHEET":
-            openWindow('spreadsheet_editor', { x: 80, y: 60 }, {
-              initialGrid: parameters.grid,
-              initialTitle: parameters.title
-            });
-            setMessages(prev => [...prev, { role: "assistant", content: `📊 **${parameters.title}** — ${parameters.description || 'Spreadsheet created and ready to edit.'}` }]);
-            break;
-          default:
-            setMessages(prev => [...prev, { role: "assistant", content: message || "Command executed." }]);
-            if (open_window) openWindow(open_window);
-            break;
-        }
-
-        base44.analytics.track({ eventName: "fleet_ai_command_success", properties: { action, command: currentCommand } });
-        addThinkingLog('result', 'Command executed successfully', null, 100);
-        break;
-      } catch (error) {
-        attempts++;
-        addThinkingLog('error', `Error (attempt ${attempts}/${maxRetries}): ${error.message}`, null, 100);
-        if (attempts >= maxRetries) {
-          setMessages(prev => [...prev, { role: "system", content: `❌ Error: ${error.message}. Please try again.` }]);
-          base44.analytics.track({ eventName: "fleet_ai_command_failed", properties: { error: error.message, attempts } });
-          break;
-        } else {
-          setMessages(prev => [...prev, { role: "system", content: `⚠️ Retrying (${attempts}/${maxRetries})...` }]);
-          await new Promise(resolve => setTimeout(resolve, 1000 * attempts));
-        }
-      }
+    // ── Use H.A.R.B.O.R. Intellect Agent ──────────────────────────────────
+    const conv = intellectConversationRef.current;
+    if (!conv) {
+      setMessages(prev => [...prev, { role: "system", content: "⚠️ H.A.R.B.O.R. not ready — please retry" }]);
+      setIsProcessing(false);
+      return;
     }
 
-    setIsProcessing(false);
-    addThinkingLog('result', 'Processing complete', null, 100);
+    // Inject org context if first command
+    const isFirstCmd = messages.filter(m => m.role === 'user').length === 0;
+    if (isFirstCmd && orgId) {
+      base44.agents.addMessage(conv, {
+        role: 'system',
+        content: `SYSTEM CONTEXT: The user's organization_id is "${orgId}". ALWAYS filter all entity queries by organization_id = "${orgId}". Never show data from other organizations.`
+      }).catch(() => {});
+    }
+
+    // Subscribe to stream response back into IntellectMode messages
+    intellectUnsubRef.current?.();
+    let processingDone = false;
+    intellectUnsubRef.current = base44.agents.subscribeToConversation(conv.id, (data) => {
+      const agentMsgs = (data.messages || []).filter(m => m.role !== 'system');
+      const lastMsg = agentMsgs[agentMsgs.length - 1];
+      if (!lastMsg || lastMsg.role !== 'assistant') return;
+
+      setMessages(prev => {
+        const withoutPending = prev.filter(m => !m.streaming && m.content !== '⚡ H.A.R.B.O.R analyzing...');
+        const last = withoutPending[withoutPending.length - 1];
+        if (last?.role === 'assistant') {
+          return [...withoutPending.slice(0, -1), { role: 'assistant', content: lastMsg.content }];
+        }
+        return [...withoutPending, { role: 'assistant', content: lastMsg.content }];
+      });
+
+      if (!processingDone) {
+        processingDone = true;
+        setIsProcessing(false);
+      }
+    });
+
+    setMessages(prev => [...prev, { role: "system", content: "⚡ H.A.R.B.O.R analyzing..." }]);
+
+    await base44.agents.addMessage(conv, {
+      role: 'user',
+      content: currentCommand,
+      ...(currentFiles.length > 0 && { file_urls: currentFiles.map(f => f.url) })
+    });
+
+    // Track billing
+    try {
+      const user = await base44.auth.me();
+      base44.entities.APIUsage.create({ organization_id: orgId || user.id, endpoint: '/functions/harborIntellectAPI', method: 'POST', status_code: 200, response_time_ms: 0, ip_address: 'internal' }).catch(() => {});
+      base44.entities.FleetAIUsage.create({ organization_id: orgId, user_email: user.email, command: currentCommand, action: 'HARBOR_INTELLECT', success: true }).catch(() => {});
+    } catch {}
   };
 
   // ── Render ─────────────────────────────────────────────────────────────
