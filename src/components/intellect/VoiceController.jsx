@@ -329,6 +329,7 @@ export default function VoiceController({
 
   useEffect(() => { isContinuousRef.current = continuous; }, [continuous]);
   useEffect(() => { ttsEnabledRef.current = ttsEnabled; }, [ttsEnabled]);
+  useEffect(() => { setLang(language); }, [language]);
 
   const onSendRef = useRef(onSend);
   const onTranscriptRef = useRef(onTranscript);
