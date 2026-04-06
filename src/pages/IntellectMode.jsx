@@ -1147,7 +1147,7 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
               </div>
               <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
                 {advancedError && <div className="p-2 rounded bg-red-500/20 border border-red-500/50 text-red-300 text-xs">{advancedError}</div>}
-                <AdvancedCommandPanel onCommand={(cmdType) => { advancedExecute(cmdType); setMessages(prev => [...prev, { role: 'system', content: `🧠 Running: ${cmdType}...` }]); }} />
+                <AdvancedCommandPanel onCommand={(cmdType) => { setShowThinkingTerminal(true); addThinkingLog('parse', `🔬 Advanced analysis initiated: ${cmdType}`, null, 0, null); addThinkingLog('analyze', 'Gathering fleet telemetry & processing command', null, 200, 25, null); advancedExecute(cmdType); setMessages(prev => [...prev, { role: 'system', content: `🧠 Running: ${cmdType}...` }]); }} />
                 {(advancedLoading || advancedResults) && (
                   <div className="pt-4 border-t border-slate-700/50">
                     <InsightRenderer data={advancedResults} loading={advancedLoading} />
