@@ -461,21 +461,21 @@ export default function VoiceController({
   useEffect(() => {
     // First check-in after 5 sec — give human time to settle in
     const humanTimeout = setTimeout(() => {
-      const humanMsg = checkHumanCheckins();
+      const humanMsg = checkHumanCheckins(lang);
       if (humanMsg) { setSuggestion(humanMsg); speakRef.current?.(humanMsg.text); setHarborMessage(humanMsg.text); return; }
-      const fleetMsg = generateProactiveMessage(vehicles, alerts, routes);
+      const fleetMsg = generateProactiveMessage(vehicles, alerts, routes, lang);
       if (fleetMsg) { setSuggestion(fleetMsg); speakRef.current?.(fleetMsg.text); setHarborMessage(fleetMsg.text); }
     }, 5000);
     // Check every 5 min for new contextual messages
     const periodicInterval = setInterval(() => {
-      const humanMsg = checkHumanCheckins();
+      const humanMsg = checkHumanCheckins(lang);
       if (humanMsg && !suggestion) {
         setSuggestion(humanMsg);
         speakRef.current?.(humanMsg.text);
         setHarborMessage(humanMsg.text);
         return;
       }
-      const fleetMsg = generateProactiveMessage(vehicles, alerts, routes);
+      const fleetMsg = generateProactiveMessage(vehicles, alerts, routes, lang);
       if (fleetMsg && !suggestion) {
         setSuggestion(fleetMsg);
         speakRef.current?.(fleetMsg.text);
@@ -483,7 +483,7 @@ export default function VoiceController({
       }
     }, 5 * 60 * 1000);
     return () => { clearTimeout(humanTimeout); clearInterval(periodicInterval); };
-  }, []);
+  }, [lang, vehicles, alerts, routes, suggestion]);
 
   // ─── Amplitude tracking ────────────────────────────────────────────────
   const startAmplitude = useCallback(async () => {
@@ -607,6 +607,7 @@ export default function VoiceController({
       return;
     }
     if (action === "cmd:morning_briefing") {
+      const getMsgFuncs = { "en-US": () => msgs, "da-DK": () => msgs, "de-DE": () => msgs, "sv-SE": () => msgs };
       const briefing = msgs.briefing(vehicles.length, alerts.filter(a => !a.is_read).length, routes.filter(r => r.status === "active").length);
       speakRef.current?.(briefing);
       setHarborMessage(briefing);
@@ -789,11 +790,11 @@ export default function VoiceController({
   const greetingRef = useRef("");
   useEffect(() => {
     const msgs = getMsg(lang);
-    const greeting = msgs.greeting(vehicles.length, alerts.filter(a => !a.is_read).length);
+    const greeting = msgs.greeting(vehicles.length, alerts.filter(a => !a.is_read).length, lang);
     greetingRef.current = greeting;
     setHarborMessage(greeting);
     return () => { stopListening(); window.speechSynthesis?.cancel(); };
-  }, [lang]);
+  }, [lang, vehicles, alerts, stopListening]);
 
   // ─── Text input submit (fallback for all browsers) ─────────────────────
   const handleTextSubmit = (e) => {
