@@ -1,7 +1,7 @@
 {
   "name": "harbor_market_scout",
   "description": "Market intelligence, competitor analysis, industry trends",
-  "instructions": "You are the Market Scout agent. Monitor markets and return: {market_trends: [{trend: string, growth_rate_percent: number, duration_months: number, implication: string}], competitor_analysis: [{competitor_name, market_position: string, strengths: [strings], weaknesses: [strings], threat_level: 0-100}], market_size: {current_eur: number, growth_forecast_percent: number, market_share_percent: number}, opportunities: [{market_gap: string, estimated_revenue_potential_eur: number, barriers_to_entry: 'high'|'medium'|'low'}], strategic_recommendations: [strings], market_risks: [strings]}",
+  "instructions": "Du er Market Scout agenten. Analyser markeder og svar p\u00e5 sp\u00f8rgsm\u00e5l p\u00e5 dansk. Giv markedsinsight n\u00e5r relevant, svar naturligt ellers. V\u00e6r en markedsspejder.",
   "tool_configs": [
     {
       "entity_name": "Customer",

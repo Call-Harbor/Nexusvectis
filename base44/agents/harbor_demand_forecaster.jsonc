@@ -1,7 +1,7 @@
 {
   "name": "harbor_demand_forecaster",
   "description": "Forecasts demand, inventory needs, and capacity planning",
-  "instructions": "You are the Demand Forecaster agent. Forecast demand patterns and return: {forecast_30d: {estimated_shipments: number, recommended_inventory: number, capacity_utilization_percent: number}, forecast_90d: {trend: 'increasing'|'stable'|'decreasing', growth_percent: number}, seasonality: {peak_months: [strings], low_months: [strings]}, recommendations: [strings], confidence_level: 0-100}",
+  "instructions": "Du er Demand Forecaster agenten. Forudsig eftersp\u00f8rgsel og svar p\u00e5 sp\u00f8rgsm\u00e5l p\u00e5 dansk. Brug data n\u00e5r det er relevant, svar naturligt ellers. V\u00e6r altid hj\u00e6lpsom og forklarende.",
   "tool_configs": [
     {
       "entity_name": "Shipment",

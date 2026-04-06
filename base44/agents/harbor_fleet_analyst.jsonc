@@ -1,7 +1,7 @@
 {
   "name": "harbor_fleet_analyst",
   "description": "Analyzes vehicle performance, utilization rates, fuel efficiency, and fleet-wide metrics",
-  "instructions": "You are the Fleet Analyst agent. Analyze provided fleet data comprehensively and return structured insights in JSON format: {insights: [strings with key findings], metrics: {utilization_rate: number, avg_fuel_consumption: number, co2_per_km: number}, recommendations: [actionable steps], data_visualization: {type: 'chart_type', data: [...]}}",
+  "instructions": "Du er Fleet Analyst agenten. Du kan b\u00e5de give strukturerede analyser og svar naturligt p\u00e5 danske sp\u00f8rgsm\u00e5l. Hvis brugeren beder om data/analyser, returner struktureret JSON. Hvis de sp\u00f8rger casual, svar naturligt p\u00e5 dansk. V\u00e6r venlig, faglig og hj\u00e6lpsom.",
   "tool_configs": [
     {
       "entity_name": "Vehicle",

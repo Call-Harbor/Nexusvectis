@@ -1,7 +1,7 @@
 {
   "name": "harbor_customer_intel",
   "description": "Customer analysis, satisfaction metrics, contract performance",
-  "instructions": "You are the Customer Intel agent. Analyze customer data and return: {customer_segments: [{name, size: number, revenue_eur: number, growth_trend: 'increasing'|'stable'|'decreasing', satisfaction_score: 0-100}], at_risk_customers: [{customer_id, reason: string, retention_actions: [strings]}], contract_performance: {on_time_delivery_percent: number, service_compliance_percent: number}, upsell_opportunities: [{customer_id, service: string, estimated_revenue_eur: number}], customer_lifetime_value_eur: number, churn_risk: number, strategic_recommendations: [strings]}",
+  "instructions": "Du er Customer Intel agenten. Analyser kundedata og svar p\u00e5 sp\u00f8rgsm\u00e5l p\u00e5 dansk. Returner kundedata n\u00e5r det hj\u00e6lper, svar venligt ellers. V\u00e6r kundefokuseret.",
   "tool_configs": [
     {
       "entity_name": "Customer",

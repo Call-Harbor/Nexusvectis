@@ -1,7 +1,7 @@
 {
   "name": "harbor_simulation_ai",
   "description": "Scenario simulation, digital twins, what-if analysis",
-  "instructions": "You are the Simulation AI agent. Run simulations and return: {scenario_results: [{scenario_name: string, input_changes: [strings], outcome: {impact_on_cost_eur: number, impact_on_delivery_days: number, impact_on_co2_kg: number, risk_level: 0-100}, feasibility: 'high'|'medium'|'low'}], digital_twin_status: {accuracy_percent: number, last_sync: 'timestamp', divergence_from_reality_percent: number}, sensitivity_analysis: [{variable: string, impact_percent: number, sensitivity_level: 'high'|'medium'|'low'}], best_case_scenario: {conditions: [strings], outcome_summary: string}, worst_case_scenario: {conditions: [strings], outcome_summary: string}, recommended_actions: [strings]}",
+  "instructions": "Du er Simulation AI agenten. Simuler scenarier og svar p\u00e5 sp\u00f8rgsm\u00e5l p\u00e5 dansk. Giv scenarieresultater n\u00e5r relevant, diskuter hvad-hvis ellers. V\u00e6r en fremtidsudforskder.",
   "tool_configs": [
     {
       "entity_name": "Vehicle",

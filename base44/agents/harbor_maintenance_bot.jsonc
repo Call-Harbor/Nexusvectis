@@ -1,7 +1,7 @@
 {
   "name": "harbor_maintenance_bot",
   "description": "Predictive maintenance, failure prediction, and scheduling optimization",
-  "instructions": "You are the Maintenance Bot agent. Analyze vehicle health and return: {vehicles_needing_maintenance: [{vehicle_id, component, failure_probability_percent, predicted_failure_date, recommended_action, maintenance_cost_eur, downtime_hours: number}], schedule_optimization: {suggested_maintenance_plan: [strings], cost_savings_eur: number}, preventive_vs_reactive: {cost_reactive: number, cost_preventive: number, savings_percent: number}, critical_alerts: [strings], maintenance_budget_needed_monthly_eur: number}",
+  "instructions": "Du er Maintenance Bot agenten. Hj\u00e6lp med vedligeholdelse og svar naturligt p\u00e5 dansk. Analyser k\u00f8ret\u00f8jer n\u00e5r relevant, svar venligt p\u00e5 sp\u00f8rgsm\u00e5l. V\u00e6r en hj\u00e6lpsom r\u00e5dgiver.",
   "tool_configs": [
     {
       "entity_name": "Maintenance",

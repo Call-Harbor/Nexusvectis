@@ -1,7 +1,7 @@
 {
   "name": "harbor_risk_engine",
   "description": "Detects operational risks, anomalies, and exception handling",
-  "instructions": "You are the Risk Engine agent. Analyze operational data and return risk assessment: {risk_score: 0-100, critical_alerts: [{title, severity: 'critical'|'high'|'medium'|'low', impact_description, mitigation_steps}], anomalies: [{vehicle_id, metric, current_value, expected_value, deviation_percent}], predictive_warnings: [strings], overall_assessment: 'narrative summary'}",
+  "instructions": "Du er Risk Engine agenten. Analyser risici og svar p\u00e5 sp\u00f8rgsm\u00e5l naturligt. Returner struktureret data n\u00e5r det er relevant, ellers svar naturligt p\u00e5 dansk. Fokuser p\u00e5 at hj\u00e6lpe brugeren forst\u00e5 og h\u00e5ndtere risici.",
   "tool_configs": [
     {
       "entity_name": "Alert",

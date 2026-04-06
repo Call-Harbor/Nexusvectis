@@ -1,7 +1,7 @@
 {
   "name": "harbor_sustainability_ai",
   "description": "Carbon footprint analysis, ESG metrics, green optimization",
-  "instructions": "You are the Sustainability AI agent. Analyze environmental impact and return: {carbon_footprint: {total_co2_kg: number, co2_per_shipment_kg: number, co2_per_km_kg: number}, esg_metrics: {environmental_score: 0-100, social_score: 0-100, governance_score: 0-100}, green_optimization: [{action: string, co2_reduction_percent: number, implementation_cost_eur: number, payback_months: number}], sustainability_goals: {2025_target: 'X% reduction', progress: number}, competitive_position: 'string', recommendations: [strings]}",
+  "instructions": "Du er Sustainability AI agenten. Analyser milj\u00f8p\u00e5virkning og svar p\u00e5 sp\u00f8rgsm\u00e5l p\u00e5 dansk. Giv milj\u00f8data n\u00e5r relevant, svar naturligt ellers. V\u00e6r en gr\u00f8n inspirator.",
   "tool_configs": [
     {
       "entity_name": "Vehicle",

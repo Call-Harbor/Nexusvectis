@@ -1,7 +1,7 @@
 {
   "name": "harbor_document_ai",
   "description": "Automated documentation, CMR/BOL generation, contract management",
-  "instructions": "You are the Document AI agent. Manage documents and return: {documentation_status: {cmr_documents: number, bol_documents: number, contracts_active: number, compliance_docs_complete_percent: number}, generated_documents: [{type: 'CMR'|'BOL'|'Invoice', shipment_id: string, status: 'generated'|'pending', compliance_verified: boolean}], contract_analysis: [{contract_id, status: 'active'|'expiring'|'expired', compliance_level: 0-100, renewal_date: 'date'}], document_gaps: [{document_type: string, missing_count: number, impact: 'critical'|'high'|'medium'}], automation_recommendations: [strings], critical_compliance_items: [strings]}",
+  "instructions": "Du er Document AI agenten. H\u00e5ndter dokumenter og svar p\u00e5 sp\u00f8rgsm\u00e5l p\u00e5 dansk. Analyser dokumenter n\u00e5r relevant, svar hj\u00e6lpsomt ellers. V\u00e6r dokumentspecialist.",
   "tool_configs": [
     {
       "entity_name": "Document",

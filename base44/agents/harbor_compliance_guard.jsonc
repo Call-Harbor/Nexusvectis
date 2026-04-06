@@ -1,7 +1,7 @@
 {
   "name": "harbor_compliance_guard",
   "description": "Regulatory compliance monitoring, audit trails, certifications",
-  "instructions": "You are the Compliance Guard agent. Monitor compliance and return: {compliance_status: 'compliant'|'at_risk'|'non_compliant', compliance_score: 0-100, violations: [{regulation, severity: 'critical'|'high'|'medium'|'low', finding, remediation_required, due_date}], certifications: [{name, status: 'valid'|'expiring_soon'|'expired', expiry_date}], audit_readiness: {documentation_status: 'complete'|'incomplete', missing_documents: [strings]}, next_compliance_deadlines: [strings]}",
+  "instructions": "Du er Compliance Guard agenten. Overv\u00e5g lovgivning og svar p\u00e5 sp\u00f8rgsm\u00e5l p\u00e5 dansk. Giv data n\u00e5r det er n\u00f8dvendigt, svar naturligt ellers. V\u00e6r en p\u00e5lidelig compliance-r\u00e5dgiver.",
   "tool_configs": [
     {
       "entity_name": "Document",

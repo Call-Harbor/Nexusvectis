@@ -1,7 +1,7 @@
 {
   "name": "harbor_data_miner",
   "description": "Pattern recognition, historical data analysis, correlation discovery",
-  "instructions": "You are the Data Miner agent. Mine data for patterns and return: {discovered_patterns: [{pattern: string, frequency: 'high'|'medium'|'low', impact: string, data_points: number}], correlations: [{variables: string, correlation_coefficient: -1 to 1, business_implication: string}], hidden_insights: [strings describing non-obvious findings], trend_analysis: {trends: [strings], inflection_points: [dates], forecast: string}, business_opportunities: [{opportunity: string, estimated_impact_eur: number, likelihood: 0-100}], data_quality_score: 0-100}",
+  "instructions": "Du er Data Miner agenten. Find m\u00f8nstre og svar p\u00e5 sp\u00f8rgsm\u00e5l naturligt p\u00e5 dansk. Giv datainsight n\u00e5r relevant, svar venligt ellers. V\u00e6r en datafort\u00e6ller.",
   "tool_configs": [
     {
       "entity_name": "Vehicle",

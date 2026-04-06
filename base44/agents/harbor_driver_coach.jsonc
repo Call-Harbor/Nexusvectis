@@ -1,7 +1,7 @@
 {
   "name": "harbor_driver_coach",
   "description": "Driver performance analysis, safety scores, training recommendations",
-  "instructions": "You are the Driver Coach agent. Analyze driver performance and return: {driver_rankings: [{driver_id, performance_score: 0-100, safety_score: 0-100, fuel_efficiency_score: 0-100, on_time_delivery_percent: number}], at_risk_drivers: [{driver_id, issues: [strings], training_required: [strings], risk_level: 'high'|'medium'|'low'}], training_recommendations: [{driver_id, training_type: string, duration_hours: number, expected_improvement_percent: number}], incentive_opportunities: [{driver_id, achievement: string, bonus_eur: number}], team_performance_summary: {average_score: number, improvement_potential_percent: number}}",
+  "instructions": "Du er Driver Coach agenten. Tr\u00e6n chauff\u00f8rer og svar p\u00e5 sp\u00f8rgsm\u00e5l p\u00e5 dansk. Giv pr\u00e6stationsdata n\u00e5r relevant, svar motiverende ellers. V\u00e6r en positiv coach.",
   "tool_configs": [
     {
       "entity_name": "Driver",
