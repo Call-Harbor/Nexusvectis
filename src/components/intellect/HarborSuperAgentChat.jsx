@@ -262,22 +262,36 @@ function ParallelTaskPanel({ onExecute, onClose }) {
 
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-      className="rounded-2xl overflow-hidden shadow-2xl"
-      style={{ background: "linear-gradient(135deg, rgba(5,10,30,0.99), rgba(15,23,42,0.95))", border: "1px solid rgba(6,182,212,0.3)" }}>
+      className="rounded-3xl overflow-hidden shadow-2xl backdrop-blur-xl"
+      style={{ 
+        background: "linear-gradient(135deg, rgba(6,182,212,0.08) 0%, rgba(139,92,246,0.05) 100%), rgba(10,15,35,0.9)",
+        border: "1px solid rgba(6,182,212,0.4)",
+        boxShadow: "0 0 60px rgba(6,182,212,0.15), 0 0 120px rgba(139,92,246,0.08)"
+      }}>
+      {/* Animated background */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-80 h-80 opacity-30 blur-3xl" style={{ background: "radial-gradient(circle, #06b6d4, transparent)" }} />
+        <div className="absolute -bottom-20 -left-20 w-60 h-60 opacity-20 blur-3xl" style={{ background: "radial-gradient(circle, #8b5cf6, transparent)" }} />
+      </div>
+
       {/* Header */}
-      <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: "rgba(6,182,212,0.15)", background: "rgba(6,182,212,0.02)" }}>
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "rgba(6,182,212,0.15)" }}>
-            <Network className="w-4 h-4" style={{ color: "#06b6d4" }} />
-          </div>
+      <div className="relative flex items-center justify-between px-6 py-5 border-b" style={{ borderColor: "rgba(6,182,212,0.2)", background: "rgba(6,182,212,0.05)" }}>
+        <div className="flex items-center gap-4">
+          <motion.div className="w-10 h-10 rounded-xl flex items-center justify-center" 
+            animate={{ boxShadow: ["0 0 20px rgba(6,182,212,0.5)", "0 0 30px rgba(6,182,212,0.7)", "0 0 20px rgba(6,182,212,0.5)"] }}
+            transition={{ duration: 3, repeat: Infinity }}
+            style={{ background: "linear-gradient(135deg, rgba(6,182,212,0.25), rgba(139,92,246,0.15))" }}>
+            <Network className="w-5 h-5" style={{ color: "#06b6d4" }} />
+          </motion.div>
           <div>
-            <h3 className="text-sm font-bold font-mono tracking-widest" style={{ color: "#06b6d4" }}>PARALLEL ORCHESTRATION</h3>
-            <p className="text-[10px] text-slate-500 font-mono mt-0.5">Compose & execute multiple AI tasks</p>
+            <h3 className="text-base font-bold font-mono tracking-wider" style={{ color: "#06b6d4" }}>⚡ AI ORCHESTRATION</h3>
+            <p className="text-xs text-slate-400 font-mono mt-0.5">Compose & execute parallel AI tasks</p>
           </div>
         </div>
-        <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-red-500/10 text-slate-500 hover:text-red-400 transition-all">
-          <X className="w-4 h-4" />
-        </button>
+        <motion.button onClick={onClose} whileHover={{ scale: 1.1, rotate: 90 }} whileTap={{ scale: 0.9 }}
+          className="p-2 rounded-xl transition-all hover:bg-red-500/20 text-slate-400 hover:text-red-400">
+          <X className="w-5 h-5" />
+        </motion.button>
       </div>
 
       {/* Tasks Section */}
