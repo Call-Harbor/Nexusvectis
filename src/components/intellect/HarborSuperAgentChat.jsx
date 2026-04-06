@@ -596,6 +596,13 @@ export default function HarborSuperAgentChat({ onClose }) {
   const executeParallelOrchestration = useCallback(async (parallelTasks, filesForOrch = []) => {
     const orchId = `orch_${Date.now()}`;
 
+    // Create orchestration metadata to track worker conversations separately
+    const orchMetadata = {
+      orchestrationId: orchId,
+      isOrchestration: true,
+      timestamp: Date.now()
+    };
+
     // Build worker list
     const workers = parallelTasks.map(task => {
       const workerDef = AI_WORKERS.find(w => w.id === task.workerId) || AI_WORKERS[0];
@@ -620,22 +627,7 @@ export default function HarborSuperAgentChat({ onClose }) {
 
     setOrchestrations(prev => [newOrch, ...prev]);
 
-    // Post orchestration status to chat conversation
-    if (activeConversation) {
-      const tasksSummary = parallelTasks.map((t, i) => {
-        const w = AI_WORKERS.find(w => w.id === t.workerId);
-        return `${i + 1}. [${w?.emoji} ${w?.name}]: ${t.prompt}`;
-      }).join("\n");
-
-      const msgData = {
-        role: "user",
-        content: `🚀 **PARALLEL ORCHESTRATION LAUNCHED** — Running ${parallelTasks.length} AI workers simultaneously:\n\n${tasksSummary}\n\nPlease coordinate these tasks and synthesize a unified intelligence report.`
-      };
-      if (filesForOrch.length > 0) {
-        msgData.file_urls = filesForOrch.map(f => f.url);
-      }
-      await base44.agents.addMessage(activeConversation, msgData);
-    }
+    // DO NOT send orchestration messages to main chat - keep them separate
 
     // Execute ALL tasks in true parallel
     const executions = parallelTasks.map(async (task) => {
@@ -654,7 +646,9 @@ export default function HarborSuperAgentChat({ onClose }) {
           task: task.prompt,
           workerType: task.workerId,
           orchestrationId: orchId,
-          taskId: task.id
+          taskId: task.id,
+          fileUrls: filesForOrch.map(f => f.url),
+          metadata: orchMetadata
         });
 
         const output = result.data?.output || result.data || "Analysis complete";
