@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import ReactMarkdown from "react-markdown";
+import WorkerHologramControl from "./WorkerHologramControl";
 import {
   Brain, Send, X, Plus, Trash2, MessageSquare, Loader2,
   Sparkles, User, Copy, CheckCheck, Minimize2, Maximize2,
@@ -526,6 +527,7 @@ export default function HarborSuperAgentChat({ onClose }) {
   const [showWorkerPool, setShowWorkerPool] = useState(false);
   const [orchestrations, setOrchestrations] = useState([]); // [{id, workers, tasks, outputs, status}]
   const [selectedOutput, setSelectedOutput] = useState(null);
+  const [workerHolograms, setWorkerHolograms] = useState([]); // [{workerId, task, isActive}]
 
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
@@ -975,8 +977,26 @@ export default function HarborSuperAgentChat({ onClose }) {
                     <OrchestrationMonitor
                       orchestration={orch}
                       onViewOutput={(worker, output) => setSelectedOutput({ worker, output })}
+                      onOpenHologram={(worker, task) => setWorkerHolograms(prev => [...prev, { workerId: worker.id, task, isActive: true }])}
                     />
                   </div>
+                ))}
+
+                {/* Worker Hologram Controls */}
+                {workerHolograms.map((holo, i) => (
+                  <WorkerHologramControl
+                    key={holo.workerId}
+                    worker={AI_WORKERS.find(w => w.id === holo.workerId)}
+                    task={holo.task}
+                    isActive={holo.isActive}
+                    onComplete={(result) => {
+                      if (result.cancelled) {
+                        setWorkerHolograms(prev => prev.filter(h => h.workerId !== result.worker.id));
+                      } else {
+                        setWorkerHolograms(prev => prev.map(h => h.workerId === result.worker.id ? { ...h, isActive: false } : h));
+                      }
+                    }}
+                  />
                 ))}
 
                 {isThinking && (
