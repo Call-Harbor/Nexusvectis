@@ -1520,24 +1520,20 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
         {showMultiScreenManager && <MultiScreenManager onClose={() => setShowMultiScreenManager(false)} onWindowOpened={(label, winRef) => { trackDesktopWindow(label, winRef); }} />}
       </AnimatePresence>
 
-      {/* VoiceController — full-screen when listening */}
-      <AnimatePresence>
-        {isListening && (
-          <VoiceController
-            language="da-DK"
-            autoStart={true}
-            onTranscript={(text) => {}}
-            onSend={(text) => { processCommand(text); }}
-            onClose={() => setIsListening(false)}
-            onNavigate={(page) => navigate(createPageUrl(page))}
-            onOpenWindow={openWindow}
-            onCloseWindows={() => setActiveWindows([])}
-            vehicles={vehicles || []}
-            alerts={alerts || []}
-            routes={routes || []}
-          />
-        )}
-      </AnimatePresence>
+      {/* VoiceController — always visible */}
+      <VoiceController
+        language="da-DK"
+        autoStart={false}
+        onTranscript={(text) => {}}
+        onSend={(text) => { processCommand(text); }}
+        onClose={() => {}}
+        onNavigate={(page) => navigate(createPageUrl(page))}
+        onOpenWindow={openWindow}
+        onCloseWindows={() => setActiveWindows([])}
+        vehicles={vehicles || []}
+        alerts={alerts || []}
+        routes={routes || []}
+      />
 
       {/* Harbor Super Agent Chat */}
       <AnimatePresence>
