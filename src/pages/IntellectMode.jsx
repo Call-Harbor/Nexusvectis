@@ -1012,16 +1012,29 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
       }).catch(() => {});
     }
 
+    // Send the message first, then subscribe for the response
+    await base44.agents.addMessage(conv, {
+      role: 'user',
+      content: currentCommand,
+      ...(currentFiles.length > 0 && { file_urls: currentFiles.map(f => f.url) })
+    });
+
+    setMessages(prev => [...prev, { role: "system", content: "⚡ H.A.R.B.O.R analyzing..." }]);
+
     // Subscribe to stream response back into IntellectMode messages
     intellectUnsubRef.current?.();
-    let processingDone = false;
+    const msgCountAtSend = (await base44.agents.getConversation(conv.id)).messages?.filter(m => m.role === 'assistant').length || 0;
+    let answered = false;
+
     intellectUnsubRef.current = base44.agents.subscribeToConversation(conv.id, (data) => {
-      const agentMsgs = (data.messages || []).filter(m => m.role !== 'system');
-      const lastMsg = agentMsgs[agentMsgs.length - 1];
-      if (!lastMsg || lastMsg.role !== 'assistant') return;
+      const assistantMsgs = (data.messages || []).filter(m => m.role === 'assistant');
+      if (assistantMsgs.length <= msgCountAtSend) return; // no new assistant message yet
+
+      const lastMsg = assistantMsgs[assistantMsgs.length - 1];
+      if (!lastMsg?.content) return;
 
       setMessages(prev => {
-        const withoutPending = prev.filter(m => !m.streaming && m.content !== '⚡ H.A.R.B.O.R analyzing...');
+        const withoutPending = prev.filter(m => m.content !== '⚡ H.A.R.B.O.R analyzing...');
         const last = withoutPending[withoutPending.length - 1];
         if (last?.role === 'assistant') {
           return [...withoutPending.slice(0, -1), { role: 'assistant', content: lastMsg.content }];
@@ -1029,19 +1042,20 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
         return [...withoutPending, { role: 'assistant', content: lastMsg.content }];
       });
 
-      if (!processingDone) {
-        processingDone = true;
+      if (!answered) {
+        answered = true;
         setIsProcessing(false);
       }
     });
 
-    setMessages(prev => [...prev, { role: "system", content: "⚡ H.A.R.B.O.R analyzing..." }]);
-
-    await base44.agents.addMessage(conv, {
-      role: 'user',
-      content: currentCommand,
-      ...(currentFiles.length > 0 && { file_urls: currentFiles.map(f => f.url) })
-    });
+    // Timeout fallback — stop spinner after 60s if no response
+    setTimeout(() => {
+      if (!answered) {
+        answered = true;
+        setIsProcessing(false);
+        setMessages(prev => prev.filter(m => m.content !== '⚡ H.A.R.B.O.R analyzing...'));
+      }
+    }, 60000);
 
     // Track billing
     try {
