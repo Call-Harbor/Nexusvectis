@@ -87,7 +87,8 @@ Deno.serve(async (req) => {
         const usageDate = new Date(usage.created_date);
         return usageDate > periodStart && usageDate <= periodEnd && usage.status_code < 400;
       });
-      const harborCalls = periodAPIUsage.filter(u => u.endpoint && (u.endpoint.includes('/harbor/intelligence') || u.endpoint.includes('harborIntellectAPI'))).length;
+      const harborCalls = periodAPIUsage.filter(u => u.endpoint && u.endpoint.includes('/harbor/intelligence') && !u.endpoint.includes('harborIntellectAPI')).length;
+      const intellectCalls = periodAPIUsage.filter(u => u.endpoint && u.endpoint.includes('harborIntellectAPI')).length;
       const apiCalls = periodAPIUsage.filter(u => !u.endpoint || (!u.endpoint.includes('/harbor/intelligence') && !u.endpoint.includes('harborIntellectAPI'))).length;
 
       const vehicleCount = vehicles.length;
@@ -98,6 +99,7 @@ Deno.serve(async (req) => {
       const fleetAIPricePer100 = 5;
       const apiPricePer100 = 5;
       const harborPricePerCall = 0.25;
+      const intellectPricePerCall = 0.50;
       const addonPrice = 2000;
 
       // Check if add-ons have been active for 48+ hours (once activated, billed for entire period even if deactivated)
@@ -132,6 +134,7 @@ Deno.serve(async (req) => {
       const fleetAITotal = Math.ceil(fleetAICommands / 100) * fleetAIPricePer100;
       const apiTotal = Math.ceil(apiCalls / 100) * apiPricePer100;
       const harborTotal = harborCalls * harborPricePerCall;
+      const intellectTotal = intellectCalls * intellectPricePerCall;
       const airportOpsTotal = addonAirportOps ? addonPrice : 0;
       const portCommandTotal = addonPortCommand ? addonPrice : 0;
       const transitControlTotal = addonTransitControl ? addonPrice : 0;
@@ -141,7 +144,7 @@ Deno.serve(async (req) => {
       const taxRules = TAX_RULES[buyerCountry] || TAX_RULES['Denmark'];
 
       // Calculate VAT
-      const subtotal = vehicleTotal + resourceTotal + fleetAITotal + apiTotal + harborTotal + airportOpsTotal + portCommandTotal + transitControlTotal;
+      const subtotal = vehicleTotal + resourceTotal + fleetAITotal + apiTotal + harborTotal + intellectTotal + airportOpsTotal + portCommandTotal + transitControlTotal;
       const isEUCrossBorder = buyerCountry !== 'Denmark' && taxRules.requires_vat_id;
       const reverseCharge = isEUCrossBorder; // EU B2B reverse charge
       const vatRate = reverseCharge ? 0 : taxRules.vat_rate;
@@ -193,6 +196,14 @@ Deno.serve(async (req) => {
           quantity: harborCalls,
           unit_price: harborPricePerCall,
           total: harborTotal
+        });
+      }
+      if (intellectCalls > 0) {
+        lineItems.push({
+          description: `H.A.R.B.O.R. Intellect Chat API (${intellectCalls} calls @ €${intellectPricePerCall}/call) — Claude Sonnet 4.6`,
+          quantity: intellectCalls,
+          unit_price: intellectPricePerCall,
+          total: intellectTotal
         });
       }
       if (addonAirportOps) {
