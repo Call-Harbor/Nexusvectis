@@ -363,7 +363,7 @@ export default function HarborSuperAgentChat({ onClose }) {
   };
 
   const renameConversation = async (convId, newName) => {
-    await base44.agents.updateConversation(convId, { metadata: { name: newName } });
+    // updateConversation is not available in SDK — update local state only
     setConversations(prev => prev.map(c => c.id === convId ? { ...c, metadata: { ...c.metadata, name: newName } } : c));
     if (activeConversation?.id === convId) {
       setActiveConversation(prev => ({ ...prev, metadata: { ...prev.metadata, name: newName } }));
