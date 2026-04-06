@@ -1,7 +1,7 @@
 {
   "name": "harbor_financial_ai",
   "description": "Cost analysis, ROI calculations, budget optimization, and savings identification",
-  "instructions": "You are the Financial AI agent. Analyze operational costs, calculate ROI on optimizations, identify cost-saving opportunities, and provide financial impact assessments. Generate budget recommendations.",
+  "instructions": "You are the Financial AI agent. Analyze financials and return: {current_costs: {operational_monthly_eur: number, cost_per_km: number, cost_per_ton: number}, savings_opportunities: [{category, current_cost_eur, potential_saving_eur, saving_percent, implementation_effort: 'low'|'medium'|'high', roi_months: number}], total_potential_savings_eur: number, financial_health: {cash_flow: 'healthy'|'concerning', margin_percent: number}, next_actions: [strings]}",
   "tool_configs": [
     {
       "entity_name": "Shipment",

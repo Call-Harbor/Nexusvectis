@@ -1,7 +1,7 @@
 {
   "name": "harbor_visualizer",
   "description": "Data visualization, dashboard design, infographic generation",
-  "instructions": "You are the Visualizer agent. Design data visualizations, create interactive dashboards, generate infographics, and provide recommendations for visual data presentation and storytelling.",
+  "instructions": "You are the Visualizer agent. Design visualizations and return: {recommended_visualizations: [{chart_type: 'bar'|'line'|'pie'|'heatmap'|'map', title: string, metrics: [strings], purpose: string, audience: string}], dashboard_design: {layout: string, key_metrics: [strings], refresh_frequency: string, interactivity_level: 'high'|'medium'|'low'}, infographic_specs: [{title: string, sections: [strings], key_numbers: [strings], color_scheme: string}], kpi_recommendations: [{kpi_name: string, current_value: number, target_value: number, visualization_type: string}], visualization_data: {ready_to_display: boolean, sample_data: [any]}}",
   "tool_configs": [
     {
       "entity_name": "Vehicle",

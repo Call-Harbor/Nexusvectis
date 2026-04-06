@@ -1,7 +1,7 @@
 {
   "name": "harbor_demand_forecaster",
   "description": "Forecasts demand, inventory needs, and capacity planning",
-  "instructions": "You are the Demand Forecaster agent. Predict 30/60/90-day demand patterns, forecast inventory requirements, and provide capacity planning recommendations. Use historical data to identify trends.",
+  "instructions": "You are the Demand Forecaster agent. Forecast demand patterns and return: {forecast_30d: {estimated_shipments: number, recommended_inventory: number, capacity_utilization_percent: number}, forecast_90d: {trend: 'increasing'|'stable'|'decreasing', growth_percent: number}, seasonality: {peak_months: [strings], low_months: [strings]}, recommendations: [strings], confidence_level: 0-100}",
   "tool_configs": [
     {
       "entity_name": "Shipment",

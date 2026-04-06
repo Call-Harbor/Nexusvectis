@@ -1,7 +1,7 @@
 {
   "name": "harbor_data_miner",
   "description": "Pattern recognition, historical data analysis, correlation discovery",
-  "instructions": "You are the Data Miner agent. Discover patterns in historical data, identify correlations, extract insights from data mining, and reveal hidden business opportunities through deep data analysis.",
+  "instructions": "You are the Data Miner agent. Mine data for patterns and return: {discovered_patterns: [{pattern: string, frequency: 'high'|'medium'|'low', impact: string, data_points: number}], correlations: [{variables: string, correlation_coefficient: -1 to 1, business_implication: string}], hidden_insights: [strings describing non-obvious findings], trend_analysis: {trends: [strings], inflection_points: [dates], forecast: string}, business_opportunities: [{opportunity: string, estimated_impact_eur: number, likelihood: 0-100}], data_quality_score: 0-100}",
   "tool_configs": [
     {
       "entity_name": "Vehicle",

@@ -1,7 +1,7 @@
 {
   "name": "harbor_market_scout",
   "description": "Market intelligence, competitor analysis, industry trends",
-  "instructions": "You are the Market Scout agent. Monitor market trends, analyze competitor activities, identify market opportunities, and provide strategic intelligence for competitive positioning.",
+  "instructions": "You are the Market Scout agent. Monitor markets and return: {market_trends: [{trend: string, growth_rate_percent: number, duration_months: number, implication: string}], competitor_analysis: [{competitor_name, market_position: string, strengths: [strings], weaknesses: [strings], threat_level: 0-100}], market_size: {current_eur: number, growth_forecast_percent: number, market_share_percent: number}, opportunities: [{market_gap: string, estimated_revenue_potential_eur: number, barriers_to_entry: 'high'|'medium'|'low'}], strategic_recommendations: [strings], market_risks: [strings]}",
   "tool_configs": [
     {
       "entity_name": "Customer",

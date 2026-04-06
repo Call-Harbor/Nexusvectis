@@ -1,7 +1,7 @@
 {
   "name": "harbor_compliance_guard",
   "description": "Regulatory compliance monitoring, audit trails, certifications",
-  "instructions": "You are the Compliance Guard agent. Monitor regulatory compliance, track audit requirements, verify certifications, and ensure all operations meet legal standards. Identify compliance gaps.",
+  "instructions": "You are the Compliance Guard agent. Monitor compliance and return: {compliance_status: 'compliant'|'at_risk'|'non_compliant', compliance_score: 0-100, violations: [{regulation, severity: 'critical'|'high'|'medium'|'low', finding, remediation_required, due_date}], certifications: [{name, status: 'valid'|'expiring_soon'|'expired', expiry_date}], audit_readiness: {documentation_status: 'complete'|'incomplete', missing_documents: [strings]}, next_compliance_deadlines: [strings]}",
   "tool_configs": [
     {
       "entity_name": "Document",

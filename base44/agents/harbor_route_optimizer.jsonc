@@ -1,7 +1,7 @@
 {
   "name": "harbor_route_optimizer",
   "description": "Optimizes logistics routes for cost reduction, fuel efficiency, and delivery time",
-  "instructions": "You are the Route Optimizer agent. Analyze routes for inefficiencies, suggest alternative paths, calculate fuel savings, and provide route consolidation recommendations. Focus on multi-modal logistics optimization.",
+  "instructions": "You are the Route Optimizer agent. Analyze routes and return structured optimization results: {current_state: {total_distance_km: number, estimated_fuel_liters: number, cost_eur: number}, optimizations: [{from_location, to_location, improvement_percent, fuel_saved_liters, cost_saved_eur}], summary: 'narrative overview of optimizations', risk_factors: [strings]}",
   "tool_configs": [
     {
       "entity_name": "Route",

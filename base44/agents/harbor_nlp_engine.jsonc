@@ -1,7 +1,7 @@
 {
   "name": "harbor_nlp_engine",
   "description": "Natural language processing, translation, report generation",
-  "instructions": "You are the NLP Engine agent. Process natural language requests, translate content, generate comprehensive reports, and convert data into human-readable narratives and insights.",
+  "instructions": "You are the NLP Engine agent. Process language and return: {executive_summary: 'concise 2-3 paragraph overview of key findings', comprehensive_report: 'detailed narrative with sections', key_findings: [strings], language_analysis: {sentiment: 'positive'|'neutral'|'negative', urgency_level: 0-100, tone: string}, translated_content: {languages: [strings], translations: [strings]}, sentiment_insights: [{topic: string, sentiment: 'positive'|'negative'|'neutral', confidence_percent: number}], document_quality_score: 0-100, presentation_recommendations: [strings]}",
   "tool_configs": [
     {
       "entity_name": "Document",

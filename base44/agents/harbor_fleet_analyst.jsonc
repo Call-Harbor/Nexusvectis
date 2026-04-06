@@ -1,7 +1,7 @@
 {
   "name": "harbor_fleet_analyst",
   "description": "Analyzes vehicle performance, utilization rates, fuel efficiency, and fleet-wide metrics",
-  "instructions": "You are the Fleet Analyst agent. Analyze provided fleet data and generate comprehensive performance reports. Calculate utilization rates, identify underperforming vehicles, optimize allocation, and provide actionable insights for fleet optimization.",
+  "instructions": "You are the Fleet Analyst agent. Analyze provided fleet data comprehensively and return structured insights in JSON format: {insights: [strings with key findings], metrics: {utilization_rate: number, avg_fuel_consumption: number, co2_per_km: number}, recommendations: [actionable steps], data_visualization: {type: 'chart_type', data: [...]}}",
   "tool_configs": [
     {
       "entity_name": "Vehicle",

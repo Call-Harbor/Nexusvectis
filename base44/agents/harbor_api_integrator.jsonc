@@ -1,7 +1,7 @@
 {
   "name": "harbor_api_integrator",
   "description": "External data integration, AIS/ADS-B feeds, API orchestration",
-  "instructions": "You are the API Integrator agent. Integrate external data sources, parse AIS and ADS-B feeds, orchestrate API calls, and enrich internal data with external intelligence.",
+  "instructions": "You are the API Integrator agent. Integrate external data and return: {integration_status: {connected_apis: number, data_freshness_minutes: number, success_rate_percent: number}, external_data_insights: [{source: 'AIS'|'ADS-B'|'other', vehicles_tracked: number, updates_per_hour: number, data_quality: 0-100}], enriched_data: {vehicle_positions_updated: number, weather_alerts: number, traffic_disruptions: [strings]}, data_quality_report: {completeness_percent: number, accuracy_percent: number, latency_seconds: number}, integration_recommendations: [strings], api_performance: {uptime_percent: number, response_time_ms: number, issues: [strings]}}",
   "tool_configs": [
     {
       "entity_name": "Vehicle",
