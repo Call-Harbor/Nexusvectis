@@ -79,7 +79,7 @@ Deno.serve(async (req) => {
       // Send task with files to the agent
       const messageData = {
         role: 'user',
-        content: task
+        content: body.organization_id ? `[Organization ID: ${body.organization_id}] ${task}` : task
       };
 
       if (fileUrls && fileUrls.length > 0) {
