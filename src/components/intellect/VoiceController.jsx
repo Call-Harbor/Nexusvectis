@@ -320,10 +320,7 @@ export default function VoiceController({
   const ttsEnabledRef = useRef(ttsEnabled);
   const intentionalStopRef = useRef(false);
   const restartTimerRef = useRef(null);
-  const agentConvRef = useRef(null);
-  const agentUnsubRef = useRef(null);
-  const lastAgentMsgIdRef = useRef(null);
-  const isSpeakingAgentRef = useRef(false);
+  // Agent integration removed — voice commands route directly via onSend
 
   const m = getMsg(lang);
 
@@ -467,20 +464,9 @@ export default function VoiceController({
 
   // ─── Send text to Harbor Super Agent ──────────────────────────────────
   const sendToAgent = useCallback(async (text) => {
-    if (!agentConvRef.current) {
-      onTranscriptRef.current?.(text);
-      onSendRef.current?.(text);
-      return;
-    }
-    setIsAgentLoading(true);
-    setHarborMessage("H.A.R.B.O.R is thinking...");
-    try {
-      await base44.agents.addMessage(agentConvRef.current, { role: "user", content: text });
-      // Response streams back via subscribeToConversation above — will be spoken aloud
-    } catch (e) {
-      toast.error("Agent error: " + e.message);
-      setIsAgentLoading(false);
-    }
+    // Route directly to onSend (no agent conversation)
+    onTranscriptRef.current?.(text);
+    onSendRef.current?.(text);
   }, []);
 
   // ─── Handle recognized text ────────────────────────────────────────────
