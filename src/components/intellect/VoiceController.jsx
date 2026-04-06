@@ -56,31 +56,33 @@ function matchCommand(text) {
 function Waveform({ isActive, amplitude = 0, isSpeaking = false }) {
   const count = 40;
   return (
-    <div className="flex items-center justify-center gap-[2px]" style={{ height: 40 }}>
-      {Array.from({ length: count }, (_, i) => {
+    <div className="flex items-center justify-center gap-[2px]" style={{ height: 48 }}>{
+      Array.from({ length: count }, (_, i) => {
         const center = Math.abs(i - count / 2) / (count / 2);
         const base = 0.05 + (1 - center) * 0.4;
         const grad = isSpeaking
           ? `rgba(167,139,250,${0.4 + (1 - center) * 0.6})`
-          : `rgba(6,182,212,${0.4 + (1 - center) * 0.6})`;
+          : isActive
+          ? `rgba(6,182,212,${0.5 + (1 - center) * 0.5})`
+          : `rgba(51,65,85,0.4)`;
         return (
           <motion.div
             key={i}
-            style={{ width: 2, borderRadius: 4, background: grad }}
+            style={{ width: 2.5, borderRadius: 4, background: grad }}
             animate={isActive || isSpeaking ? {
-              scaleY: [base, base + amplitude * (0.4 + (1 - center) * 0.8) + (isSpeaking ? 0.5 : 0), base],
-            } : { scaleY: base * 0.25 }}
+              scaleY: [base, base + amplitude * (0.6 + (1 - center) * 1.4) + (isSpeaking ? 0.6 : 0.2), base],
+            } : { scaleY: base * 0.2 }}
             transition={{
-              duration: 0.2 + (i % 5) * 0.06,
+              duration: 0.15 + (i % 5) * 0.05,
               repeat: Infinity,
               repeatType: "mirror",
-              delay: i * 0.02,
+              delay: i * 0.015,
               ease: "easeInOut",
             }}
           />
         );
-      })}
-    </div>
+      })
+    }</div>
   );
 }
 
@@ -652,49 +654,46 @@ export default function VoiceController({
           )}
         </AnimatePresence>
 
-        {/* Main interaction area */}
-        <div className="flex items-center gap-4 px-5 py-4">
-          {/* Big mic button */}
-          <motion.button
-            onClick={toggleListening}
-            whileHover={{ scale: 1.06 }}
-            whileTap={{ scale: 0.93 }}
-            className="relative flex-shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center"
-            style={{
-              background: isListening
-                ? "linear-gradient(135deg, rgba(239,68,68,0.25), rgba(220,38,38,0.15))"
-                : "linear-gradient(135deg, rgba(6,182,212,0.2), rgba(139,92,246,0.12))",
-              border: isListening
-                ? "1.5px solid rgba(239,68,68,0.7)"
-                : "1.5px solid rgba(6,182,212,0.5)",
-              boxShadow: isListening
-                ? "0 0 24px rgba(239,68,68,0.35), 0 0 0 8px rgba(239,68,68,0.05)"
-                : "0 0 20px rgba(6,182,212,0.2), 0 0 0 8px rgba(6,182,212,0.04)",
-            }}
-          >
-            {isListening && (
-              <>
+        {/* Big listening indicator banner */}
+        <AnimatePresence>
+          {isListening && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="relative overflow-hidden"
+              style={{ background: "linear-gradient(90deg, rgba(6,182,212,0.12), rgba(6,182,212,0.06), rgba(6,182,212,0.12))" }}
+            >
+              <motion.div
+                className="absolute inset-0"
+                animate={{ x: ["-100%", "100%"] }}
+                transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+                style={{ background: "linear-gradient(90deg, transparent, rgba(6,182,212,0.25), transparent)", width: "40%" }}
+              />
+              <div className="relative flex items-center justify-center gap-3 py-2.5">
                 <motion.div
-                  animate={{ scale: [1, 1.7, 1], opacity: [0.6, 0, 0.6] }}
-                  transition={{ duration: 1.4, repeat: Infinity }}
-                  className="absolute inset-0 rounded-2xl"
-                  style={{ border: "1px solid rgba(239,68,68,0.5)" }}
+                  className="w-2.5 h-2.5 rounded-full"
+                  animate={{ scale: [1, 1.5, 1], opacity: [1, 0.4, 1] }}
+                  transition={{ duration: 0.7, repeat: Infinity }}
+                  style={{ background: "#22d3ee", boxShadow: "0 0 10px rgba(6,182,212,0.8)" }}
                 />
+                <span className="text-xs font-black font-mono tracking-[0.3em] uppercase" style={{ color: "#22d3ee", textShadow: "0 0 12px rgba(6,182,212,0.6)" }}>
+                  ● LYTTER AKTIVT
+                </span>
                 <motion.div
-                  animate={{ scale: [1, 2.2, 1], opacity: [0.3, 0, 0.3] }}
-                  transition={{ duration: 1.4, repeat: Infinity, delay: 0.3 }}
-                  className="absolute inset-0 rounded-2xl"
-                  style={{ border: "1px solid rgba(239,68,68,0.2)" }}
+                  className="w-2.5 h-2.5 rounded-full"
+                  animate={{ scale: [1, 1.5, 1], opacity: [1, 0.4, 1] }}
+                  transition={{ duration: 0.7, repeat: Infinity, delay: 0.35 }}
+                  style={{ background: "#22d3ee", boxShadow: "0 0 10px rgba(6,182,212,0.8)" }}
                 />
-              </>
-            )}
-            {isListening
-              ? <MicOff className="w-6 h-6" style={{ color: "#f87171" }} />
-              : <Mic className="w-6 h-6" style={{ color: "#22d3ee" }} />
-            }
-          </motion.button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-          {/* Message + waveform */}
+      {/* Main interaction area */}
+        <div className="flex items-center gap-4 px-5 py-4">{
+          /* Message + waveform */}
           <div className="flex-1 flex flex-col gap-2 min-w-0">
             <AnimatePresence mode="wait">
               <motion.p
