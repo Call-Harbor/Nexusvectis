@@ -429,6 +429,7 @@ export default function VoiceController({
       const fleetMsg = generateProactiveMessage(vehicles, alerts, routes);
       if (fleetMsg && !suggestion) {
         setSuggestion(fleetMsg);
+        speakRef.current?.(fleetMsg.text);
         setHarborMessage(fleetMsg.text);
       }
     }, 5 * 60 * 1000);
