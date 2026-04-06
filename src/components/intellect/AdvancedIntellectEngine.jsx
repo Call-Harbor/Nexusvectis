@@ -64,23 +64,37 @@ const InsightCard = ({ title, icon: Icon, content, color = 'cyan' }) => {
 
 export const AdvancedCommandPanel = ({ onCommand }) => {
   const commands = [
-    { id: 'analyze_fleet_health', label: 'Analyze Fleet Health', icon: TrendingUp, color: 'cyan' },
-    { id: 'optimize_operations', label: 'Optimize Operations', icon: Zap, color: 'violet' },
-    { id: 'predict_issues', label: 'Predict Issues', icon: AlertTriangle, color: 'amber' },
-    { id: 'generate_insights', label: 'Generate Insights', icon: Sparkles, color: 'emerald' },
+    { id: 'multi_modal_fleet_analysis', label: '🚛 Multi-Modal Fleet DNA', icon: Brain, color: 'cyan', desc: 'Complete fleet health, efficiency patterns & predictive risks' },
+    { id: 'neural_route_optimization', label: '🗺️ Neural Route Mastery', icon: TrendingUp, color: 'violet', desc: 'AI-driven route optimization with CO₂ & cost analysis' },
+    { id: 'predictive_maintenance_ml', label: '⚠️ Maintenance Prophecy', icon: AlertTriangle, color: 'amber', desc: 'ML-powered failure prediction & maintenance scheduling' },
+    { id: 'carbon_footprint_analytics', label: '🌍 Carbon Intelligence', icon: Sparkles, color: 'emerald', desc: 'Real-time CO₂ tracking & sustainability recommendations' },
+    { id: 'shipment_intelligence', label: '📦 Shipment IQ', icon: Zap, color: 'cyan', desc: 'ETA precision, delay risk detection & customer impact' },
+    { id: 'driver_performance_ai', label: '👤 Driver AI Profiling', icon: TrendingUp, color: 'violet', desc: 'Performance scoring, safety patterns & skill gaps' },
+    { id: 'cost_optimization_engine', label: '💰 Financial Autopsy', icon: AlertTriangle, color: 'amber', desc: 'Cost breakdown, ROI on optimizations & savings potential' },
+    { id: 'supply_chain_forecast', label: '🔮 Supply Chain Oracle', icon: Sparkles, color: 'emerald', desc: '30/60/90-day demand & inventory forecasting' },
+    { id: 'competitive_benchmarking', label: '📊 Benchmark Battle', icon: Zap, color: 'cyan', desc: 'Industry comparison & competitive positioning insights' },
+    { id: 'swarm_optimization', label: '🐜 Fleet Swarm Logic', icon: Brain, color: 'violet', desc: 'Multi-vehicle coordination & dynamic fleet optimization' },
   ];
 
   return (
     <div className="grid grid-cols-2 gap-2">
       {commands.map(cmd => (
-        <Button
+        <motion.button
           key={cmd.id}
           onClick={() => onCommand(cmd.id)}
-          className="bg-slate-800 hover:bg-slate-700 h-auto flex flex-col items-start gap-1 p-3"
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          className="h-auto flex flex-col items-start gap-1.5 p-3 rounded-lg border border-slate-700/50 hover:border-slate-600 transition-all group"
+          style={{
+            background: 'rgba(15,23,42,0.6)',
+            backdropFilter: 'blur(8px)'
+          }}
         >
-          <cmd.icon className="w-4 h-4" />
-          <span className="text-xs font-semibold">{cmd.label}</span>
-        </Button>
+          <div className="flex items-start justify-between w-full">
+            <span className="text-sm font-bold text-slate-200 group-hover:text-white transition-colors">{cmd.label}</span>
+          </div>
+          <span className="text-[10px] text-slate-400 leading-tight">{cmd.desc}</span>
+        </motion.button>
       ))}
     </div>
   );
