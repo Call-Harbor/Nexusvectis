@@ -444,7 +444,7 @@ export default function APIDocumentation() {
         success: true,
         reply: "Based on your fleet of 45 vehicles (38 active), I've identified 3 high-priority risk factors: (1) TRUCK-004 shows vibration anomalies suggesting brake wear — 73% failure probability within 800km. Recommend immediate inspection. (2) 4 vehicles have overdue oil changes increasing engine wear risk by 2.3x. (3) Route CPH→HAM has a 31% delay probability due to weather patterns this week. Estimated cost exposure: €18,400 if unaddressed.",
         model: "harbor-core-intelligence-v1",
-        engine: "mistral-large-latest",
+        engine: "mistral-large-2411",
         fleet_context: {
           vehicles: { total: 45, active: 38 },
           alerts: { critical: 2, unresolved: 5 },
@@ -456,6 +456,41 @@ export default function APIDocumentation() {
         },
         usage: { prompt_tokens: 842, completion_tokens: 218, total_tokens: 1060 },
         timestamp: "2026-03-16T09:00:00Z",
+      },
+    },
+    // H.A.R.B.O.R. Intellect Chat API (Ultra Premium)
+    {
+      id: "harbor-intellect",
+      name: "H.A.R.B.O.R. Intellect Chat",
+      method: "POST",
+      endpoint: "/functions/harborIntellectAPI",
+      premium: true,
+      description: "Ultra-premium AI chat powered by Claude Sonnet 4.6 — the most advanced model in NexusVectis. Full logistics superintelligence with multi-turn conversation, structured JSON output, and expert-level domain reasoning across fleet, port, airport, transit, energy, HR, and CRM.",
+      params: {
+        message: "What is the risk profile of my fleet this week and what should I prioritize?",
+        conversation_history: [
+          { role: "user", content: "How many active vehicles do I have?" },
+          { role: "assistant", content: "You currently have 38 active vehicles out of 45 total." }
+        ],
+        context: {
+          vehicles_count: 45,
+          alerts_count: 3,
+          organization: "Demo Logistics ApS"
+        }
+      },
+      response: {
+        harbor_version: "1.0",
+        model: "claude_sonnet_4_6",
+        reply: "**Immediate (24h):** Schedule TRUCK-004 brake inspection — 73% failure probability within 800km. Cost if ignored: €4,200 breakdown + €800 downtime.\n\n**Medium-term (1-2 weeks):** 4 vehicles overdue for oil change — engine wear risk 2.3×. Book in batches to minimize fleet downtime.\n\n**Strategic:** Route CPH→HAM showing 31% delay pattern. Recommend rerouting via Odense bypass — saves avg. 28 min per run.",
+        meta: {
+          response_time_ms: 1840,
+          timestamp: "2026-04-06T09:00:00Z"
+        },
+        billing: {
+          cost_per_call_eur: 0.50,
+          model_tier: "harbor_intellect_ultra",
+          note: "H.A.R.B.O.R. Intellect is billed at €0.50/call — powered by Claude Sonnet 4.6"
+        }
       },
     },
     // Data Export
@@ -720,6 +755,8 @@ fetch("https://api.nexusvectis.com${endpoint.endpoint}", {
                     ? "bg-gradient-to-br from-sky-500/10 to-blue-500/10 border-sky-500/40 hover:border-sky-400"
                     : endpoint.id === "harbor-intelligence"
                     ? "bg-gradient-to-br from-amber-500/15 to-orange-500/10 border-amber-500/60 hover:border-amber-400"
+                    : endpoint.id === "harbor-intellect"
+                    ? "bg-gradient-to-br from-violet-500/15 to-fuchsia-500/10 border-violet-500/60 hover:border-violet-400"
                     : "bg-slate-800/50 border-slate-700 hover:border-cyan-500/50"
                 }`}
               >
@@ -729,6 +766,7 @@ fetch("https://api.nexusvectis.com${endpoint.endpoint}", {
                     {["company-analytics", "company-benchmarking"].includes(endpoint.id) && <Building2 className="w-4 h-4 text-emerald-400" />}
                     {["people-search", "people-profile"].includes(endpoint.id) && <Users className="w-4 h-4 text-sky-400" />}
                     {endpoint.id === "harbor-intelligence" && <Brain className="w-4 h-4 text-amber-400" />}
+                    {endpoint.id === "harbor-intellect" && <Brain className="w-4 h-4 text-violet-400" />}
                     <h3 className="font-semibold text-white">{endpoint.name}</h3>
                     {endpoint.id === "fleet-ai-chat" && (
                       <span className="px-1.5 py-0.5 bg-violet-500/30 rounded text-[10px] text-violet-300 font-semibold">NEW</span>
@@ -740,7 +778,10 @@ fetch("https://api.nexusvectis.com${endpoint.endpoint}", {
                       <span className="px-1.5 py-0.5 bg-sky-500/30 rounded text-[10px] text-sky-300 font-semibold">NEW</span>
                     )}
                     {endpoint.id === "harbor-intelligence" && (
-                      <span className="px-1.5 py-0.5 bg-amber-500/30 rounded text-[10px] text-amber-300 font-semibold">PREMIUM · €0.25/call</span>
+                     <span className="px-1.5 py-0.5 bg-amber-500/30 rounded text-[10px] text-amber-300 font-semibold">PREMIUM · €0.25/call</span>
+                    )}
+                    {endpoint.id === "harbor-intellect" && (
+                     <span className="px-1.5 py-0.5 bg-violet-500/30 rounded text-[10px] text-violet-300 font-semibold">ULTRA · €0.50/call</span>
                     )}
                   </div>
                   <span className="px-2 py-1 bg-violet-500/20 rounded text-xs text-violet-400 font-mono">
@@ -776,7 +817,19 @@ fetch("https://api.nexusvectis.com${endpoint.endpoint}", {
                     <p className="text-sm font-semibold text-amber-300">Harbor Core Intelligence — Premium Endpoint</p>
                     <p className="text-xs text-amber-200/70 mt-1">
                       Billed at <strong className="text-amber-300">€0.25 per API call</strong> — 5× the standard rate (€0.05/call).
-                      Each call automatically enriches your prompt with live fleet data (vehicles, routes, shipments, alerts) and uses <strong className="text-amber-300">mistral-large-latest</strong> for maximum accuracy.
+                      Each call automatically enriches your prompt with live fleet data and uses <strong className="text-amber-300">mistral-large-2411</strong> for maximum accuracy.
+                    </p>
+                  </div>
+                </div>
+              )}
+              {selected.id === "harbor-intellect" && (
+                <div className="flex items-start gap-3 p-4 rounded-xl bg-violet-500/10 border border-violet-500/40">
+                  <Brain className="w-5 h-5 text-violet-400 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-sm font-semibold text-violet-300">H.A.R.B.O.R. Intellect — Ultra Premium Endpoint</p>
+                    <p className="text-xs text-violet-200/70 mt-1">
+                      Billed at <strong className="text-violet-300">€0.50 per API call</strong> — 10× the standard rate.
+                      Powered by <strong className="text-violet-300">Claude Sonnet 4.6</strong> — the most advanced model in NexusVectis. Supports multi-turn conversation, structured JSON output, and expert-level reasoning across all logistics domains.
                     </p>
                   </div>
                 </div>

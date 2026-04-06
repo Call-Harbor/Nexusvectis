@@ -87,8 +87,8 @@ Deno.serve(async (req) => {
         const usageDate = new Date(usage.created_date);
         return usageDate > periodStart && usageDate <= periodEnd && usage.status_code < 400;
       });
-      const harborCalls = periodAPIUsage.filter(u => u.endpoint && u.endpoint.includes('/harbor/intelligence')).length;
-      const apiCalls = periodAPIUsage.filter(u => !u.endpoint || !u.endpoint.includes('/harbor/intelligence')).length;
+      const harborCalls = periodAPIUsage.filter(u => u.endpoint && (u.endpoint.includes('/harbor/intelligence') || u.endpoint.includes('harborIntellectAPI'))).length;
+      const apiCalls = periodAPIUsage.filter(u => !u.endpoint || (!u.endpoint.includes('/harbor/intelligence') && !u.endpoint.includes('harborIntellectAPI'))).length;
 
       const vehicleCount = vehicles.length;
       const resourceCount = resources.length;

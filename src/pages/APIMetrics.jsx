@@ -77,7 +77,7 @@ export default function APIMetrics() {
     // Timeline — split standard vs harbor
     const harborTimelineMap = {};
     apiUsage.forEach(call => {
-      if (!call.endpoint?.includes('/harbor/intelligence')) return;
+      if (!call.endpoint?.includes('/harbor/intelligence') && !call.endpoint?.includes('harborIntellectAPI')) return;
       const date = new Date(call.created_date);
       let key;
       if (timeRange === 'daily') key = date.toISOString().split('T')[0];
@@ -111,7 +111,7 @@ export default function APIMetrics() {
       .slice(0, 10)
       .map(([orgId, count]) => {
         const org = organizations.find(o => o.id === orgId);
-        const harborCount = apiUsage.filter(u => u.organization_id === orgId && u.endpoint?.includes('/harbor/intelligence') && u.status_code < 400).length;
+        const harborCount = apiUsage.filter(u => u.organization_id === orgId && (u.endpoint?.includes('/harbor/intelligence') || u.endpoint?.includes('harborIntellectAPI')) && u.status_code < 400).length;
         return {
           name: org?.name || orgId.slice(0, 8),
           calls: count - harborCount,
@@ -130,7 +130,8 @@ export default function APIMetrics() {
       : 0;
     const uniqueOrgs = new Set(apiUsage.map(c => c.organization_id)).size;
     const harborCalls = apiUsage.filter(c => c.endpoint?.includes('/harbor/intelligence') && c.status_code < 400).length;
-    const harborRevenue = (harborCalls * 0.25).toFixed(2);
+    const intellectCalls = apiUsage.filter(c => c.endpoint?.includes('harborIntellectAPI') && c.status_code < 400).length;
+    const harborRevenue = (harborCalls * 0.25 + intellectCalls * 0.50).toFixed(2);
 
     return {
       total,
@@ -138,6 +139,7 @@ export default function APIMetrics() {
       avgResponseTime,
       uniqueOrgs,
       harborCalls,
+      intellectCalls,
       harborRevenue
     };
   }, [apiUsage]);
@@ -208,7 +210,7 @@ export default function APIMetrics() {
               <Brain className="w-4 h-4 text-amber-400" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-white">{stats.harborCalls.toLocaleString()}</div>
+              <div className="text-2xl font-bold text-white">{stats.harborCalls.toLocaleString()} <span className="text-sm text-violet-300">+ {stats.intellectCalls} Intellect</span></div>
               <p className="text-xs text-amber-300/70 mt-1">€{stats.harborRevenue} premium revenue</p>
             </CardContent>
           </Card>
