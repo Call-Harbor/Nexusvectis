@@ -152,102 +152,137 @@ export function getBestFemaleVoice(lang = "da-DK") {
   const langCode = lang.split("-")[0].toLowerCase();
   const langVoices = voices.filter(v => v.lang.toLowerCase().startsWith(langCode));
 
-  // Priority 1: Neural/natural voices (Google/Microsoft neural are most human)
-  const neuralKeywords = ["neural", "natural", "premium", "enhanced", "wavenet", "journey"];
+  // Priority 1: Neural/natural voices (Google/Microsoft neural sound most human)
+  const neuralKeywords = ["neural", "natural", "premium", "enhanced", "wavenet", "journey", "cloud"];
   for (const keyword of neuralKeywords) {
     const match = langVoices.find(v => v.name.toLowerCase().includes(keyword));
     if (match) return match;
   }
 
-  // Priority 2: Known good female voices
+  // Priority 2: Known high-quality female voices
   const femaleKeywords = [
-    "sara", "karen", "anna", "sofie", "ida", "helle", "inger",
-    "female", "woman", "fiona", "samantha", "victoria",
-    "google dansk", "microsoft helle", "microsoft sara",
+    "sara", "karen", "anna", "sofie", "ida", "helle", "inger", "nynne",
+    "female", "woman", "fiona", "samantha", "victoria", "moira",
+    "google", "microsoft", "apple",
   ];
   for (const keyword of femaleKeywords) {
     const match = langVoices.find(v => v.name.toLowerCase().includes(keyword));
     if (match) return match;
   }
 
-  // Priority 3: Any lang match, prefer Google voices (tend to be more natural)
-  const googleVoice = langVoices.find(v => v.name.toLowerCase().includes("google"));
-  if (googleVoice) return googleVoice;
+  // Fallback: Any language match
   if (langVoices.length) return langVoices[0];
-
-  // Fallback: English neural
-  const enVoices = voices.filter(v => v.lang.startsWith("en"));
-  const enNeural = enVoices.find(v => neuralKeywords.some(k => v.name.toLowerCase().includes(k)));
-  if (enNeural) return enNeural;
-  const enGoogle = enVoices.find(v => v.name.toLowerCase().includes("google"));
-  if (enGoogle) return enGoogle;
   return voices[0] || null;
 }
 
 // ─── Make text sound more natural for TTS ────────────────────────────────
-function humanizeTextForTTS(text) {
-  return text
-    // Short pause after exclamation mid-sentence
-    .replace(/! ([A-ZÆØÅa-zæøå])/g, "! ... $1")
-    // Slight pause after question mid-sentence
-    .replace(/\? ([A-ZÆØÅa-zæøå])/g, "? ... $1")
-    // Remove markdown
-    .replace(/\*\*(.+?)\*\*/g, "$1")
-    .replace(/\*(.+?)\*/g, "$1")
-    .replace(/#{1,6}\s*/g, "")
-    .replace(/`(.+?)`/g, "$1")
-    // Replace bullet points with natural pause
-    .replace(/^[•\-\*]\s*/gm, "... ")
-    // Numbers: make them sound natural
-    .replace(/(\d+)%/g, "$1 procent")
-    // Remove URLs
-    .replace(/https?:\/\/[^\s]+/g, "")
-    // Collapse multiple spaces/newlines
-    .replace(/\n{2,}/g, ". ")
-    .replace(/\n/g, ", ")
-    .replace(/\s{2,}/g, " ")
-    .trim();
+function humanizeTextForTTS(text, lang = "da-DK") {
+  let result = text;
+  
+  // Remove emoji (they break TTS)
+  result = result.replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{27BF}]|[\u{1F600}-\u{1F64F}]/gu, '');
+  
+  // Remove markdown
+  result = result.replace(/\*\*(.+?)\*\*/g, "$1");
+  result = result.replace(/\*(.+?)\*/g, "$1");
+  result = result.replace(/#{1,6}\s*/g, "");
+  result = result.replace(/`(.+?)`/g, "$1");
+  
+  // Add natural pauses
+  result = result.replace(/\. ([A-ZÆØÅa-zæøå])/g, ". ... $1");
+  result = result.replace(/! ([A-ZÆØÅa-zæøå])/g, "! ... $1");
+  result = result.replace(/\? ([A-ZÆØÅa-zæøå])/g, "? ... $1");
+  
+  // Handle dashes (replace with comma + pause)
+  result = result.replace(/—/g, ", ... ");
+  result = result.replace(/–/g, ", ");
+  
+  // Make numbers sound natural
+  if (lang === "da-DK") {
+    result = result.replace(/(\d+)%/g, "$1 procent");
+    result = result.replace(/(\d+) (km|kilometer)/gi, "$1 kilometer");
+    result = result.replace(/(\d+)( dkk| kr)/gi, "$1 kroner");
+  } else if (lang === "en-US") {
+    result = result.replace(/(\d+)%/g, "$1 percent");
+    result = result.replace(/(\d+) (km|kilometer)/gi, "$1 kilometer");
+    result = result.replace(/(\d+)( usd| \$)/gi, "$1 dollars");
+  }
+  
+  // Remove URLs
+  result = result.replace(/https?:\/\/[^\s]+/g, "");
+  
+  // Collapse excess whitespace
+  result = result.replace(/\n{2,}/g, ". ");
+  result = result.replace(/\n/g, " ");
+  result = result.replace(/\s{2,}/g, " ");
+  
+  return result.trim();
 }
 
-export function harborSpeak(text, { lang = "da-DK", rate = 0.92, pitch = 1.05, volume = 1, onStart, onEnd } = {}) {
+export function harborSpeak(text, { lang = "da-DK", rate = 0.85, pitch = 1.0, volume = 0.85, onStart, onEnd } = {}) {
   if (!window.speechSynthesis) { onEnd?.(); return; }
   window.speechSynthesis.cancel();
 
-  const processedText = humanizeTextForTTS(text);
+  const processedText = humanizeTextForTTS(text, lang);
 
   const doSpeak = () => {
     const utt = new SpeechSynthesisUtterance(processedText);
     utt.lang = lang;
-    utt.rate = rate;   // 0.92 = slightly slower, more natural
-    utt.pitch = pitch; // 1.05 = subtle, not robotic high pitch
-    utt.volume = volume;
+    // Slower rate (0.85) for clarity + natural female voice
+    utt.rate = Math.max(0.5, Math.min(2, rate));
+    // Natural pitch (1.0 = default, not robotic)
+    utt.pitch = Math.max(0.5, Math.min(2, pitch));
+    // Slightly lower volume to reduce harshness
+    utt.volume = Math.max(0.1, Math.min(1, volume));
 
     const voice = getBestFemaleVoice(lang);
-    if (voice) utt.voice = voice;
+    if (voice) {
+      utt.voice = voice;
+    }
+    
     if (onStart) utt.onstart = onStart;
 
+    // Keep alive interval to prevent browser timeout
     const keepAlive = setInterval(() => {
-      if (!window.speechSynthesis.speaking) { clearInterval(keepAlive); return; }
-      window.speechSynthesis.pause();
-      window.speechSynthesis.resume();
-    }, 10000);
+      if (!window.speechSynthesis.speaking) { 
+        clearInterval(keepAlive);
+        return;
+      }
+      // Resume if paused (handles browser suspension)
+      if (window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
+      }
+    }, 8000);
 
-    utt.onend = () => { clearInterval(keepAlive); onEnd?.(); };
-    utt.onerror = () => { clearInterval(keepAlive); onEnd?.(); };
+    utt.onend = () => { 
+      clearInterval(keepAlive);
+      onEnd?.();
+    };
+    
+    utt.onerror = (e) => {
+      clearInterval(keepAlive);
+      onEnd?.();
+    };
 
+    // Resume if paused
     if (window.speechSynthesis.paused) window.speechSynthesis.resume();
     window.speechSynthesis.speak(utt);
   };
 
+  // Wait for voices to load if needed
   const voices = window.speechSynthesis.getVoices();
   if (voices.length === 0) {
     let retries = 0;
     const trySpeak = () => {
       const v = window.speechSynthesis.getVoices();
-      if (v.length > 0 || retries >= 5) { doSpeak(); return; }
+      if (v.length > 0 || retries >= 5) { 
+        doSpeak();
+        return;
+      }
       retries++;
       setTimeout(trySpeak, 250);
     };
+    
     window.speechSynthesis.onvoiceschanged = () => {
       window.speechSynthesis.onvoiceschanged = null;
       doSpeak();
