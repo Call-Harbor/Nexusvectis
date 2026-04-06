@@ -309,8 +309,9 @@ function ParallelTaskPanel({ onExecute, onClose }) {
       )}
 
       {/* Actions */}
-      <input ref={fileInputRef} type="file" multiple accept="image/*,video/*,.pdf,.csv,.xlsx,.xls,.docx,.txt,.json" className="hidden" onChange={handleFileUpload} />
-      <div className="px-5 py-4 flex gap-2 border-t" style={{ borderColor: "rgba(6,182,212,0.1)" }}>
+      <>
+        <input ref={fileInputRef} type="file" multiple accept="image/*,video/*,.pdf,.csv,.xlsx,.xls,.docx,.txt,.json" className="hidden" onChange={handleFileUpload} />
+        <div className="px-5 py-4 flex gap-2 border-t" style={{ borderColor: "rgba(6,182,212,0.1)" }}>
         <motion.button onClick={() => fileInputRef.current?.click()} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
           className="flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-xs font-mono font-semibold transition-all"
           style={{ background: "rgba(139,92,246,0.12)", color: "#a78bfa", border: "1px solid rgba(139,92,246,0.3)" }}>
