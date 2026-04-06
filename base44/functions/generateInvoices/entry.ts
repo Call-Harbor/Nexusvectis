@@ -73,7 +73,7 @@ Deno.serve(async (req) => {
       
       const allFleetAIUsage = await base44.asServiceRole.entities.FleetAIUsage.filter({ 
         organization_id: org.id 
-      });
+      }) || [];
       const fleetAICommands = (Array.isArray(allFleetAIUsage) ? allFleetAIUsage : []).filter(usage => {
         const usageDate = new Date(usage.created_date);
         return usageDate > periodStart && usageDate <= periodEnd && usage.success;
@@ -82,7 +82,7 @@ Deno.serve(async (req) => {
       // Count API calls since last invoice (split standard vs Harbor premium)
       const allAPIUsage = await base44.asServiceRole.entities.APIUsage.filter({ 
         organization_id: org.id 
-      });
+      }) || [];
       const periodAPIUsage = (Array.isArray(allAPIUsage) ? allAPIUsage : []).filter(usage => {
         const usageDate = new Date(usage.created_date);
         return usageDate > periodStart && usageDate <= periodEnd && usage.status_code < 400;
