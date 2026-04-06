@@ -216,19 +216,67 @@ function CommandChip({ label, icon: IconComp, onClick }) {
 }
 
 // ─── Proactive Suggestion Bubble ─────────────────────────────────────────
-const HUMAN_ACTION_LABELS = {
-  breakfast:  { yes: "Ja, jeg spiser nu! 🥐",    no: "Spiser lidt efter" },
-  lunch:      { yes: "Ja, jeg holder pause! 🍽️",  no: "Kommer snart" },
-  dinner:     { yes: "God idé! 🍝",               no: "Lidt endnu" },
-  coffee:     { yes: "Ja tak til kaffe! ☕",       no: "Måske om lidt" },
-  break:      { yes: "Ja, jeg tager en pause! 🧘", no: "Lige om lidt" },
-  stretch:    { yes: "Godt, rejser mig nu! 🚶",    no: "5 min mere" },
-  water:      { yes: "Henter et glas nu 💧",       no: "Har drukket" },
-  night:      { yes: "Lukker ned snart 🌙",        no: "Bare lidt mere" },
+const getHumanActionLabels = (lang) => {
+  if (lang === "en-US") {
+    return {
+      breakfast:  { yes: "Yes, eating now! 🥐",    no: "Eating later" },
+      lunch:      { yes: "Yes, taking break! 🍽️",  no: "Coming soon" },
+      dinner:     { yes: "Good idea! 🍝",          no: "Not yet" },
+      coffee:     { yes: "Yes please! ☕",         no: "Maybe later" },
+      break:      { yes: "Yes, taking break! 🧘",  no: "In a moment" },
+      stretch:    { yes: "OK, standing up! 🚶",    no: "5 more min" },
+      water:      { yes: "Getting water now 💧",   no: "Already drank" },
+      night:      { yes: "Shutting down soon 🌙",  no: "Just a bit more" },
+    };
+  } else if (lang === "da-DK") {
+    return {
+      breakfast:  { yes: "Ja, jeg spiser nu! 🥐",    no: "Spiser lidt efter" },
+      lunch:      { yes: "Ja, jeg holder pause! 🍽️",  no: "Kommer snart" },
+      dinner:     { yes: "God idé! 🍝",               no: "Lidt endnu" },
+      coffee:     { yes: "Ja tak til kaffe! ☕",       no: "Måske om lidt" },
+      break:      { yes: "Ja, jeg tager en pause! 🧘", no: "Lige om lidt" },
+      stretch:    { yes: "Godt, rejser mig nu! 🚶",    no: "5 min mere" },
+      water:      { yes: "Henter et glas nu 💧",       no: "Har drukket" },
+      night:      { yes: "Lukker ned snart 🌙",        no: "Bare lidt mere" },
+    };
+  } else if (lang === "de-DE") {
+    return {
+      breakfast:  { yes: "Ja, esse jetzt! 🥐",        no: "Esse später" },
+      lunch:      { yes: "Ja, Pause! 🍽️",              no: "Komme bald" },
+      dinner:     { yes: "Gute Idee! 🍝",              no: "Noch nicht" },
+      coffee:     { yes: "Ja bitte! ☕",               no: "Vielleicht später" },
+      break:      { yes: "Ja, Pause! 🧘",              no: "Gleich" },
+      stretch:    { yes: "OK, aufstehen! 🚶",          no: "5 Min mehr" },
+      water:      { yes: "Wasser holen 💧",            no: "Schon getrunken" },
+      night:      { yes: "Bald herunterfahren 🌙",     no: "Noch ein bisschen" },
+    };
+  } else if (lang === "sv-SE") {
+    return {
+      breakfast:  { yes: "Ja, äter nu! 🥐",           no: "Äter senare" },
+      lunch:      { yes: "Ja, tar paus! 🍽️",          no: "Kommer snart" },
+      dinner:     { yes: "Bra idé! 🍝",               no: "Inte än" },
+      coffee:     { yes: "Ja tack! ☕",                no: "Kanske senare" },
+      break:      { yes: "Ja, tar paus! 🧘",           no: "Strax" },
+      stretch:    { yes: "OK, står upp! 🚶",           no: "5 min till" },
+      water:      { yes: "Hämtar vatten 💧",           no: "Redan druckit" },
+      night:      { yes: "Stänger snart 🌙",           no: "Lite mer" },
+    };
+  }
+  // Default to English
+  return {
+    breakfast:  { yes: "Yes, eating now! 🥐",    no: "Eating later" },
+    lunch:      { yes: "Yes, taking break! 🍽️",  no: "Coming soon" },
+    dinner:     { yes: "Good idea! 🍝",          no: "Not yet" },
+    coffee:     { yes: "Yes please! ☕",         no: "Maybe later" },
+    break:      { yes: "Yes, taking break! 🧘",  no: "In a moment" },
+    stretch:    { yes: "OK, standing up! 🚶",    no: "5 more min" },
+    water:      { yes: "Getting water now 💧",   no: "Already drank" },
+    night:      { yes: "Shutting down soon 🌙",  no: "Just a bit more" },
+  };
 };
 
-function SuggestionBubble({ suggestion, onAccept, onDismiss }) {
-  const labels = HUMAN_ACTION_LABELS[suggestion.action] || { yes: "Ja tak! 👍", no: "Ikke nu" };
+function SuggestionBubble({ suggestion, onAccept, onDismiss, lang = "en-US" }) {
+  const labels = getHumanActionLabels(lang)[suggestion.action] || { yes: "Yes! 👍", no: "Not now" };
   return (
     <motion.div
       initial={{ opacity: 0, y: 12, scale: 0.97 }}
@@ -933,8 +981,9 @@ export default function VoiceController({
           {suggestion && (
             <div className="px-5 pt-4">
               <SuggestionBubble
-                suggestion={suggestion}
-                onAccept={() => {
+               suggestion={suggestion}
+               lang={lang}
+               onAccept={() => {
                   setSuggestion(null);
                   if (suggestion.action === "open_alerts") { onNavigate?.("Alerts"); speak("Opening alerts."); }
                   else if (suggestion.action === "analyze_fleet") { onOpenWindow?.("deep_analysis"); speak("Opening fleet analysis."); }
