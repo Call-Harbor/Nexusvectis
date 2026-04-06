@@ -38,7 +38,7 @@ export default function WorkerHologramControl({ worker, task, isActive, onComple
         setSteps(prev => prev.map(s => s === steps[steps.length - 1] ? { ...s, status: 'completed' } : s));
       }
 
-      onComplete({ worker, results: steps, mode: hologramMode });
+      onComplete({ worker: worker || {}, results: steps, mode: hologramMode });
       setIsExecuting(false);
     } catch (error) {
       console.error('Worker hologram execution failed:', error);
@@ -69,7 +69,7 @@ export default function WorkerHologramControl({ worker, task, isActive, onComple
             <Monitor className="w-4 h-4" style={{ color: '#06b6d4' }} />
           </div>
           <div>
-            <p className="text-xs font-mono font-bold" style={{ color: '#06b6d4' }}>🤖 {worker.name} — HOLOGRAM MODE</p>
+            <p className="text-xs font-mono font-bold" style={{ color: '#06b6d4' }}>🤖 {worker?.name || 'Worker'} — HOLOGRAM MODE</p>
             <p className="text-[10px] text-slate-500 mt-0.5">Interactive workspace</p>
           </div>
         </div>
@@ -82,7 +82,7 @@ export default function WorkerHologramControl({ worker, task, isActive, onComple
             {isMaximized ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
           </motion.button>
           <motion.button
-            onClick={() => onComplete({ worker, cancelled: true })}
+            onClick={() => onComplete({ worker: worker || {}, cancelled: true })}
             whileHover={{ scale: 1.1 }}
             className="p-2 rounded-lg hover:bg-red-500/20 text-slate-400 hover:text-red-400"
           >
