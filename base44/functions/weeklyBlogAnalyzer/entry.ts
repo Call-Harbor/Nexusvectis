@@ -25,11 +25,11 @@ Deno.serve(async (req) => {
   let analyzed = 0;
   const results = [];
 
-  // Analyze only top 5 posts to avoid timeout (each LLM call = ~15-30s)
-  const postsToAnalyze = posts.slice(0, 5);
+  // Analyze only top 3 posts in PARALLEL to avoid timeout (each LLM call = ~15-30s)
+  const postsToAnalyze = posts.slice(0, 3);
 
-  for (const post of postsToAnalyze) {
-    try {
+  // Run LLM analysis in parallel with Promise.allSettled (don't fail all if one fails)
+  const analysisPromises = postsToAnalyze.map(async (post) => {
     // Build a compact summary of the post to send to AI (avoid sending full HTML)
     const postSummary = `
 Title: ${post.title}
@@ -46,7 +46,7 @@ Last Optimized: ${post.last_optimized_at ? post.last_optimized_at.split('T')[0] 
 Content Preview (first 500 chars): ${(post.content || '').replace(/<[^>]+>/g, '').slice(0, 500)}
     `.trim();
 
-    const suggestions = await base44.asServiceRole.integrations.Core.InvokeLLM({
+    const response = await base44.asServiceRole.integrations.Core.InvokeLLM({
       prompt: `You are an expert SEO content strategist for NexusVectis, a B2B SaaS logistics and fleet management platform (nexusvectis.com).
 
 Analyze this blog post and generate exactly 3 CONCRETE, ACTIONABLE improvement suggestions to increase its organic search performance. Be very specific — name actual headings, keywords, links, or statistics to add/change.
@@ -84,17 +84,27 @@ Return exactly 3 suggestions ordered by priority (high first).`,
       }
     });
 
-    const topSuggestions = (suggestions.suggestions || []).slice(0, 3);
+    const suggestionsData = response?.data?.suggestions || response?.suggestions || [];
+    const topSuggestions = suggestionsData.slice(0, 3);
 
     await base44.asServiceRole.entities.BlogPost.update(post.id, {
       ai_improvement_suggestions: topSuggestions,
       suggestions_generated_at: new Date().toISOString()
     });
 
-      results.push({ id: post.id, title: post.title, suggestions: topSuggestions.length });
+    return { id: post.id, title: post.title, suggestions: topSuggestions.length };
+  });
+
+  // Wait for all LLM analyses to complete (in parallel)
+  const analysisResults = await Promise.allSettled(analysisPromises);
+
+  // Process results — collect both successes and failures
+  for (const result of analysisResults) {
+    if (result.status === 'fulfilled') {
+      results.push(result.value);
       analyzed++;
-    } catch (err) {
-      results.push({ id: post.id, title: post.title, error: err.message });
+    } else {
+      results.push({ error: result.reason?.message || String(result.reason) });
     }
   }
 
