@@ -33,7 +33,16 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing task or workerType' }, { status: 400 });
     }
 
-    const agentName = WORKER_TO_AGENT_MAP[workerType] || workerType;
+    const agentName = WORKER_TO_AGENT_MAP[workerType];
+    if (!agentName) {
+      return Response.json({ 
+        error: `Agent '${workerType}' not defined in mapping`,
+        orchestrationId,
+        taskId,
+        workerType,
+        status: 'failed'
+      }, { status: 400 });
+    }
 
     try {
       const conv = await base44.agents.createConversation({
@@ -83,7 +92,6 @@ Deno.serve(async (req) => {
 
       await base44.agents.addMessage(conv, messageData);
 
-      // Poll for response with retries (up to 5 seconds)
       let output = null;
       for (let i = 0; i < 10; i++) {
         await new Promise(resolve => setTimeout(resolve, 500));
