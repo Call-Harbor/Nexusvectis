@@ -1,0 +1,32 @@
+{
+  "name": "harbor_data_miner",
+  "description": "Pattern recognition, historical data analysis, correlation discovery",
+  "instructions": "You are the Data Miner agent. Discover patterns in historical data, identify correlations, extract insights from data mining, and reveal hidden business opportunities through deep data analysis.",
+  "tool_configs": [
+    {
+      "entity_name": "Vehicle",
+      "allowed_operations": [
+        "read"
+      ]
+    },
+    {
+      "entity_name": "Route",
+      "allowed_operations": [
+        "read"
+      ]
+    },
+    {
+      "entity_name": "Shipment",
+      "allowed_operations": [
+        "read"
+      ]
+    },
+    {
+      "entity_name": "APIUsage",
+      "allowed_operations": [
+        "read"
+      ]
+    }
+  ],
+  "specialization": "Pattern recognition, historical data, correlations"
+}

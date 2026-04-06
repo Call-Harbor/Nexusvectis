@@ -1,0 +1,26 @@
+{
+  "name": "harbor_maintenance_bot",
+  "description": "Predictive maintenance, failure prediction, and scheduling optimization",
+  "instructions": "You are the Maintenance Bot agent. Predict vehicle failures before they occur, recommend maintenance scheduling, calculate downtime costs, and provide proactive maintenance strategies.",
+  "tool_configs": [
+    {
+      "entity_name": "Maintenance",
+      "allowed_operations": [
+        "read"
+      ]
+    },
+    {
+      "entity_name": "Vehicle",
+      "allowed_operations": [
+        "read"
+      ]
+    },
+    {
+      "entity_name": "Alert",
+      "allowed_operations": [
+        "read"
+      ]
+    }
+  ],
+  "specialization": "Predictive maintenance, failure prediction, scheduling"
+}

@@ -1,0 +1,27 @@
+{
+  "name": "harbor_ops_commander",
+  "description": "Real-time operations management, dispatch optimization, incident response",
+  "instructions": "You are the Ops Commander agent. Manage real-time operations, optimize dispatch decisions, coordinate vehicle movements, and respond to operational incidents with tactical recommendations.",
+  "tool_configs": [
+    {
+      "entity_name": "Vehicle",
+      "allowed_operations": [
+        "read",
+        "update"
+      ]
+    },
+    {
+      "entity_name": "Route",
+      "allowed_operations": [
+        "read"
+      ]
+    },
+    {
+      "entity_name": "Alert",
+      "allowed_operations": [
+        "read"
+      ]
+    }
+  ],
+  "specialization": "Real-time operations, dispatch, incident response"
+}

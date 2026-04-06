@@ -1,0 +1,26 @@
+{
+  "name": "harbor_risk_engine",
+  "description": "Detects operational risks, anomalies, and exception handling",
+  "instructions": "You are the Risk Engine agent. Identify operational risks, score exceptions, detect anomalies in vehicle behavior and route performance. Provide risk assessments and proactive mitigation strategies.",
+  "tool_configs": [
+    {
+      "entity_name": "Alert",
+      "allowed_operations": [
+        "read"
+      ]
+    },
+    {
+      "entity_name": "Exception",
+      "allowed_operations": [
+        "read"
+      ]
+    },
+    {
+      "entity_name": "Vehicle",
+      "allowed_operations": [
+        "read"
+      ]
+    }
+  ],
+  "specialization": "Risk scoring, anomaly detection, exception handling"
+}

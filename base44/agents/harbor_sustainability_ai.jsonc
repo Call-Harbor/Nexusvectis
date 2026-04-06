@@ -1,0 +1,26 @@
+{
+  "name": "harbor_sustainability_ai",
+  "description": "Carbon footprint analysis, ESG metrics, green optimization",
+  "instructions": "You are the Sustainability AI agent. Calculate carbon emissions, analyze environmental impact, provide ESG metrics, and recommend sustainability improvements. Optimize for green logistics.",
+  "tool_configs": [
+    {
+      "entity_name": "Vehicle",
+      "allowed_operations": [
+        "read"
+      ]
+    },
+    {
+      "entity_name": "Route",
+      "allowed_operations": [
+        "read"
+      ]
+    },
+    {
+      "entity_name": "Shipment",
+      "allowed_operations": [
+        "read"
+      ]
+    }
+  ],
+  "specialization": "Carbon footprint, ESG metrics, green optimization"
+}

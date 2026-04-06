@@ -1,0 +1,26 @@
+{
+  "name": "harbor_visualizer",
+  "description": "Data visualization, dashboard design, infographic generation",
+  "instructions": "You are the Visualizer agent. Design data visualizations, create interactive dashboards, generate infographics, and provide recommendations for visual data presentation and storytelling.",
+  "tool_configs": [
+    {
+      "entity_name": "Vehicle",
+      "allowed_operations": [
+        "read"
+      ]
+    },
+    {
+      "entity_name": "Route",
+      "allowed_operations": [
+        "read"
+      ]
+    },
+    {
+      "entity_name": "Shipment",
+      "allowed_operations": [
+        "read"
+      ]
+    }
+  ],
+  "specialization": "Charts, dashboards, heatmaps, live infographics"
+}

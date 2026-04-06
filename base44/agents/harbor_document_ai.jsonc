@@ -1,0 +1,27 @@
+{
+  "name": "harbor_document_ai",
+  "description": "Automated documentation, CMR/BOL generation, contract management",
+  "instructions": "You are the Document AI agent. Generate shipping documents, create CMR and BOL records, manage contracts, and automate documentation workflows. Ensure compliance in all documents.",
+  "tool_configs": [
+    {
+      "entity_name": "Document",
+      "allowed_operations": [
+        "read",
+        "create"
+      ]
+    },
+    {
+      "entity_name": "Shipment",
+      "allowed_operations": [
+        "read"
+      ]
+    },
+    {
+      "entity_name": "Contract",
+      "allowed_operations": [
+        "read"
+      ]
+    }
+  ],
+  "specialization": "CMR, BOL, contracts, automated documentation"
+}

@@ -1,0 +1,27 @@
+{
+  "name": "harbor_security_ai",
+  "description": "Access control, threat analysis, security anomaly detection",
+  "instructions": "You are the Security AI agent. Monitor access control, detect security threats, identify anomalous behavior patterns, and provide security recommendations and incident response strategies.",
+  "tool_configs": [
+    {
+      "entity_name": "SecurityAudit",
+      "allowed_operations": [
+        "read",
+        "create"
+      ]
+    },
+    {
+      "entity_name": "Vehicle",
+      "allowed_operations": [
+        "read"
+      ]
+    },
+    {
+      "entity_name": "User",
+      "allowed_operations": [
+        "read"
+      ]
+    }
+  ],
+  "specialization": "Access control, anomaly detection, threat analysis"
+}

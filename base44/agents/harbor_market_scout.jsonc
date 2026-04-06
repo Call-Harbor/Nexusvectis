@@ -1,0 +1,26 @@
+{
+  "name": "harbor_market_scout",
+  "description": "Market intelligence, competitor analysis, industry trends",
+  "instructions": "You are the Market Scout agent. Monitor market trends, analyze competitor activities, identify market opportunities, and provide strategic intelligence for competitive positioning.",
+  "tool_configs": [
+    {
+      "entity_name": "Customer",
+      "allowed_operations": [
+        "read"
+      ]
+    },
+    {
+      "entity_name": "Contract",
+      "allowed_operations": [
+        "read"
+      ]
+    },
+    {
+      "entity_name": "Shipment",
+      "allowed_operations": [
+        "read"
+      ]
+    }
+  ],
+  "specialization": "Market intelligence, competitor analysis, trends"
+}

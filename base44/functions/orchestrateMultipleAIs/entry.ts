@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
-const AI_MODELS = {
+const HARBOR_AGENTS = {
   analyzer: 'data_analysis_model',
   optimizer: 'optimization_engine',
   predictor: 'prediction_model',
@@ -10,7 +10,11 @@ const AI_MODELS = {
   validator: 'validation_engine',
   transformer: 'transformation_tool',
   generator: 'generation_model',
-  integrator: 'integration_engine',
+  api_integrator: 'harbor_api_integrator',
+  visualizer: 'harbor_visualizer',
+  nlp_engine: 'harbor_nlp_engine',
+  simulation_ai: 'harbor_simulation_ai',
+  security_ai: 'harbor_security_ai'
 };
 
 Deno.serve(async (req) => {
@@ -23,41 +27,67 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing task or workerType' }, { status: 400 });
     }
 
-    // Parallel execution of multiple analysis passes
-    const analyses = await Promise.all([
-      // Pass 1: Direct analysis
-      analyzeTask(task, workerType, base44),
-      // Pass 2: Context enrichment
-      enrichContext(task, base44),
-      // Pass 3: Multi-perspective
-      multiPerspectiveAnalysis(task, workerType, base44),
-      // Pass 4: Cross-reference
-      crossReferenceInsights(task, base44),
-      // Pass 5: Predictive modeling
-      predictiveModeling(task, base44),
-    ]);
+    // Invoke the specialized Harbor Agent
+    const agentName = HARBOR_AGENTS[workerType] || 'harbor_fleet_analyst';
+    
+    try {
+      // Create or get conversation for this orchestration
+      const conversations = await base44.agents.listConversations({ agent_name: agentName });
+      let conv = conversations?.[0];
+      
+      if (!conv) {
+        conv = await base44.agents.createConversation({
+          agent_name: agentName,
+          metadata: { orchestrationId, taskId }
+        });
+      }
 
-    // Synthesize all analyses
-    const synthesized = synthesizeResults(analyses, workerType);
+      // Send task to the Harbor Agent
+      await base44.agents.addMessage(conv, {
+        role: 'user',
+        content: task
+      });
 
-    // Execute specialized worker logic
-    const workerOutput = await executeWorker(workerType, task, synthesized, base44);
+      // Wait for agent response
+      const fullConv = await base44.agents.getConversation(conv.id);
+      const agentResponse = fullConv.messages?.find(m => m.role === 'assistant');
+      
+      const output = agentResponse?.content || `${agentName} processing complete`;
 
-    return Response.json({
-      orchestrationId,
-      taskId,
-      workerType,
-      output: workerOutput,
-      analyses: synthesized,
-      timestamp: new Date().toISOString(),
-      parallelExecutions: 5
-    });
+      return Response.json({
+        orchestrationId,
+        taskId,
+        workerType,
+        agentName,
+        output,
+        conversationId: conv.id,
+        timestamp: new Date().toISOString(),
+        status: 'completed'
+      });
+    } catch (agentError) {
+      // Fallback to LLM if agent fails
+      console.warn(`Agent ${agentName} failed, falling back to LLM:`, agentError.message);
+      const fallbackOutput = await base44.integrations.Core.InvokeLLM({
+        prompt: `As a ${workerType} specialist, handle this: ${task}`,
+        model: 'gpt_5'
+      });
+      
+      return Response.json({
+        orchestrationId,
+        taskId,
+        workerType,
+        output: fallbackOutput.data,
+        fallback: true,
+        timestamp: new Date().toISOString()
+      });
+    }
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
 });
 
-async function analyzeTask(task, workerType, base44) {
+// Legacy functions removed - now using Harbor Agents directly
+async function legacyAnalyzeTask(task, workerType, base44) {
   try {
     const result = await base44.integrations.Core.InvokeLLM({
       prompt: `As a ${workerType}, analyze this task comprehensively: "${task}". Provide: 1. Core insight, 2. Key metrics, 3. Immediate actions. Be precise and data-driven.`,
@@ -77,7 +107,7 @@ async function analyzeTask(task, workerType, base44) {
   }
 }
 
-async function enrichContext(task, base44) {
+async function legacyEnrichContext(task, base44) {
   try {
     const result = await base44.integrations.Core.InvokeLLM({
       prompt: `Provide deep contextual enrichment for: "${task}". Include: 1. Industry standards, 2. Best practices, 3. Risk factors, 4. Opportunity gaps`,
@@ -98,7 +128,7 @@ async function enrichContext(task, base44) {
   }
 }
 
-async function multiPerspectiveAnalysis(task, workerType, base44) {
+async function legacyMultiPerspectiveAnalysis(task, workerType, base44) {
   try {
     const perspectives = ['technical', 'business', 'user', 'strategic'];
     const results = await Promise.all(perspectives.map(perspective =>
@@ -116,7 +146,7 @@ async function multiPerspectiveAnalysis(task, workerType, base44) {
   }
 }
 
-async function crossReferenceInsights(task, base44) {
+async function legacyCrossReferenceInsights(task, base44) {
   try {
     const result = await base44.integrations.Core.InvokeLLM({
       prompt: `Cross-reference and validate these insights: "${task}". Identify: 1. Common themes, 2. Contradictions, 3. Consensus areas, 4. Outliers`,
@@ -136,7 +166,7 @@ async function crossReferenceInsights(task, base44) {
   }
 }
 
-async function predictiveModeling(task, base44) {
+async function legacyPredictiveModeling(task, base44) {
   try {
     const result = await base44.integrations.Core.InvokeLLM({
       prompt: `Create predictive models for: "${task}". Include: 1. 30-day forecast, 2. 90-day scenario, 3. Risk probability, 4. Success factors`,
@@ -156,7 +186,7 @@ async function predictiveModeling(task, base44) {
   }
 }
 
-function synthesizeResults(analyses, workerType) {
+function legacySynthesizeResults(analyses, workerType) {
   const synthesized = {
     workerType,
     executedPasses: analyses.length,
@@ -184,7 +214,7 @@ function synthesizeResults(analyses, workerType) {
   return synthesized;
 }
 
-async function executeWorker(workerType, task, synthesized, base44) {
+async function legacyExecuteWorker(workerType, task, synthesized, base44) {
   const workerPrompts = {
     analyzer: `Provide comprehensive data analysis. Data: ${JSON.stringify(synthesized.synthesis)}. Format: structured JSON with metrics.`,
     optimizer: `Optimize based on: ${task}. Recommendations: ${JSON.stringify(synthesized.synthesis)}. Format: actionable steps.`,

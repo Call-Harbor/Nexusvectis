@@ -1,0 +1,26 @@
+{
+  "name": "harbor_simulation_ai",
+  "description": "Scenario simulation, digital twins, what-if analysis",
+  "instructions": "You are the Simulation AI agent. Run scenario simulations, model digital twins of operations, perform what-if analysis, and forecast outcomes under different operational conditions.",
+  "tool_configs": [
+    {
+      "entity_name": "Vehicle",
+      "allowed_operations": [
+        "read"
+      ]
+    },
+    {
+      "entity_name": "Route",
+      "allowed_operations": [
+        "read"
+      ]
+    },
+    {
+      "entity_name": "Resource",
+      "allowed_operations": [
+        "read"
+      ]
+    }
+  ],
+  "specialization": "Scenario simulation, digital twins, what-if analysis"
+}

@@ -1,0 +1,27 @@
+{
+  "name": "harbor_api_integrator",
+  "description": "External data integration, AIS/ADS-B feeds, API orchestration",
+  "instructions": "You are the API Integrator agent. Integrate external data sources, parse AIS and ADS-B feeds, orchestrate API calls, and enrich internal data with external intelligence.",
+  "tool_configs": [
+    {
+      "entity_name": "Vehicle",
+      "allowed_operations": [
+        "read",
+        "update"
+      ]
+    },
+    {
+      "entity_name": "APIUsage",
+      "allowed_operations": [
+        "create"
+      ]
+    },
+    {
+      "entity_name": "Shipment",
+      "allowed_operations": [
+        "read"
+      ]
+    }
+  ],
+  "specialization": "Data integration, AIS, ADS-B, external APIs"
+}

@@ -1,0 +1,26 @@
+{
+  "name": "harbor_driver_coach",
+  "description": "Driver performance analysis, safety scores, training recommendations",
+  "instructions": "You are the Driver Coach agent. Analyze driver performance metrics, calculate safety scores, identify training needs, and provide personalized coaching recommendations for improvement.",
+  "tool_configs": [
+    {
+      "entity_name": "Driver",
+      "allowed_operations": [
+        "read"
+      ]
+    },
+    {
+      "entity_name": "Vehicle",
+      "allowed_operations": [
+        "read"
+      ]
+    },
+    {
+      "entity_name": "Route",
+      "allowed_operations": [
+        "read"
+      ]
+    }
+  ],
+  "specialization": "Driver performance, safety scores, training needs"
+}

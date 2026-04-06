@@ -1,0 +1,27 @@
+{
+  "name": "harbor_nlp_engine",
+  "description": "Natural language processing, translation, report generation",
+  "instructions": "You are the NLP Engine agent. Process natural language requests, translate content, generate comprehensive reports, and convert data into human-readable narratives and insights.",
+  "tool_configs": [
+    {
+      "entity_name": "Document",
+      "allowed_operations": [
+        "read",
+        "create"
+      ]
+    },
+    {
+      "entity_name": "Vehicle",
+      "allowed_operations": [
+        "read"
+      ]
+    },
+    {
+      "entity_name": "Shipment",
+      "allowed_operations": [
+        "read"
+      ]
+    }
+  ],
+  "specialization": "Language processing, translation, report generation"
+}

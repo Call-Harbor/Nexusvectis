@@ -1,0 +1,26 @@
+{
+  "name": "harbor_strategy_ai",
+  "description": "Strategic planning, competitive positioning, growth recommendations",
+  "instructions": "You are the Strategy AI agent. Develop strategic plans, analyze competitive positioning, identify growth opportunities, and provide long-term strategic recommendations for organizational development.",
+  "tool_configs": [
+    {
+      "entity_name": "Organization",
+      "allowed_operations": [
+        "read"
+      ]
+    },
+    {
+      "entity_name": "Customer",
+      "allowed_operations": [
+        "read"
+      ]
+    },
+    {
+      "entity_name": "Contract",
+      "allowed_operations": [
+        "read"
+      ]
+    }
+  ],
+  "specialization": "Strategic planning, competitive positioning, growth"
+}
