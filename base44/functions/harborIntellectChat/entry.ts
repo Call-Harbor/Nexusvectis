@@ -27,7 +27,7 @@ Deno.serve(async (req) => {
     ]);
 
     const fullContext = {
-      vehicles: vehicles.map(v => ({
+      vehicles: vehicles.slice(0, 15).map(v => ({
         id: v.id, name: v.name, type: v.type, status: v.status,
         fuel_level: v.fuel_level, destination: v.destination, driver: v.driver,
         latitude: v.latitude, longitude: v.longitude, speed: v.speed,
@@ -35,41 +35,41 @@ Deno.serve(async (req) => {
         efficiency_score: v.efficiency_score, co2_emissions: v.co2_emissions,
         next_maintenance: v.next_maintenance
       })),
-      routes: routes.map(r => ({
+      routes: routes.slice(0, 10).map(r => ({
         id: r.id, name: r.name, origin: r.origin, destination: r.destination,
         status: r.status, transport_type: r.transport_type, priority: r.priority,
         distance_km: r.distance_km, estimated_duration_hours: r.estimated_duration_hours,
         ai_optimized: r.ai_optimized, co2_estimate: r.co2_estimate
       })),
-      shipments: shipments.map(s => ({
+      shipments: shipments.slice(0, 10).map(s => ({
         id: s.id, tracking_number: s.tracking_number, origin: s.origin,
         destination: s.destination, status: s.status, cargo_type: s.cargo_type,
         weight_kg: s.weight_kg, priority: s.priority, eta: s.eta,
         customer_name: s.customer_name, current_temperature: s.current_temperature
       })),
-      alerts: alerts.filter(a => !a.is_resolved).map(a => ({
+      alerts: alerts.filter(a => !a.is_resolved).slice(0, 10).map(a => ({
         id: a.id, title: a.title, message: a.message, type: a.type,
         category: a.category, vehicle_id: a.vehicle_id, ai_recommendation: a.ai_recommendation
       })),
-      resources: resources.map(r => ({
+      resources: resources.slice(0, 8).map(r => ({
         id: r.id, name: r.name, type: r.type, location: r.location,
         status: r.status, capacity: r.capacity, current_level: r.current_level
       })),
-      maintenance: maintenance.filter(m => m.status !== 'completed').map(m => ({
+      maintenance: maintenance.filter(m => m.status !== 'completed').slice(0, 8).map(m => ({
         id: m.id, vehicle_id: m.vehicle_id, type: m.type, priority: m.priority,
         component: m.component, description: m.description, status: m.status,
         scheduled_date: m.scheduled_date, cost_estimate: m.cost_estimate,
         ai_confidence: m.ai_confidence
       })),
-      exceptions: exceptions.filter(e => e.status !== 'resolved').map(e => ({
+      exceptions: exceptions.filter(e => e.status !== 'resolved').slice(0, 8).map(e => ({
         id: e.id, title: e.title, type: e.type, severity: e.severity,
         status: e.status, ai_recommendation: e.ai_recommendation,
         impact_score: e.impact_score, estimated_delay_minutes: e.estimated_delay_minutes
       })),
-      customers: customers.map(c => ({
+      customers: customers.slice(0, 8).map(c => ({
         id: c.id, name: c.name, email: c.email, company: c.company, status: c.status
       })),
-      drivers: drivers.map(d => ({
+      drivers: drivers.slice(0, 8).map(d => ({
         id: d.id, first_name: d.first_name, last_name: d.last_name,
         status: d.status, performance_rating: d.performance_rating,
         current_vehicle_id: d.current_vehicle_id
