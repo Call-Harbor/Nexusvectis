@@ -267,10 +267,11 @@ function ConversationList({ conversations, activeId, onSelect, onCreate, onDelet
 }
 
 export default function HarborSuperAgentChat({ onClose }) {
-  const [deletedIds] = useState(() => {
+  const getDeletedIds = () => {
     try { return new Set(JSON.parse(localStorage.getItem('harbor_deleted_convs') || '[]')); }
     catch { return new Set(); }
-  });
+  };
+  const [deletedIds, setDeletedIds] = useState(getDeletedIds);
   const [orgId, setOrgId] = useState(null);
   const [conversations, setConversations] = useState([]);
   const [activeConversation, setActiveConversation] = useState(null);
@@ -315,7 +316,8 @@ export default function HarborSuperAgentChat({ onClose }) {
     setIsLoading(true);
     try {
       const convs = await base44.agents.listConversations({ agent_name: AGENT_NAME });
-      const active = (convs || []).filter(c => !deletedIds.has(c.id));
+      const currentDeletedIds = getDeletedIds();
+      const active = (convs || []).filter(c => !currentDeletedIds.has(c.id));
       console.log('[LOAD] Total:', convs?.length, 'After blacklist filter:', active.length);
       setConversations(active);
       if (active.length > 0) {
@@ -376,9 +378,11 @@ export default function HarborSuperAgentChat({ onClose }) {
 
   const deleteConversation = async (convId) => {
     // Store in localStorage blacklist so it survives reloads
-    deletedIds.add(convId);
-    localStorage.setItem('harbor_deleted_convs', JSON.stringify([...deletedIds]));
-    console.log('[DELETE] Blacklisted:', convId, '— total blacklisted:', deletedIds.size);
+    const updated = getDeletedIds();
+    updated.add(convId);
+    localStorage.setItem('harbor_deleted_convs', JSON.stringify([...updated]));
+    setDeletedIds(updated);
+    console.log('[DELETE] Blacklisted:', convId, '— total blacklisted:', updated.size);
     setConversations(prev => {
       const remaining = prev.filter(c => c.id !== convId);
       if (activeConversation?.id === convId) {
