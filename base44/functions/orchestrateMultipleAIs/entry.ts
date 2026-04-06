@@ -40,8 +40,16 @@ Deno.serve(async (req) => {
       // Create conversation for this specific worker
       const conv = await base44.agents.createConversation({
         agent_name: agentName,
-        metadata: { orchestrationId, taskId, workerType }
+        metadata: { orchestrationId, taskId, workerType, organization_id: body.organization_id }
       });
+
+      // Send org context as system message
+      if (body.organization_id) {
+        await base44.agents.addMessage(conv, {
+          role: "system",
+          content: `SYSTEM CONTEXT: organization_id="${body.organization_id}". Always filter entities and operations by this organization ID.`
+        });
+      }
 
       // Send task with files to the agent
       const messageData = {
