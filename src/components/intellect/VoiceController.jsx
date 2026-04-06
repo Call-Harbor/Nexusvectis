@@ -4,39 +4,147 @@ import {
   Mic, MicOff, Volume2, VolumeX, X,
   Zap, Sparkles, Brain, BarChart3, Truck,
   AlertTriangle, Package, Settings, Globe,
-  MessageSquare, LayoutDashboard, FileText, Navigation,
+  MessageSquare, LayoutDashboard, FileText, Navigation, Send, Keyboard,
 } from "lucide-react";
 import { toast } from "sonner";
+import { base44 } from "@/api/base44Client";
 import { harborSpeak, getBestFemaleVoice, generateProactiveMessage, checkHumanCheckins, recordActivity, detectHumanConversation, getHumanReply } from "./HarborVoiceAgent";
+
+// ─── i18n Messages ────────────────────────────────────────────────────────────
+const MESSAGES = {
+  "en-US": {
+    listening: "Listening... say your command",
+    standby: "STANDBY",
+    activate: "CLICK TO ACTIVATE",
+    speaking: "SPEAKING",
+    listeningStatus: "LISTENING",
+    activeBanner: "● ACTIVELY LISTENING — SAY YOUR COMMAND",
+    noSpeech: "⚠️ Speech recognition not supported. Use the text input below.",
+    noMic: "⚠️ Microphone access denied. Allow microphone access in your browser.",
+    greeting: (v, a) => `Hello! I'm H.A.R.B.O.R. You have ${v} vehicles and ${a} unread alerts. What can I help you with?`,
+    sending: (t) => `Sending: "${t}"`,
+    understood: "Understood. Analyzing now.",
+    navigating: (p) => `Navigating to ${p}.`,
+    opening: (w) => `Opening ${w}.`,
+    closingWindows: "Closing all windows.",
+    cleared: "Cleared.",
+    sendingCmd: "Sending command.",
+    farewell: "Goodbye! Call me when you need help.",
+    briefing: (v, a, r) => `Here is your briefing. You have ${v} vehicles, ${a} unread alerts and ${r} active routes.`,
+    help: "You can say: open fleet, open alerts, open routes, open dashboard, close all windows, or ask me a question.",
+    typeHint: "Type a command...",
+    fallbackLabel: "Text input (speech not available)",
+    quickNav: "Quick navigation",
+    voiceShortcuts: "Voice shortcuts",
+  },
+  "da-DK": {
+    listening: "Lytter... sig din kommando",
+    standby: "STANDBY",
+    activate: "KLIK FOR AT AKTIVERE",
+    speaking: "TALER",
+    listeningStatus: "LYTTER",
+    activeBanner: "● LYTTER AKTIVT — SIG DIN KOMMANDO",
+    noSpeech: "⚠️ Stemmegenkendelse ikke understøttet. Brug tekstfeltet nedenfor.",
+    noMic: "⚠️ Mikrofon adgang nægtet. Tillad mikrofon adgang i din browsers adresselinje.",
+    greeting: (v, a) => `Hej! Jeg er H.A.R.B.O.R. Du har ${v} køretøjer og ${a} ulæste advarsler. Hvad kan jeg hjælpe med?`,
+    sending: (t) => `Sender: "${t}"`,
+    understood: "Forstået. Analyserer nu.",
+    navigating: (p) => `Navigerer til ${p}.`,
+    opening: (w) => `Åbner ${w}.`,
+    closingWindows: "Lukker alle vinduer.",
+    cleared: "Ryddet.",
+    sendingCmd: "Sender kommando.",
+    farewell: "Farvel! Kalder på mig når du har brug for hjælp.",
+    briefing: (v, a, r) => `Her er din briefing. Du har ${v} køretøjer, ${a} ulæste advarsler og ${r} aktive ruter.`,
+    help: "Du kan sige: åbn flåde, åbn advarsler, åbn ruter, åbn dashboard, luk alle vinduer, eller stil mig et spørgsmål.",
+    typeHint: "Skriv en kommando...",
+    fallbackLabel: "Tekstinput (tale ikke tilgængeligt)",
+    quickNav: "Hurtig navigation",
+    voiceShortcuts: "Stemmesnarvejer",
+  },
+  "de-DE": {
+    listening: "Ich höre... sagen Sie Ihren Befehl",
+    standby: "BEREIT",
+    activate: "KLICKEN ZUM AKTIVIEREN",
+    speaking: "SPRICHT",
+    listeningStatus: "HÖRT ZU",
+    activeBanner: "● AKTIV ZUHÖREN — SAGEN SIE IHREN BEFEHL",
+    noSpeech: "⚠️ Spracherkennung nicht unterstützt. Bitte Texteingabe verwenden.",
+    noMic: "⚠️ Mikrofonzugriff verweigert. Erlauben Sie den Mikrofonzugriff im Browser.",
+    greeting: (v, a) => `Hallo! Ich bin H.A.R.B.O.R. Sie haben ${v} Fahrzeuge und ${a} ungelesene Warnungen.`,
+    sending: (t) => `Sende: "${t}"`,
+    understood: "Verstanden. Analysiere jetzt.",
+    navigating: (p) => `Navigiere zu ${p}.`,
+    opening: (w) => `Öffne ${w}.`,
+    closingWindows: "Schließe alle Fenster.",
+    cleared: "Gelöscht.",
+    sendingCmd: "Befehl wird gesendet.",
+    farewell: "Auf Wiedersehen!",
+    briefing: (v, a, r) => `Briefing: ${v} Fahrzeuge, ${a} ungelesene Warnungen, ${r} aktive Routen.`,
+    help: "Sie können sagen: Flotte öffnen, Warnungen öffnen, Dashboard öffnen.",
+    typeHint: "Befehl eingeben...",
+    fallbackLabel: "Texteingabe (Sprache nicht verfügbar)",
+    quickNav: "Schnellnavigation",
+    voiceShortcuts: "Sprachkürzel",
+  },
+  "sv-SE": {
+    listening: "Lyssnar... säg ditt kommando",
+    standby: "STANDBY",
+    activate: "KLICKA FÖR ATT AKTIVERA",
+    speaking: "TALAR",
+    listeningStatus: "LYSSNAR",
+    activeBanner: "● LYSSNAR AKTIVT — SÄG DITT KOMMANDO",
+    noSpeech: "⚠️ Taligenkänning stöds inte. Använd textinmatningen nedan.",
+    noMic: "⚠️ Mikrofonåtkomst nekad. Tillåt mikrofonåtkomst i din webbläsare.",
+    greeting: (v, a) => `Hej! Jag är H.A.R.B.O.R. Du har ${v} fordon och ${a} olästa varningar.`,
+    sending: (t) => `Skickar: "${t}"`,
+    understood: "Förstått. Analyserar nu.",
+    navigating: (p) => `Navigerar till ${p}.`,
+    opening: (w) => `Öppnar ${w}.`,
+    closingWindows: "Stänger alla fönster.",
+    cleared: "Rensat.",
+    sendingCmd: "Skickar kommando.",
+    farewell: "Hej då! Ring mig när du behöver hjälp.",
+    briefing: (v, a, r) => `Här är din briefing. Du har ${v} fordon, ${a} olästa varningar och ${r} aktiva rutter.`,
+    help: "Du kan säga: öppna flotta, öppna varningar, öppna rutter, öppna dashboard.",
+    typeHint: "Skriv ett kommando...",
+    fallbackLabel: "Textinmatning (tal ej tillgängligt)",
+    quickNav: "Snabbnavigation",
+    voiceShortcuts: "Röstgenvägar",
+  },
+};
+
+function getMsg(lang) {
+  return MESSAGES[lang] || MESSAGES["en-US"];
+}
 
 // ─── Voice Command Registry ───────────────────────────────────────────────
 const COMMAND_MAP = [
-  { patterns: [/^(åbn|åbn op|vis|gå til)\s+(dashboard|overblik)/i, /^dashboard$/i], action: "nav:Dashboard" },
-  { patterns: [/^(åbn|vis)\s+(flåde|fleet|biler|køretøjer)/i, /^flåde$/i], action: "nav:Fleet" },
-  { patterns: [/^(åbn|vis)\s+(advarsler|alerts|alarmer)/i, /^advarsler$/i], action: "nav:Alerts" },
-  { patterns: [/^(åbn|vis)\s+(ruter|routes)/i, /^ruter$/i], action: "nav:Routes" },
-  { patterns: [/^(åbn|vis)\s+(forsendelser|shipments|leveringer)/i], action: "nav:Shipments" },
-  { patterns: [/^(åbn|vis)\s+(kunder|customers)/i], action: "nav:CustomerManagement" },
-  { patterns: [/^(åbn|vis)\s+(fakturaer|invoices)/i], action: "nav:Invoices" },
-  { patterns: [/^(åbn|vis)\s+(indstillinger|settings)/i], action: "nav:Settings" },
-  { patterns: [/^(åbn|vis)\s+(rapporter|reports)/i], action: "nav:Reports" },
-  { patterns: [/^(åbn|vis)\s+(kort|map|live)/i], action: "nav:MapMonitor" },
-  { patterns: [/^(åbn|start)\s+(app builder|harbor|harbor app)/i], action: "window:harbor_app_builder" },
-  { patterns: [/^(åbn|vis)\s+(fleet store|store|butik)/i], action: "window:fleet_store" },
-  { patterns: [/^(åbn|vis)\s+(analyse|analysis|deep analysis)/i], action: "window:deep_analysis" },
-  { patterns: [/^(åbn|vis)\s+(vedligeholdelse|maintenance)/i], action: "window:predictive_maintenance" },
-  { patterns: [/^(åbn|vis)\s+(3d|globe|globus)/i], action: "window:fleet_3d_viewer" },
-  { patterns: [/^(åbn|vis)\s+(vejr|weather|satellit)/i], action: "window:satellite_weather" },
-  { patterns: [/^(åbn|vis)\s+(nyheder|news)/i], action: "window:news_intelligence" },
-  { patterns: [/^(åbn|vis)\s+(projekt|projects)/i], action: "window:project_management" },
-  { patterns: [/^(åbn|vis)\s+(dokument|document|editor)/i], action: "window:document_editor" },
-  { patterns: [/^(åbn|vis)\s+(regneark|spreadsheet)/i], action: "window:spreadsheet_editor" },
-  { patterns: [/^(luk|close)\s+(alle|alt|vinduer|windows)/i], action: "cmd:close_windows" },
-  { patterns: [/^(luk|stop|farvel|close|exit)/i, /^(luk op|stop lyt)/i], action: "cmd:close_voice" },
-  { patterns: [/^(send|udfør|go|execute|afsendt)/i], action: "cmd:send" },
-  { patterns: [/^(ryd|slet|clear|delete)/i], action: "cmd:clear" },
-  { patterns: [/^(hvad kan du|hjælp|help|kommandoer)/i], action: "cmd:help" },
-  { patterns: [/^(morgen briefing|daglig status|status)/i], action: "cmd:morning_briefing" },
+  { patterns: [/^(open|show|go to|åbn|vis|gå til|öppna|öffne)\s+(dashboard|overview|overblik)/i, /^dashboard$/i], action: "nav:Dashboard" },
+  { patterns: [/^(open|show|åbn|vis|öppna|öffne)\s+(fleet|flåde|biler|flotta|flotte|fahrzeuge)/i, /^fleet$/i], action: "nav:Fleet" },
+  { patterns: [/^(open|show|åbn|vis|öppna|öffne)\s+(alerts|advarsler|varningar|warnungen|alarmer)/i], action: "nav:Alerts" },
+  { patterns: [/^(open|show|åbn|vis|öppna|öffne)\s+(routes|ruter|rutter|routen)/i], action: "nav:Routes" },
+  { patterns: [/^(open|show|åbn|vis|öppna|öffne)\s+(shipments|forsendelser|leveringer|lieferungen)/i], action: "nav:Shipments" },
+  { patterns: [/^(open|show|åbn|vis|öppna|öffne)\s+(customers|kunder|kunder|kunden)/i], action: "nav:CustomerManagement" },
+  { patterns: [/^(open|show|åbn|vis|öppna|öffne)\s+(invoices|fakturaer|fakturor|rechnungen)/i], action: "nav:Invoices" },
+  { patterns: [/^(open|show|åbn|vis|öppna|öffne)\s+(settings|indstillinger|inställningar|einstellungen)/i], action: "nav:Settings" },
+  { patterns: [/^(open|show|åbn|vis|öppna|öffne)\s+(reports|rapporter|rapporter|berichte)/i], action: "nav:Reports" },
+  { patterns: [/^(open|show|åbn|vis|öppna|öffne)\s+(map|kort|karta|karte|live)/i], action: "nav:MapMonitor" },
+  { patterns: [/^(open|start|åbn|öppna|öffne)\s+(app builder|harbor app|harbor)/i], action: "window:harbor_app_builder" },
+  { patterns: [/^(open|show|åbn|vis|öppna|öffne)\s+(store|butik|fleet store)/i], action: "window:fleet_store" },
+  { patterns: [/^(open|show|åbn|vis|öppna|öffne)\s+(analysis|analyse|analys|analyse|deep analysis)/i], action: "window:deep_analysis" },
+  { patterns: [/^(open|show|åbn|vis|öppna|öffne)\s+(maintenance|vedligeholdelse|underhåll|wartung)/i], action: "window:predictive_maintenance" },
+  { patterns: [/^(open|show|åbn|vis|öppna|öffne)\s+(3d|globe|globus)/i], action: "window:fleet_3d_viewer" },
+  { patterns: [/^(open|show|åbn|vis|öppna|öffne)\s+(weather|vejr|väder|wetter|satellite|satellit)/i], action: "window:satellite_weather" },
+  { patterns: [/^(open|show|åbn|vis|öppna|öffne)\s+(news|nyheder|nyheter|nachrichten)/i], action: "window:news_intelligence" },
+  { patterns: [/^(open|show|åbn|vis|öppna|öffne)\s+(project|projekt|projekt|projekt)/i], action: "window:project_management" },
+  { patterns: [/^(open|show|åbn|vis|öppna|öffne)\s+(document|dokument|dokument|dokument|editor)/i], action: "window:document_editor" },
+  { patterns: [/^(close|luk|stäng|schließe)\s+(all|alle|alla|alles|windows|vinduer|fönster|fenster)/i], action: "cmd:close_windows" },
+  { patterns: [/^(close|stop|bye|goodbye|luk|stäng|schließe|farvel|hej da)/i], action: "cmd:close_voice" },
+  { patterns: [/^(send|execute|go|udfør|skicka|senden)/i], action: "cmd:send" },
+  { patterns: [/^(clear|delete|ryd|slet|rensa|löschen)/i], action: "cmd:clear" },
+  { patterns: [/^(help|hjælp|hjälp|hilfe|commands|kommandoer)/i], action: "cmd:help" },
+  { patterns: [/^(briefing|status|morning briefing|morgen briefing|daglig status)/i], action: "cmd:morning_briefing" },
 ];
 
 function matchCommand(text) {
@@ -46,6 +154,11 @@ function matchCommand(text) {
     }
   }
   return null;
+}
+
+// ─── Check browser speech support ────────────────────────────────────────
+function hasSpeechSupport() {
+  return !!(window.SpeechRecognition || window.webkitSpeechRecognition);
 }
 
 // ─── Waveform ─────────────────────────────────────────────────────────────
@@ -126,12 +239,12 @@ function SuggestionBubble({ suggestion, onAccept, onDismiss }) {
         <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={onAccept}
           className="flex-1 py-2 rounded-xl text-[10px] font-mono font-bold tracking-widest transition-all"
           style={{ background: "rgba(139,92,246,0.3)", border: "1px solid rgba(139,92,246,0.5)", color: "#c4b5fd" }}>
-          JA, GØR DET
+          YES, DO IT
         </motion.button>
         <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={onDismiss}
           className="px-4 py-2 rounded-xl text-[10px] font-mono transition-all"
           style={{ background: "rgba(15,23,42,0.6)", border: "1px solid rgba(51,65,85,0.5)", color: "#64748b" }}>
-          Ikke nu
+          Not now
         </motion.button>
       </div>
     </motion.div>
@@ -150,7 +263,7 @@ export default function VoiceController({
   alerts = [],
   routes = [],
   fleetData = {},
-  language = "da-DK",
+  language = "en-US",
   autoStart = false,
 }) {
   const [isListening, setIsListening] = useState(false);
@@ -163,10 +276,13 @@ export default function VoiceController({
   const [lang, setLang] = useState(language);
   const [showCommands, setShowCommands] = useState(false);
   const [suggestion, setSuggestion] = useState(null);
-  const [harborMessage, setHarborMessage] = useState("Hej! Jeg er H.A.R.B.O.R. Sig en kommando eller stil mig et spørgsmål.");
+  const [harborMessage, setHarborMessage] = useState("");
   const [history, setHistory] = useState([]);
   const [continuous, setContinuous] = useState(true);
   const [voiceReady, setVoiceReady] = useState(false);
+  const [speechSupported] = useState(hasSpeechSupport);
+  const [textInput, setTextInput] = useState("");
+  const [isAgentLoading, setIsAgentLoading] = useState(false);
 
   const recognitionRef = useRef(null);
   const micStreamRef = useRef(null);
@@ -176,6 +292,9 @@ export default function VoiceController({
   const ttsEnabledRef = useRef(ttsEnabled);
   const intentionalStopRef = useRef(false);
   const restartTimerRef = useRef(null);
+  const agentConvRef = useRef(null);
+
+  const m = getMsg(lang);
 
   useEffect(() => { isContinuousRef.current = continuous; }, [continuous]);
   useEffect(() => { ttsEnabledRef.current = ttsEnabled; }, [ttsEnabled]);
@@ -192,6 +311,22 @@ export default function VoiceController({
   useEffect(() => { onNavigateRef.current = onNavigate; }, [onNavigate]);
   useEffect(() => { onOpenWindowRef.current = onOpenWindow; }, [onOpenWindow]);
   useEffect(() => { onCloseWindowsRef.current = onCloseWindows; }, [onCloseWindows]);
+
+  // ─── Init Harbor Super Agent conversation ──────────────────────────────
+  useEffect(() => {
+    const init = async () => {
+      try {
+        const conv = await base44.agents.createConversation({
+          agent_name: "harbor_intellect",
+          metadata: { name: "VoiceController Session" }
+        });
+        agentConvRef.current = conv;
+      } catch (e) {
+        console.warn("Could not init harbor agent for voice:", e);
+      }
+    };
+    init();
+  }, []);
 
   // ─── Speak ──────────────────────────────────────────────────────────────
   const speakRef = useRef(null);
@@ -257,8 +392,31 @@ export default function VoiceController({
     setAmplitude(0);
   }, []);
 
+  // ─── Send text to Harbor Super Agent ──────────────────────────────────
+  const sendToAgent = useCallback(async (text) => {
+    // First try the parent's onSend (which goes through IntellectMode's agent)
+    if (onSendRef.current) {
+      onTranscriptRef.current?.(text);
+      onSendRef.current?.(text);
+      return;
+    }
+    // Fallback: direct harbor_intellect agent
+    if (!agentConvRef.current) {
+      toast.error("Agent not ready");
+      return;
+    }
+    setIsAgentLoading(true);
+    try {
+      await base44.agents.addMessage(agentConvRef.current, { role: "user", content: text });
+    } catch (e) {
+      toast.error("Agent error: " + e.message);
+    }
+    setIsAgentLoading(false);
+  }, []);
+
   // ─── Handle recognized text ────────────────────────────────────────────
   const handleFinalText = useCallback((text) => {
+    const msgs = getMsg(lang);
     setLastCommand(text);
     setProcessingText(text);
     setHistory(p => [text, ...p].slice(0, 8));
@@ -277,39 +435,38 @@ export default function VoiceController({
     const action = matchCommand(text);
 
     if (action === "cmd:close_voice") {
-      speakRef.current?.("Farvel! Kalder på mig når du har brug for hjælp.");
+      speakRef.current?.(msgs.farewell);
       setTimeout(() => onCloseRef.current?.(), 800);
       return;
     }
     if (action === "cmd:send") {
-      speakRef.current?.("Sender kommando.");
+      speakRef.current?.(msgs.sendingCmd);
       onSendRef.current?.();
       setProcessingText("");
       return;
     }
     if (action === "cmd:clear") {
       onTranscriptRef.current?.("");
-      speakRef.current?.("Ryddet.");
+      speakRef.current?.(msgs.cleared);
       setProcessingText("");
       return;
     }
     if (action === "cmd:close_windows") {
       onCloseWindowsRef.current?.();
-      speakRef.current?.("Lukker alle vinduer.");
-      setHarborMessage("Lukker alle vinduer.");
+      speakRef.current?.(msgs.closingWindows);
+      setHarborMessage(msgs.closingWindows);
       setProcessingText("");
       return;
     }
     if (action === "cmd:help") {
-      const helpMsg = "Du kan sige åbn flåde, åbn advarsler, åbn ruter, åbn dashboard, luk alle vinduer, eller stil mig et spørgsmål.";
-      speakRef.current?.(helpMsg);
-      setHarborMessage(helpMsg);
+      speakRef.current?.(msgs.help);
+      setHarborMessage(msgs.help);
       setShowCommands(true);
       setProcessingText("");
       return;
     }
     if (action === "cmd:morning_briefing") {
-      const briefing = `Her er din morgen briefing. Du har ${vehicles.length} køretøjer, ${alerts.filter(a => !a.is_read).length} ulæste advarsler og ${routes.filter(r => r.status === "active").length} aktive ruter.`;
+      const briefing = msgs.briefing(vehicles.length, alerts.filter(a => !a.is_read).length, routes.filter(r => r.status === "active").length);
       speakRef.current?.(briefing);
       setHarborMessage(briefing);
       setProcessingText("");
@@ -317,7 +474,7 @@ export default function VoiceController({
     }
     if (action?.startsWith("nav:")) {
       const page = action.split(":")[1];
-      const msg = `Navigerer til ${page}.`;
+      const msg = msgs.navigating(page);
       speakRef.current?.(msg);
       setHarborMessage(msg);
       onNavigateRef.current?.(page);
@@ -326,7 +483,7 @@ export default function VoiceController({
     }
     if (action?.startsWith("window:")) {
       const windowType = action.split(":")[1];
-      const msg = `Åbner ${windowType.replace(/_/g, " ")}.`;
+      const msg = msgs.opening(windowType.replace(/_/g, " "));
       speakRef.current?.(msg);
       setHarborMessage(msg);
       onOpenWindowRef.current?.(windowType);
@@ -334,29 +491,26 @@ export default function VoiceController({
       return;
     }
 
-    // Free-form — pass to chat and send
-    onTranscriptRef.current?.(text);
-    setHarborMessage(`Sender: "${text}"`);
-    speakRef.current?.("Forstået. Analyserer nu.");
+    // Free-form — send to Harbor Super Agent
+    setHarborMessage(msgs.sending(text));
+    speakRef.current?.(msgs.understood);
     setTimeout(() => {
-      onSendRef.current?.(text);
+      sendToAgent(text);
       setProcessingText("");
     }, 700);
-  }, [vehicles, alerts, routes]);
+  }, [lang, vehicles, alerts, routes, sendToAgent]);
 
   const handleFinalTextRef = useRef(handleFinalText);
   useEffect(() => { handleFinalTextRef.current = handleFinalText; }, [handleFinalText]);
 
-  // ─── Start / Stop recognition ──────────────────────────────────────────
+  // ─── Start recognition ─────────────────────────────────────────────────
   const startListening = useCallback(() => {
-    // Reset intentional stop flag so auto-restart works
     intentionalStopRef.current = false;
     if (restartTimerRef.current) clearTimeout(restartTimerRef.current);
 
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) {
-      toast.error("Stemmegenkendelse ikke understøttet — brug Chrome eller Edge");
-      setHarborMessage("⚠️ Stemmegenkendelse ikke understøttet i denne browser. Brug Chrome eller Edge.");
+      setHarborMessage(getMsg(lang).noSpeech);
       return;
     }
 
@@ -367,14 +521,14 @@ export default function VoiceController({
 
     const recognition = new SR();
     recognition.lang = lang;
-    recognition.continuous = true;  // Keep listening without restart gaps
+    recognition.continuous = true;
     recognition.interimResults = true;
     recognition.maxAlternatives = 3;
 
     recognition.onstart = () => {
       setIsListening(true);
       setInterimText("");
-      setHarborMessage("Lytter... sig din kommando");
+      setHarborMessage(getMsg(lang).listening);
       startAmplitude();
     };
 
@@ -394,22 +548,17 @@ export default function VoiceController({
       console.error("Speech recognition error:", e.error);
       if (e.error === "not-allowed" || e.error === "permission-denied") {
         intentionalStopRef.current = true;
-        toast.error("Mikrofon adgang nægtet — tillad mikrofon i browser-indstillinger");
-        setHarborMessage("⚠️ Mikrofon adgang nægtet. Tillad mikrofon adgang i din browsers adresselinje.");
+        setHarborMessage(getMsg(lang).noMic);
         setIsListening(false);
         stopAmplitude();
         recognitionRef.current = null;
       } else if (e.error === "no-speech") {
-        // no-speech is normal — just restart immediately
+        // Normal: restart
         recognitionRef.current = null;
         if (!intentionalStopRef.current) {
           restartTimerRef.current = setTimeout(() => startListening(), 300);
         }
-      } else if (e.error === "aborted") {
-        // aborted means we stopped it manually — onend will handle
-      } else {
-        // other errors: log and try to restart
-        console.warn("Speech error:", e.error);
+      } else if (e.error !== "aborted") {
         recognitionRef.current = null;
         setIsListening(false);
         stopAmplitude();
@@ -423,7 +572,6 @@ export default function VoiceController({
       setIsListening(false);
       stopAmplitude();
       recognitionRef.current = null;
-      // Auto-restart if not intentionally stopped (B: auto-detect mode)
       if (isContinuousRef.current && !intentionalStopRef.current) {
         restartTimerRef.current = setTimeout(() => startListening(), 400);
       }
@@ -434,7 +582,6 @@ export default function VoiceController({
       recognition.start();
     } catch (e) {
       console.error("Failed to start recognition:", e);
-      toast.error("Kunne ikke starte mikrofon: " + e.message);
       setIsListening(false);
       recognitionRef.current = null;
     }
@@ -450,6 +597,7 @@ export default function VoiceController({
   }, [stopAmplitude]);
 
   const toggleListening = () => {
+    if (!speechSupported) return;
     if (isListening) {
       stopListening();
     } else {
@@ -463,7 +611,7 @@ export default function VoiceController({
   };
 
   useEffect(() => {
-    if (autoStart) {
+    if (autoStart && speechSupported) {
       setVoiceReady(true);
       speakRef.current?.(greetingRef.current, () => startListening());
     }
@@ -471,42 +619,50 @@ export default function VoiceController({
 
   const greetingRef = useRef("");
   useEffect(() => {
-    const hour = new Date().getHours();
-    let greeting;
-    if (hour < 10) greeting = `Godmorgen! Her er H.A.R.B.O.R. Jeg håber du har sovet godt. Du har ${vehicles.length} køretøjer klar. Hvad starter vi med?`;
-    else if (hour < 12) greeting = `Hej! H.A.R.B.O.R her. Formiddagen er i gang — ${alerts.filter(a => !a.is_read).length} advarsler venter. Hvad kan jeg hjælpe med?`;
-    else if (hour < 14) greeting = `God eftermiddag! H.A.R.B.O.R online. Har du fået spist frokost? Hvad kan jeg gøre for dig?`;
-    else if (hour < 17) greeting = `Hej igen! Eftermiddagen er i fuld gang. ${vehicles.length} køretøjer i flåden. Hvad har du brug for?`;
-    else greeting = `God aften! H.A.R.B.O.R her. Det er ved at blive sent — husk at tage en pause. Hvad kan jeg hjælpe med?`;
+    const msgs = getMsg(lang);
+    const greeting = msgs.greeting(vehicles.length, alerts.filter(a => !a.is_read).length);
     greetingRef.current = greeting;
     setHarborMessage(greeting);
     return () => { stopListening(); window.speechSynthesis?.cancel(); };
-  }, []);
+  }, [lang]);
+
+  // ─── Text input submit (fallback for all browsers) ─────────────────────
+  const handleTextSubmit = (e) => {
+    e?.preventDefault();
+    const text = textInput.trim();
+    if (!text) return;
+    setTextInput("");
+    setProcessingText(text);
+    setHarborMessage(getMsg(lang).sending(text));
+    setTimeout(() => {
+      handleFinalTextRef.current(text);
+    }, 100);
+  };
 
   const LANGS = [
-    { code: "da-DK", label: "DK" },
     { code: "en-US", label: "EN" },
+    { code: "da-DK", label: "DK" },
     { code: "de-DE", label: "DE" },
     { code: "sv-SE", label: "SV" },
   ];
 
   const NAV_COMMANDS = [
     { label: "Dashboard", icon: LayoutDashboard, action: () => onNavigate?.("Dashboard") },
-    { label: "Flåde", icon: Truck, action: () => onOpenWindow?.("fleet") },
-    { label: "Advarsler", icon: AlertTriangle, action: () => onNavigate?.("Alerts") },
-    { label: "Ruter", icon: Navigation, action: () => onOpenWindow?.("routes") },
-    { label: "Forsendelser", icon: Package, action: () => onOpenWindow?.("shipments") },
-    { label: "Analyse", icon: BarChart3, action: () => onOpenWindow?.("deep_analysis") },
+    { label: "Fleet", icon: Truck, action: () => onOpenWindow?.("fleet") },
+    { label: "Alerts", icon: AlertTriangle, action: () => onNavigate?.("Alerts") },
+    { label: "Routes", icon: Navigation, action: () => onOpenWindow?.("routes") },
+    { label: "Shipments", icon: Package, action: () => onOpenWindow?.("shipments") },
+    { label: "Analysis", icon: BarChart3, action: () => onOpenWindow?.("deep_analysis") },
     { label: "App Builder", icon: Zap, action: () => onOpenWindow?.("harbor_app_builder") },
     { label: "Fleet Store", icon: Globe, action: () => onOpenWindow?.("fleet_store") },
     { label: "3D Globe", icon: Brain, action: () => onOpenWindow?.("fleet_3d_viewer") },
-    { label: "Vedligehold", icon: Settings, action: () => onOpenWindow?.("predictive_maintenance") },
-    { label: "Nyheder", icon: FileText, action: () => onOpenWindow?.("news_intelligence") },
-    { label: "Luk vinduer", icon: X, action: () => onCloseWindows?.() },
+    { label: "Maintenance", icon: Settings, action: () => onOpenWindow?.("predictive_maintenance") },
+    { label: "News", icon: FileText, action: () => onOpenWindow?.("news_intelligence") },
+    { label: "Close All", icon: X, action: () => onCloseWindows?.() },
   ];
 
   const statusColor = isSpeaking ? "#a78bfa" : isListening ? "#22d3ee" : "#334155";
-  const statusLabel = isSpeaking ? "TALER" : isListening ? "LYTTER" : voiceReady ? "STANDBY" : "KLIK FOR AT AKTIVERE";
+  const statusLabel = isSpeaking ? m.speaking : isListening ? m.listeningStatus : voiceReady ? m.standby : m.activate;
 
   return (
     <motion.div
@@ -560,6 +716,12 @@ export default function VoiceController({
                   style={{ background: "rgba(255,255,255,0.04)", color: statusColor, border: `1px solid ${statusColor}30` }}>
                   {statusLabel}
                 </span>
+                {!speechSupported && (
+                  <span className="text-[9px] font-mono px-1.5 py-0.5 rounded-md flex items-center gap-1"
+                    style={{ background: "rgba(251,191,36,0.1)", color: "#fbbf24", border: "1px solid rgba(251,191,36,0.3)" }}>
+                    <Keyboard className="w-2.5 h-2.5" /> TEXT MODE
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -568,21 +730,22 @@ export default function VoiceController({
             <button onClick={() => setTtsEnabled(p => !p)}
               className="p-2 rounded-xl transition-all hover:bg-white/5"
               style={{ color: ttsEnabled ? "#06b6d4" : "#475569" }}
-              title={ttsEnabled ? "Sluk stemme" : "Tænd stemme"}
             >
               {ttsEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
             </button>
-            <button
-              onClick={() => setContinuous(p => { const next = !p; isContinuousRef.current = next; return next; })}
-              className="px-2 py-1 rounded-lg text-[9px] font-mono font-bold tracking-wider transition-all"
-              style={{
-                background: continuous ? "rgba(6,182,212,0.1)" : "transparent",
-                border: `1px solid ${continuous ? "rgba(6,182,212,0.3)" : "rgba(51,65,85,0.4)"}`,
-                color: continuous ? "#67e8f9" : "#475569",
-              }}
-            >
-              AUTO
-            </button>
+            {speechSupported && (
+              <button
+                onClick={() => setContinuous(p => { const next = !p; isContinuousRef.current = next; return next; })}
+                className="px-2 py-1 rounded-lg text-[9px] font-mono font-bold tracking-wider transition-all"
+                style={{
+                  background: continuous ? "rgba(6,182,212,0.1)" : "transparent",
+                  border: `1px solid ${continuous ? "rgba(6,182,212,0.3)" : "rgba(51,65,85,0.4)"}`,
+                  color: continuous ? "#67e8f9" : "#475569",
+                }}
+              >
+                AUTO
+              </button>
+            )}
             <div className="flex items-center gap-0.5 ml-1">
               {LANGS.map(l => (
                 <button key={l.code} onClick={() => setLang(l.code)}
@@ -632,7 +795,7 @@ export default function VoiceController({
                 />
                 <span className="text-xs font-black font-mono tracking-[0.3em] uppercase"
                   style={{ color: "#22d3ee", textShadow: "0 0 12px rgba(6,182,212,0.6)" }}>
-                  ● LYTTER AKTIVT — SIG DIN KOMMANDO
+                  {m.activeBanner}
                 </span>
                 <motion.div className="w-2.5 h-2.5 rounded-full"
                   animate={{ scale: [1, 1.5, 1], opacity: [1, 0.4, 1] }}
@@ -652,18 +815,11 @@ export default function VoiceController({
                 suggestion={suggestion}
                 onAccept={() => {
                   setSuggestion(null);
-                  if (suggestion.action === "open_alerts") { onNavigate?.("Alerts"); speak("Åbner advarsler nu."); }
-                  else if (suggestion.action === "analyze_fleet") { onOpenWindow?.("deep_analysis"); speak("Åbner flådeanalyse."); }
-                  else if (suggestion.action === "check_route") { onOpenWindow?.("routes"); speak("Her er ruteoversigten."); }
-                  else if (suggestion.action === "morning_briefing" || suggestion.action === "daily_summary") { onOpenWindow?.("deep_analysis"); speak("Åbner daglig briefing."); }
-                  else if (suggestion.action === "break") { speak("Godt! Tag en god pause. Jeg holder øje med tingene. Vi ses om lidt!"); }
-                  else if (suggestion.action === "coffee") { speak("God idé! Nyd din kaffe. Jeg er her når du er klar."); }
-                  else if (suggestion.action === "breakfast") { speak("Dejligt! Spis en god morgenmad. Det er dagens vigtigste måltid!"); }
-                  else if (suggestion.action === "lunch") { speak("Rigtig god idé! Nyd frokosten. Gå fra computeren og lad op."); }
-                  else if (suggestion.action === "dinner") { speak("God aften! Nyd maden og slap af efter en lang dag."); }
-                  else { speak("Godt. Åbner nu."); }
+                  if (suggestion.action === "open_alerts") { onNavigate?.("Alerts"); speak("Opening alerts."); }
+                  else if (suggestion.action === "analyze_fleet") { onOpenWindow?.("deep_analysis"); speak("Opening fleet analysis."); }
+                  else { speak("Opening now."); }
                 }}
-                onDismiss={() => { setSuggestion(null); speak("Ingen problem."); }}
+                onDismiss={() => { setSuggestion(null); speak("No problem."); }}
               />
             </div>
           )}
@@ -671,43 +827,44 @@ export default function VoiceController({
 
         {/* Main interaction area */}
         <div className="flex items-center gap-4 px-5 py-4">
-          {/* Big mic button */}
-          <motion.button
-            onClick={toggleListening}
-            whileHover={{ scale: 1.06 }}
-            whileTap={{ scale: 0.93 }}
-            className="relative flex-shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center"
-            style={{
-              background: isListening
-                ? "linear-gradient(135deg, rgba(239,68,68,0.25), rgba(220,38,38,0.15))"
-                : "linear-gradient(135deg, rgba(6,182,212,0.2), rgba(139,92,246,0.12))",
-              border: isListening
-                ? "1.5px solid rgba(239,68,68,0.7)"
-                : "1.5px solid rgba(6,182,212,0.5)",
-              boxShadow: isListening
-                ? "0 0 24px rgba(239,68,68,0.35), 0 0 0 8px rgba(239,68,68,0.05)"
-                : "0 0 20px rgba(6,182,212,0.2), 0 0 0 8px rgba(6,182,212,0.04)",
-            }}
-          >
-            {isListening && (
-              <>
-                <motion.div animate={{ scale: [1, 1.7, 1], opacity: [0.6, 0, 0.6] }} transition={{ duration: 1.4, repeat: Infinity }}
-                  className="absolute inset-0 rounded-2xl" style={{ border: "1px solid rgba(239,68,68,0.5)" }} />
-                <motion.div animate={{ scale: [1, 2.2, 1], opacity: [0.3, 0, 0.3] }} transition={{ duration: 1.4, repeat: Infinity, delay: 0.3 }}
-                  className="absolute inset-0 rounded-2xl" style={{ border: "1px solid rgba(239,68,68,0.2)" }} />
-              </>
-            )}
-            {isListening
-              ? <MicOff className="w-6 h-6" style={{ color: "#f87171" }} />
-              : <Mic className="w-6 h-6" style={{ color: "#22d3ee" }} />
-            }
-          </motion.button>
+          {/* Mic button — only shown when speech is supported */}
+          {speechSupported && (
+            <motion.button
+              onClick={toggleListening}
+              whileHover={{ scale: 1.06 }}
+              whileTap={{ scale: 0.93 }}
+              className="relative flex-shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center"
+              style={{
+                background: isListening
+                  ? "linear-gradient(135deg, rgba(239,68,68,0.25), rgba(220,38,38,0.15))"
+                  : "linear-gradient(135deg, rgba(6,182,212,0.2), rgba(139,92,246,0.12))",
+                border: isListening
+                  ? "1.5px solid rgba(239,68,68,0.7)"
+                  : "1.5px solid rgba(6,182,212,0.5)",
+                boxShadow: isListening
+                  ? "0 0 24px rgba(239,68,68,0.35), 0 0 0 8px rgba(239,68,68,0.05)"
+                  : "0 0 20px rgba(6,182,212,0.2), 0 0 0 8px rgba(6,182,212,0.04)",
+              }}
+            >
+              {isListening && (
+                <>
+                  <motion.div animate={{ scale: [1, 1.7, 1], opacity: [0.6, 0, 0.6] }} transition={{ duration: 1.4, repeat: Infinity }}
+                    className="absolute inset-0 rounded-2xl" style={{ border: "1px solid rgba(239,68,68,0.5)" }} />
+                  <motion.div animate={{ scale: [1, 2.2, 1], opacity: [0.3, 0, 0.3] }} transition={{ duration: 1.4, repeat: Infinity, delay: 0.3 }}
+                    className="absolute inset-0 rounded-2xl" style={{ border: "1px solid rgba(239,68,68,0.2)" }} />
+                </>
+              )}
+              {isListening
+                ? <MicOff className="w-6 h-6" style={{ color: "#f87171" }} />
+                : <Mic className="w-6 h-6" style={{ color: "#22d3ee" }} />
+              }
+            </motion.button>
+          )}
 
-          {/* Live transcript area */}
+          {/* Live transcript + text input */}
           <div className="flex-1 flex flex-col gap-2 min-w-0">
             <AnimatePresence mode="wait">
               {interimText ? (
-                /* Currently hearing something */
                 <motion.div key="interim" initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
                   className="rounded-xl px-3 py-2.5"
                   style={{ background: "rgba(6,182,212,0.12)", border: "1px solid rgba(6,182,212,0.4)" }}
@@ -715,12 +872,11 @@ export default function VoiceController({
                   <div className="flex items-center gap-2 mb-1">
                     <motion.div className="w-2 h-2 rounded-full" animate={{ scale: [1, 1.4, 1] }} transition={{ duration: 0.4, repeat: Infinity }}
                       style={{ background: "#22d3ee", boxShadow: "0 0 8px #22d3ee" }} />
-                    <span className="text-[9px] font-mono uppercase tracking-widest" style={{ color: "rgba(6,182,212,0.7)" }}>Registrerer...</span>
+                    <span className="text-[9px] font-mono uppercase tracking-widest" style={{ color: "rgba(6,182,212,0.7)" }}>Detecting...</span>
                   </div>
                   <p className="text-base font-semibold leading-snug" style={{ color: "#e0f9ff" }}>„{interimText}"</p>
                 </motion.div>
               ) : processingText ? (
-                /* Just said something, processing */
                 <motion.div key="processing" initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
                   className="rounded-xl px-3 py-2.5"
                   style={{ background: "rgba(139,92,246,0.12)", border: "1px solid rgba(139,92,246,0.35)" }}
@@ -728,12 +884,11 @@ export default function VoiceController({
                   <div className="flex items-center gap-2 mb-1">
                     <motion.div className="w-2 h-2 rounded-full" animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 0.6, repeat: Infinity }}
                       style={{ background: "#a78bfa" }} />
-                    <span className="text-[9px] font-mono uppercase tracking-widest" style={{ color: "rgba(139,92,246,0.7)" }}>Forstod:</span>
+                    <span className="text-[9px] font-mono uppercase tracking-widest" style={{ color: "rgba(139,92,246,0.7)" }}>Understood:</span>
                   </div>
                   <p className="text-base font-semibold leading-snug" style={{ color: "#e2d9ff" }}>„{processingText}"</p>
                 </motion.div>
               ) : (
-                /* Idle message */
                 <motion.p key="idle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                   className="text-sm leading-relaxed"
                   style={{ color: isSpeaking ? "#e2d9ff" : "#4b5563" }}
@@ -742,9 +897,49 @@ export default function VoiceController({
                 </motion.p>
               )}
             </AnimatePresence>
-            <Waveform isActive={isListening} amplitude={amplitude} isSpeaking={isSpeaking} />
+
+            {speechSupported
+              ? <Waveform isActive={isListening} amplitude={amplitude} isSpeaking={isSpeaking} />
+              : (
+                /* Text input fallback for Firefox / Safari / other browsers */
+                <form onSubmit={handleTextSubmit} className="flex items-center gap-2">
+                  <input
+                    value={textInput}
+                    onChange={e => setTextInput(e.target.value)}
+                    placeholder={m.typeHint}
+                    className="flex-1 rounded-xl px-3 py-2 text-sm bg-transparent text-white placeholder-slate-600 outline-none"
+                    style={{ border: "1px solid rgba(6,182,212,0.25)", background: "rgba(6,182,212,0.05)" }}
+                  />
+                  <motion.button type="submit" whileTap={{ scale: 0.93 }}
+                    disabled={!textInput.trim()}
+                    className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-all disabled:opacity-30"
+                    style={{ background: "linear-gradient(135deg, #06b6d4, #8b5cf6)" }}>
+                    <Send className="w-4 h-4 text-white" />
+                  </motion.button>
+                </form>
+              )
+            }
           </div>
         </div>
+
+        {/* Always-visible text input (even when speech is supported) */}
+        {speechSupported && (
+          <form onSubmit={handleTextSubmit} className="px-5 pb-4 flex items-center gap-2">
+            <input
+              value={textInput}
+              onChange={e => setTextInput(e.target.value)}
+              placeholder={m.typeHint}
+              className="flex-1 rounded-xl px-3 py-2 text-xs bg-transparent text-white placeholder-slate-600 outline-none"
+              style={{ border: "1px solid rgba(255,255,255,0.05)", background: "rgba(255,255,255,0.02)" }}
+            />
+            <motion.button type="submit" whileTap={{ scale: 0.93 }}
+              disabled={!textInput.trim()}
+              className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 transition-all disabled:opacity-20"
+              style={{ background: "rgba(6,182,212,0.15)", border: "1px solid rgba(6,182,212,0.25)" }}>
+              <Send className="w-3.5 h-3.5" style={{ color: "#06b6d4" }} />
+            </motion.button>
+          </form>
+        )}
 
         {/* Quick command chips */}
         <AnimatePresence>
@@ -758,29 +953,11 @@ export default function VoiceController({
             >
               <div className="px-5 py-4 space-y-4">
                 <div>
-                  <p className="text-[9px] font-mono uppercase tracking-[0.2em] mb-2.5" style={{ color: "#334155" }}>Hurtig navigation</p>
+                  <p className="text-[9px] font-mono uppercase tracking-[0.2em] mb-2.5" style={{ color: "#334155" }}>{m.quickNav}</p>
                   <div className="flex flex-wrap gap-2">
                     {NAV_COMMANDS.map(cmd => (
                       <CommandChip key={cmd.label} label={cmd.label} icon={cmd.icon}
-                        onClick={() => { cmd.action(); speak(`${cmd.label} åbnet.`); setHarborMessage(`${cmd.label} åbnet.`); }} />
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <p className="text-[9px] font-mono uppercase tracking-[0.2em] mb-2" style={{ color: "#334155" }}>Stemmesnarvejer</p>
-                  <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-[10px] font-mono">
-                    {[
-                      ["åbn flåde", "navigér til flåde"],
-                      ["åbn advarsler", "navigér til advarsler"],
-                      ["luk alle vinduer", "lukker alle"],
-                      ["send", "udfør kommando"],
-                      ["morgen briefing", "daglig status"],
-                      ["stop lyt", "luk voice control"],
-                    ].map(([cmd, desc]) => (
-                      <div key={cmd} className="flex gap-1.5 items-center">
-                        <span style={{ color: "#22d3ee" }}>"{cmd}"</span>
-                        <span style={{ color: "#334155" }}>— {desc}</span>
-                      </div>
+                        onClick={() => { cmd.action(); speak(`${cmd.label} opened.`); setHarborMessage(`${cmd.label} opened.`); }} />
                     ))}
                   </div>
                 </div>
