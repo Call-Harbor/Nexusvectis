@@ -38,7 +38,7 @@ import {
   PredictiveMaintenanceAnalysis, DemandForecastAnalysis, 
   RiskAssessmentAnalysis, PerformanceAnalyticsPanel 
 } from "@/components/intellect/AdvancedAIAnalysis";
-
+import { hologramWindowAPI } from "@/components/intellect/HologramWindowInteractionAPI";
 import { AdvancedIntelligenceEngine } from "@/components/intellect/AdvancedIntelligenceEngine";
 import ScenarioPredictionEngine from "@/components/intellect/ScenarioPredictionEngine";
 import MistralStreamingEngine from "@/components/intellect/MistralStreamingEngine";
@@ -136,6 +136,7 @@ export default function IntellectMode() {
   const intellectConversationRef = useRef(null);
   const intellectUnsubRef = useRef(null);
   const [installedAppIds, setInstalledAppIds] = useState(new Set());
+  const windowRefsRef = useRef({});
 
   const messagesEndRef = useRef(null);
   const queryClient = useQueryClient();
@@ -1197,8 +1198,14 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
                   onMinimize={() => toggleMinimize(window.id)}
                   isMinimized={minimizedWindows.has(window.id)}
                   isFocused={focusedWindow === window.id}
-                  onFocus={setFocusedWindow}>
-
+                  onFocus={setFocusedWindow}
+                  windowRef={(ref) => {
+                    if (ref) {
+                      windowRefsRef.current[window.id] = ref;
+                    } else {
+                      delete windowRefsRef.current[window.id];
+                    }
+                  }}>
                   <WindowContentRenderer type={window.type} data={{ ...(window.data || {}), onClose: () => closeWindow(window.id) }} vehicles={vehicles} routes={routes} shipments={shipments} alerts={alerts} currentUser={currentUser} orgId={orgId} customers={customers} setInput={setInput} openWindow={openWindow} />
                 </HologramWindow>
               );
