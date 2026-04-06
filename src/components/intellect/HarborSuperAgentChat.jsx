@@ -332,7 +332,11 @@ export default function HarborSuperAgentChat({ onClose }) {
   const subscribeToConversation = (convId) => {
     unsubscribeRef.current?.();
     unsubscribeRef.current = base44.agents.subscribeToConversation(convId, (data) => {
-      setMessages(data.messages || []);
+      const msgs = data.messages || [];
+      setMessages(msgs);
+      // Reset isSending once agent replies
+      const last = msgs[msgs.length - 1];
+      if (last?.role === 'assistant') setIsSending(false);
     });
   };
 
@@ -427,40 +431,43 @@ export default function HarborSuperAgentChat({ onClose }) {
 
   const sendMessage = useCallback(async (text) => {
     const msg = (text || input).trim();
-    if ((!msg && attachments.length === 0) || isSending) return;
+    if ((!msg && attachments.length === 0) || isSending || !activeConversation) return;
     const fileUrls = attachments.map(a => a.url);
     setInput("");
     setAttachments([]);
     setIsSending(true);
 
-    // Add user message to local state immediately
-    const userMsg = { role: "user", content: msg || "(attached files)", file_urls: fileUrls.length > 0 ? fileUrls : undefined };
-    const updatedMessages = [...messages, userMsg];
-    setMessages(updatedMessages);
-
     // Auto-name conversation on first message
     const isFirstMessage = messages.filter(m => m.role === "user").length === 0;
     if (isFirstMessage && msg) {
       const autoName = msg.length > 40 ? msg.slice(0, 40).trimEnd() + "…" : msg;
-      renameConversation(activeConversation?.id, autoName);
+      renameConversation(activeConversation.id, autoName);
     }
 
     try {
-      const response = await base44.functions.invoke('harborIntellectChat', {
-        command: msg || '(see attached files)',
-        organization_id: orgId,
-        conversation_history: updatedMessages.filter(m => m.role === 'user' || m.role === 'assistant').slice(-12).map(m => ({ role: m.role, content: m.content })),
+      // Use agent SDK — responses come via subscribeToConversation
+      await base44.agents.addMessage(activeConversation, {
+        role: "user",
+        content: msg || "(attached files)",
         ...(fileUrls.length > 0 && { file_urls: fileUrls })
       });
 
-      const responseText = response?.data?.response || JSON.stringify(response?.data);
-      setMessages(prev => [...prev, { role: 'assistant', content: responseText }]);
+      // Track usage for monthly invoice
+      if (orgId) {
+        base44.entities.FleetAIUsage.create({
+          organization_id: orgId,
+          user_email: (await base44.auth.me()).email,
+          command: msg || '(attached files)',
+          action: 'HARBOR_SUPER_AGENT_CHAT',
+          success: true,
+        }).catch(() => {});
+      }
     } catch (err) {
       toast.error("H.A.R.B.O.R could not respond");
       setMessages(prev => [...prev, { role: 'system', content: `❌ Error: ${err.message}` }]);
+      setIsSending(false);
     }
 
-    setIsSending(false);
     inputRef.current?.focus();
   }, [input, attachments, activeConversation, isSending, messages, orgId]);
 
