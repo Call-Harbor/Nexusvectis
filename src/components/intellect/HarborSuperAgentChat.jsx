@@ -220,8 +220,10 @@ function WorkerCard({ worker, task, output, onView }) {
 
 // ── Parallel Task Input ────────────────────────────────────────────────────
 function ParallelTaskPanel({ onExecute, onClose }) {
-  const [tasks, setTasks] = useState([{ id: 1, prompt: "", workerId: "fleet_analyst" }]);
+  const [tasks, setTasks] = useState([{ id: 1, prompt: "", workerId: "harbor_fleet_analyst" }]);
   const [isRunning, setIsRunning] = useState(false);
+  const [filesForOrch, setFilesForOrch] = useState([]);
+  const fileInputRef = useRef(null);
 
   const addTask = () => {
     setTasks(prev => [...prev, { id: Date.now(), prompt: "", workerId: AI_WORKERS[prev.length % AI_WORKERS.length].id }]);
@@ -233,11 +235,25 @@ function ParallelTaskPanel({ onExecute, onClose }) {
     setTasks(prev => prev.map(t => t.id === id ? { ...t, [field]: value } : t));
   };
 
+  const handleFileUpload = async (e) => {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+    for (const file of files) {
+      try {
+        const { file_url } = await base44.integrations.Core.UploadFile({ file });
+        const type = file.type.startsWith('image') ? 'image' : file.type.startsWith('video') ? 'video' : 'file';
+        setFilesForOrch(prev => [...prev, { url: file_url, name: file.name, type }]);
+        toast.success(`Uploaded ${file.name}`);
+      } catch { toast.error(`Failed to upload ${file.name}`); }
+    }
+    e.target.value = "";
+  };
+
   const handleRun = async () => {
     const validTasks = tasks.filter(t => t.prompt.trim());
     if (!validTasks.length) return toast.error("Add at least one task");
     setIsRunning(true);
-    await onExecute(validTasks);
+    await onExecute(validTasks, filesForOrch);
     setIsRunning(false);
     onClose();
   };
@@ -285,17 +301,39 @@ function ParallelTaskPanel({ onExecute, onClose }) {
           </div>
         ))}
       </div>
+      {filesForOrch.length > 0 && (
+        <div className="p-3 border-t border-slate-700/50 bg-slate-900/50">
+          <p className="text-[9px] font-mono uppercase text-slate-400 mb-2">Files ({filesForOrch.length})</p>
+          <div className="flex flex-wrap gap-1.5">
+            {filesForOrch.map((f, i) => (
+              <div key={i} className="flex items-center gap-1 px-2 py-1 rounded-lg text-[9px]" style={{ background: "rgba(6,182,212,0.1)", color: "#06b6d4", border: "1px solid rgba(6,182,212,0.2)" }}>
+                <span className="truncate max-w-[120px]">{f.type === 'image' ? '🖼️' : f.type === 'video' ? '🎬' : '📄'} {f.name}</span>
+                <button onClick={() => setFilesForOrch(prev => prev.filter((_, j) => j !== i))} className="text-red-400 hover:text-red-300"><X className="w-2.5 h-2.5" /></button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      <input ref={fileInputRef} type="file" multiple accept="image/*,video/*,.pdf,.csv,.xlsx,.xls,.docx,.txt,.json" className="hidden" onChange={handleFileUpload} />
       <div className="p-3 flex gap-2 border-t border-slate-700/50">
+        <motion.button onClick={() => fileInputRef.current?.click()} whileHover={{ scale: 1.02 }}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-mono"
+          style={{ background: "rgba(139,92,246,0.08)", color: "#a78bfa", border: "1px solid rgba(139,92,246,0.2)" }}>
+          <Paperclip className="w-3 h-3" /> Attach Files
+        </motion.button>
         <motion.button onClick={addTask} whileHover={{ scale: 1.02 }}
           className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-mono"
           style={{ background: "rgba(6,182,212,0.08)", color: "#06b6d4", border: "1px solid rgba(6,182,212,0.2)" }}>
           <Plus className="w-3 h-3" /> Add Task
         </motion.button>
-        <motion.button onClick={handleRun} disabled={isRunning} whileHover={{ scale: 1.02 }}
+        <motion.button
+          onClick={() => handleRun(() => onExecute(tasks, filesForOrch))}
+          disabled={isRunning}
+          whileHover={{ scale: 1.02 }}
           className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-mono font-bold disabled:opacity-40"
           style={{ background: "linear-gradient(135deg, rgba(6,182,212,0.3), rgba(139,92,246,0.2))", color: "#06b6d4", border: "1px solid rgba(6,182,212,0.5)" }}>
           {isRunning ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3.5 h-3.5" />}
-          {isRunning ? "Orchestrating..." : `Launch ${tasks.filter(t => t.prompt).length} AI Workers`}
+          {isRunning ? "Orchestrating..." : `Launch ${tasks.filter(t => t.prompt).length} AI Workers${filesForOrch.length > 0 ? ` + ${filesForOrch.length} files` : ""}`}
         </motion.button>
       </div>
     </motion.div>
@@ -555,7 +593,7 @@ export default function HarborSuperAgentChat({ onClose }) {
   };
 
   // ── PARALLEL ORCHESTRATION ──────────────────────────────────────────────
-  const executeParallelOrchestration = useCallback(async (parallelTasks) => {
+  const executeParallelOrchestration = useCallback(async (parallelTasks, filesForOrch = []) => {
     const orchId = `orch_${Date.now()}`;
 
     // Build worker list
@@ -589,10 +627,14 @@ export default function HarborSuperAgentChat({ onClose }) {
         return `${i + 1}. [${w?.emoji} ${w?.name}]: ${t.prompt}`;
       }).join("\n");
 
-      await base44.agents.addMessage(activeConversation, {
+      const msgData = {
         role: "user",
         content: `🚀 **PARALLEL ORCHESTRATION LAUNCHED** — Running ${parallelTasks.length} AI workers simultaneously:\n\n${tasksSummary}\n\nPlease coordinate these tasks and synthesize a unified intelligence report.`
-      });
+      };
+      if (filesForOrch.length > 0) {
+        msgData.file_urls = filesForOrch.map(f => f.url);
+      }
+      await base44.agents.addMessage(activeConversation, msgData);
     }
 
     // Execute ALL tasks in true parallel
