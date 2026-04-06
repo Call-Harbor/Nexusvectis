@@ -33,19 +33,15 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing task or workerType' }, { status: 400 });
     }
 
-    // Get the correct agent name
     const agentName = WORKER_TO_AGENT_MAP[workerType] || workerType;
 
     try {
-      // Create conversation for this specific worker
       const conv = await base44.agents.createConversation({
         agent_name: agentName,
         metadata: { orchestrationId, taskId, workerType, organization_id: body.organization_id }
       });
 
-      // Send org context as system message
       if (body.organization_id) {
-        // Fetch company data for context
         let companyContext = `SYSTEM CONTEXT: organization_id="${body.organization_id}". `;
         try {
           const org = await base44.entities.Organization.filter({ id: body.organization_id });
@@ -68,7 +64,7 @@ Deno.serve(async (req) => {
         } catch (e) {
           console.log('Could not fetch company data:', e.message);
         }
-        companyContext += "Always filter entities and operations by this organization ID. Use current data for analysis.";
+        companyContext += "Always filter entities and operations by this organization ID.";
         
         await base44.agents.addMessage(conv, {
           role: "system",
@@ -76,7 +72,6 @@ Deno.serve(async (req) => {
         });
       }
 
-      // Send task with files to the agent
       const messageData = {
         role: 'user',
         content: body.organization_id ? `[Organization ID: ${body.organization_id}] ${task}` : task
@@ -88,29 +83,33 @@ Deno.serve(async (req) => {
 
       await base44.agents.addMessage(conv, messageData);
 
-      // Wait for agent response (give it time to respond)
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      const fullConv = await base44.agents.getConversation(conv.id);
-      const agentResponse = fullConv.messages?.find(m => m.role === 'assistant');
-      
-      const output = agentResponse?.content || `${agentName} processing complete`;
+      // Poll for response with retries (up to 5 seconds)
+      let output = null;
+      for (let i = 0; i < 10; i++) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        const fullConv = await base44.agents.getConversation(conv.id);
+        const assistantMsg = fullConv.messages?.find(m => m.role === 'assistant');
+        if (assistantMsg?.content) {
+          output = assistantMsg.content;
+          break;
+        }
+      }
 
       return Response.json({
         orchestrationId,
         taskId,
         workerType,
         agentName,
-        output,
+        output: output || `${agentName} task submitted`,
         conversationId: conv.id,
         timestamp: new Date().toISOString(),
         status: 'completed',
         filesProcessed: fileUrls ? fileUrls.length : 0
       });
     } catch (agentError) {
-      console.error(`Agent ${agentName} error:`, agentError.message);
+      console.error(`Agent ${agentName} error:`, agentError);
       return Response.json({
-        error: agentError.message,
+        error: agentError.message || String(agentError),
         orchestrationId,
         taskId,
         workerType,
@@ -118,6 +117,7 @@ Deno.serve(async (req) => {
       }, { status: 500 });
     }
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    console.error('Orchestration error:', error);
+    return Response.json({ error: error.message || String(error) }, { status: 500 });
   }
 });
