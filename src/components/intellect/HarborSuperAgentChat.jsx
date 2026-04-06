@@ -618,6 +618,7 @@ export default function HarborSuperAgentChat({ onClose }) {
 
     const newOrch = {
       id: orchId,
+      conversationId: activeConversation.id,
       workers,
       tasks: parallelTasks,
       outputs: {},
@@ -909,8 +910,8 @@ export default function HarborSuperAgentChat({ onClose }) {
                 {/* Interleave messages and orchestration monitors */}
                 {visibleMessages.map((msg, i) => <MessageBubble key={i} message={msg} />)}
 
-                {/* Live orchestrations */}
-                {orchestrations.map(orch => (
+                {/* Live orchestrations - only in current conversation */}
+                {orchestrations.filter(o => o.conversationId === activeConversation?.id).map(orch => (
                   <div key={orch.id}>
                     <OrchestrationMonitor
                       orchestration={orch}
