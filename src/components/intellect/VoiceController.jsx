@@ -648,10 +648,10 @@ export default function VoiceController({
         stopAmplitude();
         recognitionRef.current = null;
       } else if (e.error === "no-speech") {
-        // Normal: restart
+        // Normal: restart with longer delay
         recognitionRef.current = null;
         if (!intentionalStopRef.current) {
-          restartTimerRef.current = setTimeout(() => startListening(), 300);
+          restartTimerRef.current = setTimeout(() => startListening(), 1200);
         }
       } else if (e.error !== "aborted") {
         recognitionRef.current = null;
@@ -668,7 +668,7 @@ export default function VoiceController({
       stopAmplitude();
       recognitionRef.current = null;
       if (isContinuousRef.current && !intentionalStopRef.current) {
-        restartTimerRef.current = setTimeout(() => startListening(), 400);
+        restartTimerRef.current = setTimeout(() => startListening(), 1500);
       }
     };
 
@@ -1002,14 +1002,14 @@ export default function VoiceController({
                     value={textInput}
                     onChange={e => setTextInput(e.target.value)}
                     placeholder={m.typeHint}
-                    className="flex-1 rounded-xl px-3 py-2 text-sm bg-transparent text-white placeholder-slate-600 outline-none"
-                    style={{ border: "1px solid rgba(6,182,212,0.25)", background: "rgba(6,182,212,0.05)" }}
+                    className="flex-1 rounded-xl px-4 py-3 text-base bg-transparent text-white placeholder-slate-500 outline-none font-medium"
+                    style={{ border: "1.5px solid rgba(6,182,212,0.4)", background: "rgba(6,182,212,0.08)" }}
                   />
                   <motion.button type="submit" whileTap={{ scale: 0.93 }}
                     disabled={!textInput.trim()}
-                    className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-all disabled:opacity-30"
-                    style={{ background: "linear-gradient(135deg, #06b6d4, #8b5cf6)" }}>
-                    <Send className="w-4 h-4 text-white" />
+                    className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-all disabled:opacity-30"
+                    style={{ background: "linear-gradient(135deg, rgba(6,182,212,0.3), rgba(139,92,246,0.2))", border: "1px solid rgba(6,182,212,0.4)" }}>
+                    <Send className="w-4 h-4" style={{ color: "#06b6d4" }} />
                   </motion.button>
                 </form>
               )
@@ -1024,14 +1024,14 @@ export default function VoiceController({
               value={textInput}
               onChange={e => setTextInput(e.target.value)}
               placeholder={m.typeHint}
-              className="flex-1 rounded-xl px-3 py-2 text-xs bg-transparent text-white placeholder-slate-600 outline-none"
-              style={{ border: "1px solid rgba(255,255,255,0.05)", background: "rgba(255,255,255,0.02)" }}
+              className="flex-1 rounded-xl px-4 py-3 text-base bg-transparent text-white placeholder-slate-500 outline-none font-medium"
+              style={{ border: "1.5px solid rgba(6,182,212,0.4)", background: "rgba(6,182,212,0.08)" }}
             />
             <motion.button type="submit" whileTap={{ scale: 0.93 }}
               disabled={!textInput.trim()}
-              className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 transition-all disabled:opacity-20"
-              style={{ background: "rgba(6,182,212,0.15)", border: "1px solid rgba(6,182,212,0.25)" }}>
-              <Send className="w-3.5 h-3.5" style={{ color: "#06b6d4" }} />
+              className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-all disabled:opacity-30"
+              style={{ background: "linear-gradient(135deg, rgba(6,182,212,0.3), rgba(139,92,246,0.2))", border: "1px solid rgba(6,182,212,0.4)" }}>
+              <Send className="w-4 h-4" style={{ color: "#06b6d4" }} />
             </motion.button>
           </form>
         )}
