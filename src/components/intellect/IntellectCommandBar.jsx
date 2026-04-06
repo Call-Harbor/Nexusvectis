@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import { Send, Mic, MicOff, Zap, Paperclip, FileText, X, Sparkles, Shield, Building2, Satellite, Newspaper, LayoutDashboard } from "lucide-react";
@@ -173,11 +173,17 @@ export default function IntellectCommandBar({
               <span className="font-semibold mr-1">🧠</span>{streamingMessage}<span className="animate-pulse ml-1">▊</span>
             </motion.div>
           )}
-          <AnimatePresence>
-            {isProcessing && <ThinkingAnimation />}
-          </AnimatePresence>
           <div ref={messagesEndRef} />
         </div>
+
+        {/* Thinking animation — outside scroll container so it's always visible */}
+        <AnimatePresence>
+          {isProcessing && (
+            <div className="mb-3">
+              <ThinkingAnimation />
+            </div>
+          )}
+        </AnimatePresence>
 
 
 
