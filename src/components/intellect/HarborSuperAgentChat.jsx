@@ -446,22 +446,14 @@ export default function HarborSuperAgentChat({ onClose }) {
     }
 
     try {
-      // Build conversation history for context
-      const history = updatedMessages
-        .filter(m => m.role === 'user' || m.role === 'assistant')
-        .slice(-12)
-        .map(m => `${m.role === 'user' ? 'User' : 'H.A.R.B.O.R'}: ${m.content}`)
-        .join('\n');
-
-      const systemPrompt = `You are H.A.R.B.O.R Intellect — the neural core of NexusVectis, an advanced AI logistics platform. You have full access to all platform data and modules. Be concise, expert and direct. Use bullet points for lists. Answer in the same language as the user.${orgId ? `\n\nThe user's organization_id is "${orgId}". All data is scoped to this organization.` : ''}${history ? `\n\nConversation so far:\n${history}` : ''}`;
-
-      const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `${systemPrompt}\n\nUser: ${msg || '(see attached files)'}`,
-        model: 'claude_sonnet_4_6',
+      const response = await base44.functions.invoke('harborIntellectChat', {
+        command: msg || '(see attached files)',
+        organization_id: orgId,
+        conversation_history: updatedMessages.filter(m => m.role === 'user' || m.role === 'assistant').slice(-12).map(m => ({ role: m.role, content: m.content })),
         ...(fileUrls.length > 0 && { file_urls: fileUrls })
       });
 
-      const responseText = typeof result === 'string' ? result : result?.response || result?.text || JSON.stringify(result);
+      const responseText = response?.data?.response || JSON.stringify(response?.data);
       setMessages(prev => [...prev, { role: 'assistant', content: responseText }]);
     } catch (err) {
       toast.error("H.A.R.B.O.R could not respond");

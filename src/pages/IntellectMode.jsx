@@ -995,37 +995,23 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
     setUploadedFiles([]);
     setIsProcessing(true);
 
-    // ── H.A.R.B.O.R Intellect via InvokeLLM med live fleet-data ─────────────
+    // ── H.A.R.B.O.R Intellect — full DB access via backend function ───────────
     setMessages(prev => [...prev, { role: "system", content: "⚡ H.A.R.B.O.R analyzing..." }]);
 
     try {
       const history = messages
         .filter(m => m.role === 'user' || m.role === 'assistant')
         .slice(-12)
-        .map(m => `${m.role === 'user' ? 'User' : 'H.A.R.B.O.R'}: ${m.content}`)
-        .join('\n');
+        .map(m => ({ role: m.role, content: m.content }));
 
-      const fleetSummary = {
-        vehicles: { total: vehicles.length, active: vehicles.filter(v => v.status === 'active').length, types: [...new Set(vehicles.map(v => v.type))], list: vehicles.slice(0, 20).map(v => ({ id: v.id, name: v.name, type: v.type, status: v.status, fuel_level: v.fuel_level, destination: v.destination, driver: v.driver })) },
-        routes: { total: routes.length, active: routes.filter(r => r.status === 'active').length, list: routes.slice(0, 10).map(r => ({ id: r.id, name: r.name, origin: r.origin, destination: r.destination, status: r.status })) },
-        shipments: { total: shipments.length, in_transit: shipments.filter(s => s.status === 'in_transit').length, delayed: shipments.filter(s => s.status === 'delayed').length, list: shipments.slice(0, 10).map(s => ({ id: s.id, tracking: s.tracking_number, origin: s.origin, destination: s.destination, status: s.status })) },
-        alerts: { total: alerts.length, critical: alerts.filter(a => a.type === 'critical' && !a.is_resolved).length, list: alerts.filter(a => !a.is_resolved).slice(0, 10).map(a => ({ title: a.title, type: a.type, message: a.message })) },
-        resources: { total: resources.length, operational: resources.filter(r => r.status === 'operational').length },
-      };
-
-      const systemPrompt = `You are H.A.R.B.O.R Intellect — the neural core of NexusVectis, a world-class AI logistics platform. You have full real-time access to the organization's fleet data. Be concise, expert and direct. Use bullet points for lists. Answer in the same language as the user.
-
-LIVE FLEET DATA:
-${JSON.stringify(fleetSummary, null, 2)}
-${history ? `\nConversation history:\n${history}` : ''}`;
-
-      const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `${systemPrompt}\n\nUser: ${currentCommand}`,
-        model: 'claude_sonnet_4_6',
+      const response = await base44.functions.invoke('harborIntellectChat', {
+        command: currentCommand,
+        organization_id: orgId,
+        conversation_history: history,
         ...(currentFiles.length > 0 && { file_urls: currentFiles.map(f => f.url) })
       });
 
-      const responseText = typeof result === 'string' ? result : result?.response || result?.text || JSON.stringify(result);
+      const responseText = response?.data?.response || JSON.stringify(response?.data);
       setMessages(prev => [
         ...prev.filter(m => m.content !== '⚡ H.A.R.B.O.R analyzing...'),
         { role: 'assistant', content: responseText }
