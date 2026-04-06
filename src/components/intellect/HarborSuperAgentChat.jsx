@@ -427,47 +427,50 @@ export default function HarborSuperAgentChat({ onClose }) {
 
   const sendMessage = useCallback(async (text) => {
     const msg = (text || input).trim();
-    if ((!msg && attachments.length === 0) || !activeConversation || isSending) return;
+    if ((!msg && attachments.length === 0) || isSending) return;
     const fileUrls = attachments.map(a => a.url);
     setInput("");
     setAttachments([]);
     setIsSending(true);
 
-    // Track usage for billing (harborIntellectAPI)
-    const startTime = Date.now();
-    try {
-      const user = await base44.auth.me();
-      const members = await base44.entities.OrganizationMember.filter({ user_email: user.email });
-      const trackOrgId = members?.[0]?.organization_id || orgId || user.id;
-      base44.entities.APIUsage.create({
-        organization_id: trackOrgId,
-        endpoint: '/functions/harborIntellectAPI',
-        method: 'POST',
-        status_code: 200,
-        response_time_ms: Date.now() - startTime,
-        ip_address: 'internal'
-      }).catch(() => {});
-    } catch {}
+    // Add user message to local state immediately
+    const userMsg = { role: "user", content: msg || "(attached files)", file_urls: fileUrls.length > 0 ? fileUrls : undefined };
+    const updatedMessages = [...messages, userMsg];
+    setMessages(updatedMessages);
 
-
+    // Auto-name conversation on first message
     const isFirstMessage = messages.filter(m => m.role === "user").length === 0;
     if (isFirstMessage && msg) {
       const autoName = msg.length > 40 ? msg.slice(0, 40).trimEnd() + "…" : msg;
-      renameConversation(activeConversation.id, autoName);
+      renameConversation(activeConversation?.id, autoName);
     }
 
     try {
-      await base44.agents.addMessage(activeConversation, {
-        role: "user",
-        content: msg || "(attached files)",
-        file_urls: fileUrls.length > 0 ? fileUrls : undefined
+      // Build conversation history for context
+      const history = updatedMessages
+        .filter(m => m.role === 'user' || m.role === 'assistant')
+        .slice(-12)
+        .map(m => `${m.role === 'user' ? 'User' : 'H.A.R.B.O.R'}: ${m.content}`)
+        .join('\n');
+
+      const systemPrompt = `You are H.A.R.B.O.R Intellect — the neural core of NexusVectis, an advanced AI logistics platform. You have full access to all platform data and modules. Be concise, expert and direct. Use bullet points for lists. Answer in the same language as the user.${orgId ? `\n\nThe user's organization_id is "${orgId}". All data is scoped to this organization.` : ''}${history ? `\n\nConversation so far:\n${history}` : ''}`;
+
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `${systemPrompt}\n\nUser: ${msg || '(see attached files)'}`,
+        model: 'claude_sonnet_4_6',
+        ...(fileUrls.length > 0 && { file_urls: fileUrls })
       });
-    } catch {
-      toast.error("Message could not be sent");
+
+      const responseText = typeof result === 'string' ? result : result?.response || result?.text || JSON.stringify(result);
+      setMessages(prev => [...prev, { role: 'assistant', content: responseText }]);
+    } catch (err) {
+      toast.error("H.A.R.B.O.R could not respond");
+      setMessages(prev => [...prev, { role: 'system', content: `❌ Error: ${err.message}` }]);
     }
+
     setIsSending(false);
     inputRef.current?.focus();
-  }, [input, attachments, activeConversation, isSending, messages]);
+  }, [input, attachments, activeConversation, isSending, messages, orgId]);
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
