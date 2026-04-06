@@ -174,6 +174,8 @@ export default function VoiceController({
   const audioCtxRef = useRef(null);
   const isContinuousRef = useRef(continuous);
   const ttsEnabledRef = useRef(ttsEnabled);
+  const intentionalStopRef = useRef(false);
+  const restartTimerRef = useRef(null);
 
   useEffect(() => { isContinuousRef.current = continuous; }, [continuous]);
   useEffect(() => { ttsEnabledRef.current = ttsEnabled; }, [ttsEnabled]);
@@ -387,21 +389,21 @@ export default function VoiceController({
     recognition.onerror = (e) => {
       console.error("Speech error:", e.error);
       if (e.error === "not-allowed" || e.error === "permission-denied") {
+        intentionalStopRef.current = true; // don't restart on permission errors
         toast.error("Mikrofon adgang nægtet — tillad mikrofon i browser-indstillinger");
         setHarborMessage("⚠️ Mikrofon adgang nægtet. Tillad mikrofon adgang i din browsers adresselinje.");
-      } else if (e.error !== "no-speech" && e.error !== "aborted") {
-        toast.error(`Stemme fejl: ${e.error}`);
       }
-      setIsListening(false);
-      stopAmplitude();
-      recognitionRef.current = null;
+      // no-speech and aborted are normal — onend will handle restart
     };
 
     recognition.onend = () => {
-      // continuous=true means onend only fires when explicitly stopped
       setIsListening(false);
       stopAmplitude();
       recognitionRef.current = null;
+      // Auto-restart if not intentionally stopped (B: auto-detect mode)
+      if (isContinuousRef.current && !intentionalStopRef.current) {
+        restartTimerRef.current = setTimeout(() => startListening(), 400);
+      }
     };
 
     recognitionRef.current = recognition;
@@ -416,6 +418,8 @@ export default function VoiceController({
   }, [lang, startAmplitude, stopAmplitude]);
 
   const stopListening = useCallback(() => {
+    intentionalStopRef.current = true;
+    if (restartTimerRef.current) clearTimeout(restartTimerRef.current);
     recognitionRef.current?.stop();
     recognitionRef.current = null;
     setIsListening(false);
