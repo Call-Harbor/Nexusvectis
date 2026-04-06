@@ -129,7 +129,7 @@ export default function APIMetrics() {
       ? (apiUsage.reduce((sum, c) => sum + (c.response_time_ms || 0), 0) / apiUsage.length).toFixed(0)
       : 0;
     const uniqueOrgs = new Set(apiUsage.map(c => c.organization_id)).size;
-    const harborCalls = apiUsage.filter(c => c.endpoint?.includes('/harbor/intelligence') && c.status_code < 400).length;
+    const harborCalls = apiUsage.filter(c => c.endpoint?.includes('/harbor/intelligence') && !c.endpoint?.includes('harborIntellectAPI') && c.status_code < 400).length;
     const intellectCalls = apiUsage.filter(c => c.endpoint?.includes('harborIntellectAPI') && c.status_code < 400).length;
     const harborRevenue = (harborCalls * 0.25 + intellectCalls * 0.50).toFixed(2);
 
@@ -206,12 +206,22 @@ export default function APIMetrics() {
           )}
           <Card className="bg-gradient-to-br from-amber-500/10 to-orange-500/10 border-amber-500/40 backdrop-blur-xl">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-amber-300">Harbor Intelligence</CardTitle>
+              <CardTitle className="text-sm font-medium text-amber-300">Harbor Core</CardTitle>
               <Brain className="w-4 h-4 text-amber-400" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-white">{stats.harborCalls.toLocaleString()} <span className="text-sm text-violet-300">+ {stats.intellectCalls} Intellect</span></div>
-              <p className="text-xs text-amber-300/70 mt-1">€{stats.harborRevenue} premium revenue</p>
+              <div className="text-2xl font-bold text-white">{stats.harborCalls.toLocaleString()}</div>
+              <p className="text-xs text-amber-300/70 mt-1">€{(stats.harborCalls * 0.25).toFixed(2)} · €0.25/call</p>
+            </CardContent>
+          </Card>
+          <Card className="bg-gradient-to-br from-violet-500/10 to-fuchsia-500/10 border-violet-500/40 backdrop-blur-xl">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-violet-300">Intellect Chat</CardTitle>
+              <Brain className="w-4 h-4 text-violet-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-white">{stats.intellectCalls.toLocaleString()}</div>
+              <p className="text-xs text-violet-300/70 mt-1">€{(stats.intellectCalls * 0.50).toFixed(2)} · €0.50/call</p>
             </CardContent>
           </Card>
         </div>
