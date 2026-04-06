@@ -656,15 +656,7 @@ export default function HarborSuperAgentChat({ onClose }) {
     const msg = (text || input).trim();
     if ((!msg && attachments.length === 0) || isSending || !activeConversation) return;
     const fileUrls = attachments.map(a => a.url);
-    setInput("");
-    setAttachments([]);
     setIsSending(true);
-
-    const isFirstMessage = messages.filter(m => m.role === "user").length === 0;
-    if (isFirstMessage && msg) {
-      const autoName = msg.length > 40 ? msg.slice(0, 40).trimEnd() + "…" : msg;
-      renameConversation(activeConversation.id, autoName);
-    }
 
     try {
       await base44.agents.addMessage(activeConversation, {
@@ -672,6 +664,10 @@ export default function HarborSuperAgentChat({ onClose }) {
         content: msg || "(attached files)",
         ...(fileUrls.length > 0 && { file_urls: fileUrls })
       });
+      // ONLY clear after successful send
+      setInput("");
+      setAttachments([]);
+      
       if (orgId) {
         base44.entities.FleetAIUsage.create({
           organization_id: orgId,
@@ -682,8 +678,10 @@ export default function HarborSuperAgentChat({ onClose }) {
         }).catch(() => {});
       }
     } catch (err) {
-      toast.error("H.A.R.B.O.R could not respond");
-      setMessages(prev => [...prev, { role: "system", content: `❌ Error: ${err.message}` }]);
+      toast.error(`Failed to send: ${err?.message || 'Unknown error'}`);
+      setMessages(prev => [...prev, { role: "system", content: `❌ Error: ${err?.message || 'Request failed'}` }]);
+      // Keep input & attachments on error so user can retry
+    } finally {
       setIsSending(false);
     }
     inputRef.current?.focus();
