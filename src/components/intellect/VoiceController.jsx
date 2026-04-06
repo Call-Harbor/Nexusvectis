@@ -361,9 +361,9 @@ export default function VoiceController({
 
     const recognition = new SR();
     recognition.lang = lang;
-    recognition.continuous = false;
+    recognition.continuous = true;  // Keep listening without restart gaps
     recognition.interimResults = true;
-    recognition.maxAlternatives = 1;
+    recognition.maxAlternatives = 3;
 
     recognition.onstart = () => {
       setIsListening(true);
@@ -398,12 +398,10 @@ export default function VoiceController({
     };
 
     recognition.onend = () => {
+      // continuous=true means onend only fires when explicitly stopped
       setIsListening(false);
       stopAmplitude();
       recognitionRef.current = null;
-      if (isContinuousRef.current) {
-        setTimeout(() => startListening(), 300);
-      }
     };
 
     recognitionRef.current = recognition;
