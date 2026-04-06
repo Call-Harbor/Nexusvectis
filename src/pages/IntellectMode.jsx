@@ -330,6 +330,16 @@ export default function IntellectMode() {
   // ── Effects ────────────────────────────────────────────────────────────────
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, streamingMessage]);
 
+  // ── Window Registration ────────────────────────────────────────────────────
+  useEffect(() => {
+    activeWindows.forEach(window => {
+      const ref = windowRefsRef.current[window.id];
+      if (ref) {
+        hologramWindowAPI.registerWindow(window.id, ref, window.type, window.data);
+      }
+    });
+  }, [activeWindows]);
+
 
 
   useEffect(() => {
@@ -1192,7 +1202,6 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
                   windowRef={(ref) => {
                     if (ref) {
                       windowRefsRef.current[window.id] = ref;
-                      hologramWindowAPI.registerWindow(window.id, ref, window.type, window.data);
                     } else {
                       delete windowRefsRef.current[window.id];
                     }
