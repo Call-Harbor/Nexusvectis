@@ -43,7 +43,6 @@ import { AdvancedIntelligenceEngine } from "@/components/intellect/AdvancedIntel
 import ScenarioPredictionEngine from "@/components/intellect/ScenarioPredictionEngine";
 import MistralStreamingEngine from "@/components/intellect/MistralStreamingEngine";
 import IntelligentCommandAgent, { CommandInput, CommandExecution } from "@/components/intellect/IntelligentCommandAgent";
-import VoiceController from "@/components/intellect/VoiceController";
 import VideoCallHologram from "@/components/intellect/VideoCallHologram";
 import ParallelTaskProcessor from "@/components/intellect/ParallelTaskProcessor";
 import ProcessThinkingTerminal from "@/components/intellect/ProcessThinkingTerminal";
@@ -103,7 +102,6 @@ export default function IntellectMode() {
   const [minimizedWindows, setMinimizedWindows] = useState(new Set());
   const [commandHistory, setCommandHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
-  const [isListening, setIsListening] = useState(false);
   const [streamingMessage, setStreamingMessage] = useState("");
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
@@ -1472,35 +1470,7 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
           )}
         </AnimatePresence>
 
-        {/* Voice activation button */}
-        <div className="pb-10 flex flex-col items-center gap-3">
-          <motion.button
-            onClick={() => setIsListening(prev => !prev)}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="relative flex items-center justify-center w-20 h-20 rounded-full transition-all"
-            style={isListening
-              ? { background: "radial-gradient(circle, rgba(239,68,68,0.3), rgba(239,68,68,0.1))", border: "2px solid rgba(239,68,68,0.6)", boxShadow: "0 0 40px rgba(239,68,68,0.4)" }
-              : { background: "radial-gradient(circle, rgba(6,182,212,0.2), rgba(139,92,246,0.1))", border: "2px solid rgba(6,182,212,0.5)", boxShadow: "0 0 40px rgba(6,182,212,0.2)" }
-            }
-          >
-            {isListening && (
-              <motion.div
-                className="absolute inset-0 rounded-full border-2"
-                animate={{ scale: [1, 1.6, 1], opacity: [0.6, 0, 0.6] }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-                style={{ borderColor: "rgba(239,68,68,0.5)" }}
-              />
-            )}
-            {isListening
-              ? <Mic className="w-8 h-8" style={{ color: "#f87171" }} />
-              : <Mic className="w-8 h-8" style={{ color: "#06b6d4" }} />
-            }
-          </motion.button>
-          <p className="text-[10px] font-mono tracking-widest uppercase" style={{ color: isListening ? "rgba(239,68,68,0.7)" : "rgba(6,182,212,0.4)" }}>
-            {isListening ? "Lytter..." : "Tryk for at tale"}
-          </p>
-        </div>
+        <div className="pb-10" />
       </div>
 
       {/* Process Terminals */}
@@ -1520,20 +1490,7 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
         {showMultiScreenManager && <MultiScreenManager onClose={() => setShowMultiScreenManager(false)} onWindowOpened={(label, winRef) => { trackDesktopWindow(label, winRef); }} />}
       </AnimatePresence>
 
-      {/* VoiceController — always visible */}
-      <VoiceController
-        language="en-US"
-        autoStart={false}
-        onTranscript={(text) => {}}
-        onSend={(text) => { processCommand(text); }}
-        onClose={() => {}}
-        onNavigate={(page) => navigate(createPageUrl(page))}
-        onOpenWindow={openWindow}
-        onCloseWindows={() => setActiveWindows([])}
-        vehicles={vehicles || []}
-        alerts={alerts || []}
-        routes={routes || []}
-      />
+
 
       {/* Harbor Super Agent Chat */}
       <AnimatePresence>
