@@ -995,79 +995,47 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
     setUploadedFiles([]);
     setIsProcessing(true);
 
-    // ── Use H.A.R.B.O.R. Intellect Agent ──────────────────────────────────
-    const conv = intellectConversationRef.current;
-    if (!conv) {
-      setMessages(prev => [...prev, { role: "system", content: "⚠️ H.A.R.B.O.R. not ready — please retry" }]);
-      setIsProcessing(false);
-      return;
-    }
-
-    // Inject org context if first command
-    const isFirstCmd = messages.filter(m => m.role === 'user').length === 0;
-    if (isFirstCmd && orgId) {
-      base44.agents.addMessage(conv, {
-        role: 'system',
-        content: `SYSTEM CONTEXT: The user's organization_id is "${orgId}". ALWAYS filter all entity queries by organization_id = "${orgId}". Never show data from other organizations.`
-      }).catch(() => {});
-    }
-
-    // Get current assistant message count so we can detect truly NEW messages
-    const currentConv = await base44.agents.getConversation(conv.id);
-    const prevAssistantCount = (currentConv.messages || []).filter(m => m.role === 'assistant').length;
-
-    // Subscribe BEFORE sending
-    intellectUnsubRef.current?.();
-    let answered = false;
-
-    intellectUnsubRef.current = base44.agents.subscribeToConversation(conv.id, (data) => {
-      const assistantMsgs = (data.messages || []).filter(m => m.role === 'assistant');
-      // Only react when a NEW assistant message has appeared
-      if (assistantMsgs.length <= prevAssistantCount) return;
-
-      const lastMsg = assistantMsgs[assistantMsgs.length - 1];
-      if (!lastMsg?.content) return;
-
-      setMessages(prev => {
-        const withoutPending = prev.filter(m => m.content !== '⚡ H.A.R.B.O.R analyzing...');
-        const last = withoutPending[withoutPending.length - 1];
-        if (last?.role === 'assistant') {
-          return [...withoutPending.slice(0, -1), { role: 'assistant', content: lastMsg.content }];
-        }
-        return [...withoutPending, { role: 'assistant', content: lastMsg.content }];
-      });
-
-      if (!answered) {
-        answered = true;
-        setIsProcessing(false);
-      }
-    });
-
-    // Now send the user message
-    await base44.agents.addMessage(conv, {
-      role: 'user',
-      content: currentCommand,
-      ...(currentFiles.length > 0 && { file_urls: currentFiles.map(f => f.url) })
-    });
-
+    // ── Direct LLM call — simple & reliable ─────────────────────────────────
     setMessages(prev => [...prev, { role: "system", content: "⚡ H.A.R.B.O.R analyzing..." }]);
 
-    // Timeout fallback after 90s
-    setTimeout(() => {
-      if (!answered) {
-        answered = true;
-        setIsProcessing(false);
-        setMessages(prev => [
-          ...prev.filter(m => m.content !== '⚡ H.A.R.B.O.R analyzing...'),
-          { role: 'system', content: '⚠️ H.A.R.B.O.R svarer ikke — prøv igen' }
-        ]);
-      }
-    }, 90000);
+    try {
+      // Build conversation history for context
+      const history = messages
+        .filter(m => m.role === 'user' || m.role === 'assistant')
+        .slice(-10)
+        .map(m => `${m.role === 'user' ? 'User' : 'H.A.R.B.O.R'}: ${m.content}`)
+        .join('\n');
+
+      const systemPrompt = `You are H.A.R.B.O.R Intellect — the neural core of NexusVectis, an advanced AI logistics platform.
+Be concise, direct and expert. Use bullet points for lists. Answer in the same language as the user.
+${orgId ? `The user's organization_id is "${orgId}".` : ''}
+${history ? `\nConversation so far:\n${history}` : ''}`;
+
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `${systemPrompt}\n\nUser: ${currentCommand}`,
+        model: 'claude_sonnet_4_6',
+        ...(currentFiles.length > 0 && { file_urls: currentFiles.map(f => f.url) })
+      });
+
+      const responseText = typeof result === 'string' ? result : result?.response || result?.text || JSON.stringify(result);
+
+      setMessages(prev => [
+        ...prev.filter(m => m.content !== '⚡ H.A.R.B.O.R analyzing...'),
+        { role: 'assistant', content: responseText }
+      ]);
+    } catch (err) {
+      setMessages(prev => [
+        ...prev.filter(m => m.content !== '⚡ H.A.R.B.O.R analyzing...'),
+        { role: 'system', content: `❌ H.A.R.B.O.R fejl: ${err.message}` }
+      ]);
+    } finally {
+      setIsProcessing(false);
+    }
 
     // Track billing
     try {
       const user = await base44.auth.me();
-      base44.entities.APIUsage.create({ organization_id: orgId || user.id, endpoint: '/functions/harborIntellectAPI', method: 'POST', status_code: 200, response_time_ms: 0, ip_address: 'internal' }).catch(() => {});
+      base44.entities.APIUsage.create({ organization_id: orgId || user.id, endpoint: 'harborIntellectAPI', method: 'POST', status_code: 200, response_time_ms: 0, ip_address: 'internal' }).catch(() => {});
       base44.entities.FleetAIUsage.create({ organization_id: orgId, user_email: user.email, command: currentCommand, action: 'HARBOR_INTELLECT', success: true }).catch(() => {});
     } catch {}
   };
