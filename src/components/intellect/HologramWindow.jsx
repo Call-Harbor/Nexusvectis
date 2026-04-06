@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Minimize2, X, ExternalLink, Monitor } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const HologramWindow = React.memo(({ id, title, icon: Icon, children, position, onClose, onMinimize, isMinimized, onSendToScreen, windowType, isFocused, onFocus }) => {
+const HologramWindow = React.memo(({ id, title, icon: Icon, children, position, onClose, onMinimize, isMinimized, onSendToScreen, windowType, isFocused, onFocus, windowRef }) => {
   const [pos, setPos] = useState(position);
   const [size] = useState({ width: 480, height: 600 });
   const [isDragging, setIsDragging] = useState(false);
@@ -112,7 +112,7 @@ const HologramWindow = React.memo(({ id, title, icon: Icon, children, position, 
               </Button>
             </div>
           </div>
-          <div className="flex-1 overflow-hidden min-h-0 bg-slate-950">
+          <div ref={windowRef} className="flex-1 overflow-hidden min-h-0 bg-slate-950">
             {children}
           </div>
         </div>
