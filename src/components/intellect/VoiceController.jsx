@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { base44 } from "@/api/base44Client";
-import { harborSpeak, getBestFemaleVoice, generateProactiveMessage, checkHumanCheckins, recordActivity, detectHumanConversation, getHumanReply } from "./HarborVoiceAgent";
+import { harborSpeak, getBestFemaleVoice, generateProactiveMessage, checkHumanCheckins, recordActivity, detectHumanConversation, getHumanReply, getTimeBasedGreeting } from "./HarborVoiceAgent";
 
 // ─── i18n Messages ────────────────────────────────────────────────────────────
 const MESSAGES = {
@@ -21,7 +21,7 @@ const MESSAGES = {
     activeBanner: "● ACTIVELY LISTENING — SAY YOUR COMMAND",
     noSpeech: "⚠️ Speech recognition not supported. Use the text input below.",
     noMic: "⚠️ Microphone access denied. Allow microphone access in your browser.",
-    greeting: (v, a) => `Hello! I'm H.A.R.B.O.R. You have ${v} vehicles and ${a} unread alerts. What can I help you with?`,
+    greeting: (v, a) => getTimeBasedGreeting(v, a),
     sending: (t) => `Sending: "${t}"`,
     understood: "Understood. Analyzing now.",
     navigating: (p) => `Navigating to ${p}.`,
@@ -46,7 +46,7 @@ const MESSAGES = {
     activeBanner: "● LYTTER AKTIVT — SIG DIN KOMMANDO",
     noSpeech: "⚠️ Stemmegenkendelse ikke understøttet. Brug tekstfeltet nedenfor.",
     noMic: "⚠️ Mikrofon adgang nægtet. Tillad mikrofon adgang i din browsers adresselinje.",
-    greeting: (v, a) => `Hej! Jeg er H.A.R.B.O.R. Du har ${v} køretøjer og ${a} ulæste advarsler. Hvad kan jeg hjælpe med?`,
+    greeting: (v, a) => getTimeBasedGreeting(v, a),
     sending: (t) => `Sender: "${t}"`,
     understood: "Forstået. Analyserer nu.",
     navigating: (p) => `Navigerer til ${p}.`,
@@ -71,7 +71,7 @@ const MESSAGES = {
     activeBanner: "● AKTIV ZUHÖREN — SAGEN SIE IHREN BEFEHL",
     noSpeech: "⚠️ Spracherkennung nicht unterstützt. Bitte Texteingabe verwenden.",
     noMic: "⚠️ Mikrofonzugriff verweigert. Erlauben Sie den Mikrofonzugriff im Browser.",
-    greeting: (v, a) => `Hallo! Ich bin H.A.R.B.O.R. Sie haben ${v} Fahrzeuge und ${a} ungelesene Warnungen.`,
+    greeting: (v, a) => getTimeBasedGreeting(v, a),
     sending: (t) => `Sende: "${t}"`,
     understood: "Verstanden. Analysiere jetzt.",
     navigating: (p) => `Navigiere zu ${p}.`,
@@ -96,7 +96,7 @@ const MESSAGES = {
     activeBanner: "● LYSSNAR AKTIVT — SÄG DITT KOMMANDO",
     noSpeech: "⚠️ Taligenkänning stöds inte. Använd textinmatningen nedan.",
     noMic: "⚠️ Mikrofonåtkomst nekad. Tillåt mikrofonåtkomst i din webbläsare.",
-    greeting: (v, a) => `Hej! Jag är H.A.R.B.O.R. Du har ${v} fordon och ${a} olästa varningar.`,
+    greeting: (v, a) => getTimeBasedGreeting(v, a),
     sending: (t) => `Skickar: "${t}"`,
     understood: "Förstått. Analyserar nu.",
     navigating: (p) => `Navigerar till ${p}.`,
@@ -216,7 +216,19 @@ function CommandChip({ label, icon: IconComp, onClick }) {
 }
 
 // ─── Proactive Suggestion Bubble ─────────────────────────────────────────
+const HUMAN_ACTION_LABELS = {
+  breakfast:  { yes: "Ja, jeg spiser nu! 🥐",    no: "Spiser lidt efter" },
+  lunch:      { yes: "Ja, jeg holder pause! 🍽️",  no: "Kommer snart" },
+  dinner:     { yes: "God idé! 🍝",               no: "Lidt endnu" },
+  coffee:     { yes: "Ja tak til kaffe! ☕",       no: "Måske om lidt" },
+  break:      { yes: "Ja, jeg tager en pause! 🧘", no: "Lige om lidt" },
+  stretch:    { yes: "Godt, rejser mig nu! 🚶",    no: "5 min mere" },
+  water:      { yes: "Henter et glas nu 💧",       no: "Har drukket" },
+  night:      { yes: "Lukker ned snart 🌙",        no: "Bare lidt mere" },
+};
+
 function SuggestionBubble({ suggestion, onAccept, onDismiss }) {
+  const labels = HUMAN_ACTION_LABELS[suggestion.action] || { yes: "Ja tak! 👍", no: "Ikke nu" };
   return (
     <motion.div
       initial={{ opacity: 0, y: 12, scale: 0.97 }}
@@ -224,29 +236,44 @@ function SuggestionBubble({ suggestion, onAccept, onDismiss }) {
       exit={{ opacity: 0, y: -8, scale: 0.97 }}
       className="rounded-2xl p-4 flex flex-col gap-3"
       style={{
-        background: "linear-gradient(135deg, rgba(139,92,246,0.12), rgba(6,182,212,0.06))",
-        border: "1px solid rgba(139,92,246,0.25)",
+        background: suggestion.type === "human"
+          ? "linear-gradient(135deg, rgba(16,185,129,0.08), rgba(6,182,212,0.06))"
+          : "linear-gradient(135deg, rgba(139,92,246,0.12), rgba(6,182,212,0.06))",
+        border: suggestion.type === "human"
+          ? "1px solid rgba(16,185,129,0.25)"
+          : "1px solid rgba(139,92,246,0.25)",
       }}
     >
       <div className="flex items-start gap-3">
         <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
-          style={{ background: "rgba(139,92,246,0.2)", border: "1px solid rgba(139,92,246,0.4)" }}>
-          <Sparkles className="w-3.5 h-3.5" style={{ color: "#c4b5fd" }} />
+          style={{
+            background: suggestion.type === "human" ? "rgba(16,185,129,0.2)" : "rgba(139,92,246,0.2)",
+            border: suggestion.type === "human" ? "1px solid rgba(16,185,129,0.4)" : "1px solid rgba(139,92,246,0.4)"
+          }}>
+          <Sparkles className="w-3.5 h-3.5" style={{ color: suggestion.type === "human" ? "#6ee7b7" : "#c4b5fd" }} />
         </div>
-        <p className="text-xs leading-relaxed" style={{ color: "#e2d9ff" }}>{suggestion.text}</p>
+        <p className="text-xs leading-relaxed" style={{ color: suggestion.type === "human" ? "#d1fae5" : "#e2d9ff" }}>
+          {suggestion.text}
+        </p>
       </div>
-      <div className="flex gap-2 ml-10">
-        <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={onAccept}
-          className="flex-1 py-2 rounded-xl text-[10px] font-mono font-bold tracking-widest transition-all"
-          style={{ background: "rgba(139,92,246,0.3)", border: "1px solid rgba(139,92,246,0.5)", color: "#c4b5fd" }}>
-          YES, DO IT
-        </motion.button>
-        <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={onDismiss}
-          className="px-4 py-2 rounded-xl text-[10px] font-mono transition-all"
-          style={{ background: "rgba(15,23,42,0.6)", border: "1px solid rgba(51,65,85,0.5)", color: "#64748b" }}>
-          Not now
-        </motion.button>
-      </div>
+      {!suggestion.skipFleet && (
+        <div className="flex gap-2 ml-10">
+          <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={onAccept}
+            className="flex-1 py-2 rounded-xl text-[10px] font-mono font-bold tracking-wider transition-all"
+            style={{
+              background: suggestion.type === "human" ? "rgba(16,185,129,0.25)" : "rgba(139,92,246,0.3)",
+              border: suggestion.type === "human" ? "1px solid rgba(16,185,129,0.5)" : "1px solid rgba(139,92,246,0.5)",
+              color: suggestion.type === "human" ? "#6ee7b7" : "#c4b5fd"
+            }}>
+            {labels.yes}
+          </motion.button>
+          <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={onDismiss}
+            className="px-4 py-2 rounded-xl text-[10px] font-mono transition-all"
+            style={{ background: "rgba(15,23,42,0.6)", border: "1px solid rgba(51,65,85,0.5)", color: "#64748b" }}>
+            {labels.no}
+          </motion.button>
+        </div>
+      )}
     </motion.div>
   );
 }
@@ -383,16 +410,28 @@ export default function VoiceController({
   }, []);
 
   useEffect(() => {
+    // First check-in after 5 sec — give human time to settle in
     const humanTimeout = setTimeout(() => {
       const humanMsg = checkHumanCheckins();
       if (humanMsg) { setSuggestion(humanMsg); speakRef.current?.(humanMsg.text); setHarborMessage(humanMsg.text); return; }
       const fleetMsg = generateProactiveMessage(vehicles, alerts, routes);
       if (fleetMsg) { setSuggestion(fleetMsg); speakRef.current?.(fleetMsg.text); setHarborMessage(fleetMsg.text); }
-    }, 3000);
+    }, 5000);
+    // Check every 5 min for new contextual messages
     const periodicInterval = setInterval(() => {
       const humanMsg = checkHumanCheckins();
-      if (humanMsg && !suggestion) { setSuggestion(humanMsg); speak(humanMsg.text); setHarborMessage(humanMsg.text); }
-    }, 15 * 60 * 1000);
+      if (humanMsg && !suggestion) {
+        setSuggestion(humanMsg);
+        speakRef.current?.(humanMsg.text);
+        setHarborMessage(humanMsg.text);
+        return;
+      }
+      const fleetMsg = generateProactiveMessage(vehicles, alerts, routes);
+      if (fleetMsg && !suggestion) {
+        setSuggestion(fleetMsg);
+        setHarborMessage(fleetMsg.text);
+      }
+    }, 5 * 60 * 1000);
     return () => { clearTimeout(humanTimeout); clearInterval(periodicInterval); };
   }, []);
 
