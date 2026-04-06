@@ -9,42 +9,44 @@ async function fetchEnerginetData() {
   // Fetch current production mix (wind, solar, etc.)
   const productionUrl = `https://api.energidataservice.dk/dataset/PowerSystemRightNow?limit=1&sort=Minutes5UTC desc&timezone=dk`;
   const productionRes = await fetch(productionUrl);
+  const productionText = await productionRes.text();
   
   if (!productionRes.ok) {
-    throw new Error(`Energinet API error: ${productionRes.status} ${productionRes.statusText}`);
+    throw new Error(`Energinet API error: ${productionRes.status} ${productionRes.statusText} - ${productionText.slice(0, 200)}`);
   }
   
-  const productionText = await productionRes.text();
   let productionData;
   try {
     // Validate it's JSON before parsing
-    if (!productionText.trim().startsWith('{') && !productionText.trim().startsWith('[')) {
-      throw new Error(`Expected JSON but got HTML/plain text: ${productionText.slice(0, 100)}`);
+    const trimmed = productionText.trim();
+    if (!trimmed.startsWith('{') && !trimmed.startsWith('[')) {
+      throw new Error(`Expected JSON but got: ${trimmed.slice(0, 50)}`);
     }
-    productionData = JSON.parse(productionText);
+    productionData = JSON.parse(trimmed);
   } catch (e) {
-    throw new Error(`Invalid JSON from Energinet production API: ${e.message}`);
+    throw new Error(`Invalid JSON from Energinet production API: ${e.message} - Response: ${productionText.slice(0, 150)}`);
   }
   const latest = productionData?.records?.[0] || null;
 
   // Fetch CO2 emission intensity
   const co2Url = `https://api.energidataservice.dk/dataset/CO2Emis?limit=1&sort=Minutes5UTC desc&timezone=dk`;
   const co2Res = await fetch(co2Url);
+  const co2Text = await co2Res.text();
   
   if (!co2Res.ok) {
-    throw new Error(`Energinet CO2 API error: ${co2Res.status} ${co2Res.statusText}`);
+    throw new Error(`Energinet CO2 API error: ${co2Res.status} ${co2Res.statusText} - ${co2Text.slice(0, 200)}`);
   }
   
-  const co2Text = await co2Res.text();
   let co2Data;
   try {
     // Validate it's JSON before parsing
-    if (!co2Text.trim().startsWith('{') && !co2Text.trim().startsWith('[')) {
-      throw new Error(`Expected JSON but got HTML/plain text: ${co2Text.slice(0, 100)}`);
+    const trimmed = co2Text.trim();
+    if (!trimmed.startsWith('{') && !trimmed.startsWith('[')) {
+      throw new Error(`Expected JSON but got: ${trimmed.slice(0, 50)}`);
     }
-    co2Data = JSON.parse(co2Text);
+    co2Data = JSON.parse(trimmed);
   } catch (e) {
-    throw new Error(`Invalid JSON from Energinet CO2 API: ${e.message}`);
+    throw new Error(`Invalid JSON from Energinet CO2 API: ${e.message} - Response: ${co2Text.slice(0, 150)}`);
   }
   const latestCO2 = co2Data?.records?.[0] || null;
 
