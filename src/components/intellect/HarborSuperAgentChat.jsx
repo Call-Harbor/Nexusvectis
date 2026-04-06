@@ -235,111 +235,41 @@ function MessageBubble({ message }) {
 
 // ── Parallel Task Input ────────────────────────────────────────────────
 function ParallelTaskPanel({ onExecute, onClose }) {
+  const [tasks, setTasks] = useState([{ id: Date.now(), workerId: AI_WORKERS[0]?.id || '', prompt: '' }]);
+  const [filesForOrch, setFilesForOrch] = useState([]);
+  const [isRunning, setIsRunning] = useState(false);
+  const fileInputRef = useRef(null);
 
-      {/* Tasks Section */}
-      <div className="px-5 py-4">
-        <p className="text-[10px] font-mono tracking-widest uppercase text-slate-400 mb-3">AI Workers ({tasks.length})</p>
-        <div className="space-y-2.5 max-h-64 overflow-y-auto">
-          {tasks.map((task, idx) => {
-            const worker = AI_WORKERS.find(w => w.id === task.workerId) || AI_WORKERS[0];
-            return (
-              <motion.div key={task.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
-                className="group p-3 rounded-xl transition-all"
-                style={{ background: "rgba(15,23,42,0.6)", border: "1px solid rgba(100,116,139,0.2)", borderLeft: `3px solid ${worker.color}` }}>
-                <div className="flex gap-3">
-                  <div className="flex-shrink-0 pt-1">
-                    <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold"
-                      style={{ background: `${worker.color}20`, color: worker.color }}>
-                      {idx + 1}
-                    </div>
-                  </div>
-                  <div className="flex-1 space-y-2">
-                    <select
-                      value={task.workerId}
-                      onChange={e => updateTask(task.id, "workerId", e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg text-xs font-mono bg-slate-900/80 border transition-all focus:border-cyan-400 text-white outline-none"
-                      style={{ borderColor: "rgba(100,116,139,0.3)" }}
-                    >
-                      {AI_WORKERS.map(w => (
-                        <option key={w.id} value={w.id}>{w.emoji} {w.name} — {w.specialty}</option>
-                      ))}
-                    </select>
-                    <textarea
-                      value={task.prompt}
-                      onChange={e => updateTask(task.id, "prompt", e.target.value)}
-                      placeholder={`Describe task ${idx + 1}...`}
-                      className="w-full px-3 py-2.5 rounded-lg text-xs bg-slate-900/80 border text-white placeholder-slate-500 outline-none resize-none focus:border-cyan-400 transition-all"
-                      style={{ borderColor: "rgba(100,116,139,0.3)", minHeight: 60 }}
-                    />
-                  </div>
-                  {tasks.length > 1 && (
-                    <motion.button onClick={() => removeTask(task.id)} whileHover={{ scale: 1.1 }}
-                      className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:bg-red-500/20 hover:text-red-400"
-                      style={{ color: "#64748b" }}>
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </motion.button>
-                  )}
-                </div>
-              </motion.div>
-            );
-          })}
-        </div>
-      </div>
+  const addTask = () => setTasks(prev => [...prev, { id: Date.now(), workerId: AI_WORKERS[0]?.id || '', prompt: '' }]);
+  const removeTask = (id) => setTasks(prev => prev.filter(t => t.id !== id));
+  const updateTask = (id, field, value) => setTasks(prev => prev.map(t => t.id === id ? { ...t, [field]: value } : t));
+  const validTaskCount = tasks.filter(t => t.prompt.trim()).length;
+  
+  const handleRun = async () => {
+    if (!validTaskCount) return;
+    setIsRunning(true);
+    try {
+      await onExecute(tasks.filter(t => t.prompt.trim()), filesForOrch);
+    } finally {
+      setIsRunning(false);
+    }
+  };
 
-      {/* Files Section */}
-      {filesForOrch.length > 0 && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-          className="px-5 py-3 border-t" style={{ borderColor: "rgba(6,182,212,0.1)", background: "rgba(139,92,246,0.02)" }}>
-          <p className="text-[9px] font-mono tracking-widest uppercase mb-2.5" style={{ color: "#a78bfa" }}>📎 Attached Files ({filesForOrch.length})</p>
-          <div className="flex flex-wrap gap-2">
-            {filesForOrch.map((f, i) => (
-              <motion.div key={i} initial={{ scale: 0.9 }} animate={{ scale: 1 }}
-                className="flex items-center gap-2 px-3 py-2 rounded-lg text-[9px] font-mono group transition-all"
-                style={{ background: "rgba(139,92,246,0.1)", border: "1px solid rgba(139,92,246,0.3)", color: "#a78bfa" }}>
-                <span>{f.type === 'image' ? '🖼️' : f.type === 'video' ? '🎬' : '📄'}</span>
-                <span className="max-w-[100px] truncate">{f.name}</span>
-                <button onClick={() => setFilesForOrch(prev => prev.filter((_, j) => j !== i))}
-                  className="opacity-0 group-hover:opacity-100 transition-opacity ml-1">
-                  <X className="w-2.5 h-2.5 hover:text-red-400" />
-                </button>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
-      )}
+  const handleFileUpload = async (e) => {
+    const files = Array.from(e.target.files);
+    for (const file of files) {
+      try {
+        const { file_url } = await base44.integrations.Core.UploadFile({ file });
+        const type = file.type.startsWith('image') ? 'image' : file.type.startsWith('video') ? 'video' : 'file';
+        setFilesForOrch(prev => [...prev, { url: file_url, name: file.name, type }]);
+      } catch { console.error('Upload failed'); }
+    }
+    e.target.value = '';
+  };
 
-      {/* Actions */}
-      <input ref={fileInputRef} type="file" multiple accept="image/*,video/*,.pdf,.csv,.xlsx,.xls,.docx,.txt,.json" className="hidden" onChange={handleFileUpload} />
-      <div className="px-5 py-4 flex gap-2 border-t" style={{ borderColor: "rgba(6,182,212,0.1)" }}>
-        <motion.button onClick={() => fileInputRef.current?.click()} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-          className="flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-xs font-mono font-semibold transition-all"
-          style={{ background: "rgba(139,92,246,0.12)", color: "#a78bfa", border: "1px solid rgba(139,92,246,0.3)" }}>
-          <Paperclip className="w-3.5 h-3.5" /> Attach
-        </motion.button>
-        <motion.button onClick={addTask} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-          className="flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-xs font-mono font-semibold transition-all"
-          style={{ background: "rgba(6,182,212,0.12)", color: "#06b6d4", border: "1px solid rgba(6,182,212,0.3)" }}>
-          <Plus className="w-3.5 h-3.5" /> Add Task
-        </motion.button>
-        <motion.button
-          onClick={handleRun}
-          disabled={isRunning || validTaskCount === 0}
-          whileHover={validTaskCount > 0 && !isRunning ? { scale: 1.05 } : {}}
-          whileTap={validTaskCount > 0 && !isRunning ? { scale: 0.95 } : {}}
-          className="flex-1 flex items-center justify-center gap-2.5 px-4 py-2.5 rounded-lg text-xs font-mono font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-          style={{ background: validTaskCount > 0 && !isRunning ? "linear-gradient(135deg, rgba(6,182,212,0.25), rgba(139,92,246,0.2))" : "rgba(6,182,212,0.08)", color: "#06b6d4", border: "1px solid rgba(6,182,212,0.4)", boxShadow: validTaskCount > 0 && !isRunning ? "0 0 20px rgba(6,182,212,0.2)" : "none" }}>
-          {isRunning ? (
-            <><Loader2 className="w-4 h-4 animate-spin" /> Orchestrating</>
-          ) : (
-            <><Play className="w-4 h-4" /> Launch {validTaskCount} {validTaskCount === 1 ? "Task" : "Tasks"}</>
-          )}
-        </motion.button>
-      </div>
-    </motion.div>
-  );
-}
-
-// ── Sidebar Conversation List ─────────────────────────────────────────────
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="rounded-2xl overflow-hidden" style={{ background: 'rgba(10,15,35,0.95)', border: '1px solid rgba(6,182,212,0.2)' }}>
+      {/* Tasks Section */} ─────────────────────────────────────────────
 function ConversationList({ conversations, activeId, onSelect, onCreate, onDelete, onRename }) {
   const [editingId, setEditingId] = useState(null);
   const [editValue, setEditValue] = useState("");
