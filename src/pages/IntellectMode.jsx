@@ -237,14 +237,14 @@ export default function IntellectMode() {
     }
   }, [currentUser]);
 
+  const isWaitingForAgentRef = useRef(false);
+
   // ── Init Harbor Intellect conversation ────────────────────────────────────
   useEffect(() => {
-    // Only init once we have orgId (or confirmed no orgId after user loaded)
     if (isLoadingUser) return;
 
     const init = async () => {
       try {
-        // Resolve orgId from member record if not on user object
         let resolvedOrgId = orgId;
         if (!resolvedOrgId && currentUser) {
           try {
@@ -258,7 +258,6 @@ export default function IntellectMode() {
           metadata: { name: 'IntellectMode Session' }
         });
 
-        // Inject org context immediately — agent will never need to ask
         if (resolvedOrgId) {
           await base44.agents.addMessage(conv, {
             role: 'system',
@@ -267,6 +266,21 @@ export default function IntellectMode() {
         }
 
         intellectConversationRef.current = conv;
+
+        // Subscribe so agent responses flow into local messages
+        intellectUnsubRef.current = base44.agents.subscribeToConversation(conv.id, (data) => {
+          if (!isWaitingForAgentRef.current) return;
+          const agentMsgs = (data.messages || []).filter(m => m.role !== 'system');
+          const last = agentMsgs[agentMsgs.length - 1];
+          if (last?.role === 'assistant' && last.content) {
+            isWaitingForAgentRef.current = false;
+            setIsProcessing(false);
+            setMessages(prev => [
+              ...prev.filter(m => m.content !== '⚡ H.A.R.B.O.R analyzing...'),
+              { role: 'assistant', content: last.content }
+            ]);
+          }
+        });
       } catch (e) {
         console.warn('Could not init harbor_intellect conversation:', e);
       }
@@ -995,33 +1009,28 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
     setUploadedFiles([]);
     setIsProcessing(true);
 
-    // ── H.A.R.B.O.R Intellect — full DB access via backend function ───────────
+    // ── H.A.R.B.O.R Intellect — via Agent SDK ────────────────────────────────
     setMessages(prev => [...prev, { role: "system", content: "⚡ H.A.R.B.O.R analyzing..." }]);
 
-    try {
-      const history = messages
-        .filter(m => m.role === 'user' || m.role === 'assistant')
-        .slice(-12)
-        .map(m => ({ role: m.role, content: m.content }));
+    if (!intellectConversationRef.current) {
+      setMessages(prev => [...prev.filter(m => m.content !== '⚡ H.A.R.B.O.R analyzing...'), { role: 'system', content: '❌ Agent ikke klar endnu, prøv igen' }]);
+      setIsProcessing(false);
+      return;
+    }
 
-      const response = await base44.functions.invoke('harborIntellectChat', {
-        command: currentCommand,
-        organization_id: orgId,
-        conversation_history: history,
+    try {
+      isWaitingForAgentRef.current = true;
+      await base44.agents.addMessage(intellectConversationRef.current, {
+        role: 'user',
+        content: currentCommand,
         ...(currentFiles.length > 0 && { file_urls: currentFiles.map(f => f.url) })
       });
-
-      const responseText = response?.data?.response || JSON.stringify(response?.data);
-      setMessages(prev => [
-        ...prev.filter(m => m.content !== '⚡ H.A.R.B.O.R analyzing...'),
-        { role: 'assistant', content: responseText }
-      ]);
     } catch (err) {
+      isWaitingForAgentRef.current = false;
       setMessages(prev => [
         ...prev.filter(m => m.content !== '⚡ H.A.R.B.O.R analyzing...'),
         { role: 'system', content: `❌ H.A.R.B.O.R fejl: ${err.message}` }
       ]);
-    } finally {
       setIsProcessing(false);
     }
 
