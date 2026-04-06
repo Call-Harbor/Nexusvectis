@@ -258,82 +258,125 @@ function ParallelTaskPanel({ onExecute, onClose }) {
     onClose();
   };
 
+  const validTaskCount = tasks.filter(t => t.prompt.trim()).length;
+
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-      className="rounded-2xl overflow-hidden"
-      style={{ background: "rgba(5,10,30,0.98)", border: "1px solid rgba(6,182,212,0.3)" }}>
-      <div className="flex items-center justify-between p-3 border-b border-slate-700/50">
-        <div className="flex items-center gap-2">
-          <Network className="w-4 h-4" style={{ color: "#06b6d4" }} />
-          <span className="text-xs font-bold font-mono tracking-widest uppercase" style={{ color: "#06b6d4" }}>
-            Parallel AI Orchestration
-          </span>
-        </div>
-        <button onClick={onClose} className="text-slate-500 hover:text-white"><X className="w-3.5 h-3.5" /></button>
-      </div>
-      <div className="p-3 space-y-2 max-h-72 overflow-y-auto">
-        {tasks.map((task, idx) => (
-          <div key={task.id} className="flex gap-2 items-start">
-            <div className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold mt-2"
-              style={{ background: "rgba(6,182,212,0.2)", color: "#06b6d4" }}>{idx + 1}</div>
-            <div className="flex-1 flex gap-2">
-              <select
-                value={task.workerId}
-                onChange={e => updateTask(task.id, "workerId", e.target.value)}
-                className="w-40 px-2 py-1.5 rounded-lg text-xs bg-slate-900 border border-slate-700 text-slate-200 flex-shrink-0"
-              >
-                {AI_WORKERS.map(w => (
-                  <option key={w.id} value={w.id}>{w.emoji} {w.name}</option>
-                ))}
-              </select>
-              <input
-                value={task.prompt}
-                onChange={e => updateTask(task.id, "prompt", e.target.value)}
-                placeholder={`Task ${idx + 1}: e.g. Analyze route efficiency...`}
-                className="flex-1 px-3 py-1.5 rounded-lg text-xs bg-slate-900 border border-slate-700 text-white placeholder-slate-500 outline-none"
-              />
-              {tasks.length > 1 && (
-                <button onClick={() => removeTask(task.id)} className="text-slate-500 hover:text-red-400 flex-shrink-0 mt-1">
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              )}
-            </div>
+      className="rounded-2xl overflow-hidden shadow-2xl"
+      style={{ background: "linear-gradient(135deg, rgba(5,10,30,0.99), rgba(15,23,42,0.95))", border: "1px solid rgba(6,182,212,0.3)" }}>
+      {/* Header */}
+      <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: "rgba(6,182,212,0.15)", background: "rgba(6,182,212,0.02)" }}>
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "rgba(6,182,212,0.15)" }}>
+            <Network className="w-4 h-4" style={{ color: "#06b6d4" }} />
           </div>
-        ))}
+          <div>
+            <h3 className="text-sm font-bold font-mono tracking-widest" style={{ color: "#06b6d4" }}>PARALLEL ORCHESTRATION</h3>
+            <p className="text-[10px] text-slate-500 font-mono mt-0.5">Compose & execute multiple AI tasks</p>
+          </div>
+        </div>
+        <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-red-500/10 text-slate-500 hover:text-red-400 transition-all">
+          <X className="w-4 h-4" />
+        </button>
       </div>
+
+      {/* Tasks Section */}
+      <div className="px-5 py-4">
+        <p className="text-[10px] font-mono tracking-widest uppercase text-slate-400 mb-3">AI Workers ({tasks.length})</p>
+        <div className="space-y-2.5 max-h-64 overflow-y-auto">
+          {tasks.map((task, idx) => {
+            const worker = AI_WORKERS.find(w => w.id === task.workerId) || AI_WORKERS[0];
+            return (
+              <motion.div key={task.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
+                className="group p-3 rounded-xl transition-all"
+                style={{ background: "rgba(15,23,42,0.6)", border: "1px solid rgba(100,116,139,0.2)", borderLeft: `3px solid ${worker.color}` }}>
+                <div className="flex gap-3">
+                  <div className="flex-shrink-0 pt-1">
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold" 
+                      style={{ background: `${worker.color}20`, color: worker.color }}>
+                      {idx + 1}
+                    </div>
+                  </div>
+                  <div className="flex-1 space-y-2">
+                    <select
+                      value={task.workerId}
+                      onChange={e => updateTask(task.id, "workerId", e.target.value)}
+                      className="w-full px-3 py-2 rounded-lg text-xs font-mono bg-slate-900/80 border transition-all focus:border-cyan-400 text-white outline-none"
+                      style={{ borderColor: "rgba(100,116,139,0.3)" }}
+                    >
+                      {AI_WORKERS.map(w => (
+                        <option key={w.id} value={w.id}>{w.emoji} {w.name} — {w.specialty}</option>
+                      ))}
+                    </select>
+                    <textarea
+                      value={task.prompt}
+                      onChange={e => updateTask(task.id, "prompt", e.target.value)}
+                      placeholder={`Describe task ${idx + 1}...`}
+                      className="w-full px-3 py-2.5 rounded-lg text-xs bg-slate-900/80 border text-white placeholder-slate-500 outline-none resize-none focus:border-cyan-400 transition-all"
+                      style={{ borderColor: "rgba(100,116,139,0.3)", minHeight: 60 }}
+                    />
+                  </div>
+                  {tasks.length > 1 && (
+                    <motion.button onClick={() => removeTask(task.id)} whileHover={{ scale: 1.1 }}
+                      className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:bg-red-500/20 hover:text-red-400"
+                      style={{ color: "#64748b" }}>
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </motion.button>
+                  )}
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Files Section */}
       {filesForOrch.length > 0 && (
-        <div className="p-3 border-t border-slate-700/50 bg-slate-900/50">
-          <p className="text-[9px] font-mono uppercase text-slate-400 mb-2">Files ({filesForOrch.length})</p>
-          <div className="flex flex-wrap gap-1.5">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+          className="px-5 py-3 border-t" style={{ borderColor: "rgba(6,182,212,0.1)", background: "rgba(139,92,246,0.02)" }}>
+          <p className="text-[9px] font-mono tracking-widest uppercase mb-2.5" style={{ color: "#a78bfa" }}>📎 Attached Files ({filesForOrch.length})</p>
+          <div className="flex flex-wrap gap-2">
             {filesForOrch.map((f, i) => (
-              <div key={i} className="flex items-center gap-1 px-2 py-1 rounded-lg text-[9px]" style={{ background: "rgba(6,182,212,0.1)", color: "#06b6d4", border: "1px solid rgba(6,182,212,0.2)" }}>
-                <span className="truncate max-w-[120px]">{f.type === 'image' ? '🖼️' : f.type === 'video' ? '🎬' : '📄'} {f.name}</span>
-                <button onClick={() => setFilesForOrch(prev => prev.filter((_, j) => j !== i))} className="text-red-400 hover:text-red-300"><X className="w-2.5 h-2.5" /></button>
-              </div>
+              <motion.div key={i} initial={{ scale: 0.9 }} animate={{ scale: 1 }}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg text-[9px] font-mono group transition-all"
+                style={{ background: "rgba(139,92,246,0.1)", border: "1px solid rgba(139,92,246,0.3)", color: "#a78bfa" }}>
+                <span>{f.type === 'image' ? '🖼️' : f.type === 'video' ? '🎬' : '📄'}</span>
+                <span className="max-w-[100px] truncate">{f.name}</span>
+                <button onClick={() => setFilesForOrch(prev => prev.filter((_, j) => j !== i))}
+                  className="opacity-0 group-hover:opacity-100 transition-opacity ml-1">
+                  <X className="w-2.5 h-2.5 hover:text-red-400" />
+                </button>
+              </motion.div>
             ))}
           </div>
-        </div>
+        </motion.div>
       )}
+
+      {/* Actions */}
       <input ref={fileInputRef} type="file" multiple accept="image/*,video/*,.pdf,.csv,.xlsx,.xls,.docx,.txt,.json" className="hidden" onChange={handleFileUpload} />
-      <div className="p-3 flex gap-2 border-t border-slate-700/50">
-        <motion.button onClick={() => fileInputRef.current?.click()} whileHover={{ scale: 1.02 }}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-mono"
-          style={{ background: "rgba(139,92,246,0.08)", color: "#a78bfa", border: "1px solid rgba(139,92,246,0.2)" }}>
-          <Paperclip className="w-3 h-3" /> Attach Files
+      <div className="px-5 py-4 flex gap-2 border-t" style={{ borderColor: "rgba(6,182,212,0.1)" }}>
+        <motion.button onClick={() => fileInputRef.current?.click()} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+          className="flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-xs font-mono font-semibold transition-all"
+          style={{ background: "rgba(139,92,246,0.12)", color: "#a78bfa", border: "1px solid rgba(139,92,246,0.3)" }}>
+          <Paperclip className="w-3.5 h-3.5" /> Attach
         </motion.button>
-        <motion.button onClick={addTask} whileHover={{ scale: 1.02 }}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-mono"
-          style={{ background: "rgba(6,182,212,0.08)", color: "#06b6d4", border: "1px solid rgba(6,182,212,0.2)" }}>
-          <Plus className="w-3 h-3" /> Add Task
+        <motion.button onClick={addTask} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+          className="flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-xs font-mono font-semibold transition-all"
+          style={{ background: "rgba(6,182,212,0.12)", color: "#06b6d4", border: "1px solid rgba(6,182,212,0.3)" }}>
+          <Plus className="w-3.5 h-3.5" /> Add Task
         </motion.button>
         <motion.button
-          onClick={() => handleRun(() => onExecute(tasks, filesForOrch))}
-          disabled={isRunning}
-          whileHover={{ scale: 1.02 }}
-          className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-mono font-bold disabled:opacity-40"
-          style={{ background: "linear-gradient(135deg, rgba(6,182,212,0.3), rgba(139,92,246,0.2))", color: "#06b6d4", border: "1px solid rgba(6,182,212,0.5)" }}>
-          {isRunning ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3.5 h-3.5" />}
-          {isRunning ? "Orchestrating..." : `Launch ${tasks.filter(t => t.prompt).length} AI Workers${filesForOrch.length > 0 ? ` + ${filesForOrch.length} files` : ""}`}
+          onClick={handleRun}
+          disabled={isRunning || validTaskCount === 0}
+          whileHover={validTaskCount > 0 && !isRunning ? { scale: 1.05 } : {}}
+          whileTap={validTaskCount > 0 && !isRunning ? { scale: 0.95 } : {}}
+          className="flex-1 flex items-center justify-center gap-2.5 px-4 py-2.5 rounded-lg text-xs font-mono font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+          style={{ background: validTaskCount > 0 && !isRunning ? "linear-gradient(135deg, rgba(6,182,212,0.25), rgba(139,92,246,0.2))" : "rgba(6,182,212,0.08)", color: "#06b6d4", border: "1px solid rgba(6,182,212,0.4)", boxShadow: validTaskCount > 0 && !isRunning ? "0 0 20px rgba(6,182,212,0.2)" : "none" }}>
+          {isRunning ? (
+            <><Loader2 className="w-4 h-4 animate-spin" /> Orchestrating...</>
+          ) : (
+            <><Play className="w-4 h-4" /> Launch {validTaskCount} {validTaskCount === 1 ? "Task" : "Tasks"}</>
+          )}
         </motion.button>
       </div>
     </motion.div>
