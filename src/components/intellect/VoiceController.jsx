@@ -300,7 +300,7 @@ export default function VoiceController({
   const [processingText, setProcessingText] = useState("");
   const [amplitude, setAmplitude] = useState(0);
   const [ttsEnabled, setTtsEnabled] = useState(true);
-  const [lang, setLang] = useState(language);
+  const [lang, setLang] = useState(() => language || 'en-US');
   const [showCommands, setShowCommands] = useState(false);
   const [suggestion, setSuggestion] = useState(null);
   const [harborMessage, setHarborMessage] = useState("");
@@ -329,7 +329,7 @@ export default function VoiceController({
 
   useEffect(() => { isContinuousRef.current = continuous; }, [continuous]);
   useEffect(() => { ttsEnabledRef.current = ttsEnabled; }, [ttsEnabled]);
-  useEffect(() => { setLang(language); }, [language]);
+  useEffect(() => { if (language) setLang(language); }, [language]);
 
   const onSendRef = useRef(onSend);
   const onTranscriptRef = useRef(onTranscript);
