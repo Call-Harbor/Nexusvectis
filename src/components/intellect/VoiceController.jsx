@@ -395,8 +395,8 @@ export default function VoiceController({
     setIsSpeaking(true);
     harborSpeak(text, {
       lang,
-      rate: 1.0,
-      pitch: 1.15,
+      rate: 0.92,   // naturlig taletempo
+      pitch: 1.05,  // subtil, ikke robotisk
       onStart: () => setIsSpeaking(true),
       onEnd: () => { setIsSpeaking(false); onDone?.(); },
     });

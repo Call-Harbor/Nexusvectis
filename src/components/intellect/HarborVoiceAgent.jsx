@@ -122,38 +122,77 @@ export function getBestFemaleVoice(lang = "da-DK") {
   const voices = window.speechSynthesis.getVoices();
   if (!voices.length) return null;
 
+  const langCode = lang.split("-")[0].toLowerCase();
+  const langVoices = voices.filter(v => v.lang.toLowerCase().startsWith(langCode));
+
+  // Priority 1: Neural/natural voices (Google/Microsoft neural are most human)
+  const neuralKeywords = ["neural", "natural", "premium", "enhanced", "wavenet", "journey"];
+  for (const keyword of neuralKeywords) {
+    const match = langVoices.find(v => v.name.toLowerCase().includes(keyword));
+    if (match) return match;
+  }
+
+  // Priority 2: Known good female voices
   const femaleKeywords = [
     "sara", "karen", "anna", "sofie", "ida", "helle", "inger",
     "female", "woman", "fiona", "samantha", "victoria",
     "google dansk", "microsoft helle", "microsoft sara",
   ];
-
-  const langCode = lang.split("-")[0].toLowerCase();
-  const langVoices = voices.filter(v => v.lang.toLowerCase().startsWith(langCode));
-
   for (const keyword of femaleKeywords) {
     const match = langVoices.find(v => v.name.toLowerCase().includes(keyword));
     if (match) return match;
   }
+
+  // Priority 3: Any lang match, prefer Google voices (tend to be more natural)
+  const googleVoice = langVoices.find(v => v.name.toLowerCase().includes("google"));
+  if (googleVoice) return googleVoice;
   if (langVoices.length) return langVoices[0];
 
+  // Fallback: English neural
   const enVoices = voices.filter(v => v.lang.startsWith("en"));
-  for (const keyword of femaleKeywords) {
-    const match = enVoices.find(v => v.name.toLowerCase().includes(keyword));
-    if (match) return match;
-  }
+  const enNeural = enVoices.find(v => neuralKeywords.some(k => v.name.toLowerCase().includes(k)));
+  if (enNeural) return enNeural;
+  const enGoogle = enVoices.find(v => v.name.toLowerCase().includes("google"));
+  if (enGoogle) return enGoogle;
   return voices[0] || null;
 }
 
-export function harborSpeak(text, { lang = "da-DK", rate = 1.0, pitch = 1.1, volume = 1, onStart, onEnd } = {}) {
+// ─── Make text sound more natural for TTS ────────────────────────────────
+function humanizeTextForTTS(text) {
+  return text
+    // Short pause after exclamation mid-sentence
+    .replace(/! ([A-ZÆØÅa-zæøå])/g, "! ... $1")
+    // Slight pause after question mid-sentence
+    .replace(/\? ([A-ZÆØÅa-zæøå])/g, "? ... $1")
+    // Remove markdown
+    .replace(/\*\*(.+?)\*\*/g, "$1")
+    .replace(/\*(.+?)\*/g, "$1")
+    .replace(/#{1,6}\s*/g, "")
+    .replace(/`(.+?)`/g, "$1")
+    // Replace bullet points with natural pause
+    .replace(/^[•\-\*]\s*/gm, "... ")
+    // Numbers: make them sound natural
+    .replace(/(\d+)%/g, "$1 procent")
+    // Remove URLs
+    .replace(/https?:\/\/[^\s]+/g, "")
+    // Collapse multiple spaces/newlines
+    .replace(/\n{2,}/g, ". ")
+    .replace(/\n/g, ", ")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
+
+export function harborSpeak(text, { lang = "da-DK", rate = 0.92, pitch = 1.05, volume = 1, onStart, onEnd } = {}) {
   if (!window.speechSynthesis) { onEnd?.(); return; }
   window.speechSynthesis.cancel();
 
+  const processedText = humanizeTextForTTS(text);
+
   const doSpeak = () => {
-    const utt = new SpeechSynthesisUtterance(text);
+    const utt = new SpeechSynthesisUtterance(processedText);
     utt.lang = lang;
-    utt.rate = rate;
-    utt.pitch = pitch;
+    utt.rate = rate;   // 0.92 = slightly slower, more natural
+    utt.pitch = pitch; // 1.05 = subtle, not robotic high pitch
     utt.volume = volume;
 
     const voice = getBestFemaleVoice(lang);
