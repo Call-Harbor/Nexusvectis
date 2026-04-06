@@ -995,34 +995,63 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
     setUploadedFiles([]);
     setIsProcessing(true);
 
-    // ── Direct LLM call — simple & reliable ─────────────────────────────────
+    // ── H.A.R.B.O.R Intellect Agent via polling ───────────────────────────
     setMessages(prev => [...prev, { role: "system", content: "⚡ H.A.R.B.O.R analyzing..." }]);
 
     try {
-      // Build conversation history for context
-      const history = messages
-        .filter(m => m.role === 'user' || m.role === 'assistant')
-        .slice(-10)
-        .map(m => `${m.role === 'user' ? 'User' : 'H.A.R.B.O.R'}: ${m.content}`)
-        .join('\n');
+      // Ensure we have a conversation
+      let conv = intellectConversationRef.current;
+      if (!conv) {
+        conv = await base44.agents.createConversation({
+          agent_name: 'harbor_intellect',
+          metadata: { name: 'IntellectMode Session' }
+        });
+        if (orgId) {
+          await base44.agents.addMessage(conv, {
+            role: 'system',
+            content: `SYSTEM CONTEXT: The user's organization_id is "${orgId}". ALWAYS filter all entity queries by organization_id = "${orgId}". Never ask the user for their organization_id.`
+          });
+        }
+        intellectConversationRef.current = conv;
+      }
 
-      const systemPrompt = `You are H.A.R.B.O.R Intellect — the neural core of NexusVectis, an advanced AI logistics platform.
-Be concise, direct and expert. Use bullet points for lists. Answer in the same language as the user.
-${orgId ? `The user's organization_id is "${orgId}".` : ''}
-${history ? `\nConversation so far:\n${history}` : ''}`;
+      // Count existing assistant messages before sending
+      const convBefore = await base44.agents.getConversation(conv.id);
+      const prevCount = (convBefore.messages || []).filter(m => m.role === 'assistant').length;
 
-      const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `${systemPrompt}\n\nUser: ${currentCommand}`,
-        model: 'claude_sonnet_4_6',
+      // Send the user message
+      await base44.agents.addMessage(conv, {
+        role: 'user',
+        content: currentCommand,
         ...(currentFiles.length > 0 && { file_urls: currentFiles.map(f => f.url) })
       });
 
-      const responseText = typeof result === 'string' ? result : result?.response || result?.text || JSON.stringify(result);
+      // Poll until a new assistant message appears (max 90s)
+      const poll = async () => {
+        const deadline = Date.now() + 90000;
+        while (Date.now() < deadline) {
+          await new Promise(r => setTimeout(r, 2000));
+          const updated = await base44.agents.getConversation(conv.id);
+          const assistantMsgs = (updated.messages || []).filter(m => m.role === 'assistant');
+          if (assistantMsgs.length > prevCount) {
+            const lastMsg = assistantMsgs[assistantMsgs.length - 1];
+            if (lastMsg?.content) {
+              setMessages(prev => [
+                ...prev.filter(m => m.content !== '⚡ H.A.R.B.O.R analyzing...'),
+                { role: 'assistant', content: lastMsg.content }
+              ]);
+              return;
+            }
+          }
+        }
+        // Timeout
+        setMessages(prev => [
+          ...prev.filter(m => m.content !== '⚡ H.A.R.B.O.R analyzing...'),
+          { role: 'system', content: '⚠️ H.A.R.B.O.R svarer ikke — prøv igen' }
+        ]);
+      };
 
-      setMessages(prev => [
-        ...prev.filter(m => m.content !== '⚡ H.A.R.B.O.R analyzing...'),
-        { role: 'assistant', content: responseText }
-      ]);
+      await poll();
     } catch (err) {
       setMessages(prev => [
         ...prev.filter(m => m.content !== '⚡ H.A.R.B.O.R analyzing...'),
