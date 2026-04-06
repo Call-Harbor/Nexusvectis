@@ -993,27 +993,25 @@ export default function VoiceController({
               )}
             </AnimatePresence>
 
-            {speechSupported
-              ? <Waveform isActive={isListening} amplitude={amplitude} isSpeaking={isSpeaking} />
-              : (
-                /* Text input fallback for Firefox / Safari / other browsers */
-                <form onSubmit={handleTextSubmit} className="flex items-center gap-2">
-                  <input
-                    value={textInput}
-                    onChange={e => setTextInput(e.target.value)}
-                    placeholder={m.typeHint}
-                    className="flex-1 rounded-xl px-4 py-3 text-base bg-transparent text-white placeholder-slate-500 outline-none font-medium"
-                    style={{ border: "1.5px solid rgba(6,182,212,0.4)", background: "rgba(6,182,212,0.08)" }}
-                  />
-                  <motion.button type="submit" whileTap={{ scale: 0.93 }}
-                    disabled={!textInput.trim()}
-                    className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-all disabled:opacity-30"
-                    style={{ background: "linear-gradient(135deg, rgba(6,182,212,0.3), rgba(139,92,246,0.2))", border: "1px solid rgba(6,182,212,0.4)" }}>
-                    <Send className="w-4 h-4" style={{ color: "#06b6d4" }} />
-                  </motion.button>
-                </form>
-              )
-            }
+            {speechSupported ? (
+              <Waveform isActive={isListening} amplitude={amplitude} isSpeaking={isSpeaking} />
+            ) : (
+              <form onSubmit={handleTextSubmit} className="flex items-center gap-2">
+                <input
+                  value={textInput}
+                  onChange={e => setTextInput(e.target.value)}
+                  placeholder={m.typeHint}
+                  className="flex-1 rounded-xl px-4 py-3 text-base bg-transparent text-white placeholder-slate-500 outline-none font-medium"
+                  style={{ border: "1.5px solid rgba(6,182,212,0.4)", background: "rgba(6,182,212,0.08)" }}
+                />
+                <motion.button type="submit" whileTap={{ scale: 0.93 }}
+                  disabled={!textInput.trim()}
+                  className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-all disabled:opacity-30"
+                  style={{ background: "linear-gradient(135deg, rgba(6,182,212,0.3), rgba(139,92,246,0.2))", border: "1px solid rgba(6,182,212,0.4)" }}>
+                  <Send className="w-4 h-4" style={{ color: "#06b6d4" }} />
+                </motion.button>
+              </form>
+            )}
           </div>
         </div>
 
