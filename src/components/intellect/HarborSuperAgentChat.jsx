@@ -630,8 +630,10 @@ export default function HarborSuperAgentChat({ onClose }) {
 
     // DO NOT send orchestration messages to main chat - keep them separate
 
-    // Execute ALL tasks in true parallel
+    // Execute ALL tasks in true parallel with org context
     const executions = parallelTasks.map(async (task) => {
+      // Ensure org context is included
+      const taskWithContext = orgId ? `[ORG: ${orgId}] ${task.prompt}` : task.prompt;
       const workerId = `${orchId}_${task.id}`;
 
       // Mark as running
@@ -644,12 +646,12 @@ export default function HarborSuperAgentChat({ onClose }) {
 
       try {
         const result = await base44.functions.invoke("orchestrateMultipleAIs", {
-          task: task.prompt,
+          task: taskWithContext,
           workerType: task.workerId,
           orchestrationId: orchId,
           taskId: task.id,
           fileUrls: filesForOrch.map(f => f.url),
-          metadata: orchMetadata
+          metadata: { ...orchMetadata, organization_id: orgId }
         });
 
         const output = result.data?.output || result.data || "Analysis complete";
