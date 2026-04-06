@@ -19,26 +19,78 @@ const AGENT_NAME = "harbor_intellect";
 // AI WORKER POOL
 // ────────────────────────────────────────────────────────────────────
 const AI_WORKERS = [
+  // ─────────────────── FLEET & LOGISTICS ───────────────────
   { id: "harbor_fleet_analyst",     name: "Fleet Analyst",       emoji: "📊", color: "#06b6d4", agent: "harbor_fleet_analyst", specialty: "Vehicle performance, utilization, CO2 metrics" },
   { id: "harbor_route_optimizer",   name: "Route Optimizer",     emoji: "🗺️", color: "#8b5cf6", agent: "harbor_route_optimizer", specialty: "Logistics routing, cost reduction, fuel optimization" },
-  { id: "harbor_risk_engine",       name: "Risk Engine",         emoji: "⚠️", color: "#ef4444", agent: "harbor_risk_engine", specialty: "Risk scoring, anomaly detection, exception handling" },
-  { id: "harbor_demand_forecaster",        name: "Demand Forecaster",   emoji: "🔮", color: "#10b981", agent: "harbor_demand_forecaster", specialty: "30/60/90-day demand, inventory, capacity planning" },
-  { id: "harbor_financial_ai",      name: "Financial AI",        emoji: "💰", color: "#f59e0b", agent: "harbor_financial_ai", specialty: "Cost analysis, ROI, budget optimization, savings" },
-  { id: "harbor_maintenance_bot",   name: "Maintenance Bot",     emoji: "🔧", color: "#06b6d4", agent: "harbor_maintenance_bot", specialty: "Predictive maintenance, failure prediction, scheduling" },
-  { id: "harbor_compliance_guard",  name: "Compliance Guard",    emoji: "🛡️", color: "#10b981", agent: "harbor_compliance_guard", specialty: "Regulatory compliance, audit trails, certifications" },
-  { id: "harbor_sustainability_ai", name: "Sustainability AI",   emoji: "🌍", color: "#22c55e", agent: "harbor_sustainability_ai", specialty: "Carbon footprint, ESG metrics, green optimization" },
-  { id: "harbor_customer_intel",    name: "Customer Intel",      emoji: "👥", color: "#8b5cf6", agent: "harbor_customer_intel", specialty: "Customer analysis, satisfaction, contract performance" },
-  { id: "harbor_data_miner",        name: "Data Miner",          emoji: "⛏️", color: "#64748b", agent: "harbor_data_miner", specialty: "Pattern recognition, historical data, correlations" },
+  { id: "harbor_demand_forecaster", name: "Demand Forecaster",   emoji: "🔮", color: "#10b981", agent: "harbor_demand_forecaster", specialty: "30/60/90-day demand, inventory, capacity planning" },
   { id: "harbor_driver_coach",      name: "Driver Coach",        emoji: "🏆", color: "#f59e0b", agent: "harbor_driver_coach", specialty: "Driver performance, safety scores, training needs" },
-  { id: "harbor_market_scout",      name: "Market Scout",        emoji: "🔍", color: "#06b6d4", agent: "harbor_market_scout", specialty: "Market intelligence, competitor analysis, trends" },
   { id: "harbor_ops_commander",     name: "Ops Commander",       emoji: "⚡", color: "#ef4444", agent: "harbor_ops_commander", specialty: "Real-time operations, dispatch, incident response" },
-  { id: "harbor_document_ai",       name: "Document AI",         emoji: "📄", color: "#8b5cf6", agent: "harbor_document_ai", specialty: "CMR, BOL, contracts, automated documentation" },
-  { id: "harbor_strategy_ai",       name: "Strategy AI",         emoji: "🧠", color: "#a78bfa", agent: "harbor_strategy_ai", specialty: "Strategic planning, competitive positioning, growth" },
-  { id: "harbor_api_integrator",    name: "API Integrator",      emoji: "🔗", color: "#06b6d4", agent: "harbor_api_integrator", specialty: "Data integration, AIS, ADS-B, external APIs" },
-  { id: "harbor_visualizer",        name: "Visualizer",          emoji: "🎨", color: "#f59e0b", agent: "harbor_visualizer", specialty: "Charts, dashboards, heatmaps, live infographics" },
-  { id: "harbor_nlp_engine",        name: "NLP Engine",          emoji: "💬", color: "#8b5cf6", agent: "harbor_nlp_engine", specialty: "Language processing, translation, report generation" },
-  { id: "harbor_simulation_ai",     name: "Simulation AI",       emoji: "🌐", color: "#10b981", agent: "harbor_simulation_ai", specialty: "Scenario simulation, digital twins, what-if analysis" },
+
+  // ─────────────────── RISK & COMPLIANCE ───────────────────
+  { id: "harbor_risk_engine",       name: "Risk Engine",         emoji: "⚠️", color: "#ef4444", agent: "harbor_risk_engine", specialty: "Risk scoring, anomaly detection, exception handling" },
+  { id: "harbor_compliance_guard",  name: "Compliance Guard",    emoji: "🛡️", color: "#10b981", agent: "harbor_compliance_guard", specialty: "Regulatory compliance, audit trails, certifications" },
   { id: "harbor_security_ai",       name: "Security AI",         emoji: "🔒", color: "#ef4444", agent: "harbor_security_ai", specialty: "Access control, anomaly detection, threat analysis" },
+
+  // ─────────────────── FINANCE & BUSINESS ───────────────────
+  { id: "harbor_financial_ai",      name: "Financial AI",        emoji: "💰", color: "#f59e0b", agent: "harbor_financial_ai", specialty: "Cost analysis, ROI, budget optimization, savings" },
+  { id: "harbor_customer_intel",    name: "Customer Intel",      emoji: "👥", color: "#8b5cf6", agent: "harbor_customer_intel", specialty: "Customer analysis, satisfaction, contract performance" },
+  { id: "harbor_market_scout",      name: "Market Scout",        emoji: "🔍", color: "#06b6d4", agent: "harbor_market_scout", specialty: "Market intelligence, competitor analysis, trends" },
+  { id: "harbor_strategy_ai",       name: "Strategy AI",         emoji: "🧠", color: "#a78bfa", agent: "harbor_strategy_ai", specialty: "Strategic planning, competitive positioning, growth" },
+  { id: "sales_agent",              name: "Sales Closer",        emoji: "🤝", color: "#ec4899", specialty: "Deal analysis, pipeline management, revenue forecasting" },
+  { id: "pricing_optimizer",        name: "Pricing AI",          emoji: "💵", color: "#f59e0b", specialty: "Dynamic pricing, market rates, profit maximization" },
+
+  // ─────────────────── OPERATIONS & QUALITY ───────────────────
+  { id: "harbor_maintenance_bot",   name: "Maintenance Bot",     emoji: "🔧", color: "#06b6d4", agent: "harbor_maintenance_bot", specialty: "Predictive maintenance, failure prediction, scheduling" },
+  { id: "quality_assurance",        name: "QA Engineer",         emoji: "✅", color: "#10b981", specialty: "Testing, bug detection, performance validation" },
+  { id: "project_manager",          name: "Project Manager",     emoji: "📋", color: "#06b6d4", specialty: "Timeline tracking, resource allocation, milestone planning" },
+  { id: "training_coordinator",     name: "Training Coach",      emoji: "🎓", color: "#a78bfa", specialty: "Employee development, skill assessment, course planning" },
+
+  // ─────────────────── DEVELOPMENT & TECH ───────────────────
+  { id: "backend_developer",        name: "Backend Dev",         emoji: "⚙️", color: "#06b6d4", specialty: "API design, database optimization, server architecture" },
+  { id: "frontend_developer",       name: "Frontend Dev",        emoji: "🎨", color: "#8b5cf6", specialty: "UI/UX implementation, responsive design, performance" },
+  { id: "devops_engineer",          name: "DevOps Ops",          emoji: "🚀", color: "#ef4444", specialty: "CI/CD pipelines, deployment, infrastructure automation" },
+  { id: "data_scientist",           name: "Data Scientist",      emoji: "📈", color: "#10b981", specialty: "ML models, statistical analysis, predictive analytics" },
+  { id: "database_architect",       name: "DB Architect",        emoji: "🗄️", color: "#f59e0b", specialty: "Database design, optimization, scaling strategies" },
+
+  // ─────────────────── CONTENT & MARKETING ───────────────────
+  { id: "content_writer",          name: "Content Writer",      emoji: "✍️", color: "#ec4899", specialty: "Blog articles, whitepapers, technical documentation" },
+  { id: "seo_specialist",          name: "SEO Specialist",      emoji: "🔎", color: "#10b981", specialty: "Keyword research, optimization, ranking improvements" },
+  { id: "social_media_mgr",        name: "Social Media Mgr",    emoji: "📱", color: "#8b5cf6", specialty: "Campaign planning, engagement, audience growth" },
+  { id: "email_marketer",          name: "Email Marketer",      emoji: "📧", color: "#f59e0b", specialty: "Campaign design, automation, conversion optimization" },
+  { id: "video_producer",          name: "Video Producer",      emoji: "🎬", color: "#ef4444", specialty: "Video editing, scripting, multimedia content creation" },
+  { id: "brand_strategist",        name: "Brand Strategist",    emoji: "🎯", color: "#a78bfa", specialty: "Brand positioning, messaging, visual identity" },
+
+  // ─────────────────── HR & PEOPLE ───────────────────
+  { id: "recruiter_ai",            name: "Recruiter AI",        emoji: "👔", color: "#06b6d4", specialty: "Candidate screening, job matching, interview prep" },
+  { id: "hr_generalist",           name: "HR Generalist",       emoji: "💼", color: "#8b5cf6", specialty: "Policy, benefits, employee relations, compliance" },
+  { id: "performance_coach",       name: "Performance Coach",   emoji: "🏅", color: "#10b981", specialty: "Goals setting, feedback, career development" },
+
+  // ─────────────────── DATA & ANALYTICS ───────────────────
+  { id: "harbor_data_miner",       name: "Data Miner",          emoji: "⛏️", color: "#64748b", agent: "harbor_data_miner", specialty: "Pattern recognition, historical data, correlations" },
+  { id: "business_intelligence",   name: "BI Analyst",          emoji: "📊", color: "#06b6d4", specialty: "Dashboard creation, data modeling, insights" },
+  { id: "analytics_specialist",    name: "Analytics Specialist", emoji: "📉", color: "#f59e0b", specialty: "User behavior, funnel analysis, A/B testing" },
+
+  // ─────────────────── SUSTAINABILITY & ESG ───────────────────
+  { id: "harbor_sustainability_ai", name: "Sustainability AI",   emoji: "🌍", color: "#22c55e", agent: "harbor_sustainability_ai", specialty: "Carbon footprint, ESG metrics, green optimization" },
+  { id: "carbon_auditor",          name: "Carbon Auditor",      emoji: "♻️", color: "#10b981", specialty: "Emissions tracking, sustainability reporting, targets" },
+
+  // ─────────────────── DOCUMENTATION & COMMUNICATION ───────────────────
+  { id: "harbor_document_ai",      name: "Document AI",         emoji: "📄", color: "#8b5cf6", agent: "harbor_document_ai", specialty: "CMR, BOL, contracts, automated documentation" },
+  { id: "technical_writer",        name: "Technical Writer",    emoji: "📖", color: "#06b6d4", specialty: "Documentation, user guides, API specifications" },
+  { id: "harbor_nlp_engine",       name: "NLP Engine",          emoji: "💬", color: "#8b5cf6", agent: "harbor_nlp_engine", specialty: "Language processing, translation, report generation" },
+
+  // ─────────────────── VISUALIZATION & DESIGN ───────────────────
+  { id: "harbor_visualizer",       name: "Visualizer",          emoji: "🎨", color: "#f59e0b", agent: "harbor_visualizer", specialty: "Charts, dashboards, heatmaps, live infographics" },
+  { id: "ux_designer",             name: "UX Designer",         emoji: "✨", color: "#8b5cf6", specialty: "User experience, wireframes, interaction design" },
+  { id: "graphic_designer",        name: "Graphic Designer",    emoji: "🖼️", color: "#ec4899", specialty: "Visual design, branding, creative assets" },
+
+  // ─────────────────── INTEGRATION & APIs ───────────────────
+  { id: "harbor_api_integrator",   name: "API Integrator",      emoji: "🔗", color: "#06b6d4", agent: "harbor_api_integrator", specialty: "Data integration, AIS, ADS-B, external APIs" },
+  { id: "webhook_specialist",      name: "Webhook Specialist",  emoji: "⚡", color: "#f59e0b", specialty: "Event-driven integration, real-time sync" },
+
+  // ─────────────────── SIMULATION & PLANNING ───────────────────
+  { id: "harbor_simulation_ai",    name: "Simulation AI",       emoji: "🌐", color: "#10b981", agent: "harbor_simulation_ai", specialty: "Scenario simulation, digital twins, what-if analysis" },
+  { id: "forecasting_ai",          name: "Forecasting AI",      emoji: "🔮", color: "#a78bfa", specialty: "Trend analysis, predictive modeling, scenario planning" },
 ];
 
 const QUICK_PROMPTS = [
