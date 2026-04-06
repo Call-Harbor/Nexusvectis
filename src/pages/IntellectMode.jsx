@@ -42,6 +42,7 @@ import { AdvancedIntelligenceEngine } from "@/components/intellect/AdvancedIntel
 import ScenarioPredictionEngine from "@/components/intellect/ScenarioPredictionEngine";
 import MistralStreamingEngine from "@/components/intellect/MistralStreamingEngine";
 import IntelligentCommandAgent, { CommandInput, CommandExecution } from "@/components/intellect/IntelligentCommandAgent";
+import VoiceController from "@/components/intellect/VoiceController";
 import VideoCallHologram from "@/components/intellect/VideoCallHologram";
 import ParallelTaskProcessor from "@/components/intellect/ParallelTaskProcessor";
 import ProcessThinkingTerminal from "@/components/intellect/ProcessThinkingTerminal";
@@ -1428,41 +1429,51 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
           )}
         </div>
 
-        {/* Thinking animation overlay above command bar */}
+        {/* Thinking animation */}
         <AnimatePresence>
           {isProcessing && (
             <motion.div
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 8 }}
-              className="px-6 pb-2"
+              className="px-6 pb-4"
             >
-              <div className="max-w-4xl mx-auto">
+              <div className="max-w-sm mx-auto">
                 <HarborThinkingBar />
               </div>
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Command Bar */}
-        <IntellectCommandBar
-          input={input} setInput={setInput}
-          messages={messages} streamingMessage={streamingMessage} messagesEndRef={messagesEndRef}
-          uploadedFiles={uploadedFiles} setUploadedFiles={setUploadedFiles}
-          isUploading={isUploading} setIsUploading={setIsUploading}
-          isListening={isListening} setIsListening={setIsListening}
-          fileInputRef={fileInputRef} processCommand={processCommand}
-          setShowCompanyAnalysis={setShowCompanyAnalysis}
-          setShowProfileSearch={setShowProfileSearch}
-          handleQuickAction={handleQuickAction}
-          openWindow={openWindow}
-          vehicles={vehicles}
-          alerts={alerts}
-          routes={routes}
-          onNavigate={(page) => navigate(createPageUrl(page))}
-          onCloseWindows={() => setActiveWindows([])}
-          isProcessing={isProcessing}
-        />
+        {/* Voice activation button */}
+        <div className="pb-10 flex flex-col items-center gap-3">
+          <motion.button
+            onClick={() => setIsListening(prev => !prev)}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="relative flex items-center justify-center w-20 h-20 rounded-full transition-all"
+            style={isListening
+              ? { background: "radial-gradient(circle, rgba(239,68,68,0.3), rgba(239,68,68,0.1))", border: "2px solid rgba(239,68,68,0.6)", boxShadow: "0 0 40px rgba(239,68,68,0.4)" }
+              : { background: "radial-gradient(circle, rgba(6,182,212,0.2), rgba(139,92,246,0.1))", border: "2px solid rgba(6,182,212,0.5)", boxShadow: "0 0 40px rgba(6,182,212,0.2)" }
+            }
+          >
+            {isListening && (
+              <motion.div
+                className="absolute inset-0 rounded-full border-2"
+                animate={{ scale: [1, 1.6, 1], opacity: [0.6, 0, 0.6] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+                style={{ borderColor: "rgba(239,68,68,0.5)" }}
+              />
+            )}
+            {isListening
+              ? <Mic className="w-8 h-8" style={{ color: "#f87171" }} />
+              : <Mic className="w-8 h-8" style={{ color: "#06b6d4" }} />
+            }
+          </motion.button>
+          <p className="text-[10px] font-mono tracking-widest uppercase" style={{ color: isListening ? "rgba(239,68,68,0.7)" : "rgba(6,182,212,0.4)" }}>
+            {isListening ? "Lytter..." : "Tryk for at tale"}
+          </p>
+        </div>
       </div>
 
       {/* Process Terminals */}
@@ -1480,6 +1491,25 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
       {/* Multi-Screen Manager */}
       <AnimatePresence>
         {showMultiScreenManager && <MultiScreenManager onClose={() => setShowMultiScreenManager(false)} onWindowOpened={(label, winRef) => { trackDesktopWindow(label, winRef); }} />}
+      </AnimatePresence>
+
+      {/* VoiceController — full-screen when listening */}
+      <AnimatePresence>
+        {isListening && (
+          <VoiceController
+            language="da-DK"
+            autoStart={true}
+            onTranscript={(text) => {}}
+            onSend={(text) => { processCommand(text); }}
+            onClose={() => setIsListening(false)}
+            onNavigate={(page) => navigate(createPageUrl(page))}
+            onOpenWindow={openWindow}
+            onCloseWindows={() => setActiveWindows([])}
+            vehicles={vehicles || []}
+            alerts={alerts || []}
+            routes={routes || []}
+          />
+        )}
       </AnimatePresence>
 
       {/* Harbor Super Agent Chat */}
