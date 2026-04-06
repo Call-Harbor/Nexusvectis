@@ -305,7 +305,7 @@ export default function VoiceController({
   const [suggestion, setSuggestion] = useState(null);
   const [harborMessage, setHarborMessage] = useState("");
   const [history, setHistory] = useState([]);
-  const [continuous, setContinuous] = useState(true);
+  const [continuous, setContinuous] = useState(false);
   const [voiceReady, setVoiceReady] = useState(false);
   const [speechSupported] = useState(hasSpeechSupport);
   const [textInput, setTextInput] = useState("");
