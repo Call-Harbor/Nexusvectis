@@ -349,6 +349,10 @@ export default function VoiceController({
 
   // ─── Start / Stop recognition ──────────────────────────────────────────
   const startListening = useCallback(() => {
+    // Reset intentional stop flag so auto-restart works
+    intentionalStopRef.current = false;
+    if (restartTimerRef.current) clearTimeout(restartTimerRef.current);
+
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) {
       toast.error("Stemmegenkendelse ikke understøttet — brug Chrome eller Edge");
@@ -387,13 +391,32 @@ export default function VoiceController({
     };
 
     recognition.onerror = (e) => {
-      console.error("Speech error:", e.error);
+      console.error("Speech recognition error:", e.error);
       if (e.error === "not-allowed" || e.error === "permission-denied") {
-        intentionalStopRef.current = true; // don't restart on permission errors
+        intentionalStopRef.current = true;
         toast.error("Mikrofon adgang nægtet — tillad mikrofon i browser-indstillinger");
         setHarborMessage("⚠️ Mikrofon adgang nægtet. Tillad mikrofon adgang i din browsers adresselinje.");
+        setIsListening(false);
+        stopAmplitude();
+        recognitionRef.current = null;
+      } else if (e.error === "no-speech") {
+        // no-speech is normal — just restart immediately
+        recognitionRef.current = null;
+        if (!intentionalStopRef.current) {
+          restartTimerRef.current = setTimeout(() => startListening(), 300);
+        }
+      } else if (e.error === "aborted") {
+        // aborted means we stopped it manually — onend will handle
+      } else {
+        // other errors: log and try to restart
+        console.warn("Speech error:", e.error);
+        recognitionRef.current = null;
+        setIsListening(false);
+        stopAmplitude();
+        if (!intentionalStopRef.current) {
+          restartTimerRef.current = setTimeout(() => startListening(), 800);
+        }
       }
-      // no-speech and aborted are normal — onend will handle restart
     };
 
     recognition.onend = () => {
