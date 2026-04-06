@@ -1012,23 +1012,18 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
       }).catch(() => {});
     }
 
-    // Send the message first, then subscribe for the response
-    await base44.agents.addMessage(conv, {
-      role: 'user',
-      content: currentCommand,
-      ...(currentFiles.length > 0 && { file_urls: currentFiles.map(f => f.url) })
-    });
+    // Get current assistant message count so we can detect truly NEW messages
+    const currentConv = await base44.agents.getConversation(conv.id);
+    const prevAssistantCount = (currentConv.messages || []).filter(m => m.role === 'assistant').length;
 
-    setMessages(prev => [...prev, { role: "system", content: "⚡ H.A.R.B.O.R analyzing..." }]);
-
-    // Subscribe to stream response back into IntellectMode messages
+    // Subscribe BEFORE sending
     intellectUnsubRef.current?.();
-    const msgCountAtSend = (await base44.agents.getConversation(conv.id)).messages?.filter(m => m.role === 'assistant').length || 0;
     let answered = false;
 
     intellectUnsubRef.current = base44.agents.subscribeToConversation(conv.id, (data) => {
       const assistantMsgs = (data.messages || []).filter(m => m.role === 'assistant');
-      if (assistantMsgs.length <= msgCountAtSend) return; // no new assistant message yet
+      // Only react when a NEW assistant message has appeared
+      if (assistantMsgs.length <= prevAssistantCount) return;
 
       const lastMsg = assistantMsgs[assistantMsgs.length - 1];
       if (!lastMsg?.content) return;
@@ -1048,14 +1043,26 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
       }
     });
 
-    // Timeout fallback — stop spinner after 60s if no response
+    // Now send the user message
+    await base44.agents.addMessage(conv, {
+      role: 'user',
+      content: currentCommand,
+      ...(currentFiles.length > 0 && { file_urls: currentFiles.map(f => f.url) })
+    });
+
+    setMessages(prev => [...prev, { role: "system", content: "⚡ H.A.R.B.O.R analyzing..." }]);
+
+    // Timeout fallback after 90s
     setTimeout(() => {
       if (!answered) {
         answered = true;
         setIsProcessing(false);
-        setMessages(prev => prev.filter(m => m.content !== '⚡ H.A.R.B.O.R analyzing...'));
+        setMessages(prev => [
+          ...prev.filter(m => m.content !== '⚡ H.A.R.B.O.R analyzing...'),
+          { role: 'system', content: '⚠️ H.A.R.B.O.R svarer ikke — prøv igen' }
+        ]);
       }
-    }, 60000);
+    }, 90000);
 
     // Track billing
     try {
