@@ -995,63 +995,29 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
     setUploadedFiles([]);
     setIsProcessing(true);
 
-    // ── H.A.R.B.O.R Intellect Agent via polling ───────────────────────────
+    // ── H.A.R.B.O.R Intellect via InvokeLLM ─────────────────────────────────
     setMessages(prev => [...prev, { role: "system", content: "⚡ H.A.R.B.O.R analyzing..." }]);
 
     try {
-      // Ensure we have a conversation
-      let conv = intellectConversationRef.current;
-      if (!conv) {
-        conv = await base44.agents.createConversation({
-          agent_name: 'harbor_intellect',
-          metadata: { name: 'IntellectMode Session' }
-        });
-        if (orgId) {
-          await base44.agents.addMessage(conv, {
-            role: 'system',
-            content: `SYSTEM CONTEXT: The user's organization_id is "${orgId}". ALWAYS filter all entity queries by organization_id = "${orgId}". Never ask the user for their organization_id.`
-          });
-        }
-        intellectConversationRef.current = conv;
-      }
+      const history = messages
+        .filter(m => m.role === 'user' || m.role === 'assistant')
+        .slice(-12)
+        .map(m => `${m.role === 'user' ? 'User' : 'H.A.R.B.O.R'}: ${m.content}`)
+        .join('\n');
 
-      // Count existing assistant messages before sending
-      const convBefore = await base44.agents.getConversation(conv.id);
-      const prevCount = (convBefore.messages || []).filter(m => m.role === 'assistant').length;
+      const systemPrompt = `You are H.A.R.B.O.R Intellect — the neural core of NexusVectis, a world-class AI logistics platform. You have full access to all fleet, route, shipment, maintenance, alert and resource data. Be concise, expert and direct. Use bullet points for lists. Answer in the same language as the user.${orgId ? `\n\nThe user's organization_id is "${orgId}". All data is scoped to this organization.` : ''}${history ? `\n\nConversation so far:\n${history}` : ''}`;
 
-      // Send the user message
-      await base44.agents.addMessage(conv, {
-        role: 'user',
-        content: currentCommand,
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `${systemPrompt}\n\nUser: ${currentCommand}`,
+        model: 'claude_sonnet_4_6',
         ...(currentFiles.length > 0 && { file_urls: currentFiles.map(f => f.url) })
       });
 
-      // Poll until a new assistant message appears (max 90s)
-      const poll = async () => {
-        const deadline = Date.now() + 90000;
-        while (Date.now() < deadline) {
-          await new Promise(r => setTimeout(r, 2000));
-          const updated = await base44.agents.getConversation(conv.id);
-          const assistantMsgs = (updated.messages || []).filter(m => m.role === 'assistant');
-          if (assistantMsgs.length > prevCount) {
-            const lastMsg = assistantMsgs[assistantMsgs.length - 1];
-            if (lastMsg?.content) {
-              setMessages(prev => [
-                ...prev.filter(m => m.content !== '⚡ H.A.R.B.O.R analyzing...'),
-                { role: 'assistant', content: lastMsg.content }
-              ]);
-              return;
-            }
-          }
-        }
-        // Timeout
-        setMessages(prev => [
-          ...prev.filter(m => m.content !== '⚡ H.A.R.B.O.R analyzing...'),
-          { role: 'system', content: '⚠️ H.A.R.B.O.R svarer ikke — prøv igen' }
-        ]);
-      };
-
-      await poll();
+      const responseText = typeof result === 'string' ? result : result?.response || result?.text || JSON.stringify(result);
+      setMessages(prev => [
+        ...prev.filter(m => m.content !== '⚡ H.A.R.B.O.R analyzing...'),
+        { role: 'assistant', content: responseText }
+      ]);
     } catch (err) {
       setMessages(prev => [
         ...prev.filter(m => m.content !== '⚡ H.A.R.B.O.R analyzing...'),
