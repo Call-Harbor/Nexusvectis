@@ -8,12 +8,88 @@ import { toast } from "sonner";
 import MessageFormatter from "./MessageFormatter";
 import VoiceController from "./VoiceController";
 
+function ThinkingAnimation() {
+  const steps = ["Querying fleet data", "Running analysis", "Generating response"];
+  const [stepIdx, setStepIdx] = React.useState(0);
+
+  React.useEffect(() => {
+    const t = setInterval(() => setStepIdx(i => (i + 1) % steps.length), 1400);
+    return () => clearInterval(t);
+  }, []);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -6 }}
+      className="flex items-center gap-3 p-3 rounded-xl"
+      style={{ background: "rgba(6,182,212,0.05)", border: "1px solid rgba(6,182,212,0.15)" }}
+    >
+      {/* Pulsing brain */}
+      <div className="relative flex-shrink-0">
+        <div className="w-7 h-7 rounded-lg flex items-center justify-center"
+          style={{ background: "linear-gradient(135deg, rgba(6,182,212,0.2), rgba(139,92,246,0.2))", border: "1px solid rgba(6,182,212,0.3)" }}>
+          <motion.div
+            animate={{ opacity: [0.5, 1, 0.5] }}
+            transition={{ duration: 1.2, repeat: Infinity }}
+            style={{ color: "#06b6d4" }}
+          >
+            🧠
+          </motion.div>
+        </div>
+        <motion.div className="absolute inset-0 rounded-lg border"
+          animate={{ scale: [1, 1.4, 1], opacity: [0.4, 0, 0.4] }}
+          transition={{ duration: 1.5, repeat: Infinity }}
+          style={{ borderColor: "#06b6d4" }} />
+      </div>
+
+      {/* Dots */}
+      <div className="flex items-center gap-1">
+        {[0, 0.15, 0.3].map((delay, i) => (
+          <motion.div key={i} className="w-1.5 h-1.5 rounded-full"
+            animate={{ y: [0, -5, 0], opacity: [0.4, 1, 0.4] }}
+            transition={{ duration: 0.7, repeat: Infinity, delay }}
+            style={{ background: "#06b6d4", boxShadow: "0 0 6px rgba(6,182,212,0.6)" }}
+          />
+        ))}
+      </div>
+
+      {/* Cycling step text */}
+      <div className="flex-1 min-w-0">
+        <AnimatePresence mode="wait">
+          <motion.span
+            key={stepIdx}
+            initial={{ opacity: 0, x: 10 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -10 }}
+            transition={{ duration: 0.3 }}
+            className="text-[10px] font-mono tracking-widest uppercase"
+            style={{ color: "rgba(6,182,212,0.7)" }}
+          >
+            {steps[stepIdx]}...
+          </motion.span>
+        </AnimatePresence>
+      </div>
+
+      {/* Neural scan bar */}
+      <div className="w-20 h-1 rounded-full overflow-hidden flex-shrink-0" style={{ background: "rgba(6,182,212,0.1)" }}>
+        <motion.div
+          className="h-full rounded-full"
+          animate={{ x: ["-100%", "100%"] }}
+          transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
+          style={{ background: "linear-gradient(90deg, transparent, #06b6d4, #8b5cf6, transparent)", width: "50%" }}
+        />
+      </div>
+    </motion.div>
+  );
+}
+
 export default function IntellectCommandBar({
   input, setInput, messages, streamingMessage, messagesEndRef,
   uploadedFiles, setUploadedFiles, isUploading, setIsUploading,
   isListening, setIsListening, fileInputRef,
   processCommand, setShowCompanyAnalysis, setShowProfileSearch, handleQuickAction, openWindow,
-  vehicles, alerts, routes, onNavigate, onCloseWindows,
+  vehicles, alerts, routes, onNavigate, onCloseWindows, isProcessing,
 }) {
   const removeFile = (index) => setUploadedFiles(prev => prev.filter((_, i) => i !== index));
 
@@ -97,6 +173,9 @@ export default function IntellectCommandBar({
               <span className="font-semibold mr-1">🧠</span>{streamingMessage}<span className="animate-pulse ml-1">▊</span>
             </motion.div>
           )}
+          <AnimatePresence>
+            {isProcessing && <ThinkingAnimation />}
+          </AnimatePresence>
           <div ref={messagesEndRef} />
         </div>
 
