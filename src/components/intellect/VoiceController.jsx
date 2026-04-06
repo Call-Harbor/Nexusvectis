@@ -320,7 +320,10 @@ export default function VoiceController({
   const ttsEnabledRef = useRef(ttsEnabled);
   const intentionalStopRef = useRef(false);
   const restartTimerRef = useRef(null);
-  // Agent integration removed — voice commands route directly via onSend
+  const agentConvRef = useRef(null);
+  const agentUnsubRef = useRef(null);
+  const lastAgentMsgIdRef = useRef(null);
+  const isSpeakingAgentRef = useRef(false);
 
   const m = getMsg(lang);
 
@@ -463,11 +466,45 @@ export default function VoiceController({
   }, []);
 
   // ─── Send text to Harbor Super Agent ──────────────────────────────────
-  const sendToAgent = useCallback(async (text) => {
-    // Route directly to onSend (no agent conversation)
-    onTranscriptRef.current?.(text);
-    onSendRef.current?.(text);
+  const initAgentConversation = useCallback(async () => {
+    if (agentConvRef.current) return;
+    try {
+      const conv = await base44.agents.createConversation({
+        agent_name: "harbor_intellect",
+        metadata: { name: "Voice Session" }
+      });
+      agentConvRef.current = conv;
+      agentUnsubRef.current = base44.agents.subscribeToConversation(conv.id, (data) => {
+        const msgs = (data.messages || []).filter(m => m.role !== 'system');
+        const last = msgs[msgs.length - 1];
+        if (!last || last.role !== 'assistant' || !last.content) return;
+        if (last.id === lastAgentMsgIdRef.current) return;
+        if (isSpeakingAgentRef.current) return;
+        lastAgentMsgIdRef.current = last.id;
+        const clean = last.content.replace(/\*\*(.+?)\*\*/g, '$1').replace(/\*(.+?)\*/g, '$1').replace(/#{1,6}\s*/g, '').replace(/`(.+?)`/g, '$1').replace(/\n{2,}/g, '. ').replace(/\n/g, ' ').slice(0, 600);
+        setAgentReply(last.content);
+        setHarborMessage(last.content.slice(0, 200));
+        setIsAgentLoading(false);
+        setProcessingText('');
+        isSpeakingAgentRef.current = true;
+        speakRef.current?.(clean, () => { isSpeakingAgentRef.current = false; });
+      });
+    } catch (e) {
+      console.warn('Could not init agent:', e);
+    }
   }, []);
+
+  const sendToAgent = useCallback(async (text) => {
+    if (!agentConvRef.current) await initAgentConversation();
+    if (!agentConvRef.current) return;
+    setIsAgentLoading(true);
+    try {
+      await base44.agents.addMessage(agentConvRef.current, { role: 'user', content: text });
+    } catch (e) {
+      toast.error('Agent error: ' + e.message);
+      setIsAgentLoading(false);
+    }
+  }, [initAgentConversation]);
 
   // ─── Handle recognized text ────────────────────────────────────────────
   const handleFinalText = useCallback((text) => {
@@ -682,6 +719,7 @@ export default function VoiceController({
     if (isListening) {
       stopListening();
     } else {
+      initAgentConversation();
       if (!voiceReady) {
         setVoiceReady(true);
         speakRef.current?.(greetingRef.current, () => startListening());
@@ -693,10 +731,11 @@ export default function VoiceController({
 
   useEffect(() => {
     if (autoStart && speechSupported) {
+      initAgentConversation();
       setVoiceReady(true);
       speakRef.current?.(greetingRef.current, () => startListening());
     }
-  }, [autoStart]);
+  }, [autoStart, initAgentConversation]);
 
   const greetingRef = useRef("");
   useEffect(() => {
