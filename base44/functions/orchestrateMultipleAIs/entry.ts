@@ -45,9 +45,34 @@ Deno.serve(async (req) => {
 
       // Send org context as system message
       if (body.organization_id) {
+        // Fetch company data for context
+        let companyContext = `SYSTEM CONTEXT: organization_id="${body.organization_id}". `;
+        try {
+          const org = await base44.entities.Organization.filter({ id: body.organization_id });
+          if (org?.length > 0) {
+            companyContext += `Company: ${org[0].name}. `;
+          }
+          const invoices = await base44.entities.Invoice.filter({ organization_id: body.organization_id }, '-created_date', 10);
+          if (invoices?.length > 0) {
+            const totalAmount = invoices.reduce((sum, inv) => sum + (inv.total_amount || 0), 0);
+            companyContext += `Recent invoicing: ${invoices.length} invoices, total €${totalAmount.toFixed(2)}. `;
+          }
+          const vehicles = await base44.entities.Vehicle.filter({ organization_id: body.organization_id });
+          if (vehicles?.length > 0) {
+            companyContext += `Fleet: ${vehicles.length} vehicles. `;
+          }
+          const shipments = await base44.entities.Shipment.filter({ organization_id: body.organization_id }, '-created_date', 10);
+          if (shipments?.length > 0) {
+            companyContext += `Active shipments: ${shipments.length}. `;
+          }
+        } catch (e) {
+          console.log('Could not fetch company data:', e.message);
+        }
+        companyContext += "Always filter entities and operations by this organization ID. Use current data for analysis.";
+        
         await base44.agents.addMessage(conv, {
           role: "system",
-          content: `SYSTEM CONTEXT: organization_id="${body.organization_id}". Always filter entities and operations by this organization ID.`
+          content: companyContext
         });
       }
 
