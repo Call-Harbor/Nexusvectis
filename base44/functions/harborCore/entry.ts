@@ -12,7 +12,7 @@
  * - Returns structured AI response
  */
 
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 const HARBOR_IDENTITY = `You are H.A.R.B.O.R. — Holistic Autonomous Reasoning & Business Operations Resource.
 
@@ -71,7 +71,7 @@ PERSONALITY:
 
 Deno.serve(async (req) => {
   if (req.method === 'GET') {
-    return Response.json({ status: 'HARBOR Core Engine — online', version: '1.0' });
+    return Response.json({ status: 'HARBOR Core Engine — online', version: '2.0', model: 'mistral-large-2411' });
   }
 
   if (req.method !== 'POST') {
@@ -305,7 +305,7 @@ Be concise, actionable, and structured with headers/bullets where appropriate.`;
     }
 
     // ─── 6. CALL MISTRAL ──────────────────────────────────────────────────────
-    const model = imageUrls.length > 0 ? 'pixtral-large-latest' : 'mistral-large-latest';
+    const model = imageUrls.length > 0 ? 'pixtral-large-latest' : 'mistral-large-2411';
 
     // If mode=command or response_schema provided, use JSON mode
     const useJsonMode = mode === 'command' || !!response_schema;
@@ -390,7 +390,7 @@ Be concise, actionable, and structured with headers/bullets where appropriate.`;
     }
 
     return Response.json({
-      harbor_version: '1.0',
+      harbor_version: '2.0',
       mode: mode || 'chat',
       reply: result,
       usage: data.usage || null

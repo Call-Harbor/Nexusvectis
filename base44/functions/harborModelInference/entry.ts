@@ -1,9 +1,9 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 Deno.serve(async (req) => {
   // Health check
   if (req.method === 'GET') {
-    return Response.json({ status: 'HARBOR Model Inference API — online', version: '2.0' });
+    return Response.json({ status: 'HARBOR Model Inference API — online', version: '2.1', engine: 'mistral-large-2411' });
   }
 
   if (req.method !== 'POST') {
