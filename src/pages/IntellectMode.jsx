@@ -1522,7 +1522,7 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
 
       {/* VoiceController — always visible */}
       <VoiceController
-        language="da-DK"
+        language="en-US"
         autoStart={false}
         onTranscript={(text) => {}}
         onSend={(text) => { processCommand(text); }}
