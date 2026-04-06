@@ -433,6 +433,23 @@ export default function HarborSuperAgentChat({ onClose }) {
     setAttachments([]);
     setIsSending(true);
 
+    // Track usage for billing (harborIntellectAPI)
+    const startTime = Date.now();
+    try {
+      const user = await base44.auth.me();
+      const members = await base44.entities.OrganizationMember.filter({ user_email: user.email });
+      const trackOrgId = members?.[0]?.organization_id || orgId || user.id;
+      base44.entities.APIUsage.create({
+        organization_id: trackOrgId,
+        endpoint: '/functions/harborIntellectAPI',
+        method: 'POST',
+        status_code: 200,
+        response_time_ms: Date.now() - startTime,
+        ip_address: 'internal'
+      }).catch(() => {});
+    } catch {}
+
+
     const isFirstMessage = messages.filter(m => m.role === "user").length === 0;
     if (isFirstMessage && msg) {
       const autoName = msg.length > 40 ? msg.slice(0, 40).trimEnd() + "…" : msg;
