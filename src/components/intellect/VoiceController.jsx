@@ -617,8 +617,8 @@ export default function VoiceController({
     if (action?.startsWith("nav:")) {
       const page = action.split(":")[1];
       const msg = msgs.navigating(page);
-      speakRef.current?.(msg);
       setHarborMessage(msg);
+      speakRef.current?.(msg);
       onNavigateRef.current?.(page);
       setProcessingText("");
       return;
@@ -626,8 +626,8 @@ export default function VoiceController({
     if (action?.startsWith("window:")) {
       const windowType = action.split(":")[1];
       const msg = msgs.opening(windowType.replace(/_/g, " "));
-      speakRef.current?.(msg);
       setHarborMessage(msg);
+      speakRef.current?.(msg);
       onOpenWindowRef.current?.(windowType);
       setProcessingText("");
       return;
@@ -660,12 +660,14 @@ export default function VoiceController({
     }
 
     // Free-form — send to Harbor Super Agent
-    setHarborMessage(msgs.sending(text));
-    speakRef.current?.(msgs.understood);
-    setTimeout(() => {
-      sendToAgent(text);
-      setProcessingText("");
-    }, 700);
+    const sendMsg = msgs.sending(text);
+    setHarborMessage(sendMsg);
+    speakRef.current?.(msgs.understood, () => {
+      setTimeout(() => {
+        sendToAgent(text);
+        setProcessingText("");
+      }, 500);
+    });
   }, [lang, vehicles, alerts, routes, sendToAgent]);
 
   const handleFinalTextRef = useRef(handleFinalText);
@@ -817,18 +819,18 @@ export default function VoiceController({
   ];
 
   const NAV_COMMANDS = [
-    { label: "Dashboard", icon: LayoutDashboard, action: () => onNavigate?.("Dashboard") },
-    { label: "Fleet", icon: Truck, action: () => onOpenWindow?.("fleet") },
-    { label: "Alerts", icon: AlertTriangle, action: () => onNavigate?.("Alerts") },
-    { label: "Routes", icon: Navigation, action: () => onOpenWindow?.("routes") },
-    { label: "Shipments", icon: Package, action: () => onOpenWindow?.("shipments") },
-    { label: "Analysis", icon: BarChart3, action: () => onOpenWindow?.("deep_analysis") },
-    { label: "App Builder", icon: Zap, action: () => onOpenWindow?.("harbor_app_builder") },
-    { label: "Fleet Store", icon: Globe, action: () => onOpenWindow?.("fleet_store") },
-    { label: "3D Globe", icon: Brain, action: () => onOpenWindow?.("fleet_3d_viewer") },
-    { label: "Maintenance", icon: Settings, action: () => onOpenWindow?.("predictive_maintenance") },
-    { label: "News", icon: FileText, action: () => onOpenWindow?.("news_intelligence") },
-    { label: "Close All", icon: X, action: () => onCloseWindows?.() },
+    { label: "Dashboard", icon: LayoutDashboard, action: () => { onNavigate?.("Dashboard"); speak("Navigating to dashboard"); } },
+    { label: "Fleet", icon: Truck, action: () => { onOpenWindow?.("fleet"); speak(lang === "da-DK" ? "Åbner flåde" : "Opening fleet"); } },
+    { label: "Alerts", icon: AlertTriangle, action: () => { onNavigate?.("Alerts"); speak(lang === "da-DK" ? "Åbner advarsler" : "Opening alerts"); } },
+    { label: "Routes", icon: Navigation, action: () => { onOpenWindow?.("routes"); speak(lang === "da-DK" ? "Åbner ruter" : "Opening routes"); } },
+    { label: "Shipments", icon: Package, action: () => { onOpenWindow?.("shipments"); speak(lang === "da-DK" ? "Åbner forsendelser" : "Opening shipments"); } },
+    { label: "Analysis", icon: BarChart3, action: () => { onOpenWindow?.("deep_analysis"); speak(lang === "da-DK" ? "Åbner dybdeanalyse" : "Opening analysis"); } },
+    { label: "App Builder", icon: Zap, action: () => { onOpenWindow?.("harbor_app_builder"); speak(lang === "da-DK" ? "Åbner app builder" : "Opening app builder"); } },
+    { label: "Fleet Store", icon: Globe, action: () => { onOpenWindow?.("fleet_store"); speak(lang === "da-DK" ? "Åbner fleet store" : "Opening fleet store"); } },
+    { label: "3D Globe", icon: Brain, action: () => { onOpenWindow?.("fleet_3d_viewer"); speak(lang === "da-DK" ? "Åbner 3D verden" : "Opening 3D globe"); } },
+    { label: "Maintenance", icon: Settings, action: () => { onOpenWindow?.("predictive_maintenance"); speak(lang === "da-DK" ? "Åbner vedligeholdelse" : "Opening maintenance"); } },
+    { label: "News", icon: FileText, action: () => { onOpenWindow?.("news_intelligence"); speak(lang === "da-DK" ? "Åbner nyheder" : "Opening news"); } },
+    { label: "Close All", icon: X, action: () => { onCloseWindows?.(); speak(lang === "da-DK" ? "Lukker alle vinduer" : "Closing all windows"); } },
   ];
 
   const statusColor = isSpeaking ? "#a78bfa" : isListening ? "#22d3ee" : "#334155";
@@ -986,11 +988,11 @@ export default function VoiceController({
                lang={lang}
                onAccept={() => {
                   setSuggestion(null);
-                  if (suggestion.action === "open_alerts") { onNavigate?.("Alerts"); speak("Opening alerts."); }
-                  else if (suggestion.action === "analyze_fleet") { onOpenWindow?.("deep_analysis"); speak("Opening fleet analysis."); }
-                  else { speak("Opening now."); }
+                  if (suggestion.action === "open_alerts") { onNavigate?.("Alerts"); speak(lang === "da-DK" ? "Åbner advarsler." : "Opening alerts."); }
+                  else if (suggestion.action === "analyze_fleet") { onOpenWindow?.("deep_analysis"); speak(lang === "da-DK" ? "Åbner flådeanalyse." : "Opening fleet analysis."); }
+                  else { speak(lang === "da-DK" ? "Åbner nu." : "Opening now."); }
                 }}
-                onDismiss={() => { setSuggestion(null); speak("No problem."); }}
+                onDismiss={() => { setSuggestion(null); speak(lang === "da-DK" ? "Ingen problem." : "No problem."); }}
               />
             </div>
           )}
@@ -1126,7 +1128,7 @@ export default function VoiceController({
                   <div className="flex flex-wrap gap-2">
                     {NAV_COMMANDS.map(cmd => (
                       <CommandChip key={cmd.label} label={cmd.label} icon={cmd.icon}
-                        onClick={() => { cmd.action(); speak(`${cmd.label} opened.`); setHarborMessage(`${cmd.label} opened.`); }} />
+                        onClick={() => { cmd.action(); }} />
                     ))}
                   </div>
                 </div>
