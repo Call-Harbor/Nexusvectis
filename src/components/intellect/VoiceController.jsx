@@ -283,6 +283,7 @@ export default function VoiceController({
   const [speechSupported] = useState(hasSpeechSupport);
   const [textInput, setTextInput] = useState("");
   const [isAgentLoading, setIsAgentLoading] = useState(false);
+  const [agentReply, setAgentReply] = useState("");
 
   const recognitionRef = useRef(null);
   const micStreamRef = useRef(null);
@@ -293,6 +294,9 @@ export default function VoiceController({
   const intentionalStopRef = useRef(false);
   const restartTimerRef = useRef(null);
   const agentConvRef = useRef(null);
+  const agentUnsubRef = useRef(null);
+  const lastAgentMsgIdRef = useRef(null);
+  const isSpeakingAgentRef = useRef(false);
 
   const m = getMsg(lang);
 
@@ -312,7 +316,7 @@ export default function VoiceController({
   useEffect(() => { onOpenWindowRef.current = onOpenWindow; }, [onOpenWindow]);
   useEffect(() => { onCloseWindowsRef.current = onCloseWindows; }, [onCloseWindows]);
 
-  // ─── Init Harbor Super Agent conversation ──────────────────────────────
+  // ─── Init Harbor Super Agent conversation + subscribe to replies ─────
   useEffect(() => {
     const init = async () => {
       try {
@@ -321,11 +325,40 @@ export default function VoiceController({
           metadata: { name: "VoiceController Session" }
         });
         agentConvRef.current = conv;
+
+        // Subscribe to agent responses and speak them
+        agentUnsubRef.current = base44.agents.subscribeToConversation(conv.id, (data) => {
+          const msgs = data.messages || [];
+          const last = msgs[msgs.length - 1];
+          if (!last || last.role !== "assistant" || !last.content) return;
+          if (last.id === lastAgentMsgIdRef.current) return; // already spoken
+          if (isSpeakingAgentRef.current) return; // don't interrupt
+          lastAgentMsgIdRef.current = last.id;
+
+          // Extract clean text for TTS (strip markdown)
+          const clean = last.content
+            .replace(/\*\*(.+?)\*\*/g, "$1")
+            .replace(/\*(.+?)\*/g, "$1")
+            .replace(/#{1,6}\s*/g, "")
+            .replace(/`(.+?)`/g, "$1")
+            .replace(/\n{2,}/g, ". ")
+            .replace(/\n/g, " ")
+            .slice(0, 600); // cap to avoid super-long TTS
+
+          setAgentReply(last.content);
+          setHarborMessage(last.content.slice(0, 200));
+          setIsAgentLoading(false);
+          setProcessingText("");
+
+          isSpeakingAgentRef.current = true;
+          speakRef.current?.(clean, () => { isSpeakingAgentRef.current = false; });
+        });
       } catch (e) {
         console.warn("Could not init harbor agent for voice:", e);
       }
     };
     init();
+    return () => { agentUnsubRef.current?.(); };
   }, []);
 
   // ─── Speak ──────────────────────────────────────────────────────────────
@@ -394,24 +427,20 @@ export default function VoiceController({
 
   // ─── Send text to Harbor Super Agent ──────────────────────────────────
   const sendToAgent = useCallback(async (text) => {
-    // First try the parent's onSend (which goes through IntellectMode's agent)
-    if (onSendRef.current) {
+    if (!agentConvRef.current) {
       onTranscriptRef.current?.(text);
       onSendRef.current?.(text);
       return;
     }
-    // Fallback: direct harbor_intellect agent
-    if (!agentConvRef.current) {
-      toast.error("Agent not ready");
-      return;
-    }
     setIsAgentLoading(true);
+    setHarborMessage("H.A.R.B.O.R is thinking...");
     try {
       await base44.agents.addMessage(agentConvRef.current, { role: "user", content: text });
+      // Response streams back via subscribeToConversation above — will be spoken aloud
     } catch (e) {
       toast.error("Agent error: " + e.message);
+      setIsAgentLoading(false);
     }
-    setIsAgentLoading(false);
   }, []);
 
   // ─── Handle recognized text ────────────────────────────────────────────
@@ -489,6 +518,32 @@ export default function VoiceController({
       onOpenWindowRef.current?.(windowType);
       setProcessingText("");
       return;
+    }
+
+    // Hologram-opening intelligence: detect analysis/window requests and open + send
+    const lower = text.toLowerCase();
+    const hologramMap = [
+      { patterns: [/multidimensional|deep analysis|fleet analysis|analyse.*flåde|fleet.*analys|run.*analysis|show.*analysis/], window: "deep_analysis" },
+      { patterns: [/predictive.*maintenance|maintenance.*predict|vedligeholdelse|forudsig/], window: "predictive_maintenance" },
+      { patterns: [/risk.*assess|assess.*risk|risk analysis|risiko/], window: "risk_assessment" },
+      { patterns: [/demand.*forecast|forecast|efterspørgsel/], window: "demand_forecast" },
+      { patterns: [/performance.*analytic|kpi|nøgletal/], window: "performance_analytics" },
+      { patterns: [/satellite|weather|vejr|væjret|storm/], window: "satellite_weather" },
+      { patterns: [/news|nyheder|latest.*news/], window: "news_intelligence" },
+      { patterns: [/3d.*globe|globe|3d.*flåde|globus/], window: "fleet_3d_viewer" },
+      { patterns: [/project|projekt|task/], window: "project_management" },
+      { patterns: [/document|dokument|report.*doc/], window: "document_editor" },
+    ];
+    for (const entry of hologramMap) {
+      if (entry.patterns.some(p => p.test(lower))) {
+        const msg = msgs.opening(entry.window.replace(/_/g, " "));
+        speakRef.current?.(msgs.understood);
+        setHarborMessage(msg);
+        onOpenWindowRef.current?.(entry.window);
+        // Also send to agent for analysis content
+        setTimeout(() => { sendToAgent(text); setProcessingText(""); }, 400);
+        return;
+      }
     }
 
     // Free-form — send to Harbor Super Agent
