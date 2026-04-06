@@ -48,6 +48,41 @@ import ProcessThinkingTerminal from "@/components/intellect/ProcessThinkingTermi
 import AICoach from "@/components/intellect/AICoach";
 import HarborSuperAgentChat from "@/components/intellect/HarborSuperAgentChat";
 
+const THINKING_STEPS = ["Querying fleet data", "Running neural analysis", "Cross-referencing modules", "Generating response"];
+
+function HarborThinkingBar() {
+  const [stepIdx, setStepIdx] = React.useState(0);
+  React.useEffect(() => {
+    const t = setInterval(() => setStepIdx(i => (i + 1) % THINKING_STEPS.length), 1400);
+    return () => clearInterval(t);
+  }, []);
+  return (
+    <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl" style={{ background: "rgba(6,182,212,0.07)", border: "1px solid rgba(6,182,212,0.2)" }}>
+      <div className="relative flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "linear-gradient(135deg, rgba(6,182,212,0.2), rgba(139,92,246,0.2))", border: "1px solid rgba(6,182,212,0.3)" }}>
+        <motion.div animate={{ opacity: [0.5, 1, 0.5] }} transition={{ duration: 1.2, repeat: Infinity }}>
+          <Brain className="w-3.5 h-3.5" style={{ color: "#06b6d4" }} />
+        </motion.div>
+        <motion.div className="absolute inset-0 rounded-lg border" animate={{ scale: [1, 1.5, 1], opacity: [0.4, 0, 0.4] }} transition={{ duration: 1.5, repeat: Infinity }} style={{ borderColor: "#06b6d4" }} />
+      </div>
+      <div className="flex items-center gap-1">
+        {[0, 0.15, 0.3].map((delay, i) => (
+          <motion.div key={i} className="w-1.5 h-1.5 rounded-full" animate={{ y: [0, -5, 0], opacity: [0.4, 1, 0.4] }} transition={{ duration: 0.7, repeat: Infinity, delay }} style={{ background: "#06b6d4", boxShadow: "0 0 6px rgba(6,182,212,0.6)" }} />
+        ))}
+      </div>
+      <div className="flex-1 overflow-hidden">
+        <AnimatePresence mode="wait">
+          <motion.span key={stepIdx} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} transition={{ duration: 0.3 }} className="text-[10px] font-mono tracking-widest uppercase block" style={{ color: "rgba(6,182,212,0.8)" }}>
+            ⚡ {THINKING_STEPS[stepIdx]}...
+          </motion.span>
+        </AnimatePresence>
+      </div>
+      <div className="w-24 h-1 rounded-full overflow-hidden flex-shrink-0" style={{ background: "rgba(6,182,212,0.1)" }}>
+        <motion.div className="h-full rounded-full" animate={{ x: ["-100%", "150%"] }} transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }} style={{ background: "linear-gradient(90deg, transparent, #06b6d4, #8b5cf6, transparent)", width: "40%" }} />
+      </div>
+    </div>
+  );
+}
+
 const INITIAL_MESSAGES = [
   { role: "system", content: "⚡ FLEET AI online. World's most advanced logistics intelligence system ready. I can: perform predictive maintenance analysis, forecast demand, optimize routes multi-modally, generate CO2 reports, detect anomalies, assess risks, benchmark performance, and execute any fleet operation. Command me." }
 ];
@@ -1392,6 +1427,22 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
             </div>
           )}
         </div>
+
+        {/* Thinking animation overlay above command bar */}
+        <AnimatePresence>
+          {isProcessing && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 8 }}
+              className="px-6 pb-2"
+            >
+              <div className="max-w-4xl mx-auto">
+                <HarborThinkingBar />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Command Bar */}
         <IntellectCommandBar
