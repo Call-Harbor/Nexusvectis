@@ -243,18 +243,25 @@ export default function AITaskRunner({ onOpenWindow, windowRefs, orgId, onClose 
       addStep(`Hologram aktiveret ✓`, "narrate");
       await new Promise(r => setTimeout(r, 200));
 
-      // Phase 3: Get window ref (quick - window opens fast with loading state)
+      // Phase 3: Wait for hologram to fully load
       let newestRef = null;
-      for (let attempt = 0; attempt < 8; attempt++) {
+      let contentFound = false;
+      for (let attempt = 0; attempt < 15; attempt++) {
         const refs = Object.entries(windowRefs.current || {});
         if (refs.length > 0) {
           newestRef = refs[refs.length - 1][1];
-          const buttons = newestRef?.querySelectorAll("button") || [];
-          const inputs = newestRef?.querySelectorAll("input, textarea, select") || [];
-          if (buttons.length > 0 || inputs.length > 0) break;
+          if (newestRef) {
+            const buttons = newestRef?.querySelectorAll("button, [role='button']") || [];
+            const inputs = newestRef?.querySelectorAll("input, textarea, select, [role='combobox']") || [];
+            const text = newestRef?.textContent?.trim().length > 20;
+            if ((buttons.length > 1 || inputs.length > 0) && text) {
+              contentFound = true;
+              break;
+            }
+          }
         }
-        addStep(`Venter på indhold (${attempt + 1}/8)`, "think");
-        await new Promise(r => setTimeout(r, 400));
+        addStep(`Indlæser hologram (${attempt + 1}/15)...`, "think");
+        await new Promise(r => setTimeout(r, 500));
       }
 
       if (!newestRef) {
