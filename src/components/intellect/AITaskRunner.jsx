@@ -1,225 +1,357 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
-import { Bot, Send, X, Loader2, CheckCircle2, ChevronRight, Zap } from "lucide-react";
+import { Bot, Send, X, Loader2, CheckCircle2, ChevronRight, Zap, Brain, Eye, MousePointer, Keyboard, ScrollText, Terminal, ChevronDown, ChevronUp } from "lucide-react";
 import { useHologramAIAgent } from "./HologramAIAgent";
 import { toast } from "sonner";
 
-// Map task keywords to window types
-const TASK_WINDOW_MAP = [
-  { keywords: /rute|route|routing/i, window: "route_optimizer" },
-  { keywords: /fleet map|flåde|live track/i, window: "fleet_map" },
-  { keywords: /vedligehold|maintenance/i, window: "predictive_maintenance" },
-  { keywords: /performance|ydelse/i, window: "performance_analytics" },
-  { keywords: /prognose|forecast|demand/i, window: "demand_forecast" },
-  { keywords: /risiko|risk/i, window: "risk_assessment" },
+const WINDOW_MAP = [
+  { keywords: /rute|route|routing|optimer/i, window: "route_optimizer" },
+  { keywords: /fleet map|flåde|live track|kort/i, window: "fleet_map" },
+  { keywords: /vedligehold|maintenance|service/i, window: "predictive_maintenance" },
+  { keywords: /performance|ydelse|effektivitet/i, window: "performance_analytics" },
+  { keywords: /prognose|forecast|demand|efterspørgsel/i, window: "demand_forecast" },
+  { keywords: /risiko|risk|fare/i, window: "risk_assessment" },
   { keywords: /dokument|document|kontrakt|contract/i, window: "document_editor" },
   { keywords: /regneark|spreadsheet/i, window: "spreadsheet_editor" },
-  { keywords: /vejr|weather/i, window: "satellite_weather" },
+  { keywords: /vejr|weather|satellit/i, window: "satellite_weather" },
   { keywords: /nyheder|news/i, window: "news_intelligence" },
   { keywords: /projekt|project/i, window: "project_management" },
-  { keywords: /port|havn/i, window: "port_command" },
-  { keywords: /lufthavn|airport/i, window: "airport_ops" },
-  { keywords: /analyse|analysis/i, window: "deep_analysis" },
-  { keywords: /3d|globe/i, window: "fleet_3d_viewer" },
+  { keywords: /port|havn|vessel|skib/i, window: "port_command" },
+  { keywords: /lufthavn|airport|fly/i, window: "airport_ops" },
+  { keywords: /analyse|analysis|data/i, window: "deep_analysis" },
+  { keywords: /swarm|sværm/i, window: "swarm_intelligence" },
+  { keywords: /digital twin|tvilling/i, window: "digital_twin" },
 ];
 
 function pickWindow(task) {
-  for (const entry of TASK_WINDOW_MAP) {
-    if (entry.keywords.test(task)) return entry.window;
+  for (const e of WINDOW_MAP) {
+    if (e.keywords.test(task)) return e.window;
   }
-  return "fleet_map"; // default
+  return "performance_analytics";
 }
 
-const EXAMPLE_TASKS = [
+const PHASE_ICONS = {
+  scan: Eye,
+  plan: Brain,
+  think: Brain,
+  click: MousePointer,
+  type: Keyboard,
+  scroll: ScrollText,
+  hover: Eye,
+  narrate: CheckCircle2,
+  error: X,
+};
+
+const PHASE_COLORS = {
+  scan: "#06b6d4",
+  plan: "#8b5cf6",
+  think: "#f59e0b",
+  click: "#10b981",
+  type: "#a78bfa",
+  scroll: "#64748b",
+  hover: "#06b6d4",
+  narrate: "#10b981",
+  error: "#ef4444",
+};
+
+const EXAMPLES = [
   "Åbn rute-optimering og optimer alle aktive ruter",
-  "Gå til vedligeholdelse og marker Truck-01 som klar",
-  "Åbn performance dashboard og tjek efficiency scores",
-  "Åbn demand forecast og vis prognosen for næste måned",
+  "Gå til performance dashboard og tjek hvilke køretøjer der er ineffektive",
+  "Åbn vedligeholdelse og se hvilke køretøjer der snart skal serviceres",
+  "Åbn demand forecast og analyser næste måneds prognoser",
+  "Tjek port command og se vessel queue status",
 ];
 
-/**
- * AITaskRunner — lets the user type a task in natural language,
- * then picks the right hologram window and runs the AI agent inside it.
- */
 export default function AITaskRunner({ onOpenWindow, windowRefs, orgId, onClose }) {
   const [task, setTask] = useState("");
   const [running, setRunning] = useState(false);
+  const [phase, setPhase] = useState("idle"); // idle | scanning | planning | executing | done | error
   const [steps, setSteps] = useState([]);
-  const [done, setDone] = useState(false);
+  const [currentWindowType, setCurrentWindowType] = useState(null);
+  const [planPreview, setPlanPreview] = useState(null);
+  const [expanded, setExpanded] = useState(true);
+  const stepsEndRef = useRef(null);
   const inputRef = useRef(null);
   const { runTask } = useHologramAIAgent();
+
+  useEffect(() => {
+    stepsEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [steps]);
+
+  const addStep = (text, stepPhase) => {
+    setSteps(prev => [...prev, { text, phase: stepPhase, id: Date.now() }]);
+  };
 
   const execute = async () => {
     if (!task.trim() || running) return;
     setRunning(true);
-    setDone(false);
-    setSteps([{ text: "Analyserer opgave...", status: "running" }]);
+    setPhase("scanning");
+    setSteps([]);
+    setPlanPreview(null);
 
     try {
-      // 1. Ask LLM which window to open and what the precise task is
-      const plan = await base44.integrations.Core.InvokeLLM({
-        prompt: `Given this user task: "${task}"
+      // Phase 1: Determine window
+      addStep("Forstår opgaven...", "think");
+      setPhase("planning");
 
-Which hologram window should be opened and what is the precise sub-task?
+      let windowType;
+      let preciseTask = task;
 
-Available windows: route_optimizer, fleet_map, predictive_maintenance, demand_forecast, risk_assessment, performance_analytics, satellite_weather, news_intelligence, swarm_intelligence, digital_twin, document_editor, spreadsheet_editor, deep_analysis, fleet_3d_viewer, airport_ops, port_command, project_management, image_generator.
+      try {
+        const plan = await base44.integrations.Core.InvokeLLM({
+          prompt: `The user wants to do this task in a logistics operations system: "${task}"
 
-Return JSON: { "window": "window_type", "task": "precise task description in English", "reason": "why this window" }`,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            window: { type: "string" },
-            task: { type: "string" },
-            reason: { type: "string" }
+Which UI window/module should be opened? Pick ONE from:
+route_optimizer, fleet_map, predictive_maintenance, demand_forecast, risk_assessment, 
+performance_analytics, satellite_weather, news_intelligence, swarm_intelligence, 
+digital_twin, document_editor, spreadsheet_editor, deep_analysis, fleet_3d_viewer, 
+airport_ops, port_command, project_management, image_generator
+
+Also rephrase the task in clear English for the AI agent executor.
+
+Return: { "window": "window_type", "task": "clear English task description" }`,
+          response_json_schema: {
+            type: "object",
+            properties: { window: { type: "string" }, task: { type: "string" } }
           }
-        }
-      });
+        });
+        windowType = plan?.window || pickWindow(task);
+        preciseTask = plan?.task || task;
+      } catch {
+        windowType = pickWindow(task);
+      }
 
-      const windowType = plan.window || pickWindow(task);
-      const preciseTask = plan.task || task;
+      setCurrentWindowType(windowType);
+      addStep(`Åbner modul: ${windowType.replace(/_/g, " ")}`, "scan");
 
-      setSteps([
-        { text: `Åbner hologram: ${windowType.replace(/_/g, " ")}`, status: "done" },
-        { text: `AI agent klar: ${preciseTask.slice(0, 55)}...`, status: "running" },
-      ]);
-
-      // 2. Open the window
+      // Phase 2: Open window
       onOpenWindow(windowType, preciseTask);
+      addStep(`Hologram aktiveret ✓`, "narrate");
 
-      // 3. Wait longer for window + content to render
-      await new Promise(r => setTimeout(r, 2200));
+      // Phase 3: Wait for render
+      addStep("Venter på interface at loade...", "think");
+      await new Promise(r => setTimeout(r, 2400));
 
-      // 4. Find the newest ref (last added)
+      // Phase 4: Find ref
       const refs = Object.entries(windowRefs.current || {});
-      const newestRef = refs.length > 0 ? refs[refs.length - 1][1] : null;
-
-      if (!newestRef) {
-        setSteps(prev => [...prev, { text: "Vindue ikke fundet - prøv at åbne det manuelt", status: "error" }]);
+      if (refs.length === 0) {
+        addStep("Vindue ikke tilgængeligt — prøv manuelt", "error");
+        setPhase("error");
         setRunning(false);
         return;
       }
 
-      setSteps(prev => [...prev.slice(0, -1),
-        { text: `Udfører i ${windowType.replace(/_/g, " ")}...`, status: "running" },
-      ]);
+      const newestRef = refs[refs.length - 1][1];
+      addStep("Interface scannet — planlægger handlinger...", "scan");
+      setPhase("executing");
 
-      // 5. Run AI agent inside window
-      const result = await runTask(newestRef, windowType, preciseTask, orgId);
+      // Phase 5: Run agent with live step reporting
+      const result = await runTask(newestRef, windowType, preciseTask, orgId, (step) => {
+        addStep(step.text, step.phase);
+      });
 
-      setSteps(prev => [
-        ...prev.slice(0, -1),
-        { text: result?.summary || "Opgave udført ✓", status: "done" },
-      ]);
-      setDone(true);
-      toast.success(`✅ ${result?.summary || "Opgave udført"}`);
+      addStep(`✅ ${result?.summary || "Opgave fuldført"}`, "narrate");
+      setPhase("done");
+      toast.success(`✅ ${result?.summary || "Opgave fuldført"}`);
+
     } catch (err) {
-      setSteps(prev => [...prev, { text: `Fejl: ${err.message}`, status: "error" }]);
+      addStep(`❌ Fejl: ${err.message}`, "error");
+      setPhase("error");
       toast.error(err.message);
     }
 
     setRunning(false);
   };
 
+  const reset = () => {
+    setTask("");
+    setSteps([]);
+    setPhase("idle");
+    setCurrentWindowType(null);
+    setPlanPreview(null);
+    setTimeout(() => inputRef.current?.focus(), 100);
+  };
+
+  const phaseLabel = {
+    idle: "Klar",
+    scanning: "Scanner interface...",
+    planning: "Planlægger handlinger...",
+    executing: "Udfører opgave...",
+    done: "Fuldført ✓",
+    error: "Fejl",
+  }[phase];
+
+  const phaseColor = {
+    idle: "#64748b", scanning: "#06b6d4", planning: "#8b5cf6",
+    executing: "#10b981", done: "#10b981", error: "#ef4444"
+  }[phase];
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20, scale: 0.96 }}
+      initial={{ opacity: 0, y: 20, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: 20, scale: 0.96 }}
-      className="fixed bottom-48 right-6 z-50 w-[400px] rounded-2xl overflow-hidden"
+      exit={{ opacity: 0, y: 20, scale: 0.95 }}
+      className="fixed bottom-52 right-6 z-50 w-[420px] rounded-2xl overflow-hidden flex flex-col"
       style={{
-        background: "rgba(2,8,18,0.97)",
-        border: "1px solid rgba(6,182,212,0.4)",
-        boxShadow: "0 0 60px rgba(6,182,212,0.15), 0 0 120px rgba(139,92,246,0.08)"
+        background: "rgba(2,6,16,0.98)",
+        border: "1px solid rgba(6,182,212,0.35)",
+        boxShadow: "0 0 80px rgba(6,182,212,0.12), 0 0 160px rgba(139,92,246,0.06)",
+        maxHeight: "calc(100vh - 280px)"
       }}
     >
+      {/* Top glow line */}
+      <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, #06b6d4, #8b5cf6, transparent)" }} />
+
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b"
-        style={{ borderColor: "rgba(6,182,212,0.15)", background: "rgba(6,182,212,0.04)" }}>
-        <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-lg flex items-center justify-center"
-            style={{ background: "linear-gradient(135deg, rgba(6,182,212,0.2), rgba(139,92,246,0.2))", border: "1px solid rgba(6,182,212,0.3)" }}>
-            <Zap className="w-3.5 h-3.5" style={{ color: "#06b6d4" }} />
+      <div className="flex items-center justify-between px-4 py-3 flex-shrink-0"
+        style={{ borderBottom: "1px solid rgba(6,182,212,0.12)", background: "rgba(6,182,212,0.03)" }}>
+        <div className="flex items-center gap-3">
+          <div className="relative w-8 h-8 rounded-xl flex items-center justify-center"
+            style={{ background: "linear-gradient(135deg, rgba(6,182,212,0.2), rgba(139,92,246,0.2))", border: "1px solid rgba(6,182,212,0.35)" }}>
+            <Zap className="w-4 h-4" style={{ color: "#06b6d4" }} />
+            {running && (
+              <motion.div className="absolute inset-0 rounded-xl border"
+                animate={{ scale: [1, 1.5, 1], opacity: [0.5, 0, 0.5] }}
+                transition={{ duration: 1.2, repeat: Infinity }}
+                style={{ borderColor: "#06b6d4" }} />
+            )}
           </div>
           <div>
-            <p className="text-[11px] font-black font-mono tracking-widest uppercase" style={{ color: "#06b6d4" }}>AI Udfør Opgave</p>
-            <p className="text-[9px] text-slate-500 font-mono">Åbner hologrammer og arbejder som et menneske</p>
+            <p className="text-[11px] font-black font-mono tracking-widest uppercase" style={{ color: "#06b6d4" }}>
+              AI Agentfunktion
+            </p>
+            <div className="flex items-center gap-1.5">
+              <motion.div className="w-1.5 h-1.5 rounded-full" animate={running ? { scale: [1, 1.5, 1], opacity: [1, 0.4, 1] } : {}}
+                transition={{ duration: 0.8, repeat: Infinity }}
+                style={{ background: phaseColor, boxShadow: `0 0 6px ${phaseColor}` }} />
+              <p className="text-[9px] font-mono tracking-wider" style={{ color: phaseColor }}>{phaseLabel}</p>
+              {currentWindowType && (
+                <p className="text-[9px] font-mono text-slate-600">• {currentWindowType.replace(/_/g, " ")}</p>
+              )}
+            </div>
           </div>
         </div>
-        <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-red-500/20 hover:text-red-400 transition-colors" style={{ color: "#64748b" }}>
-          <X className="w-3.5 h-3.5" />
-        </button>
+        <div className="flex items-center gap-1">
+          <button onClick={() => setExpanded(p => !p)} className="p-1.5 rounded-lg hover:bg-slate-800 transition-colors" style={{ color: "#64748b" }}>
+            {expanded ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronUp className="w-3.5 h-3.5" />}
+          </button>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-red-500/20 hover:text-red-400 transition-colors" style={{ color: "#64748b" }}>
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
       </div>
 
-      {/* Input */}
-      <div className="p-4">
-        <div className="flex gap-2">
-          <div className="flex-1 flex items-center gap-2 px-3 py-2.5 rounded-xl border"
-            style={{ background: "rgba(15,23,42,0.8)", borderColor: "rgba(6,182,212,0.25)" }}>
-            <Bot className="w-3.5 h-3.5 flex-shrink-0" style={{ color: "#06b6d4" }} />
-            <input
-              ref={inputRef}
-              value={task}
-              onChange={e => setTask(e.target.value)}
-              onKeyDown={e => e.key === "Enter" && execute()}
-              placeholder="Beskriv hvad AI'en skal gøre..."
-              className="flex-1 bg-transparent text-sm text-white placeholder-slate-600 outline-none"
-              disabled={running}
-            />
-          </div>
-          <motion.button
-            onClick={execute}
-            disabled={!task.trim() || running}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="w-10 h-10 rounded-xl flex items-center justify-center disabled:opacity-30 transition-all"
-            style={{
-              background: task.trim() && !running ? "linear-gradient(135deg, #06b6d4, #8b5cf6)" : "rgba(6,182,212,0.1)",
-              boxShadow: task.trim() && !running ? "0 0 20px rgba(6,182,212,0.4)" : "none"
-            }}
-          >
-            {running ? <Loader2 className="w-4 h-4 text-white animate-spin" /> : <Send className="w-4 h-4 text-white" />}
-          </motion.button>
-        </div>
+      <AnimatePresence>
+        {expanded && (
+          <motion.div initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }}
+            className="flex flex-col overflow-hidden">
 
-        {/* Steps */}
-        <AnimatePresence>
-          {steps.length > 0 && (
-            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="mt-3 space-y-1.5">
-              {steps.map((step, i) => (
-                <motion.div key={i} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }}
-                  className="flex items-center gap-2 text-[10px] font-mono">
-                  {step.status === "running" ? (
-                    <Loader2 className="w-3 h-3 animate-spin" style={{ color: "#06b6d4" }} />
-                  ) : step.status === "done" ? (
-                    <CheckCircle2 className="w-3 h-3" style={{ color: "#10b981" }} />
+            {/* Input */}
+            <div className="px-4 pt-3 pb-2 flex-shrink-0">
+              <div className="flex gap-2">
+                <div className="flex-1 flex items-start gap-2 px-3 py-2.5 rounded-xl border"
+                  style={{ background: "rgba(15,23,42,0.8)", borderColor: running ? "rgba(6,182,212,0.4)" : "rgba(6,182,212,0.2)" }}>
+                  <Bot className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" style={{ color: "#06b6d4" }} />
+                  <textarea
+                    ref={inputRef}
+                    value={task}
+                    onChange={e => setTask(e.target.value)}
+                    onKeyDown={e => e.key === "Enter" && !e.shiftKey && (e.preventDefault(), execute())}
+                    placeholder="Beskriv hvad AI'en skal gøre i systemet..."
+                    disabled={running}
+                    rows={2}
+                    className="flex-1 bg-transparent text-sm text-white placeholder-slate-600 outline-none resize-none leading-relaxed"
+                  />
+                </div>
+                <motion.button
+                  onClick={phase === "done" || phase === "error" ? reset : execute}
+                  disabled={running && phase !== "done"}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="w-10 h-10 mt-0.5 rounded-xl flex items-center justify-center disabled:opacity-40 transition-all flex-shrink-0"
+                  style={{
+                    background: phase === "done" || phase === "error"
+                      ? "rgba(100,116,139,0.2)"
+                      : (task.trim() && !running ? "linear-gradient(135deg, #06b6d4, #8b5cf6)" : "rgba(6,182,212,0.1)"),
+                    boxShadow: task.trim() && !running ? "0 0 20px rgba(6,182,212,0.4)" : "none"
+                  }}
+                >
+                  {running ? (
+                    <Loader2 className="w-4 h-4 text-white animate-spin" />
+                  ) : phase === "done" || phase === "error" ? (
+                    <ChevronRight className="w-4 h-4 text-slate-400" />
                   ) : (
-                    <X className="w-3 h-3 text-red-400" />
+                    <Send className="w-4 h-4 text-white" />
                   )}
-                  <span style={{ color: step.status === "done" ? "#94a3b8" : step.status === "error" ? "#f87171" : "#06b6d4" }}>
-                    {step.text}
-                  </span>
-                </motion.div>
-              ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
+                </motion.button>
+              </div>
+            </div>
 
-        {/* Example tasks */}
-        {steps.length === 0 && (
-          <div className="mt-3 space-y-1">
-            <p className="text-[9px] font-mono uppercase tracking-widest text-slate-600 mb-2">Eksempler</p>
-            {EXAMPLE_TASKS.map((ex, i) => (
-              <button key={i} onClick={() => { setTask(ex); setTimeout(() => inputRef.current?.focus(), 50); }}
-                className="w-full text-left flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[10px] font-mono transition-all hover:text-cyan-300"
-                style={{ color: "#64748b", background: "rgba(6,182,212,0.03)", border: "1px solid rgba(6,182,212,0.08)" }}>
-                <ChevronRight className="w-3 h-3 flex-shrink-0" />
-                {ex}
-              </button>
-            ))}
-          </div>
+            {/* Terminal / Steps Log */}
+            {steps.length > 0 ? (
+              <div className="mx-4 mb-3 rounded-xl overflow-hidden flex-shrink-0"
+                style={{ background: "rgba(0,0,0,0.6)", border: "1px solid rgba(6,182,212,0.12)", maxHeight: 220, overflowY: "auto" }}>
+                <div className="flex items-center gap-2 px-3 py-1.5 border-b" style={{ borderColor: "rgba(6,182,212,0.1)", background: "rgba(6,182,212,0.03)" }}>
+                  <Terminal className="w-3 h-3" style={{ color: "#06b6d4" }} />
+                  <span className="text-[9px] font-mono uppercase tracking-widest" style={{ color: "#06b6d4" }}>Execution Log</span>
+                  <div className="ml-auto flex gap-1">
+                    {["#ef4444","#f59e0b","#10b981"].map((c, i) => <div key={i} className="w-2 h-2 rounded-full" style={{ background: c, opacity: 0.6 }} />)}
+                  </div>
+                </div>
+                <div className="px-3 py-2 space-y-1.5">
+                  {steps.map((step, i) => {
+                    const Icon = PHASE_ICONS[step.phase] || ChevronRight;
+                    const color = PHASE_COLORS[step.phase] || "#64748b";
+                    const isLast = i === steps.length - 1;
+                    return (
+                      <motion.div key={step.id} initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }}
+                        className="flex items-start gap-2">
+                        <div className="flex-shrink-0 mt-0.5">
+                          {isLast && running ? (
+                            <Loader2 className="w-3 h-3 animate-spin" style={{ color }} />
+                          ) : (
+                            <Icon className="w-3 h-3" style={{ color }} />
+                          )}
+                        </div>
+                        <span className="text-[10px] font-mono leading-relaxed" style={{ color: isLast && running ? color : "#94a3b8" }}>
+                          {step.text}
+                        </span>
+                      </motion.div>
+                    );
+                  })}
+                  <div ref={stepsEndRef} />
+                </div>
+              </div>
+            ) : (
+              /* Example prompts */
+              <div className="px-4 pb-3">
+                <p className="text-[9px] font-mono uppercase tracking-widest text-slate-600 mb-2">Eksempler — klik for at bruge</p>
+                <div className="space-y-1">
+                  {EXAMPLES.map((ex, i) => (
+                    <motion.button key={i} onClick={() => { setTask(ex); setTimeout(() => inputRef.current?.focus(), 50); }}
+                      whileHover={{ x: 4 }}
+                      className="w-full text-left flex items-center gap-2 px-3 py-2 rounded-lg text-[10px] font-mono transition-all"
+                      style={{ color: "#64748b", background: "rgba(6,182,212,0.03)", border: "1px solid rgba(6,182,212,0.07)" }}
+                      onMouseEnter={e => { e.currentTarget.style.color = "#06b6d4"; e.currentTarget.style.borderColor = "rgba(6,182,212,0.2)"; }}
+                      onMouseLeave={e => { e.currentTarget.style.color = "#64748b"; e.currentTarget.style.borderColor = "rgba(6,182,212,0.07)"; }}>
+                      <ChevronRight className="w-3 h-3 flex-shrink-0" />
+                      {ex}
+                    </motion.button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Bottom hint */}
+            <div className="px-4 pb-3 flex-shrink-0">
+              <p className="text-[9px] font-mono text-slate-700 text-center">
+                AI åbner det rigtige modul · scanner interface · klikker og skriver som et menneske
+              </p>
+            </div>
+          </motion.div>
         )}
-      </div>
+      </AnimatePresence>
     </motion.div>
   );
 }
