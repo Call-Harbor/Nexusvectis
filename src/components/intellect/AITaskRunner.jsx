@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useId } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { Bot, Send, X, Loader2, CheckCircle2, ChevronRight, Zap, Brain, Eye, MousePointer, Keyboard, ScrollText, Terminal, ChevronDown, ChevronUp, AlertCircle } from "lucide-react";
-import { useHologramAIAgent } from "./HologramAIAgentSimple";
+import { useHologramAIAgentAdvanced } from "./HologramAIAgentAdvanced";
 import { toast } from "sonner";
 
 const WINDOW_MAP = [
@@ -105,7 +105,7 @@ export default function AITaskRunner({ onOpenWindow, windowRefs, orgId, onClose 
   const [error, setError] = useState(null);
   const stepsEndRef = useRef(null);
   const inputRef = useRef(null);
-  const { runTask } = useHologramAIAgent();
+  const { runTask } = useHologramAIAgentAdvanced();
 
   useEffect(() => {
     stepsEndRef.current?.scrollIntoView({ behavior: "smooth" });
