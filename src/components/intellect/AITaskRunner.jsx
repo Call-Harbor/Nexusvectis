@@ -104,8 +104,6 @@ export default function AITaskRunner({ onOpenWindow, windowRefs, orgId, onClose 
   const [expanded, setExpanded] = useState(true);
   const stepsEndRef = useRef(null);
   const inputRef = useRef(null);
-  const stepIdPrefix = useId();
-  const stepCounterRef = useRef(0);
   const { runTask } = useHologramAIAgent();
 
   useEffect(() => {
@@ -113,8 +111,7 @@ export default function AITaskRunner({ onOpenWindow, windowRefs, orgId, onClose 
   }, [steps]);
 
   const addStep = (text, stepPhase) => {
-    stepCounterRef.current += 1;
-    setSteps(prev => [...prev, { text, phase: stepPhase, id: `${stepIdPrefix}-${stepCounterRef.current}` }]);
+    setSteps(prev => [...prev, { text, phase: stepPhase, id: `${Date.now()}-${Math.random()}-${prev.length}` }]);
   };
 
   const execute = async () => {
@@ -294,7 +291,6 @@ export default function AITaskRunner({ onOpenWindow, windowRefs, orgId, onClose 
     setPhase("idle");
     setCurrentWindowType(null);
     setPlanPreview(null);
-    stepCounterRef.current = 0;
     setTimeout(() => inputRef.current?.focus(), 100);
   };
 
