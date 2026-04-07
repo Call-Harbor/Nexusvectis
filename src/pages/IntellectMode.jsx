@@ -369,7 +369,7 @@ export default function IntellectMode() {
     const allowMultiple = type.startsWith('chart_') || type === 'document_editor' || type === 'spreadsheet_editor' || type === 'deep_analysis';
     if (!allowMultiple && activeWindows.find(w => w.type === type)) {
       toast.info(`${type} window already open`);
-      return;
+      return null;
     }
     // Offset position slightly for each new window of same type to avoid stacking
     const existingCount = activeWindows.filter(w => w.type === type || w.type.startsWith('chart_')).length;
@@ -380,6 +380,7 @@ export default function IntellectMode() {
     const newId = Date.now();
     setActiveWindows(prev => [...prev, { type, id: newId, position: allowMultiple ? offsetPosition : position, data }]);
     setFocusedWindow(newId);
+    return newId;
   }, [activeWindows]);
 
   const closeWindow = useCallback((id) => {
@@ -1518,8 +1519,9 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
             windowRefs={windowRefsRef}
             orgId={orgId}
             onOpenWindow={(windowType, agentTask) => {
-              openWindow(windowType, { x: 80 + Math.random() * 200, y: 60 + Math.random() * 100 }, null);
+              const newId = openWindow(windowType, { x: 80 + Math.random() * 200, y: 60 + Math.random() * 100 }, null);
               toast.success(`🤖 Åbner ${windowType.replace(/_/g, ' ')}...`);
+              return newId;
             }}
           />
         )}

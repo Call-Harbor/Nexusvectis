@@ -81,29 +81,35 @@ Return JSON: { "window": "window_type", "task": "precise task description in Eng
 
       setSteps([
         { text: `Åbner hologram: ${windowType.replace(/_/g, " ")}`, status: "done" },
-        { text: `AI agent klar til: ${preciseTask.slice(0, 60)}`, status: "running" },
+        { text: `AI agent klar: ${preciseTask.slice(0, 55)}...`, status: "running" },
       ]);
 
       // 2. Open the window
-      const winId = await onOpenWindow(windowType, preciseTask);
+      onOpenWindow(windowType, preciseTask);
 
-      // 3. Wait for window to render
-      await new Promise(r => setTimeout(r, 1800));
+      // 3. Wait longer for window + content to render
+      await new Promise(r => setTimeout(r, 2200));
 
-      // 4. Find the window ref (newest ref)
+      // 4. Find the newest ref (last added)
       const refs = Object.entries(windowRefs.current || {});
       const newestRef = refs.length > 0 ? refs[refs.length - 1][1] : null;
 
+      if (!newestRef) {
+        setSteps(prev => [...prev, { text: "Vindue ikke fundet - prøv at åbne det manuelt", status: "error" }]);
+        setRunning(false);
+        return;
+      }
+
       setSteps(prev => [...prev.slice(0, -1),
-        { text: `AI udfører opgaven i ${windowType.replace(/_/g, " ")}...`, status: "running" },
+        { text: `Udfører i ${windowType.replace(/_/g, " ")}...`, status: "running" },
       ]);
 
-      // 5. Run AI agent
+      // 5. Run AI agent inside window
       const result = await runTask(newestRef, windowType, preciseTask, orgId);
 
       setSteps(prev => [
         ...prev.slice(0, -1),
-        { text: result?.summary || "Opgave udført", status: "done" },
+        { text: result?.summary || "Opgave udført ✓", status: "done" },
       ]);
       setDone(true);
       toast.success(`✅ ${result?.summary || "Opgave udført"}`);
