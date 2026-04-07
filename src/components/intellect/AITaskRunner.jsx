@@ -80,11 +80,16 @@ const PHASE_COLORS = {
 };
 
 const EXAMPLES = [
-  "Åbn rute-optimering og optimer alle aktive ruter",
-  "Gå til performance dashboard og tjek hvilke køretøjer der er ineffektive",
-  "Åbn vedligeholdelse og se hvilke køretøjer der snart skal serviceres",
-  "Åbn demand forecast og analyser næste måneds prognoser",
-  "Tjek port command og se vessel queue status",
+  "Åbn rute-optimering og optimer alle aktive ruter for at spare brændstof",
+  "Gå til fleet map og find alle aktive lastbiler",
+  "Åbn vedligeholdelse og vis køretøjer med kritisk service snart",
+  "Vis performance analytics og tjek CO₂-emissioner denne måned",
+  "Åbn port command og se vessel queue status",
+  "Lav en ny rute fra København til Aarhus",
+  "Åbn demand forecast og analyser næste måneds kapacitetsbehov",
+  "Vis alle aktive forsendelser i shipments modulet",
+  "Åbn alerts og tjek kritiske advarsler",
+  "Åbn airport ops og tjek gate status",
 ];
 
 export default function AITaskRunner({ onOpenWindow, windowRefs, orgId, onClose }) {
@@ -123,8 +128,55 @@ export default function AITaskRunner({ onOpenWindow, windowRefs, orgId, onClose 
       let preciseTask = task;
 
       try {
+        const NEXUSVECTIS_KNOWLEDGE = [
+          `You are an expert AI operator of NexusVectis — an advanced AI logistics platform.`,
+          `The platform uses holographic windows (holograms) that float on the IntellectMode desktop.`,
+          `Each hologram is interactive: you click buttons, fill forms, navigate tabs, and read data.`,
+          ``,
+          `HOLOGRAM MODULES:`,
+          `fleet => Fleet list: all vehicles, fuel, drivers, status tabs (All/Active/Maintenance). Buttons: Add Vehicle, Export.`,
+          `fleet_map => Live GPS tracking map: moving vehicle dots, real-time location, click for details, zoom/filter.`,
+          `fleet_3d_viewer => 3D globe visualization of entire fleet. Cinematic overview.`,
+          `routes => CREATE/VIEW routes. Use when user wants to ADD a new route. Has New Route button, form: origin, destination, transport type, priority.`,
+          `route_optimizer => AI route optimization for EXISTING routes. Analyzes efficiency, fuel savings, consolidation. Shows savings estimates.`,
+          `shipments => Shipment management: tracking numbers, status, cold chain temp, ETA predictions. Filters: status/cargo/priority.`,
+          `predictive_maintenance => AI maintenance prediction: failure probability, upcoming service dates, risk scores by vehicle.`,
+          `performance_analytics => KPI dashboards: efficiency %, CO2 emissions, on-time delivery, utilization. Bar/line charts, export.`,
+          `demand_forecast => AI demand predictions: 30/60/90 day forecasts, capacity planning, seasonal patterns.`,
+          `risk_assessment => Risk analysis: operational risk scores, safety incidents, high-risk routes, mitigation steps.`,
+          `satellite_weather => Real-time satellite weather: storm warnings, weather fronts, route weather impact.`,
+          `news_intelligence => Logistics/supply chain news feed with AI analysis: disruptions, regulatory changes.`,
+          `alerts => System alerts: sorted by severity (critical/warning/info). Dismiss, filter, see maintenance notices.`,
+          `swarm_intelligence => Multi-vehicle swarm coordination. For groups of vehicles operating together.`,
+          `digital_twin => Digital twin federation: real-time virtual copies of physical assets for simulation.`,
+          `neuro_risk => Neuro-symbolic AI risk fusion: advanced multi-source risk modeling.`,
+          `document_editor => AI document editor: CMR waybills, BOL, contracts, reports. Rich text + AI suggestions.`,
+          `spreadsheet_editor => Excel-like spreadsheet for data tables, calculations, logistics planning.`,
+          `project_management => Kanban project board: tasks, milestones, team assignments.`,
+          `image_generator => AI image generation: charts, infographics, vehicle diagrams.`,
+          `port_command => Port Command Center: vessel queues, berth scheduling, container tracking, crane ops. Tabs: Vessels/Berths/Containers/Cranes/Yard.`,
+          `airport_ops => Airport Ops Center: flight boards, gate allocation, baggage, ground handling, security, turnaround. Tabs: Flights/Gates/Baggage/Ground.`,
+          `deep_analysis => Deep AI data analysis: patterns, anomalies, historical trend mining.`,
+          ``,
+          `ROUTING RULES (CRITICAL — follow exactly):`,
+          `lav rute / opret rute / ny rute / create route / add route => routes`,
+          `optimer rute / route optimiz / optimaliser / find bedste rute => route_optimizer`,
+          `se p\u00e5 kort / find k\u00f8ret\u00f8j / live track / GPS / live map => fleet_map`,
+          `service / vedligehold / maintenance / defekt / reparation / nedbrud => predictive_maintenance`,
+          `performance / KPI / effektivitet / statistik / CO2 / emissioner => performance_analytics`,
+          `forsendelse / shipment / levering / pakke / tracking => shipments`,
+          `prognose / forecast / eftersp\u00f8rgsel / kapacitetsbehov => demand_forecast`,
+          `risiko / risk / fare / sikkerhed => risk_assessment`,
+          `alert / alarm / advarsel / fejl-meddelelse => alerts`,
+          `port / havn / vessel / skib / berth / crane => port_command`,
+          `lufthavn / airport / fly / gate / bagage / turnaround => airport_ops`,
+          `dokument / kontrakt / BOL / CMR / rapport / brev => document_editor`,
+          `vejr / weather / storm / satellit => satellite_weather`,
+          `nyheder / news / industri => news_intelligence`,
+        ].join('\n');
+
         const plan = await base44.integrations.Core.InvokeLLM({
-          prompt: `The user wants to do this task in a logistics operations system: "${task}"\n\nChoose the BEST window/module:\n- "routes" => CREATE a new route between two locations\n- "route_optimizer" => OPTIMIZE or ANALYZE existing routes\n- "fleet_map" => See vehicles on a LIVE MAP\n- "fleet" => Manage/view the vehicle fleet list\n- "predictive_maintenance" => Maintenance scheduling, failure predictions\n- "demand_forecast" => Demand and capacity forecasting\n- "risk_assessment" => Risk analysis\n- "performance_analytics" => KPI dashboards, efficiency statistics\n- "shipments" => View/manage shipments\n- "alerts" => View system alerts\n- "document_editor" => Write/edit documents\n- "spreadsheet_editor" => Tables, Excel-like data entry\n- "satellite_weather" => Weather intelligence\n- "news_intelligence" => Logistics news\n- "project_management" => Project tasks\n- "port_command" => Port and vessel operations\n- "airport_ops" => Airport and flight operations\n- "deep_analysis" => Deep AI data analysis\n- "image_generator" => Generate images with AI\n\nRules: If task says "lav", "opret", "ny rute" or "create route" => pick "routes". If "optimer" routes => pick "route_optimizer".\n\nReturn JSON: { "window": "key", "task": "English description" }`,
+          prompt: `${NEXUSVECTIS_KNOWLEDGE}\n\nUser task: "${task}"\n\nPick the single best window key and write a concise English task description.\n\nReturn JSON only: { "window": "exact_window_key", "task": "what to do in this window" }`,
           response_json_schema: {
             type: "object",
             properties: { window: { type: "string" }, task: { type: "string" } }
