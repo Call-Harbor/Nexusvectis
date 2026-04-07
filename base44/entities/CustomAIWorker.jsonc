@@ -1,0 +1,73 @@
+{
+  "name": "CustomAIWorker",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string"
+    },
+    "created_by": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string",
+      "description": "Worker display name"
+    },
+    "emoji": {
+      "type": "string",
+      "description": "Emoji icon"
+    },
+    "color": {
+      "type": "string",
+      "description": "Hex color"
+    },
+    "specialty": {
+      "type": "string",
+      "description": "One-line specialty description"
+    },
+    "system_prompt": {
+      "type": "string",
+      "description": "Full system prompt / instructions"
+    },
+    "training_sources": {
+      "type": "array",
+      "description": "URLs and files the worker has been trained on",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "url",
+              "file"
+            ]
+          },
+          "label": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string",
+            "description": "URL or file_url"
+          },
+          "extracted_content": {
+            "type": "string",
+            "description": "AI-extracted knowledge from this source"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "extracting",
+              "done",
+              "error"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "name",
+    "emoji",
+    "system_prompt"
+  ]
+}

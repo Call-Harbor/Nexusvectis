@@ -4,13 +4,14 @@ import { base44 } from "@/api/base44Client";
 import ReactMarkdown from "react-markdown";
 import WorkerHologramControl from "./WorkerHologramControl";
 import OrchestrationMonitor from "./OrchestrationMonitor";
+import CustomWorkerBuilder from "./CustomWorkerBuilder";
 import {
   Brain, Send, X, Plus, Trash2, MessageSquare, Loader2,
   Sparkles, User, Copy, CheckCheck, Minimize2, Maximize2,
   Pencil, Paperclip, Image, Film, FileText, Download,
   ImagePlus, Wand2, XCircle, Zap, Network, Grid3x3,
   Play, Square, Eye, ChevronDown, AlertCircle, CheckCircle2,
-  Clock, Activity
+  Clock, Activity, Settings, UserPlus
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -234,13 +235,13 @@ function MessageBubble({ message }) {
 // ── OrchestrationMonitor is now imported from separate component ────────────────────
 
 // ── Parallel Task Input ────────────────────────────────────────────────
-function ParallelTaskPanel({ onExecute, onClose }) {
-  const [tasks, setTasks] = useState([{ id: Date.now(), workerId: AI_WORKERS[0]?.id || '', prompt: '' }]);
+function ParallelTaskPanel({ onExecute, onClose, workers = AI_WORKERS }) {
+  const [tasks, setTasks] = useState([{ id: Date.now(), workerId: workers[0]?.id || '', prompt: '' }]);
   const [filesForOrch, setFilesForOrch] = useState([]);
   const [isRunning, setIsRunning] = useState(false);
   const fileInputRef = useRef(null);
 
-  const addTask = () => setTasks(prev => [...prev, { id: Date.now(), workerId: AI_WORKERS[0]?.id || '', prompt: '' }]);
+  const addTask = () => setTasks(prev => [...prev, { id: Date.now(), workerId: workers[0]?.id || '', prompt: '' }]);
   const removeTask = (id) => setTasks(prev => prev.filter(t => t.id !== id));
   const updateTask = (id, field, value) => setTasks(prev => prev.map(t => t.id === id ? { ...t, [field]: value } : t));
   const validTaskCount = tasks.filter(t => t.prompt.trim()).length;
@@ -278,7 +279,7 @@ function ParallelTaskPanel({ onExecute, onClose }) {
         <p className="text-[10px] font-mono tracking-widest uppercase text-slate-400 mb-3">AI Workers ({tasks.length})</p>
         <div className="space-y-2.5 max-h-64 overflow-y-auto">
           {tasks.map((task, idx) => {
-            const worker = AI_WORKERS.find(w => w.id === task.workerId) || AI_WORKERS[0];
+            const worker = workers.find(w => w.id === task.workerId) || workers[0];
             return (
               <motion.div key={task.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
                 className="group p-3 rounded-xl transition-all"
@@ -292,7 +293,7 @@ function ParallelTaskPanel({ onExecute, onClose }) {
                     <select value={task.workerId} onChange={e => updateTask(task.id, "workerId", e.target.value)}
                       className="w-full px-3 py-2 rounded-lg text-xs font-mono bg-slate-900/80 border transition-all focus:border-cyan-400 text-white outline-none"
                       style={{ borderColor: "rgba(100,116,139,0.3)" }}>
-                      {AI_WORKERS.map(w => <option key={w.id} value={w.id}>{w.emoji} {w.name} — {w.specialty}</option>)}
+                      {workers.map(w => <option key={w.id} value={w.id}>{w.emoji} {w.name}{w.isCustom ? " ★" : ""} — {w.specialty}</option>)}
                     </select>
                     <textarea value={task.prompt} onChange={e => updateTask(task.id, "prompt", e.target.value)}
                       placeholder={`Describe task ${idx + 1}...`}
@@ -432,6 +433,12 @@ export default function HarborSuperAgentChat({ onClose }) {
   const [imageGenPrompt, setImageGenPrompt] = useState("");
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
 
+  // Custom workers
+  const [customWorkers, setCustomWorkers] = useState([]);
+  const [showWorkerBuilder, setShowWorkerBuilder] = useState(false);
+  const [editingWorker, setEditingWorker] = useState(null);
+  const [workerPoolTab, setWorkerPoolTab] = useState("built-in"); // 'built-in' | 'custom'
+
   // Orchestration state
   const [showOrchestrationPanel, setShowOrchestrationPanel] = useState(false);
   const [showWorkerPool, setShowWorkerPool] = useState(false);
@@ -444,6 +451,15 @@ export default function HarborSuperAgentChat({ onClose }) {
   const fileInputRef = useRef(null);
   const unsubscribeRef = useRef(null);
 
+  // Load custom workers
+  const loadCustomWorkers = useCallback(async () => {
+    try {
+      const user = await base44.auth.me();
+      const workers = await base44.entities.CustomAIWorker.filter({ created_by: user.email });
+      setCustomWorkers(workers || []);
+    } catch {}
+  }, []);
+
   // Init
   useEffect(() => {
     const init = async () => {
@@ -453,6 +469,7 @@ export default function HarborSuperAgentChat({ onClose }) {
         if (members?.length > 0) setOrgId(members[0].organization_id);
       } catch {}
       await loadConversations();
+      await loadCustomWorkers();
     };
     init();
     return () => { unsubscribeRef.current?.(); };
@@ -578,7 +595,7 @@ export default function HarborSuperAgentChat({ onClose }) {
 
     // Build worker list
     const workers = parallelTasks.map(task => {
-      const workerDef = AI_WORKERS.find(w => w.id === task.workerId) || AI_WORKERS[0];
+      const workerDef = allWorkers.find(w => w.id === task.workerId) || allWorkers[0];
       return {
         id: `${orchId}_${task.id}`,
         workerId: task.workerId,
@@ -706,6 +723,21 @@ export default function HarborSuperAgentChat({ onClose }) {
   const visibleMessages = messages.filter(m => m.role !== "system");
   const isThinking = messages.length > 0 && messages[messages.length - 1]?.role === "user" && isSending;
 
+  // Merged worker list (built-in + custom)
+  const allWorkers = [
+    ...AI_WORKERS,
+    ...customWorkers.map(w => ({
+      id: `custom_${w.id}`,
+      name: w.name,
+      emoji: w.emoji,
+      color: w.color,
+      specialty: w.specialty,
+      systemPrompt: w.system_prompt,
+      isCustom: true,
+      rawId: w.id,
+    }))
+  ];
+
   // ── RENDER ──────────────────────────────────────────────────────────────
   return (
     <motion.div
@@ -746,7 +778,7 @@ export default function HarborSuperAgentChat({ onClose }) {
               <h2 className="text-sm font-black font-mono tracking-widest uppercase" style={{ color: "#06b6d4" }}>H.A.R.B.O.R INTELLECT</h2>
               <span className="text-[9px] font-mono px-1.5 py-0.5 rounded-md uppercase tracking-widest"
                 style={{ color: "#10b981", border: "1px solid rgba(16,185,129,0.3)", background: "rgba(16,185,129,0.08)" }}>
-                {AI_WORKERS.length}+ AI WORKERS
+                {allWorkers.length}+ AI WORKERS
               </span>
             </div>
             <p className="text-[10px] font-mono tracking-widest" style={{ color: "rgba(6,182,212,0.4)" }}>
@@ -779,7 +811,7 @@ export default function HarborSuperAgentChat({ onClose }) {
               border: `1px solid rgba(139,92,246,${showWorkerPool ? "0.5" : "0.2"})`
             }}>
             <Grid3x3 className="w-3.5 h-3.5" />
-            {AI_WORKERS.length} WORKERS
+            {allWorkers.length} WORKERS
           </motion.button>
           <button onClick={() => setShowSidebar(!showSidebar)}
             className="px-2.5 py-1.5 rounded-lg text-[10px] font-mono tracking-wider flex items-center gap-1.5"
@@ -806,15 +838,79 @@ export default function HarborSuperAgentChat({ onClose }) {
             className="overflow-hidden flex-shrink-0 border-b border-slate-700/50"
             style={{ background: "rgba(6,182,212,0.02)" }}>
             <div className="p-4">
-              <p className="text-[10px] font-mono uppercase tracking-widest mb-3" style={{ color: "#64748b" }}>{AI_WORKERS.length}+ Specialized AI Workers</p>
-              <div className="grid grid-cols-4 gap-2">
-                {AI_WORKERS.map(w => (
-                  <div key={w.id} className="p-2 rounded-lg" style={{ background: `rgba(${parseInt(w.color.slice(1,3),16)},${parseInt(w.color.slice(3,5),16)},${parseInt(w.color.slice(5,7),16)},0.08)`, border: `1px solid ${w.color}22` }}>
-                    <p className="text-xs font-bold" style={{ color: w.color }}>{w.emoji} {w.name}</p>
-                    <p className="text-[9px] text-slate-500 mt-0.5 leading-tight">{w.specialty}</p>
-                  </div>
-                ))}
+              {/* Tabs */}
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex gap-1">
+                  <button onClick={() => setWorkerPoolTab("built-in")}
+                    className="px-3 py-1 rounded-lg text-[10px] font-mono font-bold transition-all"
+                    style={{ background: workerPoolTab === "built-in" ? "rgba(6,182,212,0.15)" : "transparent", color: workerPoolTab === "built-in" ? "#06b6d4" : "#64748b", border: workerPoolTab === "built-in" ? "1px solid rgba(6,182,212,0.3)" : "1px solid transparent" }}>
+                    Built-in ({AI_WORKERS.length})
+                  </button>
+                  <button onClick={() => setWorkerPoolTab("custom")}
+                    className="px-3 py-1 rounded-lg text-[10px] font-mono font-bold transition-all"
+                    style={{ background: workerPoolTab === "custom" ? "rgba(139,92,246,0.15)" : "transparent", color: workerPoolTab === "custom" ? "#a78bfa" : "#64748b", border: workerPoolTab === "custom" ? "1px solid rgba(139,92,246,0.3)" : "1px solid transparent" }}>
+                    Custom ({customWorkers.length})
+                  </button>
+                </div>
+                <motion.button
+                  onClick={() => { setEditingWorker(null); setShowWorkerBuilder(true); }}
+                  whileHover={{ scale: 1.05 }}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-mono font-bold transition-all"
+                  style={{ background: "rgba(139,92,246,0.15)", color: "#a78bfa", border: "1px solid rgba(139,92,246,0.3)" }}>
+                  <UserPlus className="w-3 h-3" /> Create Worker
+                </motion.button>
               </div>
+
+              {/* Built-in tab */}
+              {workerPoolTab === "built-in" && (
+                <div className="grid grid-cols-4 gap-2 max-h-48 overflow-y-auto">
+                  {AI_WORKERS.map(w => (
+                    <div key={w.id} className="p-2 rounded-lg" style={{ background: `rgba(${parseInt(w.color.slice(1,3),16)},${parseInt(w.color.slice(3,5),16)},${parseInt(w.color.slice(5,7),16)},0.08)`, border: `1px solid ${w.color}22` }}>
+                      <p className="text-xs font-bold" style={{ color: w.color }}>{w.emoji} {w.name}</p>
+                      <p className="text-[9px] text-slate-500 mt-0.5 leading-tight">{w.specialty}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Custom tab */}
+              {workerPoolTab === "custom" && (
+                <div>
+                  {customWorkers.length === 0 ? (
+                    <div className="py-6 text-center">
+                      <p className="text-xs text-slate-500 mb-3">No custom workers yet</p>
+                      <motion.button
+                        onClick={() => { setEditingWorker(null); setShowWorkerBuilder(true); }}
+                        whileHover={{ scale: 1.05 }}
+                        className="px-4 py-2 rounded-xl text-xs font-mono font-bold"
+                        style={{ background: "rgba(139,92,246,0.15)", color: "#a78bfa", border: "1px solid rgba(139,92,246,0.3)" }}>
+                        + Create your first worker
+                      </motion.button>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto">
+                      {customWorkers.map(w => (
+                        <div key={w.id} className="group p-2.5 rounded-lg relative"
+                          style={{ background: `${w.color}10`, border: `1px solid ${w.color}25` }}>
+                          <p className="text-xs font-bold" style={{ color: w.color }}>{w.emoji} {w.name}</p>
+                          <p className="text-[9px] text-slate-500 mt-0.5 leading-tight">{w.specialty}</p>
+                          {w.training_sources?.filter(s => s.status === "done").length > 0 && (
+                            <span className="text-[8px] font-mono mt-1 block" style={{ color: "#10b981" }}>
+                              📚 {w.training_sources.filter(s => s.status === "done").length} sources
+                            </span>
+                          )}
+                          <button
+                            onClick={() => { setEditingWorker(w); setShowWorkerBuilder(true); }}
+                            className="absolute top-1.5 right-1.5 p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity hover:bg-slate-700"
+                            style={{ color: "#64748b" }}>
+                            <Settings className="w-2.5 h-2.5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </motion.div>
         )}
@@ -867,7 +963,7 @@ export default function HarborSuperAgentChat({ onClose }) {
                     <div className="text-center space-y-2">
                       <h3 className="text-lg font-black font-mono tracking-widest uppercase" style={{ color: "#06b6d4" }}>Ready for command</h3>
                       <p className="text-xs text-slate-500 max-w-xs leading-relaxed">
-                        H.A.R.B.O.R Intellect has {AI_WORKERS.length}+ specialized AI workers standing by. Use ORCHESTRATE to run multiple AI tasks in parallel, or chat directly.
+                        H.A.R.B.O.R Intellect has {allWorkers.length}+ specialized AI workers standing by. Use ORCHESTRATE to run multiple AI tasks in parallel, or chat directly.
                       </p>
                     </div>
                     <div className="grid grid-cols-2 gap-2 max-w-lg w-full">
@@ -942,6 +1038,7 @@ export default function HarborSuperAgentChat({ onClose }) {
                       <ParallelTaskPanel
                         onExecute={executeParallelOrchestration}
                         onClose={() => setShowOrchestrationPanel(false)}
+                        workers={allWorkers}
                       />
                     </div>
                   </motion.div>
@@ -1040,13 +1137,30 @@ export default function HarborSuperAgentChat({ onClose }) {
                   </button>
                 </div>
                 <p className="text-[9px] font-mono text-slate-600 text-center mt-2 tracking-wider">
-                  {AI_WORKERS.length}+ AI Workers • Parallel execution • Real-time orchestration • Hologram control
+                  {allWorkers.length}+ AI Workers • Parallel execution • Real-time orchestration • Hologram control
                 </p>
               </div>
             </>
           )}
         </div>
       </div>
+
+      {/* ── CUSTOM WORKER BUILDER MODAL ── */}
+      <AnimatePresence>
+        {showWorkerBuilder && (
+          <CustomWorkerBuilder
+            onClose={() => { setShowWorkerBuilder(false); setEditingWorker(null); }}
+            editingWorker={editingWorker}
+            onWorkerCreated={(saved) => {
+              loadCustomWorkers();
+              setShowWorkerBuilder(false);
+              setEditingWorker(null);
+              setWorkerPoolTab("custom");
+              setShowWorkerPool(true);
+            }}
+          />
+        )}
+      </AnimatePresence>
 
       {/* ── OUTPUT VIEWER MODAL ── */}
       <AnimatePresence>
