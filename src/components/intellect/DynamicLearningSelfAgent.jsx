@@ -308,4 +308,3 @@ async function updateMemoryWithResults(memory, windowType, strategy, result, org
 
   await saveMemory(updated, windowType, orgId);
 }
-}
