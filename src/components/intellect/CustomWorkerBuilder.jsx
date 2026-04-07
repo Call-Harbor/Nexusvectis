@@ -26,7 +26,7 @@ export default function CustomWorkerBuilder({ onClose, onWorkerCreated, editingW
     const url = urlInput.trim();
     if (!url) return;
     if (!url.startsWith("http")) { toast.error("Enter a valid URL starting with http"); return; }
-    setSources(prev => [...prev, { type: "url", label: url, source: url, status: "pending", extracted_content: "" }]);
+    setSources(prev => [...prev, { type: "url", label: url, source: url, status: "done", extracted_content: url }]);
     setUrlInput("");
   };
 
@@ -35,36 +35,11 @@ export default function CustomWorkerBuilder({ onClose, onWorkerCreated, editingW
     for (const file of files) {
       try {
         const { file_url } = await base44.integrations.Core.UploadFile({ file });
-        setSources(prev => [...prev, { type: "file", label: file.name, source: file_url, status: "pending", extracted_content: "" }]);
+        setSources(prev => [...prev, { type: "file", label: file.name, source: file_url, status: "done", extracted_content: file_url }]);
+        toast.success(`${file.name} uploaded`);
       } catch { toast.error(`Failed to upload ${file.name}`); }
     }
     e.target.value = "";
-  };
-
-  const extractSource = async (idx) => {
-    const source = sources[idx];
-    setSources(prev => prev.map((s, i) => i === idx ? { ...s, status: "extracting" } : s));
-    try {
-      let result;
-      if (source.type === "url") {
-        result = await base44.integrations.Core.InvokeLLM({
-          prompt: `Crawl and extract all meaningful information from this URL: ${source.source}. Return a comprehensive summary of all key facts, data, processes, rules, and content found. Be thorough.`,
-          add_context_from_internet: true,
-          model: "gemini_3_flash"
-        });
-      } else {
-        result = await base44.integrations.Core.InvokeLLM({
-          prompt: `Extract all meaningful information and key knowledge from the attached file. Summarize comprehensively — facts, data, processes, rules, content.`,
-          file_urls: [source.source],
-          model: "gemini_3_flash"
-        });
-      }
-      setSources(prev => prev.map((s, i) => i === idx ? { ...s, status: "done", extracted_content: typeof result === "string" ? result : JSON.stringify(result) } : s));
-      toast.success(`Extracted knowledge from ${source.label}`);
-    } catch (err) {
-      setSources(prev => prev.map((s, i) => i === idx ? { ...s, status: "error" } : s));
-      toast.error(`Extraction failed: ${err.message}`);
-    }
   };
 
   const removeSource = (idx) => setSources(prev => prev.filter((_, i) => i !== idx));
@@ -248,13 +223,7 @@ export default function CustomWorkerBuilder({ onClose, onWorkerCreated, editingW
                     <span className="flex-1 text-[11px] text-slate-300 font-mono truncate">{src.label}</span>
                     <div className="flex items-center gap-2 flex-shrink-0">
                       {statusIcon(src.status)}
-                      {src.status === "pending" && (
-                        <button onClick={() => extractSource(idx)}
-                          className="text-[9px] font-mono px-2 py-1 rounded-lg transition-all"
-                          style={{ background: "rgba(6,182,212,0.12)", color: "#06b6d4", border: "1px solid rgba(6,182,212,0.3)" }}>
-                          Extract
-                        </button>
-                      )}
+
                       {src.extracted_content && (
                         <button onClick={() => setExpandedSource(expandedSource === idx ? null : idx)}
                           className="p-1 rounded hover:bg-slate-700 transition-all"
@@ -268,21 +237,34 @@ export default function CustomWorkerBuilder({ onClose, onWorkerCreated, editingW
                     </div>
                   </div>
 
-                  {/* Extracted content preview */}
+                  {/* Source preview */}
                   <AnimatePresence>
-                    {expandedSource === idx && src.extracted_content && (
+                    {expandedSource === idx && (
                       <motion.div
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: "auto", opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
                         className="border-t overflow-hidden"
-                        style={{ borderColor: "rgba(16,185,129,0.15)" }}
+                        style={{ borderColor: "rgba(6,182,212,0.15)" }}
                       >
                         <div className="px-3 py-3" style={{ background: "rgba(0,0,0,0.3)" }}>
-                          <p className="text-[8px] font-mono uppercase tracking-widest text-green-400 mb-2">Extracted Knowledge</p>
-                          <div className="max-h-48 overflow-y-auto rounded-lg p-3" style={{ background: "rgba(0,0,0,0.3)", border: "1px solid rgba(16,185,129,0.1)" }}>
-                            <p className="text-[10px] text-slate-400 leading-relaxed whitespace-pre-wrap font-light">{src.extracted_content}</p>
-                          </div>
+                          {src.type === "url" ? (
+                            <iframe
+                              src={src.source}
+                              className="w-full rounded-lg"
+                              style={{ height: 200, border: "1px solid rgba(6,182,212,0.2)", background: "#000" }}
+                              sandbox="allow-scripts allow-same-origin"
+                              title={src.label}
+                            />
+                          ) : (
+                            <div className="flex items-center gap-3 p-3 rounded-lg" style={{ background: "rgba(139,92,246,0.1)", border: "1px solid rgba(139,92,246,0.2)" }}>
+                              <FileText className="w-5 h-5 text-violet-400" />
+                              <div>
+                                <p className="text-xs text-slate-300 font-mono">{src.label}</p>
+                                <a href={src.source} target="_blank" rel="noopener noreferrer" className="text-[10px] text-violet-400 hover:underline">Open file ↗</a>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </motion.div>
                     )}
