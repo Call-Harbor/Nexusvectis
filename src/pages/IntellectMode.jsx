@@ -50,6 +50,7 @@ import AICoach from "@/components/intellect/AICoach";
 import HarborSuperAgentChat from "@/components/intellect/HarborSuperAgentChat";
 import AIAgentCursor from "@/components/intellect/AIAgentCursor";
 import { useHologramAIAgent } from "@/components/intellect/HologramAIAgent";
+import AITaskRunner from "@/components/intellect/AITaskRunner";
 
 const THINKING_STEPS = ["Querying fleet data", "Running neural analysis", "Cross-referencing modules", "Generating response"];
 
@@ -133,6 +134,7 @@ export default function IntellectMode() {
   const [isCircularMenuOpen, setIsCircularMenuOpen] = useState(false);
   const [showFleetAITrainer, setShowFleetAITrainer] = useState(false);
   const [showHarborAgentChat, setShowHarborAgentChat] = useState(false);
+  const [showAITaskRunner, setShowAITaskRunner] = useState(false);
   const intellectConversationRef = useRef(null);
   const intellectUnsubRef = useRef(null);
   const [installedAppIds, setInstalledAppIds] = useState(new Set());
@@ -1508,6 +1510,21 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
       {/* AI Agent Cursor — shows when agent is operating the UI */}
       <AIAgentCursor />
 
+      {/* AI Task Runner */}
+      <AnimatePresence>
+        {showAITaskRunner && (
+          <AITaskRunner
+            onClose={() => setShowAITaskRunner(false)}
+            windowRefs={windowRefsRef}
+            orgId={orgId}
+            onOpenWindow={(windowType, agentTask) => {
+              openWindow(windowType, { x: 80 + Math.random() * 200, y: 60 + Math.random() * 100 }, null);
+              toast.success(`🤖 Åbner ${windowType.replace(/_/g, ' ')}...`);
+            }}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Harbor Super Agent Chat */}
       <AnimatePresence>
         {showHarborAgentChat && (
@@ -1542,6 +1559,25 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
           />
         )}
       </AnimatePresence>
+
+      {/* AI Task Runner Button */}
+      <motion.button
+        onClick={() => setShowAITaskRunner(prev => !prev)}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        className="fixed bottom-48 right-6 z-40 flex items-center gap-2.5 px-4 py-3 rounded-2xl font-mono font-bold text-xs tracking-widest uppercase transition-all"
+        style={{
+          background: showAITaskRunner
+            ? "linear-gradient(135deg, rgba(16,185,129,0.3), rgba(6,182,212,0.3))"
+            : "linear-gradient(135deg, rgba(16,185,129,0.15), rgba(6,182,212,0.15))",
+          border: "1px solid rgba(16,185,129,0.5)",
+          color: "#10b981",
+          boxShadow: "0 0 30px rgba(16,185,129,0.2)"
+        }}>
+        <Zap className="w-4 h-4" />
+        AI Udfør
+        <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+      </motion.button>
 
       {/* Harbor Agent Button */}
       <motion.button
