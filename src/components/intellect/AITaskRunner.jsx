@@ -243,36 +243,26 @@ export default function AITaskRunner({ onOpenWindow, windowRefs, orgId, onClose 
       addStep(`Hologram aktiveret ✓`, "narrate");
       await new Promise(r => setTimeout(r, 200));
 
-      // Phase 3: Wait for hologram to fully load
+      // Phase 3: Wait for window ref to exist (hologram is open)
       let newestRef = null;
-      let contentFound = false;
-      for (let attempt = 0; attempt < 15; attempt++) {
+      for (let attempt = 0; attempt < 10; attempt++) {
         const refs = Object.entries(windowRefs.current || {});
         if (refs.length > 0) {
           newestRef = refs[refs.length - 1][1];
-          if (newestRef) {
-            const buttons = newestRef?.querySelectorAll("button, [role='button']") || [];
-            const inputs = newestRef?.querySelectorAll("input, textarea, select, [role='combobox']") || [];
-            const text = newestRef?.textContent?.trim().length > 20;
-            if ((buttons.length > 1 || inputs.length > 0) && text) {
-              contentFound = true;
-              break;
-            }
-          }
+          if (newestRef && newestRef.offsetHeight > 0) break;
         }
-        addStep(`Indlæser hologram (${attempt + 1}/15)...`, "think");
-        await new Promise(r => setTimeout(r, 500));
+        addStep(`Åbner hologram (${attempt + 1}/10)...`, "think");
+        await new Promise(r => setTimeout(r, 300));
       }
 
-      if (!contentFound || !newestRef) {
-        addStep("Hologrammet loadede ikke fuldstændigt — prøv igen", "error");
+      if (!newestRef) {
+        addStep("Hologrammet åbnede ikke", "error");
         setPhase("error");
         setRunning(false);
         return;
       }
 
-      addStep("✓ Hologram fuldt loadet — starter AI", "narrate");
-      await new Promise(r => setTimeout(r, 300));
+      addStep("✓ Hologram åbnet", "narrate");
 
       // Phase 4: Run agent with live step reporting
       const result = await runTask(newestRef, windowType, preciseTask, orgId, (step) => {
