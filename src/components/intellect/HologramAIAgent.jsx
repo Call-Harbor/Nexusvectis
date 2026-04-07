@@ -654,9 +654,13 @@ export function useHologramAIAgent() {
         .map(el => el.getAttribute("aria-label") || el.getAttribute("title") || el.textContent?.trim() || "Add")
         .filter(Boolean);
 
+      // Prioritize LIVE scanned data over pre-trained knowledge (live data is accurate for current module)
       const allButtons = [...new Set([...liveButtons, ...fabButtons, ...knownButtons])];
       const allInputs = [...new Set([...liveInputs, ...knownInputs])];
       const allTabs = [...new Set([...liveTabs, ...knownTabs])];
+      
+      // Report what we actually found
+      report(`Scanned form: ${liveInputs.length} live fields, ${liveButtons.length} buttons`, "scan");
 
       // Build select options info for the prompt
       const selectsInfo = liveStructure.inputs
@@ -669,13 +673,16 @@ export function useHologramAIAgent() {
 
 TASK: "${task}"
 MODULE: "${windowType.replace(/_/g, ' ')}"
-${knowledge ? `MODULE INFO: ${knowledge.description}` : ''}
+IMPORTANT: Use the LIVE scanned field names EXACTLY — they are more accurate than module pre-training.
 
-=== BUTTONS (use EXACT text) ===
-${allButtons.length > 0 ? allButtons.map((b, i) => `${i + 1}. "${b}"`).join('\n') : 'None detected yet'}
+=== LIVE SCANNED BUTTONS (EXACT — use these first) ===
+${liveButtons.length > 0 ? liveButtons.map((b, i) => `${i + 1}. "${b}"`).join('\n') : 'None'}
 
-=== INPUT FIELDS (use EXACT placeholder/label) ===
-${allInputs.length > 0 ? allInputs.map((f, i) => `${i + 1}. "${f}"`).join('\n') : 'None'}
+=== LIVE SCANNED INPUT FIELDS (EXACT — use ONLY these field names) ===
+${liveInputs.length > 0 ? liveInputs.map((f, i) => `${i + 1}. "${f}"`).join('\n') : 'None'}
+
+=== FALLBACK: Known buttons ===
+${knownButtons.filter(b => !liveButtons.includes(b)).slice(0, 5).map((b, i) => `${i + 1}. "${b}"`).join('\n') || 'None'}
 
 === REQUIRED FIELDS ===
 ${requiredFieldsText || 'None detected'}
@@ -690,17 +697,18 @@ ${allTabs.length > 0 ? allTabs.map((t, i) => `${i + 1}. "${t}"`).join('\n') : 'N
 ${liveStructure.text.slice(0, 400) || 'loading...'}
 
 RULES:
-1. Generate steps for EVERY field in the form. Be complete and thorough.
-2. CLICK steps: click buttons using exact label text.
-3. TYPE steps: use EXACT input placeholder/label. Provide realistic values. For address/location fields, use real city/country names.
-4. SELECT steps: use type="select" with label=field name, value=option to pick.
-5. CHECK steps: use type="check" with label=checkbox/radio name, value="true" or "false".
-6. For "create" tasks: click the primary creation button first, then fill EVERY dialog form field in order, then click submit.
-7. For "search": type in the search input.
-8. For "navigate to tab": use type="tab".
-9. ALWAYS end with clicking the submit/create/save button. Never skip the final submit step.
-10. CRITICAL: Fill ALL required fields. Do not skip any field marked in REQUIRED FIELDS section.
-11. If a button looks like a submit button (Create, Save, Submit, OK, Confirm), ALWAYS include it as the final step.
+1. Generate steps for EVERY field in the LIVE SCANNED INPUT FIELDS list. Match field names EXACTLY.
+2. ONLY use field names from the LIVE SCANNED INPUT FIELDS section — ignore pre-trained knowledge.
+3. CLICK steps: click buttons using exact label text from LIVE SCANNED BUTTONS.
+4. TYPE steps: use EXACT field name from LIVE SCANNED list. Provide realistic values. For address/location fields, use real city/country names.
+5. SELECT steps: use type="select" with label=field name, value=option to pick.
+6. CHECK steps: use type="check" with label=checkbox/radio name, value="true" or "false".
+7. For "create" tasks: click the primary creation button first, then fill EVERY field in the live list in order, then click submit.
+8. For "search": type in the search input.
+9. For "navigate to tab": use type="tab".
+10. ALWAYS end with clicking the submit/create/save button (e.g. "Save Employee", "Create", "Submit").
+11. CRITICAL: Fill ALL required fields. Do not skip any field.
+12. FIELD NAME ACCURACY IS CRITICAL — if a field in LIVE list says "First Name", use EXACTLY "First Name", not "Employee Name".
 
 Return JSON only with complete step sequence:
 { "steps": [ {"type": "click|type|select|check|tab|think|narrate|scroll", "label": "...", "value": "...", "text": "..."} ], "summary": "one sentence summary" }
@@ -931,14 +939,18 @@ IMPORTANT: Last step MUST be clicking the submit/create/save button.`,
           } else {
             report(`⚠️ Input "${step.label}" not found — re-scanning`, "think");
             const fresh = deepScanWindow(activeRoot);
+            const allAvailable = fresh.inputs.map(i => i.label).join(', ');
+            report(`Available fields: ${allAvailable}`, "think");
             const freshInput = fresh.inputs.find(i => i.label.toLowerCase().includes(step.label.toLowerCase()));
             if (freshInput) {
-              report(`✅ Found after re-scan: ${step.label}`, "narrate");
+              report(`✅ Found after re-scan: ${freshInput.label}`, "narrate");
               const retry = findElement(activeRoot, freshInput.label, "input");
               if (retry) {
                 fillElement(retry, val);
                 await new Promise(r => setTimeout(r, 150));
               }
+            } else {
+              report(`⚠️ Field "${step.label}" not in form. Skipping.`, "think");
             }
           }
           executedLabels.push(`typed:${step.label}=${val.slice(0, 20)}`);
