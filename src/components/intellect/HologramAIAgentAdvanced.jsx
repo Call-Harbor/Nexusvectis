@@ -316,12 +316,21 @@ export function useHologramAIAgentAdvanced() {
     try {
       report("🔍 Analyzing interface...", "scan");
 
-      // PHASE 1: Deep analysis (scan current window, don't wait for iframes)
-      const page = await analyzePage(containerEl || document);
+      // PHASE 1: Deep analysis with retry - wait for page to fully load
+      let page = await analyzePage(containerEl || document);
+      let retries = 0;
+
+      while ((page.buttons.length === 0 && page.inputs.length === 0) && retries < 10) {
+        report(`⏳ Page loading... (${retries + 1}/10)`, "think");
+        await new Promise(r => setTimeout(r, 300));
+        page = await analyzePage(containerEl || document);
+        retries++;
+      }
+
       report(`Scanned: ${page.buttons.length} buttons, ${page.inputs.length} inputs`, "scan");
 
       if (page.buttons.length === 0 && page.inputs.length === 0) {
-        report("❌ No interactive elements found", "error");
+        report("❌ Page empty after 10 retries", "error");
         busyRef.current = false;
         return { summary: "Empty page", steps: [] };
       }
