@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useId } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { Bot, Send, X, Loader2, CheckCircle2, ChevronRight, Zap, Brain, Eye, MousePointer, Keyboard, ScrollText, Terminal, ChevronDown, ChevronUp, AlertCircle } from "lucide-react";
-import { useHologramAIAgent } from "./HologramAIAgent";
+import { useHologramAIAgent } from "./HologramAIAgentSimple";
 import { toast } from "sonner";
 
 const WINDOW_MAP = [
@@ -281,7 +281,7 @@ export default function AITaskRunner({ onOpenWindow, windowRefs, orgId, onClose 
       const errorDetails = {
         message: err.message || "Ukendt fejl",
         type: err.name || "Error",
-        suggestions: generateSuggestions(err.message, windowType),
+        suggestions: generateSuggestions(err.message, currentWindowType),
         timestamp: new Date().toLocaleString("da-DK")
       };
       setError(errorDetails);

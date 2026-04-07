@@ -772,6 +772,7 @@ Output ONLY JSON, no other text:
       setAgentStatus("working", task.slice(0, 50));
       const executedLabels = [];
       let activeRoot = containerEl;
+      let dialogDepth = 0;
 
       for (let i = 0; i < steps.length; i++) {
         const step = steps[i];
@@ -822,19 +823,30 @@ Output ONLY JSON, no other text:
           }
           executedLabels.push(`clicked:${step.label}`);
 
-          // Check if dialog opened
-          await new Promise(r => setTimeout(r, 250));
+          // Check if dialog opened after click
+          await new Promise(r => setTimeout(r, 400));
           const dialog = getActiveDialog();
           if (dialog && activeRoot !== dialog) {
+            dialogDepth++;
             activeRoot = dialog;
-            report(`💬 Dialog opened — scanning form fields`, "think");
+            report(`💬 Dialog åbnet — scanner felter i dialog`, "think");
+            
+            // Rescan the dialog to extract actual fields and update the plan
+            const dialogStructure = deepScanWindow(dialog);
+            const dialogButtons = dialogStructure.buttons.map(b => b.label).filter(Boolean);
+            const dialogInputs = dialogStructure.inputs.map(i => `${i.label}${i.type === 'select' ? ' (dropdown)' : ''}`).filter(Boolean);
+            
             if (i < steps.length - 1) {
-              const remaining = steps.slice(i + 1);
-              const remainingGoal = remaining.map(s => s.text || s.label || s.value).filter(Boolean).join(", ");
-              const newSteps = await rePlanRemaining(remainingGoal || task, executedLabels);
-              if (newSteps.length > 0) {
-                steps = [...steps.slice(0, i + 1), ...newSteps];
-                report(`Re-planned: ${newSteps.filter(s => ["click","type"].includes(s.type)).length} new actions`, "plan");
+              const remaining = steps.slice(i + 1).filter(s => !["click", "tab"].includes(s.type) || s.label);
+              const remainingGoal = remaining.map(s => s.text || s.label).filter(Boolean).join(", ") || task;
+              
+              // Only replan if we found actual fields in the dialog
+              if (dialogInputs.length > 0 || dialogButtons.length > 0) {
+                const newSteps = await rePlanRemaining(remainingGoal, executedLabels);
+                if (newSteps && newSteps.length > 0) {
+                  steps.splice(i + 1, remaining.length, ...newSteps);
+                  report(`Re-planlagt: ${newSteps.filter(s => ["click","type"].includes(s.type)).length} nye handlinger`, "plan");
+                }
               }
             }
           }
