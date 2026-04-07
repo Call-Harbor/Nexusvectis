@@ -264,14 +264,17 @@ export default function AITaskRunner({ onOpenWindow, windowRefs, orgId, onClose 
         await new Promise(r => setTimeout(r, 500));
       }
 
-      if (!newestRef) {
-        addStep("Vindue ikke tilgængeligt — prøv manuelt", "error");
+      if (!contentFound || !newestRef) {
+        addStep("Hologrammet loadede ikke fuldstændigt — prøv igen", "error");
         setPhase("error");
         setRunning(false);
         return;
       }
 
-      // Phase 5: Run agent with live step reporting
+      addStep("✓ Hologram fuldt loadet — starter AI", "narrate");
+      await new Promise(r => setTimeout(r, 300));
+
+      // Phase 4: Run agent with live step reporting
       const result = await runTask(newestRef, windowType, preciseTask, orgId, (step) => {
         addStep(step.text, step.phase);
       });
