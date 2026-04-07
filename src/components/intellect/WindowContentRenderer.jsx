@@ -418,6 +418,10 @@ export default function WindowContentRenderer({ type, data, vehicles, routes, sh
   if (type === 'risk_assessment') return <RiskAssessmentAnalysis vehicles={vehicles} routes={routes} alerts={alerts} />;
   if (type === 'performance_analytics') return <PerformanceAnalyticsPanel vehicles={vehicles} routes={routes} shipments={shipments} />;
   if (type === 'fleet_map') return <iframe src={`/MapMonitor?hologram=true`} className="w-full h-full border-0" title="Fleet Map" />;
+  if (type === 'routes') return <iframe src={`/Routes?hologram=true`} className="w-full h-full border-0" title="Routes" />;
+  if (type === 'fleet') return <iframe src={`/Fleet?hologram=true`} className="w-full h-full border-0" title="Fleet" />;
+  if (type === 'shipments') return <iframe src={`/Shipments?hologram=true`} className="w-full h-full border-0" title="Shipments" />;
+  if (type === 'alerts') return <iframe src={`/Alerts?hologram=true`} className="w-full h-full border-0" title="Alerts" />;
   if (type === 'project_management') return <ProjectManagementPanel orgId={orgId} />;
   if (type === 'fleet_drive') return <FleetDrivePanel orgId={orgId} openWindow={openWindow} />;
   if (type === 'hologram_presentation') return <HologramPresentation orgId={orgId} initialFileUrl={data?.initialFileUrl} onSaved={onSaved} />;

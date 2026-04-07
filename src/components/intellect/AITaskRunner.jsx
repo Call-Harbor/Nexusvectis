@@ -6,22 +6,46 @@ import { useHologramAIAgent } from "./HologramAIAgent";
 import { toast } from "sonner";
 
 const WINDOW_MAP = [
-  { keywords: /rute|route|routing|optimer/i, window: "route_optimizer" },
-  { keywords: /fleet map|flåde|live track|kort/i, window: "fleet_map" },
-  { keywords: /vedligehold|maintenance|service/i, window: "predictive_maintenance" },
-  { keywords: /performance|ydelse|effektivitet/i, window: "performance_analytics" },
-  { keywords: /prognose|forecast|demand|efterspørgsel/i, window: "demand_forecast" },
-  { keywords: /risiko|risk|fare/i, window: "risk_assessment" },
-  { keywords: /dokument|document|kontrakt|contract/i, window: "document_editor" },
-  { keywords: /regneark|spreadsheet/i, window: "spreadsheet_editor" },
+  // Routes page = CREATE/VIEW/EDIT actual routes between locations
+  { keywords: /lav en rute|opret rute|ny rute|create route|new route|lave en route|lav route/i, window: "routes" },
+  // Route optimizer = OPTIMIZE/ANALYZE existing routes for efficiency
+  { keywords: /optimer rute|route optimiz|optimér|optimer eksist/i, window: "route_optimizer" },
+  // Fleet map = live tracking on a map
+  { keywords: /fleet map|flåde kort|live track|live map|se på kort|find køretøj|track/i, window: "fleet_map" },
+  // Predictive maintenance
+  { keywords: /vedligehold|maintenance|service|reparation|nedbrud/i, window: "predictive_maintenance" },
+  // Performance analytics
+  { keywords: /performance|ydelse|effektivitet|kpi|statistik/i, window: "performance_analytics" },
+  // Demand forecast
+  { keywords: /prognose|forecast|demand|efterspørgsel|forudsig/i, window: "demand_forecast" },
+  // Risk assessment
+  { keywords: /risiko|risk|fare|sikkerhed/i, window: "risk_assessment" },
+  // Document editor
+  { keywords: /dokument|document|kontrakt|skriv brev|rapport/i, window: "document_editor" },
+  // Spreadsheet
+  { keywords: /regneark|spreadsheet|tabel|excel/i, window: "spreadsheet_editor" },
+  // Weather
   { keywords: /vejr|weather|satellit/i, window: "satellite_weather" },
+  // News
   { keywords: /nyheder|news/i, window: "news_intelligence" },
-  { keywords: /projekt|project/i, window: "project_management" },
+  // Project management
+  { keywords: /projekt|project|opgaver|tasks/i, window: "project_management" },
+  // Port
   { keywords: /port|havn|vessel|skib/i, window: "port_command" },
-  { keywords: /lufthavn|airport|fly/i, window: "airport_ops" },
-  { keywords: /analyse|analysis|data/i, window: "deep_analysis" },
+  // Airport
+  { keywords: /lufthavn|airport|fly|terminal/i, window: "airport_ops" },
+  // Deep analysis
+  { keywords: /analyse|analysis|data indsigt/i, window: "deep_analysis" },
+  // Swarm
   { keywords: /swarm|sværm/i, window: "swarm_intelligence" },
+  // Digital twin
   { keywords: /digital twin|tvilling/i, window: "digital_twin" },
+  // Vehicles/fleet management
+  { keywords: /køretøj|vehicle|lastbil|flåde admin|fleet admin/i, window: "fleet" },
+  // Shipments
+  { keywords: /forsendelse|shipment|levering|pakke/i, window: "shipments" },
+  // Alerts
+  { keywords: /alert|alarm|advarsel/i, window: "alerts" },
 ];
 
 function pickWindow(task) {
@@ -100,17 +124,7 @@ export default function AITaskRunner({ onOpenWindow, windowRefs, orgId, onClose 
 
       try {
         const plan = await base44.integrations.Core.InvokeLLM({
-          prompt: `The user wants to do this task in a logistics operations system: "${task}"
-
-Which UI window/module should be opened? Pick ONE from:
-route_optimizer, fleet_map, predictive_maintenance, demand_forecast, risk_assessment, 
-performance_analytics, satellite_weather, news_intelligence, swarm_intelligence, 
-digital_twin, document_editor, spreadsheet_editor, deep_analysis, fleet_3d_viewer, 
-airport_ops, port_command, project_management, image_generator
-
-Also rephrase the task in clear English for the AI agent executor.
-
-Return: { "window": "window_type", "task": "clear English task description" }`,
+          prompt: `The user wants to do this task in a logistics operations system: "${task}"\n\nChoose the BEST window/module:\n- "routes" => CREATE a new route between two locations\n- "route_optimizer" => OPTIMIZE or ANALYZE existing routes\n- "fleet_map" => See vehicles on a LIVE MAP\n- "fleet" => Manage/view the vehicle fleet list\n- "predictive_maintenance" => Maintenance scheduling, failure predictions\n- "demand_forecast" => Demand and capacity forecasting\n- "risk_assessment" => Risk analysis\n- "performance_analytics" => KPI dashboards, efficiency statistics\n- "shipments" => View/manage shipments\n- "alerts" => View system alerts\n- "document_editor" => Write/edit documents\n- "spreadsheet_editor" => Tables, Excel-like data entry\n- "satellite_weather" => Weather intelligence\n- "news_intelligence" => Logistics news\n- "project_management" => Project tasks\n- "port_command" => Port and vessel operations\n- "airport_ops" => Airport and flight operations\n- "deep_analysis" => Deep AI data analysis\n- "image_generator" => Generate images with AI\n\nRules: If task says "lav", "opret", "ny rute" or "create route" => pick "routes". If "optimer" routes => pick "route_optimizer".\n\nReturn JSON: { "window": "key", "task": "English description" }`,
           response_json_schema: {
             type: "object",
             properties: { window: { type: "string" }, task: { type: "string" } }
