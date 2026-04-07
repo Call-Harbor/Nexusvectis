@@ -49,6 +49,7 @@ import ProcessThinkingTerminal from "@/components/intellect/ProcessThinkingTermi
 import AICoach from "@/components/intellect/AICoach";
 import HarborSuperAgentChat from "@/components/intellect/HarborSuperAgentChat";
 import AIAgentCursor from "@/components/intellect/AIAgentCursor";
+import { useHologramAIAgent } from "@/components/intellect/HologramAIAgent";
 
 const THINKING_STEPS = ["Querying fleet data", "Running neural analysis", "Cross-referencing modules", "Generating response"];
 
@@ -136,6 +137,8 @@ export default function IntellectMode() {
   const intellectUnsubRef = useRef(null);
   const [installedAppIds, setInstalledAppIds] = useState(new Set());
   const windowRefsRef = useRef({});
+  const pendingAgentTaskRef = useRef(null); // { windowType, task }
+  const { runTask } = useHologramAIAgent();
 
   const messagesEndRef = useRef(null);
   const queryClient = useQueryClient();
@@ -1510,9 +1513,31 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
         {showHarborAgentChat && (
           <HarborSuperAgentChat
             onClose={() => setShowHarborAgentChat(false)}
-            onOpenWindow={(windowType, position, data) => {
+            onOpenWindow={(windowType, position, data, agentTask) => {
+              const newId = Date.now();
               openWindow(windowType, position || { x: 80 + Math.random() * 200, y: 60 + Math.random() * 100 }, data);
               toast.success(`🤖 H.A.R.B.O.R opened: ${windowType.replace(/_/g, ' ')}`);
+              // If agent has a task to perform inside this window, schedule it
+              if (agentTask) {
+                pendingAgentTaskRef.current = { windowType, task: agentTask, time: Date.now() };
+                // Wait for window to render, then run task
+                setTimeout(() => {
+                  const pending = pendingAgentTaskRef.current;
+                  if (!pending) return;
+                  // Find the newly opened window ref by type
+                  const winEntry = Object.entries(windowRefsRef.current).find(([wid, ref]) => {
+                    // Match by most recently added window of this type
+                    return ref != null;
+                  });
+                  const winRef = winEntry ? winEntry[1] : null;
+                  if (winRef) {
+                    pendingAgentTaskRef.current = null;
+                    runTask(winRef, windowType, pending.task, orgId).then(result => {
+                      if (result?.summary) toast.success(`✅ ${result.summary}`);
+                    });
+                  }
+                }, 1800);
+              }
             }}
           />
         )}

@@ -464,16 +464,22 @@ const dispatchAIAction = (type, label, selector, value) => {
 };
 
 // Parse agent response for action tags and execute them with delays
+// Also extracts the intent around each OPEN tag to use as the agent task
 const executeAgentActions = (content, onOpenWindow) => {
   const tagRegex = /\[(OPEN|CLICK|TYPE|SCROLL):([^\]]+)\]/gi;
   let match;
   let delay = 300;
-  while ((match = tagRegex.exec(content)) !== null) {
-    const cmd = match[1].toUpperCase();
-    const args = match[2].split(":");
+  // Collect all matches first
+  const allMatches = [...content.matchAll(/\[(OPEN|CLICK|TYPE|SCROLL):([^\]]+)\]/gi)];
+  allMatches.forEach((m, idx) => {
+    const cmd = m[1].toUpperCase();
+    const args = m[2].split(":");
     const delay_ = delay;
     if (cmd === "OPEN" && onOpenWindow) {
-      setTimeout(() => onOpenWindow(args[0], { x: 80 + Math.random() * 200, y: 60 + Math.random() * 100 }), delay_);
+      // Grab surrounding text as task context (50 chars before/after the tag)
+      const tagIdx = content.indexOf(m[0]);
+      const surrounding = content.slice(Math.max(0, tagIdx - 80), tagIdx + 80).replace(m[0], "").trim();
+      setTimeout(() => onOpenWindow(args[0], { x: 80 + Math.random() * 200, y: 60 + Math.random() * 100 }, null, surrounding || null), delay_);
       delay += 800;
     } else if (cmd === "CLICK") {
       setTimeout(() => dispatchAIAction("click", args[0]), delay_);
@@ -486,7 +492,7 @@ const executeAgentActions = (content, onOpenWindow) => {
       setTimeout(() => dispatchAIAction("scroll", args[0] || "down"), delay_);
       delay += 500;
     }
-  }
+  });
 };
 
 export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
