@@ -310,8 +310,7 @@ Return JSON: { "steps": [ {"type": "click|type|tab|hover|scroll|think|narrate", 
             const rect = el.getBoundingClientRect();
             dispatchCursorAction("click", step.label, null, null, rect.left + rect.width / 2, rect.top + rect.height / 2);
             await new Promise(r => setTimeout(r, 350));
-            // Dispatch a proper bubbling MouseEvent so React synthetic events fire
-            el.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+            el.click();
             await new Promise(r => setTimeout(r, 1000 + Math.random() * 400));
           } else {
             if (containerEl) {
