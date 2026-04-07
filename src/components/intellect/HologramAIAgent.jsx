@@ -264,6 +264,33 @@ function findElement(containerEl, label, type) {
       el = visible.find(e => /add|new|create|plus|fab|float/i.test(e.className || ""));
       if (el) return el;
     }
+
+    // For inputs: also find by associated <label> text or nearby label element
+    if (type === "input") {
+      const allInputs = [...root.querySelectorAll("input:not([type=hidden]):not([type=checkbox]), textarea, select")].filter(isVisible);
+      for (const inp of allInputs) {
+        // Check <label for="id"> association
+        if (inp.id) {
+          const lbl = root.querySelector(`label[for="${inp.id}"]`);
+          if (lbl && lbl.textContent?.trim().toLowerCase().includes(lower)) return inp;
+        }
+        // Check aria-labelledby
+        const labelledBy = inp.getAttribute("aria-labelledby");
+        if (labelledBy) {
+          const lbl = root.getElementById(labelledBy) || document.getElementById(labelledBy);
+          if (lbl && lbl.textContent?.trim().toLowerCase().includes(lower)) return inp;
+        }
+        // Check parent/sibling label text
+        const parent = inp.closest("div, fieldset, [class*='field'], [class*='form']");
+        if (parent) {
+          const lblEl = parent.querySelector("label, [class*='label']");
+          if (lblEl && lblEl.textContent?.trim().toLowerCase().includes(lower)) return inp;
+          // Also check all text nodes in parent
+          const parentText = parent.textContent?.toLowerCase() || "";
+          if (parentText.includes(lower)) return inp;
+        }
+      }
+    }
   }
   return null;
 }
