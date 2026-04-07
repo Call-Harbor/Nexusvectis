@@ -283,72 +283,88 @@ export function useHologramAIAgent() {
 
       report(`✅ Filled ${filledCount.size} fields`, "narrate");
 
-      // Now get LLM plan for button clicks and order
-      const fieldList = scan.inputs.map(f => f.label).join('\n');
-      const buttonList = scan.buttons.map(b => b.label).join('\n');
-
-      const planResult = await base44.integrations.Core.InvokeLLM({
-        prompt: `Task: "${task}"
-
-All fields have been filled with data:
-${fieldList}
-
-Available buttons to click:
-${buttonList}
-
-What buttons should be clicked in order to complete this task? Output ONLY JSON:
-{"buttons":["exact button name 1","exact button name 2"],"summary":"task completed"}`,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            buttons: { type: "array", items: { type: "string" } },
-            summary: { type: "string" }
-          }
+      // Priority buttons to look for in order
+      const priorityButtons = [
+        "Save Employee",
+        "Create Employee", 
+        "Add Employee",
+        "Save",
+        "Create",
+        "Add",
+        "Submit",
+        "Confirm",
+        "Next",
+        "Continue"
+      ];
+      
+      // Find first available priority button
+      let buttonsToClick = [];
+      for (const priorityLabel of priorityButtons) {
+        const btn = findButton(containerEl, priorityLabel);
+        if (btn) {
+          buttonsToClick = [priorityLabel];
+          report(`Found submit button: ${priorityLabel}`, "narrate");
+          break;
         }
-      });
+      }
+      
+      // If no priority button found, use first real button from scan
+      if (buttonsToClick.length === 0 && scan.buttons.length > 0) {
+        buttonsToClick = [scan.buttons[0].label];
+        report(`Using first available button: ${scan.buttons[0].label}`, "narrate");
+      }
 
-      const buttonsToClick = planResult?.buttons || ["Save", "Create", "Submit", "Confirm"];
-
-      // Click buttons in sequence — with retry and continuation
-      let clickedCount = 0;
-      for (const btnLabel of buttonsToClick) {
-        try {
-          let btn = findButton(containerEl, btnLabel);
-          
-          // Retry: if button not found, look for similar buttons
-          if (!btn) {
-            report(`🔄 Searching for alternative button match...`, "think");
-            const freshScan = aggressiveDeepScan(containerEl);
-            const similar = freshScan.buttons.find(b => fuzzyMatch(b.label, btnLabel) > 0.6);
-            if (similar) {
-              btn = similar.element;
-              report(`✅ Found similar: ${similar.label}`, "narrate");
+      // Click button with aggressive retries
+      if (buttonsToClick.length > 0) {
+        const btnLabel = buttonsToClick[0];
+        let clicked = false;
+        
+        for (let attempt = 0; attempt < 5; attempt++) {
+          try {
+            let btn = findButton(containerEl, btnLabel);
+            
+            if (!btn && attempt > 0) {
+              // Rescan for button
+              const freshScan = aggressiveDeepScan(containerEl);
+              btn = freshScan.buttons.find(b => fuzzyMatch(b.label, btnLabel) > 0.5)?.element;
             }
-          }
-          
-          if (btn) {
-            report(`🖱️ Clicking: ${btnLabel}`, "click");
-            try {
-              const rect = btn.getBoundingClientRect();
-              if (rect.width > 0 && rect.height > 0) {
-                dispatchCursorAction("click", btnLabel, null, null, rect.left + rect.width / 2, rect.top + rect.height / 2);
-                await new Promise(r => setTimeout(r, 150));
+            
+            if (btn) {
+              report(`🖱️ Clicking: ${btnLabel} (attempt ${attempt + 1})`, "click");
+              try {
+                const rect = btn.getBoundingClientRect();
+                if (rect.width > 0 && rect.height > 0) {
+                  dispatchCursorAction("click", btnLabel, null, null, rect.left + rect.width / 2, rect.top + rect.height / 2);
+                  await new Promise(r => setTimeout(r, 200));
+                }
+                // Multiple click methods
+                btn.click();
+                await new Promise(r => setTimeout(r, 100));
+                btn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+                clicked = true;
+                report(`✅ Button clicked successfully`, "narrate");
+                await new Promise(r => setTimeout(r, 1500)); // Wait for form submission
+                break;
+              } catch (clickErr) {
+                report(`⚠️ Click attempt ${attempt + 1} failed, retrying...`, "think");
+                await new Promise(r => setTimeout(r, 400));
               }
-              btn.click();
-              clickedCount++;
-              await new Promise(r => setTimeout(r, 1000));
-            } catch (clickErr) {
-              report(`⚠️ Click attempt failed, continuing...`, "think");
+            } else if (attempt < 4) {
+              report(`Waiting for button to appear... (${attempt + 1}/4)`, "think");
+              await new Promise(r => setTimeout(r, 600));
+            }
+          } catch (e) {
+            if (attempt < 4) {
               await new Promise(r => setTimeout(r, 300));
             }
-          } else {
-            report(`ℹ️ Button "${btnLabel}" not found, skipping...`, "think");
           }
-        } catch (e) {
-          report(`⚠️ Error processing button, continuing to next...`, "think");
-          await new Promise(r => setTimeout(r, 200));
-          continue; // CRITICAL: Don't stop, continue to next button
         }
+        
+        if (!clicked) {
+          report(`⚠️ Could not click button after 5 attempts`, "think");
+        }
+      } else {
+        report(`ℹ️ No submit button found in form`, "think");
       }
 
       report(`✅ Task completed - Filled ${filledCount.size} fields and executed button actions`, "narrate");
