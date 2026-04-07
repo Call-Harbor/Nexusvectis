@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useId } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
-import { Bot, Send, X, Loader2, CheckCircle2, ChevronRight, Zap, Brain, Eye, MousePointer, Keyboard, ScrollText, Terminal, ChevronDown, ChevronUp } from "lucide-react";
+import { Bot, Send, X, Loader2, CheckCircle2, ChevronRight, Zap, Brain, Eye, MousePointer, Keyboard, ScrollText, Terminal, ChevronDown, ChevronUp, AlertCircle } from "lucide-react";
 import { useHologramAIAgent } from "./HologramAIAgent";
 import { toast } from "sonner";
 
@@ -102,6 +102,7 @@ export default function AITaskRunner({ onOpenWindow, windowRefs, orgId, onClose 
   const [currentWindowType, setCurrentWindowType] = useState(null);
   const [planPreview, setPlanPreview] = useState(null);
   const [expanded, setExpanded] = useState(true);
+  const [error, setError] = useState(null);
   const stepsEndRef = useRef(null);
   const inputRef = useRef(null);
   const { runTask } = useHologramAIAgent();
@@ -277,12 +278,33 @@ export default function AITaskRunner({ onOpenWindow, windowRefs, orgId, onClose 
       toast.success(`✅ ${result?.summary || "Opgave fuldført"}`);
 
     } catch (err) {
-      addStep(`❌ Fejl: ${err.message}`, "error");
+      const errorDetails = {
+        message: err.message || "Ukendt fejl",
+        type: err.name || "Error",
+        suggestions: generateSuggestions(err.message, windowType),
+        timestamp: new Date().toLocaleString("da-DK")
+      };
+      setError(errorDetails);
+      addStep(`❌ Fejl: ${errorDetails.message}`, "error");
       setPhase("error");
-      toast.error(err.message);
+      toast.error(errorDetails.message);
     }
 
     setRunning(false);
+  };
+
+  const generateSuggestions = (errorMsg, wType) => {
+    const suggestions = [];
+    const msg = errorMsg?.toLowerCase() || "";
+    
+    if (msg.includes("not found")) suggestions.push("Elementet blev ikke fundet - prøv at specificere opgaven mere klart");
+    if (msg.includes("timeout")) suggestions.push("Timeout - vinduet tager for lang tid at loade. Prøv igen eller åbn modulet manuelt");
+    if (msg.includes("undefined")) suggestions.push("Modulet er ikke helt loadet. Vent et øjeblik og prøv igen");
+    if (msg.includes("disabled")) suggestions.push("Feltet er deaktiveret - tjek formens vilkår eller krav");
+    if (msg.includes("permission")) suggestions.push("Adgang nægtet - du har muligvis ikke rettigheder til denne handling");
+    if (!suggestions.length) suggestions.push("Prøv at formulere opgaven anderledes eller åbn modulet manuelt");
+    
+    return suggestions;
   };
 
   const reset = () => {
@@ -291,7 +313,21 @@ export default function AITaskRunner({ onOpenWindow, windowRefs, orgId, onClose 
     setPhase("idle");
     setCurrentWindowType(null);
     setPlanPreview(null);
+    setError(null);
     setTimeout(() => inputRef.current?.focus(), 100);
+  };
+
+  const handleRetry = () => {
+    setError(null);
+    setSteps([]);
+    setPhase("idle");
+    setTimeout(() => execute(), 100);
+  };
+
+  const handleReport = () => {
+    const report = `Error Report\nTidspunkt: ${error?.timestamp}\nFejl: ${error?.message}\nType: ${error?.type}\nOpgave: ${task}\nModul: ${currentWindowType || "unknown"}`;
+    navigator.clipboard.writeText(report);
+    toast.success("Fejlrapport kopieret til clipboard");
   };
 
   const phaseLabel = {
@@ -464,12 +500,62 @@ export default function AITaskRunner({ onOpenWindow, windowRefs, orgId, onClose 
               </div>
             )}
 
+            {/* Error Panel */}
+            {error && (
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+                className="mx-4 mb-3 rounded-xl overflow-hidden flex-shrink-0"
+                style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)" }}>
+                <div className="px-3 py-2.5">
+                  <div className="flex items-start gap-2 mb-2.5">
+                    <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: "#ef4444" }} />
+                    <div className="flex-1">
+                      <p className="text-[11px] font-semibold" style={{ color: "#ef4444" }}>Fejl opstod</p>
+                      <p className="text-[9px] text-slate-400 mt-1">{error.message}</p>
+                    </div>
+                  </div>
+                  {error.suggestions && error.suggestions.length > 0 && (
+                    <div className="mb-2.5 pl-5 border-l" style={{ borderColor: "rgba(239,68,68,0.2)" }}>
+                      <p className="text-[8px] font-mono uppercase tracking-wider text-slate-500 mb-1.5">Forslag:</p>
+                      {error.suggestions.map((sug, i) => (
+                        <p key={i} className="text-[9px] text-slate-400 mb-1">• {sug}</p>
+                      ))}
+                    </div>
+                  )}
+                  <div className="flex gap-2 pt-2.5 border-t" style={{ borderColor: "rgba(239,68,68,0.2)" }}>
+                    <motion.button onClick={handleRetry} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                      className="flex-1 px-2.5 py-1.5 rounded-lg text-[9px] font-semibold transition-all"
+                      style={{ background: "rgba(59,130,246,0.2)", color: "#3b82f6" }}
+                      onMouseEnter={e => e.currentTarget.style.background = "rgba(59,130,246,0.3)"}
+                      onMouseLeave={e => e.currentTarget.style.background = "rgba(59,130,246,0.2)"}>
+                      ↻ Prøv igen
+                    </motion.button>
+                    <motion.button onClick={handleReport} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                      className="flex-1 px-2.5 py-1.5 rounded-lg text-[9px] font-semibold transition-all"
+                      style={{ background: "rgba(168,85,247,0.2)", color: "#a855f7" }}
+                      onMouseEnter={e => e.currentTarget.style.background = "rgba(168,85,247,0.3)"}
+                      onMouseLeave={e => e.currentTarget.style.background = "rgba(168,85,247,0.2)"}>
+                      📋 Rapportér
+                    </motion.button>
+                    <motion.button onClick={reset} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                      className="px-2.5 py-1.5 rounded-lg text-[9px] font-semibold transition-all"
+                      style={{ background: "rgba(100,116,139,0.2)", color: "#64748b" }}
+                      onMouseEnter={e => e.currentTarget.style.background = "rgba(100,116,139,0.3)"}
+                      onMouseLeave={e => e.currentTarget.style.background = "rgba(100,116,139,0.2)"}>
+                      Lukket
+                    </motion.button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
             {/* Bottom hint */}
-            <div className="px-4 pb-3 flex-shrink-0">
-              <p className="text-[9px] font-mono text-slate-700 text-center">
-                AI åbner det rigtige modul · scanner interface · klikker og skriver som et menneske
-              </p>
-            </div>
+            {!error && (
+              <div className="px-4 pb-3 flex-shrink-0">
+                <p className="text-[9px] font-mono text-slate-700 text-center">
+                  AI åbner det rigtige modul · scanner interface · klikker og skriver som et menneske
+                </p>
+              </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
