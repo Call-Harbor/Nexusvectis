@@ -250,6 +250,10 @@ function ParallelTaskPanel({ onExecute, onClose }) {
     setIsRunning(true);
     try {
       await onExecute(tasks.filter(t => t.prompt.trim()), filesForOrch);
+      // Reset after successful execution
+      setTasks([{ id: Date.now(), workerId: AI_WORKERS[0]?.id || '', prompt: '' }]);
+      setFilesForOrch([]);
+      onClose();
     } finally {
       setIsRunning(false);
     }
