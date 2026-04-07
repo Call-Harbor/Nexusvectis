@@ -251,13 +251,23 @@ Return JSON: { "steps": [ {"type": "click|type|tab|hover|scroll|think|narrate", 
       report(`Plan: ${steps.filter(s => s.type === 'click' || s.type === 'type' || s.type === 'tab').length} actions planned`, "plan");
       await new Promise(r => setTimeout(r, 300));
 
+      // Detect open dialogs/modals in document.body (React portals)
+      const getActiveDialog = () => {
+        return document.querySelector(
+          '[role="dialog"][data-state="open"], [role="dialog"].fixed, [role="alertdialog"], .fixed.inset-0 [role="dialog"], [data-radix-dialog-content]'
+        );
+      };
+
       // Helper: re-plan remaining steps after UI changes (e.g. dialog opened)
       const rePlanRemaining = async (remainingTask, executedSoFar) => {
-        const fresh = deepScanWindow(containerEl);
+        // Prefer active dialog context over container
+        const dialog = getActiveDialog();
+        const scanRoot = dialog || containerEl;
+        const fresh = deepScanWindow(scanRoot);
         const bLabels = fresh.buttons.map(b => b.label).filter(Boolean);
         const iLabels = fresh.inputs.map(i => i.label).filter(Boolean);
         const tLabels = fresh.tabs.map(t => t.label).filter(Boolean);
-        report(`Re-scanning after UI change: ${bLabels.length} buttons, ${iLabels.length} inputs`, "scan");
+        report(`Re-scanning ${dialog ? 'dialog' : 'window'}: ${bLabels.length} buttons, ${iLabels.length} inputs`, "scan");
         const rePlan = await base44.integrations.Core.InvokeLLM({
           prompt: `You are an AI agent inside a NexusVectis logistics UI.\n\nOriginal task: "${task}"\nRemaining goal: "${remainingTask}"\nActions already done: ${executedSoFar.join(', ')}\n\n=== CURRENT BUTTONS ===\n${bLabels.length > 0 ? bLabels.map((b,i) => `${i+1}. "${b}"`).join('\n') : 'none'}\n\n=== CURRENT INPUT FIELDS ===\n${iLabels.length > 0 ? iLabels.map((f,i) => `${i+1}. "${f}"`).join('\n') : 'none'}\n\n=== CURRENT TABS ===\n${tLabels.length > 0 ? tLabels.map((t,i) => `${i+1}. "${t}"`).join('\n') : 'none'}\n\nGenerate remaining steps to complete the goal. Use ONLY exact strings from the lists above. Return JSON: { "steps": [{"type": "click|type|tab|think|narrate", "label": "...", "value": "...", "text": "..."}], "summary": "..." }`,
           response_json_schema: { type: "object", properties: { steps: { type: "array", items: { type: "object", additionalProperties: true } }, summary: { type: "string" } } }
@@ -265,15 +275,16 @@ Return JSON: { "steps": [ {"type": "click|type|tab|hover|scroll|think|narrate", 
         return rePlan?.steps || [];
       };
 
-      // ── PHASE 3: EXECUTE ───────────────────────────────────────────────
+      // ── PHASE 3: EXECUTE
       setAgentStatus("working", task.slice(0, 50));
       const executedLabels = [];
+      let activeRoot = containerEl;
 
       for (let i = 0; i < steps.length; i++) {
         const step = steps[i];
 
         if (step.type === "tab") {
-          const el = findElement(containerEl, step.label, "tab");
+          const el = findElement(activeRoot, step.label, "tab");
           report(`📌 Clicking tab: ${step.label}`, "click");
           if (el) {
             const rect = el.getBoundingClientRect();
@@ -289,45 +300,58 @@ Return JSON: { "steps": [ {"type": "click|type|tab|hover|scroll|think|narrate", 
         }
 
         if (step.type === "click") {
-          const el = findElement(containerEl, step.label, "button")
-            || findElement(containerEl, step.label, "tab")
-            || findElement(containerEl, step.label, "any");
+          // Always search in activeRoot first, then document.body
+          const el = findElement(activeRoot, step.label, "button")
+            || findElement(activeRoot, step.label, "tab")
+            || findElement(document.body, step.label, "button")
+            || findElement(document.body, step.label, "any");
           report(`🖱 Clicking: ${step.label}`, "click");
-          const scanBefore = deepScanWindow(containerEl);
           if (el) {
             const rect = el.getBoundingClientRect();
             dispatchCursorAction("click", step.label, null, null, rect.left + rect.width / 2, rect.top + rect.height / 2);
             await new Promise(r => setTimeout(r, 350));
-            el.click();
-            await new Promise(r => setTimeout(r, 900 + Math.random() * 400));
+            // Dispatch a proper bubbling MouseEvent so React synthetic events fire
+            el.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+            await new Promise(r => setTimeout(r, 1000 + Math.random() * 400));
           } else {
             if (containerEl) {
               const r = containerEl.getBoundingClientRect();
               dispatchCursorAction("click", step.label, null, null, r.left + r.width * 0.5, r.top + r.height * 0.4);
             }
-            await new Promise(r => setTimeout(r, 500));
+            await new Promise(r => setTimeout(r, 600));
           }
           executedLabels.push(`clicked:${step.label}`);
-          // If UI changed significantly (new inputs appeared), re-plan remaining steps
-          const scanAfter = deepScanWindow(containerEl);
-          const newInputCount = scanAfter.inputs.length - scanBefore.inputs.length;
-          const newButtonCount = scanAfter.buttons.length - scanBefore.buttons.length;
-          if ((newInputCount > 1 || newButtonCount > 2) && i < steps.length - 1) {
-            report(`UI changed (+${newInputCount} inputs, +${newButtonCount} buttons) — re-planning`, "think");
-            await new Promise(r => setTimeout(r, 600));
-            const remaining = steps.slice(i + 1);
-            const remainingGoal = remaining.map(s => s.text || s.label || s.value).filter(Boolean).join(", ");
-            const newSteps = await rePlanRemaining(remainingGoal || task, executedLabels);
-            if (newSteps.length > 0) {
-              steps = [...steps.slice(0, i + 1), ...newSteps];
-              report(`Re-planned: ${newSteps.filter(s => s.type === 'click' || s.type === 'type').length} new actions`, "plan");
+          // Check if a dialog/modal just opened (React portal)
+          await new Promise(r => setTimeout(r, 400));
+          const dialog = getActiveDialog();
+          if (dialog) {
+            activeRoot = dialog;
+            report(`💬 Dialog detected — switching context to dialog`, "think");
+          }
+          // Re-plan if remaining steps likely need new UI
+          if (i < steps.length - 1) {
+            const scanAfter = deepScanWindow(activeRoot);
+            const scanBefore = deepScanWindow(containerEl);
+            const newInputCount = scanAfter.inputs.length - scanBefore.inputs.length;
+            const newButtonCount = scanAfter.buttons.length;
+            if (dialog || newInputCount > 0 || newButtonCount > 3) {
+              report(`UI changed — re-planning remaining steps`, "think");
+              await new Promise(r => setTimeout(r, 400));
+              const remaining = steps.slice(i + 1);
+              const remainingGoal = remaining.map(s => s.text || s.label || s.value).filter(Boolean).join(", ");
+              const newSteps = await rePlanRemaining(remainingGoal || task, executedLabels);
+              if (newSteps.length > 0) {
+                steps = [...steps.slice(0, i + 1), ...newSteps];
+                report(`Re-planned: ${newSteps.filter(s => s.type === 'click' || s.type === 'type').length} new actions`, "plan");
+              }
             }
           }
           continue;
         }
 
         if (step.type === "type") {
-          const typeEl = findElement(containerEl, step.label, "input");
+          const typeEl = findElement(activeRoot, step.label, "input")
+            || findElement(document.body, step.label, "input");
           const val = step.value || "";
           report(`⌨️ Typing in "${step.label}": ${val.slice(0, 30)}`, "type");
           if (typeEl) {
