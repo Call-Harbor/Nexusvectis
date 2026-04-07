@@ -13,67 +13,16 @@ export function setAgentStatus(status, task) {
   }));
 }
 
-// Aggressive dialog finder
-function findDialog() {
-  // Try all possible dialog selectors
-  const selectors = [
-    '[role="dialog"]',
-    '[role="alertdialog"]',
-    'dialog',
-    '[data-radix-dialog-content]',
-    '[class*="dialog"]',
-    '[class*="modal"]',
-    '[class*="popup"]',
-  ];
-
-  for (const sel of selectors) {
-    const els = document.querySelectorAll(sel);
-    for (const el of els) {
-      const rect = el.getBoundingClientRect();
-      const style = window.getComputedStyle(el);
-      // Check if visible and has reasonable size
-      if (rect.width > 100 && rect.height > 100 && style.display !== 'none') {
-        return el;
-      }
-    }
-  }
-
-  // Check for portal containers with dialog content
-  const allDivs = document.querySelectorAll('[class*="fixed"], [class*="absolute"]');
-  for (const div of allDivs) {
-    const text = div.innerText || '';
-    if (text.includes('Deal') || text.includes('Navn') || text.includes('Email')) {
-      const rect = div.getBoundingClientRect();
-      if (rect.width > 100 && rect.height > 100) {
-        const style = window.getComputedStyle(div);
-        if (style.display !== 'none' && style.visibility !== 'hidden') {
-          return div;
-        }
-      }
-    }
-  }
-
-  return null;
-}
-
-// Ultra-aggressive input finder
-function findAllInputs(container) {
-  const inputs = [];
+// Find all clickable elements on the page
+function findAllClickables(container = document) {
+  const clickables = [];
   
-  // Get all possible input elements
   const selectors = [
-    'input:not([type="hidden"]):not([type="submit"]):not([type="button"])',
-    'textarea',
-    'select',
-    '[role="combobox"]',
-    '[role="searchbox"]',
-    '[contenteditable="true"]',
-    '[role="textbox"]',
-    'input[type="text"]',
-    'input[type="email"]',
-    'input[type="number"]',
-    'input[type="date"]',
-    'input[type="tel"]',
+    'button:not([disabled])',
+    '[role="button"]:not([aria-disabled="true"])',
+    'a:not([disabled])',
+    '[type="submit"]',
+    '[class*="btn"]:not([disabled])',
   ];
 
   for (const sel of selectors) {
@@ -82,23 +31,81 @@ function findAllInputs(container) {
       for (const el of els) {
         const rect = el.getBoundingClientRect();
         const style = window.getComputedStyle(el);
-        const parent = el.parentElement?.getBoundingClientRect();
 
-        // Visibility checks
         if (rect.width < 5 || rect.height < 5) continue;
         if (style.display === 'none' || style.visibility === 'hidden') continue;
-        if (style.opacity === '0') continue;
 
-        // Get label
-        let label = el.placeholder || el.getAttribute('aria-label') || el.name || el.id || '';
+        const label = el.textContent?.trim().slice(0, 80) || 
+          el.getAttribute('aria-label') || '';
+
+        if (label && !clickables.some(c => c.label === label)) {
+          clickables.push({
+            el,
+            label,
+            rect,
+          });
+        }
+      }
+    } catch (e) {}
+  }
+
+  return clickables;
+}
+
+// Find dialog or modal
+function findDialog() {
+  const selectors = [
+    '[role="dialog"]',
+    '[role="alertdialog"]',
+    '[data-radix-dialog-content]',
+    '[class*="modal"]',
+    '[class*="dialog"]',
+  ];
+
+  for (const sel of selectors) {
+    const els = document.querySelectorAll(sel);
+    for (const el of els) {
+      const rect = el.getBoundingClientRect();
+      if (rect.width > 100 && rect.height > 100) {
+        const style = window.getComputedStyle(el);
+        if (style.display !== 'none') {
+          return el;
+        }
+      }
+    }
+  }
+
+  return null;
+}
+
+// Find all form inputs
+function findFormInputs(container) {
+  const inputs = [];
+  
+  const selectors = [
+    'input:not([type="hidden"]):not([type="submit"]):not([type="button"])',
+    'textarea',
+    'select',
+    '[role="combobox"]',
+  ];
+
+  for (const sel of selectors) {
+    try {
+      const els = container.querySelectorAll(sel);
+      for (const el of els) {
+        const rect = el.getBoundingClientRect();
+        const style = window.getComputedStyle(el);
+
+        if (rect.width < 5 || rect.height < 5) continue;
+        if (style.display === 'none' || style.visibility === 'hidden') continue;
+
+        let label = el.placeholder || el.getAttribute('aria-label') || el.name || '';
         
-        // Search for associated label
         if (!label && el.id) {
           const lbl = container.querySelector(`label[for="${el.id}"]`);
           if (lbl) label = lbl.textContent?.trim() || '';
         }
 
-        // Search parent for label
         if (!label) {
           let p = el.parentElement;
           for (let i = 0; i < 5; i++) {
@@ -112,7 +119,7 @@ function findAllInputs(container) {
           }
         }
 
-        if (!label) label = `input_${inputs.length}`;
+        if (!label) label = `field_${inputs.length}`;
 
         inputs.push({
           el,
@@ -121,24 +128,20 @@ function findAllInputs(container) {
           value: el.value,
         });
       }
-    } catch (e) {
-      // Skip selector if it fails
-    }
+    } catch (e) {}
   }
 
   return inputs;
 }
 
-// Ultra-aggressive button finder
-function findAllButtons(container) {
+// Find buttons in dialog/form
+function findFormButtons(container) {
   const buttons = [];
   
   const selectors = [
     'button:not([disabled])',
-    '[role="button"]:not([aria-disabled="true"])',
+    '[role="button"]:not([aria-disabled])',
     '[type="submit"]',
-    'a[role="button"]',
-    '[class*="btn"]:not([disabled])',
   ];
 
   for (const sel of selectors) {
@@ -158,92 +161,57 @@ function findAllButtons(container) {
           buttons.push({
             el,
             label,
-            disabled: el.disabled || el.getAttribute('aria-disabled') === 'true',
+            disabled: el.disabled,
           });
         }
       }
-    } catch (e) {
-      // Skip
-    }
+    } catch (e) {}
   }
 
   return buttons;
 }
 
-// React-compatible value setter
-function setInputValue(input, value) {
+// Set input value with React support
+function fillInput(input, value) {
   if (!input || !value) return;
 
-  try {
-    input.focus();
-  } catch {}
+  try { input.focus(); } catch {}
 
-  // Handle select
   if (input.tagName === 'SELECT') {
     for (const opt of input.options) {
-      if (opt.text.toLowerCase().includes(value.toLowerCase()) ||
-          opt.value.toLowerCase() === value.toLowerCase()) {
+      if (opt.text.toLowerCase().includes(value.toLowerCase())) {
         input.value = opt.value;
         break;
       }
     }
-    input.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
-    input.dispatchEvent(new Event('input', { bubbles: true, cancelable: true }));
+    input.dispatchEvent(new Event('change', { bubbles: true }));
     return;
   }
 
-  // Handle checkbox/radio
   if (input.type === 'checkbox' || input.type === 'radio') {
-    const check = /true|yes|1|on|✓|checked/i.test(value);
-    if (input.checked !== check) {
-      input.click();
-    }
+    if (!input.checked) input.click();
     return;
   }
 
-  // Handle text inputs
   const nativeSetter = Object.getOwnPropertyDescriptor(
     Object.getPrototypeOf(input),
     'value'
   )?.set;
 
-  // Clear
-  if (nativeSetter) nativeSetter.call(input, '');
-  else input.value = '';
-  
-  input.dispatchEvent(new Event('change', { bubbles: true }));
-  input.dispatchEvent(new Event('input', { bubbles: true }));
-
-  // Set new value
   if (nativeSetter) nativeSetter.call(input, value);
   else input.value = value;
 
-  // Multiple event triggers for React compatibility
-  input.dispatchEvent(new Event('input', { bubbles: true, cancelable: true }));
-  input.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
-  input.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'a' }));
-  input.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true, key: 'a' }));
-  input.dispatchEvent(new Event('blur', { bubbles: true }));
-  input.dispatchEvent(new Event('focus', { bubbles: true }));
+  input.dispatchEvent(new Event('input', { bubbles: true }));
+  input.dispatchEvent(new Event('change', { bubbles: true }));
+  input.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true }));
 }
 
-// Click element reliably
-function clickButton(btn) {
-  if (!btn) return false;
-
+// Click element
+function clickElement(el) {
+  if (!el) return false;
   try {
-    const rect = btn.getBoundingClientRect();
-    if (rect.width > 0 && rect.height > 0) {
-      // Simulate mouse down/up
-      btn.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
-      btn.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true }));
-      btn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
-      btn.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
-      btn.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }));
-    }
-
-    // Direct click
-    btn.click?.();
+    el.click();
+    el.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     return true;
   } catch (e) {
     return false;
@@ -263,137 +231,145 @@ export function useHologramAIAgentAdvanced() {
     };
 
     try {
-      report("🔍 Scanning for dialog...", "scan");
+      report("🔍 Analyzing task...", "plan");
 
-      // Wait for dialog
-      let dialog = null;
-      for (let i = 0; i < 10; i++) {
-        dialog = findDialog();
-        if (dialog) break;
-        report(`⏳ Waiting for dialog (${i + 1}/10)`, "think");
-        await new Promise(r => setTimeout(r, 600));
-      }
+      // PHASE 1: Analyze page and determine what button to click
+      const pageButtons = findAllClickables(document);
+      report(`Found ${pageButtons.length} buttons on page`, "scan");
 
-      if (!dialog) {
-        report("❌ Dialog not found", "error");
+      if (pageButtons.length === 0) {
+        report("❌ No buttons found", "error");
         busyRef.current = false;
-        return { summary: "Dialog not found", steps: [] };
+        return { summary: "No actions available", steps: [] };
       }
 
-      report("✓ Dialog found", "narrate");
-
-      // Scan inputs and buttons
-      report("📋 Scanning form elements...", "scan");
-      let inputs = findAllInputs(dialog);
-      let buttons = findAllButtons(dialog);
-
-      // Retry if no inputs found
-      if (inputs.length === 0) {
-        for (let i = 0; i < 5; i++) {
-          report(`⏳ No inputs found, rescanning (${i + 1}/5)`, "think");
-          await new Promise(r => setTimeout(r, 800));
-          inputs = findAllInputs(dialog);
-          if (inputs.length > 0) break;
-        }
-      }
-
-      if (inputs.length === 0) {
-        report("❌ No form fields found", "error");
-        busyRef.current = false;
-        return { summary: "No inputs found", steps: [] };
-      }
-
-      report(`✓ Found: ${inputs.length} fields, ${buttons.length} buttons`, "narrate");
-
-      // Generate smart values
-      report("🤖 Analyzing context...", "plan");
-      const fieldList = inputs.map(i => `- ${i.label} (${i.type})`).join('\n');
-
-      let values = {};
+      // Use LLM to determine which button to click
+      const buttonLabels = pageButtons.map(b => b.label).filter(Boolean);
+      
+      let buttonToClick = null;
       try {
-        const resp = await base44.integrations.Core.InvokeLLM({
-          prompt: `Task: "${task}"\n\nFill these fields:\n${fieldList}\n\nOutput JSON only:\n{"data":{"Field Label":"value"}}`,
+        const plan = await base44.integrations.Core.InvokeLLM({
+          prompt: `Task: "${task}"\n\nAvailable buttons: [${buttonLabels.join(', ')}]\n\nWhich button should be clicked first? Return JSON: {"button":"exact button name"}`,
           response_json_schema: {
             type: "object",
-            properties: { data: { type: "object" } }
+            properties: { button: { type: "string" } }
           }
         });
-        values = resp?.data || {};
+
+        if (plan?.button) {
+          buttonToClick = pageButtons.find(b => 
+            b.label.toLowerCase().includes(plan.button.toLowerCase()) ||
+            plan.button.toLowerCase().includes(b.label.toLowerCase())
+          );
+        }
       } catch (e) {
-        report("⚠️ LLM error, using defaults", "think");
+        report("⚠️ LLM error, using first relevant button", "think");
       }
 
-      // Fill all inputs
-      report("⌨️ Filling fields...", "type");
-      let filled = 0;
-
-      for (const inp of inputs) {
-        // Skip if already filled
-        if (inp.value?.trim()) {
-          report(`✓ ${inp.label} (already filled)`, "narrate");
-          filled++;
-          continue;
-        }
-
-        // Get value from LLM response or generate default
-        let val = values[inp.label] || values[inp.name] || '';
-        
-        if (!val) {
-          // Smart defaults
-          const label = inp.label.toLowerCase();
-          if (label.includes('name') || label.includes('titel')) val = 'Test Value';
-          else if (label.includes('email')) val = 'test@example.com';
-          else if (label.includes('phone') || label.includes('telefon')) val = '+4512345678';
-          else if (label.includes('price') || label.includes('value') || label.includes('beløb')) val = '10000';
-          else if (label.includes('date') || label.includes('dato')) val = new Date().toISOString().split('T')[0];
-          else val = 'Test Data';
-        }
-
-        report(`⌨️ ${inp.label}: "${val.slice(0, 20)}"`, "type");
-        
-        try {
-          const rect = inp.el.getBoundingClientRect();
-          dispatchCursorAction("type", inp.label, null, val, rect.left + rect.width / 2, rect.top + rect.height / 2);
-          
-          await setInputValue(inp.el, val);
-          filled++;
-          await new Promise(r => setTimeout(r, 180));
-        } catch (e) {
-          report(`⚠️ Error filling field, skipping`, "think");
+      // Fallback to smart button selection
+      if (!buttonToClick) {
+        const keywords = ['add', 'new', 'create', 'open', 'start', 'begin'];
+        for (const kw of keywords) {
+          buttonToClick = pageButtons.find(b => b.label.toLowerCase().includes(kw));
+          if (buttonToClick) break;
         }
       }
 
-      report(`✅ Filled ${filled}/${inputs.length} fields`, "narrate");
+      if (!buttonToClick) {
+        buttonToClick = pageButtons[0];
+      }
 
-      // Find and click submit button
-      if (buttons.length > 0) {
+      // PHASE 2: Click the button
+      report(`🖱️ Clicking: ${buttonToClick.label}`, "click");
+      const rect = buttonToClick.rect;
+      dispatchCursorAction("click", buttonToClick.label, null, null, 
+        rect.left + rect.width / 2, rect.top + rect.height / 2);
+      
+      clickElement(buttonToClick.el);
+      report(`✓ Button clicked`, "narrate");
+      await new Promise(r => setTimeout(r, 1500));
+
+      // PHASE 3: Wait for and handle dialog/form if it appears
+      let dialog = null;
+      for (let i = 0; i < 6; i++) {
+        dialog = findDialog();
+        if (dialog) break;
+        report(`⏳ Waiting for dialog (${i + 1}/6)`, "think");
+        await new Promise(r => setTimeout(r, 700));
+      }
+
+      let steps = 1;
+
+      if (dialog) {
+        report("✓ Dialog opened", "narrate");
+
+        // Find form inputs
+        const inputs = findFormInputs(dialog);
+        if (inputs.length > 0) {
+          report(`📋 Found ${inputs.length} fields`, "scan");
+
+          // Generate smart values
+          let values = {};
+          try {
+            const fieldList = inputs.map(i => `- ${i.label} (${i.type})`).join('\n');
+            const resp = await base44.integrations.Core.InvokeLLM({
+              prompt: `Fill form for: "${task}"\n\nFields:\n${fieldList}\n\nJSON: {"data":{"Field Label":"value"}}`,
+              response_json_schema: {
+                type: "object",
+                properties: { data: { type: "object" } }
+              }
+            });
+            values = resp?.data || {};
+          } catch (e) {
+            report("⚠️ LLM unavailable", "think");
+          }
+
+          // Fill inputs
+          report("⌨️ Filling fields...", "type");
+          let filled = 0;
+
+          for (const inp of inputs) {
+            if (inp.value?.trim()) {
+              filled++;
+              continue;
+            }
+
+            let val = values[inp.label] || '';
+            if (!val) {
+              const lbl = inp.label.toLowerCase();
+              if (lbl.includes('name')) val = 'Test Name';
+              else if (lbl.includes('email')) val = 'test@test.com';
+              else if (lbl.includes('price') || lbl.includes('value')) val = '10000';
+              else val = 'Test Data';
+            }
+
+            report(`⌨️ ${inp.label}`, "type");
+            fillInput(inp.el, val);
+            filled++;
+            await new Promise(r => setTimeout(r, 150));
+          }
+
+          steps += filled;
+          report(`✅ Filled ${filled} fields`, "narrate");
+        }
+
+        // Click submit button
+        const buttons = findFormButtons(dialog);
         const submitBtn = buttons.find(b => 
           b.label.toLowerCase().includes('create') ||
           b.label.toLowerCase().includes('save') ||
           b.label.toLowerCase().includes('submit')
-        ) || buttons[buttons.length - 1];
+        ) || buttons[0];
 
         if (submitBtn && !submitBtn.disabled) {
-          report(`🖱️ Clicking: ${submitBtn.label}`, "click");
-
-          for (let attempt = 0; attempt < 6; attempt++) {
-            const rect = submitBtn.el.getBoundingClientRect();
-            if (rect.width > 0) {
-              dispatchCursorAction("click", submitBtn.label, null, null, rect.left + rect.width / 2, rect.top + rect.height / 2);
-            }
-
-            const success = clickButton(submitBtn.el);
-            if (success) {
-              report(`✅ Button clicked`, "narrate");
-              await new Promise(r => setTimeout(r, 2000));
-              break;
-            }
-
-            if (attempt < 5) {
-              report(`🔄 Retry click (${attempt + 1}/6)`, "think");
-              await new Promise(r => setTimeout(r, 500));
-            }
-          }
+          report(`🖱️ Submitting: ${submitBtn.label}`, "click");
+          const sbRect = submitBtn.el.getBoundingClientRect();
+          dispatchCursorAction("click", submitBtn.label, null, null,
+            sbRect.left + sbRect.width / 2, sbRect.top + sbRect.height / 2);
+          
+          clickElement(submitBtn.el);
+          await new Promise(r => setTimeout(r, 1800));
+          steps++;
         }
       }
 
@@ -401,15 +377,15 @@ export function useHologramAIAgentAdvanced() {
       busyRef.current = false;
 
       return {
-        summary: `✅ Task completed: ${filled}/${inputs.length} fields filled`,
-        steps: filled + 1
+        summary: `✅ Task completed in ${steps} steps`,
+        steps
       };
 
     } catch (err) {
       report(`❌ Error: ${err.message}`, "error");
       setAgentStatus("idle");
       busyRef.current = false;
-      return { summary: `Failed: ${err.message}`, steps: 0 };
+      return { summary: `Error: ${err.message}`, steps: 0 };
     }
   }, []);
 
