@@ -49,16 +49,19 @@ function generateSmartValue(fieldName, fieldType = 'text') {
   if (lower.includes('last name')) return 'Anderson';
   if (lower.includes('full name') || lower.includes('name')) return 'John Anderson';
   if (lower.includes('company')) return 'Tech Solutions ApS';
-  if (lower.includes('employee id')) return 'EMP001';
-  if (lower.includes('location')) return 'Copenhagen';
+  if (lower.includes('employee id') || lower.includes('id')) return 'EMP001';
+  if (lower.includes('location') || lower.includes('city')) return 'Copenhagen';
   if (lower.includes('job title') || lower.includes('title')) return 'Senior Manager';
   if (lower.includes('department')) return 'Operations';
   if (lower.includes('date') || lower.includes('close')) return '12/31/2026';
-  if (lower.includes('note') || lower.includes('description')) return 'High-priority account with growth potential';
+  if (lower.includes('note') || lower.includes('description') || lower.includes('comment')) return 'Additional information';
   if (lower.includes('value') || lower.includes('amount')) return '500000';
   if (lower.includes('currency')) return 'EUR';
+  if (lower.includes('address') || lower.includes('street')) return '123 Main Street';
+  if (lower.includes('zip') || lower.includes('postal')) return '1000';
+  if (lower.includes('country')) return 'Denmark';
   
-  return 'Data entry';
+  return '';
 }
 
 function fillElement(el, val) {
