@@ -224,48 +224,30 @@ Return JSON: { "steps": [ {"type": "click|type|tab|hover|scroll|think|narrate", 
         }
       });
 
-      const steps = planResult?.steps || [];
+      let steps = planResult?.steps || [];
       report(`Plan: ${steps.filter(s => s.type === 'click' || s.type === 'type' || s.type === 'tab').length} actions planned`, "plan");
       await new Promise(r => setTimeout(r, 300));
 
+      // Helper: re-plan remaining steps after UI changes (e.g. dialog opened)
+      const rePlanRemaining = async (remainingTask, executedSoFar) => {
+        const fresh = deepScanWindow(containerEl);
+        const bLabels = fresh.buttons.map(b => b.label).filter(Boolean);
+        const iLabels = fresh.inputs.map(i => i.label).filter(Boolean);
+        const tLabels = fresh.tabs.map(t => t.label).filter(Boolean);
+        report(`Re-scanning after UI change: ${bLabels.length} buttons, ${iLabels.length} inputs`, "scan");
+        const rePlan = await base44.integrations.Core.InvokeLLM({
+          prompt: `You are an AI agent inside a NexusVectis logistics UI.\n\nOriginal task: "${task}"\nRemaining goal: "${remainingTask}"\nActions already done: ${executedSoFar.join(', ')}\n\n=== CURRENT BUTTONS ===\n${bLabels.length > 0 ? bLabels.map((b,i) => `${i+1}. "${b}"`).join('\n') : 'none'}\n\n=== CURRENT INPUT FIELDS ===\n${iLabels.length > 0 ? iLabels.map((f,i) => `${i+1}. "${f}"`).join('\n') : 'none'}\n\n=== CURRENT TABS ===\n${tLabels.length > 0 ? tLabels.map((t,i) => `${i+1}. "${t}"`).join('\n') : 'none'}\n\nGenerate remaining steps to complete the goal. Use ONLY exact strings from the lists above. Return JSON: { "steps": [{"type": "click|type|tab|think|narrate", "label": "...", "value": "...", "text": "..."}], "summary": "..." }`,
+          response_json_schema: { type: "object", properties: { steps: { type: "array", items: { type: "object", additionalProperties: true } }, summary: { type: "string" } } }
+        });
+        return rePlan?.steps || [];
+      };
+
       // ── PHASE 3: EXECUTE ───────────────────────────────────────────────
       setAgentStatus("working", task.slice(0, 50));
+      const executedLabels = [];
 
       for (let i = 0; i < steps.length; i++) {
         const step = steps[i];
-
-        if (step.type === "think") {
-          report(`💭 ${step.text || "Analyzing..."}`, "think");
-          setAgentStatus("thinking", step.text?.slice(0, 50) || "Analyzing");
-          await new Promise(r => setTimeout(r, 900 + Math.random() * 600));
-          continue;
-        }
-
-        if (step.type === "narrate") {
-          report(`✓ ${step.text || ""}`, "narrate");
-          await new Promise(r => setTimeout(r, 700));
-          continue;
-        }
-
-        if (step.type === "hover") {
-          const el = findElement(containerEl, step.label, "any");
-          report(`👁 Reading: ${step.label}`, "hover");
-          if (el) {
-            const rect = el.getBoundingClientRect();
-            dispatchCursorAction("hover", step.label, null, null,
-              rect.left + rect.width / 2, rect.top + rect.height / 2);
-          } else {
-            // Move to approximate area
-            if (containerEl) {
-              const r = containerEl.getBoundingClientRect();
-              dispatchCursorAction("hover", step.label, null, null,
-                r.left + r.width * (0.2 + Math.random() * 0.6),
-                r.top + r.height * (0.2 + Math.random() * 0.6));
-            }
-          }
-          await new Promise(r => setTimeout(r, 600 + Math.random() * 400));
-          continue;
-        }
 
         if (step.type === "tab") {
           const el = findElement(containerEl, step.label, "tab");
@@ -288,18 +270,35 @@ Return JSON: { "steps": [ {"type": "click|type|tab|hover|scroll|think|narrate", 
             || findElement(containerEl, step.label, "tab")
             || findElement(containerEl, step.label, "any");
           report(`🖱 Clicking: ${step.label}`, "click");
+          const scanBefore = deepScanWindow(containerEl);
           if (el) {
             const rect = el.getBoundingClientRect();
             dispatchCursorAction("click", step.label, null, null, rect.left + rect.width / 2, rect.top + rect.height / 2);
             await new Promise(r => setTimeout(r, 350));
             el.click();
-            await new Promise(r => setTimeout(r, 700 + Math.random() * 400));
+            await new Promise(r => setTimeout(r, 900 + Math.random() * 400));
           } else {
             if (containerEl) {
               const r = containerEl.getBoundingClientRect();
               dispatchCursorAction("click", step.label, null, null, r.left + r.width * 0.5, r.top + r.height * 0.4);
             }
             await new Promise(r => setTimeout(r, 500));
+          }
+          executedLabels.push(`clicked:${step.label}`);
+          // If UI changed significantly (new inputs appeared), re-plan remaining steps
+          const scanAfter = deepScanWindow(containerEl);
+          const newInputCount = scanAfter.inputs.length - scanBefore.inputs.length;
+          const newButtonCount = scanAfter.buttons.length - scanBefore.buttons.length;
+          if ((newInputCount > 1 || newButtonCount > 2) && i < steps.length - 1) {
+            report(`UI changed (+${newInputCount} inputs, +${newButtonCount} buttons) — re-planning`, "think");
+            await new Promise(r => setTimeout(r, 600));
+            const remaining = steps.slice(i + 1);
+            const remainingGoal = remaining.map(s => s.text || s.label || s.value).filter(Boolean).join(", ");
+            const newSteps = await rePlanRemaining(remainingGoal || task, executedLabels);
+            if (newSteps.length > 0) {
+              steps = [...steps.slice(0, i + 1), ...newSteps];
+              report(`Re-planned: ${newSteps.filter(s => s.type === 'click' || s.type === 'type').length} new actions`, "plan");
+            }
           }
           continue;
         }
@@ -330,6 +329,7 @@ Return JSON: { "steps": [ {"type": "click|type|tab|hover|scroll|think|narrate", 
             }
             await new Promise(r => setTimeout(r, Math.max(800, val.length * 45)));
           }
+          executedLabels.push(`typed:${step.label}=${val.slice(0,20)}`);
           continue;
         }
 
