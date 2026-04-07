@@ -60,7 +60,7 @@ function deepScanWindow(containerEl) {
   return { buttons, inputs, tabs, selects, links, headings, text: allText.slice(0, 800) };
 }
 
-/** Find element by multiple strategies */
+/** Find element by multiple strategies — aggressive fuzzy matching */
 function findElement(containerEl, label, type) {
   if (!label || !containerEl) return null;
   const lower = label.toLowerCase().trim();
@@ -68,20 +68,36 @@ function findElement(containerEl, label, type) {
   const pool = type === "input"
     ? [...containerEl.querySelectorAll("input:not([type=hidden]), textarea, select")]
     : type === "tab"
-    ? [...containerEl.querySelectorAll("[role='tab'], [data-state]")]
-    : [...containerEl.querySelectorAll("button, [role='button'], [role='tab'], a, input, textarea, select, label")];
+    ? [...containerEl.querySelectorAll("[role='tab'], [data-state='inactive'], [data-state='active']")]
+    : [...containerEl.querySelectorAll("button, [role='button'], [role='tab'], a, input, textarea, select, label, [class*='tab']")];
+
+  const isVisible = (el) => {
+    const r = el.getBoundingClientRect();
+    return r.width > 0 && r.height > 0 && r.top < window.innerHeight && r.bottom > 0;
+  };
+
+  const visible = pool.filter(isVisible);
 
   // Exact text match
-  let el = pool.find(e => e.textContent?.trim().toLowerCase() === lower);
+  let el = visible.find(e => e.textContent?.trim().toLowerCase() === lower);
   if (el) return el;
   // Placeholder match
-  el = pool.find(e => e.placeholder?.toLowerCase().includes(lower));
+  el = visible.find(e => e.placeholder?.toLowerCase() === lower);
   if (el) return el;
-  // Partial text match
-  el = pool.find(e => e.textContent?.trim().toLowerCase().includes(lower));
+  // Placeholder includes
+  el = visible.find(e => e.placeholder?.toLowerCase().includes(lower));
   if (el) return el;
-  // aria-label match
-  el = pool.find(e => e.getAttribute("aria-label")?.toLowerCase().includes(lower));
+  // Partial text match (target contains label)
+  el = visible.find(e => e.textContent?.trim().toLowerCase().includes(lower));
+  if (el) return el;
+  // Label contains target text
+  el = visible.find(e => lower.includes(e.textContent?.trim().toLowerCase()) && e.textContent?.trim().length > 2);
+  if (el) return el;
+  // aria-label
+  el = visible.find(e => e.getAttribute("aria-label")?.toLowerCase().includes(lower));
+  if (el) return el;
+  // name/id
+  el = visible.find(e => (e.name || e.id || "").toLowerCase().includes(lower));
   return el || null;
 }
 
@@ -127,36 +143,45 @@ export function useHologramAIAgent() {
 
       const windowName = windowType.replace(/_/g, " ");
 
+      // Re-scan after potential load
+      const liveStructure = deepScanWindow(containerEl);
+      const buttonLabels = liveStructure.buttons.map(b => b.label).filter(Boolean);
+      const inputLabels = liveStructure.inputs.map(i => i.label).filter(Boolean);
+      const tabLabels = liveStructure.tabs.map(t => t.label).filter(Boolean);
+
       const planResult = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are an expert AI agent physically operating a logistics UI. Your task is:
+        prompt: `You are an AI agent physically clicking and typing inside a NexusVectis logistics hologram UI.
 
 TASK: "${task}"
-WINDOW: "${windowName}"
+WINDOW: "${windowType.replace(/_/g, ' ')}"
 
-CURRENT INTERFACE STATE:
-- BUTTONS: ${structure.buttons.map(b => `"${b.label}"`).join(", ") || "none visible yet"}
-- INPUT FIELDS: ${structure.inputs.map(i => `"${i.label}" [${i.type}]`).join(", ") || "none"}
-- TABS: ${structure.tabs.map(t => `"${t.label}"${t.active ? " (ACTIVE)" : ""}`).join(", ") || "none"}
-- HEADINGS: ${structure.headings.join(" | ") || "none"}
-- PAGE TEXT: ${structure.text.slice(0, 300) || "loading..."}
+=== EXACT CLICKABLE BUTTONS (use EXACT label text) ===
+${buttonLabels.length > 0 ? buttonLabels.map((b, i) => `${i + 1}. "${b}"`).join('\n') : 'No buttons found yet (window may still be loading)'}
 
-IMPORTANT: The window content may still be loading. If you see very few elements, still create realistic steps.
+=== INPUT FIELDS (use EXACT label text) ===
+${inputLabels.length > 0 ? inputLabels.map((f, i) => `${i + 1}. "${f}"`).join('\n') : 'No input fields found'}
 
-Create 5-8 realistic steps. ALWAYS include:
-1. A "hover" step to read the current state
-2. At least 1-2 "click" or "type" steps using EXACT label text from the lists above (if available)
-3. If no elements match, use "type" steps with realistic values based on the task
-4. "think" steps to show reasoning
-5. A final "narrate" step summarizing what was done
+=== TABS (use EXACT label text) ===
+${tabLabels.length > 0 ? tabLabels.map((t, i) => `${i + 1}. "${t}"`).join('\n') : 'No tabs found'}
 
-For task "${task}", the most likely actions in "${windowName}" are:
-- Look for origin/destination input fields and type in them
-- Look for "Optimize", "Calculate", "Search", "Add", "Save" buttons and click them
-- Look for filter dropdowns and select relevant options
+=== VISIBLE HEADINGS ===
+${liveStructure.headings.join(' | ') || 'none'}
 
-Return JSON: { "steps": [...], "summary": "one sentence what was accomplished" }
+=== VISIBLE DATA ===
+${liveStructure.text.slice(0, 400) || 'loading...'}
 
-Step types: click (label), type (label + value), hover (label), scroll (direction), think (text), narrate (text)`,
+Your job: Generate a realistic sequence of 5-9 actions to complete the task. Rules:
+1. For CLICK actions: use ONLY exact strings from the BUTTONS or TABS list above.
+2. For TYPE actions: use ONLY exact strings from the INPUT FIELDS list above, and provide realistic values.
+3. If the task requires navigating to a tab first (e.g. "Active" tab), click that tab before other actions.
+4. If task is "create", look for buttons like "New", "Add", "Create", "Opret", "Tilf\u00f8j", "+ ..."
+5. If task is "optimize", look for buttons like "Optimize", "Optim\u00e9r", "Run", "Calculate", "Analyse"
+6. If task is "search/filter", look for search inputs and type the search term.
+7. Always end with a narrate step summarizing what was accomplished.
+8. Include think steps to show reasoning between actions.
+9. CRITICAL: Do NOT invent button/field labels. Only use exact strings from the lists above. If a needed button isn't in the list, skip that action.
+
+Return JSON: { "steps": [ {"type": "click|type|tab|hover|scroll|think|narrate", "label": "exact text", "value": "value for type steps", "text": "text for think/narrate"} ], "summary": "one sentence summary" }`,
         response_json_schema: {
           type: "object",
           properties: {
@@ -167,22 +192,8 @@ Step types: click (label), type (label + value), hover (label), scroll (directio
       });
 
       const steps = planResult?.steps || [];
-      report(`Plan ready: ${steps.length} actions`, "plan");
+      report(`Plan: ${steps.filter(s => s.type === 'click' || s.type === 'type' || s.type === 'tab').length} actions planned`, "plan");
       await new Promise(r => setTimeout(r, 300));
-
-      // If no steps or only think steps, generate fallback steps based on task
-      const actionSteps = steps.filter(s => s.type === "click" || s.type === "type");
-      if (steps.length === 0 || actionSteps.length === 0) {
-        // Create minimal fallback steps that look realistic
-        const fallback = [
-          { type: "think", text: `Analyzing ${windowName} interface for task: ${task.slice(0, 50)}` },
-          { type: "hover", label: "interface", purpose: "Reading available options" },
-          { type: "scroll", direction: "down" },
-          { type: "think", text: "Identifying the best approach to complete this task" },
-          { type: "narrate", text: `Reviewed ${windowName} — the interface is loading. Task context registered for when content is available.` }
-        ];
-        steps.splice(0, 0, ...fallback);
-      }
 
       // ── PHASE 3: EXECUTE ───────────────────────────────────────────────
       setAgentStatus("working", task.slice(0, 50));
@@ -223,24 +234,37 @@ Step types: click (label), type (label + value), hover (label), scroll (directio
           continue;
         }
 
-        if (step.type === "click") {
-          const el = findElement(containerEl, step.label, "button");
-          report(`🖱 Clicking: ${step.label}`, "click");
-
+        if (step.type === "tab") {
+          const el = findElement(containerEl, step.label, "tab");
+          report(`📌 Clicking tab: ${step.label}`, "click");
           if (el) {
             const rect = el.getBoundingClientRect();
-            const cx = rect.left + rect.width / 2;
-            const cy = rect.top + rect.height / 2;
-            dispatchCursorAction("click", step.label, null, null, cx, cy);
+            dispatchCursorAction("click", step.label, null, null, rect.left + rect.width / 2, rect.top + rect.height / 2);
+            await new Promise(r => setTimeout(r, 300));
+            el.click();
+            await new Promise(r => setTimeout(r, 800));
+          } else {
+            report(`Tab "${step.label}" not found, skipping`, "think");
+            await new Promise(r => setTimeout(r, 300));
+          }
+          continue;
+        }
+
+        if (step.type === "click") {
+          const el = findElement(containerEl, step.label, "button")
+            || findElement(containerEl, step.label, "tab")
+            || findElement(containerEl, step.label, "any");
+          report(`🖱 Clicking: ${step.label}`, "click");
+          if (el) {
+            const rect = el.getBoundingClientRect();
+            dispatchCursorAction("click", step.label, null, null, rect.left + rect.width / 2, rect.top + rect.height / 2);
             await new Promise(r => setTimeout(r, 350));
             el.click();
-            await new Promise(r => setTimeout(r, 600 + Math.random() * 400));
+            await new Promise(r => setTimeout(r, 700 + Math.random() * 400));
           } else {
-            // Still animate cursor even if element not found
             if (containerEl) {
               const r = containerEl.getBoundingClientRect();
-              dispatchCursorAction("click", step.label, null, null,
-                r.left + r.width * 0.5, r.top + r.height * 0.4);
+              dispatchCursorAction("click", step.label, null, null, r.left + r.width * 0.5, r.top + r.height * 0.4);
             }
             await new Promise(r => setTimeout(r, 500));
           }
@@ -248,31 +272,28 @@ Step types: click (label), type (label + value), hover (label), scroll (directio
         }
 
         if (step.type === "type") {
-          const el = findElement(containerEl, step.label, "input");
+          const typeEl = findElement(containerEl, step.label, "input");
           const val = step.value || "";
           report(`⌨️ Typing in "${step.label}": ${val.slice(0, 30)}`, "type");
-
-          if (el) {
-            const rect = el.getBoundingClientRect();
+          if (typeEl) {
+            const rect = typeEl.getBoundingClientRect();
             dispatchCursorAction("type", step.label, null, val, rect.left + rect.width / 2, rect.top + rect.height / 2);
             await new Promise(r => setTimeout(r, 400));
-            el.focus();
-            // React-compatible setter
-            const proto = el.tagName === "TEXTAREA"
+            typeEl.focus();
+            const proto = typeEl.tagName === "TEXTAREA"
               ? window.HTMLTextAreaElement.prototype
               : window.HTMLInputElement.prototype;
             const setter = Object.getOwnPropertyDescriptor(proto, "value")?.set;
             if (setter) {
-              setter.call(el, val);
-              el.dispatchEvent(new Event("input", { bubbles: true }));
-              el.dispatchEvent(new Event("change", { bubbles: true }));
+              setter.call(typeEl, val);
+              typeEl.dispatchEvent(new Event("input", { bubbles: true }));
+              typeEl.dispatchEvent(new Event("change", { bubbles: true }));
             }
             await new Promise(r => setTimeout(r, Math.max(800, val.length * 45)));
           } else {
             if (containerEl) {
               const r = containerEl.getBoundingClientRect();
-              dispatchCursorAction("type", step.label, null, val,
-                r.left + r.width * 0.5, r.top + r.height * 0.5);
+              dispatchCursorAction("type", step.label, null, val, r.left + r.width * 0.5, r.top + r.height * 0.5);
             }
             await new Promise(r => setTimeout(r, Math.max(800, val.length * 45)));
           }
