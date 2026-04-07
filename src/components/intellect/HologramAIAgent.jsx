@@ -28,10 +28,14 @@ function deepScanWindow(containerEl) {
     return r.width > 0 && r.height > 0 && r.top < window.innerHeight && r.bottom > 0;
   };
 
-  const buttons = [...containerEl.querySelectorAll("button:not([disabled])")].filter(isVisible).map(b => ({
-    label: b.textContent?.trim().replace(/\s+/g, " ").slice(0, 80),
-    classes: b.className?.slice(0, 50)
-  })).filter(b => b.label).slice(0, 40);
+  const buttons = [...containerEl.querySelectorAll("button:not([disabled]), [role='button']:not([disabled])")].filter(isVisible).map(b => ({
+    label: (b.textContent?.trim().replace(/\s+/g, " ") ||
+            b.getAttribute("aria-label") ||
+            b.getAttribute("title") ||
+            b.getAttribute("data-label") ||
+            (b.className?.includes("add") || b.className?.includes("new") || b.className?.includes("create") ? "Add" : "")).slice(0, 80),
+    classes: b.className?.slice(0, 80)
+  })).filter(b => b.label).slice(0, 50);
 
   const inputs = [...containerEl.querySelectorAll("input:not([type=hidden]):not([type=checkbox]), textarea, select")].filter(isVisible).map(i => ({
     label: (i.placeholder || i.getAttribute("aria-label") || i.name || i.id || "field").slice(0, 50),
@@ -69,7 +73,7 @@ function findElement(containerEl, label, type) {
     ? [...containerEl.querySelectorAll("input:not([type=hidden]), textarea, select")]
     : type === "tab"
     ? [...containerEl.querySelectorAll("[role='tab'], [data-state='inactive'], [data-state='active']")]
-    : [...containerEl.querySelectorAll("button, [role='button'], [role='tab'], a, input, textarea, select, label, [class*='tab']")];
+    : [...containerEl.querySelectorAll("button, [role='button'], [role='tab'], a, input, textarea, select, label, [class*='tab'], [class*='fab'], [class*='float']")];
 
   const isVisible = (el) => {
     const r = el.getBoundingClientRect();
@@ -96,9 +100,18 @@ function findElement(containerEl, label, type) {
   // aria-label
   el = visible.find(e => e.getAttribute("aria-label")?.toLowerCase().includes(lower));
   if (el) return el;
+  // title attribute
+  el = visible.find(e => e.getAttribute("title")?.toLowerCase().includes(lower));
+  if (el) return el;
   // name/id
   el = visible.find(e => (e.name || e.id || "").toLowerCase().includes(lower));
-  return el || null;
+  if (el) return el;
+  // class name heuristic for add/new/create
+  if (/add|new|create|opret|tilf/i.test(lower)) {
+    el = visible.find(e => /add|new|create|plus|fab|float/i.test(e.className || ""));
+    if (el) return el;
+  }
+  return null;
 }
 
 export function useHologramAIAgent() {
@@ -135,6 +148,19 @@ export function useHologramAIAgent() {
       }
 
       report(`Found ${structure.buttons.length} buttons, ${structure.inputs.length} inputs, ${structure.tabs.length} tabs`, "scan");
+
+      // If nothing found yet, retry up to 4 more times (window may still be rendering)
+      if (structure.buttons.length === 0 && structure.inputs.length === 0) {
+        for (let attempt = 0; attempt < 4; attempt++) {
+          report(`Waiting for content to load... (${attempt + 1}/4)`, "think");
+          await new Promise(r => setTimeout(r, 1500));
+          const retry = deepScanWindow(containerEl);
+          if (retry.buttons.length > 0 || retry.inputs.length > 0) {
+            report(`Content loaded: ${retry.buttons.length} buttons, ${retry.inputs.length} inputs`, "scan");
+            break;
+          }
+        }
+      }
       await new Promise(r => setTimeout(r, 400));
 
       // ── PHASE 2: PLAN ──────────────────────────────────────────────────
@@ -149,6 +175,13 @@ export function useHologramAIAgent() {
       const inputLabels = liveStructure.inputs.map(i => i.label).filter(Boolean);
       const tabLabels = liveStructure.tabs.map(t => t.label).filter(Boolean);
 
+      // Also scan for any floating action buttons (class-based detection)
+      const fabButtons = [...(containerEl?.querySelectorAll("[class*='fab'], [class*='float'], [class*='action-btn'], [class*='add-btn']") || [])]
+        .filter(el => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0; })
+        .map(el => el.getAttribute("aria-label") || el.getAttribute("title") || el.textContent?.trim() || "Add")
+        .filter(Boolean);
+      const allButtonLabels = [...new Set([...buttonLabels, ...fabButtons])];
+
       const planResult = await base44.integrations.Core.InvokeLLM({
         prompt: `You are an AI agent physically clicking and typing inside a NexusVectis logistics hologram UI.
 
@@ -156,7 +189,7 @@ TASK: "${task}"
 WINDOW: "${windowType.replace(/_/g, ' ')}"
 
 === EXACT CLICKABLE BUTTONS (use EXACT label text) ===
-${buttonLabels.length > 0 ? buttonLabels.map((b, i) => `${i + 1}. "${b}"`).join('\n') : 'No buttons found yet (window may still be loading)'}
+${allButtonLabels.length > 0 ? allButtonLabels.map((b, i) => `${i + 1}. "${b}"`).join('\n') : 'No buttons found yet (window may still be loading)'}
 
 === INPUT FIELDS (use EXACT label text) ===
 ${inputLabels.length > 0 ? inputLabels.map((f, i) => `${i + 1}. "${f}"`).join('\n') : 'No input fields found'}
