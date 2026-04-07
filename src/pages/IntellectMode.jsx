@@ -48,6 +48,7 @@ import ParallelTaskProcessor from "@/components/intellect/ParallelTaskProcessor"
 import ProcessThinkingTerminal from "@/components/intellect/ProcessThinkingTerminal";
 import AICoach from "@/components/intellect/AICoach";
 import HarborSuperAgentChat from "@/components/intellect/HarborSuperAgentChat";
+import AIAgentCursor from "@/components/intellect/AIAgentCursor";
 
 const THINKING_STEPS = ["Querying fleet data", "Running neural analysis", "Cross-referencing modules", "Generating response"];
 
@@ -1500,6 +1501,9 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
       </AnimatePresence>
 
 
+
+      {/* AI Agent Cursor — shows when agent is operating the UI */}
+      <AIAgentCursor />
 
       {/* Harbor Super Agent Chat */}
       <AnimatePresence>

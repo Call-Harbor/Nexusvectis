@@ -443,7 +443,51 @@ const KEYWORD_WINDOW_MAP = [
   { keywords: /project.?man|projekt.?man/i, window: 'project_management' },
 ];
 
-const HOLOGRAM_SYSTEM_CONTEXT = `You are H.A.R.B.O.R INTELLECT — an advanced AI with the ability to control and navigate hologram windows in the IntellectMode interface. When you want to open a specific hologram window for the user to see, include a tag like [OPEN:window_type] in your response. Available windows: fleet_map, route_optimizer, predictive_maintenance, demand_forecast, risk_assessment, performance_analytics, satellite_weather, news_intelligence, swarm_intelligence, digital_twin, neuro_risk, document_editor, spreadsheet_editor, deep_analysis, fleet_3d_viewer, airport_ops, port_command, app_builder, vehicle_builder, image_generator, project_management. Use these tags naturally when it makes sense to show the user a hologram while explaining something. Example: "Let me open the fleet map so you can see the vehicle positions [OPEN:fleet_map]"`;
+const HOLOGRAM_SYSTEM_CONTEXT = `You are H.A.R.B.O.R INTELLECT — an advanced AI with the ability to control and navigate hologram windows in the IntellectMode interface like a human operator.
+
+When you want to open a window, use: [OPEN:window_type]
+When you want to click a button or tab, use: [CLICK:button_label]
+When you want to type into a field, use: [TYPE:input_label:value_to_type]
+When you want to scroll a window, use: [SCROLL:down] or [SCROLL:up]
+
+Available windows: fleet_map, route_optimizer, predictive_maintenance, demand_forecast, risk_assessment, performance_analytics, satellite_weather, news_intelligence, swarm_intelligence, digital_twin, neuro_risk, document_editor, spreadsheet_editor, deep_analysis, fleet_3d_viewer, airport_ops, port_command, app_builder, vehicle_builder, image_generator, project_management.
+
+Use these tags naturally to navigate the interface while explaining what you are doing. Example: "Let me open the fleet performance dashboard [OPEN:performance_analytics] and check the efficiency scores [CLICK:Efficiency] — I can see the vehicles here. Let me filter by active status [CLICK:Active]."
+
+Behave like a skilled human operator who narrates every action they take.`;
+
+// Dispatch AI action event so AIAgentCursor can animate it
+const dispatchAIAction = (type, label, selector, value) => {
+  window.dispatchEvent(new CustomEvent("harbor_ai_action", {
+    detail: { type, label, selector, value }
+  }));
+};
+
+// Parse agent response for action tags and execute them with delays
+const executeAgentActions = (content, onOpenWindow) => {
+  const tagRegex = /\[(OPEN|CLICK|TYPE|SCROLL):([^\]]+)\]/gi;
+  let match;
+  let delay = 300;
+  while ((match = tagRegex.exec(content)) !== null) {
+    const cmd = match[1].toUpperCase();
+    const args = match[2].split(":");
+    const delay_ = delay;
+    if (cmd === "OPEN" && onOpenWindow) {
+      setTimeout(() => onOpenWindow(args[0], { x: 80 + Math.random() * 200, y: 60 + Math.random() * 100 }), delay_);
+      delay += 800;
+    } else if (cmd === "CLICK") {
+      setTimeout(() => dispatchAIAction("click", args[0]), delay_);
+      delay += 700;
+    } else if (cmd === "TYPE") {
+      const field = args[0]; const val = args.slice(1).join(":");
+      setTimeout(() => dispatchAIAction("type", field, null, val), delay_);
+      delay += (val.length * 65) + 400;
+    } else if (cmd === "SCROLL") {
+      setTimeout(() => dispatchAIAction("scroll", args[0] || "down"), delay_);
+      delay += 500;
+    }
+  }
+};
 
 export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
   const getDeletedIds = () => { try { return new Set(JSON.parse(localStorage.getItem("harbor_deleted_convs") || "[]")); } catch { return new Set(); } };
@@ -526,16 +570,11 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
   };
 
   const processHologramCommands = useCallback((content) => {
-    if (!onOpenWindow || !content) return;
-    // Detect [OPEN:window_type] tags
-    const tagMatches = [...content.matchAll(/\[OPEN:([\w_]+)\]/gi)];
-    tagMatches.forEach((match, i) => {
-      setTimeout(() => {
-        onOpenWindow(match[1], { x: 80 + i * 40, y: 60 + i * 30 });
-      }, i * 600);
-    });
-    // Fallback: detect keywords if no tags
-    if (tagMatches.length === 0) {
+    if (!content) return;
+    // Execute all action tags (OPEN, CLICK, TYPE, SCROLL) with human-like timing
+    executeAgentActions(content, onOpenWindow);
+    // Fallback keyword-based window open if no tags found
+    if (!/\[(OPEN|CLICK|TYPE|SCROLL):/i.test(content) && onOpenWindow) {
       for (const mapping of KEYWORD_WINDOW_MAP) {
         if (mapping.keywords.test(content)) {
           onOpenWindow(mapping.window, { x: 80, y: 60 });
