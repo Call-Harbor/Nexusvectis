@@ -147,9 +147,22 @@ const MODULE_KNOWLEDGE = {
   },
 };
 
+/** Get the real scannable root — if container has an iframe, use its contentDocument */
+function getEffectiveRoot(containerEl) {
+  if (!containerEl) return document.body;
+  const iframe = containerEl.querySelector('iframe');
+  if (iframe) {
+    try {
+      const doc = iframe.contentDocument || iframe.contentWindow?.document;
+      if (doc && doc.body) return doc.body;
+    } catch {}
+  }
+  return containerEl;
+}
+
 /** Deep DOM scan — extracts everything visible in a container */
 function deepScanWindow(containerEl) {
-  const root = containerEl || document.body;
+  const root = getEffectiveRoot(containerEl);
 
   const isVisible = (el) => {
     const r = el.getBoundingClientRect();
@@ -192,19 +205,30 @@ function deepScanWindow(containerEl) {
 
   const result = scan(root);
 
-  if (containerEl && result.buttons.length === 0 && result.inputs.length === 0) {
+  // If iframe scan found nothing, try container element directly
+  if (result.buttons.length === 0 && result.inputs.length === 0) {
+    if (containerEl && root !== containerEl) {
+      const fallback = scan(containerEl);
+      if (fallback.buttons.length > 0 || fallback.inputs.length > 0) return fallback;
+    }
     return scan(document.body);
   }
 
   return result;
 }
 
-/** Find element by multiple strategies */
+/** Find element by multiple strategies — also searches inside iframes */
 function findElement(containerEl, label, type) {
   if (!label) return null;
   const lower = label.toLowerCase().trim();
 
-  const roots = containerEl ? [containerEl, document.body] : [document.body];
+  // Include iframe contentDocument in search roots
+  const effectiveRoot = getEffectiveRoot(containerEl);
+  const rootSet = new Set();
+  if (effectiveRoot) rootSet.add(effectiveRoot);
+  if (containerEl) rootSet.add(containerEl);
+  rootSet.add(document.body);
+  const roots = [...rootSet];
 
   const isVisible = (el) => {
     const r = el.getBoundingClientRect();
@@ -362,9 +386,20 @@ Return JSON only:
       report(`Plan: ${steps.filter(s => ["click","type","tab"].includes(s.type)).length} actions`, "plan");
 
       // ── Helpers ────────────────────────────────────────────────────────
-      const getActiveDialog = () => document.querySelector(
-        '[role="dialog"][data-state="open"], [role="dialog"].fixed, [role="alertdialog"], [data-radix-dialog-content]'
-      );
+      // Check both main document AND iframe document for dialogs
+      const getActiveDialog = () => {
+        const selector = '[role="dialog"][data-state="open"], [role="dialog"].fixed, [role="alertdialog"], [data-radix-dialog-content]';
+        // Check main document first (Radix portals render here)
+        const mainDialog = document.querySelector(selector);
+        if (mainDialog) return mainDialog;
+        // Also check iframe document
+        try {
+          const iframe = containerEl?.querySelector('iframe');
+          const iframeDoc = iframe?.contentDocument || iframe?.contentWindow?.document;
+          if (iframeDoc) return iframeDoc.querySelector(selector);
+        } catch {}
+        return null;
+      };
 
       const rePlanRemaining = async (remainingTask, executedSoFar) => {
         const dialog = getActiveDialog();
