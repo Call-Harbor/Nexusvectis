@@ -246,13 +246,23 @@ export function useHologramAIAgent() {
 
       report("Planning intelligent fill strategy...", "plan");
 
-      // Auto-fill ALL fields found without waiting for LLM
+      // Auto-fill ALL empty fields with dummy data
       const filledCount = new Set();
       
       for (const field of scan.inputs) {
         if (!field.element) continue;
         
+        // Check if field is already filled by user
+        const currentValue = field.element.value || field.element.textContent || '';
+        if (currentValue && currentValue.trim()) {
+          report(`✓ Field already filled: ${field.label}`, "narrate");
+          filledCount.add(field.label);
+          continue;
+        }
+        
         const val = generateSmartValue(field.label, field.type);
+        if (!val) continue; // Skip if no dummy data generated
+        
         report(`⌨️ Auto-filling: ${field.label}`, "type");
         
         try {
