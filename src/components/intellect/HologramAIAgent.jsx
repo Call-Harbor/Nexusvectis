@@ -669,33 +669,40 @@ export function useHologramAIAgent() {
         .join('\n');
 
       const planResult = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are an intelligent AI agent. Your task: "${task}"
+        prompt: `You are an intelligent AI agent that performs UI actions by generating step sequences.
 
-=== INTERFACE DETECTED ===
-Available buttons: ${liveButtons.join(', ') || '(none)'}
-Available input fields: ${liveInputs.join(', ') || '(none)'}
-Required fields: ${requiredFieldsText || 'none'}
+TASK: "${task}"
 
-=== YOUR JOB ===
-1. THINK intelligently about what needs to be done to complete the task
-2. Fill EVERY input field with realistic, relevant data
-3. Use the EXACT field names you see in the list above
-4. Click buttons to navigate, submit forms, open dialogs
-5. Always END by clicking the submit/save/create/confirm button
-6. For missing fields: generate realistic data (names, emails, dates, cities, etc)
-7. For dropdowns: pick the most relevant option
-8. Do not skip any field — fill them all
+=== FORM FIELDS YOU MUST FILL ===
+${liveInputs.length > 0 ? liveInputs.map((f, i) => `${i + 1}. "${f}"`).join('\n') : '(no input fields detected)'}
 
-=== RESPONSE FORMAT ===
-Return ONLY valid JSON with this structure:
+=== BUTTONS AVAILABLE ===
+${liveButtons.length > 0 ? liveButtons.map((b, i) => `${i + 1}. "${b}"`).join('\n') : '(no buttons)'}
+
+=== INSTRUCTIONS ===
+1. You MUST generate type="type" steps for EACH input field listed above
+2. Each field in the form must have a corresponding {"type": "type", "label": "Field Name", "value": "realistic data"} step
+3. Generate realistic values: names (e.g., "John Smith"), emails (e.g., "john@example.com"), cities (e.g., "Copenhagen"), dates
+4. Click buttons to open dialogs or submit forms
+5. If you need to click a button FIRST (e.g., "Create", "New"), do that before filling the form that appears
+6. CRITICAL: Do not skip any field in the form
+7. End with clicking the submit/save/create button
+
+=== EXAMPLE STEPS (for a form with fields: First Name, Last Name, Email) ===
+[
+  {"type": "click", "label": "Create New Item", "text": "Open the form"},
+  {"type": "type", "label": "First Name", "value": "John"},
+  {"type": "type", "label": "Last Name", "value": "Smith"},
+  {"type": "type", "label": "Email", "value": "john.smith@example.com"},
+  {"type": "click", "label": "Save", "text": "Submit form"}
+]
+
+=== RESPONSE ===
+Return ONLY valid JSON:
 {
-  "steps": [
-    {"type": "click|type|select|check|tab|narrate", "label": "field/button name", "value": "data to enter", "text": "optional description"}
-  ],
-  "summary": "one sentence about what was accomplished"
-}
-
-Think step by step. Be intelligent and adapt to what you see.`,
+  "steps": [ {"type": "type|click|select|check|tab|narrate", "label": "exact field/button name", "value": "data"} ],
+  "summary": "one sentence"
+}`,
         response_json_schema: {
           type: "object",
           properties: {
