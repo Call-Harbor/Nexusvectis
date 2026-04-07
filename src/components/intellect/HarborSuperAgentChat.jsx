@@ -414,7 +414,38 @@ function ConversationList({ conversations, activeId, onSelect, onCreate, onDelet
 // ════════════════════════════════════════════════════════════════════
 // MAIN COMPONENT
 // ════════════════════════════════════════════════════════════════════
-export default function HarborSuperAgentChat({ onClose }) {
+// Map keywords in AI responses → hologram window types
+const HOLOGRAM_TRIGGERS = [
+  { pattern: /\[OPEN:([\w_]+)\]/gi, type: 'tag' },
+];
+
+const KEYWORD_WINDOW_MAP = [
+  { keywords: /fleet.?map|live.?track|vehicle.?map|tracking.?map/i, window: 'fleet_map' },
+  { keywords: /route.?optim|optim.?route|rute.?optim/i, window: 'route_optimizer' },
+  { keywords: /predictive.?maint|maintenance.?pred|vedligehold.?pred/i, window: 'predictive_maintenance' },
+  { keywords: /demand.?forecast|forecast.?demand|prognose/i, window: 'demand_forecast' },
+  { keywords: /risk.?assess|assess.?risk|risk.?anal/i, window: 'risk_assessment' },
+  { keywords: /performance.?analyt|analyt.?perf/i, window: 'performance_analytics' },
+  { keywords: /satellite.?weather|weather.?intel|vejr.?intel/i, window: 'satellite_weather' },
+  { keywords: /news.?intel|intel.?news|nyheds/i, window: 'news_intelligence' },
+  { keywords: /swarm.?intel/i, window: 'swarm_intelligence' },
+  { keywords: /digital.?twin/i, window: 'digital_twin' },
+  { keywords: /neuro.?risk|neural.?risk/i, window: 'neuro_risk' },
+  { keywords: /document.?editor|doc.?editor/i, window: 'document_editor' },
+  { keywords: /spreadsheet|ark.?editor/i, window: 'spreadsheet_editor' },
+  { keywords: /deep.?anal|analysis.?hologram|hologram.?anal/i, window: 'deep_analysis' },
+  { keywords: /3d.?fleet|fleet.?3d|globe.?3d/i, window: 'fleet_3d_viewer' },
+  { keywords: /airport.?ops|lufthavn.?ops/i, window: 'airport_ops' },
+  { keywords: /port.?command|havn.?command/i, window: 'port_command' },
+  { keywords: /app.?builder|harbor.?builder/i, window: 'harbor_app_builder' },
+  { keywords: /vehicle.?builder|transport.?builder/i, window: 'vehicle_builder' },
+  { keywords: /image.?gen|generer.?billede/i, window: 'image_generator' },
+  { keywords: /project.?man|projekt.?man/i, window: 'project_management' },
+];
+
+const HOLOGRAM_SYSTEM_CONTEXT = `You are H.A.R.B.O.R INTELLECT — an advanced AI with the ability to control and navigate hologram windows in the IntellectMode interface. When you want to open a specific hologram window for the user to see, include a tag like [OPEN:window_type] in your response. Available windows: fleet_map, route_optimizer, predictive_maintenance, demand_forecast, risk_assessment, performance_analytics, satellite_weather, news_intelligence, swarm_intelligence, digital_twin, neuro_risk, document_editor, spreadsheet_editor, deep_analysis, fleet_3d_viewer, airport_ops, port_command, app_builder, vehicle_builder, image_generator, project_management. Use these tags naturally when it makes sense to show the user a hologram while explaining something. Example: "Let me open the fleet map so you can see the vehicle positions [OPEN:fleet_map]"`;
+
+export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
   const getDeletedIds = () => { try { return new Set(JSON.parse(localStorage.getItem("harbor_deleted_convs") || "[]")); } catch { return new Set(); } };
 
   const [deletedIds, setDeletedIds] = useState(getDeletedIds);
@@ -494,13 +525,36 @@ export default function HarborSuperAgentChat({ onClose }) {
     setIsLoading(false);
   };
 
+  const processHologramCommands = useCallback((content) => {
+    if (!onOpenWindow || !content) return;
+    // Detect [OPEN:window_type] tags
+    const tagMatches = [...content.matchAll(/\[OPEN:([\w_]+)\]/gi)];
+    tagMatches.forEach((match, i) => {
+      setTimeout(() => {
+        onOpenWindow(match[1], { x: 80 + i * 40, y: 60 + i * 30 });
+      }, i * 600);
+    });
+    // Fallback: detect keywords if no tags
+    if (tagMatches.length === 0) {
+      for (const mapping of KEYWORD_WINDOW_MAP) {
+        if (mapping.keywords.test(content)) {
+          onOpenWindow(mapping.window, { x: 80, y: 60 });
+          break;
+        }
+      }
+    }
+  }, [onOpenWindow]);
+
   const subscribeToConversation = (convId) => {
     unsubscribeRef.current?.();
     unsubscribeRef.current = base44.agents.subscribeToConversation(convId, (data) => {
       const msgs = data.messages || [];
       setMessages(msgs);
       const last = msgs[msgs.length - 1];
-      if (last?.role === "assistant") setIsSending(false);
+      if (last?.role === "assistant") {
+        setIsSending(false);
+        processHologramCommands(last.content);
+      }
     });
   };
 
@@ -521,6 +575,10 @@ export default function HarborSuperAgentChat({ onClose }) {
     setActiveConversation(conv);
     setMessages([]);
     subscribeToConversation(conv.id);
+    await base44.agents.addMessage(conv, {
+      role: "system",
+      content: HOLOGRAM_SYSTEM_CONTEXT
+    });
     if (orgId) {
       await base44.agents.addMessage(conv, {
         role: "system",

@@ -1504,7 +1504,13 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
       {/* Harbor Super Agent Chat */}
       <AnimatePresence>
         {showHarborAgentChat && (
-          <HarborSuperAgentChat onClose={() => setShowHarborAgentChat(false)} />
+          <HarborSuperAgentChat
+            onClose={() => setShowHarborAgentChat(false)}
+            onOpenWindow={(windowType, position, data) => {
+              openWindow(windowType, position || { x: 80 + Math.random() * 200, y: 60 + Math.random() * 100 }, data);
+              toast.success(`🤖 H.A.R.B.O.R opened: ${windowType.replace(/_/g, ' ')}`);
+            }}
+          />
         )}
       </AnimatePresence>
 
