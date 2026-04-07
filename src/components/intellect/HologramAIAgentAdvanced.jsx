@@ -316,8 +316,8 @@ export function useHologramAIAgentAdvanced() {
     try {
       report("🔍 Analyzing interface...", "scan");
 
-      // PHASE 1: Deep analysis
-      const page = await analyzePage(document);
+      // PHASE 1: Deep analysis (scan current window, don't wait for iframes)
+      const page = await analyzePage(containerEl || document);
       report(`Scanned: ${page.buttons.length} buttons, ${page.inputs.length} inputs`, "scan");
 
       if (page.buttons.length === 0 && page.inputs.length === 0) {
@@ -360,6 +360,7 @@ export function useHologramAIAgentAdvanced() {
             break;
           }
         }
+        if (!plan || plan.length === 0) plan = page.buttons.slice(0, 1).map(b => b.text);
       }
 
       // Execute plan
@@ -369,7 +370,7 @@ export function useHologramAIAgentAdvanced() {
           report(`🖱️ Clicking: ${action}`, "click");
           clickButton(btn);
           steps.push(`clicked: ${action}`);
-          await new Promise(r => setTimeout(r, 1200));
+          await new Promise(r => setTimeout(r, 600));
 
           // Re-analyze after click
           const updated = await analyzePage(document);
@@ -378,6 +379,7 @@ export function useHologramAIAgentAdvanced() {
             Object.assign(page, updated);
           }
         }
+        await new Promise(r => setTimeout(r, 400));
       }
 
       // PHASE 4: Fill any visible form
@@ -398,7 +400,7 @@ export function useHologramAIAgentAdvanced() {
             report(`  ${inp.label}`, "type");
             fillInput(inp.el, value);
             steps.push(`filled: ${inp.label}`);
-            await new Promise(r => setTimeout(r, 100));
+            await new Promise(r => setTimeout(r, 50));
           }
         }
       }
@@ -412,7 +414,7 @@ export function useHologramAIAgentAdvanced() {
         report(`🖱️ Submitting...`, "click");
         clickButton(submitBtn.el);
         steps.push('submitted');
-        await new Promise(r => setTimeout(r, 1500));
+        await new Promise(r => setTimeout(r, 800));
       }
 
       setAgentStatus("idle");
