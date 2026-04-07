@@ -22,11 +22,33 @@ export default function CustomWorkerBuilder({ onClose, onWorkerCreated, editingW
   const [expandedSource, setExpandedSource] = useState(null);
   const fileInputRef = useRef(null);
 
+  const quickExtract = async (idx, source) => {
+    setSources(prev => prev.map((s, i) => i === idx ? { ...s, status: "extracting" } : s));
+    try {
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: source.type === "url"
+          ? `Giv en kort, naturlig tekstopsummering (3-5 sætninger) af hvad denne side/kilde handler om og hvilke nøgleinformationer den indeholder: ${source.source}`
+          : `Giv en kort, naturlig tekstopsummering (3-5 sætninger) af hvad denne fil indeholder og hvilke vigtigste informationer den har.`,
+        add_context_from_internet: source.type === "url",
+        file_urls: source.type === "file" ? [source.source] : undefined,
+        model: "gemini_3_flash"
+      });
+      setSources(prev => prev.map((s, i) => i === idx ? { ...s, status: "done", extracted_content: typeof result === "string" ? result : JSON.stringify(result) } : s));
+    } catch {
+      setSources(prev => prev.map((s, i) => i === idx ? { ...s, status: "done", extracted_content: "Kunne ikke hente info automatisk." } : s));
+    }
+  };
+
   const addUrl = () => {
     const url = urlInput.trim();
     if (!url) return;
     if (!url.startsWith("http")) { toast.error("Enter a valid URL starting with http"); return; }
-    setSources(prev => [...prev, { type: "url", label: url, source: url, status: "done", extracted_content: url }]);
+    const newSource = { type: "url", label: url, source: url, status: "extracting", extracted_content: "" };
+    setSources(prev => {
+      const idx = prev.length;
+      setTimeout(() => quickExtract(idx, newSource), 0);
+      return [...prev, newSource];
+    });
     setUrlInput("");
   };
 
@@ -35,8 +57,12 @@ export default function CustomWorkerBuilder({ onClose, onWorkerCreated, editingW
     for (const file of files) {
       try {
         const { file_url } = await base44.integrations.Core.UploadFile({ file });
-        setSources(prev => [...prev, { type: "file", label: file.name, source: file_url, status: "done", extracted_content: file_url }]);
-        toast.success(`${file.name} uploaded`);
+        const newSource = { type: "file", label: file.name, source: file_url, status: "extracting", extracted_content: "" };
+        setSources(prev => {
+          const idx = prev.length;
+          setTimeout(() => quickExtract(idx, newSource), 0);
+          return [...prev, newSource];
+        });
       } catch { toast.error(`Failed to upload ${file.name}`); }
     }
     e.target.value = "";
@@ -224,7 +250,7 @@ export default function CustomWorkerBuilder({ onClose, onWorkerCreated, editingW
                     <div className="flex items-center gap-2 flex-shrink-0">
                       {statusIcon(src.status)}
 
-                      {src.extracted_content && (
+                      {(src.extracted_content || src.status === "extracting") && (
                         <button onClick={() => setExpandedSource(expandedSource === idx ? null : idx)}
                           className="p-1 rounded hover:bg-slate-700 transition-all"
                           style={{ color: "#64748b" }}>
@@ -248,22 +274,19 @@ export default function CustomWorkerBuilder({ onClose, onWorkerCreated, editingW
                         style={{ borderColor: "rgba(6,182,212,0.15)" }}
                       >
                         <div className="px-3 py-3" style={{ background: "rgba(0,0,0,0.3)" }}>
-                          {src.type === "url" ? (
-                            <iframe
-                              src={src.source}
-                              className="w-full rounded-lg"
-                              style={{ height: 200, border: "1px solid rgba(6,182,212,0.2)", background: "#000" }}
-                              sandbox="allow-scripts allow-same-origin"
-                              title={src.label}
-                            />
-                          ) : (
-                            <div className="flex items-center gap-3 p-3 rounded-lg" style={{ background: "rgba(139,92,246,0.1)", border: "1px solid rgba(139,92,246,0.2)" }}>
-                              <FileText className="w-5 h-5 text-violet-400" />
-                              <div>
-                                <p className="text-xs text-slate-300 font-mono">{src.label}</p>
-                                <a href={src.source} target="_blank" rel="noopener noreferrer" className="text-[10px] text-violet-400 hover:underline">Open file ↗</a>
-                              </div>
+                          {src.status === "extracting" ? (
+                            <div className="flex items-center gap-2 text-[11px] text-cyan-400 font-mono">
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              Henter info...
                             </div>
+                          ) : (
+                            <p className="text-[11px] text-slate-300 leading-relaxed">{src.extracted_content || "Ingen info tilgængelig."}</p>
+                          )}
+                          {src.type === "url" && (
+                            <a href={src.source} target="_blank" rel="noopener noreferrer" className="text-[10px] text-cyan-500 hover:underline mt-2 inline-block">Åbn kilde ↗</a>
+                          )}
+                          {src.type === "file" && src.source && (
+                            <a href={src.source} target="_blank" rel="noopener noreferrer" className="text-[10px] text-violet-400 hover:underline mt-2 inline-block">Åbn fil ↗</a>
                           )}
                         </div>
                       </motion.div>
