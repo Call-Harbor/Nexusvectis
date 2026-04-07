@@ -307,7 +307,30 @@ const MODULE_KNOWLEDGE = {
   },
 };
 
-/** Get the real scannable root — if container has an iframe, use its contentDocument */
+/** Collect all searchable roots: container + all iframe documents inside it */
+function getAllRoots(containerEl) {
+  const roots = [];
+  if (!containerEl) { roots.push(document.body); return roots; }
+
+  // Add all iframe documents first (highest priority)
+  const iframes = containerEl.querySelectorAll('iframe');
+  for (const iframe of iframes) {
+    try {
+      const doc = iframe.contentDocument || iframe.contentWindow?.document;
+      if (doc && doc.body) roots.push(doc.body);
+    } catch {}
+  }
+
+  // Add the container itself
+  roots.push(containerEl);
+
+  // Add main document as last resort
+  if (!roots.includes(document.body)) roots.push(document.body);
+
+  return roots;
+}
+
+/** Get primary iframe doc or container */
 function getEffectiveRoot(containerEl) {
   if (!containerEl) return document.body;
   const iframe = containerEl.querySelector('iframe');
@@ -320,17 +343,66 @@ function getEffectiveRoot(containerEl) {
   return containerEl;
 }
 
-/** Deep DOM scan — extracts everything visible in a container */
+/** Fill an input/textarea/select with a value, triggering all React-compatible events */
+function fillElement(el, val) {
+  const elWin = el.ownerDocument?.defaultView || window;
+  el.focus();
+
+  if (el.tagName === 'SELECT') {
+    // Find matching option by text or value
+    const lower = val.toLowerCase();
+    const opt = [...el.options].find(o =>
+      o.value.toLowerCase() === lower ||
+      o.text.toLowerCase() === lower ||
+      o.text.toLowerCase().includes(lower)
+    );
+    if (opt) {
+      const nativeSetter = Object.getOwnPropertyDescriptor(elWin.HTMLSelectElement.prototype, 'value')?.set;
+      if (nativeSetter) nativeSetter.call(el, opt.value);
+      else el.value = opt.value;
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    return;
+  }
+
+  if (el.type === 'checkbox' || el.type === 'radio') {
+    const shouldCheck = /true|yes|1|on|check/i.test(val);
+    if (el.checked !== shouldCheck) {
+      el.click();
+    }
+    return;
+  }
+
+  // input / textarea
+  const proto = el.tagName === 'TEXTAREA'
+    ? elWin.HTMLTextAreaElement.prototype
+    : elWin.HTMLInputElement.prototype;
+  const setter = Object.getOwnPropertyDescriptor(proto, 'value')?.set;
+
+  if (setter) {
+    setter.call(el, '');
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+    setter.call(el, val);
+  } else {
+    el.value = val;
+  }
+  el.dispatchEvent(new Event('input', { bubbles: true }));
+  el.dispatchEvent(new Event('change', { bubbles: true }));
+  el.dispatchEvent(new InputEvent('input', { bubbles: true, data: val }));
+}
+
+/** Deep DOM scan — extracts EVERYTHING visible in a container, including iframes */
 function deepScanWindow(containerEl) {
-  const root = getEffectiveRoot(containerEl);
+  const roots = getAllRoots(containerEl);
 
   const isVisible = (el) => {
     const r = el.getBoundingClientRect();
     return r.width > 0 && r.height > 0;
   };
 
-  const scan = (el) => {
-    const buttons = [...el.querySelectorAll(
+  const scan = (root) => {
+    const buttons = [...root.querySelectorAll(
       "button:not([disabled]), [role='button']:not([disabled]), [class*='btn']:not([disabled])"
     )].filter(isVisible).map(b => ({
       label: (
@@ -340,55 +412,79 @@ function deepScanWindow(containerEl) {
         b.getAttribute("data-label") ||
         (/(add|new|create|plus|fab|float)/i.test(b.className || "") ? "Add" : "")
       ).slice(0, 80),
-      classes: b.className?.slice(0, 80)
     })).filter(b => b.label).slice(0, 60);
 
-    const inputs = [...el.querySelectorAll("input:not([type=hidden]):not([type=checkbox]), textarea, select")].filter(isVisible).map(i => ({
-      label: (i.placeholder || i.getAttribute("aria-label") || i.name || i.id || "field").slice(0, 50),
-      type: i.type || i.tagName.toLowerCase(),
-      value: i.value?.slice(0, 30) || ""
-    })).slice(0, 30);
+    const inputs = [...root.querySelectorAll(
+      "input:not([type=hidden]), textarea, select"
+    )].filter(isVisible).map(i => {
+      // Resolve label from <label for>, aria-labelledby, or parent label
+      let label = i.placeholder || i.getAttribute("aria-label") || "";
+      if (!label && i.id) {
+        const lbl = root.querySelector(`label[for="${i.id}"]`);
+        if (lbl) label = lbl.textContent?.trim() || "";
+      }
+      if (!label) {
+        const lblById = i.getAttribute("aria-labelledby");
+        if (lblById) {
+          const lbl = root.getElementById(lblById);
+          if (lbl) label = lbl.textContent?.trim() || "";
+        }
+      }
+      if (!label) {
+        const parent = i.closest("div, fieldset, [class*='field'], [class*='form-item'], [class*='form-group']");
+        if (parent) {
+          const lbl = parent.querySelector("label, [class*='label']");
+          if (lbl) label = lbl.textContent?.trim() || "";
+        }
+      }
+      if (!label) label = i.name || i.id || "field";
 
-    const tabs = [...el.querySelectorAll("[role='tab'], [data-state='active'], [data-state='inactive']")].filter(isVisible).map(t => ({
+      // For selects, include option values
+      const options = i.tagName === 'SELECT'
+        ? [...i.options].map(o => o.text).filter(Boolean)
+        : [];
+
+      return {
+        label: label.slice(0, 60),
+        type: i.type || i.tagName.toLowerCase(),
+        options,
+        value: i.value?.slice(0, 30) || ""
+      };
+    }).slice(0, 40);
+
+    const tabs = [...root.querySelectorAll("[role='tab'], [data-state='active'], [data-state='inactive']")].filter(isVisible).map(t => ({
       label: t.textContent?.trim().slice(0, 40),
       active: t.getAttribute("data-state") === "active" || t.getAttribute("aria-selected") === "true"
     })).filter(t => t.label).slice(0, 20);
 
-    const headings = [...el.querySelectorAll("h1,h2,h3,h4,[class*='title'],[class*='heading']")].filter(isVisible).map(h => h.textContent?.trim().slice(0, 60)).filter(Boolean).slice(0, 10);
+    const headings = [...root.querySelectorAll("h1,h2,h3,h4,[class*='title'],[class*='heading']")].filter(isVisible).map(h => h.textContent?.trim().slice(0, 60)).filter(Boolean).slice(0, 10);
 
-    const allText = [...el.querySelectorAll("p, span, td, [class*='label'], [class*='value'], [class*='stat']")]
+    const allText = [...root.querySelectorAll("p, span, td, [class*='label'], [class*='value'], [class*='stat']")]
       .filter(isVisible).map(e => e.textContent?.trim()).filter(t => t && t.length > 2 && t.length < 100)
       .slice(0, 30).join(" | ");
 
     return { buttons, inputs, tabs, headings, text: allText.slice(0, 600) };
   };
 
-  const result = scan(root);
-
-  // If iframe scan found nothing, try container element directly
-  if (result.buttons.length === 0 && result.inputs.length === 0) {
-    if (containerEl && root !== containerEl) {
-      const fallback = scan(containerEl);
-      if (fallback.buttons.length > 0 || fallback.inputs.length > 0) return fallback;
-    }
-    return scan(document.body);
+  // Merge results from all roots, preferring iframe content
+  let merged = { buttons: [], inputs: [], tabs: [], headings: [], text: "" };
+  for (const root of roots) {
+    const r = scan(root);
+    if (r.buttons.length > merged.buttons.length) merged.buttons = r.buttons;
+    if (r.inputs.length > merged.inputs.length) merged.inputs = r.inputs;
+    if (r.tabs.length > merged.tabs.length) merged.tabs = r.tabs;
+    if (r.headings.length > merged.headings.length) merged.headings = r.headings;
+    if (r.text.length > merged.text.length) merged.text = r.text;
   }
 
-  return result;
+  return merged;
 }
 
-/** Find element by multiple strategies — also searches inside iframes */
+/** Find element by multiple strategies — searches ALL roots including iframes */
 function findElement(containerEl, label, type) {
   if (!label) return null;
   const lower = label.toLowerCase().trim();
-
-  // Include iframe contentDocument in search roots
-  const effectiveRoot = getEffectiveRoot(containerEl);
-  const rootSet = new Set();
-  if (effectiveRoot) rootSet.add(effectiveRoot);
-  if (containerEl) rootSet.add(containerEl);
-  rootSet.add(document.body);
-  const roots = [...rootSet];
+  const roots = getAllRoots(containerEl);
 
   const isVisible = (el) => {
     const r = el.getBoundingClientRect();
@@ -397,57 +493,61 @@ function findElement(containerEl, label, type) {
 
   for (const root of roots) {
     const pool = type === "input"
-      ? [...root.querySelectorAll("input:not([type=hidden]):not([type=checkbox]), textarea, select")]
+      ? [...root.querySelectorAll("input:not([type=hidden]), textarea, select")]
       : type === "tab"
       ? [...root.querySelectorAll("[role='tab'], [data-state='inactive'], [data-state='active']")]
       : [...root.querySelectorAll("button, [role='button'], [role='tab'], a, input, textarea, select, label, [class*='tab'], [class*='fab'], [class*='float'], [class*='btn']")];
 
     const visible = pool.filter(isVisible);
 
+    // Exact text match
     let el = visible.find(e => e.textContent?.trim().toLowerCase() === lower);
     if (el) return el;
+    // Placeholder exact
     el = visible.find(e => e.placeholder?.toLowerCase() === lower);
     if (el) return el;
+    // Placeholder contains
     el = visible.find(e => e.placeholder?.toLowerCase().includes(lower));
     if (el) return el;
+    // Text contains
     el = visible.find(e => e.textContent?.trim().toLowerCase().includes(lower));
     if (el) return el;
+    // Label contains search term
     el = visible.find(e => lower.includes(e.textContent?.trim().toLowerCase()) && e.textContent?.trim().length > 2);
     if (el) return el;
+    // aria-label
     el = visible.find(e => e.getAttribute("aria-label")?.toLowerCase().includes(lower));
     if (el) return el;
+    // title
     el = visible.find(e => e.getAttribute("title")?.toLowerCase().includes(lower));
     if (el) return el;
+    // name/id
     el = visible.find(e => (e.name || e.id || "").toLowerCase().includes(lower));
     if (el) return el;
+    // FAB patterns
     if (/add|new|create|opret|tilf/i.test(lower)) {
       el = visible.find(e => /add|new|create|plus|fab|float/i.test(e.className || ""));
       if (el) return el;
     }
 
-    // For inputs: also find by associated <label> text or nearby label element
+    // For inputs: resolve via associated label elements
     if (type === "input") {
-      const allInputs = [...root.querySelectorAll("input:not([type=hidden]):not([type=checkbox]), textarea, select")].filter(isVisible);
+      const allInputs = [...root.querySelectorAll("input:not([type=hidden]), textarea, select")].filter(isVisible);
       for (const inp of allInputs) {
-        // Check <label for="id"> association
         if (inp.id) {
           const lbl = root.querySelector(`label[for="${inp.id}"]`);
           if (lbl && lbl.textContent?.trim().toLowerCase().includes(lower)) return inp;
         }
-        // Check aria-labelledby
         const labelledBy = inp.getAttribute("aria-labelledby");
         if (labelledBy) {
-          const lbl = root.getElementById(labelledBy) || document.getElementById(labelledBy);
+          const lbl = root.getElementById(labelledBy);
           if (lbl && lbl.textContent?.trim().toLowerCase().includes(lower)) return inp;
         }
-        // Check parent/sibling label text
-        const parent = inp.closest("div, fieldset, [class*='field'], [class*='form']");
+        const parent = inp.closest("div, fieldset, [class*='field'], [class*='form-item'], [class*='form-group']");
         if (parent) {
           const lblEl = parent.querySelector("label, [class*='label']");
           if (lblEl && lblEl.textContent?.trim().toLowerCase().includes(lower)) return inp;
-          // Also check all text nodes in parent
-          const parentText = parent.textContent?.toLowerCase() || "";
-          if (parentText.includes(lower)) return inp;
+          if (parent.textContent?.toLowerCase().includes(lower)) return inp;
         }
       }
     }
@@ -528,18 +628,27 @@ export function useHologramAIAgent() {
       const allInputs = [...new Set([...liveInputs, ...knownInputs])];
       const allTabs = [...new Set([...liveTabs, ...knownTabs])];
 
+      // Build select options info for the prompt
+      const selectsInfo = liveStructure.inputs
+        .filter(i => i.type === 'select' && i.options?.length > 0)
+        .map(i => `  "${i.label}" options: [${i.options.slice(0, 10).join(', ')}]`)
+        .join('\n');
+
       const planResult = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are an AI agent operating the NexusVectis logistics platform — physically clicking buttons and typing in forms, FASTER than a human.
+        prompt: `You are an AI agent operating the NexusVectis logistics platform — physically clicking buttons and typing in forms.
 
 TASK: "${task}"
 MODULE: "${windowType.replace(/_/g, ' ')}"
 ${knowledge ? `MODULE INFO: ${knowledge.description}` : ''}
 
-=== BUTTONS (pre-trained + live scan — use EXACT text) ===
-${allButtons.length > 0 ? allButtons.map((b, i) => `${i + 1}. "${b}"`).join('\n') : 'None detected yet — UI may still be loading'}
+=== BUTTONS (use EXACT text) ===
+${allButtons.length > 0 ? allButtons.map((b, i) => `${i + 1}. "${b}"`).join('\n') : 'None detected yet'}
 
-=== INPUT FIELDS (use EXACT placeholder/label text) ===
+=== INPUT FIELDS (use EXACT placeholder/label) ===
 ${allInputs.length > 0 ? allInputs.map((f, i) => `${i + 1}. "${f}"`).join('\n') : 'None'}
+
+=== SELECT DROPDOWNS (options available) ===
+${selectsInfo || 'None'}
 
 === TABS ===
 ${allTabs.length > 0 ? allTabs.map((t, i) => `${i + 1}. "${t}"`).join('\n') : 'None'}
@@ -548,18 +657,19 @@ ${allTabs.length > 0 ? allTabs.map((t, i) => `${i + 1}. "${t}"`).join('\n') : 'N
 ${liveStructure.text.slice(0, 400) || 'loading...'}
 
 RULES:
-1. Generate 3-8 steps. Be concise and direct — no unnecessary hover/think steps.
-2. CLICK steps: use button labels from the BUTTONS list above. Even if not in live scan, use known button names.
-3. TYPE steps: use EXACT input placeholder from INPUT FIELDS. Provide realistic values.
-4. For "create" tasks: click the primary creation button (e.g. "Create Route", "Add Vehicle", "New Shipment").
-5. After clicking a create button, a dialog will open — fill its fields and click the submit button inside.
-6. For "search/filter": type directly in the search input.
-7. For "navigate to tab": use tab step type.
-8. Always end with a narrate step summarizing what was accomplished.
-9. If a button is in the KNOWN list but not live scan, still plan to click it — it may just not be visible yet.
+1. Generate 3-8 steps. Be concise and direct.
+2. CLICK steps: click buttons using exact label text.
+3. TYPE steps: use EXACT input placeholder/label. Provide realistic values.
+4. SELECT steps: use type="select" with label=field name, value=option to pick.
+5. CHECK steps: use type="check" with label=checkbox/radio name, value="true" or "false".
+6. For "create" tasks: click the primary creation button first, then fill the dialog form fields.
+7. For "search": type in the search input.
+8. For "navigate to tab": use type="tab".
+9. Always end with a narrate step summarizing what was accomplished.
+10. Use known button names even if not in live scan — they may appear after loading.
 
 Return JSON only:
-{ "steps": [ {"type": "click|type|tab|think|narrate|scroll", "label": "...", "value": "...", "text": "..."} ], "summary": "one sentence summary" }`,
+{ "steps": [ {"type": "click|type|select|check|tab|think|narrate|scroll", "label": "...", "value": "...", "text": "..."} ], "summary": "one sentence summary" }`,
         response_json_schema: {
           type: "object",
           properties: {
@@ -676,6 +786,42 @@ Return JSON only:
           continue;
         }
 
+        if (step.type === "select") {
+          const selEl = findElement(activeRoot, step.label, "input")
+            || findElement(document.body, step.label, "input");
+          const val = step.value || "";
+          report(`🔽 Select "${val}" in ${step.label}`, "type");
+          if (selEl) {
+            const rect = selEl.getBoundingClientRect();
+            dispatchCursorAction("click", step.label, null, null, rect.left + rect.width / 2, rect.top + rect.height / 2);
+            await new Promise(r => setTimeout(r, 80));
+            fillElement(selEl, val);
+            await new Promise(r => setTimeout(r, 200));
+          } else {
+            report(`⚠️ Select "${step.label}" not found`, "think");
+          }
+          executedLabels.push(`selected:${step.label}=${val.slice(0, 20)}`);
+          continue;
+        }
+
+        if (step.type === "check") {
+          const checkEl = findElement(activeRoot, step.label, "input")
+            || findElement(document.body, step.label, "input");
+          const val = step.value || "true";
+          report(`☑️ Check "${step.label}" = ${val}`, "click");
+          if (checkEl) {
+            const rect = checkEl.getBoundingClientRect();
+            dispatchCursorAction("click", step.label, null, null, rect.left + rect.width / 2, rect.top + rect.height / 2);
+            await new Promise(r => setTimeout(r, 80));
+            fillElement(checkEl, val);
+            await new Promise(r => setTimeout(r, 150));
+          } else {
+            report(`⚠️ Checkbox "${step.label}" not found`, "think");
+          }
+          executedLabels.push(`checked:${step.label}`);
+          continue;
+        }
+
         if (step.type === "type") {
           const typeEl = findElement(activeRoot, step.label, "input")
             || findElement(document.body, step.label, "input");
@@ -685,31 +831,7 @@ Return JSON only:
             const rect = typeEl.getBoundingClientRect();
             dispatchCursorAction("type", step.label, null, val, rect.left + rect.width / 2, rect.top + rect.height / 2);
             await new Promise(r => setTimeout(r, 80));
-            // Use the element's own window context (important for iframes)
-            const elWin = typeEl.ownerDocument?.defaultView || window;
-            typeEl.focus();
-            // Clear existing value first
-            const nativeInputProto = typeEl.tagName === "TEXTAREA"
-              ? elWin.HTMLTextAreaElement.prototype
-              : elWin.HTMLInputElement.prototype;
-            const setter = Object.getOwnPropertyDescriptor(nativeInputProto, "value")?.set;
-            if (setter) {
-              setter.call(typeEl, "");
-              typeEl.dispatchEvent(new Event("input", { bubbles: true }));
-            }
-            // Set new value
-            if (setter) {
-              setter.call(typeEl, val);
-              typeEl.dispatchEvent(new Event("input", { bubbles: true }));
-              typeEl.dispatchEvent(new Event("change", { bubbles: true }));
-            } else {
-              // Fallback: simulate keypresses character by character
-              typeEl.value = val;
-              typeEl.dispatchEvent(new Event("input", { bubbles: true }));
-              typeEl.dispatchEvent(new Event("change", { bubbles: true }));
-            }
-            // Also dispatch a React-compatible synthetic event via nativeInputValueSetter
-            typeEl.dispatchEvent(new InputEvent("input", { bubbles: true, data: val }));
+            fillElement(typeEl, val);
             await new Promise(r => setTimeout(r, 150));
           } else {
             report(`⚠️ Input "${step.label}" not found`, "think");
