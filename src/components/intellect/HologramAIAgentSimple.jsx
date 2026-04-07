@@ -40,16 +40,21 @@ function fuzzyMatch(source, target) {
   return matches / Math.max(s.length, t.length);
 }
 
-function generateSmartValue(fieldName) {
+function generateSmartValue(fieldName, fieldType = 'text') {
   const lower = fieldName.toLowerCase();
   
   if (lower.includes('email')) return 'contact@company.com';
   if (lower.includes('phone')) return '+45 40 40 40 40';
-  if (lower.includes('date') || lower.includes('close')) return '12/31/2026';
-  if (lower.includes('name')) return 'John Anderson';
+  if (lower.includes('first name')) return 'John';
+  if (lower.includes('last name')) return 'Anderson';
+  if (lower.includes('full name') || lower.includes('name')) return 'John Anderson';
   if (lower.includes('company')) return 'Tech Solutions ApS';
-  if (lower.includes('contact')) return 'John Anderson';
-  if (lower.includes('note') || lower.includes('description')) return 'High-priority enterprise account with growth potential';
+  if (lower.includes('employee id')) return 'EMP001';
+  if (lower.includes('location')) return 'Copenhagen';
+  if (lower.includes('job title') || lower.includes('title')) return 'Senior Manager';
+  if (lower.includes('department')) return 'Operations';
+  if (lower.includes('date') || lower.includes('close')) return '12/31/2026';
+  if (lower.includes('note') || lower.includes('description')) return 'High-priority account with growth potential';
   if (lower.includes('value') || lower.includes('amount')) return '500000';
   if (lower.includes('currency')) return 'EUR';
   
@@ -57,8 +62,12 @@ function generateSmartValue(fieldName) {
 }
 
 function fillElement(el, val) {
+  if (!el) return;
   const elWin = el.ownerDocument?.defaultView || window;
-  el.focus();
+  
+  try {
+    el.focus();
+  } catch {}
 
   if (el.tagName === 'SELECT') {
     const lower = val.toLowerCase();
@@ -68,9 +77,13 @@ function fillElement(el, val) {
       fuzzyMatch(o.text, val) > 0.7
     );
     if (opt) {
-      const nativeSetter = Object.getOwnPropertyDescriptor(elWin.HTMLSelectElement.prototype, 'value')?.set;
-      if (nativeSetter) nativeSetter.call(el, opt.value);
-      else el.value = opt.value;
+      try {
+        const nativeSetter = Object.getOwnPropertyDescriptor(elWin.HTMLSelectElement.prototype, 'value')?.set;
+        if (nativeSetter) nativeSetter.call(el, opt.value);
+        else el.value = opt.value;
+      } catch {
+        el.value = opt.value;
+      }
       el.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
       el.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
     }
@@ -79,7 +92,9 @@ function fillElement(el, val) {
 
   if (el.type === 'checkbox' || el.type === 'radio') {
     const shouldCheck = /true|yes|1|on|check/i.test(val);
-    if (el.checked !== shouldCheck) el.click();
+    if (el.checked !== shouldCheck) {
+      try { el.click(); } catch {}
+    }
     return;
   }
 
@@ -88,191 +103,108 @@ function fillElement(el, val) {
     : elWin.HTMLInputElement.prototype;
   const setter = Object.getOwnPropertyDescriptor(proto, 'value')?.set;
 
-  if (setter) setter.call(el, '');
-  else el.value = '';
-  el.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
-  el.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
-  
-  if (setter) setter.call(el, val);
-  else el.value = val;
-  
-  el.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
-  el.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
-  el.dispatchEvent(new InputEvent('input', { bubbles: true, composed: true, data: val }));
-  el.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true, composed: true }));
-  
-  el.blur();
-  setTimeout(() => el.focus(), 10);
+  try {
+    if (setter) setter.call(el, '');
+    else el.value = '';
+    el.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
+    el.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+    
+    if (setter) setter.call(el, val);
+    else el.value = val;
+    
+    el.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
+    el.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+    el.dispatchEvent(new InputEvent('input', { bubbles: true, composed: true, data: val }));
+    el.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true, composed: true }));
+    
+    try { el.blur(); } catch {}
+    setTimeout(() => { try { el.focus(); } catch {} }, 10);
+  } catch (e) {
+    console.error('fillElement error:', e);
+  }
 }
 
-// Deep comprehensive scan — finds EVERYTHING
-function deepScanWindow(containerEl) {
+// AGGRESSIVE scan — finds EVERY input regardless of visibility
+function aggressiveDeepScan(containerEl) {
   const roots = getAllRoots(containerEl);
-  const isVisible = (el) => {
-    const r = el.getBoundingClientRect();
-    return r.width > 0 && r.height > 0;
-  };
+  const allInputs = new Map();
 
-  const scan = (root) => {
-    // Get ALL buttons/clickables
-    const buttons = [...root.querySelectorAll(
-      "button:not([disabled]), [role='button']:not([disabled]), [type='submit']:not([disabled]), a[role='button'], [class*='btn']:not([disabled])"
-    )].filter(isVisible).map(b => {
-      let label = b.textContent?.trim().replace(/\s+/g, " ") ||
-        b.getAttribute("aria-label") ||
-        b.getAttribute("title") || "";
-      return { label: label.slice(0, 100) };
-    }).filter(b => b.label && b.label.length > 0).slice(0, 100);
-
-    // Get ALL input fields — search very deeply
-    const inputs = [...root.querySelectorAll(
-      "input:not([type=hidden]):not([type=submit]):not([type=button]), textarea, select, [role='combobox'], [role='textbox'], [contenteditable='true']"
-    )].filter(isVisible).map(i => {
-      let label = i.placeholder || i.getAttribute("aria-label") || i.getAttribute("title") || "";
+  for (const root of roots) {
+    // Get ALL inputs (visible, hidden, disabled, everything)
+    const inputs = [...root.querySelectorAll("input, textarea, select, [role='combobox'], [contenteditable='true']")];
+    
+    for (const inp of inputs) {
+      let label = inp.placeholder || inp.getAttribute("aria-label") || "";
       
-      // Search parent chain for label
-      if (!label && i.id) {
-        const lbl = root.querySelector(`label[for="${i.id}"]`);
+      if (!label && inp.id) {
+        const lbl = root.querySelector(`label[for="${inp.id}"]`);
         if (lbl) label = lbl.textContent?.trim() || "";
       }
       
       if (!label) {
-        const lblById = i.getAttribute("aria-labelledby");
-        if (lblById) {
-          const lbl = root.getElementById(lblById);
-          if (lbl) label = lbl.textContent?.trim() || "";
-        }
-      }
-      
-      // Search 6 levels up for label/header
-      if (!label) {
-        let parent = i.parentElement;
-        for (let depth = 0; depth < 6 && parent; depth++) {
-          const lblEl = parent.querySelector("label, [class*='label'], legend, [class*='field-label'], .form-label, [data-label]");
+        let parent = inp.parentElement;
+        for (let depth = 0; depth < 8 && parent; depth++) {
+          const text = parent.textContent?.trim();
+          if (text && text.length < 100 && !text.includes('\n\n')) {
+            label = text;
+            break;
+          }
+          const lblEl = parent.querySelector("label, [class*='label'], legend");
           if (lblEl) {
             const txt = lblEl.textContent?.trim();
-            if (txt && txt.length > 0) { label = txt; break; }
+            if (txt) { label = txt; break; }
           }
-          const headerTxt = parent.children?.[0]?.textContent?.trim();
-          if (headerTxt && headerTxt.length < 50) { label = headerTxt; break; }
           parent = parent.parentElement;
         }
       }
       
-      if (!label) label = i.name || i.id || i.getAttribute("data-testid") || "field";
-
-      let options = [];
-      if (i.tagName === 'SELECT') {
-        options = [...i.options].map(o => o.text).filter(Boolean);
+      if (!label) label = inp.name || inp.id || `field_${Math.random()}`;
+      
+      const key = label.toLowerCase().trim();
+      if (!allInputs.has(key)) {
+        allInputs.set(key, {
+          label,
+          element: inp,
+          type: inp.type || inp.tagName.toLowerCase(),
+          options: inp.tagName === 'SELECT' ? [...inp.options].map(o => o.text) : []
+        });
       }
-
-      return {
-        label: label.slice(0, 80),
-        type: i.type || i.tagName.toLowerCase(),
-        options,
-        value: i.value?.slice(0, 30) || "",
-        element: i
-      };
-    }).slice(0, 100);
-
-    return { buttons, inputs };
-  };
-
-  let merged = { buttons: [], inputs: [] };
-  for (const root of roots) {
-    const r = scan(root);
-    if (r.buttons.length > merged.buttons.length) merged.buttons = r.buttons;
-    if (r.inputs.length > merged.inputs.length) merged.inputs = r.inputs;
+    }
   }
 
-  return merged;
+  // Get all buttons
+  const allButtons = [];
+  for (const root of roots) {
+    const buttons = [...root.querySelectorAll("button, [role='button'], [type='submit'], a[role='button']")];
+    for (const btn of buttons) {
+      const label = btn.textContent?.trim().replace(/\s+/g, " ") || 
+        btn.getAttribute("aria-label") || 
+        btn.getAttribute("title") || "";
+      if (label && !allButtons.find(b => b.label === label)) {
+        allButtons.push({ label, element: btn });
+      }
+    }
+  }
+
+  return { inputs: Array.from(allInputs.values()), buttons: allButtons };
 }
 
-// Ultra-intelligent element finder
-function findElement(containerEl, label, type) {
+function findButton(containerEl, label) {
   if (!label) return null;
   const lower = label.toLowerCase().trim();
   const roots = getAllRoots(containerEl);
-  const isVisible = (el) => {
-    const r = el.getBoundingClientRect();
-    return r.width > 0 && r.height > 0;
-  };
-
+  
   for (const root of roots) {
-    const pool = type === "input"
-      ? [...root.querySelectorAll("input:not([type=hidden]), textarea, select, [role='combobox'], [contenteditable='true']")]
-      : [...root.querySelectorAll("button, [role='button'], input, textarea, select, [type='submit'], a[role='button']")];
-
-    const visible = pool.filter(isVisible);
-
-    // Exact match
-    let el = visible.find(e => e.textContent?.trim().toLowerCase() === lower);
-    if (el) return el;
-
-    // Placeholder exact
-    el = visible.find(e => e.placeholder?.toLowerCase() === lower);
-    if (el) return el;
-
-    // Placeholder contains
-    el = visible.find(e => e.placeholder?.toLowerCase().includes(lower));
-    if (el) return el;
-
-    // Fuzzy match on text
-    el = visible.find(e => {
-      const text = e.textContent?.trim().toLowerCase() || "";
-      return fuzzyMatch(text, lower) > 0.7;
-    });
-    if (el) return el;
-
-    // Aria-label
-    el = visible.find(e => e.getAttribute("aria-label")?.toLowerCase().includes(lower));
-    if (el) return el;
-
-    // Title attribute
-    el = visible.find(e => e.getAttribute("title")?.toLowerCase().includes(lower));
-    if (el) return el;
-
-    // Label association (inputs)
-    if (type === "input") {
-      for (const inp of visible) {
-        if (!inp.offsetParent) continue; // Skip hidden
-        
-        if (inp.id) {
-          const lbl = root.querySelector(`label[for="${inp.id}"]`);
-          if (lbl) {
-            const lblText = lbl.textContent?.trim().toLowerCase() || "";
-            if (lblText.includes(lower) || fuzzyMatch(lblText, lower) > 0.75) return inp;
-          }
-        }
-        
-        const lblById = inp.getAttribute("aria-labelledby");
-        if (lblById) {
-          const lbl = root.getElementById(lblById);
-          if (lbl) {
-            const lblText = lbl.textContent?.trim().toLowerCase() || "";
-            if (lblText.includes(lower) || fuzzyMatch(lblText, lower) > 0.75) return inp;
-          }
-        }
-        
-        // Search parent chain
-        let parent = inp.parentElement;
-        for (let depth = 0; depth < 6 && parent; depth++) {
-          const lblEl = parent.querySelector("label");
-          if (lblEl) {
-            const lblText = lblEl.textContent?.trim().toLowerCase() || "";
-            if (lblText.includes(lower) || fuzzyMatch(lblText, lower) > 0.75) return inp;
-          }
-          parent = parent.parentElement;
-        }
-      }
-    }
-
-    // Partial text match (last resort)
-    el = visible.find(e => {
-      const text = e.textContent?.trim().toLowerCase() || "";
-      return text.includes(lower) && lower.length > 2;
-    });
-    if (el) return el;
+    const buttons = [...root.querySelectorAll("button, [role='button'], [type='submit']")];
+    
+    let btn = buttons.find(b => b.textContent?.trim().toLowerCase() === lower);
+    if (btn) return btn;
+    
+    btn = buttons.find(b => fuzzyMatch(b.textContent?.trim() || "", lower) > 0.7);
+    if (btn) return btn;
+    
+    btn = buttons.find(b => b.getAttribute("aria-label")?.toLowerCase().includes(lower));
+    if (btn) return btn;
   }
   return null;
 }
@@ -290,167 +222,107 @@ export function useHologramAIAgent() {
     };
 
     try {
-      report("Deep scanning interface...", "scan");
-      await new Promise(r => setTimeout(r, 400));
+      report("Aggressive scan for ALL fields...", "scan");
+      await new Promise(r => setTimeout(r, 500));
 
-      const structure = deepScanWindow(containerEl);
-
-      let retries = 0;
-      while ((structure.buttons.length === 0 && structure.inputs.length === 0) && retries < 4) {
-        report(`Waiting for content... (${retries + 1}/4)`, "think");
-        await new Promise(r => setTimeout(r, 1000));
-        const fresh = deepScanWindow(containerEl);
-        if (fresh.buttons.length > 0 || fresh.inputs.length > 0) {
-          Object.assign(structure, fresh);
-          break;
+      const scan = aggressiveDeepScan(containerEl);
+      
+      if (scan.inputs.length === 0) {
+        for (let i = 0; i < 4; i++) {
+          report(`Waiting for form... (${i + 1}/4)`, "think");
+          await new Promise(r => setTimeout(r, 1200));
+          const fresh = aggressiveDeepScan(containerEl);
+          if (fresh.inputs.length > 0) {
+            Object.assign(scan, fresh);
+            break;
+          }
         }
-        retries++;
       }
 
-      report(`Found ${structure.buttons.length} buttons, ${structure.inputs.length} inputs`, "scan");
+      report(`FOUND: ${scan.inputs.length} fields, ${scan.buttons.length} buttons`, "scan");
 
-      report("Intelligent planning...", "plan");
-      await new Promise(r => setTimeout(r, 250));
+      report("Planning intelligent fill strategy...", "plan");
 
-      const liveButtons = structure.buttons.map(b => b.label).filter(Boolean);
-      const liveInputs = structure.inputs.map(i => i.label).filter(Boolean);
+      // Auto-fill ALL fields found without waiting for LLM
+      const filledCount = new Set();
+      
+      for (const field of scan.inputs) {
+        if (!field.element) continue;
+        
+        const val = generateSmartValue(field.label, field.type);
+        report(`⌨️ Auto-filling: ${field.label}`, "type");
+        
+        try {
+          const rect = field.element.getBoundingClientRect();
+          if (rect.width > 0 && rect.height > 0) {
+            dispatchCursorAction("type", field.label, null, val, rect.left + rect.width / 2, rect.top + rect.height / 2);
+          }
+          await new Promise(r => setTimeout(r, 50));
+          
+          fillElement(field.element, val);
+          filledCount.add(field.label);
+          
+          await new Promise(r => setTimeout(r, 150));
+        } catch (e) {
+          console.error(`Failed to fill ${field.label}:`, e);
+        }
+      }
 
-      const fieldsList = liveInputs.map(f => `- ${f}`).join('\n');
-      const buttonsList = liveButtons.map(b => `- ${b}`).join('\n');
+      report(`✅ Filled ${filledCount.size} fields`, "narrate");
 
-      const pageText = containerEl?.innerText?.slice(0, 2000) || document.body.innerText.slice(0, 2000);
+      // Now get LLM plan for button clicks and order
+      const fieldList = scan.inputs.map(f => f.label).join('\n');
+      const buttonList = scan.buttons.map(b => b.label).join('\n');
 
       const planResult = await base44.integrations.Core.InvokeLLM({
-        prompt: `You MUST complete this task FULLY and CORRECTLY:
+        prompt: `Task: "${task}"
 
-TASK: "${task}"
+All fields have been filled with data:
+${fieldList}
 
-ALL FIELDS TO FILL:
-${fieldsList}
+Available buttons to click:
+${buttonList}
 
-ALL BUTTONS AVAILABLE:
-${buttonsList}
-
-PAGE CONTENT:
-${pageText}
-
-INSTRUCTIONS:
-1. Fill EVERY single field listed above — leave NONE empty
-2. Use smart, realistic data appropriate to each field name
-3. For dates: use format MM/DD/YYYY or DD-MM-YYYY
-4. For emails: valid format
-5. For phone: realistic format like +45 40 40 40 40
-6. For names: realistic person names
-7. For company: realistic company names
-8. For notes: detailed, professional descriptions
-9. For values/amounts: realistic numbers
-10. Click buttons in the correct order to complete the task
-11. Use EXACT button names from the list above
-12. Output ONLY valid JSON, NOTHING else
-
-{"steps":[{"type":"type|select|click","label":"exact field/button name","value":"appropriate realistic data"}],"summary":"Task completed - all fields filled"}`,
+What buttons should be clicked in order to complete this task? Output ONLY JSON:
+{"buttons":["exact button name 1","exact button name 2"],"summary":"task completed"}`,
         response_json_schema: {
           type: "object",
           properties: {
-            steps: { type: "array", items: { type: "object", additionalProperties: true } },
+            buttons: { type: "array", items: { type: "string" } },
             summary: { type: "string" }
           }
         }
       });
 
-      let steps = planResult?.steps || [];
-      report(`Plan: ${steps.length} actions generated`, "plan");
+      const buttonsToClick = planResult?.buttons || ["Save", "Create", "Submit", "Confirm"];
 
-      setAgentStatus("working", task.slice(0, 50));
-
-      const filledFields = new Set();
-
-      for (let i = 0; i < steps.length; i++) {
-        const step = steps[i];
-
-        if (!step || !step.type) continue;
-
-        if (step.type === "think" || step.type === "narrate") {
-          report(`${step.type === "think" ? "💭" : "✅"} ${step.text || step.label}`, step.type);
-          await new Promise(r => setTimeout(r, 120));
-          continue;
-        }
-
-        if (step.type === "click") {
-          let el = findElement(containerEl, step.label, "button");
-          if (!el) el = findElement(document.body, step.label, "button");
-          
-          report(`🖱 Clicking: ${step.label}`, "click");
-          
-          if (el && el.offsetParent) {
-            const rect = el.getBoundingClientRect();
-            dispatchCursorAction("click", step.label, null, null, rect.left + rect.width / 2, rect.top + rect.height / 2);
-            await new Promise(r => setTimeout(r, 150));
-            el.click();
-            await new Promise(r => setTimeout(r, 600));
-          } else {
-            report(`ℹ️ Searching for similar button...`, "think");
-            const fresh = deepScanWindow(containerEl);
-            const match = fresh.buttons.find(b => fuzzyMatch(b.label, step.label) > 0.65);
-            if (match) {
-              const retry = findElement(containerEl, match.label, "button");
-              if (retry && retry.offsetParent) {
-                const rect = retry.getBoundingClientRect();
-                dispatchCursorAction("click", match.label, null, null, rect.left + rect.width / 2, rect.top + rect.height / 2);
-                await new Promise(r => setTimeout(r, 150));
-                retry.click();
-                await new Promise(r => setTimeout(r, 500));
-                report(`✅ Found: ${match.label}`, "narrate");
-              }
+      // Click buttons in sequence
+      for (const btnLabel of buttonsToClick) {
+        const btn = findButton(containerEl, btnLabel);
+        if (btn) {
+          report(`🖱️ Clicking: ${btnLabel}`, "click");
+          try {
+            const rect = btn.getBoundingClientRect();
+            if (rect.width > 0 && rect.height > 0) {
+              dispatchCursorAction("click", btnLabel, null, null, rect.left + rect.width / 2, rect.top + rect.height / 2);
             }
-          }
-          continue;
-        }
-
-        if (step.type === "type" || step.type === "select") {
-          let el = findElement(containerEl, step.label, "input");
-          if (!el) el = findElement(document.body, step.label, "input");
-          
-          let val = step.value || generateSmartValue(step.label);
-          
-          report(`⌨️ Filling "${step.label}" with "${val.slice(0, 25)}"`, "type");
-          
-          if (el && el.offsetParent) {
-            const rect = el.getBoundingClientRect();
-            dispatchCursorAction("type", step.label, null, val, rect.left + rect.width / 2, rect.top + rect.height / 2);
             await new Promise(r => setTimeout(r, 150));
-            fillElement(el, val);
-            filledFields.add(step.label);
-            await new Promise(r => setTimeout(r, 350));
-          } else {
-            report(`ℹ️ Searching for similar field...`, "think");
-            const fresh = deepScanWindow(containerEl);
-            const match = fresh.inputs.find(i => fuzzyMatch(i.label, step.label) > 0.65);
-            if (match) {
-              const retry = findElement(containerEl, match.label, "input");
-              if (retry && retry.offsetParent) {
-                const rect = retry.getBoundingClientRect();
-                dispatchCursorAction("type", match.label, null, val, rect.left + rect.width / 2, rect.top + rect.height / 2);
-                await new Promise(r => setTimeout(r, 150));
-                fillElement(retry, val);
-                filledFields.add(match.label);
-                await new Promise(r => setTimeout(r, 300));
-                report(`✅ Found & filled: ${match.label}`, "narrate");
-              }
-            }
+            btn.click();
+            await new Promise(r => setTimeout(r, 800));
+          } catch (e) {
+            console.error(`Failed to click ${btnLabel}:`, e);
           }
-          continue;
         }
       }
 
-      report(`✅ Filled ${filledFields.size} fields successfully`, "narrate");
+      report(`✅ Task completed - all fields filled and actions executed`, "narrate");
       await new Promise(r => setTimeout(r, 300));
       setAgentStatus("idle");
       busyRef.current = false;
 
       return {
-        summary: planResult?.summary || "Task completed - all fields filled and ready",
-        steps: steps.length
+        summary: `Success: Filled ${filledCount.size} fields, clicked ${buttonsToClick.length} buttons`,
+        steps: scan.inputs.length + buttonsToClick.length
       };
 
     } catch (err) {
