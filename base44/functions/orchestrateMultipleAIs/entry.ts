@@ -33,16 +33,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing task or workerType' }, { status: 400 });
     }
 
-    const agentName = WORKER_TO_AGENT_MAP[workerType];
-    if (!agentName) {
-      return Response.json({ 
-        error: `Agent '${workerType}' not defined in mapping`,
-        orchestrationId,
-        taskId,
-        workerType,
-        status: 'failed'
-      }, { status: 400 });
-    }
+    const agentName = WORKER_TO_AGENT_MAP[workerType] || 'harbor_intellect';
 
     try {
       const conv = await base44.agents.createConversation({
