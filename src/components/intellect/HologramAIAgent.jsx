@@ -673,20 +673,21 @@ ${allTabs.length > 0 ? allTabs.map((t, i) => `${i + 1}. "${t}"`).join('\n') : 'N
 ${liveStructure.text.slice(0, 400) || 'loading...'}
 
 RULES:
-1. Generate 3-8 steps. Be concise and direct.
+1. Generate steps for EVERY field in the form. Be complete and thorough.
 2. CLICK steps: click buttons using exact label text.
-3. TYPE steps: use EXACT input placeholder/label. Provide realistic values.
+3. TYPE steps: use EXACT input placeholder/label. Provide realistic values. For address/location fields, use real city/country names.
 4. SELECT steps: use type="select" with label=field name, value=option to pick.
 5. CHECK steps: use type="check" with label=checkbox/radio name, value="true" or "false".
-6. For "create" tasks: click the primary creation button first, then fill the dialog form fields.
+6. For "create" tasks: click the primary creation button first, then fill EVERY dialog form field in order, then click submit.
 7. For "search": type in the search input.
 8. For "navigate to tab": use type="tab".
-9. Always end with a narrate step summarizing what was accomplished.
-10. Use known button names even if not in live scan — they may appear after loading.
-11. CRITICAL: Fill ALL required fields. Do not skip required fields marked in REQUIRED FIELDS section.
+9. ALWAYS end with clicking the submit/create/save button. Never skip the final submit step.
+10. CRITICAL: Fill ALL required fields. Do not skip any field marked in REQUIRED FIELDS section.
+11. If a button looks like a submit button (Create, Save, Submit, OK, Confirm), ALWAYS include it as the final step.
 
-Return JSON only:
-{ "steps": [ {"type": "click|type|select|check|tab|think|narrate|scroll", "label": "...", "value": "...", "text": "..."} ], "summary": "one sentence summary" }`,
+Return JSON only with complete step sequence:
+{ "steps": [ {"type": "click|type|select|check|tab|think|narrate|scroll", "label": "...", "value": "...", "text": "..."} ], "summary": "one sentence summary" }
+IMPORTANT: Last step MUST be clicking the submit/create/save button.`,
         response_json_schema: {
           type: "object",
           properties: {
