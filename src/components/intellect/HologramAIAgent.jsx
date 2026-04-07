@@ -707,6 +707,45 @@ Return JSON only:
         return null;
       };
 
+      // Special findElement for dialogs — search ONLY within dialog, not entire document
+      const findElementInDialog = (dialog, label, type) => {
+        if (!dialog || !label) return null;
+        const lower = label.toLowerCase().trim();
+        const isVisible = (el) => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0; };
+        
+        const pool = type === "input"
+          ? [...dialog.querySelectorAll("input:not([type=hidden]), textarea, select")]
+          : [...dialog.querySelectorAll("button, [role='button'], a, input, textarea, select, label")];
+        
+        const visible = pool.filter(isVisible);
+        
+        // Exact match on placeholder or text
+        let el = visible.find(e => e.placeholder?.toLowerCase() === lower || e.textContent?.trim().toLowerCase() === lower);
+        if (el) return el;
+        // Contains match on placeholder
+        el = visible.find(e => e.placeholder?.toLowerCase().includes(lower));
+        if (el) return el;
+        // Label association
+        if (type === "input") {
+          for (const inp of visible) {
+            if (inp.tagName !== 'INPUT' && inp.tagName !== 'TEXTAREA' && inp.tagName !== 'SELECT') continue;
+            if (inp.id) {
+              const lbl = dialog.querySelector(`label[for="${inp.id}"]`);
+              if (lbl && lbl.textContent?.trim().toLowerCase().includes(lower)) return inp;
+            }
+            const parent = inp.closest("div");
+            if (parent) {
+              const lblEl = parent.querySelector("label");
+              if (lblEl && lblEl.textContent?.trim().toLowerCase().includes(lower)) return inp;
+            }
+          }
+        }
+        // Broad text search
+        el = visible.find(e => e.textContent?.trim().toLowerCase().includes(lower));
+        if (el) return el;
+        return null;
+      };
+
       const rePlanRemaining = async (remainingTask, executedSoFar) => {
         const dialog = getActiveDialog();
         const scanRoot = dialog || containerEl;
@@ -796,8 +835,15 @@ Return JSON only:
         }
 
         if (step.type === "select") {
-          const selEl = findElement(activeRoot, step.label, "input")
-            || findElement(document.body, step.label, "input");
+          // Try dialog-specific search first if activeRoot is a dialog
+          let selEl = (activeRoot?.getAttribute?.('role') === 'dialog') 
+            ? findElementInDialog(activeRoot, step.label, "input")
+            : null;
+          // Fallback to regular search
+          if (!selEl) {
+            selEl = findElement(activeRoot, step.label, "input")
+              || findElement(document.body, step.label, "input");
+          }
           const val = step.value || "";
           report(`🔽 Select "${val}" in ${step.label}`, "type");
           if (selEl) {
@@ -832,8 +878,15 @@ Return JSON only:
         }
 
         if (step.type === "type") {
-          const typeEl = findElement(activeRoot, step.label, "input")
-            || findElement(document.body, step.label, "input");
+          // Try dialog-specific search first if activeRoot is a dialog
+          let typeEl = (activeRoot?.getAttribute?.('role') === 'dialog') 
+            ? findElementInDialog(activeRoot, step.label, "input")
+            : null;
+          // Fallback to regular search
+          if (!typeEl) {
+            typeEl = findElement(activeRoot, step.label, "input")
+              || findElement(document.body, step.label, "input");
+          }
           const val = step.value || "";
           report(`⌨️ Type "${val.slice(0, 25)}" in ${step.label}`, "type");
           if (typeEl) {
