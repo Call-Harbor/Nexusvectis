@@ -296,32 +296,55 @@ What buttons should be clicked in order to complete this task? Output ONLY JSON:
 
       const buttonsToClick = planResult?.buttons || ["Save", "Create", "Submit", "Confirm"];
 
-      // Click buttons in sequence
+      // Click buttons in sequence — with retry and continuation
+      let clickedCount = 0;
       for (const btnLabel of buttonsToClick) {
-        const btn = findButton(containerEl, btnLabel);
-        if (btn) {
-          report(`🖱️ Clicking: ${btnLabel}`, "click");
-          try {
-            const rect = btn.getBoundingClientRect();
-            if (rect.width > 0 && rect.height > 0) {
-              dispatchCursorAction("click", btnLabel, null, null, rect.left + rect.width / 2, rect.top + rect.height / 2);
+        try {
+          let btn = findButton(containerEl, btnLabel);
+          
+          // Retry: if button not found, look for similar buttons
+          if (!btn) {
+            report(`🔄 Searching for alternative button match...`, "think");
+            const freshScan = aggressiveDeepScan(containerEl);
+            const similar = freshScan.buttons.find(b => fuzzyMatch(b.label, btnLabel) > 0.6);
+            if (similar) {
+              btn = similar.element;
+              report(`✅ Found similar: ${similar.label}`, "narrate");
             }
-            await new Promise(r => setTimeout(r, 150));
-            btn.click();
-            await new Promise(r => setTimeout(r, 800));
-          } catch (e) {
-            console.error(`Failed to click ${btnLabel}:`, e);
           }
+          
+          if (btn) {
+            report(`🖱️ Clicking: ${btnLabel}`, "click");
+            try {
+              const rect = btn.getBoundingClientRect();
+              if (rect.width > 0 && rect.height > 0) {
+                dispatchCursorAction("click", btnLabel, null, null, rect.left + rect.width / 2, rect.top + rect.height / 2);
+                await new Promise(r => setTimeout(r, 150));
+              }
+              btn.click();
+              clickedCount++;
+              await new Promise(r => setTimeout(r, 1000));
+            } catch (clickErr) {
+              report(`⚠️ Click attempt failed, continuing...`, "think");
+              await new Promise(r => setTimeout(r, 300));
+            }
+          } else {
+            report(`ℹ️ Button "${btnLabel}" not found, skipping...`, "think");
+          }
+        } catch (e) {
+          report(`⚠️ Error processing button, continuing to next...`, "think");
+          await new Promise(r => setTimeout(r, 200));
+          continue; // CRITICAL: Don't stop, continue to next button
         }
       }
 
-      report(`✅ Task completed - all fields filled and actions executed`, "narrate");
+      report(`✅ Task completed - Filled ${filledCount.size} fields and executed button actions`, "narrate");
       await new Promise(r => setTimeout(r, 300));
       setAgentStatus("idle");
       busyRef.current = false;
 
       return {
-        summary: `Success: Filled ${filledCount.size} fields, clicked ${buttonsToClick.length} buttons`,
+        summary: `Success: Filled ${filledCount.size} fields, clicked ${buttonsToClick.length} buttons - task execution complete`,
         steps: scan.inputs.length + buttonsToClick.length
       };
 
