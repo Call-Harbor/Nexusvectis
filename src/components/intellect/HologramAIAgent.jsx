@@ -21,129 +21,289 @@ export function setAgentStatus(status, task) {
 }
 
 // ── Pre-trained UI knowledge for every module ─────────────────────────────
-// Gives the agent reliable knowledge WITHOUT needing perfect DOM scan
 const MODULE_KNOWLEDGE = {
   routes: {
-    description: "Route management page. Lists all routes.",
-    buttons: ["Create Route", "Export", "AI Route Optimizer"],
+    description: "Route management — create and view routes between locations.",
+    buttons: ["Create Route", "Export", "AI Route Optimizer", "Edit", "Delete", "View"],
     inputs: ["Search by name, origin, destination..."],
     tabs: [],
     dialogs: {
       "Create Route": {
-        buttons: ["Create Route", "AI Plan", "Manual Editor"],
-        inputs: ["e.g. Copenhagen-Aarhus Express", "e.g. Copenhagen", "e.g. Aarhus", "Route Name", "Origin", "Destination"],
+        buttons: ["Create Route", "AI Plan", "Manual Editor", "Cancel"],
+        inputs: ["e.g. Copenhagen-Aarhus Express", "e.g. Copenhagen", "e.g. Aarhus", "Route Name", "Origin", "Destination", "Distance (km)", "Est. Duration (hours)"],
         selects: ["Transport Type", "Priority"]
       }
     }
   },
   fleet: {
-    description: "Fleet vehicle list.",
-    buttons: ["Add Vehicle", "Export"],
+    description: "Fleet vehicle list — view and manage all vehicles.",
+    buttons: ["Add Vehicle", "Export", "Edit", "Delete", "View Details"],
     inputs: ["Search vehicles..."],
     tabs: ["All", "Active", "Maintenance", "Offline"],
-    dialogs: { "Add Vehicle": { inputs: ["Vehicle Name", "Driver", "Destination"] } }
+    dialogs: {
+      "Add Vehicle": {
+        buttons: ["Save", "Cancel", "Add Vehicle"],
+        inputs: ["Vehicle Name", "Driver", "Destination", "Fuel Level", "Cargo Capacity"]
+      }
+    }
   },
   fleet_map: {
-    description: "Live GPS tracking map.",
-    buttons: ["Filter", "Refresh"],
+    description: "Live GPS tracking map with vehicle locations.",
+    buttons: ["Filter", "Refresh", "Center Map", "Export"],
     inputs: ["Search vehicle..."],
     tabs: ["All", "Active", "Trucks", "Ships", "Drones"]
   },
   shipments: {
-    description: "Shipment management.",
-    buttons: ["New Shipment", "Export", "Import"],
-    inputs: ["Search shipments...", "Tracking Number", "Origin", "Destination"],
+    description: "Shipment tracking and management.",
+    buttons: ["New Shipment", "Export", "Import", "Edit", "Delete", "Track"],
+    inputs: ["Search shipments...", "Tracking Number", "Origin", "Destination", "Customer Name", "Weight (kg)"],
     tabs: ["All", "Pending", "In Transit", "Delivered", "Delayed"]
   },
   alerts: {
-    description: "System alerts.",
-    buttons: ["Mark all read", "Dismiss", "Resolve"],
+    description: "System alerts sorted by severity.",
+    buttons: ["Mark all read", "Dismiss", "Resolve", "Create Alert", "Delete"],
     inputs: ["Search alerts..."],
     tabs: ["All", "Critical", "Warning", "Info"]
   },
   predictive_maintenance: {
-    description: "AI predictive maintenance panel.",
-    buttons: ["Schedule Maintenance", "Run Analysis", "Export"],
-    inputs: [],
-    tabs: ["Overview", "Vehicles", "Schedule"]
+    description: "AI predictive maintenance — schedule and predict failures.",
+    buttons: ["Schedule Maintenance", "Run Analysis", "Export", "Mark Complete", "Add Record"],
+    inputs: ["Search vehicles..."],
+    tabs: ["Overview", "Vehicles", "Schedule", "History"]
   },
   performance_analytics: {
-    description: "KPI dashboard.",
-    buttons: ["Export", "Refresh"],
+    description: "KPI dashboard — efficiency, CO2, delivery rates.",
+    buttons: ["Export", "Refresh", "Generate Report"],
     inputs: [],
     tabs: ["Overview", "Vehicles", "Routes", "Emissions"]
   },
   demand_forecast: {
-    description: "AI demand forecasting.",
-    buttons: ["Generate Forecast", "Export"],
+    description: "AI demand forecasting for capacity planning.",
+    buttons: ["Generate Forecast", "Export", "Apply"],
     inputs: [],
     tabs: ["30 Days", "60 Days", "90 Days"]
   },
   risk_assessment: {
-    description: "Risk analysis dashboard.",
-    buttons: ["Run Assessment", "Export"],
+    description: "Operational risk analysis.",
+    buttons: ["Run Assessment", "Export", "Refresh"],
     inputs: [],
     tabs: ["Overview", "Routes", "Vehicles", "Incidents"]
   },
   port_command: {
-    description: "Port Command Center.",
-    buttons: ["Add Vessel", "Schedule Berth", "Add Call", "Refresh"],
-    inputs: ["Search..."],
+    description: "Port Command Center — vessels, berths, containers, cranes.",
+    buttons: ["Add Vessel", "Schedule Berth", "Add Call", "Refresh", "Export", "Assign"],
+    inputs: ["Search...", "Vessel Name", "IMO Number", "Destination"],
     tabs: ["Vessels", "Berths", "Containers", "Cranes", "Yard", "Gates"]
   },
   airport_ops: {
-    description: "Airport Ops Center.",
-    buttons: ["Add Flight", "Assign Gate", "Refresh"],
-    inputs: ["Search flight..."],
+    description: "Airport Ops Center — flights, gates, baggage, ground handling.",
+    buttons: ["Add Flight", "Assign Gate", "Refresh", "Export", "Add Staff"],
+    inputs: ["Search flight...", "Flight Number", "Airline", "Origin", "Destination"],
     tabs: ["Live Dashboard", "Flights", "Gates", "Baggage", "Ground Handling", "Security", "Turnaround", "Staff", "Landside"]
   },
   document_editor: {
-    description: "AI document editor.",
-    buttons: ["New Document", "Save", "Export PDF", "AI Generate"],
+    description: "AI document editor — CMR, BOL, contracts, reports.",
+    buttons: ["New Document", "Save", "Export PDF", "AI Generate", "Share", "Delete"],
     inputs: ["Document title...", "Search templates..."],
     tabs: ["My Documents", "Templates", "Shared"]
   },
+  spreadsheet_editor: {
+    description: "Excel-like spreadsheet for logistics data.",
+    buttons: ["New Sheet", "Save", "Export", "Import CSV", "AI Fill"],
+    inputs: [],
+    tabs: ["Sheet 1"]
+  },
   project_management: {
-    description: "Kanban project board.",
-    buttons: ["New Task", "New Project", "Add Column"],
-    inputs: ["Task title...", "Search..."],
+    description: "Kanban project board with tasks and milestones.",
+    buttons: ["New Task", "New Project", "Add Column", "Delete", "Edit", "Assign"],
+    inputs: ["Task title...", "Search...", "Project Name", "Description"],
     tabs: ["Board", "List", "Timeline"]
   },
   route_optimizer: {
-    description: "AI route optimizer for existing routes.",
-    buttons: ["Run Optimization", "Apply", "Export", "Optimize All"],
+    description: "AI route optimization — reduces fuel, time, CO2.",
+    buttons: ["Run Optimization", "Apply", "Export", "Optimize All", "Reset"],
     inputs: [],
     tabs: ["Overview", "Savings", "Routes"]
   },
   swarm_intelligence: {
-    description: "Multi-vehicle swarm coordination.",
-    buttons: ["Activate Swarm", "Configure", "Run Analysis"],
-    inputs: [],
-    tabs: []
+    description: "Multi-vehicle swarm coordination AI.",
+    buttons: ["Activate Swarm", "Configure", "Run Analysis", "Stop", "Deploy"],
+    inputs: ["Swarm radius..."],
+    tabs: ["Overview", "Vehicles", "Commands"]
   },
   digital_twin: {
-    description: "Digital twin federation.",
-    buttons: ["Create Twin", "Simulate", "Refresh"],
-    inputs: [],
-    tabs: ["Overview", "Assets", "Simulation"]
+    description: "Digital twin federation — virtual asset copies.",
+    buttons: ["Create Twin", "Simulate", "Refresh", "Sync", "Delete"],
+    inputs: ["Asset name..."],
+    tabs: ["Overview", "Assets", "Simulation", "Divergences"]
   },
   news_intelligence: {
-    description: "Live logistics news with AI analysis.",
-    buttons: ["Refresh", "Filter"],
+    description: "Live logistics news with AI analysis and insights.",
+    buttons: ["Refresh", "Filter", "Save Article", "Analyze"],
     inputs: ["Search news..."],
     tabs: ["All", "Disruptions", "Regulatory", "Market"]
   },
   satellite_weather: {
-    description: "Satellite weather and route weather impact.",
-    buttons: ["Refresh", "Toggle Layer"],
+    description: "Satellite weather intelligence and route weather impact.",
+    buttons: ["Refresh", "Toggle Layer", "Export"],
     inputs: [],
     tabs: ["Map", "Forecast", "Alerts"]
   },
   deep_analysis: {
-    description: "Deep AI data analysis.",
-    buttons: ["Run Analysis", "Export"],
-    inputs: ["Analysis query..."],
+    description: "Deep AI data analysis — patterns, anomalies, trends.",
+    buttons: ["Run Analysis", "Export", "New Analysis"],
+    inputs: ["Analysis query...", "Enter your analysis query..."],
     tabs: []
+  },
+  crm: {
+    description: "CRM — customers, deals, activities, pipeline.",
+    buttons: ["New Deal", "Add Customer", "Add Activity", "Export", "Edit", "Delete"],
+    inputs: ["Search...", "Customer Name", "Company", "Email", "Phone", "Deal Value"],
+    tabs: ["Pipeline", "Customers", "Activities", "Contracts"]
+  },
+  vehicles: {
+    description: "Fleet vehicle management.",
+    buttons: ["Add Vehicle", "Export", "Edit", "Delete"],
+    inputs: ["Search vehicles...", "Vehicle Name", "Driver"],
+    tabs: ["All", "Active", "Maintenance", "Offline"]
+  },
+  drivers: {
+    description: "Driver management — profiles, licenses, performance.",
+    buttons: ["Add Driver", "Export", "Edit", "Delete", "View Details"],
+    inputs: ["Search drivers...", "First Name", "Last Name", "Email", "Phone", "License Number"],
+    tabs: ["All", "Active", "On Leave", "Suspended"]
+  },
+  maintenance: {
+    description: "Maintenance records and scheduling.",
+    buttons: ["Add Maintenance", "Export", "Schedule", "Mark Complete", "Edit"],
+    inputs: ["Search...", "Vehicle", "Component", "Description", "Cost Estimate"],
+    tabs: ["Pending", "In Progress", "Completed", "Scheduled"]
+  },
+  hr: {
+    description: "HR Management — employees, leave, performance, recruitment.",
+    buttons: ["Add Employee", "New Leave Request", "Schedule Review", "Export", "Edit"],
+    inputs: ["Search employees...", "Employee Name", "Department", "Email"],
+    tabs: ["Employees", "Leave", "Performance", "Recruitment", "Training"]
+  },
+  invoices: {
+    description: "Invoice management — billing, payments, PDF generation.",
+    buttons: ["Generate Invoice", "Export PDF", "Mark Paid", "Send", "Delete"],
+    inputs: ["Search invoices...", "Invoice Number"],
+    tabs: ["All", "Pending", "Paid", "Overdue"]
+  },
+  resources: {
+    description: "Resource management — warehouses, fuel depots, ports.",
+    buttons: ["Add Resource", "Export", "Edit", "Delete"],
+    inputs: ["Search resources...", "Resource Name", "Location"],
+    tabs: ["All", "Operational", "Limited", "Offline"]
+  },
+  dashboard: {
+    description: "Main dashboard with fleet overview KPIs.",
+    buttons: ["Refresh", "Export", "Filter"],
+    inputs: [],
+    tabs: ["Overview", "Fleet", "Alerts", "Performance"]
+  },
+  fleet_drive: {
+    description: "Fleet Drive — file storage for documents and assets.",
+    buttons: ["Upload", "New Folder", "Delete", "Download", "Share"],
+    inputs: ["Search files...", "Folder name..."],
+    tabs: ["My Files", "Shared", "Recent"]
+  },
+  fleet_ai_trainer: {
+    description: "H.A.R.B.O.R AI trainer — train custom AI workers.",
+    buttons: ["Start Training", "Add Source", "Save", "Export Model"],
+    inputs: ["URL or topic...", "Training prompt..."],
+    tabs: ["Sources", "Training", "Models"]
+  },
+  parallel_processor: {
+    description: "Parallel task processor — run multiple AI tasks simultaneously.",
+    buttons: ["Add Task", "Run All", "Clear", "Export Results"],
+    inputs: ["Enter task prompt..."],
+    tabs: ["Queue", "Running", "Completed"]
+  },
+  fleet_3d_viewer: {
+    description: "3D globe viewer of entire fleet.",
+    buttons: ["Reset View", "Filter", "Toggle Labels"],
+    inputs: [],
+    tabs: []
+  },
+  vehicle_builder: {
+    description: "Transport builder and simulator.",
+    buttons: ["Build Vehicle", "Simulate", "Save", "Export"],
+    inputs: ["Vehicle name..."],
+    tabs: ["Builder", "Simulator", "Gallery"]
+  },
+  harbor_app_builder: {
+    description: "H.A.R.B.O.R App Builder — create custom fleet apps.",
+    buttons: ["New App", "Generate", "Install", "Preview", "Export"],
+    inputs: ["App name...", "Describe your app..."],
+    tabs: ["Apps", "Builder", "Installed"]
+  },
+  fleet_store: {
+    description: "Fleet Store — install fleet add-on apps.",
+    buttons: ["Install", "Uninstall", "View Details", "Search"],
+    inputs: ["Search apps..."],
+    tabs: ["All", "Installed", "Analytics", "Operations", "AI"]
+  },
+  image_generator: {
+    description: "AI image generator for logistics visuals.",
+    buttons: ["Generate", "Download", "Edit", "Save"],
+    inputs: ["Describe the image...", "Prompt..."],
+    tabs: []
+  },
+  image_editor: {
+    description: "AI image editor.",
+    buttons: ["Apply", "Save", "Export", "Reset", "Enhance"],
+    inputs: ["Edit instructions..."],
+    tabs: []
+  },
+  global_search: {
+    description: "Global search across all entities.",
+    buttons: ["Search", "Filter", "Open"],
+    inputs: ["Search everything..."],
+    tabs: ["All", "Vehicles", "Routes", "Shipments", "Alerts"]
+  },
+  web_browser: {
+    description: "In-app web browser.",
+    buttons: ["Go", "Back", "Forward", "Reload"],
+    inputs: ["Enter URL..."],
+    tabs: []
+  },
+  nexus_chat: {
+    description: "Nexus satellite chat communication.",
+    buttons: ["Send", "New Chat", "Attach File"],
+    inputs: ["Type a message..."],
+    tabs: ["Chats", "Channels"]
+  },
+  transit_console: {
+    description: "Transit Control — bus lines, stops, schedules, demand.",
+    buttons: ["Add Bus", "Add Line", "Add Stop", "Optimize", "Refresh", "Export"],
+    inputs: ["Search...", "Line Name", "Stop Name"],
+    tabs: ["Live Map", "Lines", "Stops", "Fleet", "Demand", "Analytics", "DRT", "Driver App"]
+  },
+  ai_dev_ide: {
+    description: "Fleet AI IDE & DevOps — code editor and deployment.",
+    buttons: ["Run", "Deploy", "Save", "New File", "Install Package"],
+    inputs: ["// Write code here...", "Package name..."],
+    tabs: ["Editor", "Terminal", "Deploy", "Logs"]
+  },
+  neuro_risk: {
+    description: "Neuro-symbolic AI risk fusion — advanced multi-source risk modeling.",
+    buttons: ["Run Analysis", "Export", "Configure", "Refresh"],
+    inputs: [],
+    tabs: ["Overview", "Risk Factors", "Predictions"]
+  },
+  company_analytics: {
+    description: "Company analytics — research and insights about companies.",
+    buttons: ["Analyze", "Export", "Save", "New Analysis"],
+    inputs: ["Company name...", "Enter company name..."],
+    tabs: ["Overview", "Financials", "News", "Competitors"]
+  },
+  profile_search: {
+    description: "People intelligence — search and analyze professional profiles.",
+    buttons: ["Search", "Analyze", "Export", "Save Profile"],
+    inputs: ["Name...", "Company...", "Location..."],
+    tabs: ["Search", "Results", "Saved"]
   },
 };
 
