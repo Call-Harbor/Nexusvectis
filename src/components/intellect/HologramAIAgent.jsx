@@ -1,4 +1,4 @@
-import { useCallback, useRef } from "react";
+import { useRef, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
 
@@ -360,8 +360,8 @@ function fillElement(el, val) {
       const nativeSetter = Object.getOwnPropertyDescriptor(elWin.HTMLSelectElement.prototype, 'value')?.set;
       if (nativeSetter) nativeSetter.call(el, opt.value);
       else el.value = opt.value;
-      el.dispatchEvent(new Event('change', { bubbles: true }));
-      el.dispatchEvent(new Event('input', { bubbles: true }));
+      el.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
+      el.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
     }
     return;
   }
@@ -374,22 +374,31 @@ function fillElement(el, val) {
     return;
   }
 
-  // input / textarea
+  // For input/textarea — use native setter + trigger both input & change
   const proto = el.tagName === 'TEXTAREA'
     ? elWin.HTMLTextAreaElement.prototype
     : elWin.HTMLInputElement.prototype;
   const setter = Object.getOwnPropertyDescriptor(proto, 'value')?.set;
 
-  if (setter) {
-    setter.call(el, '');
-    el.dispatchEvent(new Event('input', { bubbles: true }));
-    setter.call(el, val);
-  } else {
-    el.value = val;
-  }
-  el.dispatchEvent(new Event('input', { bubbles: true }));
-  el.dispatchEvent(new Event('change', { bubbles: true }));
-  el.dispatchEvent(new InputEvent('input', { bubbles: true, data: val }));
+  // Step 1: Clear field
+  if (setter) setter.call(el, '');
+  else el.value = '';
+  el.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
+  el.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+  
+  // Step 2: Set new value
+  if (setter) setter.call(el, val);
+  else el.value = val;
+  
+  // Step 3: Trigger all events in sequence (React may listen to any of these)
+  el.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
+  el.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+  el.dispatchEvent(new InputEvent('input', { bubbles: true, composed: true, data: val }));
+  el.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true, composed: true }));
+  
+  // Blur and refocus to ensure React picks up the change
+  el.blur();
+  setTimeout(() => el.focus(), 10);
 }
 
 /** Deep DOM scan — extracts EVERYTHING visible in a container, including iframes */
@@ -525,7 +534,7 @@ function findElement(containerEl, label, type) {
     el = visible.find(e => (e.name || e.id || "").toLowerCase().includes(lower));
     if (el) return el;
     // FAB patterns
-    if (/add|new|create|opret|tilf/i.test(lower)) {
+    if (/add|new|create/i.test(lower)) {
       el = visible.find(e => /add|new|create|plus|fab|float/i.test(e.className || ""));
       if (el) return el;
     }
