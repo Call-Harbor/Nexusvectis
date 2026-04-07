@@ -7,9 +7,10 @@ import { base44 } from "@/api/base44Client";
 
 async function loadMemory(windowType, orgId) {
   try {
+    const user = await base44.auth.me();
     const memories = await base44.entities.AdaptiveAgentMemory.filter({
       window_type: windowType,
-      created_by: (await base44.auth.me()).email,
+      created_by: user.email,
     });
     return memories.length > 0 ? memories[0] : null;
   } catch {
@@ -306,4 +307,5 @@ async function updateMemoryWithResults(memory, windowType, strategy, result, org
   }
 
   await saveMemory(updated, windowType, orgId);
+}
 }
