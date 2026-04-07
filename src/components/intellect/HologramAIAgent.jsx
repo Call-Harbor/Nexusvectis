@@ -498,16 +498,31 @@ Return JSON only:
             const rect = typeEl.getBoundingClientRect();
             dispatchCursorAction("type", step.label, null, val, rect.left + rect.width / 2, rect.top + rect.height / 2);
             await new Promise(r => setTimeout(r, 80));
+            // Use the element's own window context (important for iframes)
+            const elWin = typeEl.ownerDocument?.defaultView || window;
             typeEl.focus();
-            const proto = typeEl.tagName === "TEXTAREA"
-              ? window.HTMLTextAreaElement.prototype
-              : window.HTMLInputElement.prototype;
-            const setter = Object.getOwnPropertyDescriptor(proto, "value")?.set;
+            // Clear existing value first
+            const nativeInputProto = typeEl.tagName === "TEXTAREA"
+              ? elWin.HTMLTextAreaElement.prototype
+              : elWin.HTMLInputElement.prototype;
+            const setter = Object.getOwnPropertyDescriptor(nativeInputProto, "value")?.set;
+            if (setter) {
+              setter.call(typeEl, "");
+              typeEl.dispatchEvent(new Event("input", { bubbles: true }));
+            }
+            // Set new value
             if (setter) {
               setter.call(typeEl, val);
               typeEl.dispatchEvent(new Event("input", { bubbles: true }));
               typeEl.dispatchEvent(new Event("change", { bubbles: true }));
+            } else {
+              // Fallback: simulate keypresses character by character
+              typeEl.value = val;
+              typeEl.dispatchEvent(new Event("input", { bubbles: true }));
+              typeEl.dispatchEvent(new Event("change", { bubbles: true }));
             }
+            // Also dispatch a React-compatible synthetic event via nativeInputValueSetter
+            typeEl.dispatchEvent(new InputEvent("input", { bubbles: true, data: val }));
             await new Promise(r => setTimeout(r, 150));
           } else {
             report(`⚠️ Input "${step.label}" not found`, "think");
