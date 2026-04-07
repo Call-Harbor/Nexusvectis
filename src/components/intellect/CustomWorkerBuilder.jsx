@@ -27,15 +27,15 @@ export default function CustomWorkerBuilder({ onClose, onWorkerCreated, editingW
     try {
       const result = await base44.integrations.Core.InvokeLLM({
         prompt: source.type === "url"
-          ? `Giv en kort, naturlig tekstopsummering (3-5 sætninger) af hvad denne side/kilde handler om og hvilke nøgleinformationer den indeholder: ${source.source}`
-          : `Giv en kort, naturlig tekstopsummering (3-5 sætninger) af hvad denne fil indeholder og hvilke vigtigste informationer den har.`,
+        ? `Give a short, natural text summary (3-5 sentences) of what this page/source is about and what key information it contains: ${source.source}`
+        : `Give a short, natural text summary (3-5 sentences) of what this file contains and what the most important information is.`,
         add_context_from_internet: source.type === "url",
         file_urls: source.type === "file" ? [source.source] : undefined,
         model: "gemini_3_flash"
       });
       setSources(prev => prev.map((s, i) => i === idx ? { ...s, status: "done", extracted_content: typeof result === "string" ? result : JSON.stringify(result) } : s));
     } catch {
-      setSources(prev => prev.map((s, i) => i === idx ? { ...s, status: "done", extracted_content: "Kunne ikke hente info automatisk." } : s));
+      setSources(prev => prev.map((s, i) => i === idx ? { ...s, status: "done", extracted_content: "Could not fetch info automatically." } : s));
     }
   };
 
@@ -277,16 +277,16 @@ export default function CustomWorkerBuilder({ onClose, onWorkerCreated, editingW
                           {src.status === "extracting" ? (
                             <div className="flex items-center gap-2 text-[11px] text-cyan-400 font-mono">
                               <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                              Henter info...
+                              Fetching info...
                             </div>
                           ) : (
-                            <p className="text-[11px] text-slate-300 leading-relaxed">{src.extracted_content || "Ingen info tilgængelig."}</p>
+                            <p className="text-[11px] text-slate-300 leading-relaxed">{src.extracted_content || "No info available."}</p>
                           )}
                           {src.type === "url" && (
-                            <a href={src.source} target="_blank" rel="noopener noreferrer" className="text-[10px] text-cyan-500 hover:underline mt-2 inline-block">Åbn kilde ↗</a>
+                            <a href={src.source} target="_blank" rel="noopener noreferrer" className="text-[10px] text-cyan-500 hover:underline mt-2 inline-block">Open source ↗</a>
                           )}
                           {src.type === "file" && src.source && (
-                            <a href={src.source} target="_blank" rel="noopener noreferrer" className="text-[10px] text-violet-400 hover:underline mt-2 inline-block">Åbn fil ↗</a>
+                            <a href={src.source} target="_blank" rel="noopener noreferrer" className="text-[10px] text-violet-400 hover:underline mt-2 inline-block">Open file ↗</a>
                           )}
                         </div>
                       </motion.div>
