@@ -668,41 +668,20 @@ export function useHologramAIAgent() {
         .map(i => `  "${i.label}" options: [${i.options.slice(0, 10).join(', ')}]`)
         .join('\n');
 
+      const fieldsList = liveInputs.map(f => `- ${f}`).join('\n');
+      const buttonsList = liveButtons.map(b => `- ${b}`).join('\n');
+
       const planResult = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are an intelligent AI agent that performs UI actions by generating step sequences.
+        prompt: `Generate UI actions for: "${task}"
 
-TASK: "${task}"
+FIELDS:
+${fieldsList}
 
-=== FORM FIELDS YOU MUST FILL ===
-${liveInputs.length > 0 ? liveInputs.map((f, i) => `${i + 1}. "${f}"`).join('\n') : '(no input fields detected)'}
+BUTTONS:
+${buttonsList}
 
-=== BUTTONS AVAILABLE ===
-${liveButtons.length > 0 ? liveButtons.map((b, i) => `${i + 1}. "${b}"`).join('\n') : '(no buttons)'}
-
-=== INSTRUCTIONS ===
-1. You MUST generate type="type" steps for EACH input field listed above
-2. Each field in the form must have a corresponding {"type": "type", "label": "Field Name", "value": "realistic data"} step
-3. Generate realistic values: names (e.g., "John Smith"), emails (e.g., "john@example.com"), cities (e.g., "Copenhagen"), dates
-4. Click buttons to open dialogs or submit forms
-5. If you need to click a button FIRST (e.g., "Create", "New"), do that before filling the form that appears
-6. CRITICAL: Do not skip any field in the form
-7. End with clicking the submit/save/create button
-
-=== EXAMPLE STEPS (for a form with fields: First Name, Last Name, Email) ===
-[
-  {"type": "click", "label": "Create New Item", "text": "Open the form"},
-  {"type": "type", "label": "First Name", "value": "John"},
-  {"type": "type", "label": "Last Name", "value": "Smith"},
-  {"type": "type", "label": "Email", "value": "john.smith@example.com"},
-  {"type": "click", "label": "Save", "text": "Submit form"}
-]
-
-=== RESPONSE ===
-Return ONLY valid JSON:
-{
-  "steps": [ {"type": "type|click|select|check|tab|narrate", "label": "exact field/button name", "value": "data"} ],
-  "summary": "one sentence"
-}`,
+Output ONLY JSON, no other text:
+{"steps":[{"type":"click|type|select","label":"field/button","value":"data"}],"summary":"text"}`,
         response_json_schema: {
           type: "object",
           properties: {
@@ -711,7 +690,6 @@ Return ONLY valid JSON:
           }
         }
       });
-
       let steps = planResult?.steps || [];
       report(`Plan: ${steps.filter(s => ["click","type","tab"].includes(s.type)).length} actions`, "plan");
 
