@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect, useRef, useId } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { Bot, Send, X, Loader2, CheckCircle2, ChevronRight, Zap, Brain, Eye, MousePointer, Keyboard, ScrollText, Terminal, ChevronDown, ChevronUp } from "lucide-react";
@@ -104,6 +104,7 @@ export default function AITaskRunner({ onOpenWindow, windowRefs, orgId, onClose 
   const [expanded, setExpanded] = useState(true);
   const stepsEndRef = useRef(null);
   const inputRef = useRef(null);
+  const stepIdPrefix = useId();
   const stepCounterRef = useRef(0);
   const { runTask } = useHologramAIAgent();
 
@@ -113,7 +114,7 @@ export default function AITaskRunner({ onOpenWindow, windowRefs, orgId, onClose 
 
   const addStep = (text, stepPhase) => {
     stepCounterRef.current += 1;
-    setSteps(prev => [...prev, { text, phase: stepPhase, id: stepCounterRef.current }]);
+    setSteps(prev => [...prev, { text, phase: stepPhase, id: `${stepIdPrefix}-${stepCounterRef.current}` }]);
   };
 
   const execute = async () => {
@@ -293,6 +294,7 @@ export default function AITaskRunner({ onOpenWindow, windowRefs, orgId, onClose 
     setPhase("idle");
     setCurrentWindowType(null);
     setPlanPreview(null);
+    stepCounterRef.current = 0;
     setTimeout(() => inputRef.current?.focus(), 100);
   };
 
