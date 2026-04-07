@@ -21,95 +21,118 @@ export function setAgentStatus(status, task) {
 
 /** Deep DOM scan — extracts everything visible in a container */
 function deepScanWindow(containerEl) {
-  if (!containerEl) return { buttons: [], inputs: [], tabs: [], selects: [], links: [], headings: [], text: "" };
+  // Fallback to full document if containerEl is missing or yields nothing
+  const root = containerEl || document.body;
 
+  // Relaxed visibility: just needs to have dimensions (ignores scroll/viewport position)
   const isVisible = (el) => {
     const r = el.getBoundingClientRect();
-    return r.width > 0 && r.height > 0 && r.top < window.innerHeight && r.bottom > 0;
+    return r.width > 0 && r.height > 0;
   };
 
-  const buttons = [...containerEl.querySelectorAll("button:not([disabled]), [role='button']:not([disabled])")].filter(isVisible).map(b => ({
-    label: (b.textContent?.trim().replace(/\s+/g, " ") ||
-            b.getAttribute("aria-label") ||
-            b.getAttribute("title") ||
-            b.getAttribute("data-label") ||
-            (b.className?.includes("add") || b.className?.includes("new") || b.className?.includes("create") ? "Add" : "")).slice(0, 80),
-    classes: b.className?.slice(0, 80)
-  })).filter(b => b.label).slice(0, 50);
+  const scan = (el) => {
+    const buttons = [...el.querySelectorAll(
+      "button:not([disabled]), [role='button']:not([disabled]), [class*='btn']:not([disabled])"
+    )].filter(isVisible).map(b => ({
+      label: (
+        b.textContent?.trim().replace(/\s+/g, " ") ||
+        b.getAttribute("aria-label") ||
+        b.getAttribute("title") ||
+        b.getAttribute("data-label") ||
+        (/(add|new|create|plus|fab|float)/i.test(b.className || "") ? "Add" : "")
+      ).slice(0, 80),
+      classes: b.className?.slice(0, 80)
+    })).filter(b => b.label).slice(0, 60);
 
-  const inputs = [...containerEl.querySelectorAll("input:not([type=hidden]):not([type=checkbox]), textarea, select")].filter(isVisible).map(i => ({
-    label: (i.placeholder || i.getAttribute("aria-label") || i.name || i.id || "field").slice(0, 50),
-    type: i.type || i.tagName.toLowerCase(),
-    value: i.value?.slice(0, 30) || ""
-  })).slice(0, 25);
+    const inputs = [...el.querySelectorAll("input:not([type=hidden]):not([type=checkbox]), textarea, select")].filter(isVisible).map(i => ({
+      label: (i.placeholder || i.getAttribute("aria-label") || i.name || i.id || "field").slice(0, 50),
+      type: i.type || i.tagName.toLowerCase(),
+      value: i.value?.slice(0, 30) || ""
+    })).slice(0, 30);
 
-  const tabs = [...containerEl.querySelectorAll("[role='tab'], [data-state='active'], [data-state='inactive']")].filter(isVisible).map(t => ({
-    label: t.textContent?.trim().slice(0, 40),
-    active: t.getAttribute("data-state") === "active" || t.getAttribute("aria-selected") === "true"
-  })).filter(t => t.label).slice(0, 20);
+    const tabs = [...el.querySelectorAll("[role='tab'], [data-state='active'], [data-state='inactive']")].filter(isVisible).map(t => ({
+      label: t.textContent?.trim().slice(0, 40),
+      active: t.getAttribute("data-state") === "active" || t.getAttribute("aria-selected") === "true"
+    })).filter(t => t.label).slice(0, 20);
 
-  const selects = [...containerEl.querySelectorAll("select")].filter(isVisible).map(s => ({
-    label: s.getAttribute("aria-label") || s.name || "select",
-    options: [...s.options].map(o => o.text).slice(0, 8)
-  })).slice(0, 10);
+    const selects = [...el.querySelectorAll("select")].filter(isVisible).map(s => ({
+      label: s.getAttribute("aria-label") || s.name || "select",
+      options: [...s.options].map(o => o.text).slice(0, 8)
+    })).slice(0, 10);
 
-  const links = [...containerEl.querySelectorAll("a[href], [role='link']")].filter(isVisible).map(a => a.textContent?.trim().slice(0, 40)).filter(Boolean).slice(0, 15);
+    const links = [...el.querySelectorAll("a[href], [role='link']")].filter(isVisible).map(a => a.textContent?.trim().slice(0, 40)).filter(Boolean).slice(0, 15);
 
-  const headings = [...containerEl.querySelectorAll("h1,h2,h3,h4,[class*='title'],[class*='heading']")].filter(isVisible).map(h => h.textContent?.trim().slice(0, 60)).filter(Boolean).slice(0, 10);
+    const headings = [...el.querySelectorAll("h1,h2,h3,h4,[class*='title'],[class*='heading']")].filter(isVisible).map(h => h.textContent?.trim().slice(0, 60)).filter(Boolean).slice(0, 10);
 
-  const allText = [...containerEl.querySelectorAll("p, span, td, [class*='label'], [class*='value'], [class*='stat']")]
-    .filter(isVisible).map(e => e.textContent?.trim()).filter(t => t && t.length > 2 && t.length < 100)
-    .slice(0, 30).join(" | ");
+    const allText = [...el.querySelectorAll("p, span, td, [class*='label'], [class*='value'], [class*='stat']")]
+      .filter(isVisible).map(e => e.textContent?.trim()).filter(t => t && t.length > 2 && t.length < 100)
+      .slice(0, 30).join(" | ");
 
-  return { buttons, inputs, tabs, selects, links, headings, text: allText.slice(0, 800) };
+    return { buttons, inputs, tabs, selects, links, headings, text: allText.slice(0, 800) };
+  };
+
+  const result = scan(root);
+
+  // If container scan finds nothing, fall back to full document
+  if (containerEl && result.buttons.length === 0 && result.inputs.length === 0) {
+    return scan(document.body);
+  }
+
+  return result;
 }
 
 /** Find element by multiple strategies — aggressive fuzzy matching */
 function findElement(containerEl, label, type) {
-  if (!label || !containerEl) return null;
+  if (!label) return null;
   const lower = label.toLowerCase().trim();
 
-  const pool = type === "input"
-    ? [...containerEl.querySelectorAll("input:not([type=hidden]), textarea, select")]
-    : type === "tab"
-    ? [...containerEl.querySelectorAll("[role='tab'], [data-state='inactive'], [data-state='active']")]
-    : [...containerEl.querySelectorAll("button, [role='button'], [role='tab'], a, input, textarea, select, label, [class*='tab'], [class*='fab'], [class*='float']")];
+  // Search in container first, then fall back to full document
+  const roots = containerEl ? [containerEl, document.body] : [document.body];
 
+  // Relaxed: just needs dimensions
   const isVisible = (el) => {
     const r = el.getBoundingClientRect();
-    return r.width > 0 && r.height > 0 && r.top < window.innerHeight && r.bottom > 0;
+    return r.width > 0 && r.height > 0;
   };
 
-  const visible = pool.filter(isVisible);
+  for (const root of roots) {
+    const pool = type === "input"
+      ? [...root.querySelectorAll("input:not([type=hidden]):not([type=checkbox]), textarea, select")]
+      : type === "tab"
+      ? [...root.querySelectorAll("[role='tab'], [data-state='inactive'], [data-state='active']")]
+      : [...root.querySelectorAll("button, [role='button'], [role='tab'], a, input, textarea, select, label, [class*='tab'], [class*='fab'], [class*='float'], [class*='btn']")];
 
-  // Exact text match
-  let el = visible.find(e => e.textContent?.trim().toLowerCase() === lower);
-  if (el) return el;
-  // Placeholder match
-  el = visible.find(e => e.placeholder?.toLowerCase() === lower);
-  if (el) return el;
-  // Placeholder includes
-  el = visible.find(e => e.placeholder?.toLowerCase().includes(lower));
-  if (el) return el;
-  // Partial text match (target contains label)
-  el = visible.find(e => e.textContent?.trim().toLowerCase().includes(lower));
-  if (el) return el;
-  // Label contains target text
-  el = visible.find(e => lower.includes(e.textContent?.trim().toLowerCase()) && e.textContent?.trim().length > 2);
-  if (el) return el;
-  // aria-label
-  el = visible.find(e => e.getAttribute("aria-label")?.toLowerCase().includes(lower));
-  if (el) return el;
-  // title attribute
-  el = visible.find(e => e.getAttribute("title")?.toLowerCase().includes(lower));
-  if (el) return el;
-  // name/id
-  el = visible.find(e => (e.name || e.id || "").toLowerCase().includes(lower));
-  if (el) return el;
-  // class name heuristic for add/new/create
-  if (/add|new|create|opret|tilf/i.test(lower)) {
-    el = visible.find(e => /add|new|create|plus|fab|float/i.test(e.className || ""));
+    const visible = pool.filter(isVisible);
+
+    // Exact text match
+    let el = visible.find(e => e.textContent?.trim().toLowerCase() === lower);
     if (el) return el;
+    // Placeholder match
+    el = visible.find(e => e.placeholder?.toLowerCase() === lower);
+    if (el) return el;
+    // Placeholder includes
+    el = visible.find(e => e.placeholder?.toLowerCase().includes(lower));
+    if (el) return el;
+    // Partial text match
+    el = visible.find(e => e.textContent?.trim().toLowerCase().includes(lower));
+    if (el) return el;
+    // Label contains target text
+    el = visible.find(e => lower.includes(e.textContent?.trim().toLowerCase()) && e.textContent?.trim().length > 2);
+    if (el) return el;
+    // aria-label
+    el = visible.find(e => e.getAttribute("aria-label")?.toLowerCase().includes(lower));
+    if (el) return el;
+    // title attribute
+    el = visible.find(e => e.getAttribute("title")?.toLowerCase().includes(lower));
+    if (el) return el;
+    // name/id
+    el = visible.find(e => (e.name || e.id || "").toLowerCase().includes(lower));
+    if (el) return el;
+    // class name heuristic for add/new/create
+    if (/add|new|create|opret|tilf/i.test(lower)) {
+      el = visible.find(e => /add|new|create|plus|fab|float/i.test(e.className || ""));
+      if (el) return el;
+    }
   }
   return null;
 }
