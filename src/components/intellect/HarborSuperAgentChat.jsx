@@ -458,7 +458,11 @@ export default function HarborSuperAgentChat({ onClose }) {
     return () => { unsubscribeRef.current?.(); };
   }, []);
 
-  useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, orchestrations]);
+  const scrollToBottom = useCallback((behavior = "smooth") => {
+    setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior }), 50);
+  }, []);
+
+  useEffect(() => { scrollToBottom(); }, [messages, orchestrations]);
 
   const loadConversations = async () => {
     setIsLoading(true);
@@ -852,9 +856,9 @@ export default function HarborSuperAgentChat({ onClose }) {
           ) : (
             <>
               {/* Messages + Orchestration feed */}
-              <div className="flex-1 overflow-y-auto p-5 space-y-5">
+              <div className="flex-1 overflow-y-auto p-5 flex flex-col justify-end" style={{ gap: '1.25rem' }}>
                 {visibleMessages.length === 0 && orchestrations.length === 0 && (
-                  <div className="flex flex-col items-center justify-center py-12 gap-6">
+                  <div className="flex flex-col items-center justify-center flex-1 py-12 gap-6">
                     <motion.div animate={{ rotate: [0, 360] }} transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
                       className="w-20 h-20 rounded-full border flex items-center justify-center"
                       style={{ borderColor: "rgba(6,182,212,0.2)", background: "rgba(6,182,212,0.05)" }}>
