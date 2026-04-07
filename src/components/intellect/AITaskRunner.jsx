@@ -238,27 +238,23 @@ export default function AITaskRunner({ onOpenWindow, windowRefs, orgId, onClose 
       setCurrentWindowType(windowType);
       addStep(`Åbner modul: ${windowType.replace(/_/g, " ")}`, "scan");
 
-      // Phase 2: Open window
+      // Phase 2: Open window (instant, don't wait)
       onOpenWindow(windowType, preciseTask);
       addStep(`Hologram aktiveret ✓`, "narrate");
+      await new Promise(r => setTimeout(r, 200));
 
-      // Phase 3: Wait for render — give content time to load
-      addStep("Venter på interface at loade...", "think");
-      await new Promise(r => setTimeout(r, 1800));
-
-      // Phase 4: Find ref with retry
+      // Phase 3: Get window ref (quick - window opens fast with loading state)
       let newestRef = null;
-      for (let attempt = 0; attempt < 5; attempt++) {
+      for (let attempt = 0; attempt < 8; attempt++) {
         const refs = Object.entries(windowRefs.current || {});
         if (refs.length > 0) {
           newestRef = refs[refs.length - 1][1];
-          // Check if the window actually has content
           const buttons = newestRef?.querySelectorAll("button") || [];
           const inputs = newestRef?.querySelectorAll("input, textarea, select") || [];
           if (buttons.length > 0 || inputs.length > 0) break;
         }
-        addStep(`Venter på vindue indhold... (forsøg ${attempt + 1}/5)`, "think");
-        await new Promise(r => setTimeout(r, 1200));
+        addStep(`Venter på indhold (${attempt + 1}/8)`, "think");
+        await new Promise(r => setTimeout(r, 400));
       }
 
       if (!newestRef) {
