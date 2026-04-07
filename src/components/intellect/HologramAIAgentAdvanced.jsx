@@ -13,194 +13,241 @@ export function setAgentStatus(status, task) {
   }));
 }
 
-// Find all visible documents (main + iframes)
-function getAllRoots(containerEl) {
-  const roots = [];
-  if (!containerEl) { roots.push(document); return roots; }
-  
-  const iframes = containerEl.querySelectorAll('iframe');
-  for (const iframe of iframes) {
-    try {
-      const doc = iframe.contentDocument || iframe.contentWindow?.document;
-      if (doc) roots.push(doc);
-    } catch {}
-  }
-  roots.push(document);
-  return roots;
-}
+// Aggressive dialog finder
+function findDialog() {
+  // Try all possible dialog selectors
+  const selectors = [
+    '[role="dialog"]',
+    '[role="alertdialog"]',
+    'dialog',
+    '[data-radix-dialog-content]',
+    '[class*="dialog"]',
+    '[class*="modal"]',
+    '[class*="popup"]',
+  ];
 
-// Find the active dialog (Radix UI or HTML dialog)
-function findActiveDialog(containerEl) {
-  let dialog = null;
-  
-  // Check main document first (Radix portals)
-  dialog = document.querySelector('[role="dialog"][data-state="open"], [role="alertdialog"], [role="dialog"]:not([hidden])');
-  if (dialog) return dialog;
-  
-  // Check container
-  if (containerEl) {
-    dialog = containerEl.querySelector('[role="dialog"], [role="alertdialog"]');
-    if (dialog && dialog.offsetHeight > 0) return dialog;
+  for (const sel of selectors) {
+    const els = document.querySelectorAll(sel);
+    for (const el of els) {
+      const rect = el.getBoundingClientRect();
+      const style = window.getComputedStyle(el);
+      // Check if visible and has reasonable size
+      if (rect.width > 100 && rect.height > 100 && style.display !== 'none') {
+        return el;
+      }
+    }
   }
-  
-  // Check iframes
-  const iframes = containerEl?.querySelectorAll('iframe') || [];
-  for (const iframe of iframes) {
-    try {
-      const doc = iframe.contentDocument || iframe.contentWindow?.document;
-      const d = doc?.querySelector('[role="dialog"], [role="alertdialog"]');
-      if (d && d.offsetHeight > 0) return d;
-    } catch {}
+
+  // Check for portal containers with dialog content
+  const allDivs = document.querySelectorAll('[class*="fixed"], [class*="absolute"]');
+  for (const div of allDivs) {
+    const text = div.innerText || '';
+    if (text.includes('Deal') || text.includes('Navn') || text.includes('Email')) {
+      const rect = div.getBoundingClientRect();
+      if (rect.width > 100 && rect.height > 100) {
+        const style = window.getComputedStyle(div);
+        if (style.display !== 'none' && style.visibility !== 'hidden') {
+          return div;
+        }
+      }
+    }
   }
-  
+
   return null;
 }
 
-// Smart element finding with multiple strategies
-function findElement(doc, label, type = "any") {
-  if (!doc || !label) return null;
+// Ultra-aggressive input finder
+function findAllInputs(container) {
+  const inputs = [];
   
-  const lower = label.toLowerCase().trim();
-  const selector = type === "input" 
-    ? "input, textarea, select, [role='combobox'], [role='searchbox']"
-    : type === "button"
-    ? "button, [role='button'], [type='submit']"
-    : "*";
+  // Get all possible input elements
+  const selectors = [
+    'input:not([type="hidden"]):not([type="submit"]):not([type="button"])',
+    'textarea',
+    'select',
+    '[role="combobox"]',
+    '[role="searchbox"]',
+    '[contenteditable="true"]',
+    '[role="textbox"]',
+    'input[type="text"]',
+    'input[type="email"]',
+    'input[type="number"]',
+    'input[type="date"]',
+    'input[type="tel"]',
+  ];
 
-  let elements = doc.querySelectorAll(selector);
-  
-  // Filter visible
-  elements = [...elements].filter(el => {
-    const rect = el.getBoundingClientRect();
-    const style = window.getComputedStyle(el);
-    return rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
-  });
+  for (const sel of selectors) {
+    try {
+      const els = container.querySelectorAll(sel);
+      for (const el of els) {
+        const rect = el.getBoundingClientRect();
+        const style = window.getComputedStyle(el);
+        const parent = el.parentElement?.getBoundingClientRect();
 
-  // Exact text match
-  let el = elements.find(e => e.textContent?.trim().toLowerCase() === lower);
-  if (el) return el;
+        // Visibility checks
+        if (rect.width < 5 || rect.height < 5) continue;
+        if (style.display === 'none' || style.visibility === 'hidden') continue;
+        if (style.opacity === '0') continue;
 
-  // Placeholder match (inputs)
-  el = elements.find(e => e.placeholder?.toLowerCase() === lower);
-  if (el) return el;
+        // Get label
+        let label = el.placeholder || el.getAttribute('aria-label') || el.name || el.id || '';
+        
+        // Search for associated label
+        if (!label && el.id) {
+          const lbl = container.querySelector(`label[for="${el.id}"]`);
+          if (lbl) label = lbl.textContent?.trim() || '';
+        }
 
-  // Aria-label match
-  el = elements.find(e => e.getAttribute('aria-label')?.toLowerCase().includes(lower));
-  if (el) return el;
+        // Search parent for label
+        if (!label) {
+          let p = el.parentElement;
+          for (let i = 0; i < 5; i++) {
+            if (!p) break;
+            const txt = p.textContent?.trim().split('\n')[0] || '';
+            if (txt && txt.length > 2 && txt.length < 60) {
+              label = txt;
+              break;
+            }
+            p = p.parentElement;
+          }
+        }
 
-  // Text contains
-  el = elements.find(e => e.textContent?.trim().toLowerCase().includes(lower));
-  if (el) return el;
+        if (!label) label = `input_${inputs.length}`;
 
-  // Label association (for inputs)
-  for (const inp of elements) {
-    if (inp.id && doc.querySelector(`label[for="${inp.id}"]`)) {
-      const lbl = doc.querySelector(`label[for="${inp.id}"]`);
-      if (lbl?.textContent?.toLowerCase().includes(lower)) return inp;
+        inputs.push({
+          el,
+          label: label.slice(0, 80),
+          type: el.type || el.tagName.toLowerCase(),
+          value: el.value,
+        });
+      }
+    } catch (e) {
+      // Skip selector if it fails
     }
   }
 
-  return elements[0] || null;
+  return inputs;
 }
 
-// Scan all visible elements
-function scanDialog(dialog) {
-  const fields = [];
+// Ultra-aggressive button finder
+function findAllButtons(container) {
   const buttons = [];
+  
+  const selectors = [
+    'button:not([disabled])',
+    '[role="button"]:not([aria-disabled="true"])',
+    '[type="submit"]',
+    'a[role="button"]',
+    '[class*="btn"]:not([disabled])',
+  ];
 
-  if (!dialog) return { fields, buttons };
+  for (const sel of selectors) {
+    try {
+      const els = container.querySelectorAll(sel);
+      for (const el of els) {
+        const rect = el.getBoundingClientRect();
+        const style = window.getComputedStyle(el);
 
-  const inputs = [...dialog.querySelectorAll("input, textarea, select, [role='combobox'], [contenteditable='true']")];
-  const btns = [...dialog.querySelectorAll("button, [role='button'], [type='submit']")];
+        if (rect.width < 5 || rect.height < 5) continue;
+        if (style.display === 'none' || style.visibility === 'hidden') continue;
 
-  for (const inp of inputs) {
-    const rect = inp.getBoundingClientRect();
-    if (rect.width < 1 || rect.height < 1) continue;
+        const label = el.textContent?.trim().slice(0, 60) || 
+          el.getAttribute('aria-label') || '';
 
-    let label = inp.placeholder || inp.getAttribute("aria-label") || inp.name || "";
-    if (!label && inp.id) {
-      const lbl = dialog.querySelector(`label[for="${inp.id}"]`);
-      if (lbl) label = lbl.textContent?.trim() || "";
-    }
-
-    fields.push({
-      label: label.slice(0, 60),
-      element: inp,
-      type: inp.type || inp.tagName.toLowerCase(),
-      value: inp.value || ""
-    });
-  }
-
-  for (const btn of btns) {
-    const rect = btn.getBoundingClientRect();
-    if (rect.width < 1 || rect.height < 1) continue;
-
-    const label = btn.textContent?.trim().slice(0, 60) || 
-      btn.getAttribute("aria-label") || 
-      btn.getAttribute("title") || "";
-
-    if (label) {
-      buttons.push({
-        label,
-        element: btn,
-        disabled: btn.disabled || btn.getAttribute("aria-disabled") === "true"
-      });
+        if (label && !buttons.some(b => b.label === label)) {
+          buttons.push({
+            el,
+            label,
+            disabled: el.disabled || el.getAttribute('aria-disabled') === 'true',
+          });
+        }
+      }
+    } catch (e) {
+      // Skip
     }
   }
 
-  return { fields, buttons };
+  return buttons;
 }
 
-// Fill element with proper React event handling
-function fillInput(el, val) {
-  if (!el || !val) return;
+// React-compatible value setter
+function setInputValue(input, value) {
+  if (!input || !value) return;
 
   try {
-    el.focus();
+    input.focus();
   } catch {}
 
-  if (el.tagName === 'SELECT') {
-    const opt = [...el.options].find(o => o.text.toLowerCase().includes(val.toLowerCase()));
-    if (opt) {
-      el.value = opt.value;
-      el.dispatchEvent(new Event('change', { bubbles: true }));
-      el.dispatchEvent(new Event('input', { bubbles: true }));
+  // Handle select
+  if (input.tagName === 'SELECT') {
+    for (const opt of input.options) {
+      if (opt.text.toLowerCase().includes(value.toLowerCase()) ||
+          opt.value.toLowerCase() === value.toLowerCase()) {
+        input.value = opt.value;
+        break;
+      }
+    }
+    input.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
+    input.dispatchEvent(new Event('input', { bubbles: true, cancelable: true }));
+    return;
+  }
+
+  // Handle checkbox/radio
+  if (input.type === 'checkbox' || input.type === 'radio') {
+    const check = /true|yes|1|on|✓|checked/i.test(value);
+    if (input.checked !== check) {
+      input.click();
     }
     return;
   }
 
-  if (el.type === 'checkbox' || el.type === 'radio') {
-    if (!el.checked) el.click();
-    return;
-  }
-
-  // Clear field
-  el.value = '';
-  el.dispatchEvent(new Event('input', { bubbles: true }));
-  el.dispatchEvent(new Event('change', { bubbles: true }));
-
-  // Set value with React support
-  const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
-    window.HTMLInputElement.prototype,
+  // Handle text inputs
+  const nativeSetter = Object.getOwnPropertyDescriptor(
+    Object.getPrototypeOf(input),
     'value'
   )?.set;
 
-  if (nativeInputValueSetter) {
-    nativeInputValueSetter.call(el, val);
-  } else {
-    el.value = val;
-  }
+  // Clear
+  if (nativeSetter) nativeSetter.call(input, '');
+  else input.value = '';
+  
+  input.dispatchEvent(new Event('change', { bubbles: true }));
+  input.dispatchEvent(new Event('input', { bubbles: true }));
 
-  // Trigger all events
-  el.dispatchEvent(new Event('input', { bubbles: true }));
-  el.dispatchEvent(new Event('change', { bubbles: true }));
-  el.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'Enter' }));
-  el.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true, key: 'Enter' }));
+  // Set new value
+  if (nativeSetter) nativeSetter.call(input, value);
+  else input.value = value;
+
+  // Multiple event triggers for React compatibility
+  input.dispatchEvent(new Event('input', { bubbles: true, cancelable: true }));
+  input.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
+  input.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'a' }));
+  input.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true, key: 'a' }));
+  input.dispatchEvent(new Event('blur', { bubbles: true }));
+  input.dispatchEvent(new Event('focus', { bubbles: true }));
+}
+
+// Click element reliably
+function clickButton(btn) {
+  if (!btn) return false;
 
   try {
-    el.blur();
-    el.focus();
-  } catch {}
+    const rect = btn.getBoundingClientRect();
+    if (rect.width > 0 && rect.height > 0) {
+      // Simulate mouse down/up
+      btn.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
+      btn.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true }));
+      btn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+      btn.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+      btn.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }));
+    }
+
+    // Direct click
+    btn.click?.();
+    return true;
+  } catch (e) {
+    return false;
+  }
 }
 
 export function useHologramAIAgentAdvanced() {
@@ -216,130 +263,135 @@ export function useHologramAIAgentAdvanced() {
     };
 
     try {
-      report("Scanning dialog interface...", "scan");
+      report("🔍 Scanning for dialog...", "scan");
 
-      // Wait for dialog to appear
-      let dialog = findActiveDialog(containerEl);
-      for (let i = 0; i < 5 && !dialog; i++) {
-        await new Promise(r => setTimeout(r, 800));
-        dialog = findActiveDialog(containerEl);
-        report(`Waiting for dialog... (${i + 1}/5)`, "think");
+      // Wait for dialog
+      let dialog = null;
+      for (let i = 0; i < 10; i++) {
+        dialog = findDialog();
+        if (dialog) break;
+        report(`⏳ Waiting for dialog (${i + 1}/10)`, "think");
+        await new Promise(r => setTimeout(r, 600));
       }
 
       if (!dialog) {
-        report("No dialog found", "error");
+        report("❌ Dialog not found", "error");
         busyRef.current = false;
-        return { summary: "Dialog not detected", steps: [] };
+        return { summary: "Dialog not found", steps: [] };
       }
 
-      report("Dialog found ✓", "narrate");
+      report("✓ Dialog found", "narrate");
 
-      // Scan dialog content
-      const { fields, buttons } = scanDialog(dialog);
-      report(`Found: ${fields.length} fields, ${buttons.length} buttons`, "scan");
+      // Scan inputs and buttons
+      report("📋 Scanning form elements...", "scan");
+      let inputs = findAllInputs(dialog);
+      let buttons = findAllButtons(dialog);
 
-      if (fields.length === 0) {
-        report("No fields in dialog", "error");
-        busyRef.current = false;
-        return { summary: "No form fields detected", steps: [] };
+      // Retry if no inputs found
+      if (inputs.length === 0) {
+        for (let i = 0; i < 5; i++) {
+          report(`⏳ No inputs found, rescanning (${i + 1}/5)`, "think");
+          await new Promise(r => setTimeout(r, 800));
+          inputs = findAllInputs(dialog);
+          if (inputs.length > 0) break;
+        }
       }
 
-      // Generate smart values using LLM
-      report("Analyzing task context...", "plan");
-      const fieldDescriptions = fields
-        .filter(f => f.label && f.label.length > 0)
-        .map(f => `- ${f.label} (${f.type})`)
-        .join('\n');
+      if (inputs.length === 0) {
+        report("❌ No form fields found", "error");
+        busyRef.current = false;
+        return { summary: "No inputs found", steps: [] };
+      }
 
-      let smartValues = {};
+      report(`✓ Found: ${inputs.length} fields, ${buttons.length} buttons`, "narrate");
+
+      // Generate smart values
+      report("🤖 Analyzing context...", "plan");
+      const fieldList = inputs.map(i => `- ${i.label} (${i.type})`).join('\n');
+
+      let values = {};
       try {
-        const response = await base44.integrations.Core.InvokeLLM({
-          prompt: `You are filling a form for: "${task}"
-
-Fields to fill:
-${fieldDescriptions}
-
-Generate realistic, contextual data. Output ONLY valid JSON:
-{
-  "values": {
-    "Field Label Exactly": "realistic value"
-  }
-}`,
+        const resp = await base44.integrations.Core.InvokeLLM({
+          prompt: `Task: "${task}"\n\nFill these fields:\n${fieldList}\n\nOutput JSON only:\n{"data":{"Field Label":"value"}}`,
           response_json_schema: {
             type: "object",
-            properties: {
-              values: { type: "object", additionalProperties: { type: "string" } }
-            }
+            properties: { data: { type: "object" } }
           }
         });
-        smartValues = response?.values || {};
+        values = resp?.data || {};
       } catch (e) {
-        report("LLM unavailable, using defaults", "think");
+        report("⚠️ LLM error, using defaults", "think");
       }
 
-      // Fill form
-      report("Filling fields...", "type");
+      // Fill all inputs
+      report("⌨️ Filling fields...", "type");
       let filled = 0;
 
-      for (const field of fields) {
-        if (!field.label) continue;
-        if (field.value && field.value.trim()) {
-          report(`✓ Already filled: ${field.label}`, "narrate");
+      for (const inp of inputs) {
+        // Skip if already filled
+        if (inp.value?.trim()) {
+          report(`✓ ${inp.label} (already filled)`, "narrate");
           filled++;
           continue;
         }
 
-        const value = smartValues[field.label] || smartValues[field.type] || "";
-        if (!value) {
-          report(`⊘ Skipping: ${field.label}`, "think");
-          continue;
+        // Get value from LLM response or generate default
+        let val = values[inp.label] || values[inp.name] || '';
+        
+        if (!val) {
+          // Smart defaults
+          const label = inp.label.toLowerCase();
+          if (label.includes('name') || label.includes('titel')) val = 'Test Value';
+          else if (label.includes('email')) val = 'test@example.com';
+          else if (label.includes('phone') || label.includes('telefon')) val = '+4512345678';
+          else if (label.includes('price') || label.includes('value') || label.includes('beløb')) val = '10000';
+          else if (label.includes('date') || label.includes('dato')) val = new Date().toISOString().split('T')[0];
+          else val = 'Test Data';
         }
 
-        report(`⌨️ Filling: ${field.label}`, "type");
+        report(`⌨️ ${inp.label}: "${val.slice(0, 20)}"`, "type");
+        
         try {
-          const rect = field.element.getBoundingClientRect();
-          if (rect.width > 0) {
-            dispatchCursorAction("type", field.label, null, value, rect.left + rect.width / 2, rect.top + rect.height / 2);
-          }
-          fillInput(field.element, value);
+          const rect = inp.el.getBoundingClientRect();
+          dispatchCursorAction("type", inp.label, null, val, rect.left + rect.width / 2, rect.top + rect.height / 2);
+          
+          await setInputValue(inp.el, val);
           filled++;
-          await new Promise(r => setTimeout(r, 150));
+          await new Promise(r => setTimeout(r, 180));
         } catch (e) {
           report(`⚠️ Error filling field, skipping`, "think");
         }
       }
 
-      report(`✅ Filled ${filled} fields`, "narrate");
+      report(`✅ Filled ${filled}/${inputs.length} fields`, "narrate");
 
       // Find and click submit button
       if (buttons.length > 0) {
-        const createBtn = buttons.find(b => b.label.toLowerCase().includes('create'));
-        const saveBtn = buttons.find(b => b.label.toLowerCase().includes('save'));
-        const submitBtn = createBtn || saveBtn || buttons.find(b => !b.disabled);
+        const submitBtn = buttons.find(b => 
+          b.label.toLowerCase().includes('create') ||
+          b.label.toLowerCase().includes('save') ||
+          b.label.toLowerCase().includes('submit')
+        ) || buttons[buttons.length - 1];
 
-        if (submitBtn) {
+        if (submitBtn && !submitBtn.disabled) {
           report(`🖱️ Clicking: ${submitBtn.label}`, "click");
 
-          for (let attempt = 0; attempt < 4; attempt++) {
-            try {
-              const rect = submitBtn.element.getBoundingClientRect();
-              if (rect.width > 0 && rect.height > 0) {
-                dispatchCursorAction("click", submitBtn.label, null, null, rect.left + rect.width / 2, rect.top + rect.height / 2);
-                await new Promise(r => setTimeout(r, 100));
-              }
+          for (let attempt = 0; attempt < 6; attempt++) {
+            const rect = submitBtn.el.getBoundingClientRect();
+            if (rect.width > 0) {
+              dispatchCursorAction("click", submitBtn.label, null, null, rect.left + rect.width / 2, rect.top + rect.height / 2);
+            }
 
-              // Multiple click methods
-              submitBtn.element.click();
-              await new Promise(r => setTimeout(r, 100));
-              submitBtn.element.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
-              
-              report(`✅ Form submitted`, "narrate");
-              await new Promise(r => setTimeout(r, 1500));
+            const success = clickButton(submitBtn.el);
+            if (success) {
+              report(`✅ Button clicked`, "narrate");
+              await new Promise(r => setTimeout(r, 2000));
               break;
-            } catch (e) {
-              if (attempt < 3) {
-                await new Promise(r => setTimeout(r, 400));
-              }
+            }
+
+            if (attempt < 5) {
+              report(`🔄 Retry click (${attempt + 1}/6)`, "think");
+              await new Promise(r => setTimeout(r, 500));
             }
           }
         }
@@ -349,15 +401,15 @@ Generate realistic, contextual data. Output ONLY valid JSON:
       busyRef.current = false;
 
       return {
-        summary: `✅ Task completed: Filled ${filled} fields`,
-        steps: filled + (buttons.length > 0 ? 1 : 0)
+        summary: `✅ Task completed: ${filled}/${inputs.length} fields filled`,
+        steps: filled + 1
       };
 
     } catch (err) {
-      report(`❌ ${err.message}`, "error");
+      report(`❌ Error: ${err.message}`, "error");
       setAgentStatus("idle");
       busyRef.current = false;
-      return { summary: `Error: ${err.message}`, steps: [] };
+      return { summary: `Failed: ${err.message}`, steps: 0 };
     }
   }, []);
 
