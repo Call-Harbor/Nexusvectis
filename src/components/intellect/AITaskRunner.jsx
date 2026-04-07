@@ -129,22 +129,31 @@ Return: { "window": "window_type", "task": "clear English task description" }`,
       onOpenWindow(windowType, preciseTask);
       addStep(`Hologram aktiveret ✓`, "narrate");
 
-      // Phase 3: Wait for render
+      // Phase 3: Wait for render — give content time to load
       addStep("Venter på interface at loade...", "think");
-      await new Promise(r => setTimeout(r, 2400));
+      await new Promise(r => setTimeout(r, 3500));
 
-      // Phase 4: Find ref
-      const refs = Object.entries(windowRefs.current || {});
-      if (refs.length === 0) {
+      // Phase 4: Find ref with retry
+      let newestRef = null;
+      for (let attempt = 0; attempt < 5; attempt++) {
+        const refs = Object.entries(windowRefs.current || {});
+        if (refs.length > 0) {
+          newestRef = refs[refs.length - 1][1];
+          // Check if the window actually has content
+          const buttons = newestRef?.querySelectorAll("button") || [];
+          const inputs = newestRef?.querySelectorAll("input, textarea, select") || [];
+          if (buttons.length > 0 || inputs.length > 0) break;
+        }
+        addStep(`Venter på vindue indhold... (forsøg ${attempt + 1}/5)`, "think");
+        await new Promise(r => setTimeout(r, 1200));
+      }
+
+      if (!newestRef) {
         addStep("Vindue ikke tilgængeligt — prøv manuelt", "error");
         setPhase("error");
         setRunning(false);
         return;
       }
-
-      const newestRef = refs[refs.length - 1][1];
-      addStep("Interface scannet — planlægger handlinger...", "scan");
-      setPhase("executing");
 
       // Phase 5: Run agent with live step reporting
       const result = await runTask(newestRef, windowType, preciseTask, orgId, (step) => {
