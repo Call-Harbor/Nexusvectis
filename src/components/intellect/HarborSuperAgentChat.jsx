@@ -1048,20 +1048,49 @@ export default function HarborSuperAgentChat({ onClose }) {
       <AnimatePresence>
         {selectedOutput && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="absolute inset-0 flex items-center justify-center z-50 bg-black/70 backdrop-blur-sm rounded-[20px]"
+            className="absolute inset-0 flex items-center justify-center z-50 bg-black/80 backdrop-blur-md rounded-[20px]"
             onClick={() => setSelectedOutput(null)}>
-            <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }}
+            <motion.div initial={{ scale: 0.92, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.92, y: 20 }}
               onClick={e => e.stopPropagation()}
-              className="w-3/4 max-w-2xl max-h-[70vh] overflow-y-auto rounded-2xl p-6"
-              style={{ background: "rgba(5,10,30,0.99)", border: `1px solid ${selectedOutput.worker.color}44` }}>
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-bold text-sm" style={{ color: selectedOutput.worker.color }}>
-                  {selectedOutput.worker.emoji} {selectedOutput.worker.name} Output
-                </h3>
-                <button onClick={() => setSelectedOutput(null)} className="text-slate-400 hover:text-white"><X className="w-4 h-4" /></button>
+              className="w-4/5 max-w-3xl max-h-[82vh] flex flex-col rounded-2xl overflow-hidden"
+              style={{ background: "rgba(5,8,22,0.99)", border: `1px solid ${selectedOutput.worker.color}40`, boxShadow: `0 0 60px ${selectedOutput.worker.color}15` }}>
+              {/* Modal Header */}
+              <div className="flex items-center justify-between px-6 py-4 flex-shrink-0 border-b" style={{ borderColor: selectedOutput.worker.color + '20', background: selectedOutput.worker.color + '08' }}>
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center text-lg" style={{ background: selectedOutput.worker.color + '15', border: `1px solid ${selectedOutput.worker.color}30` }}>
+                    {selectedOutput.worker.emoji}
+                  </div>
+                  <div>
+                    <p className="text-sm font-black font-mono tracking-wider" style={{ color: selectedOutput.worker.color }}>{selectedOutput.worker.name}</p>
+                    <p className="text-[10px] text-slate-500 font-mono uppercase tracking-widest">Analysis Output</p>
+                  </div>
+                </div>
+                <button onClick={() => setSelectedOutput(null)} className="p-1.5 rounded-lg hover:bg-red-500/20 hover:text-red-400 transition-colors" style={{ color: '#64748b' }}><X className="w-4 h-4" /></button>
               </div>
-              <div className="text-xs text-slate-300 leading-relaxed font-mono whitespace-pre-wrap">
-                {typeof selectedOutput.output === "string" ? selectedOutput.output : JSON.stringify(selectedOutput.output, null, 2)}
+              {/* Modal Body */}
+              <div className="flex-1 overflow-y-auto px-6 py-6">
+                <ReactMarkdown
+                  className="prose prose-sm prose-invert max-w-none"
+                  components={{
+                    h1: ({ children }) => <h1 className="text-xl font-black mt-0 mb-4 pb-3 border-b" style={{ color: selectedOutput.worker.color, borderColor: selectedOutput.worker.color + '30' }}>{children}</h1>,
+                    h2: ({ children }) => <h2 className="text-base font-bold mt-6 mb-3" style={{ color: selectedOutput.worker.color + 'cc' }}>{children}</h2>,
+                    h3: ({ children }) => <h3 className="text-sm font-semibold mt-4 mb-2 text-slate-200">{children}</h3>,
+                    p: ({ children }) => <p className="text-sm text-slate-300 leading-relaxed mb-3">{children}</p>,
+                    li: ({ children }) => <li className="text-sm text-slate-300 leading-relaxed mb-1">{children}</li>,
+                    strong: ({ children }) => <strong className="font-bold text-white">{children}</strong>,
+                    blockquote: ({ children }) => <blockquote className="border-l-2 pl-4 my-3 italic text-slate-400" style={{ borderColor: selectedOutput.worker.color + '60' }}>{children}</blockquote>,
+                    hr: () => <hr className="my-5" style={{ borderColor: 'rgba(100,116,139,0.2)' }} />,
+                    code: ({ inline, children }) => inline
+                      ? <code className="px-1.5 py-0.5 rounded text-xs" style={{ background: selectedOutput.worker.color + '15', color: selectedOutput.worker.color }}>{children}</code>
+                      : <pre className="rounded-xl p-4 my-3 overflow-x-auto" style={{ background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(100,116,139,0.15)' }}><code className="text-xs text-slate-300">{children}</code></pre>,
+                    table: ({ children }) => <table className="w-full my-4 text-sm border-collapse">{children}</table>,
+                    th: ({ children }) => <th className="text-left text-xs font-mono uppercase tracking-wider py-2 px-3" style={{ color: selectedOutput.worker.color, borderBottom: `1px solid ${selectedOutput.worker.color}30` }}>{children}</th>,
+                    td: ({ children }) => <td className="py-2 px-3 text-slate-300 border-b" style={{ borderColor: 'rgba(100,116,139,0.1)' }}>{children}</td>,
+                    a: ({ children, href }) => <a href={href} target="_blank" rel="noopener noreferrer" className="underline hover:opacity-80" style={{ color: selectedOutput.worker.color }}>{children}</a>,
+                  }}
+                >
+                  {typeof selectedOutput.output === "string" ? selectedOutput.output : JSON.stringify(selectedOutput.output, null, 2)}
+                </ReactMarkdown>
               </div>
             </motion.div>
           </motion.div>
