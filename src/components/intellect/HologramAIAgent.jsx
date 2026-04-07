@@ -669,50 +669,33 @@ export function useHologramAIAgent() {
         .join('\n');
 
       const planResult = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are an AI agent operating the NexusVectis logistics platform — physically clicking buttons and typing in forms.
+        prompt: `You are an intelligent AI agent. Your task: "${task}"
 
-TASK: "${task}"
-MODULE: "${windowType.replace(/_/g, ' ')}"
-IMPORTANT: Use the LIVE scanned field names EXACTLY — they are more accurate than module pre-training.
+=== INTERFACE DETECTED ===
+Available buttons: ${liveButtons.join(', ') || '(none)'}
+Available input fields: ${liveInputs.join(', ') || '(none)'}
+Required fields: ${requiredFieldsText || 'none'}
 
-=== LIVE SCANNED BUTTONS (EXACT — use these first) ===
-${liveButtons.length > 0 ? liveButtons.map((b, i) => `${i + 1}. "${b}"`).join('\n') : 'None'}
+=== YOUR JOB ===
+1. THINK intelligently about what needs to be done to complete the task
+2. Fill EVERY input field with realistic, relevant data
+3. Use the EXACT field names you see in the list above
+4. Click buttons to navigate, submit forms, open dialogs
+5. Always END by clicking the submit/save/create/confirm button
+6. For missing fields: generate realistic data (names, emails, dates, cities, etc)
+7. For dropdowns: pick the most relevant option
+8. Do not skip any field — fill them all
 
-=== LIVE SCANNED INPUT FIELDS (EXACT — use ONLY these field names) ===
-${liveInputs.length > 0 ? liveInputs.map((f, i) => `${i + 1}. "${f}"`).join('\n') : 'None'}
+=== RESPONSE FORMAT ===
+Return ONLY valid JSON with this structure:
+{
+  "steps": [
+    {"type": "click|type|select|check|tab|narrate", "label": "field/button name", "value": "data to enter", "text": "optional description"}
+  ],
+  "summary": "one sentence about what was accomplished"
+}
 
-=== FALLBACK: Known buttons ===
-${knownButtons.filter(b => !liveButtons.includes(b)).slice(0, 5).map((b, i) => `${i + 1}. "${b}"`).join('\n') || 'None'}
-
-=== REQUIRED FIELDS ===
-${requiredFieldsText || 'None detected'}
-
-=== SELECT DROPDOWNS (options available) ===
-${selectsInfo || 'None'}
-
-=== TABS ===
-${allTabs.length > 0 ? allTabs.map((t, i) => `${i + 1}. "${t}"`).join('\n') : 'None'}
-
-=== VISIBLE DATA ===
-${liveStructure.text.slice(0, 400) || 'loading...'}
-
-RULES:
-1. Generate steps for EVERY field in the LIVE SCANNED INPUT FIELDS list. Match field names EXACTLY.
-2. ONLY use field names from the LIVE SCANNED INPUT FIELDS section — ignore pre-trained knowledge.
-3. CLICK steps: click buttons using exact label text from LIVE SCANNED BUTTONS.
-4. TYPE steps: use EXACT field name from LIVE SCANNED list. Provide realistic values. For address/location fields, use real city/country names.
-5. SELECT steps: use type="select" with label=field name, value=option to pick.
-6. CHECK steps: use type="check" with label=checkbox/radio name, value="true" or "false".
-7. For "create" tasks: click the primary creation button first, then fill EVERY field in the live list in order, then click submit.
-8. For "search": type in the search input.
-9. For "navigate to tab": use type="tab".
-10. ALWAYS end with clicking the submit/create/save button (e.g. "Save Employee", "Create", "Submit").
-11. CRITICAL: Fill ALL required fields. Do not skip any field.
-12. FIELD NAME ACCURACY IS CRITICAL — if a field in LIVE list says "First Name", use EXACTLY "First Name", not "Employee Name".
-
-Return JSON only with complete step sequence:
-{ "steps": [ {"type": "click|type|select|check|tab|think|narrate|scroll", "label": "...", "value": "...", "text": "..."} ], "summary": "one sentence summary" }
-IMPORTANT: Last step MUST be clicking the submit/create/save button.`,
+Think step by step. Be intelligent and adapt to what you see.`,
         response_json_schema: {
           type: "object",
           properties: {
