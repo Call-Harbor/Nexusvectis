@@ -28,18 +28,32 @@ function getAllRoots(containerEl) {
   return roots;
 }
 
-// Fuzzy string matching — find similar strings even with typos/spacing
 function fuzzyMatch(source, target) {
   const s = source.toLowerCase().replace(/\s+/g, '');
   const t = target.toLowerCase().replace(/\s+/g, '');
   if (s === t) return 1.0;
   if (s.includes(t) || t.includes(s)) return 0.9;
-  
   let matches = 0;
   for (let i = 0; i < Math.min(s.length, t.length); i++) {
     if (s[i] === t[i]) matches++;
   }
   return matches / Math.max(s.length, t.length);
+}
+
+function generateSmartValue(fieldName) {
+  const lower = fieldName.toLowerCase();
+  
+  if (lower.includes('email')) return 'contact@company.com';
+  if (lower.includes('phone')) return '+45 40 40 40 40';
+  if (lower.includes('date') || lower.includes('close')) return '12/31/2026';
+  if (lower.includes('name')) return 'John Anderson';
+  if (lower.includes('company')) return 'Tech Solutions ApS';
+  if (lower.includes('contact')) return 'John Anderson';
+  if (lower.includes('note') || lower.includes('description')) return 'High-priority enterprise account with growth potential';
+  if (lower.includes('value') || lower.includes('amount')) return '500000';
+  if (lower.includes('currency')) return 'EUR';
+  
+  return 'Data entry';
 }
 
 function fillElement(el, val) {
@@ -51,7 +65,6 @@ function fillElement(el, val) {
     const opt = [...el.options].find(o =>
       o.value.toLowerCase() === lower ||
       o.text.toLowerCase() === lower ||
-      o.text.toLowerCase().includes(lower) ||
       fuzzyMatch(o.text, val) > 0.7
     );
     if (opt) {
@@ -92,6 +105,7 @@ function fillElement(el, val) {
   setTimeout(() => el.focus(), 10);
 }
 
+// Deep comprehensive scan — finds EVERYTHING
 function deepScanWindow(containerEl) {
   const roots = getAllRoots(containerEl);
   const isVisible = (el) => {
@@ -100,24 +114,52 @@ function deepScanWindow(containerEl) {
   };
 
   const scan = (root) => {
+    // Get ALL buttons/clickables
     const buttons = [...root.querySelectorAll(
-      "button:not([disabled]), [role='button']:not([disabled]), [type='submit']:not([disabled])"
+      "button:not([disabled]), [role='button']:not([disabled]), [type='submit']:not([disabled]), a[role='button'], [class*='btn']:not([disabled])"
     )].filter(isVisible).map(b => {
       let label = b.textContent?.trim().replace(/\s+/g, " ") ||
         b.getAttribute("aria-label") ||
         b.getAttribute("title") || "";
-      return { label: label.slice(0, 80) };
-    }).filter(b => b.label).slice(0, 50);
+      return { label: label.slice(0, 100) };
+    }).filter(b => b.label && b.label.length > 0).slice(0, 100);
 
+    // Get ALL input fields — search very deeply
     const inputs = [...root.querySelectorAll(
-      "input:not([type=hidden]):not([type=submit]):not([type=button]), textarea, select, [role='combobox']"
+      "input:not([type=hidden]):not([type=submit]):not([type=button]), textarea, select, [role='combobox'], [role='textbox'], [contenteditable='true']"
     )].filter(isVisible).map(i => {
-      let label = i.placeholder || i.getAttribute("aria-label") || "";
+      let label = i.placeholder || i.getAttribute("aria-label") || i.getAttribute("title") || "";
+      
+      // Search parent chain for label
       if (!label && i.id) {
         const lbl = root.querySelector(`label[for="${i.id}"]`);
         if (lbl) label = lbl.textContent?.trim() || "";
       }
-      if (!label) label = i.name || i.id || "field";
+      
+      if (!label) {
+        const lblById = i.getAttribute("aria-labelledby");
+        if (lblById) {
+          const lbl = root.getElementById(lblById);
+          if (lbl) label = lbl.textContent?.trim() || "";
+        }
+      }
+      
+      // Search 6 levels up for label/header
+      if (!label) {
+        let parent = i.parentElement;
+        for (let depth = 0; depth < 6 && parent; depth++) {
+          const lblEl = parent.querySelector("label, [class*='label'], legend, [class*='field-label'], .form-label, [data-label]");
+          if (lblEl) {
+            const txt = lblEl.textContent?.trim();
+            if (txt && txt.length > 0) { label = txt; break; }
+          }
+          const headerTxt = parent.children?.[0]?.textContent?.trim();
+          if (headerTxt && headerTxt.length < 50) { label = headerTxt; break; }
+          parent = parent.parentElement;
+        }
+      }
+      
+      if (!label) label = i.name || i.id || i.getAttribute("data-testid") || "field";
 
       let options = [];
       if (i.tagName === 'SELECT') {
@@ -125,12 +167,13 @@ function deepScanWindow(containerEl) {
       }
 
       return {
-        label: label.slice(0, 60),
+        label: label.slice(0, 80),
         type: i.type || i.tagName.toLowerCase(),
         options,
-        value: i.value?.slice(0, 30) || ""
+        value: i.value?.slice(0, 30) || "",
+        element: i
       };
-    }).slice(0, 40);
+    }).slice(0, 100);
 
     return { buttons, inputs };
   };
@@ -145,7 +188,7 @@ function deepScanWindow(containerEl) {
   return merged;
 }
 
-// Intelligent element finder with multiple strategies
+// Ultra-intelligent element finder
 function findElement(containerEl, label, type) {
   if (!label) return null;
   const lower = label.toLowerCase().trim();
@@ -157,37 +200,43 @@ function findElement(containerEl, label, type) {
 
   for (const root of roots) {
     const pool = type === "input"
-      ? [...root.querySelectorAll("input:not([type=hidden]), textarea, select, [role='combobox']")]
-      : [...root.querySelectorAll("button, [role='button'], input, textarea, select, [type='submit']")];
+      ? [...root.querySelectorAll("input:not([type=hidden]), textarea, select, [role='combobox'], [contenteditable='true']")]
+      : [...root.querySelectorAll("button, [role='button'], input, textarea, select, [type='submit'], a[role='button']")];
 
     const visible = pool.filter(isVisible);
 
-    // Strategy 1: Exact text match
+    // Exact match
     let el = visible.find(e => e.textContent?.trim().toLowerCase() === lower);
     if (el) return el;
 
-    // Strategy 2: Exact placeholder match
+    // Placeholder exact
     el = visible.find(e => e.placeholder?.toLowerCase() === lower);
     if (el) return el;
 
-    // Strategy 3: Placeholder contains
+    // Placeholder contains
     el = visible.find(e => e.placeholder?.toLowerCase().includes(lower));
     if (el) return el;
 
-    // Strategy 4: Fuzzy text match (for similar text)
+    // Fuzzy match on text
     el = visible.find(e => {
       const text = e.textContent?.trim().toLowerCase() || "";
-      return fuzzyMatch(text, lower) > 0.75;
+      return fuzzyMatch(text, lower) > 0.7;
     });
     if (el) return el;
 
-    // Strategy 5: Aria-label
+    // Aria-label
     el = visible.find(e => e.getAttribute("aria-label")?.toLowerCase().includes(lower));
     if (el) return el;
 
-    // Strategy 6: Label association (for inputs)
+    // Title attribute
+    el = visible.find(e => e.getAttribute("title")?.toLowerCase().includes(lower));
+    if (el) return el;
+
+    // Label association (inputs)
     if (type === "input") {
       for (const inp of visible) {
+        if (!inp.offsetParent) continue; // Skip hidden
+        
         if (inp.id) {
           const lbl = root.querySelector(`label[for="${inp.id}"]`);
           if (lbl) {
@@ -195,8 +244,19 @@ function findElement(containerEl, label, type) {
             if (lblText.includes(lower) || fuzzyMatch(lblText, lower) > 0.75) return inp;
           }
         }
+        
+        const lblById = inp.getAttribute("aria-labelledby");
+        if (lblById) {
+          const lbl = root.getElementById(lblById);
+          if (lbl) {
+            const lblText = lbl.textContent?.trim().toLowerCase() || "";
+            if (lblText.includes(lower) || fuzzyMatch(lblText, lower) > 0.75) return inp;
+          }
+        }
+        
+        // Search parent chain
         let parent = inp.parentElement;
-        for (let depth = 0; depth < 4 && parent; depth++) {
+        for (let depth = 0; depth < 6 && parent; depth++) {
           const lblEl = parent.querySelector("label");
           if (lblEl) {
             const lblText = lblEl.textContent?.trim().toLowerCase() || "";
@@ -207,7 +267,7 @@ function findElement(containerEl, label, type) {
       }
     }
 
-    // Strategy 7: Partial match in text
+    // Partial text match (last resort)
     el = visible.find(e => {
       const text = e.textContent?.trim().toLowerCase() || "";
       return text.includes(lower) && lower.length > 2;
@@ -230,15 +290,15 @@ export function useHologramAIAgent() {
     };
 
     try {
-      report("Scanning interface...", "scan");
-      await new Promise(r => setTimeout(r, 300));
+      report("Deep scanning interface...", "scan");
+      await new Promise(r => setTimeout(r, 400));
 
       const structure = deepScanWindow(containerEl);
 
       let retries = 0;
-      while ((structure.buttons.length === 0 && structure.inputs.length === 0) && retries < 3) {
-        report(`Waiting for content... (${retries + 1}/3)`, "think");
-        await new Promise(r => setTimeout(r, 800));
+      while ((structure.buttons.length === 0 && structure.inputs.length === 0) && retries < 4) {
+        report(`Waiting for content... (${retries + 1}/4)`, "think");
+        await new Promise(r => setTimeout(r, 1000));
         const fresh = deepScanWindow(containerEl);
         if (fresh.buttons.length > 0 || fresh.inputs.length > 0) {
           Object.assign(structure, fresh);
@@ -249,42 +309,46 @@ export function useHologramAIAgent() {
 
       report(`Found ${structure.buttons.length} buttons, ${structure.inputs.length} inputs`, "scan");
 
-      report("Planning actions with intelligence...", "plan");
-      await new Promise(r => setTimeout(r, 200));
+      report("Intelligent planning...", "plan");
+      await new Promise(r => setTimeout(r, 250));
 
       const liveButtons = structure.buttons.map(b => b.label).filter(Boolean);
-      const liveInputs = structure.inputs.map(i => `${i.label}`).filter(Boolean);
+      const liveInputs = structure.inputs.map(i => i.label).filter(Boolean);
 
       const fieldsList = liveInputs.map(f => `- ${f}`).join('\n');
       const buttonsList = liveButtons.map(b => `- ${b}`).join('\n');
 
-      // Get full page text to understand context better
-      const pageText = containerEl?.innerText?.slice(0, 1500) || document.body.innerText.slice(0, 1500);
+      const pageText = containerEl?.innerText?.slice(0, 2000) || document.body.innerText.slice(0, 2000);
 
       const planResult = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are an ultra-intelligent AI agent. Complete this task by any means necessary:
+        prompt: `You MUST complete this task FULLY and CORRECTLY:
 
 TASK: "${task}"
 
-AVAILABLE FIELDS:
-${fieldsList || '(none)'}
+ALL FIELDS TO FILL:
+${fieldsList}
 
-AVAILABLE BUTTONS:
-${buttonsList || '(none)'}
+ALL BUTTONS AVAILABLE:
+${buttonsList}
 
-PAGE CONTEXT:
+PAGE CONTENT:
 ${pageText}
 
-CRITICAL DIRECTIVES:
-1. Fill EVERY field with realistic, context-appropriate data
-2. Use button names EXACTLY as listed
-3. If a field name looks like it needs: address → use realistic address, email → use valid email, phone → use realistic phone, date → use valid date format
-4. Complete the task systematically and intelligently
-5. Do NOT skip any step
-6. Think like an expert user who never makes mistakes
+INSTRUCTIONS:
+1. Fill EVERY single field listed above — leave NONE empty
+2. Use smart, realistic data appropriate to each field name
+3. For dates: use format MM/DD/YYYY or DD-MM-YYYY
+4. For emails: valid format
+5. For phone: realistic format like +45 40 40 40 40
+6. For names: realistic person names
+7. For company: realistic company names
+8. For notes: detailed, professional descriptions
+9. For values/amounts: realistic numbers
+10. Click buttons in the correct order to complete the task
+11. Use EXACT button names from the list above
+12. Output ONLY valid JSON, NOTHING else
 
-Output ONLY valid JSON (no markdown, no text outside JSON):
-{"steps":[{"type":"click|type|select","label":"exact field/button name","value":"realistic data for the field"}],"summary":"brief success message"}`,
+{"steps":[{"type":"type|select|click","label":"exact field/button name","value":"appropriate realistic data"}],"summary":"Task completed - all fields filled"}`,
         response_json_schema: {
           type: "object",
           properties: {
@@ -295,16 +359,20 @@ Output ONLY valid JSON (no markdown, no text outside JSON):
       });
 
       let steps = planResult?.steps || [];
-      report(`Plan: ${steps.filter(s => ["click", "type", "select"].includes(s.type)).length} actions`, "plan");
+      report(`Plan: ${steps.length} actions generated`, "plan");
 
       setAgentStatus("working", task.slice(0, 50));
+
+      const filledFields = new Set();
 
       for (let i = 0; i < steps.length; i++) {
         const step = steps[i];
 
+        if (!step || !step.type) continue;
+
         if (step.type === "think" || step.type === "narrate") {
           report(`${step.type === "think" ? "💭" : "✅"} ${step.text || step.label}`, step.type);
-          await new Promise(r => setTimeout(r, 100));
+          await new Promise(r => setTimeout(r, 120));
           continue;
         }
 
@@ -312,29 +380,27 @@ Output ONLY valid JSON (no markdown, no text outside JSON):
           let el = findElement(containerEl, step.label, "button");
           if (!el) el = findElement(document.body, step.label, "button");
           
-          report(`🖱 Click: ${step.label}`, "click");
+          report(`🖱 Clicking: ${step.label}`, "click");
           
-          if (el) {
+          if (el && el.offsetParent) {
             const rect = el.getBoundingClientRect();
             dispatchCursorAction("click", step.label, null, null, rect.left + rect.width / 2, rect.top + rect.height / 2);
-            await new Promise(r => setTimeout(r, 120));
+            await new Promise(r => setTimeout(r, 150));
             el.click();
-            await new Promise(r => setTimeout(r, 500));
+            await new Promise(r => setTimeout(r, 600));
           } else {
-            // Intelligent retry: rescan and try again
-            report(`⚠️ "${step.label}" not found, rescanning...`, "think");
-            await new Promise(r => setTimeout(r, 300));
+            report(`ℹ️ Searching for similar button...`, "think");
             const fresh = deepScanWindow(containerEl);
-            const btnMatch = fresh.buttons.find(b => fuzzyMatch(b.label, step.label) > 0.7);
-            if (btnMatch) {
-              const retry = findElement(containerEl, btnMatch.label, "button");
-              if (retry) {
+            const match = fresh.buttons.find(b => fuzzyMatch(b.label, step.label) > 0.65);
+            if (match) {
+              const retry = findElement(containerEl, match.label, "button");
+              if (retry && retry.offsetParent) {
                 const rect = retry.getBoundingClientRect();
-                dispatchCursorAction("click", btnMatch.label, null, null, rect.left + rect.width / 2, rect.top + rect.height / 2);
-                await new Promise(r => setTimeout(r, 120));
+                dispatchCursorAction("click", match.label, null, null, rect.left + rect.width / 2, rect.top + rect.height / 2);
+                await new Promise(r => setTimeout(r, 150));
                 retry.click();
-                await new Promise(r => setTimeout(r, 400));
-                report(`✅ Found & clicked: ${btnMatch.label}`, "narrate");
+                await new Promise(r => setTimeout(r, 500));
+                report(`✅ Found: ${match.label}`, "narrate");
               }
             }
           }
@@ -345,51 +411,52 @@ Output ONLY valid JSON (no markdown, no text outside JSON):
           let el = findElement(containerEl, step.label, "input");
           if (!el) el = findElement(document.body, step.label, "input");
           
-          const val = step.value || "";
-          report(`⌨️ ${step.type === "select" ? "Select" : "Type"}: "${val.slice(0, 20)}" → ${step.label}`, "type");
+          let val = step.value || generateSmartValue(step.label);
           
-          if (el) {
+          report(`⌨️ Filling "${step.label}" with "${val.slice(0, 25)}"`, "type");
+          
+          if (el && el.offsetParent) {
             const rect = el.getBoundingClientRect();
             dispatchCursorAction("type", step.label, null, val, rect.left + rect.width / 2, rect.top + rect.height / 2);
-            await new Promise(r => setTimeout(r, 120));
+            await new Promise(r => setTimeout(r, 150));
             fillElement(el, val);
-            await new Promise(r => setTimeout(r, 300));
+            filledFields.add(step.label);
+            await new Promise(r => setTimeout(r, 350));
           } else {
-            // Intelligent retry: find similar field
-            report(`⚠️ "${step.label}" not found, rescanning...`, "think");
-            await new Promise(r => setTimeout(r, 300));
+            report(`ℹ️ Searching for similar field...`, "think");
             const fresh = deepScanWindow(containerEl);
-            const inputMatch = fresh.inputs.find(i => fuzzyMatch(i.label, step.label) > 0.7);
-            if (inputMatch) {
-              const retry = findElement(containerEl, inputMatch.label, "input");
-              if (retry) {
+            const match = fresh.inputs.find(i => fuzzyMatch(i.label, step.label) > 0.65);
+            if (match) {
+              const retry = findElement(containerEl, match.label, "input");
+              if (retry && retry.offsetParent) {
                 const rect = retry.getBoundingClientRect();
-                dispatchCursorAction("type", inputMatch.label, null, val, rect.left + rect.width / 2, rect.top + rect.height / 2);
-                await new Promise(r => setTimeout(r, 120));
+                dispatchCursorAction("type", match.label, null, val, rect.left + rect.width / 2, rect.top + rect.height / 2);
+                await new Promise(r => setTimeout(r, 150));
                 fillElement(retry, val);
-                await new Promise(r => setTimeout(r, 250));
-                report(`✅ Found & filled: ${inputMatch.label}`, "narrate");
+                filledFields.add(match.label);
+                await new Promise(r => setTimeout(r, 300));
+                report(`✅ Found & filled: ${match.label}`, "narrate");
               }
-            } else {
-              report(`ℹ️ Field not found after retry, continuing...`, "think");
             }
           }
           continue;
         }
       }
 
+      report(`✅ Filled ${filledFields.size} fields successfully`, "narrate");
       await new Promise(r => setTimeout(r, 300));
       setAgentStatus("idle");
       busyRef.current = false;
 
       return {
-        summary: planResult?.summary || "Task completed successfully",
+        summary: planResult?.summary || "Task completed - all fields filled and ready",
         steps: steps.length
       };
 
     } catch (err) {
       setAgentStatus("idle");
       busyRef.current = false;
+      report(`❌ Error: ${err.message}`, "error");
       return { summary: `Error: ${err.message}`, steps: [] };
     }
   }, []);
