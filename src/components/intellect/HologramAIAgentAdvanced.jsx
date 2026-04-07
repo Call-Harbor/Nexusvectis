@@ -13,373 +13,350 @@ export function setAgentStatus(status, task) {
   }));
 }
 
+// Find all visible documents (main + iframes)
 function getAllRoots(containerEl) {
   const roots = [];
-  if (!containerEl) { roots.push(document.body); return roots; }
+  if (!containerEl) { roots.push(document); return roots; }
+  
   const iframes = containerEl.querySelectorAll('iframe');
   for (const iframe of iframes) {
     try {
       const doc = iframe.contentDocument || iframe.contentWindow?.document;
-      if (doc && doc.body) roots.push(doc.body);
+      if (doc) roots.push(doc);
     } catch {}
   }
-  roots.push(containerEl);
-  if (!roots.includes(document.body)) roots.push(document.body);
+  roots.push(document);
   return roots;
 }
 
-function getElementLabel(el, root) {
-  let label = el.placeholder || el.getAttribute("aria-label") || "";
+// Find the active dialog (Radix UI or HTML dialog)
+function findActiveDialog(containerEl) {
+  let dialog = null;
   
-  if (!label && el.id) {
-    const lbl = root.querySelector(`label[for="${el.id}"]`);
-    if (lbl) label = lbl.textContent?.trim() || "";
+  // Check main document first (Radix portals)
+  dialog = document.querySelector('[role="dialog"][data-state="open"], [role="alertdialog"], [role="dialog"]:not([hidden])');
+  if (dialog) return dialog;
+  
+  // Check container
+  if (containerEl) {
+    dialog = containerEl.querySelector('[role="dialog"], [role="alertdialog"]');
+    if (dialog && dialog.offsetHeight > 0) return dialog;
   }
   
-  if (!label) {
-    let parent = el.parentElement;
-    for (let depth = 0; depth < 10 && parent; depth++) {
-      const lblEl = parent.querySelector("label, [class*='label'], legend, [class*='field-label']");
-      if (lblEl) {
-        const txt = lblEl.textContent?.trim();
-        if (txt && txt.length < 100) { label = txt; break; }
-      }
-      
-      const parentText = parent.textContent?.trim();
-      if (parentText && parentText.length < 150 && parentText.includes(el.placeholder || el.name || '')) {
-        label = parentText;
-        break;
-      }
-      
-      parent = parent.parentElement;
-    }
+  // Check iframes
+  const iframes = containerEl?.querySelectorAll('iframe') || [];
+  for (const iframe of iframes) {
+    try {
+      const doc = iframe.contentDocument || iframe.contentWindow?.document;
+      const d = doc?.querySelector('[role="dialog"], [role="alertdialog"]');
+      if (d && d.offsetHeight > 0) return d;
+    } catch {}
   }
   
-  if (!label) label = el.name || el.id || "";
-  return label.trim();
+  return null;
 }
 
-// Advanced scan with field type detection
-async function advancedDeepScan(containerEl) {
-  const roots = getAllRoots(containerEl);
-  const fields = [];
+// Smart element finding with multiple strategies
+function findElement(doc, label, type = "any") {
+  if (!doc || !label) return null;
+  
+  const lower = label.toLowerCase().trim();
+  const selector = type === "input" 
+    ? "input, textarea, select, [role='combobox'], [role='searchbox']"
+    : type === "button"
+    ? "button, [role='button'], [type='submit']"
+    : "*";
 
-  for (const root of roots) {
-    const inputs = [...root.querySelectorAll("input, textarea, select, [role='combobox'], [contenteditable='true']")];
-    
-    for (const inp of inputs) {
-      const label = getElementLabel(inp, root);
-      if (!label) continue;
-      
-      let fieldType = inp.type || inp.tagName.toLowerCase();
-      let options = [];
-      let isRequired = inp.required || inp.getAttribute("aria-required") === "true";
-      
-      if (inp.tagName === 'SELECT') {
-        options = [...inp.options].map(o => ({ text: o.text, value: o.value }));
-      }
-      
-      // Check for aria-invalid or error states
-      const hasError = inp.classList.contains('error') || inp.getAttribute('aria-invalid') === 'true';
-      
-      fields.push({
-        label,
-        element: inp,
-        type: fieldType,
-        options,
-        required: isRequired,
-        hasError,
-        value: inp.value || "",
-        classList: inp.className,
-        name: inp.name
-      });
+  let elements = doc.querySelectorAll(selector);
+  
+  // Filter visible
+  elements = [...elements].filter(el => {
+    const rect = el.getBoundingClientRect();
+    const style = window.getComputedStyle(el);
+    return rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
+  });
+
+  // Exact text match
+  let el = elements.find(e => e.textContent?.trim().toLowerCase() === lower);
+  if (el) return el;
+
+  // Placeholder match (inputs)
+  el = elements.find(e => e.placeholder?.toLowerCase() === lower);
+  if (el) return el;
+
+  // Aria-label match
+  el = elements.find(e => e.getAttribute('aria-label')?.toLowerCase().includes(lower));
+  if (el) return el;
+
+  // Text contains
+  el = elements.find(e => e.textContent?.trim().toLowerCase().includes(lower));
+  if (el) return el;
+
+  // Label association (for inputs)
+  for (const inp of elements) {
+    if (inp.id && doc.querySelector(`label[for="${inp.id}"]`)) {
+      const lbl = doc.querySelector(`label[for="${inp.id}"]`);
+      if (lbl?.textContent?.toLowerCase().includes(lower)) return inp;
     }
   }
 
-  // Get buttons
+  return elements[0] || null;
+}
+
+// Scan all visible elements
+function scanDialog(dialog) {
+  const fields = [];
   const buttons = [];
-  for (const root of roots) {
-    const btns = [...root.querySelectorAll("button, [role='button'], [type='submit'], a[role='button']")];
-    for (const btn of btns) {
-      const label = btn.textContent?.trim().replace(/\s+/g, " ") || 
-        btn.getAttribute("aria-label") || 
-        btn.getAttribute("title") || "";
-      const isDisabled = btn.disabled || btn.getAttribute("aria-disabled") === "true";
-      
-      if (label && !buttons.find(b => b.label === label)) {
-        buttons.push({ label, element: btn, disabled: isDisabled });
-      }
+
+  if (!dialog) return { fields, buttons };
+
+  const inputs = [...dialog.querySelectorAll("input, textarea, select, [role='combobox'], [contenteditable='true']")];
+  const btns = [...dialog.querySelectorAll("button, [role='button'], [type='submit']")];
+
+  for (const inp of inputs) {
+    const rect = inp.getBoundingClientRect();
+    if (rect.width < 1 || rect.height < 1) continue;
+
+    let label = inp.placeholder || inp.getAttribute("aria-label") || inp.name || "";
+    if (!label && inp.id) {
+      const lbl = dialog.querySelector(`label[for="${inp.id}"]`);
+      if (lbl) label = lbl.textContent?.trim() || "";
+    }
+
+    fields.push({
+      label: label.slice(0, 60),
+      element: inp,
+      type: inp.type || inp.tagName.toLowerCase(),
+      value: inp.value || ""
+    });
+  }
+
+  for (const btn of btns) {
+    const rect = btn.getBoundingClientRect();
+    if (rect.width < 1 || rect.height < 1) continue;
+
+    const label = btn.textContent?.trim().slice(0, 60) || 
+      btn.getAttribute("aria-label") || 
+      btn.getAttribute("title") || "";
+
+    if (label) {
+      buttons.push({
+        label,
+        element: btn,
+        disabled: btn.disabled || btn.getAttribute("aria-disabled") === "true"
+      });
     }
   }
 
   return { fields, buttons };
 }
 
-// Use LLM to intelligently fill form based on task context
-async function generateIntelligentValues(task, fields) {
-  if (fields.length === 0) return {};
-  
-  const fieldDescriptions = fields
-    .map(f => `- ${f.label} (type: ${f.type}, required: ${f.required})${f.options.length > 0 ? ` [options: ${f.options.map(o => o.text).slice(0, 5).join(', ')}]` : ''}`)
-    .join('\n');
-
-  const response = await base44.integrations.Core.InvokeLLM({
-    prompt: `You are filling a form to: "${task}"
-
-Form fields:
-${fieldDescriptions}
-
-Generate realistic, contextual data for each field. Output ONLY JSON (no other text):
-{
-  "fieldValues": {
-    "Field Label Exactly As Above": "realistic value",
-    ...
-  },
-  "strategy": "description of approach"
-}`,
-    response_json_schema: {
-      type: "object",
-      properties: {
-        fieldValues: { type: "object", additionalProperties: { type: "string" } },
-        strategy: { type: "string" }
-      }
-    }
-  });
-
-  return response?.fieldValues || {};
-}
-
-function fuzzyMatch(source, target) {
-  const s = source.toLowerCase().replace(/\s+/g, '');
-  const t = target.toLowerCase().replace(/\s+/g, '');
-  if (s === t) return 1.0;
-  if (s.includes(t) || t.includes(s)) return 0.85;
-  let matches = 0;
-  for (let i = 0; i < Math.min(s.length, t.length); i++) {
-    if (s[i] === t[i]) matches++;
-  }
-  return matches / Math.max(s.length, t.length);
-}
-
-function fillElement(el, val) {
+// Fill element with proper React event handling
+function fillInput(el, val) {
   if (!el || !val) return;
-  
+
   try {
     el.focus();
   } catch {}
 
   if (el.tagName === 'SELECT') {
-    const lower = val.toLowerCase();
-    const opt = [...el.options].find(o =>
-      fuzzyMatch(o.text, val) > 0.8 ||
-      fuzzyMatch(o.value, val) > 0.8
-    );
+    const opt = [...el.options].find(o => o.text.toLowerCase().includes(val.toLowerCase()));
     if (opt) {
-      try {
-        const nativeSetter = Object.getOwnPropertyDescriptor(el.ownerDocument.defaultView.HTMLSelectElement.prototype, 'value')?.set;
-        if (nativeSetter) nativeSetter.call(el, opt.value);
-        else el.value = opt.value;
-      } catch {
-        el.value = opt.value;
-      }
-      el.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
-      el.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+      el.value = opt.value;
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+      el.dispatchEvent(new Event('input', { bubbles: true }));
     }
     return;
   }
 
   if (el.type === 'checkbox' || el.type === 'radio') {
-    const shouldCheck = /true|yes|1|on|check/i.test(val);
-    if (el.checked !== shouldCheck) {
-      try { el.click(); } catch {}
-    }
+    if (!el.checked) el.click();
     return;
   }
 
-  const proto = el.tagName === 'TEXTAREA'
-    ? el.ownerDocument.defaultView.HTMLTextAreaElement.prototype
-    : el.ownerDocument.defaultView.HTMLInputElement.prototype;
-  const setter = Object.getOwnPropertyDescriptor(proto, 'value')?.set;
+  // Clear field
+  el.value = '';
+  el.dispatchEvent(new Event('input', { bubbles: true }));
+  el.dispatchEvent(new Event('change', { bubbles: true }));
+
+  // Set value with React support
+  const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+    window.HTMLInputElement.prototype,
+    'value'
+  )?.set;
+
+  if (nativeInputValueSetter) {
+    nativeInputValueSetter.call(el, val);
+  } else {
+    el.value = val;
+  }
+
+  // Trigger all events
+  el.dispatchEvent(new Event('input', { bubbles: true }));
+  el.dispatchEvent(new Event('change', { bubbles: true }));
+  el.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'Enter' }));
+  el.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true, key: 'Enter' }));
 
   try {
-    if (setter) setter.call(el, val);
-    else el.value = val;
-    
-    // Trigger all change events
-    ['change', 'input', 'blur', 'focus'].forEach(eventType => {
-      el.dispatchEvent(new Event(eventType, { bubbles: true, composed: true }));
-    });
-    el.dispatchEvent(new InputEvent('input', { bubbles: true, composed: true, data: val }));
-  } catch (e) {
-    console.error('fillElement error:', e);
-  }
+    el.blur();
+    el.focus();
+  } catch {}
 }
 
 export function useHologramAIAgentAdvanced() {
   const busyRef = useRef(false);
 
   const runTask = useCallback(async (containerEl, windowType, task, orgId, onStep) => {
-    if (busyRef.current) return { summary: "Agent is busy", steps: [] };
+    if (busyRef.current) return { summary: "Agent busy", steps: [] };
     busyRef.current = true;
 
     const report = (text, phase) => {
-      setAgentStatus("working", text.slice(0, 60));
+      setAgentStatus("working", text.slice(0, 50));
       onStep?.({ text, phase });
     };
 
     try {
-      report("Advanced form analysis...", "scan");
-      
-      // Initial scan with waits
-      let scan = await advancedDeepScan(containerEl);
-      if (scan.fields.length === 0) {
-        for (let i = 0; i < 4; i++) {
-          report(`Waiting for form content... (${i + 1}/4)`, "think");
-          await new Promise(r => setTimeout(r, 1200));
-          scan = await advancedDeepScan(containerEl);
-          if (scan.fields.length > 0) break;
-        }
+      report("Scanning dialog interface...", "scan");
+
+      // Wait for dialog to appear
+      let dialog = findActiveDialog(containerEl);
+      for (let i = 0; i < 5 && !dialog; i++) {
+        await new Promise(r => setTimeout(r, 800));
+        dialog = findActiveDialog(containerEl);
+        report(`Waiting for dialog... (${i + 1}/5)`, "think");
       }
 
-      report(`Form loaded: ${scan.fields.length} fields, ${scan.buttons.length} buttons`, "narrate");
+      if (!dialog) {
+        report("No dialog found", "error");
+        busyRef.current = false;
+        return { summary: "Dialog not detected", steps: [] };
+      }
 
-      // Generate intelligent values using LLM
-      report("Analyzing form context with AI...", "plan");
-      const values = await generateIntelligentValues(task, scan.fields);
+      report("Dialog found ✓", "narrate");
 
-      // Fill fields in parallel groups for speed
-      report("Filling form fields intelligently...", "type");
-      let filledCount = 0;
+      // Scan dialog content
+      const { fields, buttons } = scanDialog(dialog);
+      report(`Found: ${fields.length} fields, ${buttons.length} buttons`, "scan");
 
-      for (const field of scan.fields) {
-        try {
-          const value = values[field.label] || values[field.name] || "";
-          
-          if (!value) {
-            report(`⊘ Skipping optional field: ${field.label}`, "think");
-            continue;
+      if (fields.length === 0) {
+        report("No fields in dialog", "error");
+        busyRef.current = false;
+        return { summary: "No form fields detected", steps: [] };
+      }
+
+      // Generate smart values using LLM
+      report("Analyzing task context...", "plan");
+      const fieldDescriptions = fields
+        .filter(f => f.label && f.label.length > 0)
+        .map(f => `- ${f.label} (${f.type})`)
+        .join('\n');
+
+      let smartValues = {};
+      try {
+        const response = await base44.integrations.Core.InvokeLLM({
+          prompt: `You are filling a form for: "${task}"
+
+Fields to fill:
+${fieldDescriptions}
+
+Generate realistic, contextual data. Output ONLY valid JSON:
+{
+  "values": {
+    "Field Label Exactly": "realistic value"
+  }
+}`,
+          response_json_schema: {
+            type: "object",
+            properties: {
+              values: { type: "object", additionalProperties: { type: "string" } }
+            }
           }
+        });
+        smartValues = response?.values || {};
+      } catch (e) {
+        report("LLM unavailable, using defaults", "think");
+      }
 
-          if (field.value && field.value.trim()) {
-            report(`✓ Field already filled: ${field.label}`, "narrate");
-            filledCount++;
-            continue;
-          }
+      // Fill form
+      report("Filling fields...", "type");
+      let filled = 0;
 
-          report(`⌨️ Filling: ${field.label}`, "type");
-          const rect = field.element.getBoundingClientRect();
-          if (rect.width > 0 && rect.height > 0) {
-            dispatchCursorAction("type", field.label, null, value, rect.left + rect.width / 2, rect.top + rect.height / 2);
-            await new Promise(r => setTimeout(r, 80));
-          }
-
-          fillElement(field.element, value);
-          filledCount++;
-          await new Promise(r => setTimeout(r, 120));
-
-        } catch (e) {
-          report(`⚠️ Error filling ${field.label}, skipping...`, "think");
+      for (const field of fields) {
+        if (!field.label) continue;
+        if (field.value && field.value.trim()) {
+          report(`✓ Already filled: ${field.label}`, "narrate");
+          filled++;
           continue;
         }
-      }
 
-      report(`✅ Filled ${filledCount}/${scan.fields.length} fields`, "narrate");
-
-      // Get LLM recommendation for button sequence
-      report("Determining submission strategy...", "plan");
-      const buttonLabels = scan.buttons.filter(b => !b.disabled).map(b => b.label);
-      
-      const submitPlan = await base44.integrations.Core.InvokeLLM({
-        prompt: `Task: "${task}"
-        
-Available buttons: [${buttonLabels.join(', ')}]
-
-Which button(s) should be clicked to submit/complete this form? Only return exact button names from the list.
-Output JSON: {"buttons": ["button name 1", "button name 2"], "reason": "why"}`,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            buttons: { type: "array", items: { type: "string" } },
-            reason: { type: "string" }
-          }
+        const value = smartValues[field.label] || smartValues[field.type] || "";
+        if (!value) {
+          report(`⊘ Skipping: ${field.label}`, "think");
+          continue;
         }
-      });
 
-      let buttonsToClick = submitPlan?.buttons?.filter(b => buttonLabels.some(bl => fuzzyMatch(bl, b) > 0.7)) || [];
-      
-      // If no match, use priority buttons
-      if (buttonsToClick.length === 0) {
-        const priorityLabels = ["Save", "Create", "Submit", "Confirm", "Add", "Next"];
-        for (const priority of priorityLabels) {
-          if (buttonLabels.some(bl => fuzzyMatch(bl, priority) > 0.7)) {
-            buttonsToClick = [buttonLabels.find(bl => fuzzyMatch(bl, priority) > 0.7)];
-            break;
+        report(`⌨️ Filling: ${field.label}`, "type");
+        try {
+          const rect = field.element.getBoundingClientRect();
+          if (rect.width > 0) {
+            dispatchCursorAction("type", field.label, null, value, rect.left + rect.width / 2, rect.top + rect.height / 2);
           }
+          fillInput(field.element, value);
+          filled++;
+          await new Promise(r => setTimeout(r, 150));
+        } catch (e) {
+          report(`⚠️ Error filling field, skipping`, "think");
         }
       }
 
-      if (buttonsToClick.length === 0 && buttonLabels.length > 0) {
-        buttonsToClick = [buttonLabels[0]];
-      }
+      report(`✅ Filled ${filled} fields`, "narrate");
 
-      // Submit form with aggressive retry logic
-      for (const btnLabel of buttonsToClick) {
-        let success = false;
-        
-        for (let attempt = 0; attempt < 6; attempt++) {
-          try {
-            let btn = scan.buttons.find(b => fuzzyMatch(b.label, btnLabel) > 0.7)?.element;
-            
-            if (!btn) {
-              const freshScan = await advancedDeepScan(containerEl);
-              btn = freshScan.buttons.find(b => fuzzyMatch(b.label, btnLabel) > 0.7)?.element;
-            }
+      // Find and click submit button
+      if (buttons.length > 0) {
+        const createBtn = buttons.find(b => b.label.toLowerCase().includes('create'));
+        const saveBtn = buttons.find(b => b.label.toLowerCase().includes('save'));
+        const submitBtn = createBtn || saveBtn || buttons.find(b => !b.disabled);
 
-            if (btn) {
-              report(`🖱️ Submitting with: ${btnLabel} (attempt ${attempt + 1})`, "click");
-              const rect = btn.getBoundingClientRect();
-              
+        if (submitBtn) {
+          report(`🖱️ Clicking: ${submitBtn.label}`, "click");
+
+          for (let attempt = 0; attempt < 4; attempt++) {
+            try {
+              const rect = submitBtn.element.getBoundingClientRect();
               if (rect.width > 0 && rect.height > 0) {
-                dispatchCursorAction("click", btnLabel, null, null, rect.left + rect.width / 2, rect.top + rect.height / 2);
-                await new Promise(r => setTimeout(r, 150));
+                dispatchCursorAction("click", submitBtn.label, null, null, rect.left + rect.width / 2, rect.top + rect.height / 2);
+                await new Promise(r => setTimeout(r, 100));
               }
 
-              // Multiple submission strategies
-              btn.click();
+              // Multiple click methods
+              submitBtn.element.click();
               await new Promise(r => setTimeout(r, 100));
-              btn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
-              await new Promise(r => setTimeout(r, 100));
-              btn.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
-              btn.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }));
+              submitBtn.element.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
               
-              success = true;
-              report(`✅ Form submitted successfully`, "narrate");
-              await new Promise(r => setTimeout(r, 2000)); // Wait for submission processing
+              report(`✅ Form submitted`, "narrate");
+              await new Promise(r => setTimeout(r, 1500));
               break;
-            } else if (attempt < 5) {
-              report(`Searching for button... (${attempt + 1}/5)`, "think");
-              await new Promise(r => setTimeout(r, 700));
+            } catch (e) {
+              if (attempt < 3) {
+                await new Promise(r => setTimeout(r, 400));
+              }
             }
-          } catch (e) {
-            if (attempt < 5) await new Promise(r => setTimeout(r, 400));
           }
         }
-        
-        if (success) break; // Successfully submitted, exit loop
       }
 
       setAgentStatus("idle");
       busyRef.current = false;
 
       return {
-        summary: `Task completed: Filled ${filledCount} fields and submitted form`,
-        steps: filledCount + buttonsToClick.length
+        summary: `✅ Task completed: Filled ${filled} fields`,
+        steps: filled + (buttons.length > 0 ? 1 : 0)
       };
 
     } catch (err) {
+      report(`❌ ${err.message}`, "error");
       setAgentStatus("idle");
       busyRef.current = false;
-      report(`❌ Error: ${err.message}`, "error");
       return { summary: `Error: ${err.message}`, steps: [] };
     }
   }, []);
