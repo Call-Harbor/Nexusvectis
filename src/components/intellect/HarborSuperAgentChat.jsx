@@ -667,6 +667,10 @@ export default function HarborSuperAgentChat({ onClose }) {
       // ONLY clear after successful send
       setInput("");
       setAttachments([]);
+      // Reset textarea height
+      if (inputRef.current) {
+        inputRef.current.style.height = '24px';
+      }
       
       if (orgId) {
         base44.entities.FleetAIUsage.create({

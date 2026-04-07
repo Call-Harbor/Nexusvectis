@@ -173,19 +173,8 @@ export default function OrchestrationMonitor({ orchestration, onViewOutput, onOp
                         className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg text-[9px] font-mono font-semibold transition-all"
                         style={{ background: config.color + '15', color: config.color, border: `0.5px solid ${config.color}30` }}
                       >
-                        <Eye className="w-3 h-3" /> View
+                        <Eye className="w-3 h-3" /> View Full Output
                       </motion.button>
-                      {onOpenHologram && (
-                        <motion.button
-                          onClick={(e) => { e.stopPropagation(); onOpenHologram(worker, task?.prompt); }}
-                          whileHover={{ scale: 1.03 }}
-                          whileTap={{ scale: 0.97 }}
-                          className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg text-[9px] font-mono font-semibold transition-all"
-                          style={{ background: 'rgba(139,92,246,0.1)', color: '#a78bfa', border: '0.5px solid rgba(139,92,246,0.2)' }}
-                        >
-                          💻 Hologram
-                        </motion.button>
-                      )}
                     </div>
                   </div>
                 </motion.div>
