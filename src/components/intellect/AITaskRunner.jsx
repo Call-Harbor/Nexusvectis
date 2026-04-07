@@ -197,7 +197,7 @@ export default function AITaskRunner({ onOpenWindow, windowRefs, orgId, onClose 
 
       // Phase 3: Wait for render — give content time to load
       addStep("Venter på interface at loade...", "think");
-      await new Promise(r => setTimeout(r, 3500));
+      await new Promise(r => setTimeout(r, 1800));
 
       // Phase 4: Find ref with retry
       let newestRef = null;

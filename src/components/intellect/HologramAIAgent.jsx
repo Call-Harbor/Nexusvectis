@@ -3,8 +3,9 @@ import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
 
 /**
- * HologramAIAgent — Production-grade AI that physically operates hologram windows.
- * Reads DOM, plans actions via LLM, executes with human-like timing + cursor events.
+ * HologramAIAgent — AI that physically operates hologram windows.
+ * Has pre-trained knowledge of every module's UI so it doesn't rely
+ * solely on DOM scanning. Fast execution — faster than a human.
  */
 
 export function dispatchCursorAction(type, label, selector, value, x, y) {
@@ -19,12 +20,137 @@ export function setAgentStatus(status, task) {
   }));
 }
 
+// ── Pre-trained UI knowledge for every module ─────────────────────────────
+// Gives the agent reliable knowledge WITHOUT needing perfect DOM scan
+const MODULE_KNOWLEDGE = {
+  routes: {
+    description: "Route management page. Lists all routes.",
+    buttons: ["Create Route", "Export", "AI Route Optimizer"],
+    inputs: ["Search by name, origin, destination..."],
+    tabs: [],
+    dialogs: {
+      "Create Route": {
+        buttons: ["Create Route", "AI Plan", "Manual Editor"],
+        inputs: ["e.g. Copenhagen-Aarhus Express", "e.g. Copenhagen", "e.g. Aarhus", "Route Name", "Origin", "Destination"],
+        selects: ["Transport Type", "Priority"]
+      }
+    }
+  },
+  fleet: {
+    description: "Fleet vehicle list.",
+    buttons: ["Add Vehicle", "Export"],
+    inputs: ["Search vehicles..."],
+    tabs: ["All", "Active", "Maintenance", "Offline"],
+    dialogs: { "Add Vehicle": { inputs: ["Vehicle Name", "Driver", "Destination"] } }
+  },
+  fleet_map: {
+    description: "Live GPS tracking map.",
+    buttons: ["Filter", "Refresh"],
+    inputs: ["Search vehicle..."],
+    tabs: ["All", "Active", "Trucks", "Ships", "Drones"]
+  },
+  shipments: {
+    description: "Shipment management.",
+    buttons: ["New Shipment", "Export", "Import"],
+    inputs: ["Search shipments...", "Tracking Number", "Origin", "Destination"],
+    tabs: ["All", "Pending", "In Transit", "Delivered", "Delayed"]
+  },
+  alerts: {
+    description: "System alerts.",
+    buttons: ["Mark all read", "Dismiss", "Resolve"],
+    inputs: ["Search alerts..."],
+    tabs: ["All", "Critical", "Warning", "Info"]
+  },
+  predictive_maintenance: {
+    description: "AI predictive maintenance panel.",
+    buttons: ["Schedule Maintenance", "Run Analysis", "Export"],
+    inputs: [],
+    tabs: ["Overview", "Vehicles", "Schedule"]
+  },
+  performance_analytics: {
+    description: "KPI dashboard.",
+    buttons: ["Export", "Refresh"],
+    inputs: [],
+    tabs: ["Overview", "Vehicles", "Routes", "Emissions"]
+  },
+  demand_forecast: {
+    description: "AI demand forecasting.",
+    buttons: ["Generate Forecast", "Export"],
+    inputs: [],
+    tabs: ["30 Days", "60 Days", "90 Days"]
+  },
+  risk_assessment: {
+    description: "Risk analysis dashboard.",
+    buttons: ["Run Assessment", "Export"],
+    inputs: [],
+    tabs: ["Overview", "Routes", "Vehicles", "Incidents"]
+  },
+  port_command: {
+    description: "Port Command Center.",
+    buttons: ["Add Vessel", "Schedule Berth", "Add Call", "Refresh"],
+    inputs: ["Search..."],
+    tabs: ["Vessels", "Berths", "Containers", "Cranes", "Yard", "Gates"]
+  },
+  airport_ops: {
+    description: "Airport Ops Center.",
+    buttons: ["Add Flight", "Assign Gate", "Refresh"],
+    inputs: ["Search flight..."],
+    tabs: ["Live Dashboard", "Flights", "Gates", "Baggage", "Ground Handling", "Security", "Turnaround", "Staff", "Landside"]
+  },
+  document_editor: {
+    description: "AI document editor.",
+    buttons: ["New Document", "Save", "Export PDF", "AI Generate"],
+    inputs: ["Document title...", "Search templates..."],
+    tabs: ["My Documents", "Templates", "Shared"]
+  },
+  project_management: {
+    description: "Kanban project board.",
+    buttons: ["New Task", "New Project", "Add Column"],
+    inputs: ["Task title...", "Search..."],
+    tabs: ["Board", "List", "Timeline"]
+  },
+  route_optimizer: {
+    description: "AI route optimizer for existing routes.",
+    buttons: ["Run Optimization", "Apply", "Export", "Optimize All"],
+    inputs: [],
+    tabs: ["Overview", "Savings", "Routes"]
+  },
+  swarm_intelligence: {
+    description: "Multi-vehicle swarm coordination.",
+    buttons: ["Activate Swarm", "Configure", "Run Analysis"],
+    inputs: [],
+    tabs: []
+  },
+  digital_twin: {
+    description: "Digital twin federation.",
+    buttons: ["Create Twin", "Simulate", "Refresh"],
+    inputs: [],
+    tabs: ["Overview", "Assets", "Simulation"]
+  },
+  news_intelligence: {
+    description: "Live logistics news with AI analysis.",
+    buttons: ["Refresh", "Filter"],
+    inputs: ["Search news..."],
+    tabs: ["All", "Disruptions", "Regulatory", "Market"]
+  },
+  satellite_weather: {
+    description: "Satellite weather and route weather impact.",
+    buttons: ["Refresh", "Toggle Layer"],
+    inputs: [],
+    tabs: ["Map", "Forecast", "Alerts"]
+  },
+  deep_analysis: {
+    description: "Deep AI data analysis.",
+    buttons: ["Run Analysis", "Export"],
+    inputs: ["Analysis query..."],
+    tabs: []
+  },
+};
+
 /** Deep DOM scan — extracts everything visible in a container */
 function deepScanWindow(containerEl) {
-  // Fallback to full document if containerEl is missing or yields nothing
   const root = containerEl || document.body;
 
-  // Relaxed visibility: just needs to have dimensions (ignores scroll/viewport position)
   const isVisible = (el) => {
     const r = el.getBoundingClientRect();
     return r.width > 0 && r.height > 0;
@@ -55,25 +181,17 @@ function deepScanWindow(containerEl) {
       active: t.getAttribute("data-state") === "active" || t.getAttribute("aria-selected") === "true"
     })).filter(t => t.label).slice(0, 20);
 
-    const selects = [...el.querySelectorAll("select")].filter(isVisible).map(s => ({
-      label: s.getAttribute("aria-label") || s.name || "select",
-      options: [...s.options].map(o => o.text).slice(0, 8)
-    })).slice(0, 10);
-
-    const links = [...el.querySelectorAll("a[href], [role='link']")].filter(isVisible).map(a => a.textContent?.trim().slice(0, 40)).filter(Boolean).slice(0, 15);
-
     const headings = [...el.querySelectorAll("h1,h2,h3,h4,[class*='title'],[class*='heading']")].filter(isVisible).map(h => h.textContent?.trim().slice(0, 60)).filter(Boolean).slice(0, 10);
 
     const allText = [...el.querySelectorAll("p, span, td, [class*='label'], [class*='value'], [class*='stat']")]
       .filter(isVisible).map(e => e.textContent?.trim()).filter(t => t && t.length > 2 && t.length < 100)
       .slice(0, 30).join(" | ");
 
-    return { buttons, inputs, tabs, selects, links, headings, text: allText.slice(0, 800) };
+    return { buttons, inputs, tabs, headings, text: allText.slice(0, 600) };
   };
 
   const result = scan(root);
 
-  // If container scan finds nothing, fall back to full document
   if (containerEl && result.buttons.length === 0 && result.inputs.length === 0) {
     return scan(document.body);
   }
@@ -81,15 +199,13 @@ function deepScanWindow(containerEl) {
   return result;
 }
 
-/** Find element by multiple strategies — aggressive fuzzy matching */
+/** Find element by multiple strategies */
 function findElement(containerEl, label, type) {
   if (!label) return null;
   const lower = label.toLowerCase().trim();
 
-  // Search in container first, then fall back to full document
   const roots = containerEl ? [containerEl, document.body] : [document.body];
 
-  // Relaxed: just needs dimensions
   const isVisible = (el) => {
     const r = el.getBoundingClientRect();
     return r.width > 0 && r.height > 0;
@@ -104,31 +220,22 @@ function findElement(containerEl, label, type) {
 
     const visible = pool.filter(isVisible);
 
-    // Exact text match
     let el = visible.find(e => e.textContent?.trim().toLowerCase() === lower);
     if (el) return el;
-    // Placeholder match
     el = visible.find(e => e.placeholder?.toLowerCase() === lower);
     if (el) return el;
-    // Placeholder includes
     el = visible.find(e => e.placeholder?.toLowerCase().includes(lower));
     if (el) return el;
-    // Partial text match
     el = visible.find(e => e.textContent?.trim().toLowerCase().includes(lower));
     if (el) return el;
-    // Label contains target text
     el = visible.find(e => lower.includes(e.textContent?.trim().toLowerCase()) && e.textContent?.trim().length > 2);
     if (el) return el;
-    // aria-label
     el = visible.find(e => e.getAttribute("aria-label")?.toLowerCase().includes(lower));
     if (el) return el;
-    // title attribute
     el = visible.find(e => e.getAttribute("title")?.toLowerCase().includes(lower));
     if (el) return el;
-    // name/id
     el = visible.find(e => (e.name || e.id || "").toLowerCase().includes(lower));
     if (el) return el;
-    // class name heuristic for add/new/create
     if (/add|new|create|opret|tilf/i.test(lower)) {
       el = visible.find(e => /add|new|create|plus|fab|float/i.test(e.className || ""));
       if (el) return el;
@@ -150,94 +257,98 @@ export function useHologramAIAgent() {
     };
 
     try {
-      // ── PHASE 1: SCAN ──────────────────────────────────────────────────
+      // ── PHASE 1: SCAN ─────────────────────────────────────────────────
       report("Scanning interface...", "scan");
       setAgentStatus("thinking", "Analyzing window structure");
-      await new Promise(r => setTimeout(r, 600));
+      await new Promise(r => setTimeout(r, 200));
 
       const structure = deepScanWindow(containerEl);
 
-      // Move cursor to center of window while "reading"
       if (containerEl) {
         const rect = containerEl.getBoundingClientRect();
         if (rect.width > 0) {
           dispatchCursorAction("hover", "Reading interface", null, null,
             rect.left + rect.width * 0.3, rect.top + rect.height * 0.3);
-          await new Promise(r => setTimeout(r, 500));
+          await new Promise(r => setTimeout(r, 100));
           dispatchCursorAction("hover", "Reading interface", null, null,
             rect.left + rect.width * 0.7, rect.top + rect.height * 0.5);
-          await new Promise(r => setTimeout(r, 400));
+          await new Promise(r => setTimeout(r, 80));
         }
       }
 
-      report(`Found ${structure.buttons.length} buttons, ${structure.inputs.length} inputs, ${structure.tabs.length} tabs`, "scan");
-
-      // If nothing found yet, retry up to 4 more times (window may still be rendering)
+      // Retry scan if empty (window still rendering)
+      let liveStructure = structure;
       if (structure.buttons.length === 0 && structure.inputs.length === 0) {
-        for (let attempt = 0; attempt < 4; attempt++) {
-          report(`Waiting for content to load... (${attempt + 1}/4)`, "think");
-          await new Promise(r => setTimeout(r, 1500));
+        for (let attempt = 0; attempt < 3; attempt++) {
+          report(`Waiting for content... (${attempt + 1}/3)`, "think");
+          await new Promise(r => setTimeout(r, 700));
           const retry = deepScanWindow(containerEl);
           if (retry.buttons.length > 0 || retry.inputs.length > 0) {
-            report(`Content loaded: ${retry.buttons.length} buttons, ${retry.inputs.length} inputs`, "scan");
+            liveStructure = retry;
             break;
           }
         }
       }
-      await new Promise(r => setTimeout(r, 400));
 
-      // ── PHASE 2: PLAN ──────────────────────────────────────────────────
-      report("Planning action sequence...", "plan");
+      report(`Found ${liveStructure.buttons.length} buttons, ${liveStructure.inputs.length} inputs`, "scan");
+
+      // ── PHASE 2: PLAN ─────────────────────────────────────────────────
+      report("Planning actions...", "plan");
       setAgentStatus("thinking", "Planning optimal action sequence");
 
-      const windowName = windowType.replace(/_/g, " ");
+      const knowledge = MODULE_KNOWLEDGE[windowType] || null;
 
-      // Re-scan after potential load
-      const liveStructure = deepScanWindow(containerEl);
-      const buttonLabels = liveStructure.buttons.map(b => b.label).filter(Boolean);
-      const inputLabels = liveStructure.inputs.map(i => i.label).filter(Boolean);
-      const tabLabels = liveStructure.tabs.map(t => t.label).filter(Boolean);
+      // Merge pre-trained knowledge with live scan
+      const liveButtons = liveStructure.buttons.map(b => b.label).filter(Boolean);
+      const liveInputs = liveStructure.inputs.map(i => i.label).filter(Boolean);
+      const liveTabs = liveStructure.tabs.map(t => t.label).filter(Boolean);
 
-      // Also scan for any floating action buttons (class-based detection)
+      const knownButtons = knowledge?.buttons || [];
+      const knownInputs = knowledge?.inputs || [];
+      const knownTabs = knowledge?.tabs || [];
+
+      // Also scan FABs
       const fabButtons = [...(containerEl?.querySelectorAll("[class*='fab'], [class*='float'], [class*='action-btn'], [class*='add-btn']") || [])]
         .filter(el => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0; })
         .map(el => el.getAttribute("aria-label") || el.getAttribute("title") || el.textContent?.trim() || "Add")
         .filter(Boolean);
-      const allButtonLabels = [...new Set([...buttonLabels, ...fabButtons])];
+
+      const allButtons = [...new Set([...liveButtons, ...fabButtons, ...knownButtons])];
+      const allInputs = [...new Set([...liveInputs, ...knownInputs])];
+      const allTabs = [...new Set([...liveTabs, ...knownTabs])];
 
       const planResult = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are an AI agent physically clicking and typing inside a NexusVectis logistics hologram UI.
+        prompt: `You are an AI agent operating the NexusVectis logistics platform — physically clicking buttons and typing in forms, FASTER than a human.
 
 TASK: "${task}"
-WINDOW: "${windowType.replace(/_/g, ' ')}"
+MODULE: "${windowType.replace(/_/g, ' ')}"
+${knowledge ? `MODULE INFO: ${knowledge.description}` : ''}
 
-=== EXACT CLICKABLE BUTTONS (use EXACT label text) ===
-${allButtonLabels.length > 0 ? allButtonLabels.map((b, i) => `${i + 1}. "${b}"`).join('\n') : 'No buttons found yet (window may still be loading)'}
+=== BUTTONS (pre-trained + live scan — use EXACT text) ===
+${allButtons.length > 0 ? allButtons.map((b, i) => `${i + 1}. "${b}"`).join('\n') : 'None detected yet — UI may still be loading'}
 
-=== INPUT FIELDS (use EXACT label text) ===
-${inputLabels.length > 0 ? inputLabels.map((f, i) => `${i + 1}. "${f}"`).join('\n') : 'No input fields found'}
+=== INPUT FIELDS (use EXACT placeholder/label text) ===
+${allInputs.length > 0 ? allInputs.map((f, i) => `${i + 1}. "${f}"`).join('\n') : 'None'}
 
-=== TABS (use EXACT label text) ===
-${tabLabels.length > 0 ? tabLabels.map((t, i) => `${i + 1}. "${t}"`).join('\n') : 'No tabs found'}
-
-=== VISIBLE HEADINGS ===
-${liveStructure.headings.join(' | ') || 'none'}
+=== TABS ===
+${allTabs.length > 0 ? allTabs.map((t, i) => `${i + 1}. "${t}"`).join('\n') : 'None'}
 
 === VISIBLE DATA ===
 ${liveStructure.text.slice(0, 400) || 'loading...'}
 
-Your job: Generate a realistic sequence of 5-9 actions to complete the task. Rules:
-1. For CLICK actions: use ONLY exact strings from the BUTTONS or TABS list above.
-2. For TYPE actions: use ONLY exact strings from the INPUT FIELDS list above, and provide realistic values.
-3. If the task requires navigating to a tab first (e.g. "Active" tab), click that tab before other actions.
-4. If task is "create", look for buttons like "New", "Add", "Create", "Opret", "Tilf\u00f8j", "+ ..."
-5. If task is "optimize", look for buttons like "Optimize", "Optim\u00e9r", "Run", "Calculate", "Analyse"
-6. If task is "search/filter", look for search inputs and type the search term.
-7. Always end with a narrate step summarizing what was accomplished.
-8. Include think steps to show reasoning between actions.
-9. CRITICAL: Do NOT invent button/field labels. Only use exact strings from the lists above. If a needed button isn't in the list, skip that action.
+RULES:
+1. Generate 3-8 steps. Be concise and direct — no unnecessary hover/think steps.
+2. CLICK steps: use button labels from the BUTTONS list above. Even if not in live scan, use known button names.
+3. TYPE steps: use EXACT input placeholder from INPUT FIELDS. Provide realistic values.
+4. For "create" tasks: click the primary creation button (e.g. "Create Route", "Add Vehicle", "New Shipment").
+5. After clicking a create button, a dialog will open — fill its fields and click the submit button inside.
+6. For "search/filter": type directly in the search input.
+7. For "navigate to tab": use tab step type.
+8. Always end with a narrate step summarizing what was accomplished.
+9. If a button is in the KNOWN list but not live scan, still plan to click it — it may just not be visible yet.
 
-Return JSON: { "steps": [ {"type": "click|type|tab|hover|scroll|think|narrate", "label": "exact text", "value": "value for type steps", "text": "text for think/narrate"} ], "summary": "one sentence summary" }`,
+Return JSON only:
+{ "steps": [ {"type": "click|type|tab|think|narrate|scroll", "label": "...", "value": "...", "text": "..."} ], "summary": "one sentence summary" }`,
         response_json_schema: {
           type: "object",
           properties: {
@@ -248,34 +359,29 @@ Return JSON: { "steps": [ {"type": "click|type|tab|hover|scroll|think|narrate", 
       });
 
       let steps = planResult?.steps || [];
-      report(`Plan: ${steps.filter(s => s.type === 'click' || s.type === 'type' || s.type === 'tab').length} actions planned`, "plan");
-      await new Promise(r => setTimeout(r, 300));
+      report(`Plan: ${steps.filter(s => ["click","type","tab"].includes(s.type)).length} actions`, "plan");
 
-      // Detect open dialogs/modals in document.body (React portals)
-      const getActiveDialog = () => {
-        return document.querySelector(
-          '[role="dialog"][data-state="open"], [role="dialog"].fixed, [role="alertdialog"], .fixed.inset-0 [role="dialog"], [data-radix-dialog-content]'
-        );
-      };
+      // ── Helpers ────────────────────────────────────────────────────────
+      const getActiveDialog = () => document.querySelector(
+        '[role="dialog"][data-state="open"], [role="dialog"].fixed, [role="alertdialog"], [data-radix-dialog-content]'
+      );
 
-      // Helper: re-plan remaining steps after UI changes (e.g. dialog opened)
       const rePlanRemaining = async (remainingTask, executedSoFar) => {
-        // Prefer active dialog context over container
         const dialog = getActiveDialog();
         const scanRoot = dialog || containerEl;
         const fresh = deepScanWindow(scanRoot);
-        const bLabels = fresh.buttons.map(b => b.label).filter(Boolean);
-        const iLabels = fresh.inputs.map(i => i.label).filter(Boolean);
+        const bLabels = [...new Set([...fresh.buttons.map(b => b.label), ...(knowledge?.dialogs?.[executedSoFar.find(e => e.startsWith('clicked:'))?.replace('clicked:', '')] || knowledge)?.buttons || []])].filter(Boolean);
+        const iLabels = [...new Set([...fresh.inputs.map(i => i.label), ...(knowledge?.dialogs?.[executedSoFar.find(e => e.startsWith('clicked:'))?.replace('clicked:', '')] || knowledge)?.inputs || []])].filter(Boolean);
         const tLabels = fresh.tabs.map(t => t.label).filter(Boolean);
         report(`Re-scanning ${dialog ? 'dialog' : 'window'}: ${bLabels.length} buttons, ${iLabels.length} inputs`, "scan");
         const rePlan = await base44.integrations.Core.InvokeLLM({
-          prompt: `You are an AI agent inside a NexusVectis logistics UI.\n\nOriginal task: "${task}"\nRemaining goal: "${remainingTask}"\nActions already done: ${executedSoFar.join(', ')}\n\n=== CURRENT BUTTONS ===\n${bLabels.length > 0 ? bLabels.map((b,i) => `${i+1}. "${b}"`).join('\n') : 'none'}\n\n=== CURRENT INPUT FIELDS ===\n${iLabels.length > 0 ? iLabels.map((f,i) => `${i+1}. "${f}"`).join('\n') : 'none'}\n\n=== CURRENT TABS ===\n${tLabels.length > 0 ? tLabels.map((t,i) => `${i+1}. "${t}"`).join('\n') : 'none'}\n\nGenerate remaining steps to complete the goal. Use ONLY exact strings from the lists above. Return JSON: { "steps": [{"type": "click|type|tab|think|narrate", "label": "...", "value": "...", "text": "..."}], "summary": "..." }`,
+          prompt: `You are an AI agent inside NexusVectis UI.\n\nOriginal task: "${task}"\nRemaining goal: "${remainingTask}"\nDone so far: ${executedSoFar.join(', ')}\n\n=== CURRENT BUTTONS ===\n${bLabels.length > 0 ? bLabels.map((b, i) => `${i + 1}. "${b}"`).join('\n') : 'none'}\n\n=== CURRENT INPUT FIELDS ===\n${iLabels.length > 0 ? iLabels.map((f, i) => `${i + 1}. "${f}"`).join('\n') : 'none'}\n\n=== CURRENT TABS ===\n${tLabels.length > 0 ? tLabels.map((t, i) => `${i + 1}. "${t}"`).join('\n') : 'none'}\n\nGenerate remaining steps. ONLY use exact strings from lists above. JSON: { "steps": [{"type": "click|type|tab|think|narrate", "label": "...", "value": "...", "text": "..."}], "summary": "..." }`,
           response_json_schema: { type: "object", properties: { steps: { type: "array", items: { type: "object", additionalProperties: true } }, summary: { type: "string" } } }
         });
         return rePlan?.steps || [];
       };
 
-      // ── PHASE 3: EXECUTE
+      // ── PHASE 3: EXECUTE ──────────────────────────────────────────────
       setAgentStatus("working", task.slice(0, 50));
       const executedLabels = [];
       let activeRoot = containerEl;
@@ -283,65 +389,65 @@ Return JSON: { "steps": [ {"type": "click|type|tab|hover|scroll|think|narrate", 
       for (let i = 0; i < steps.length; i++) {
         const step = steps[i];
 
+        if (step.type === "think") {
+          report(`💭 ${step.text || step.label}`, "think");
+          await new Promise(r => setTimeout(r, 80));
+          continue;
+        }
+
+        if (step.type === "narrate") {
+          report(`✅ ${step.text || step.label}`, "narrate");
+          continue;
+        }
+
         if (step.type === "tab") {
           const el = findElement(activeRoot, step.label, "tab");
-          report(`📌 Clicking tab: ${step.label}`, "click");
+          report(`📌 Tab: ${step.label}`, "click");
           if (el) {
             const rect = el.getBoundingClientRect();
             dispatchCursorAction("click", step.label, null, null, rect.left + rect.width / 2, rect.top + rect.height / 2);
-            await new Promise(r => setTimeout(r, 300));
+            await new Promise(r => setTimeout(r, 80));
             el.click();
-            await new Promise(r => setTimeout(r, 800));
-          } else {
-            report(`Tab "${step.label}" not found, skipping`, "think");
             await new Promise(r => setTimeout(r, 300));
           }
           continue;
         }
 
         if (step.type === "click") {
-          // Always search in activeRoot first, then document.body
           const el = findElement(activeRoot, step.label, "button")
             || findElement(activeRoot, step.label, "tab")
             || findElement(document.body, step.label, "button")
             || findElement(document.body, step.label, "any");
-          report(`🖱 Clicking: ${step.label}`, "click");
+          report(`🖱 Click: ${step.label}`, "click");
           if (el) {
             const rect = el.getBoundingClientRect();
             dispatchCursorAction("click", step.label, null, null, rect.left + rect.width / 2, rect.top + rect.height / 2);
-            await new Promise(r => setTimeout(r, 350));
+            await new Promise(r => setTimeout(r, 80));
             el.click();
-            await new Promise(r => setTimeout(r, 1000 + Math.random() * 400));
+            await new Promise(r => setTimeout(r, 350));
           } else {
+            report(`⚠️ Button "${step.label}" not found — trying anyway`, "think");
             if (containerEl) {
               const r = containerEl.getBoundingClientRect();
               dispatchCursorAction("click", step.label, null, null, r.left + r.width * 0.5, r.top + r.height * 0.4);
             }
-            await new Promise(r => setTimeout(r, 600));
+            await new Promise(r => setTimeout(r, 200));
           }
           executedLabels.push(`clicked:${step.label}`);
-          // Check if a dialog/modal just opened (React portal)
-          await new Promise(r => setTimeout(r, 400));
+
+          // Check if dialog opened
+          await new Promise(r => setTimeout(r, 250));
           const dialog = getActiveDialog();
-          if (dialog) {
+          if (dialog && activeRoot !== dialog) {
             activeRoot = dialog;
-            report(`💬 Dialog detected — switching context to dialog`, "think");
-          }
-          // Re-plan if remaining steps likely need new UI
-          if (i < steps.length - 1) {
-            const scanAfter = deepScanWindow(activeRoot);
-            const scanBefore = deepScanWindow(containerEl);
-            const newInputCount = scanAfter.inputs.length - scanBefore.inputs.length;
-            const newButtonCount = scanAfter.buttons.length;
-            if (dialog || newInputCount > 0 || newButtonCount > 3) {
-              report(`UI changed — re-planning remaining steps`, "think");
-              await new Promise(r => setTimeout(r, 400));
+            report(`💬 Dialog opened — re-planning form fields`, "think");
+            if (i < steps.length - 1) {
               const remaining = steps.slice(i + 1);
               const remainingGoal = remaining.map(s => s.text || s.label || s.value).filter(Boolean).join(", ");
               const newSteps = await rePlanRemaining(remainingGoal || task, executedLabels);
               if (newSteps.length > 0) {
                 steps = [...steps.slice(0, i + 1), ...newSteps];
-                report(`Re-planned: ${newSteps.filter(s => s.type === 'click' || s.type === 'type').length} new actions`, "plan");
+                report(`Re-planned: ${newSteps.filter(s => ["click","type"].includes(s.type)).length} new actions`, "plan");
               }
             }
           }
@@ -352,11 +458,11 @@ Return JSON: { "steps": [ {"type": "click|type|tab|hover|scroll|think|narrate", 
           const typeEl = findElement(activeRoot, step.label, "input")
             || findElement(document.body, step.label, "input");
           const val = step.value || "";
-          report(`⌨️ Typing in "${step.label}": ${val.slice(0, 30)}`, "type");
+          report(`⌨️ Type "${val.slice(0, 25)}" in ${step.label}`, "type");
           if (typeEl) {
             const rect = typeEl.getBoundingClientRect();
             dispatchCursorAction("type", step.label, null, val, rect.left + rect.width / 2, rect.top + rect.height / 2);
-            await new Promise(r => setTimeout(r, 400));
+            await new Promise(r => setTimeout(r, 80));
             typeEl.focus();
             const proto = typeEl.tagName === "TEXTAREA"
               ? window.HTMLTextAreaElement.prototype
@@ -367,37 +473,33 @@ Return JSON: { "steps": [ {"type": "click|type|tab|hover|scroll|think|narrate", 
               typeEl.dispatchEvent(new Event("input", { bubbles: true }));
               typeEl.dispatchEvent(new Event("change", { bubbles: true }));
             }
-            await new Promise(r => setTimeout(r, Math.max(800, val.length * 45)));
+            await new Promise(r => setTimeout(r, 150));
           } else {
-            if (containerEl) {
-              const r = containerEl.getBoundingClientRect();
-              dispatchCursorAction("type", step.label, null, val, r.left + r.width * 0.5, r.top + r.height * 0.5);
-            }
-            await new Promise(r => setTimeout(r, Math.max(800, val.length * 45)));
+            report(`⚠️ Input "${step.label}" not found`, "think");
+            await new Promise(r => setTimeout(r, 100));
           }
-          executedLabels.push(`typed:${step.label}=${val.slice(0,20)}`);
+          executedLabels.push(`typed:${step.label}=${val.slice(0, 20)}`);
           continue;
         }
 
         if (step.type === "scroll") {
-          report(`📜 Scrolling ${step.direction || "down"}`, "scroll");
+          report(`📜 Scroll ${step.direction || "down"}`, "scroll");
           if (containerEl) {
             const r = containerEl.getBoundingClientRect();
-            dispatchCursorAction("scroll", step.direction || "down", null, null,
-              r.left + r.width / 2, r.top + r.height / 2);
+            dispatchCursorAction("scroll", step.direction || "down", null, null, r.left + r.width / 2, r.top + r.height / 2);
             containerEl.scrollBy({ top: step.direction === "up" ? -200 : 200, behavior: "smooth" });
           }
-          await new Promise(r => setTimeout(r, 700));
+          await new Promise(r => setTimeout(r, 250));
           continue;
         }
       }
 
-      await new Promise(r => setTimeout(r, 800));
+      await new Promise(r => setTimeout(r, 200));
       setAgentStatus("idle");
       busyRef.current = false;
 
       return {
-        summary: planResult.summary || "Task completed successfully",
+        summary: planResult.summary || "Task completed",
         steps: steps.length
       };
 
