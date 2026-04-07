@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { Bot, Send, X, Loader2, CheckCircle2, ChevronRight, Zap, Brain, Eye, MousePointer, Keyboard, ScrollText, Terminal, ChevronDown, ChevronUp, AlertCircle } from "lucide-react";
 import { useHologramAIAgentAdvanced } from "./HologramAIAgentAdvanced";
+import { runDynamicLearningSelfAgent } from "./DynamicLearningSelfAgent";
 import { toast } from "sonner";
 
 const WINDOW_MAP = [
@@ -106,6 +107,7 @@ export default function AITaskRunner({ onOpenWindow, windowRefs, orgId, onClose 
   const stepsEndRef = useRef(null);
   const inputRef = useRef(null);
   const { runTask } = useHologramAIAgentAdvanced();
+  const useAdaptive = true; // Toggle for dynamic learning mode
 
   useEffect(() => {
     stepsEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -265,9 +267,22 @@ export default function AITaskRunner({ onOpenWindow, windowRefs, orgId, onClose 
       addStep("✓ Hologram åbnet", "narrate");
 
       // Phase 4: Run agent with live step reporting
-      const result = await runTask(newestRef, windowType, preciseTask, orgId, (step) => {
-        addStep(step.text, step.phase);
-      });
+      let result;
+      if (useAdaptive) {
+        // Use self-learning adaptive agent
+        result = await runDynamicLearningSelfAgent(
+          newestRef,
+          windowType,
+          preciseTask,
+          orgId,
+          (step) => addStep(step.text, step.phase)
+        );
+      } else {
+        // Fallback to pre-trained agent
+        result = await runTask(newestRef, windowType, preciseTask, orgId, (step) => {
+          addStep(step.text, step.phase);
+        });
+      }
 
       addStep(`✅ ${result?.summary || "Opgave fuldført"}`, "narrate");
       setPhase("done");

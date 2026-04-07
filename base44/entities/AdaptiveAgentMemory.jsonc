@@ -1,0 +1,79 @@
+{
+  "name": "AdaptiveAgentMemory",
+  "type": "object",
+  "properties": {
+    "window_type": {
+      "type": "string",
+      "description": "Target window type (e.g., 'routes', 'fleet_map')"
+    },
+    "success_strategies": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "action_sequence": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Steps that worked"
+          },
+          "success_count": {
+            "type": "number",
+            "default": 0
+          },
+          "failure_count": {
+            "type": "number",
+            "default": 0
+          },
+          "success_rate": {
+            "type": "number",
+            "description": "0-100%"
+          }
+        }
+      },
+      "description": "Proven action patterns"
+    },
+    "failure_patterns": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "error_type": {
+            "type": "string"
+          },
+          "trigger_keywords": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "avoided_actions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "count": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "adaptive_notes": {
+      "type": "string",
+      "description": "Free-form learning observations"
+    },
+    "last_updated": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "confidence_score": {
+      "type": "number",
+      "description": "0-100, how confident agent is with this window"
+    }
+  },
+  "required": [
+    "window_type"
+  ]
+}
