@@ -181,56 +181,90 @@ function selectAdaptiveStrategy(task, memory, analysis) {
 
 async function executeAndLearn(container, strategy, analysis, onStep) {
   const steps = [];
-  let success = true;
-  let description = "Task attempted";
+  let success = false;
+  let description = "No actions completed";
 
   try {
+    let actionsPerformed = 0;
+    let elementsFound = 0;
+
     // Execute actions from strategy
     for (const actionText of strategy.actions) {
-      onStep?.({ text: `🖱️ ${actionText}`, phase: "click" });
+      onStep?.({ text: `🖱️ Søger efter: ${actionText}`, phase: "click" });
       const btn = analysis.buttons.find(b =>
         b.text.toLowerCase().includes(actionText.toLowerCase())
       );
 
-      if (btn) {
-        btn.el.click();
-        steps.push(`clicked: ${actionText}`);
-        await new Promise(r => setTimeout(r, 500));
+      if (btn && btn.el && btn.el.offsetHeight > 0) {
+        elementsFound++;
+        try {
+          btn.el.click();
+          actionsPerformed++;
+          steps.push(`clicked: ${actionText}`);
+          await new Promise(r => setTimeout(r, 500));
+        } catch (e) {
+          onStep?.({ text: `❌ Kunne ikke klikke på: ${actionText}`, phase: "error" });
+        }
+      } else {
+        onStep?.({ text: `⚠️ Element ikke synligt: ${actionText}`, phase: "error" });
       }
     }
 
     // Try to fill visible inputs
+    let inputsFilled = 0;
     if (analysis.inputs.length > 0) {
-      onStep?.({ text: "⌨️ Fylder formular...", phase: "type" });
+      onStep?.({ text: "⌨️ Udfylder formular...", phase: "type" });
       for (const input of analysis.inputs.slice(0, 3)) {
         const value = generateSmartValue(input.label);
-        if (value) {
-          input.el.focus();
-          input.el.value = value;
-          input.el.dispatchEvent(new Event("input", { bubbles: true }));
-          input.el.dispatchEvent(new Event("change", { bubbles: true }));
-          steps.push(`filled: ${input.label}`);
-          await new Promise(r => setTimeout(r, 100));
+        if (value && input.el && input.el.offsetHeight > 0) {
+          try {
+            input.el.focus();
+            input.el.value = value;
+            input.el.dispatchEvent(new Event("input", { bubbles: true }));
+            input.el.dispatchEvent(new Event("change", { bubbles: true }));
+            inputsFilled++;
+            steps.push(`filled: ${input.label}`);
+            await new Promise(r => setTimeout(r, 100));
+          } catch (e) {
+            onStep?.({ text: `⚠️ Kunne ikke udfylde: ${input.label}`, phase: "error" });
+          }
         }
       }
     }
 
     // Find and click submit-like button
+    let submitted = false;
     const submitBtn = analysis.buttons.find(b =>
-      b.text.toLowerCase().match(/create|save|submit|ok|lav|gem/i)
+      b.text.toLowerCase().match(/create|save|submit|ok|lav|gem|gem|opret/i)
     );
-    if (submitBtn) {
-      onStep?.({ text: `✓ Sender...`, phase: "click" });
-      submitBtn.el.click();
-      steps.push("submitted");
-      await new Promise(r => setTimeout(r, 800));
+    if (submitBtn && submitBtn.el && submitBtn.el.offsetHeight > 0) {
+      onStep?.({ text: `✓ Sender formular...`, phase: "click" });
+      try {
+        submitBtn.el.click();
+        steps.push("submitted");
+        submitted = true;
+        await new Promise(r => setTimeout(r, 800));
+      } catch (e) {
+        onStep?.({ text: `❌ Kunne ikke sende: ${e.message}`, phase: "error" });
+      }
+    }
+
+    // Determine success based on actual actions
+    if (actionsPerformed > 0 || inputsFilled > 0 || submitted) {
       success = true;
-      description = "Task completed";
+      description = `Udførte ${actionsPerformed} handlinger, fyldte ${inputsFilled} felter${submitted ? ', sendte form' : ''}`;
+      onStep?.({ text: `✅ Komplet: ${description}`, phase: "narrate" });
+    } else if (elementsFound === 0) {
+      description = "Ingen elementer fundet på siden";
+      onStep?.({ text: `❌ ${description}`, phase: "error" });
+    } else {
+      description = "Elementer fundet men kunne ikke interagere";
+      onStep?.({ text: `❌ ${description}`, phase: "error" });
     }
   } catch (err) {
     success = false;
-    description = err.message;
-    onStep?.({ text: `❌ ${err.message}`, phase: "error" });
+    description = `Fejl under udførelse: ${err.message}`;
+    onStep?.({ text: `❌ ${description}`, phase: "error" });
   }
 
   return { success, description, steps };
