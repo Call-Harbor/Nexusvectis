@@ -620,8 +620,12 @@ export function useHologramAIAgent() {
 
       // Merge pre-trained knowledge with live scan
       const liveButtons = liveStructure.buttons.map(b => b.label).filter(Boolean);
-      const liveInputs = liveStructure.inputs.map(i => i.label).filter(Boolean);
+      const liveInputs = liveStructure.inputs.map(i => `${i.label}${i.type === 'select' ? ' (dropdown)' : ''}`).filter(Boolean);
       const liveTabs = liveStructure.tabs.map(t => t.label).filter(Boolean);
+      const requiredFieldsText = liveStructure.inputs
+        .filter(i => !i.label.toLowerCase().includes('optional'))
+        .map(i => `  • ${i.label}${i.type === 'select' ? ` (options: ${i.options.slice(0, 3).join(', ')})` : ''}`)
+        .join('\n');
 
       const knownButtons = knowledge?.buttons || [];
       const knownInputs = knowledge?.inputs || [];
@@ -656,6 +660,9 @@ ${allButtons.length > 0 ? allButtons.map((b, i) => `${i + 1}. "${b}"`).join('\n'
 === INPUT FIELDS (use EXACT placeholder/label) ===
 ${allInputs.length > 0 ? allInputs.map((f, i) => `${i + 1}. "${f}"`).join('\n') : 'None'}
 
+=== REQUIRED FIELDS ===
+${requiredFieldsText || 'None detected'}
+
 === SELECT DROPDOWNS (options available) ===
 ${selectsInfo || 'None'}
 
@@ -676,6 +683,7 @@ RULES:
 8. For "navigate to tab": use type="tab".
 9. Always end with a narrate step summarizing what was accomplished.
 10. Use known button names even if not in live scan — they may appear after loading.
+11. CRITICAL: Fill ALL required fields. Do not skip required fields marked in REQUIRED FIELDS section.
 
 Return JSON only:
 { "steps": [ {"type": "click|type|select|check|tab|think|narrate|scroll", "label": "...", "value": "...", "text": "..."} ], "summary": "one sentence summary" }`,
@@ -754,8 +762,9 @@ Return JSON only:
         const iLabels = [...new Set([...fresh.inputs.map(i => i.label), ...(knowledge?.dialogs?.[executedSoFar.find(e => e.startsWith('clicked:'))?.replace('clicked:', '')] || knowledge)?.inputs || []])].filter(Boolean);
         const tLabels = fresh.tabs.map(t => t.label).filter(Boolean);
         report(`Re-scanning ${dialog ? 'dialog' : 'window'}: ${bLabels.length} buttons, ${iLabels.length} inputs`, "scan");
+        const requiredFields = fresh.inputs.filter(i => !i.label.toLowerCase().includes('optional')).map(i => i.label).join(', ');
         const rePlan = await base44.integrations.Core.InvokeLLM({
-          prompt: `You are an AI agent inside NexusVectis UI.\n\nOriginal task: "${task}"\nRemaining goal: "${remainingTask}"\nDone so far: ${executedSoFar.join(', ')}\n\n=== CURRENT BUTTONS ===\n${bLabels.length > 0 ? bLabels.map((b, i) => `${i + 1}. "${b}"`).join('\n') : 'none'}\n\n=== CURRENT INPUT FIELDS ===\n${iLabels.length > 0 ? iLabels.map((f, i) => `${i + 1}. "${f}"`).join('\n') : 'none'}\n\n=== CURRENT TABS ===\n${tLabels.length > 0 ? tLabels.map((t, i) => `${i + 1}. "${t}"`).join('\n') : 'none'}\n\nGenerate remaining steps. ONLY use exact strings from lists above. JSON: { "steps": [{"type": "click|type|tab|think|narrate", "label": "...", "value": "...", "text": "..."}], "summary": "..." }`,
+          prompt: `You are an AI agent inside NexusVectis UI.\n\nOriginal task: "${task}"\nRemaining goal: "${remainingTask}"\nDone so far: ${executedSoFar.join(', ')}\n\n=== CURRENT BUTTONS ===\n${bLabels.length > 0 ? bLabels.map((b, i) => `${i + 1}. "${b}"`).join('\n') : 'none'}\n\n=== CURRENT INPUT FIELDS ===\n${iLabels.length > 0 ? iLabels.map((f, i) => `${i + 1}. "${f}"`).join('\n') : 'none'}\n\n=== REQUIRED FIELDS TO FILL ===\n${requiredFields || 'None'}\n\n=== CURRENT TABS ===\n${tLabels.length > 0 ? tLabels.map((t, i) => `${i + 1}. "${t}"`).join('\n') : 'none'}\n\nCRITICAL: Fill ALL required fields with realistic data. ONLY use exact strings from lists above. JSON: { "steps": [{"type": "click|type|tab|think|narrate|select", "label": "...", "value": "...", "text": "..."}], "summary": "..." }`, 
           response_json_schema: { type: "object", properties: { steps: { type: "array", items: { type: "object", additionalProperties: true } }, summary: { type: "string" } } }
         });
         return rePlan?.steps || [];
