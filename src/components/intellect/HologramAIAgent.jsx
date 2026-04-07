@@ -412,19 +412,22 @@ function deepScanWindow(containerEl) {
 
   const scan = (root) => {
     const buttons = [...root.querySelectorAll(
-      "button:not([disabled]), [role='button']:not([disabled]), [class*='btn']:not([disabled])"
-    )].filter(isVisible).map(b => ({
-      label: (
-        b.textContent?.trim().replace(/\s+/g, " ") ||
+      "button:not([disabled]), [role='button']:not([disabled]), [class*='btn']:not([disabled]), [class*='submit']:not([disabled]), [class*='save']:not([disabled]), [type='submit']:not([disabled])"
+    )].filter(isVisible).map(b => {
+      let label = b.textContent?.trim().replace(/\s+/g, " ") ||
         b.getAttribute("aria-label") ||
         b.getAttribute("title") ||
         b.getAttribute("data-label") ||
-        (/(add|new|create|plus|fab|float)/i.test(b.className || "") ? "Add" : "")
-      ).slice(0, 80),
-    })).filter(b => b.label).slice(0, 60);
+        b.getAttribute("data-testid") ||
+        b.name || "";
+      if (!label && /(add|new|create|plus|fab|float|submit|save|create|ok|confirm)/i.test(b.className || "")) {
+        label = "Action";
+      }
+      return { label: label.slice(0, 80) };
+    }).filter(b => b.label).slice(0, 60);
 
     const inputs = [...root.querySelectorAll(
-      "input:not([type=hidden]), textarea, select"
+      "input:not([type=hidden]):not([type=submit]):not([type=button]), textarea, select, [role='combobox'], [role='listbox']"
     )].filter(isVisible).map(i => {
       // Resolve label from <label for>, aria-labelledby, or parent label
       let label = i.placeholder || i.getAttribute("aria-label") || "";
@@ -448,10 +451,16 @@ function deepScanWindow(containerEl) {
       }
       if (!label) label = i.name || i.id || "field";
 
-      // For selects, include option values
-      const options = i.tagName === 'SELECT'
-        ? [...i.options].map(o => o.text).filter(Boolean)
-        : [];
+      // For selects and dropdowns, include option values
+      let options = [];
+      if (i.tagName === 'SELECT') {
+        options = [...i.options].map(o => o.text).filter(Boolean);
+      } else if (i.getAttribute('role') === 'combobox' || i.getAttribute('role') === 'listbox') {
+        const container = i.closest('[class*="dropdown"], [class*="menu"], [role="listbox"]');
+        if (container) {
+          options = [...container.querySelectorAll('[role="option"]')].map(o => o.textContent?.trim()).filter(Boolean).slice(0, 10);
+        }
+      }
 
       return {
         label: label.slice(0, 60),
@@ -502,10 +511,10 @@ function findElement(containerEl, label, type) {
 
   for (const root of roots) {
     const pool = type === "input"
-      ? [...root.querySelectorAll("input:not([type=hidden]), textarea, select")]
+      ? [...root.querySelectorAll("input:not([type=hidden]):not([type=submit]):not([type=button]), textarea, select, [role='combobox'], [role='listbox']")]
       : type === "tab"
       ? [...root.querySelectorAll("[role='tab'], [data-state='inactive'], [data-state='active']")]
-      : [...root.querySelectorAll("button, [role='button'], [role='tab'], a, input, textarea, select, label, [class*='tab'], [class*='fab'], [class*='float'], [class*='btn']")];
+      : [...root.querySelectorAll("button, [role='button'], [role='tab'], a, input, textarea, select, label, [class*='tab'], [class*='fab'], [class*='float'], [class*='btn'], [class*='submit'], [type='submit']")];
 
     const visible = pool.filter(isVisible);
 
@@ -518,14 +527,17 @@ function findElement(containerEl, label, type) {
     // Placeholder contains
     el = visible.find(e => e.placeholder?.toLowerCase().includes(lower));
     if (el) return el;
-    // Text contains
-    el = visible.find(e => e.textContent?.trim().toLowerCase().includes(lower));
-    if (el) return el;
-    // Label contains search term
-    el = visible.find(e => lower.includes(e.textContent?.trim().toLowerCase()) && e.textContent?.trim().length > 2);
+    // Text contains (tighter match)
+    el = visible.find(e => {
+      const text = e.textContent?.trim().toLowerCase() || "";
+      return text.includes(lower) && (lower.length > 3 || text === lower);
+    });
     if (el) return el;
     // aria-label
     el = visible.find(e => e.getAttribute("aria-label")?.toLowerCase().includes(lower));
+    if (el) return el;
+    // data-testid
+    el = visible.find(e => e.getAttribute("data-testid")?.toLowerCase().includes(lower));
     if (el) return el;
     // title
     el = visible.find(e => e.getAttribute("title")?.toLowerCase().includes(lower));
@@ -552,11 +564,16 @@ function findElement(containerEl, label, type) {
           const lbl = root.getElementById(labelledBy);
           if (lbl && lbl.textContent?.trim().toLowerCase().includes(lower)) return inp;
         }
-        const parent = inp.closest("div, fieldset, [class*='field'], [class*='form-item'], [class*='form-group']");
-        if (parent) {
-          const lblEl = parent.querySelector("label, [class*='label']");
-          if (lblEl && lblEl.textContent?.trim().toLowerCase().includes(lower)) return inp;
-          if (parent.textContent?.toLowerCase().includes(lower)) return inp;
+        // Search multiple levels up for label
+        let parent = inp.parentElement;
+        for (let depth = 0; depth < 4 && parent; depth++) {
+          const lblEl = parent.querySelector("label, [class*='label'], [class*='legend']");
+          if (lblEl) {
+            const lblText = lblEl.textContent?.trim().toLowerCase() || "";
+            if (lblText.includes(lower)) return inp;
+          }
+          if (parent.textContent?.toLowerCase().includes(lower) && parent.textContent?.length < 200) return inp;
+          parent = parent.parentElement;
         }
       }
     }
@@ -720,11 +737,15 @@ IMPORTANT: Last step MUST be clicking the submit/create/save button.`,
       const findElementInDialog = (dialog, label, type) => {
         if (!dialog || !label) return null;
         const lower = label.toLowerCase().trim();
-        const isVisible = (el) => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0; };
+        const isVisible = (el) => { 
+          const r = el.getBoundingClientRect(); 
+          const style = window.getComputedStyle(el);
+          return r.width > 0 && r.height > 0 && style.visibility !== 'hidden' && style.display !== 'none';
+        };
         
         const pool = type === "input"
-          ? [...dialog.querySelectorAll("input:not([type=hidden]), textarea, select")]
-          : [...dialog.querySelectorAll("button, [role='button'], a, input, textarea, select, label")];
+          ? [...dialog.querySelectorAll("input:not([type=hidden]):not([type=submit]):not([type=button]), textarea, select, [role='combobox']")]
+          : [...dialog.querySelectorAll("button, [role='button'], a, input, textarea, select, label, [class*='submit'], [type='submit']")];
         
         const visible = pool.filter(isVisible);
         
@@ -830,7 +851,7 @@ IMPORTANT: Last step MUST be clicking the submit/create/save button.`,
           const dialog = getActiveDialog();
           if (dialog && activeRoot !== dialog) {
             activeRoot = dialog;
-            report(`💬 Dialog opened — re-planning form fields`, "think");
+            report(`💬 Dialog opened — scanning form fields`, "think");
             if (i < steps.length - 1) {
               const remaining = steps.slice(i + 1);
               const remainingGoal = remaining.map(s => s.text || s.label || s.value).filter(Boolean).join(", ");
@@ -845,14 +866,16 @@ IMPORTANT: Last step MUST be clicking the submit/create/save button.`,
         }
 
         if (step.type === "select") {
-          // Try dialog-specific search first if activeRoot is a dialog
-          let selEl = (activeRoot?.getAttribute?.('role') === 'dialog') 
+              // Try dialog-specific search first if activeRoot is a dialog
+          let selEl = activeRoot?.getAttribute?.('role')
             ? findElementInDialog(activeRoot, step.label, "input")
             : null;
           // Fallback to regular search
           if (!selEl) {
             selEl = findElement(activeRoot, step.label, "input")
-              || findElement(document.body, step.label, "input");
+              || findElement(document.body, step.label, "input")
+              || findElement(activeRoot, step.label, "any")
+              || findElement(document.body, step.label, "any");
           }
           const val = step.value || "";
           report(`🔽 Select "${val}" in ${step.label}`, "type");
@@ -904,10 +927,19 @@ IMPORTANT: Last step MUST be clicking the submit/create/save button.`,
             dispatchCursorAction("type", step.label, null, val, rect.left + rect.width / 2, rect.top + rect.height / 2);
             await new Promise(r => setTimeout(r, 80));
             fillElement(typeEl, val);
-            await new Promise(r => setTimeout(r, 150));
+            await new Promise(r => setTimeout(r, 200));
           } else {
-            report(`⚠️ Input "${step.label}" not found`, "think");
-            await new Promise(r => setTimeout(r, 100));
+            report(`⚠️ Input "${step.label}" not found — re-scanning`, "think");
+            const fresh = deepScanWindow(activeRoot);
+            const freshInput = fresh.inputs.find(i => i.label.toLowerCase().includes(step.label.toLowerCase()));
+            if (freshInput) {
+              report(`✅ Found after re-scan: ${step.label}`, "narrate");
+              const retry = findElement(activeRoot, freshInput.label, "input");
+              if (retry) {
+                fillElement(retry, val);
+                await new Promise(r => setTimeout(r, 150));
+              }
+            }
           }
           executedLabels.push(`typed:${step.label}=${val.slice(0, 20)}`);
           continue;
