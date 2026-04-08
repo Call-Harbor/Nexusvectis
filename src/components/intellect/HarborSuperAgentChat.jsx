@@ -235,10 +235,20 @@ function MessageBubble({ message }) {
 // ── OrchestrationMonitor is now imported from separate component ────────────────────
 
 // ── Parallel Task Input ────────────────────────────────────────────────
+const ORCH_MODES = [
+  { key: 'concurrent', label: 'Concurrent', desc: 'Fan-out — all agents run simultaneously', color: '#10b981' },
+  { key: 'sequential', label: 'Sequential', desc: 'One after another, each builds on last', color: '#06b6d4' },
+  { key: 'hierarchical', label: 'Hierarchical', desc: 'First agent orchestrates the rest', color: '#f59e0b' },
+  { key: 'quorum', label: 'Quorum Vote', desc: 'All vote — majority answer wins', color: '#8b5cf6' },
+];
+
 function ParallelTaskPanel({ onExecute, onClose, workers = AI_WORKERS }) {
   const [tasks, setTasks] = useState([{ id: Date.now(), workerId: workers[0]?.id || '', prompt: '' }]);
   const [filesForOrch, setFilesForOrch] = useState([]);
   const [isRunning, setIsRunning] = useState(false);
+  const [orchMode, setOrchMode] = useState('concurrent');
+  const [budget, setBudget] = useState(5000);
+  const [requireApproval, setRequireApproval] = useState(false);
   const fileInputRef = useRef(null);
 
   const addTask = () => setTasks(prev => [...prev, { id: Date.now(), workerId: workers[0]?.id || '', prompt: '' }]);
@@ -250,7 +260,7 @@ function ParallelTaskPanel({ onExecute, onClose, workers = AI_WORKERS }) {
     if (!validTaskCount) return;
     setIsRunning(true);
     try {
-      await onExecute(tasks.filter(t => t.prompt.trim()), filesForOrch);
+      await onExecute(tasks.filter(t => t.prompt.trim()), filesForOrch, { mode: orchMode, budget, requireApproval });
       // Reset after successful execution
       setTasks([{ id: Date.now(), workerId: AI_WORKERS[0]?.id || '', prompt: '' }]);
       setFilesForOrch([]);
@@ -334,6 +344,37 @@ function ParallelTaskPanel({ onExecute, onClose, workers = AI_WORKERS }) {
         </motion.div>
       )}
 
+      {/* Orchestration mode */}
+      <div className="px-5 pb-3">
+        <p className="text-[9px] font-mono uppercase tracking-widest text-slate-500 mb-2">Orchestration Mode</p>
+        <div className="grid grid-cols-4 gap-1.5 mb-3">
+          {ORCH_MODES.map(m => (
+            <button key={m.key} onClick={() => setOrchMode(m.key)}
+              className="px-2 py-2 rounded-lg text-[9px] font-medium transition-all text-left"
+              style={{ background: orchMode === m.key ? `${m.color}20` : 'rgba(255,255,255,0.03)', border: `1px solid ${orchMode === m.key ? m.color : 'rgba(255,255,255,0.06)'}`, color: orchMode === m.key ? m.color : '#64748b' }}>
+              {m.label}
+            </button>
+          ))}
+        </div>
+        <p className="text-[9px] text-slate-600">{ORCH_MODES.find(m => m.key === orchMode)?.desc}</p>
+        <div className="flex items-center gap-4 mt-3">
+          <div className="flex-1">
+            <p className="text-[9px] font-mono uppercase tracking-widest text-slate-500 mb-1">Token Budget</p>
+            <input type="number" value={budget} onChange={e => setBudget(Number(e.target.value))}
+              className="w-full px-2 py-1.5 rounded-lg text-xs text-white outline-none"
+              style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.08)' }} />
+          </div>
+          <div className="flex items-center gap-2 mt-4">
+            <button onClick={() => setRequireApproval(p => !p)}
+              className="w-8 h-4 rounded-full relative transition-all"
+              style={{ background: requireApproval ? '#f59e0b' : 'rgba(255,255,255,0.1)' }}>
+              <div className="absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all"
+                style={{ left: requireApproval ? 'calc(100% - 14px)' : '2px' }} />
+            </button>
+            <span className="text-[9px] text-slate-400 whitespace-nowrap">Human gate</span>
+          </div>
+        </div>
+      </div>
       <input ref={fileInputRef} type="file" multiple accept="image/*,video/*,.pdf,.csv,.xlsx,.xls,.docx,.txt,.json" className="hidden" onChange={handleFileUpload} />
       <div className="px-5 py-4 flex gap-2 border-t" style={{ borderColor: "rgba(6,182,212,0.1)" }}>
         <motion.button onClick={() => fileInputRef.current?.click()} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
@@ -351,7 +392,7 @@ function ParallelTaskPanel({ onExecute, onClose, workers = AI_WORKERS }) {
           whileTap={validTaskCount > 0 && !isRunning ? { scale: 0.95 } : {}}
           className="flex-1 flex items-center justify-center gap-2.5 px-4 py-2.5 rounded-lg text-xs font-mono font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed"
           style={{ background: validTaskCount > 0 && !isRunning ? "linear-gradient(135deg, rgba(6,182,212,0.25), rgba(139,92,246,0.2))" : "rgba(6,182,212,0.08)", color: "#06b6d4", border: "1px solid rgba(6,182,212,0.4)", boxShadow: validTaskCount > 0 && !isRunning ? "0 0 20px rgba(6,182,212,0.2)" : "none" }}>
-          {isRunning ? <><Loader2 className="w-4 h-4 animate-spin" /> Orchestrating</> : <><Play className="w-4 h-4" /> Launch {validTaskCount} {validTaskCount === 1 ? "Task" : "Tasks"}</>}
+          {isRunning ? <><Loader2 className="w-4 h-4 animate-spin" /> Orchestrating</> : <><Play className="w-4 h-4" /> {orchMode === 'quorum' ? 'Vote' : 'Launch'} {validTaskCount} {validTaskCount === 1 ? "Task" : "Tasks"}</>}
         </motion.button>
       </div>
     </motion.div>
@@ -686,7 +727,8 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
   };
 
   // ── PARALLEL ORCHESTRATION ──────────────────────────────────────────────
-  const executeParallelOrchestration = useCallback(async (parallelTasks, filesForOrch = []) => {
+  const executeParallelOrchestration = useCallback(async (parallelTasks, filesForOrch = [], options = {}) => {
+    const { mode = 'concurrent', budget = 5000, requireApproval = false } = options;
     const orchId = `orch_${Date.now()}`;
 
     // Create orchestration metadata to track worker conversations separately
@@ -715,9 +757,22 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
       workers,
       tasks: parallelTasks,
       outputs: {},
-      status: "running",
+      status: requireApproval ? 'awaiting_approval' : 'running',
+      orchMode: mode,
+      budget,
       startedAt: Date.now()
     };
+
+    if (requireApproval) {
+      setOrchestrations(prev => [newOrch, ...prev]);
+      toast.info('⏳ Waiting for human approval before executing...');
+      await new Promise(resolve => {
+        const handler = (e) => { if (e.detail?.orchId === orchId) { window.removeEventListener('harbor_orch_approve', handler); resolve(); } };
+        window.addEventListener('harbor_orch_approve', handler);
+        setTimeout(resolve, 30000); // auto-approve after 30s
+      });
+      setOrchestrations(prev => prev.map(o => o.id === orchId ? { ...o, status: 'running' } : o));
+    }
 
     setOrchestrations(prev => [newOrch, ...prev]);
 

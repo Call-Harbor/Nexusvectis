@@ -37,6 +37,29 @@ export default function OrchestrationMonitor({ orchestration, onViewOutput, onOp
         boxShadow: '0 0 30px rgba(6,182,212,0.08), inset 0 0.5px 0 rgba(255,255,255,0.04)',
       }}
     >
+      {/* Human approval gate */}
+      {orchestration.status === 'awaiting_approval' && (
+        <div className="px-5 py-3 flex items-center justify-between" style={{ background: 'rgba(245,158,11,0.08)', borderBottom: '1px solid rgba(245,158,11,0.2)' }}>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-mono" style={{ color: '#f59e0b' }}>⏳ Awaiting human approval</span>
+          </div>
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent('harbor_orch_approve', { detail: { orchId: orchestration.id } }))}
+            className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
+            style={{ background: 'rgba(16,185,129,0.2)', color: '#10b981', border: '1px solid rgba(16,185,129,0.3)' }}>
+            ✓ Approve & Run
+          </button>
+        </div>
+      )}
+
+      {/* Orchestration mode + budget badge */}
+      {orchestration.orchMode && (
+        <div className="px-5 pt-3 pb-0 flex items-center gap-2">
+          <span className="text-[9px] font-mono px-2 py-0.5 rounded-full" style={{ background: 'rgba(139,92,246,0.15)', color: '#a78bfa' }}>{orchestration.orchMode}</span>
+          {orchestration.budget && <span className="text-[9px] font-mono px-2 py-0.5 rounded-full" style={{ background: 'rgba(6,182,212,0.1)', color: '#06b6d4' }}>budget: {orchestration.budget.toLocaleString()} tokens</span>}
+        </div>
+      )}
+
       {/* Header */}
       <div className="relative px-6 py-5 border-b" style={{ borderColor: 'rgba(6,182,212,0.15)', background: 'linear-gradient(180deg, rgba(6,182,212,0.03), transparent)' }}>
         <div className="flex items-center justify-between mb-4">
