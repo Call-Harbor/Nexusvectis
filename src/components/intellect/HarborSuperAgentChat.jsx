@@ -5,13 +5,17 @@ import ReactMarkdown from "react-markdown";
 import WorkerHologramControl from "./WorkerHologramControl";
 import OrchestrationMonitor from "./OrchestrationMonitor";
 import CustomWorkerBuilder from "./CustomWorkerBuilder";
+import AgentSmartRouter from "./AgentSmartRouter";
+import AgentObservabilityPanel from "./AgentObservabilityPanel";
+import WorkflowVersionManager from "./WorkflowVersionManager";
+import AgentEvalSuite from "./AgentEvalSuite";
 import {
   Brain, Send, X, Plus, Trash2, MessageSquare, Loader2,
   Sparkles, User, Copy, CheckCheck, Minimize2, Maximize2,
   Pencil, Paperclip, Image, Film, FileText, Download,
   ImagePlus, Wand2, XCircle, Zap, Network, Grid3x3,
   Play, Square, Eye, ChevronDown, AlertCircle, CheckCircle2,
-  Clock, Activity, Settings, UserPlus
+  Clock, Activity, Settings, UserPlus, GitBranch, FlaskConical, Route
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -568,6 +572,15 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
   const [selectedOutput, setSelectedOutput] = useState(null);
   const [workerHolograms, setWorkerHolograms] = useState([]); // [{workerId, task, isActive}]
 
+  // Advanced features state
+  const [showSmartRouter, setShowSmartRouter] = useState(false);
+  const [showObservability, setShowObservability] = useState(false);
+  const [showVersionManager, setShowVersionManager] = useState(false);
+  const [showEvalSuite, setShowEvalSuite] = useState(false);
+  const [performanceHistory, setPerformanceHistory] = useState([]);
+  const [pendingTasks, setPendingTasks] = useState([]);
+  const [pendingOptions, setPendingOptions] = useState({});
+
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -829,8 +842,18 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
 
     // Mark orchestration done
     setOrchestrations(prev => prev.map(o =>
-      o.id === orchId ? { ...o, status: "done" } : o
+      o.id === orchId ? { ...o, status: "done", completedAt: Date.now() } : o
     ));
+
+    // Update performance history for smart router
+    results.forEach(r => {
+      setPerformanceHistory(prev => [...prev.slice(-200), {
+        workerId: r.workerId,
+        success: !r.error,
+        latency_ms: Date.now() - newOrch.startedAt,
+        timestamp: Date.now(),
+      }]);
+    });
 
     toast.success(`⚡ ${parallelTasks.length} AI workers completed`);
   }, [activeConversation]);
@@ -957,6 +980,30 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
             }}>
             <Network className="w-3.5 h-3.5" />
             ORCHESTRATE
+          </motion.button>
+          {/* Smart Router */}
+          <motion.button onClick={() => setShowSmartRouter(p => !p)} whileHover={{ scale: 1.05 }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-mono font-bold tracking-widest transition-all"
+            style={{ background: showSmartRouter ? "rgba(16,185,129,0.2)" : "rgba(16,185,129,0.06)", color: "#10b981", border: `1px solid rgba(16,185,129,${showSmartRouter ? "0.5" : "0.2"})` }}>
+            <Route className="w-3.5 h-3.5" /> ROUTER
+          </motion.button>
+          {/* Observability */}
+          <motion.button onClick={() => setShowObservability(p => !p)} whileHover={{ scale: 1.05 }}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[10px] font-mono font-bold tracking-widest transition-all"
+            style={{ background: showObservability ? "rgba(245,158,11,0.2)" : "rgba(245,158,11,0.06)", color: "#f59e0b", border: `1px solid rgba(245,158,11,${showObservability ? "0.5" : "0.2"})` }}>
+            <Activity className="w-3.5 h-3.5" />
+          </motion.button>
+          {/* Versions */}
+          <motion.button onClick={() => setShowVersionManager(p => !p)} whileHover={{ scale: 1.05 }}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[10px] font-mono font-bold tracking-widest transition-all"
+            style={{ background: showVersionManager ? "rgba(139,92,246,0.2)" : "rgba(139,92,246,0.06)", color: "#a78bfa", border: `1px solid rgba(139,92,246,${showVersionManager ? "0.5" : "0.2"})` }}>
+            <GitBranch className="w-3.5 h-3.5" />
+          </motion.button>
+          {/* Eval */}
+          <motion.button onClick={() => setShowEvalSuite(p => !p)} whileHover={{ scale: 1.05 }}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[10px] font-mono font-bold tracking-widest transition-all"
+            style={{ background: showEvalSuite ? "rgba(245,158,11,0.2)" : "rgba(245,158,11,0.06)", color: "#f59e0b", border: `1px solid rgba(245,158,11,${showEvalSuite ? "0.5" : "0.2"})` }}>
+            <FlaskConical className="w-3.5 h-3.5" />
           </motion.button>
           {/* Worker Pool button */}
           <motion.button
@@ -1141,7 +1188,54 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
                 {/* Interleave messages and orchestration monitors */}
                 {visibleMessages.map((msg, i) => <MessageBubble key={i} message={msg} />)}
 
-                {/* Live orchestrations - only in current conversation */}
+                {/* Smart Router Panel */}
+                {showSmartRouter && (
+                  <AgentSmartRouter
+                    task={input}
+                    allWorkers={allWorkers}
+                    performanceHistory={performanceHistory}
+                    onSelectWorker={(worker) => {
+                      setShowSmartRouter(false);
+                      toast.success(`${worker.emoji} ${worker.name} selected — open ORCHESTRATE to use`);
+                    }}
+                    onClose={() => setShowSmartRouter(false)}
+                  />
+                )}
+
+                {/* Observability Panel */}
+                {showObservability && (
+                  <AgentObservabilityPanel
+                    orchestrations={orchestrations}
+                    onClose={() => setShowObservability(false)}
+                  />
+                )}
+
+                {/* Workflow Version Manager */}
+                {showVersionManager && (
+                  <WorkflowVersionManager
+                    currentTasks={pendingTasks}
+                    currentOptions={pendingOptions}
+                    onLoadVersion={(version) => {
+                      setPendingTasks(version.tasks);
+                      setPendingOptions(version.options || {});
+                      setShowVersionManager(false);
+                      setShowOrchestrationPanel(true);
+                      toast.success(`Loaded: ${version.name}`);
+                    }}
+                    onClose={() => setShowVersionManager(false)}
+                  />
+                )}
+
+                {/* Eval Suite */}
+                {showEvalSuite && (
+                  <AgentEvalSuite
+                    allWorkers={allWorkers}
+                    orgId={orgId}
+                    onClose={() => setShowEvalSuite(false)}
+                  />
+                )}
+
+              {/* Live orchestrations - only in current conversation */}
                 {orchestrations.filter(o => o.conversationId === activeConversation?.id).map(orch => (
                   <div key={orch.id}>
                     <OrchestrationMonitor
