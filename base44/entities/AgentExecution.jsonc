@@ -1,0 +1,90 @@
+{
+  "name": "AgentExecution",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string"
+    },
+    "workflow_id": {
+      "type": "string"
+    },
+    "workflow_name": {
+      "type": "string"
+    },
+    "task": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "queued",
+        "running",
+        "awaiting_approval",
+        "completed",
+        "failed",
+        "cancelled"
+      ],
+      "default": "queued"
+    },
+    "orchestration_mode": {
+      "type": "string"
+    },
+    "agents_involved": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "steps": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "result": {
+      "type": "string"
+    },
+    "error": {
+      "type": "string"
+    },
+    "tokens_used": {
+      "type": "number",
+      "default": 0
+    },
+    "cost_estimate": {
+      "type": "number",
+      "default": 0
+    },
+    "latency_ms": {
+      "type": "number"
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "human_approved_by": {
+      "type": "string"
+    },
+    "human_approved_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "quorum_votes": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "routing_decision": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "task",
+    "organization_id"
+  ]
+}

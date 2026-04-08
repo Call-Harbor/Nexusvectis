@@ -1,0 +1,102 @@
+{
+  "name": "AgentWorkflow",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "version": {
+      "type": "number",
+      "default": 1
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "active",
+        "paused",
+        "archived"
+      ],
+      "default": "draft"
+    },
+    "orchestration_mode": {
+      "type": "string",
+      "enum": [
+        "sequential",
+        "concurrent",
+        "hierarchical",
+        "peer_to_peer",
+        "hybrid",
+        "auto"
+      ],
+      "default": "auto"
+    },
+    "agents": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "budget_limit": {
+      "type": "number",
+      "description": "Max cost in tokens/credits"
+    },
+    "budget_used": {
+      "type": "number",
+      "default": 0
+    },
+    "require_human_approval": {
+      "type": "boolean",
+      "default": false
+    },
+    "approval_threshold": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "default": "high"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "success_rate": {
+      "type": "number"
+    },
+    "avg_latency_ms": {
+      "type": "number"
+    },
+    "run_count": {
+      "type": "number",
+      "default": 0
+    },
+    "last_run": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "golden_tasks": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "eval_score": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "name",
+    "organization_id"
+  ]
+}

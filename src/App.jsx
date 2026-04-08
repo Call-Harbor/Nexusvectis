@@ -26,6 +26,7 @@ import StaffManagement from './pages/StaffManagement';
 import RegulatoryIntelligence from './pages/RegulatoryIntelligence';
 import EnergyOpsCenter from './pages/EnergyOpsCenter';
 import MobileAppPublisher from './pages/MobileAppPublisher';
+import AgentOrchestrator from './pages/AgentOrchestrator';
 import GridManagement from './pages/GridManagement';
 
 
@@ -229,6 +230,8 @@ const AuthenticatedApp = () => {
           </LayoutWrapper>
         }
       />
+
+      <Route path="/AgentOrchestrator" element={<AgentOrchestrator />} />
 
       <Route path="*" element={<PageNotFound />} />
     </Routes>
