@@ -9,13 +9,14 @@ import AgentSmartRouter from "./AgentSmartRouter";
 import AgentObservabilityPanel from "./AgentObservabilityPanel";
 import WorkflowVersionManager from "./WorkflowVersionManager";
 import AgentEvalSuite from "./AgentEvalSuite";
+import AgentSharedMemoryPanel from "./AgentSharedMemoryPanel";
 import {
   Brain, Send, X, Plus, Trash2, MessageSquare, Loader2,
   Sparkles, User, Copy, CheckCheck, Minimize2, Maximize2,
   Pencil, Paperclip, Image, Film, FileText, Download,
   ImagePlus, Wand2, XCircle, Zap, Network, Grid3x3,
   Play, Square, Eye, ChevronDown, AlertCircle, CheckCircle2,
-  Clock, Activity, Settings, UserPlus, GitBranch, FlaskConical, Route
+  Clock, Activity, Settings, UserPlus, GitBranch, FlaskConical, Route, Database
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -580,6 +581,7 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
   const [performanceHistory, setPerformanceHistory] = useState([]);
   const [pendingTasks, setPendingTasks] = useState([]);
   const [pendingOptions, setPendingOptions] = useState({});
+  const [showMemoryPanel, setShowMemoryPanel] = useState(false);
 
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
@@ -806,13 +808,19 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
       ));
 
       try {
-        const result = await base44.functions.invoke("orchestrateMultipleAIs", {
+        const result = await base44.functions.invoke("agentSandbox", {
           task: taskWithContext,
           workerType: task.workerId,
           orchestrationId: orchId,
           taskId: task.id,
           fileUrls: filesForOrch.map(f => f.url),
-          metadata: { ...orchMetadata, organization_id: orgId }
+          metadata: { ...orchMetadata, organization_id: orgId },
+          sandboxOptions: {
+            timeoutMs: 45000,
+            maxTokens: budget,
+            injectMemory: true,
+            agentId: task.workerId
+          }
         });
 
         const output = result.data?.output || result.data || "Analysis complete";
@@ -1004,6 +1012,12 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
             className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[10px] font-mono font-bold tracking-widest transition-all"
             style={{ background: showEvalSuite ? "rgba(245,158,11,0.2)" : "rgba(245,158,11,0.06)", color: "#f59e0b", border: `1px solid rgba(245,158,11,${showEvalSuite ? "0.5" : "0.2"})` }}>
             <FlaskConical className="w-3.5 h-3.5" />
+          </motion.button>
+          {/* Memory */}
+          <motion.button onClick={() => setShowMemoryPanel(p => !p)} whileHover={{ scale: 1.05 }}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[10px] font-mono font-bold tracking-widest transition-all"
+            style={{ background: showMemoryPanel ? "rgba(139,92,246,0.3)" : "rgba(139,92,246,0.06)", color: "#a78bfa", border: `1px solid rgba(139,92,246,${showMemoryPanel ? "0.6" : "0.2"})` }}>
+            <Database className="w-3.5 h-3.5" />
           </motion.button>
           {/* Worker Pool button */}
           <motion.button
@@ -1232,6 +1246,14 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
                     allWorkers={allWorkers}
                     orgId={orgId}
                     onClose={() => setShowEvalSuite(false)}
+                  />
+                )}
+
+                {/* Shared Memory Panel */}
+                {showMemoryPanel && (
+                  <AgentSharedMemoryPanel
+                    orgId={orgId}
+                    onClose={() => setShowMemoryPanel(false)}
                   />
                 )}
 

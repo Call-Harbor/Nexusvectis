@@ -1,0 +1,71 @@
+{
+  "name": "AgentSharedMemory",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string"
+    },
+    "key": {
+      "type": "string",
+      "description": "Memory key/topic"
+    },
+    "value": {
+      "type": "string",
+      "description": "Memory content (text or JSON)"
+    },
+    "memory_type": {
+      "type": "string",
+      "enum": [
+        "fact",
+        "context",
+        "result",
+        "instruction",
+        "secret"
+      ],
+      "default": "fact"
+    },
+    "access_level": {
+      "type": "string",
+      "enum": [
+        "all_agents",
+        "admin_only",
+        "specific_agents"
+      ],
+      "default": "all_agents"
+    },
+    "allowed_agents": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Agent IDs that can read this memory (when access_level=specific_agents)"
+    },
+    "ttl_hours": {
+      "type": "number",
+      "description": "Auto-expire after N hours (0 = never)"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "source_agent": {
+      "type": "string",
+      "description": "Which agent wrote this"
+    },
+    "read_count": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "key",
+    "value",
+    "organization_id"
+  ]
+}
