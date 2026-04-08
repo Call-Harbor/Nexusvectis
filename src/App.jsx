@@ -26,6 +26,7 @@ import StaffManagement from './pages/StaffManagement';
 import RegulatoryIntelligence from './pages/RegulatoryIntelligence';
 import EnergyOpsCenter from './pages/EnergyOpsCenter';
 import MobileAppPublisher from './pages/MobileAppPublisher';
+import HarborIntellectProduct from './pages/HarborIntellectProduct';
 import GridManagement from './pages/GridManagement';
 
 
@@ -220,6 +221,10 @@ const AuthenticatedApp = () => {
             <MobileAppPublisher />
           </LayoutWrapper>
         }
+      />
+      <Route
+        path="/HarborIntellectProduct"
+        element={<HarborIntellectProduct />}
       />
       <Route
         path="/BillingDashboard"

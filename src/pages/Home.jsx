@@ -273,11 +273,11 @@ export default function Home() {
           />
           <div className="flex items-center gap-2 sm:gap-4">
             <Link
-              to={createPageUrl("HarborInfo")}
-              className="hidden sm:flex items-center gap-1.5 text-amber-300 hover:text-amber-200 px-3 py-2 rounded-lg transition-colors text-sm font-semibold border border-amber-500/30 hover:border-amber-400/50 hover:bg-amber-500/10"
+              to={createPageUrl("HarborIntellectProduct")}
+              className="hidden sm:flex items-center gap-1.5 text-violet-300 hover:text-violet-200 px-3 py-2 rounded-lg transition-colors text-sm font-semibold border border-violet-500/30 hover:border-violet-400/50 hover:bg-violet-500/10"
             >
-              <Zap className="w-3.5 h-3.5" />
-              H.A.R.B.O.R.
+              <Brain className="w-3.5 h-3.5" />
+              H.A.R.B.O.R Intellect
             </Link>
             <button
               onClick={() => base44.auth.redirectToLogin(createPageUrl("Dashboard"))}
@@ -1263,6 +1263,7 @@ export default function Home() {
               <ul className="space-y-2 text-slate-400">
                 <li><Link to={createPageUrl("FleetAIPage")} className="hover:text-cyan-400 transition-colors">FLEET AI</Link></li>
                 <li><Link to={createPageUrl("HarborInfo")} className="hover:text-amber-400 transition-colors">H.A.R.B.O.R. AI</Link></li>
+                <li><Link to={createPageUrl("HarborIntellectProduct")} className="hover:text-violet-400 transition-colors">H.A.R.B.O.R Intellect</Link></li>
                 <li><Link to={createPageUrl("LiveTrackingPage")} className="hover:text-cyan-400 transition-colors">Live Tracking</Link></li>
                 <li><Link to={createPageUrl("AnalyticsPage")} className="hover:text-cyan-400 transition-colors">Analytics</Link></li>
                 <li><Link to={createPageUrl("IntegrationsPage")} className="hover:text-cyan-400 transition-colors">Integrations</Link></li>
