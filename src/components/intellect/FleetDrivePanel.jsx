@@ -130,6 +130,15 @@ export default function FleetDrivePanel({ orgId, openWindow }) {
     refetchInterval: 30000,
   });
 
+  // Listen for files added from H.A.R.B.O.R chat and refresh instantly
+  useEffect(() => {
+    const handler = () => {
+      queryClient.invalidateQueries({ queryKey: ["fleet-drive", orgId] });
+    };
+    window.addEventListener("fleetdrive_file_added", handler);
+    return () => window.removeEventListener("fleetdrive_file_added", handler);
+  }, [orgId, queryClient]);
+
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.FleetDriveFile.delete(id),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["fleet-drive", orgId] }); toast.success("File deleted"); },
@@ -419,10 +428,14 @@ function JarvisFileRow({ file, onDelete, onPin, openWindow, selected, onSelect }
         <div className="flex items-center gap-2 mt-0.5">
           <span className="text-[9px] tracking-widest" style={{ color: "rgba(148,163,184,0.4)" }}>{formatBytes(file.file_size_bytes)}</span>
           <span className="text-[9px] tracking-widest uppercase" style={{ color: `${color}60` }}>{file.file_type || "FILE"}</span>
-          {file.source !== "uploaded" && (
+          {file.source && file.source !== "uploaded" && (
             <span className="text-[8px] px-1 py-px border"
-              style={{ color: "#8b5cf6", borderColor: "rgba(139,92,246,0.3)", background: "rgba(139,92,246,0.06)" }}>
-              {file.source === "document_editor" ? "DOC" : "SHEET"}
+              style={{
+                color: file.source === "chat" ? "#10b981" : "#8b5cf6",
+                borderColor: file.source === "chat" ? "rgba(16,185,129,0.3)" : "rgba(139,92,246,0.3)",
+                background: file.source === "chat" ? "rgba(16,185,129,0.06)" : "rgba(139,92,246,0.06)"
+              }}>
+              {file.source === "chat" ? "CHAT" : file.source === "document_editor" ? "DOC" : "SHEET"}
             </span>
           )}
         </div>

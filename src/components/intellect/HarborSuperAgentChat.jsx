@@ -708,15 +708,50 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
     });
   };
 
+  const inferFileType = (mimeType, name) => {
+    const ext = name?.split(".").pop()?.toLowerCase();
+    if (mimeType?.startsWith("image/") || ["jpg","jpeg","png","gif","webp","svg"].includes(ext)) return "image";
+    if (mimeType?.startsWith("video/") || ["mp4","mov","avi","mkv"].includes(ext)) return "video";
+    if (mimeType === "application/pdf" || ext === "pdf") return "pdf";
+    if (["doc","docx","txt","rtf","odt","html"].includes(ext)) return "document";
+    if (["xls","xlsx","csv","ods"].includes(ext)) return "spreadsheet";
+    if (["zip","rar","tar","gz","7z"].includes(ext)) return "archive";
+    return "other";
+  };
+
+  const saveToFleetDrive = useCallback(async (file, fileUrl) => {
+    if (!orgId) return;
+    try {
+      const record = await base44.entities.FleetDriveFile.create({
+        organization_id: orgId,
+        name: file.name,
+        file_url: fileUrl,
+        file_type: inferFileType(file.type, file.name),
+        file_size_bytes: file.size,
+        mime_type: file.type,
+        folder: "chat_uploads",
+        source: "chat",
+      });
+      // Notify FleetDrive panel to refresh
+      window.dispatchEvent(new CustomEvent("fleetdrive_file_added", { detail: { file: record } }));
+    } catch { /* silent — chat still works without FleetDrive */ }
+  }, [orgId]);
+
   const handleFileUpload = async (e) => {
     const files = Array.from(e.target.files);
     if (!files.length) return;
     setIsUploading(true);
     for (const file of files) {
       try {
-        const { file_url } = await base44.integrations.Core.UploadFile({ file });
+        const res = await base44.integrations.Core.UploadFile({ file });
+        const file_url = res?.data?.file_url || res?.file_url;
+        if (!file_url) throw new Error("Upload failed");
         const type = file.type.startsWith("image") ? "image" : file.type.startsWith("video") ? "video" : "file";
         setAttachments(prev => [...prev, { url: file_url, name: file.name, type }]);
+        // Auto-save to FleetDrive in background
+        saveToFleetDrive(file, file_url).then(() => {
+          toast.success(`📁 "${file.name}" gemt i FleetDrive`, { duration: 2500 });
+        });
       } catch { toast.error(`Failed to upload ${file.name}`); }
     }
     setIsUploading(false);
