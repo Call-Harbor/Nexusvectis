@@ -846,6 +846,11 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
         setIsSending(false);
         if (last.content) processHologramCommands(last.content);
       }
+      // Safety: if last message is from user and we've been waiting >15s, reset sending state
+      if (last?.role === "user") {
+        clearTimeout(window._harborSendTimeout);
+        window._harborSendTimeout = setTimeout(() => setIsSending(false), 15000);
+      }
     });
   };
 
@@ -987,16 +992,10 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
     scrollToBottom(true);
 
     try {
-      // Send message with advanced parameters to intellect API
       await base44.agents.addMessage(conv, { 
         role: "user", 
         content: msg || "(files attached)", 
         ...(fileUrls.length > 0 && { file_urls: fileUrls }),
-        // Advanced features from Intellect API
-        confidence_scores: confidenceScores,
-        context_enrichment: contextEnrichment,
-        output_format: outputFormat,
-        temperature_hint: temperatureHint
       });
       if (orgId) base44.entities.FleetAIUsage.create({ organization_id: orgId, command: msg || "(files)", action: "HARBOR_SUPER_AGENT_CHAT", success: true }).catch(() => {});
     } catch (err) {
@@ -1092,7 +1091,7 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
           })}
           <button onClick={() => setShowSidebar(p => !p)} className="px-2.5 py-1.5 rounded-lg text-[10px] font-mono flex items-center gap-1 transition-all"
             style={{ color: "#64748b", border: "1px solid rgba(100,116,139,0.2)" }}>
-            <MessageSquare className="w-3 h-3" /><span className="hidden sm:inline">{showSidebar ? "Skjul" : "Chats"}</span>
+            <MessageSquare className="w-3 h-3" /><span className="hidden sm:inline">{showSidebar ? "Hide" : "Chats"}</span>
           </button>
           <button onClick={() => setIsMaximized(p => !p)} className="p-1.5 rounded-lg hover:bg-slate-800/60 transition-all" style={{ color: "#64748b" }}>
             {isMaximized ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
@@ -1122,14 +1121,14 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
                 <div className="flex items-center gap-2">
                   <div className="relative">
                     <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3" style={{ color: "#475569" }} />
-                    <input value={workerSearch} onChange={e => setWorkerSearch(e.target.value)} placeholder="Søg..."
+                    <input value={workerSearch} onChange={e => setWorkerSearch(e.target.value)} placeholder="Search..."
                       className="pl-7 pr-3 py-1 rounded-lg text-[10px] font-mono bg-black/40 text-white outline-none w-32"
                       style={{ border: "1px solid rgba(255,255,255,0.08)" }} />
                   </div>
                   <motion.button onClick={() => { setEditingWorker(null); setShowWorkerBuilder(true); }} whileHover={{ scale: 1.05 }}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-mono font-bold"
                     style={{ background: "rgba(139,92,246,0.15)", color: "#a78bfa", border: "1px solid rgba(139,92,246,0.3)" }}>
-                    <UserPlus className="w-3 h-3" /> Opret Worker
+                    <UserPlus className="w-3 h-3" /> Create Worker
                   </motion.button>
                 </div>
               </div>
@@ -1148,11 +1147,11 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
                 <div>
                   {customWorkers.length === 0 ? (
                     <div className="py-6 text-center">
-                      <p className="text-xs text-slate-500 mb-3">Ingen custom workers endnu</p>
+                      <p className="text-xs text-slate-500 mb-3">No custom workers yet</p>
                       <motion.button onClick={() => { setEditingWorker(null); setShowWorkerBuilder(true); }} whileHover={{ scale: 1.05 }}
                         className="px-4 py-2 rounded-xl text-xs font-mono font-bold"
                         style={{ background: "rgba(139,92,246,0.15)", color: "#a78bfa", border: "1px solid rgba(139,92,246,0.3)" }}>
-                        + Opret din første worker
+                        + Create your first worker
                       </motion.button>
                     </div>
                   ) : (
@@ -1460,7 +1459,7 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
                   </div>
                   <div>
                     <p className="text-sm font-black font-mono tracking-wider" style={{ color: selectedOutput.worker.color }}>{selectedOutput.worker.name}</p>
-                    <p className="text-[10px] text-slate-500 font-mono uppercase tracking-widest">Analyse Output</p>
+                    <p className="text-[10px] text-slate-500 font-mono uppercase tracking-widest">Analysis Output</p>
                   </div>
                 </div>
                 <button onClick={() => setSelectedOutput(null)} className="p-1.5 rounded-lg hover:bg-red-500/20 transition-colors" style={{ color: "#64748b" }}>
