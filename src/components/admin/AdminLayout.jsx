@@ -5,8 +5,8 @@ import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
 import { 
   LayoutDashboard, FileText, Mail, Globe, Loader2, ShieldAlert, Brain, 
-  BarChart2, Smartphone, Building2, Activity, Shield, Users, 
-  Zap, Database, ChevronLeft, AlertTriangle, Settings, TrendingUp
+  BarChart2, Building2, Activity, Shield, Users, 
+  Zap, Database, ChevronLeft, AlertTriangle, TrendingUp, Layers
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -38,14 +38,15 @@ const adminNavItems = [
     items: [
       { name: "Security Center", icon: Shield, page: "AdminSecurityCenter" },
       { name: "Messages", icon: Mail, page: "AdminMessages" },
-      { name: "API & Usage", icon: Zap, page: "APIMetrics" },
     ]
   },
   {
-    section: "INTELLIGENCE",
+    section: "STRATEGIC AI",
     items: [
       { name: "CEO Intelligence", icon: Brain, page: "CEODashboard" },
-      { name: "Mobile Publisher", icon: Smartphone, page: "MobileAppPublisher" },
+      { name: "Competitive Intel", icon: TrendingUp, page: "AdminCompetitiveIntel" },
+      { name: "Revenue Engine", icon: Database, page: "AdminRevenueEngine" },
+      { name: "Scenario Simulator", icon: Layers, page: "AdminScenarioSimulator" },
     ]
   }
 ];

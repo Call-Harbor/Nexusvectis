@@ -31,6 +31,9 @@ import GridManagement from './pages/GridManagement';
 import AdminPlatformHealth from './pages/AdminPlatformHealth';
 import AdminOrganizations from './pages/AdminOrganizations';
 import AdminSecurityCenter from './pages/AdminSecurityCenter';
+import AdminCompetitiveIntel from './pages/AdminCompetitiveIntel';
+import AdminRevenueEngine from './pages/AdminRevenueEngine';
+import AdminScenarioSimulator from './pages/AdminScenarioSimulator';
 
 
 const { Pages, Layout, mainPage } = pagesConfig;
@@ -241,6 +244,9 @@ const AuthenticatedApp = () => {
       <Route path="/AdminPlatformHealth" element={<LayoutWrapper currentPageName="AdminPlatformHealth"><AdminPlatformHealth /></LayoutWrapper>} />
       <Route path="/AdminOrganizations" element={<LayoutWrapper currentPageName="AdminOrganizations"><AdminOrganizations /></LayoutWrapper>} />
       <Route path="/AdminSecurityCenter" element={<LayoutWrapper currentPageName="AdminSecurityCenter"><AdminSecurityCenter /></LayoutWrapper>} />
+      <Route path="/AdminCompetitiveIntel" element={<LayoutWrapper currentPageName="AdminCompetitiveIntel"><AdminCompetitiveIntel /></LayoutWrapper>} />
+      <Route path="/AdminRevenueEngine" element={<LayoutWrapper currentPageName="AdminRevenueEngine"><AdminRevenueEngine /></LayoutWrapper>} />
+      <Route path="/AdminScenarioSimulator" element={<LayoutWrapper currentPageName="AdminScenarioSimulator"><AdminScenarioSimulator /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
