@@ -1012,7 +1012,7 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
       setMessages(prev => [...prev, { role: "user", content: currentCommand }]);
       setInput("");
       openWindow('vehicle_builder', { x: 80, y: 60 });
-      setMessages(prev => [...prev, { role: "system", content: "🔧 Transportbygger & Simulator åbnet — Konfigurer dit køretøj trin for trin og kør avanceret brændstof- og CO₂-simulering" }]);
+      setMessages(prev => [...prev, { role: "system", content: "🔧 Vehicle Builder & Simulator opened — Configure your vehicle step by step and run advanced fuel and CO₂ simulation" }]);
       return;
     }
 
@@ -1022,7 +1022,7 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
       setMessages(prev => [...prev, { role: "user", content: currentCommand }]);
       setInput("");
       openWindow('fleet_3d_viewer', { x: 60, y: 50 });
-      setMessages(prev => [...prev, { role: "system", content: "🚛 Fleet 3D Viewer åbnet — Udforsk realistiske 3D-modeller af lastbiler (Volvo, Scania, Mercedes, MAN, DAF), containerskibe, tankskibe, cargo droner og fragtfly. Klik og træk for at rotere!" }]);
+      setMessages(prev => [...prev, { role: "system", content: "🚛 Fleet 3D Viewer opened — Explore realistic 3D models of trucks (Volvo, Scania, Mercedes, MAN, DAF), container ships, tankers, cargo drones and cargo aircraft. Click and drag to rotate!" }]);
       return;
     }
 
@@ -1064,7 +1064,7 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
     setMessages(prev => [...prev, { role: "system", content: "⚡ H.A.R.B.O.R analyzing..." }]);
 
     if (!intellectConversationRef.current) {
-      setMessages(prev => [...prev.filter(m => m.content !== '⚡ H.A.R.B.O.R analyzing...'), { role: 'system', content: '❌ Agent ikke klar endnu, prøv igen' }]);
+      setMessages(prev => [...prev.filter(m => m.content !== '⚡ H.A.R.B.O.R analyzing...'), { role: 'system', content: '❌ Agent not ready yet, try again' }]);
       setIsProcessing(false);
       return;
     }
@@ -1080,7 +1080,7 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
       isWaitingForAgentRef.current = false;
       setMessages(prev => [
         ...prev.filter(m => m.content !== '⚡ H.A.R.B.O.R analyzing...'),
-        { role: 'system', content: `❌ H.A.R.B.O.R fejl: ${err.message}` }
+        { role: 'system', content: `❌ H.A.R.B.O.R error: ${err.message}` }
       ]);
       setIsProcessing(false);
     }
@@ -1509,7 +1509,7 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
             orgId={orgId}
             onOpenWindow={(windowType, agentTask) => {
               const newId = openWindow(windowType, { x: 80 + Math.random() * 200, y: 60 + Math.random() * 100 }, null);
-              toast.success(`🤖 Åbner ${windowType.replace(/_/g, ' ')}...`);
+              toast.success(`🤖 Opening ${windowType.replace(/_/g, ' ')}...`);
               return newId;
             }}
           />
