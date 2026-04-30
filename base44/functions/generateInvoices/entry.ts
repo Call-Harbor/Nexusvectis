@@ -99,9 +99,10 @@ Deno.serve(async (req) => {
       const resourcePriceEuro = 40;
       const fleetAIPricePer100 = 5;
       const apiPricePer100 = 5;
-      const harborPricePerCall = 0.25;
-      const intellectPricePerCall = 0.50;
-      const orchestratorPricePerCall = 0.50;
+      // Harbor Premium pricing — all include advanced features (confidence scoring, domain tagging, synthesis, validation)
+      const harborPricePerCall = 0.25;      // Harbor Core Intelligence — basic specialized analysis
+      const intellectPricePerCall = 0.50;   // Harbor Intellect Chat — conversational superintelligence with advanced features
+      const orchestratorPricePerCall = 0.50; // Harbor Orchestrator — multi-agent orchestration with task decomposition + validation
       const addonPrice = 2000;
 
       // Check if add-ons have been active for 48+ hours (once activated, billed for entire period even if deactivated)

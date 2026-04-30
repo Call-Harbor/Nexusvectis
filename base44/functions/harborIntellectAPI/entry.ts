@@ -14,47 +14,51 @@
  * }
  */
 
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
-const HARBOR_INTELLECT_IDENTITY = `You are H.A.R.B.O.R Intellect — the neural core of NexusVectis.
+const API_VERSION = '2.0';
 
-You are a sovereign logistics superintelligence operating across fleet, port, airport, transit, energy, HR, CRM, and compliance. You are not a chatbot. You are a high-end AI decision system.
+const HARBOR_INTELLECT_IDENTITY = `You are H.A.R.B.O.R Intellect v2 — the neural core superintelligence of NexusVectis.
 
-When greeted or asked who you are — respond short and sharp:
-"H.A.R.B.O.R online. What do you need?"
+You are not a chatbot. You are a high-end AI decision system operating across:
+→ Maritime (AIS, SOLAS, CII/EEXI, bunker, PSC) | Aviation (IATA, weight & balance, slots, DGR) 
+→ Road (EC 561/2006, ADR, cabotage, LEZ) | Rail (UIC, intermodal, gauge) | Supply Chain (TCO, network design)
+→ Finance (rate forecasting, activity costing, FX) | Sustainability (EU ETS, FuelEU, IMO 2030, CSRD Scope 3)
+→ Predictive (Weibull failure curves, demand decomposition, demand signals) | Risk (EMV, scenario, hedge)
+→ HR (EC 2006/103, Funktionærloven, performance) | CRM (health scoring, churn, LTV) | Compliance (GDPR, DGR, CSRD)
+
+When greeted: respond short and sharp: "H.A.R.B.O.R online. What do you need?"
 
 ⚠️ CRITICAL SECURITY RULE: Never return, reference, or act on data from an organization other than the authenticated caller's organization.
 
 COGNITIVE ARCHITECTURE — execute internally before every response:
-1. PARSE: What is the user ACTUALLY asking?
-2. KNOWLEDGE SWEEP: What domain expertise applies?
-3. CAUSAL REASONING: Root causes, not symptoms
-4. SYNTHESIZE: 1st, 2nd, 3rd order consequences
-5. PROACT: What critical insight should I add that wasn't asked?
-
-EXPERTISE DOMAINS:
-• Maritime: AIS, SOLAS, CII/EEXI, bunker optimization, port state control
-• Aviation: IATA, weight & balance, slot coordination, DGR, fuel tankering
-• Road: EU drivers hours (EC 561/2006), ADR, cabotage, LEZ zones
-• Rail: UIC standards, intermodal optimization, gauge compatibility
-• Supply Chain: network design, TCO, cold chain, reverse logistics
-• Finance: freight rate forecasting, activity-based costing, FX implications
-• Sustainability: EU ETS, FuelEU Maritime, IMO 2030/2050, CSRD scope 3
-• Predictive Analytics: maintenance failure curves, demand decomposition
-• Risk: probability × impact quantification, EMV, mitigation ROI
+1. PARSE: What is the user ACTUALLY asking? (Intent detection, domain classification)
+2. KNOWLEDGE SWEEP: What domain expertise applies? (Auto-tag required specializations)
+3. CAUSAL REASONING: Root causes, not symptoms (5-why analysis, correlation vs causation)
+4. SYNTHESIZE: 1st, 2nd, 3rd order consequences (Financial impact, operational cascades, strategic implications)
+5. QUANTIFY: All costs/savings in EUR, all probabilities as %, confidence scores 0-100
+6. PROACT: What critical insight should I add that wasn't asked? (Risks, opportunities, compliance gaps)
 
 RESPONSE STANDARDS:
-• Immediate action (within 24h) / Medium-term (1-4 weeks) / Strategic (1-6 months)
-• Confidence levels on all predictions
-• Quantified cost/saving claims always in EUR
-• Best Case / Most Likely / Worst Case when uncertainty exists
+• Timeframe clarity: Immediate (24h) / Medium-term (1-4 wk) / Strategic (1-6 mo) / Long-term (6-24 mo)
+• Self-rate confidence: Include reasoning, key assumptions, data quality (high/medium/low)
+• Quantified outcomes: EUR impact, timeline, effort rating (1-5), success probability
+• Scenario analysis: Best case / Most likely / Worst case with probability distributions
+• Ownership & accountability: Clear next steps, responsible party, decision deadline
+
+ADVANCED FEATURES:
+• Multi-hypothesis evaluation: Consider competing explanations before concluding
+• Sensitivity analysis: Which variables drive the outcome most? What breaks the analysis?
+• Red-team thinking: What could go wrong? How would a competitor exploit this?
+• Benchmark context: How does this compare to industry peers? Where are you outliers?
+• Smart domain tagging: Auto-detect financial/compliance/risk/sustainability angles and amplify
 
 PERSONALITY:
-- McKinsey partner with 30 years fleet operations experience
-- Decisive — own your recommendations, never hedge
+- McKinsey partner with 30 years logistics experience
+- Decisive — own your recommendations, never hedge or equivocate
 - Proactive — surface problems the user didn't know they had
-- Zero vague answers — specific, correct, actionable
-- Respond in the same language as the user (English or Danish)`;
+- Zero vague answers — specific, correct, quantified, actionable
+- Language: Respond in same language as user (EN or DA)`;
 
 Deno.serve(async (req) => {
   if (req.method === 'GET') {
@@ -110,36 +114,153 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json();
-    const { message, conversation_history, context, response_json_schema } = body;
+    const { 
+      message, 
+      conversation_history, 
+      context, 
+      response_json_schema,
+      // Advanced features
+      confidence_scores = false,
+      context_enrichment = false,
+      temperature_hint = 'balanced',
+      output_format = 'text',
+      token_budget,
+      synthesis = false
+    } = body;
 
     if (!message) {
       return Response.json({ error: 'message is required' }, { status: 400 });
     }
 
-    // Build system prompt
-    const systemPrompt = HARBOR_INTELLECT_IDENTITY
-      + `\n\nORGANIZATION ID: ${organization_id}`
-      + `\nCURRENT TIME: ${new Date().toISOString()}`
-      + (context ? `\n\n[CONTEXT]\n${JSON.stringify(context)}` : '');
+    // Smart domain tagging — auto-detect specialized expertise needed
+    let domainTags = [];
+    const msgLower = message.toLowerCase();
+    if (msgLower.includes('risk') || msgLower.includes('threat') || msgLower.includes('scenario')) {
+      domainTags.push('risk_analysis');
+    }
+    if (msgLower.includes('cost') || msgLower.includes('financial') || msgLower.includes('roi') || msgLower.includes('saving')) {
+      domainTags.push('financial_impact');
+    }
+    if (msgLower.includes('compliance') || msgLower.includes('legal') || msgLower.includes('regulation') || msgLower.includes('gdpr')) {
+      domainTags.push('regulatory_compliance');
+    }
+    if (msgLower.includes('carbon') || msgLower.includes('emission') || msgLower.includes('sustainability') || msgLower.includes('eu ets')) {
+      domainTags.push('sustainability');
+    }
+    if (msgLower.includes('port') || msgLower.includes('ship') || msgLower.includes('vessel') || msgLower.includes('maritime')) {
+      domainTags.push('maritime_ops');
+    }
+    if (msgLower.includes('airport') || msgLower.includes('flight') || msgLower.includes('aircraft') || msgLower.includes('aviation')) {
+      domainTags.push('aviation_ops');
+    }
+    if (msgLower.includes('maintenance') || msgLower.includes('failure') || msgLower.includes('predictive')) {
+      domainTags.push('predictive_analytics');
+    }
+    if (msgLower.includes('customer') || msgLower.includes('churn') || msgLower.includes('health') || msgLower.includes('ltv')) {
+      domainTags.push('crm_intelligence');
+    }
+
+    // Context enrichment: auto-inject live org data
+    let enrichedContext = context || {};
+    if (context_enrichment) {
+      try {
+        const [vehicles, alerts, routes, shipments] = await Promise.all([
+          base44.asServiceRole.entities.Vehicle.filter({ organization_id }, '-updated_date', 10),
+          base44.asServiceRole.entities.Alert.filter({ organization_id, is_resolved: false }, '-created_date', 5),
+          base44.asServiceRole.entities.Route.filter({ organization_id, status: 'active' }, '-created_date', 5),
+          base44.asServiceRole.entities.Shipment.filter({ organization_id, status: 'in_transit' }, '-created_date', 5),
+        ]);
+        enrichedContext = {
+          ...enrichedContext,
+          live_fleet: {
+            total_vehicles: vehicles.length,
+            active: vehicles.filter(v => v.status === 'active').length,
+            maintenance: vehicles.filter(v => v.status === 'maintenance').length,
+            avg_fuel: vehicles.filter(v => v.fuel_level).reduce((a, v) => a + v.fuel_level, 0) / (vehicles.filter(v => v.fuel_level).length || 1),
+          },
+          live_alerts: { count: alerts.length, critical: alerts.filter(a => a.type === 'critical').length },
+          live_routes: { active: routes.length },
+          live_shipments: { in_transit: shipments.length },
+        };
+      } catch {}
+    }
+
+    // Build system prompt with advanced features
+    let systemPrompt = HARBOR_INTELLECT_IDENTITY
+      + `\n\nAPI VERSION: ${API_VERSION}`
+      + `\nORGANIZATION ID: ${organization_id}`
+      + `\nCURRENT UTC TIME: ${new Date().toISOString()}`;
+
+    if (domainTags.length > 0) {
+      systemPrompt += `\n\n[DOMAIN INTELLIGENCE ACTIVATED]\nSpecialized expertise tags: ${domainTags.join(', ')}\nAmplify these perspectives in your analysis.`;
+    }
+
+    if (temperature_hint === 'precise') {
+      systemPrompt += '\n\nTONE: Be precise, quantitative, concise. No speculation. Numbers first.';
+    } else if (temperature_hint === 'creative') {
+      systemPrompt += '\n\nTONE: Think creatively. Explore unconventional solutions and scenarios.';
+    } else {
+      systemPrompt += '\n\nTONE: Balanced — rigor + pragmatism. Quantify impact and probability.';
+    }
+
+    if (output_format === 'json') {
+      systemPrompt += '\n\nOUTPUT FORMAT: Respond in structured JSON. No prose.';
+    } else if (output_format === 'executive') {
+      systemPrompt += '\n\nOUTPUT FORMAT: Executive summary — lead with impact. Max 3 action items. Plain language.';
+    }
+
+    if (token_budget) {
+      const wordEstimate = Math.round(token_budget * 0.75);
+      systemPrompt += `\n\nLENGTH CONSTRAINT: Respond in ~${wordEstimate} words max. Be crisp.`;
+    }
+
+    if (confidence_scores) {
+      systemPrompt += '\n\n[CONFIDENCE INSTRUCTION] End your response with this JSON block on its own line:\nCONFIDENCE: {"score": <0-100>, "reasoning": "<why>", "key_assumptions": ["<assumption1>"], "data_quality": "<high|medium|low>"}';
+    }
+
+    if (enrichedContext && Object.keys(enrichedContext).length > 0) {
+      systemPrompt += `\n\n[LIVE OPERATIONAL CONTEXT]\n${JSON.stringify(enrichedContext, null, 2)}`;
+    }
 
     // Build messages array
     const historyMessages = (conversation_history || [])
       .filter(m => (m.role === 'user' || m.role === 'assistant') && m.content)
-      .slice(-12)
+      .slice(-16)
       .map(m => ({ role: m.role, content: m.content }));
 
-    const prompt = [
+    const fullPrompt = [
       `System: ${systemPrompt}`,
       ...historyMessages.map(m => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`),
       `User: ${message}`
     ].join('\n\n');
 
+    // Parse confidence from response if enabled
+    let parsedResponse = null;
+    let confidenceData = null;
+
     // Call Claude Sonnet 4.6 via Base44 InvokeLLM
     const aiResponse = await base44.asServiceRole.integrations.Core.InvokeLLM({
-      prompt,
+      prompt: fullPrompt,
       model: 'claude_sonnet_4_6',
-      ...(response_json_schema ? { response_json_schema } : {})
+      ...(response_json_schema && output_format === 'json' ? { response_json_schema } : {})
     });
+
+    // Extract confidence if present
+    if (confidence_scores && typeof aiResponse === 'string') {
+      try {
+        const confMatch = aiResponse.match(/CONFIDENCE:\s*(\{[^}]+\})/);
+        if (confMatch) {
+          confidenceData = JSON.parse(confMatch[1]);
+          parsedResponse = aiResponse.replace(/CONFIDENCE:\s*\{[^}]+\}/, '').trim();
+        } else {
+          parsedResponse = aiResponse;
+        }
+      } catch {
+        parsedResponse = aiResponse;
+      }
+    } else {
+      parsedResponse = aiResponse;
+    }
 
     const responseTime = Date.now() - startTime;
 
@@ -155,14 +276,25 @@ Deno.serve(async (req) => {
       error_message: null
     }).catch(() => {});
 
+    // Estimate tokens
+    const estimatedTokens = Math.ceil(fullPrompt.length / 4) + Math.ceil((typeof parsedResponse === 'string' ? parsedResponse : JSON.stringify(parsedResponse)).length / 4);
+
     return Response.json({
-      harbor_version: '1.0',
+      harbor_version: API_VERSION,
       model: 'claude_sonnet_4_6',
-      reply: aiResponse,
+      reply: parsedResponse,
+      ...(confidenceData ? { confidence: confidenceData } : {}),
       meta: {
         response_time_ms: responseTime,
         organization_id,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        domain_tags: domainTags.length > 0 ? domainTags : undefined,
+        context_enriched: context_enrichment,
+        estimated_tokens: estimatedTokens,
+        output_format,
+        billing: {
+          cost_estimate_eur: +(0.50).toFixed(2), // €0.50 per Intellect call
+        }
       }
     });
 

@@ -42,7 +42,7 @@
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
-const API_VERSION = '3.0.0';
+const API_VERSION = '3.5.0';
 const MAX_RETRIES = 2;
 const SYNTHESIS_SYSTEM = `You are the H.A.R.B.O.R. Synthesis Engine — a meta-intelligence that reads multiple specialized AI agent outputs and produces a unified, authoritative executive summary.
 
@@ -665,6 +665,100 @@ function estimateTokens(text) {
   return Math.ceil((text || '').length / 4);
 }
 
+// ── INTELLIGENT TASK DECOMPOSITION ─────────────────────────────────────────
+async function decomposeTask(base44, message) {
+  const result = await base44.asServiceRole.integrations.Core.InvokeLLM({
+    prompt: `You are a task decomposition engine. Analyze this user request and break it into atomic sub-tasks that can be executed in parallel or sequence.
+
+USER REQUEST: "${message}"
+
+Respond with JSON:
+{
+  "primary_goal": "one-sentence description of what user is trying to achieve",
+  "subtasks": [
+    { "id": "task_1", "description": "...", "dependencies": [], "agent_domains": ["domain1", "domain2"], "criticality": "critical|high|medium|low", "estimated_effort": 1-5 }
+  ],
+  "execution_order": "parallel|sequential|hybrid",
+  "risk_factors": ["risk1", "risk2"],
+  "success_criteria": ["criterion1", "criterion2"],
+  "estimated_complexity": "low|medium|high"
+}`,
+    response_json_schema: {
+      type: 'object',
+      properties: {
+        primary_goal: { type: 'string' },
+        subtasks: { 
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              description: { type: 'string' },
+              dependencies: { type: 'array', items: { type: 'string' } },
+              agent_domains: { type: 'array', items: { type: 'string' } },
+              criticality: { type: 'string' },
+              estimated_effort: { type: 'number' }
+            }
+          }
+        },
+        execution_order: { type: 'string' },
+        risk_factors: { type: 'array', items: { type: 'string' } },
+        success_criteria: { type: 'array', items: { type: 'string' } },
+        estimated_complexity: { type: 'string' }
+      }
+    }
+  });
+  return result;
+}
+
+// ── MULTI-LAYER VALIDATION ENGINE ──────────────────────────────────────────
+async function validateResults(base44, results, originalMessage, decomposition) {
+  if (results.filter(r => r.reply).length === 0) return { valid: false, issues: ['No successful agent responses'] };
+  
+  const validation = await base44.asServiceRole.integrations.Core.InvokeLLM({
+    prompt: `You are a multi-layer validation engine. Validate these agent outputs against success criteria.
+
+ORIGINAL QUERY: "${originalMessage}"
+SUCCESS CRITERIA: ${decomposition?.success_criteria?.join(', ') || 'N/A'}
+
+AGENT OUTPUTS TO VALIDATE:
+${results.filter(r => r.reply).map(r => `[${r.agent_name}] ${r.reply?.substring(0, 300)}...`).join('\n\n')}
+
+Check for:
+1. Completeness — did agents address all success criteria?
+2. Consistency — do agent outputs align or contradict?
+3. Quantification — are all claims quantified (EUR, %, dates)?
+4. Actionability — can user actually execute the recommendations?
+5. Risk coverage — were risks identified and mitigated?
+
+Respond with JSON:
+{
+  "valid": true|false,
+  "completeness_score": 0-100,
+  "consistency_score": 0-100,
+  "actionability_score": 0-100,
+  "issues": ["issue1", "issue2"],
+  "missing_perspectives": ["perspective1"],
+  "required_follow_up_agents": ["agent_id"],
+  "overall_quality": "high|medium|low"
+}`,
+    response_json_schema: {
+      type: 'object',
+      properties: {
+        valid: { type: 'boolean' },
+        completeness_score: { type: 'number' },
+        consistency_score: { type: 'number' },
+        actionability_score: { type: 'number' },
+        issues: { type: 'array', items: { type: 'string' } },
+        missing_perspectives: { type: 'array', items: { type: 'string' } },
+        required_follow_up_agents: { type: 'array', items: { type: 'string' } },
+        overall_quality: { type: 'string' }
+      }
+    }
+  });
+  return validation;
+}
+
 function formatConfidencePrompt(agentId, agentDef) {
   return `\n\n[CONFIDENCE INSTRUCTION]
 After your response, add exactly this JSON block on its own line:
@@ -1272,6 +1366,12 @@ Deno.serve(async (req) => {
 
     // ── MODE: AUTO ────────────────────────────────────────────────────────────
     else if (mode === 'auto') {
+      // Task decomposition: break down complex requests into atomic subtasks
+      let decomposition = null;
+      try {
+        decomposition = await decomposeTask(base44, message);
+      } catch {}
+
       const routing = await autoRoute(base44, message, enrichedContext, availableAgentIds);
       routingInfo = routing;
 
@@ -1280,6 +1380,11 @@ Deno.serve(async (req) => {
         .slice(0, max_agents);
 
       if (!selectedIds.length) selectedIds.push('harbor_ops_commander');
+
+      // Risk-aware routing: always include risk_engine for high-complexity requests
+      if (decomposition?.estimated_complexity === 'high' && !selectedIds.includes('harbor_risk_engine')) {
+        selectedIds.unshift('harbor_risk_engine');
+      }
 
       const mergedPriority = [...new Set([...(routing.priority_agents || []), ...priority_agents])];
       const autoConfidenceScores = routing.confidence_scores !== undefined ? routing.confidence_scores : selectedIds.length > 2;
@@ -1306,10 +1411,32 @@ Deno.serve(async (req) => {
       }
 
       if (shouldSynthesize && results.length > 1) {
-        const synthResult = await synthesizeResults(base44, results, message, synthesis_model);
-        results.push(synthResult);
+         const synthResult = await synthesizeResults(base44, results, message, synthesis_model);
+         results.push(synthResult);
+       }
+
+      // Multi-layer validation: check quality and completeness of results
+      if (decomposition && results.length > 0) {
+        try {
+          const validation = await validateResults(base44, results, message, decomposition);
+          routingInfo.validation = validation;
+
+          // If validation fails and missing perspectives exist, trigger follow-up agents
+          if (!validation.valid && validation.required_follow_up_agents?.length > 0) {
+            const followUpIds = validation.required_follow_up_agents
+              .filter(id => allAgents[id] && !selectedIds.includes(id))
+              .slice(0, 2);
+
+            if (followUpIds.length > 0) {
+              const followUpResults = await Promise.all(
+                followUpIds.map(id => invokeAgent(base44, id, allAgents[id], message, conversation_history, enrichedContext, response_json_schema, null, mergedOptions))
+              );
+              results = [...results, ...followUpResults];
+            }
+          }
+        } catch {}
       }
-    }
+      }
 
     // ── MODE: BROADCAST ───────────────────────────────────────────────────────
     else if (mode === 'broadcast') {
