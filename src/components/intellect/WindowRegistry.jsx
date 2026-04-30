@@ -56,6 +56,7 @@ export const WINDOW_META = {
   airport_ops: { title: '✈️ Airport Ops Center', icon: Layers },
   port_command: { title: '🚢 Port Command Center', icon: Layers },
   ai_dev_ide: { title: '🖥️ Fleet AI IDE & DevOps', icon: Code2 },
+  orchestrator_load_map: { title: '📡 Orchestrator Load Map', icon: Activity },
 };
 
 export function getWindowMeta(type) {

@@ -450,6 +450,7 @@ export default function IntellectMode() {
       openPortCommand: () => { openWindow('port_command', { x: 80, y: 60 }); setMessages(prev => [...prev, { role: "system", content: "🚢 Port Command Center opened as hologram — Full AI-powered port operations" }]); },
       openEnergyOps: () => { navigate('/EnergyOpsCenter'); setMessages(prev => [...prev, { role: "system", content: "⚡ Energy & Utilities Ops opened — Neural grid control, load forecast, AI dispatch and resilience simulation" }]); },
       openAIDevIDE: () => { openWindow('ai_dev_ide', { x: 40, y: 30 }); setMessages(prev => [...prev, { role: "system", content: "🖥️ Fleet AI IDE & DevOps Orchestrator activated — Advanced code generation, CI/CD pipelines and AI agent orchestration" }]); },
+      openOrchestratorLoadMap: () => { openWindow('orchestrator_load_map', { x: 60, y: 50 }); setMessages(prev => [...prev, { role: "system", content: "📡 Orchestrator Load Map opened — Real-time heatmap of all 50+ AI agents' system load" }]); },
       };
      actionMap[action]?.();
      }, [openWindow, vehicles, routes, setMessages, installedAppIds]);
@@ -1554,6 +1555,23 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
           <AgentControlPanel onClose={() => setShowAgentControlPanel(false)} />
         )}
       </AnimatePresence>
+
+      {/* Orchestrator Load Map Button */}
+      <motion.button
+        onClick={() => handleQuickAction('openOrchestratorLoadMap')}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        className="fixed bottom-80 right-6 z-40 flex items-center gap-2.5 px-4 py-3 rounded-2xl font-mono font-bold text-xs tracking-widest uppercase transition-all"
+        style={{
+          background: "linear-gradient(135deg, rgba(167,139,250,0.15), rgba(239,68,68,0.15))",
+          border: "1px solid rgba(167,139,250,0.5)",
+          color: "#a78bfa",
+          boxShadow: "0 0 30px rgba(167,139,250,0.2)"
+        }}>
+        <Network className="w-4 h-4" />
+        Load Map
+        <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" />
+      </motion.button>
 
       {/* Agent Control Button */}
       <motion.button

@@ -36,6 +36,7 @@ import FleetStore from "@/components/intellect/FleetStore";
 import AIDevOrchestrator from "@/components/intellect/AIDevOrchestrator";
 import FleetAnalysisFormatter from "@/components/intellect/FleetAnalysisFormatter";
 import AdvancedFleetAnalysisHologram from "@/components/intellect/AdvancedFleetAnalysisHologram";
+import OrchestratorLoadMap from "@/components/intellect/OrchestratorLoadMap";
 
 const CHART_COLORS = ['#06b6d4', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444'];
 
@@ -435,6 +436,7 @@ export default function WindowContentRenderer({ type, data, vehicles, routes, sh
   if (type === 'airport_ops') return <iframe src={`/AirportOpsCenter?hologram=true`} className="w-full h-full border-0" title="Airport Ops Center" />;
   if (type === 'port_command') return <iframe src={`/PortCommandCenter?hologram=true`} className="w-full h-full border-0" title="Port Command Center" />;
   if (type === 'ai_dev_ide') return <AIDevOrchestrator onClose={data?.onClose} />;
+  if (type === 'orchestrator_load_map') return <OrchestratorLoadMap />;
   if (PAGE_MAP[type]) {
     return <iframe src={`${createPageUrl(PAGE_MAP[type])}?hologram=true`} className="w-full h-full border-0" title={PAGE_MAP[type]} />;
   }
