@@ -9,6 +9,7 @@ import {
   AlertTriangle, Info, ChevronDown, Gauge, Rocket, Star
 } from "lucide-react";
 import { toast } from "sonner";
+import OrchestratorDocs from "@/components/api/OrchestratorDocs";
 
 const CATEGORIES = [
   { id: "all", label: "All Endpoints", icon: Layers, color: "#06b6d4" },
@@ -169,7 +170,7 @@ export default function APIDocumentation() {
               </div>
             </div>
             <div className="hidden md:flex gap-1">
-              {["endpoints", "sdks", "errors"].map(s => (
+              {["endpoints", "orchestrator", "sdks", "errors"].map(s => (
                 <button key={s} onClick={() => setActiveSection(s)}
                   className="px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-widest transition-all"
                   style={{ background: activeSection === s ? "rgba(6,182,212,0.15)" : "transparent", color: activeSection === s ? "#06b6d4" : "#475569", border: activeSection === s ? "1px solid rgba(6,182,212,0.3)" : "1px solid transparent" }}>
@@ -386,6 +387,10 @@ export default function APIDocumentation() {
               </motion.div>
             )}
           </div>
+        )}
+
+        {activeSection === "orchestrator" && (
+          <OrchestratorDocs />
         )}
 
         {activeSection === "sdks" && (
