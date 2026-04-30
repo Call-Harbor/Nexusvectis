@@ -1071,9 +1071,12 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
 
     try {
       isWaitingForAgentRef.current = true;
+      const messageContent = orgId 
+        ? `[ORG:${orgId}]\n\n${currentCommand}`
+        : currentCommand;
       await base44.agents.addMessage(intellectConversationRef.current, {
         role: 'user',
-        content: currentCommand,
+        content: messageContent,
         ...(currentFiles.length > 0 && { file_urls: currentFiles.map(f => f.url) })
       });
     } catch (err) {

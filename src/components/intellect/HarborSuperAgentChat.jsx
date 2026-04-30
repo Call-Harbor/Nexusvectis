@@ -992,9 +992,12 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
     scrollToBottom(true);
 
     try {
+      const messageContent = orgId 
+        ? `[ORG:${orgId}]\n\n${msg || "(files attached)"}`
+        : msg || "(files attached)";
       await base44.agents.addMessage(conv, { 
         role: "user", 
-        content: msg || "(files attached)", 
+        content: messageContent,
         ...(fileUrls.length > 0 && { file_urls: fileUrls }),
       });
       if (orgId) base44.entities.FleetAIUsage.create({ organization_id: orgId, command: msg || "(files)", action: "HARBOR_SUPER_AGENT_CHAT", success: true }).catch(() => {});
