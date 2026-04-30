@@ -74,10 +74,11 @@ export default function APIMetrics() {
       }
     });
 
-    // Timeline — split standard vs harbor
-    const harborTimelineMap = {};
+    // Timeline — split standard vs premium (Harbor Core, Intellect, Orchestrator)
+    const premiumTimelineMap = {};
     apiUsage.forEach(call => {
-      if (!call.endpoint?.includes('/harbor/intelligence') && !call.endpoint?.includes('harborIntellectAPI')) return;
+      const isPremium = call.endpoint?.includes('harbor') || call.endpoint?.includes('intelligence') || call.endpoint?.includes('orchestrator');
+      if (!isPremium) return;
       const date = new Date(call.created_date);
       let key;
       if (timeRange === 'daily') key = date.toISOString().split('T')[0];
@@ -85,13 +86,13 @@ export default function APIMetrics() {
         const ws = new Date(date); ws.setDate(date.getDate() - date.getDay());
         key = ws.toISOString().split('T')[0];
       } else key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-      harborTimelineMap[key] = (harborTimelineMap[key] || 0) + 1;
+      premiumTimelineMap[key] = (premiumTimelineMap[key] || 0) + 1;
     });
 
     const timeline = Object.entries(timelineMap)
       .sort(([a], [b]) => a.localeCompare(b))
       .slice(-30)
-      .map(([date, count]) => ({ date, calls: count, harbor: harborTimelineMap[date] || 0, standard: count - (harborTimelineMap[date] || 0) }));
+      .map(([date, count]) => ({ date, calls: count, premium: premiumTimelineMap[date] || 0, standard: count - (premiumTimelineMap[date] || 0) }));
 
     const endpoints = Object.entries(endpointMap)
       .sort(([, a], [, b]) => b - a)
@@ -111,11 +112,11 @@ export default function APIMetrics() {
       .slice(0, 10)
       .map(([orgId, count]) => {
         const org = organizations.find(o => o.id === orgId);
-        const harborCount = apiUsage.filter(u => u.organization_id === orgId && (u.endpoint?.includes('/harbor/intelligence') || u.endpoint?.includes('harborIntellectAPI')) && u.status_code < 400).length;
+        const premiumCount = apiUsage.filter(u => u.organization_id === orgId && (u.endpoint?.includes('harbor') || u.endpoint?.includes('intelligence') || u.endpoint?.includes('orchestrator')) && u.status_code < 400).length;
         return {
           name: org?.name || orgId.slice(0, 8),
-          calls: count - harborCount,
-          harbor: harborCount
+          standard: count - premiumCount,
+          premium: premiumCount
         };
       });
 
@@ -129,18 +130,20 @@ export default function APIMetrics() {
       ? (apiUsage.reduce((sum, c) => sum + (c.response_time_ms || 0), 0) / apiUsage.length).toFixed(0)
       : 0;
     const uniqueOrgs = new Set(apiUsage.map(c => c.organization_id)).size;
-    const harborCalls = apiUsage.filter(c => c.endpoint?.includes('/harbor/intelligence') && !c.endpoint?.includes('harborIntellectAPI') && c.status_code < 400).length;
-    const intellectCalls = apiUsage.filter(c => c.endpoint?.includes('harborIntellectAPI') && c.status_code < 400).length;
-    const harborRevenue = (harborCalls * 0.25 + intellectCalls * 0.50).toFixed(2);
+    const harborCoreCalls = apiUsage.filter(c => c.endpoint?.includes('harbor/intelligence') && !c.endpoint?.includes('Intellect') && !c.endpoint?.includes('Orchestrator') && c.status_code < 400).length;
+    const intellectCalls = apiUsage.filter(c => c.endpoint?.includes('harborIntellectAPI') || c.endpoint?.includes('Intellect') && c.status_code < 400).length;
+    const orchestratorCalls = apiUsage.filter(c => c.endpoint?.includes('Orchestrator') && c.status_code < 400).length;
+    const premiumRevenue = (harborCoreCalls * 0.25 + intellectCalls * 0.50 + orchestratorCalls * 0.50).toFixed(2);
 
     return {
       total,
       successRate: total > 0 ? ((success / total) * 100).toFixed(1) : 0,
       avgResponseTime,
       uniqueOrgs,
-      harborCalls,
+      harborCoreCalls,
       intellectCalls,
-      harborRevenue
+      orchestratorCalls,
+      premiumRevenue
     };
   }, [apiUsage]);
 
@@ -210,8 +213,8 @@ export default function APIMetrics() {
               <Brain className="w-4 h-4 text-amber-400" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-white">{stats.harborCalls.toLocaleString()}</div>
-              <p className="text-xs text-amber-300/70 mt-1">€{(stats.harborCalls * 0.25).toFixed(2)} · €0.25/call</p>
+              <div className="text-2xl font-bold text-white">{stats.harborCoreCalls.toLocaleString()}</div>
+              <p className="text-xs text-amber-300/70 mt-1">€{(stats.harborCoreCalls * 0.25).toFixed(2)} · €0.25/call</p>
             </CardContent>
           </Card>
           <Card className="bg-gradient-to-br from-violet-500/10 to-fuchsia-500/10 border-violet-500/40 backdrop-blur-xl">
@@ -222,6 +225,16 @@ export default function APIMetrics() {
             <CardContent>
               <div className="text-2xl font-bold text-white">{stats.intellectCalls.toLocaleString()}</div>
               <p className="text-xs text-violet-300/70 mt-1">€{(stats.intellectCalls * 0.50).toFixed(2)} · €0.50/call</p>
+            </CardContent>
+          </Card>
+          <Card className="bg-gradient-to-br from-indigo-500/10 to-purple-500/10 border-indigo-500/40 backdrop-blur-xl">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-indigo-300">Orchestrator</CardTitle>
+              <Brain className="w-4 h-4 text-indigo-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-white">{stats.orchestratorCalls.toLocaleString()}</div>
+              <p className="text-xs text-indigo-300/70 mt-1">€{(stats.orchestratorCalls * 0.50).toFixed(2)} · €0.50/call</p>
             </CardContent>
           </Card>
         </div>
@@ -255,7 +268,7 @@ export default function APIMetrics() {
                 />
                 <Legend />
                 <Line type="monotone" dataKey="standard" stroke="#06b6d4" strokeWidth={2} dot={false} name="Standard" />
-                <Line type="monotone" dataKey="harbor" stroke="#f59e0b" strokeWidth={2} dot={false} name="Harbor Premium" />
+                <Line type="monotone" dataKey="premium" stroke="#f59e0b" strokeWidth={2} dot={false} name="Premium (Core/Intellect/Orchestrator)" />
               </LineChart>
             </ResponsiveContainer>
           </CardContent>
@@ -343,8 +356,8 @@ export default function APIMetrics() {
                     contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '8px' }}
                     labelStyle={{ color: '#e2e8f0' }}
                   />
-                  <Bar dataKey="calls" fill="#06b6d4" name="Standard" stackId="a" />
-                  <Bar dataKey="harbor" fill="#f59e0b" name="Harbor Premium" stackId="a" />
+                  <Bar dataKey="standard" fill="#06b6d4" name="Standard" stackId="a" />
+                  <Bar dataKey="premium" fill="#f59e0b" name="Premium" stackId="a" />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
