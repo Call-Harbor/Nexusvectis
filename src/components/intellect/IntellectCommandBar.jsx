@@ -1,12 +1,24 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
-import { Send, Mic, MicOff, Zap, Paperclip, FileText, X, Sparkles, Shield, Building2, Satellite, Newspaper, LayoutDashboard } from "lucide-react";
+import { Send, Mic, MicOff, Zap, Paperclip, FileText, X, Sparkles, Shield, Building2, Satellite, Newspaper, LayoutDashboard, ChevronDown } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import MessageFormatter from "./MessageFormatter";
 import VoiceController from "./VoiceController";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+
+const PROMPT_TEMPLATES = [
+  { label: "Fleet Status", prompt: "Give me a comprehensive fleet status report" },
+  { label: "Predictive Maintenance", prompt: "Analyze predictive maintenance for all vehicles" },
+  { label: "Route Optimization", prompt: "Optimize all active routes for efficiency" },
+  { label: "Cost Analysis", prompt: "Perform a detailed cost analysis of current operations" },
+  { label: "Demand Forecast", prompt: "Forecast demand for the next 30 days" },
+  { label: "Risk Assessment", prompt: "Assess operational risks and provide mitigation strategies" },
+  { label: "Performance Analytics", prompt: "Generate performance analytics and KPI report" },
+  { label: "Sustainability Report", prompt: "Generate sustainability and CO2 emissions report" },
+];
 
 function ThinkingAnimation() {
   const steps = ["Querying fleet data", "Running analysis", "Generating response"];
@@ -211,12 +223,28 @@ export default function IntellectCommandBar({
           </AnimatePresence>
 
           <div className="flex gap-3 sm:gap-4">
-            <input type="text" value={input} onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); processCommand(); } }}
-              placeholder="COMMAND FLEET AI..."
-              className="flex-1 px-4 py-3 sm:px-5 sm:py-3.5 bg-slate-950 border-2 rounded-lg sm:rounded-xl text-sm sm:text-base text-cyan-400 placeholder:text-slate-600 focus:outline-none focus:border-cyan-500 focus:shadow-lg focus:shadow-cyan-500/30 font-mono tracking-wide backdrop-blur transition-all"
-              style={{ borderColor: "rgba(6,182,212,0.5)" }}
-            />
+            <div className="flex-1 relative">
+              <input type="text" value={input} onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); processCommand(); } }}
+                placeholder="COMMAND FLEET AI..."
+                className="w-full px-4 py-3 sm:px-5 sm:py-3.5 bg-slate-950 border-2 rounded-lg sm:rounded-xl text-sm sm:text-base text-cyan-400 placeholder:text-slate-600 focus:outline-none focus:border-cyan-500 focus:shadow-lg focus:shadow-cyan-500/30 font-mono tracking-wide backdrop-blur transition-all pr-10"
+                style={{ borderColor: "rgba(6,182,212,0.5)" }}
+              />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="absolute right-2 top-1/2 -translate-y-1/2 p-2 hover:bg-cyan-500/10 rounded transition-all" style={{ color: "rgba(6,182,212,0.6)" }}>
+                    <ChevronDown className="w-4 h-4" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  {PROMPT_TEMPLATES.map((template) => (
+                    <DropdownMenuItem key={template.label} onClick={() => setInput(template.prompt)}>
+                      <span className="text-sm">{template.label}</span>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
             <input ref={fileInputRef} type="file" multiple onChange={handleFileUpload} className="hidden" accept="*/*" />
             <button onClick={() => fileInputRef.current?.click()} disabled={isUploading} 
               className={`px-3 py-3 sm:px-4 rounded-lg transition-all ${isUploading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-slate-800'}`}
