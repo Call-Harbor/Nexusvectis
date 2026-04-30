@@ -693,6 +693,20 @@ function formatOutputForMode(reply, output_format) {
 function buildAgentPrompt(agentDef, message, context, prevOutput, priorityMode, output_format, token_budget, temperature_hint, confidence_scores) {
   let systemPrompt = agentDef.system_prompt;
 
+  // Smart amnestic tagging — auto-detect specialized agents needed
+  if (message.toLowerCase().includes('risk') || message.toLowerCase().includes('threat')) {
+    systemPrompt += '\n\n[DOMAIN EXPERTISE ACTIVATED] Risk analysis mode: quantify all risks with EMV (probability × impact). Include risk register sorted by severity.';
+  }
+  if (message.toLowerCase().includes('cost') || message.toLowerCase().includes('financial') || message.toLowerCase().includes('roi')) {
+    systemPrompt += '\n\n[DOMAIN EXPERTISE ACTIVATED] Financial analysis mode: all costs in EUR. Include payback period, break-even, TCO analysis.';
+  }
+  if (message.toLowerCase().includes('compliance') || message.toLowerCase().includes('legal') || message.toLowerCase().includes('regulation')) {
+    systemPrompt += '\n\n[DOMAIN EXPERTISE ACTIVATED] Regulatory compliance mode: cite specific legal references, article numbers, maximum fines in EUR.';
+  }
+  if (message.toLowerCase().includes('carbon') || message.toLowerCase().includes('emission') || message.toLowerCase().includes('sustainability')) {
+    systemPrompt += '\n\n[DOMAIN EXPERTISE ACTIVATED] Sustainability mode: calculate Scope 1/2/3 emissions, EU ETS exposure, reduction pathways.';
+  }
+
   if (temperature_hint === 'precise') {
     systemPrompt += '\n\nTONE: Be precise, quantitative, and concise. No speculation. Numbers only.';
   } else if (temperature_hint === 'creative') {
@@ -830,7 +844,7 @@ async function invokeAgent(base44, agentId, agentDef, message, conversationHisto
   };
 }
 
-// ── AUTO-ROUTER v2: Intelligent multi-signal routing ─────────────────────────
+// ── AUTO-ROUTER v3: Enhanced intelligent multi-signal routing ─────────────────
 async function autoRoute(base44, message, context, allAgentIds) {
   const agentList = allAgentIds
     .map(id => {
@@ -841,24 +855,51 @@ async function autoRoute(base44, message, context, allAgentIds) {
     .filter(Boolean)
     .join('\n');
 
+  // Auto-detect required agents based on message keywords
+  const requiredAgents = [];
+  if (message.toLowerCase().includes('risk') || message.toLowerCase().includes('threat')) {
+    requiredAgents.push('harbor_risk_engine');
+  }
+  if (message.toLowerCase().includes('financial') || message.toLowerCase().includes('cost') || message.toLowerCase().includes('roi')) {
+    requiredAgents.push('harbor_financial_ai');
+  }
+  if (message.toLowerCase().includes('compliance') || message.toLowerCase().includes('legal')) {
+    requiredAgents.push('harbor_compliance_guard');
+  }
+  if (message.toLowerCase().includes('route') || message.toLowerCase().includes('logistics')) {
+    requiredAgents.push('harbor_route_optimizer');
+  }
+  if (message.toLowerCase().includes('maintenance') || message.toLowerCase().includes('failure')) {
+    requiredAgents.push('harbor_maintenance_bot');
+  }
+  if (message.toLowerCase().includes('fleet') || message.toLowerCase().includes('vehicle')) {
+    requiredAgents.push('harbor_fleet_analyst');
+  }
+
   const result = await base44.asServiceRole.integrations.Core.InvokeLLM({
-    prompt: `You are the H.A.R.B.O.R. Master Router — the brain of a multi-agent superintelligence system.
+    prompt: `You are the H.A.R.B.O.R. Master Router v3 — enhanced intelligence system with adaptive agent selection.
 
 AVAILABLE AGENTS (${allAgentIds.length} total):
 ${agentList}
 
 USER MESSAGE: "${message}"
 ${context ? `\nCONTEXT: ${JSON.stringify(context)}` : ''}
+${requiredAgents.length > 0 ? `\nSUGGESTED SPECIALIZED AGENTS (based on message analysis): ${requiredAgents.join(', ')}` : ''}
 
-Your job: Select the optimal set of agents and execution strategy.
+Your job: Select the optimal set of agents and execution strategy with consideration of:
+1. Message intent (strategic, operational, analytical, advisory)
+2. Domain coverage (minimize gaps, avoid redundancy)
+3. Execution efficiency (parallel when independent, sequential for causality)
+4. Output synthesis (when >3 agents, synthesis typically improves clarity)
 
-ROUTING RULES:
-- For focused single-domain queries: select 1-2 agents
-- For cross-domain strategy: select 3-5 agents in parallel
-- For causal chains (A must feed B): use sequential
-- For complex strategic decisions: parallel with synthesis
-- For high-stakes decisions: include harbor_risk_engine always
-- For financial impact: always include harbor_financial_ai
+ADVANCED ROUTING RULES:
+- Risk-heavy queries: ALWAYS include harbor_risk_engine (weights heavily in synthesis)
+- Financial decisions: ALWAYS include harbor_financial_ai (tie all recommendations to EUR impact)
+- Compliance concerns: include harbor_compliance_guard for regulatory risk scoring
+- Multi-modal problems: use parallel for independent agents, sequential for causal chains
+- High-stakes decisions (multi-agent): auto-enable synthesis + confidence scoring
+- Tier consideration: Core tier agents for foundational analysis, Advanced tier for strategic nuance
+- Specialist tiers: Port/Airport/Transit/Energy for domain-specific queries
 
 Respond with JSON:
 {
@@ -866,8 +907,9 @@ Respond with JSON:
   "mode": "parallel" | "sequential",
   "synthesis": true | false,
   "priority_agents": ["agent_id"],
+  "confidence_scores": true | false,
   "reasoning": "detailed explanation of routing logic",
-  "confidence": 0-100,
+  "routing_confidence": 0-100,
   "estimated_complexity": "low" | "medium" | "high"
 }`,
     response_json_schema: {
@@ -877,8 +919,9 @@ Respond with JSON:
         mode: { type: 'string' },
         synthesis: { type: 'boolean' },
         priority_agents: { type: 'array', items: { type: 'string' } },
+        confidence_scores: { type: 'boolean' },
         reasoning: { type: 'string' },
-        confidence: { type: 'number' },
+        routing_confidence: { type: 'number' },
         estimated_complexity: { type: 'string' }
       }
     }
@@ -887,24 +930,46 @@ Respond with JSON:
   return result;
 }
 
-// ── SYNTHESIS ENGINE ──────────────────────────────────────────────────────────
+// ── SYNTHESIS ENGINE v2: Enhanced synthesis with quality scoring ───────────
 async function synthesizeResults(base44, results, message, synthesis_model = 'claude_sonnet_4_6') {
   const agentOutputs = results
     .filter(r => r.reply)
-    .map(r => `## ${r.agent_emoji} ${r.agent_name} [${r.domain}]${r.confidence ? ` (Confidence: ${r.confidence.score}/100)` : ''}\n${r.reply}`)
+    .map(r => `## ${r.agent_emoji} ${r.agent_name} [${r.domain}]${r.confidence ? ` (Confidence: ${r.confidence.score}/100, Data Quality: ${r.confidence.data_quality})` : ''}\n${r.reply}`)
     .join('\n\n---\n\n');
 
-  const prompt = `${SYNTHESIS_SYSTEM}
+  const confidenceScores = results.filter(r => r.confidence?.score != null).map(r => r.confidence.score);
+  const avgConfidence = confidenceScores.length > 0 
+    ? Math.round(confidenceScores.reduce((a, b) => a + b, 0) / confidenceScores.length)
+    : null;
+
+  const lowConfidenceAgents = results
+    .filter(r => r.confidence?.score != null && r.confidence.score < 50)
+    .map(r => `${r.agent_name} (${r.confidence.score}%)`)
+    .join(', ');
+
+  const synthesisPrompt = `${SYNTHESIS_SYSTEM}
+
+SYNTHESIS METADATA:
+- Number of agents: ${results.length}
+- Average confidence: ${avgConfidence ? avgConfidence + '%' : 'N/A'}
+${lowConfidenceAgents ? `- Low-confidence agents: ${lowConfidenceAgents} (validate findings carefully)` : ''}
 
 ORIGINAL USER QUERY: "${message}"
 
 AGENT OUTPUTS:
 ${agentOutputs}
 
-Now produce your synthesis:`;
+SYNTHESIS INSTRUCTIONS:
+1. Weight agent outputs by their confidence scores (if available)
+2. Flag any contradictions between agents and explain resolution
+3. Prioritize actionable, EUR-quantified recommendations
+4. Group actions by ownership and timeline
+5. Include caveats where low-confidence agents were used
+
+Now produce your enhanced synthesis:`;
 
   const synthesis = await base44.asServiceRole.integrations.Core.InvokeLLM({
-    prompt,
+    prompt: synthesisPrompt,
     model: synthesis_model
   });
 
@@ -916,6 +981,11 @@ Now produce your synthesis:`;
     tier: 'synthesis',
     reply: synthesis,
     model: synthesis_model,
+    meta: {
+      agents_synthesized: results.length,
+      avg_confidence: avgConfidence,
+      low_confidence_count: results.filter(r => r.confidence?.score != null && r.confidence.score < 50).length,
+    }
   };
 }
 
@@ -1212,8 +1282,9 @@ Deno.serve(async (req) => {
       if (!selectedIds.length) selectedIds.push('harbor_ops_commander');
 
       const mergedPriority = [...new Set([...(routing.priority_agents || []), ...priority_agents])];
-      const mergedOptions = { ...invocationOptions, priority_agents: mergedPriority };
-      const shouldSynthesize = synthesis || routing.synthesis;
+      const autoConfidenceScores = routing.confidence_scores !== undefined ? routing.confidence_scores : selectedIds.length > 2;
+      const mergedOptions = { ...invocationOptions, priority_agents: mergedPriority, confidence_scores: autoConfidenceScores };
+      const shouldSynthesize = synthesis || routing.synthesis || selectedIds.length > 3; // Auto-synthesis for complex multi-agent queries
 
       if (routing.mode === 'sequential') {
         let prevOutput = null;
@@ -1350,7 +1421,18 @@ Deno.serve(async (req) => {
         context_enriched: context_enrichment,
         total_tokens_estimated: totalTokens,
         output_format,
+        agent_confidence_distribution: {
+          high: successResults.filter(r => r.confidence?.score >= 75).length,
+          medium: successResults.filter(r => r.confidence?.score >= 50 && r.confidence.score < 75).length,
+          low: successResults.filter(r => r.confidence?.score < 50).length,
+          unscored: successResults.filter(r => !r.confidence?.score).length,
+        },
         ...(avgConfidence !== null ? { average_confidence: avgConfidence } : {}),
+        performance: {
+          agents_invoked: results.length,
+          success_rate: successResults.length > 0 ? ((successResults.length / results.length) * 100).toFixed(1) + '%' : '0%',
+          avg_tokens_per_agent: results.length > 0 ? Math.round(totalTokens / results.length) : 0,
+        },
         billing: {
           calls: results.length,
           cost_estimate_eur: +(results.length * 0.50).toFixed(2),
