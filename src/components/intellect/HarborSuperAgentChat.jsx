@@ -1171,7 +1171,8 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
           ) : (
             <>
               {/* Messages + Orchestration feed */}
-              <div className="flex-1 overflow-y-auto p-5 flex flex-col justify-end" style={{ gap: '1.25rem' }}>
+              <div className="flex-1 overflow-y-auto p-5 flex flex-col" style={{ gap: '1.25rem' }}>
+                <div className="flex-1" />
                 {visibleMessages.length === 0 && orchestrations.length === 0 && (
                   <div className="flex flex-col items-center justify-center flex-1 py-12 gap-6">
                     <motion.div animate={{ rotate: [0, 360] }} transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
