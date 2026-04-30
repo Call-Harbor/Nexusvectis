@@ -108,8 +108,7 @@ export default function AdminRevenueEngine() {
     }));
 
     const future = Array.from({ length: forecastMonths }, (_, i) => {
-      const noise = 1 + (Math.random() - 0.5) * 0.04;
-      const projected = base * Math.pow(1 + monthlyGrowth, i + 1) * noise;
+      const projected = base * Math.pow(1 + monthlyGrowth, i + 1);
       const month = new Date();
       month.setMonth(month.getMonth() + i + 1);
       return {

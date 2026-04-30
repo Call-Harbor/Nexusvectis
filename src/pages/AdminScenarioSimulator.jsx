@@ -86,11 +86,10 @@ function runSimulation(baseData, levers, months) {
     const baseMRR = currentOrgs * (currentMRR / orgs) * (1 + levers.arpu_change / 100);
     currentMRR = (baseMRR + addonRevenue * 0.1 + apiRevenue) * levers.market_expansion;
 
-    const noise = 1 + (Math.sin(m * 1.3) * 0.03);
     timeline.push({
       month: m + 1,
       orgs: Math.round(currentOrgs),
-      mrr: Math.round(currentMRR * noise),
+      mrr: Math.round(currentMRR),
       vehicles: Math.round(currentVehicles),
       health: Math.min(100, Math.max(0, 70 + (levers.org_growth - levers.churn * 2 - levers.competitor_pressure) * 1.2)),
     });
