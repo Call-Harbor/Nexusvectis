@@ -87,9 +87,10 @@ Deno.serve(async (req) => {
         const usageDate = new Date(usage.created_date);
         return usageDate > periodStart && usageDate <= periodEnd && usage.status_code < 400;
       });
-      const harborCalls = periodAPIUsage.filter(u => u.endpoint && u.endpoint.includes('/harbor/intelligence') && !u.endpoint.includes('harborIntellectAPI')).length;
-      const intellectCalls = periodAPIUsage.filter(u => u.endpoint && u.endpoint.includes('harborIntellectAPI')).length;
-      const apiCalls = periodAPIUsage.filter(u => !u.endpoint || (!u.endpoint.includes('/harbor/intelligence') && !u.endpoint.includes('harborIntellectAPI'))).length;
+      const harborCalls = periodAPIUsage.filter(u => u.endpoint && u.endpoint.includes('/harbor/intelligence') && !u.endpoint.includes('harborIntellectAPI') && !u.endpoint.includes('Orchestrator')).length;
+      const intellectCalls = periodAPIUsage.filter(u => u.endpoint && (u.endpoint.includes('harborIntellectAPI') || u.endpoint.includes('Intellect'))).length;
+      const orchestratorCalls = periodAPIUsage.filter(u => u.endpoint && u.endpoint.includes('Orchestrator')).length;
+      const apiCalls = periodAPIUsage.filter(u => !u.endpoint || (!u.endpoint.includes('/harbor/intelligence') && !u.endpoint.includes('harborIntellectAPI') && !u.endpoint.includes('Intellect') && !u.endpoint.includes('Orchestrator'))).length;
 
       const vehicleCount = vehicles.length;
       const resourceCount = resources.length;
@@ -100,6 +101,7 @@ Deno.serve(async (req) => {
       const apiPricePer100 = 5;
       const harborPricePerCall = 0.25;
       const intellectPricePerCall = 0.50;
+      const orchestratorPricePerCall = 0.50;
       const addonPrice = 2000;
 
       // Check if add-ons have been active for 48+ hours (once activated, billed for entire period even if deactivated)
@@ -135,6 +137,7 @@ Deno.serve(async (req) => {
       const apiTotal = Math.ceil(apiCalls / 100) * apiPricePer100;
       const harborTotal = harborCalls * harborPricePerCall;
       const intellectTotal = intellectCalls * intellectPricePerCall;
+      const orchestratorTotal = orchestratorCalls * orchestratorPricePerCall;
       const airportOpsTotal = addonAirportOps ? addonPrice : 0;
       const portCommandTotal = addonPortCommand ? addonPrice : 0;
       const transitControlTotal = addonTransitControl ? addonPrice : 0;
@@ -144,7 +147,7 @@ Deno.serve(async (req) => {
       const taxRules = TAX_RULES[buyerCountry] || TAX_RULES['Denmark'];
 
       // Calculate VAT
-      const subtotal = vehicleTotal + resourceTotal + fleetAITotal + apiTotal + harborTotal + intellectTotal + airportOpsTotal + portCommandTotal + transitControlTotal;
+      const subtotal = vehicleTotal + resourceTotal + fleetAITotal + apiTotal + harborTotal + intellectTotal + orchestratorTotal + airportOpsTotal + portCommandTotal + transitControlTotal;
       const isEUCrossBorder = buyerCountry !== 'Denmark' && taxRules.requires_vat_id;
       const reverseCharge = isEUCrossBorder; // EU B2B reverse charge
       const vatRate = reverseCharge ? 0 : taxRules.vat_rate;
@@ -204,6 +207,14 @@ Deno.serve(async (req) => {
           quantity: intellectCalls,
           unit_price: intellectPricePerCall,
           total: intellectTotal
+        });
+      }
+      if (orchestratorCalls > 0) {
+        lineItems.push({
+          description: `H.A.R.B.O.R. Orchestrator API (${orchestratorCalls} calls @ €${orchestratorPricePerCall}/call) — 50+ AI Agents`,
+          quantity: orchestratorCalls,
+          unit_price: orchestratorPricePerCall,
+          total: orchestratorTotal
         });
       }
       if (addonAirportOps) {
@@ -267,12 +278,16 @@ Deno.serve(async (req) => {
         vehicle_price_euro: vehiclePriceEuro,
         resource_price_euro: resourcePriceEuro,
         fleetai_commands: fleetAICommands,
-        fleetai_price_per_100: fleetAIPricePer100,
-        api_calls: apiCalls,
-        api_price_per_100: apiPricePer100,
-        harbor_intelligence_calls: harborCalls,
-        harbor_intelligence_price_per_call: harborPricePerCall,
-        addon_airport_ops: addonAirportOps,
+         fleetai_price_per_100: fleetAIPricePer100,
+         api_calls: apiCalls,
+         api_price_per_100: apiPricePer100,
+         harbor_intelligence_calls: harborCalls,
+         harbor_intelligence_price_per_call: harborPricePerCall,
+         harbor_intellect_calls: intellectCalls,
+         harbor_intellect_price_per_call: intellectPricePerCall,
+         harbor_orchestrator_calls: orchestratorCalls,
+         harbor_orchestrator_price_per_call: orchestratorPricePerCall,
+         addon_airport_ops: addonAirportOps,
         addon_port_command: addonPortCommand,
         addon_transit_control: addonTransitControl,
         addon_airport_ops_price: airportOpsTotal,
@@ -395,7 +410,23 @@ Deno.serve(async (req) => {
                     <td style="padding: 10px; text-align: right; border-bottom: 1px solid #e2e8f0;">€${harborTotal.toFixed(2)}</td>
                   </tr>
                   ` : ''}
-                </tbody>
+                  ${intellectCalls > 0 ? `
+                  <tr>
+                    <td style="padding: 10px; border-bottom: 1px solid #e2e8f0;">H.A.R.B.O.R. Intellect Chat API (${intellectCalls} calls) <span style="background:#e9d5ff;color:#6b21a8;font-size:11px;padding:2px 6px;border-radius:4px;font-weight:bold;">ULTRA</span></td>
+                    <td style="padding: 10px; text-align: right; border-bottom: 1px solid #e2e8f0;">${intellectCalls}</td>
+                    <td style="padding: 10px; text-align: right; border-bottom: 1px solid #e2e8f0;">€${intellectPricePerCall}</td>
+                    <td style="padding: 10px; text-align: right; border-bottom: 1px solid #e2e8f0;">€${intellectTotal.toFixed(2)}</td>
+                  </tr>
+                  ` : ''}
+                  ${orchestratorCalls > 0 ? `
+                  <tr>
+                    <td style="padding: 10px; border-bottom: 1px solid #e2e8f0;">H.A.R.B.O.R. Orchestrator API (${orchestratorCalls} calls) <span style="background:#e0e7ff;color:#3730a3;font-size:11px;padding:2px 6px;border-radius:4px;font-weight:bold;">ULTRA</span></td>
+                    <td style="padding: 10px; text-align: right; border-bottom: 1px solid #e2e8f0;">${orchestratorCalls}</td>
+                    <td style="padding: 10px; text-align: right; border-bottom: 1px solid #e2e8f0;">€${orchestratorPricePerCall}</td>
+                    <td style="padding: 10px; text-align: right; border-bottom: 1px solid #e2e8f0;">€${orchestratorTotal.toFixed(2)}</td>
+                  </tr>
+                  ` : ''}
+                  </tbody>
               </table>
               
               <div style="margin-top: 20px; text-align: right;">
