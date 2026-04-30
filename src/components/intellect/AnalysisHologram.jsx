@@ -206,9 +206,7 @@ export default function AnalysisHologram({ data, chartData: extChartData, orgId 
   const [liveData, setLiveData] = useState(null);
   const [liveCharts, setLiveCharts] = useState(null);
 
-  if (!data || typeof data !== "object") return null;
-
-  // Fetch live data from system
+  // Fetch live data from system (must be before early return)
   const { data: fleetLiveData, isLoading: loadingFleetData } = useQuery({
     queryKey: ['fleet-live-data', orgId],
     queryFn: async () => {
@@ -220,7 +218,7 @@ export default function AnalysisHologram({ data, chartData: extChartData, orgId 
       ]);
       return { liveFleetData, charts };
     },
-    enabled: !!orgId,
+    enabled: !!orgId && !!data,
     refetchInterval: 15000, // Refresh every 15s
   });
 
@@ -230,6 +228,8 @@ export default function AnalysisHologram({ data, chartData: extChartData, orgId 
       setLiveCharts(fleetLiveData.charts);
     }
   }, [fleetLiveData]);
+
+  if (!data || typeof data !== "object") return null;
 
   const chartData = extChartData || data.chart_data || [];
   const xKey = data.xKey || (chartData[0] ? Object.keys(chartData[0])[0] : "label");

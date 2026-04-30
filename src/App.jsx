@@ -35,6 +35,7 @@ import AdminCompetitiveIntel from './pages/AdminCompetitiveIntel';
 import AdminRevenueEngine from './pages/AdminRevenueEngine';
 import AdminScenarioSimulator from './pages/AdminScenarioSimulator';
 import AdminCustomerHealth from './pages/AdminCustomerHealth';
+import AgentComparisonPage from './pages/AgentComparisonPage';
 
 
 const { Pages, Layout, mainPage } = pagesConfig;
@@ -249,6 +250,7 @@ const AuthenticatedApp = () => {
       <Route path="/AdminRevenueEngine" element={<LayoutWrapper currentPageName="AdminRevenueEngine"><AdminRevenueEngine /></LayoutWrapper>} />
       <Route path="/AdminScenarioSimulator" element={<LayoutWrapper currentPageName="AdminScenarioSimulator"><AdminScenarioSimulator /></LayoutWrapper>} />
       <Route path="/AdminCustomerHealth" element={<LayoutWrapper currentPageName="AdminCustomerHealth"><AdminCustomerHealth /></LayoutWrapper>} />
+      <Route path="/AgentComparison" element={<LayoutWrapper currentPageName="AgentComparison"><AgentComparisonPage /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
