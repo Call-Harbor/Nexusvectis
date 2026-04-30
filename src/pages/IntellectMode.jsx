@@ -168,6 +168,7 @@ export default function IntellectMode() {
   }, [currentUser, isLoadingUser]);
 
   const orgId = currentUser?.organization_id || currentUser?.data?.organization_id;
+  const validOrgId = orgId; // Ensure org ID is always defined before use
 
   const { data: vehicles = [] } = useQuery({
     queryKey: ['vehicles-intellect', orgId],
@@ -286,7 +287,7 @@ export default function IntellectMode() {
 
   // ── Init Harbor Intellect conversation (persistent) ────────────────────────────────────
   useEffect(() => {
-    if (isLoadingUser || !currentUser) return;
+    if (isLoadingUser || !currentUser || !validOrgId) return;
 
     const init = async () => {
       try {
@@ -308,7 +309,7 @@ export default function IntellectMode() {
             agent_name: 'harbor_intellect',
             metadata: { 
               name: 'IntellectMode Session',
-              organization_id: orgId
+              organization_id: validOrgId
             }
           });
           localStorage.setItem('harbor_intellect_conv_id', conv.id);
@@ -336,7 +337,7 @@ export default function IntellectMode() {
     };
     init();
     return () => { intellectUnsubRef.current?.(); };
-  }, [isLoadingUser, currentUser, orgId]);
+  }, [isLoadingUser, currentUser, validOrgId]);
 
   // Clear conversation on logout
   useEffect(() => {
@@ -1068,8 +1069,8 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
 
     try {
       isWaitingForAgentRef.current = true;
-      const messageContent = orgId 
-        ? `[ORG:${orgId}]\n\n${currentCommand}`
+      const messageContent = validOrgId 
+        ? `[ORG:${validOrgId}]\n\n${currentCommand}`
         : currentCommand;
       await base44.agents.addMessage(intellectConversationRef.current, {
         role: 'user',
@@ -1088,8 +1089,8 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
     // Track billing
     try {
       const user = await base44.auth.me();
-      base44.entities.APIUsage.create({ organization_id: orgId || user.id, endpoint: 'harborIntellectAPI', method: 'POST', status_code: 200, response_time_ms: 0, ip_address: 'internal' }).catch(() => {});
-      base44.entities.FleetAIUsage.create({ organization_id: orgId, user_email: user.email, command: currentCommand, action: 'HARBOR_INTELLECT', success: true }).catch(() => {});
+      base44.entities.APIUsage.create({ organization_id: validOrgId || user.id, endpoint: 'harborIntellectAPI', method: 'POST', status_code: 200, response_time_ms: 0, ip_address: 'internal' }).catch(() => {});
+      base44.entities.FleetAIUsage.create({ organization_id: validOrgId, user_email: user.email, command: currentCommand, action: 'HARBOR_INTELLECT', success: true }).catch(() => {});
     } catch {}
   };
 
