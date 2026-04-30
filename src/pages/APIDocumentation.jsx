@@ -248,141 +248,155 @@ export default function APIDocumentation() {
         </div>
 
         {activeSection === "endpoints" && (
-          <div className="grid grid-cols-1 xl:grid-cols-[340px_1fr] gap-6">
-            {/* Left panel */}
-            <div className="space-y-3">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5" style={{ color: "#475569" }} />
-                <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search endpoints..."
-                  className="w-full pl-9 pr-4 py-2.5 rounded-xl text-sm outline-none"
-                  style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "#e2e8f0" }} />
+          <div className="grid grid-cols-1 xl:grid-cols-[300px_1fr] gap-0 rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(255,255,255,0.07)" }}>
+
+            {/* Left sidebar */}
+            <div className="flex flex-col" style={{ background: "rgba(255,255,255,0.015)", borderRight: "1px solid rgba(255,255,255,0.07)" }}>
+              {/* Search */}
+              <div className="p-3 border-b" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5" style={{ color: "#475569" }} />
+                  <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search endpoints..."
+                    className="w-full pl-9 pr-4 py-2 rounded-lg text-xs outline-none"
+                    style={{ background: "rgba(0,0,0,0.3)", border: "1px solid rgba(255,255,255,0.07)", color: "#e2e8f0" }} />
+                </div>
               </div>
-              <div className="flex gap-1.5 flex-wrap">
+
+              {/* Category tabs — vertical */}
+              <div className="p-2 border-b space-y-0.5" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
                 {CATEGORIES.map(cat => {
                   const Icon = cat.icon;
+                  const count = ENDPOINTS.filter(e => cat.id === "all" || e.category === cat.id).length;
                   return (
                     <button key={cat.id} onClick={() => setActiveCategory(cat.id)}
-                      className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all"
-                      style={{ background: activeCategory === cat.id ? `${cat.color}18` : "rgba(255,255,255,0.03)", color: activeCategory === cat.id ? cat.color : "#475569", border: activeCategory === cat.id ? `1px solid ${cat.color}40` : "1px solid rgba(255,255,255,0.06)" }}>
-                      <Icon className="w-2.5 h-2.5" />{cat.label}
+                      className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-bold transition-all group"
+                      style={{ background: activeCategory === cat.id ? `${cat.color}15` : "transparent", color: activeCategory === cat.id ? cat.color : "#475569" }}>
+                      <div className="flex items-center gap-2">
+                        <Icon className="w-3.5 h-3.5" />
+                        <span className="font-mono tracking-wide uppercase text-[10px]">{cat.label}</span>
+                      </div>
+                      <span className="text-[9px] font-mono px-1.5 py-0.5 rounded" style={{ background: activeCategory === cat.id ? `${cat.color}20` : "rgba(255,255,255,0.05)", color: activeCategory === cat.id ? cat.color : "#334155" }}>{count}</span>
                     </button>
                   );
                 })}
               </div>
-              <div className="space-y-1.5">
+
+              {/* Endpoint list */}
+              <div className="flex-1 overflow-auto p-2 space-y-1">
                 {filtered.map(ep => (
-                  <motion.button key={ep.id} onClick={() => setSelectedId(ep.id)} whileHover={{ x: 2 }}
-                    className="w-full text-left p-3 rounded-xl transition-all group"
-                    style={{ background: selectedId === ep.id ? `${ep.tagColor}10` : "rgba(255,255,255,0.02)", border: selectedId === ep.id ? `1px solid ${ep.tagColor}30` : "1px solid rgba(255,255,255,0.05)" }}>
-                    <div className="flex items-center justify-between mb-1">
-                      <div className="flex items-center gap-2">
-                        <MethodBadge method={ep.method} />
-                        <TagBadge label={ep.tag} color={ep.tagColor} />
-                      </div>
-                      <ChevronRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: ep.tagColor }} />
+                  <motion.button key={ep.id} onClick={() => setSelectedId(ep.id)} whileHover={{ x: 1 }}
+                    className="w-full text-left px-3 py-2.5 rounded-lg transition-all group"
+                    style={{ background: selectedId === ep.id ? `${ep.tagColor}12` : "transparent", borderLeft: selectedId === ep.id ? `2px solid ${ep.tagColor}` : "2px solid transparent" }}>
+                    <div className="flex items-center gap-2 mb-1">
+                      <MethodBadge method={ep.method} />
+                      <TagBadge label={ep.tag} color={ep.tagColor} />
                     </div>
-                    <p className="text-[13px] font-bold text-white mb-0.5">{ep.name}</p>
-                    <p className="text-[10px] leading-relaxed line-clamp-2" style={{ color: "#64748b" }}>{ep.description}</p>
-                    <div className="flex items-center gap-3 mt-1.5">
-                      <span className="text-[9px] font-mono truncate" style={{ color: "#334155" }}>{ep.endpoint}</span>
-                      <span className="text-[9px] font-mono flex-shrink-0" style={{ color: ep.tagColor, opacity: 0.6 }}>
-                        <Clock className="w-2.5 h-2.5 inline mr-0.5" />{ep.latency}
-                      </span>
-                    </div>
+                    <p className="text-[12px] font-bold text-white leading-tight">{ep.name}</p>
+                    <p className="text-[10px] font-mono mt-0.5 truncate" style={{ color: "#334155" }}>{ep.endpoint}</p>
                   </motion.button>
                 ))}
               </div>
             </div>
 
-            {/* Right panel */}
+            {/* Right detail panel */}
             {selected && (
-              <motion.div key={selected.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
-                <div className="p-6 rounded-2xl" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}>
-                  <div className="flex items-start justify-between mb-4">
-                    <div>
+              <motion.div key={selected.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="overflow-auto" style={{ maxHeight: "80vh" }}>
+
+                {/* Header */}
+                <div className="p-6 border-b" style={{ borderColor: "rgba(255,255,255,0.06)", background: "rgba(255,255,255,0.01)" }}>
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
                         <MethodBadge method={selected.method} />
                         <TagBadge label={selected.tag} color={selected.tagColor} />
                         {selected.premium && <TagBadge label="PREMIUM" color="#f59e0b" />}
                       </div>
                       <h2 className="text-2xl font-black text-white mb-1">{selected.name}</h2>
-                      <p className="text-sm leading-relaxed" style={{ color: "#64748b" }}>{selected.description}</p>
+                      <p className="text-sm leading-relaxed max-w-xl" style={{ color: "#64748b" }}>{selected.description}</p>
                     </div>
-                    <div className="text-right space-y-1 flex-shrink-0 ml-6">
-                      <div className="text-[10px] font-mono" style={{ color: "#475569" }}>LATENCY</div>
-                      <div className="text-xl font-black" style={{ color: selected.tagColor }}>{selected.latency}</div>
-                      <div className="text-[10px] font-mono" style={{ color: "#475569" }}>€{(selected.costPer100 / 100).toFixed(2)}/call</div>
-                    </div>
-                  </div>
-
-                  {selected.premium && (
-                    <div className="flex items-start gap-3 p-4 rounded-xl mt-4" style={{ background: `${selected.tagColor}10`, border: `1px solid ${selected.tagColor}30` }}>
-                      <Star className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: selected.tagColor }} />
-                      <div>
-                        <p className="text-sm font-bold mb-0.5" style={{ color: selected.tagColor }}>{selected.name} — Premium Endpoint</p>
-                        <p className="text-xs" style={{ color: `${selected.tagColor}99` }}>
-                          Billed at <strong style={{ color: selected.tagColor }}>€{selected.response?.billing?.cost_per_call_eur ?? (selected.costPer100 / 100).toFixed(2)}/call</strong>.
-                          {selected.id === "harbor-orchestrator" && " Orchestrates 50+ specialized AI workers in parallel, sequential, or auto-routing modes."}
-                          {selected.id === "harbor-intellect" && " Powered by Claude Sonnet 4.6 — multi-turn conversation, structured JSON, expert reasoning."}
-                          {selected.id === "harbor-intelligence" && " Uses mistral-large-2411 with live fleet data enrichment for maximum accuracy."}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="mt-4">
-                    <p className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{ color: "#475569" }}>Endpoint</p>
-                    <div className="flex items-center gap-2 p-3 rounded-xl" style={{ background: "rgba(0,0,0,0.4)", border: "1px solid rgba(255,255,255,0.06)" }}>
-                      <MethodBadge method={selected.method} />
-                      <code className="text-sm font-mono text-white flex-1">{selected.endpoint}</code>
-                      <CopyButton text={`https://api.nexusvectis.com${selected.endpoint}`} />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="p-6 rounded-2xl space-y-4" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}>
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-black text-white">Code Examples</p>
-                    <div className="flex gap-1">
-                      {["curl", "python", "javascript", "typescript", "go"].map(l => (
-                        <button key={l} onClick={() => setCodeLang(l)}
-                          className="px-2.5 py-1 rounded-lg text-[10px] font-mono font-bold uppercase tracking-wider transition-all"
-                          style={{ background: codeLang === l ? "rgba(6,182,212,0.15)" : "rgba(255,255,255,0.04)", color: codeLang === l ? "#06b6d4" : "#475569", border: codeLang === l ? "1px solid rgba(6,182,212,0.3)" : "1px solid rgba(255,255,255,0.06)" }}>
-                          {l}
-                        </button>
+                    <div className="flex gap-3 flex-shrink-0">
+                      {[
+                        { label: "Latency", value: selected.latency, color: "#10b981" },
+                        { label: "Per call", value: `€${(selected.costPer100 / 100).toFixed(2)}`, color: "#f59e0b" },
+                      ].map(stat => (
+                        <div key={stat.label} className="text-center px-4 py-3 rounded-xl" style={{ background: "rgba(0,0,0,0.3)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                          <p className="text-[9px] font-mono uppercase tracking-widest mb-1" style={{ color: "#475569" }}>{stat.label}</p>
+                          <p className="text-base font-black" style={{ color: stat.color }}>{stat.value}</p>
+                        </div>
                       ))}
                     </div>
                   </div>
-                  <CodeBlock code={generateCode(selected, codeLang)} lang={codeLang} />
+
+                  {/* Endpoint URL bar */}
+                  <div className="flex items-center gap-2 mt-4 p-2.5 rounded-xl" style={{ background: "rgba(0,0,0,0.4)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                    <MethodBadge method={selected.method} />
+                    <code className="text-sm font-mono text-white flex-1">{selected.endpoint}</code>
+                    <CopyButton text={`https://api.nexusvectis.com${selected.endpoint}`} />
+                  </div>
+
+                  {selected.premium && (
+                    <div className="flex items-center gap-3 p-3 rounded-xl mt-3" style={{ background: `${selected.tagColor}0a`, border: `1px solid ${selected.tagColor}25` }}>
+                      <Star className="w-3.5 h-3.5 flex-shrink-0" style={{ color: selected.tagColor }} />
+                      <p className="text-xs" style={{ color: `${selected.tagColor}cc` }}>
+                        Billed at <strong style={{ color: selected.tagColor }}>€{selected.response?.billing?.cost_per_call_eur ?? (selected.costPer100 / 100).toFixed(2)}/call</strong>.
+                        {selected.id === "harbor-orchestrator" && " Orchestrates 50+ AI workers in parallel, sequential, or auto-routing modes."}
+                        {selected.id === "harbor-intellect" && " Powered by Claude Sonnet 4.6 — multi-turn reasoning, structured JSON output."}
+                        {selected.id === "harbor-intelligence" && " Uses mistral-large-2411 with live fleet data enrichment."}
+                      </p>
+                    </div>
+                  )}
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="p-5 rounded-2xl" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}>
-                    <JsonBlock data={selected.params} label="Request Body" />
-                  </div>
-                  <div className="p-5 rounded-2xl" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}>
-                    <JsonBlock data={selected.response} label="Response (200 OK)" />
-                  </div>
-                </div>
+                {/* Body: code + payloads */}
+                <div className="p-6 space-y-5">
 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {[
-                    { label: "Latency (p50)", value: selected.latency, icon: Gauge, color: "#10b981" },
-                    { label: "Cost / 100 calls", value: `€${selected.costPer100}`, icon: DollarSign, color: "#f59e0b" },
-                    { label: "Auth", value: "X-API-Key", icon: Lock, color: "#06b6d4" },
-                    { label: "Version", value: "v2.0 stable", icon: RefreshCw, color: "#8b5cf6" },
-                  ].map((s) => {
-                    const Icon = s.icon;
-                    return (
-                      <div key={s.label} className="p-4 rounded-xl" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}>
-                        <div className="flex items-center gap-1.5 mb-1.5">
-                          <Icon className="w-3 h-3" style={{ color: s.color }} />
-                          <span className="text-[9px] font-mono uppercase tracking-widest" style={{ color: "#475569" }}>{s.label}</span>
-                        </div>
-                        <p className="text-sm font-black text-white">{s.value}</p>
+                  {/* Code examples */}
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <p className="text-xs font-black text-white uppercase tracking-widest">Code Example</p>
+                      <div className="flex gap-1">
+                        {["curl", "python", "javascript", "typescript", "go"].map(l => (
+                          <button key={l} onClick={() => setCodeLang(l)}
+                            className="px-2.5 py-1 rounded-lg text-[10px] font-mono font-bold uppercase tracking-wider transition-all"
+                            style={{ background: codeLang === l ? "rgba(6,182,212,0.15)" : "rgba(255,255,255,0.04)", color: codeLang === l ? "#06b6d4" : "#475569", border: codeLang === l ? "1px solid rgba(6,182,212,0.3)" : "1px solid rgba(255,255,255,0.06)" }}>
+                            {l}
+                          </button>
+                        ))}
                       </div>
-                    );
-                  })}
+                    </div>
+                    <CodeBlock code={generateCode(selected, codeLang)} lang={codeLang} />
+                  </div>
+
+                  {/* Request + Response side by side */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <div className="p-4 rounded-xl" style={{ background: "rgba(0,0,0,0.25)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                      <JsonBlock data={selected.params} label="Request Body" />
+                    </div>
+                    <div className="p-4 rounded-xl" style={{ background: "rgba(0,0,0,0.25)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                      <JsonBlock data={selected.response} label="Response · 200 OK" />
+                    </div>
+                  </div>
+
+                  {/* Meta stats row */}
+                  <div className="grid grid-cols-4 gap-3">
+                    {[
+                      { label: "Latency p50", value: selected.latency, icon: Gauge, color: "#10b981" },
+                      { label: "Cost / 100", value: `€${selected.costPer100}`, icon: DollarSign, color: "#f59e0b" },
+                      { label: "Auth", value: "X-API-Key", icon: Lock, color: "#06b6d4" },
+                      { label: "Version", value: "v2.0", icon: RefreshCw, color: "#8b5cf6" },
+                    ].map(s => {
+                      const Icon = s.icon;
+                      return (
+                        <div key={s.label} className="flex items-center gap-3 p-3 rounded-xl" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
+                          <Icon className="w-4 h-4 flex-shrink-0" style={{ color: s.color }} />
+                          <div>
+                            <p className="text-[9px] font-mono uppercase tracking-widest" style={{ color: "#475569" }}>{s.label}</p>
+                            <p className="text-xs font-black text-white">{s.value}</p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               </motion.div>
             )}
