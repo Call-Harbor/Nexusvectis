@@ -597,13 +597,21 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
     } catch {}
   }, []);
 
-  // Init
+  // Init — resolve orgId with cache fallback so it's always available
   useEffect(() => {
     const init = async () => {
       try {
         const user = await base44.auth.me();
+        // Try cached orgId first for instant availability
+        const cached = localStorage.getItem(`harbor_org_id_${user.email}`);
+        if (cached) setOrgId(cached);
+        // Always refresh from DB to stay accurate
         const members = await base44.entities.OrganizationMember.filter({ user_email: user.email });
-        if (members?.length > 0) setOrgId(members[0].organization_id);
+        if (members?.length > 0) {
+          const id = members[0].organization_id;
+          setOrgId(id);
+          localStorage.setItem(`harbor_org_id_${user.email}`, id);
+        }
       } catch {}
       await loadConversations();
       await loadCustomWorkers();
@@ -680,10 +688,17 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
       role: "system",
       content: HOLOGRAM_SYSTEM_CONTEXT
     });
-    if (orgId) {
+    // Inject orgId — use state or cached value
+    const resolvedOrgId = orgId || (() => {
+      try {
+        const keys = Object.keys(localStorage).filter(k => k.startsWith("harbor_org_id_"));
+        return keys.length > 0 ? localStorage.getItem(keys[0]) : null;
+      } catch { return null; }
+    })();
+    if (resolvedOrgId) {
       await base44.agents.addMessage(conv, {
         role: "system",
-        content: `SYSTEM CONTEXT: organization_id="${orgId}". Always filter entities by this ID.`
+        content: `SYSTEM CONTEXT: organization_id="${resolvedOrgId}". Always filter entities by this ID.`
       });
     }
   };
