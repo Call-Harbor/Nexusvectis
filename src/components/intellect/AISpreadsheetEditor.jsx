@@ -766,8 +766,9 @@ function SDivider() {
   return <div className="w-px h-4 bg-slate-700/50 mx-0.5 flex-shrink-0" />;
 }
 
-export default function AISpreadsheetEditor({ initialGrid, initialTitle, initialFileUrl, orgId, onSaved }) {
+export default function AISpreadsheetEditor({ initialGrid, initialTitle, initialFileUrl, initialFileId, orgId, onSaved }) {
   const [sheetName, setSheetName] = useState(initialTitle?.replace(/\.[^.]+$/, '') || "Untitled Spreadsheet");
+  const existingFileId = useRef(initialFileId || null);
   const [grid, setGrid] = useState(() => {
     if (initialGrid) {
       // initialGrid is array of arrays of strings
@@ -934,18 +935,27 @@ export default function AISpreadsheetEditor({ initialGrid, initialTitle, initial
       const res = await base44.integrations.Core.UploadFile({ file });
       const fileUrl = res?.data?.file_url || res?.file_url;
       if (fileUrl && orgId) {
-        await base44.entities.FleetDriveFile.create({
-          organization_id: orgId,
-          name: fileName,
-          file_url: fileUrl,
-          file_type: "spreadsheet",
-          file_size_bytes: blob.size,
-          mime_type: "text/csv",
-          folder: "Spreadsheets",
-          source: "spreadsheet_editor",
-          description: `FleetSheet spreadsheet`,
-          tags: ["fleetsheet", "spreadsheet"],
-        });
+        if (existingFileId.current) {
+          await base44.entities.FleetDriveFile.update(existingFileId.current, {
+            name: fileName,
+            file_url: fileUrl,
+            file_size_bytes: blob.size,
+          });
+        } else {
+          const created = await base44.entities.FleetDriveFile.create({
+            organization_id: orgId,
+            name: fileName,
+            file_url: fileUrl,
+            file_type: "spreadsheet",
+            file_size_bytes: blob.size,
+            mime_type: "text/csv",
+            folder: "Spreadsheets",
+            source: "spreadsheet_editor",
+            description: `FleetSheet spreadsheet`,
+            tags: ["fleetsheet", "spreadsheet"],
+          });
+          existingFileId.current = created.id;
+        }
         toast.success("✅ Saved to Fleet Drive → Spreadsheets");
         onSaved?.();
       }

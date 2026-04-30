@@ -384,7 +384,7 @@ function JarvisFileRow({ file, onDelete, onPin, openWindow, selected, onSelect }
     else if (ft === 'document' || ['doc','docx','txt','rtf','odt','html'].includes(ext)) windowType = 'document_editor';
     else if (ft === 'spreadsheet' || ['xls','xlsx','csv','ods'].includes(ext)) windowType = 'spreadsheet_editor';
     else windowType = 'hologram_presentation';
-    openWindow(windowType, { x: 120, y: 80 }, { initialFileUrl: file.file_url, initialTitle: file.name });
+    openWindow(windowType, { x: 120, y: 80 }, { initialFileUrl: file.file_url, initialTitle: file.name, initialFileId: file.id });
   };
 
   return (

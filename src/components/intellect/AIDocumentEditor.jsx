@@ -100,9 +100,10 @@ function HeadingDrop({ value, onChange }) {
   );
 }
 
-export default function AIDocumentEditor({ initialContent, initialTitle, initialFileUrl, orgId, onSaved }) {
+export default function AIDocumentEditor({ initialContent, initialTitle, initialFileUrl, initialFileId, orgId, onSaved }) {
   const [content, setContent] = useState(initialContent || `<h1>Document Title</h1><p>Start typing your document here...</p>`);
   const [documentTitle, setDocumentTitle] = useState(initialTitle?.replace(/\.[^.]+$/, '') || "Untitled Document");
+  const existingFileId = useRef(initialFileId || null);
 
   // Load from URL if provided
   useEffect(() => {
@@ -148,18 +149,27 @@ export default function AIDocumentEditor({ initialContent, initialTitle, initial
       const res = await base44.integrations.Core.UploadFile({ file });
       const fileUrl = res?.data?.file_url || res?.file_url;
       if (fileUrl && orgId) {
-        await base44.entities.FleetDriveFile.create({
-          organization_id: orgId,
-          name: fileName,
-          file_url: fileUrl,
-          file_type: "document",
-          file_size_bytes: blob.size,
-          mime_type: "text/html",
-          folder: "Documents",
-          source: "document_editor",
-          description: `FleetDocs document`,
-          tags: ["fleetdocs", "document"],
-        });
+        if (existingFileId.current) {
+          await base44.entities.FleetDriveFile.update(existingFileId.current, {
+            name: fileName,
+            file_url: fileUrl,
+            file_size_bytes: blob.size,
+          });
+        } else {
+          const created = await base44.entities.FleetDriveFile.create({
+            organization_id: orgId,
+            name: fileName,
+            file_url: fileUrl,
+            file_type: "document",
+            file_size_bytes: blob.size,
+            mime_type: "text/html",
+            folder: "Documents",
+            source: "document_editor",
+            description: `FleetDocs document`,
+            tags: ["fleetdocs", "document"],
+          });
+          existingFileId.current = created.id;
+        }
         toast.success("✅ Saved to Fleet Drive → Documents");
         onSaved?.();
       }

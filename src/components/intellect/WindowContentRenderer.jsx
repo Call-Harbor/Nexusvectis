@@ -378,8 +378,8 @@ function ArticleIframeViewer({ url, onClose }) {
 export default function WindowContentRenderer({ type, data, vehicles, routes, shipments, alerts, currentUser, orgId, customers, setInput, openWindow }) {
   const queryClient = useQueryClient();
   const onSaved = () => queryClient.invalidateQueries({ queryKey: ['fleet-drive', orgId] });
-  if (type === 'document_editor') return <AIDocumentEditor initialContent={data?.initialContent} initialTitle={data?.initialTitle} initialFileUrl={data?.initialFileUrl} orgId={orgId} onSaved={onSaved} />;
-  if (type === 'spreadsheet_editor') return <AISpreadsheetEditor initialGrid={data?.initialGrid} initialTitle={data?.initialTitle} initialFileUrl={data?.initialFileUrl} orgId={orgId} onSaved={onSaved} />;
+  if (type === 'document_editor') return <AIDocumentEditor initialContent={data?.initialContent} initialTitle={data?.initialTitle} initialFileUrl={data?.initialFileUrl} initialFileId={data?.initialFileId} orgId={orgId} onSaved={onSaved} />;
+  if (type === 'spreadsheet_editor') return <AISpreadsheetEditor initialGrid={data?.initialGrid} initialTitle={data?.initialTitle} initialFileUrl={data?.initialFileUrl} initialFileId={data?.initialFileId} orgId={orgId} onSaved={onSaved} />;
 
   if (type.startsWith('chart_')) {
     // Always use AdvancedFleetAnalysisHologram — it handles all analysis types generically
