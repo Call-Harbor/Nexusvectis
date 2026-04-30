@@ -445,7 +445,7 @@ export default function IntellectMode() {
      openVehicleBuilder: () => { openWindow('vehicle_builder', { x: 80, y: 60 }); setMessages(prev => [...prev, { role: "system", content: "🔧 Transport Builder & Simulator opened — Configure truck, ship, aircraft or train and run advanced fuel & CO₂ simulations" }]); },
      openHarborAppBuilder: () => { openWindow('harbor_app_builder', { x: 60, y: 50 }, { installedAppIds, onInstall: (appId) => updateInstalledApps(new Set([...installedAppIds, appId])), vehicles, routes, shipments, alerts, customers, currentUser, orgId }); setMessages(prev => [...prev, { role: "system", content: "⚡ H.A.R.B.O.R App Builder activated — Entity-first design workflow" }]); },
      openFleetStore: () => { openWindow('fleet_store', { x: 100, y: 80 }, { installedAppIds, onInstall: (appId) => { const next = new Set([...installedAppIds, appId]); updateInstalledApps(next); window.dispatchEvent(new CustomEvent('harbor_install_app', { detail: { appId, orgId } })); openWindow('harbor_app_builder', { x: 60, y: 50 }, { installedAppIds: next, onInstall: (id) => updateInstalledApps(new Set([...next, id])), vehicles, routes, shipments, alerts, customers, currentUser, orgId }); toast.success("App installed — check App Builder!"); }, onUninstall: async (appId) => { const next = new Set(installedAppIds); next.delete(appId); updateInstalledApps(next); } }); setMessages(prev => [...prev, { role: "system", content: "Fleet Store opened" }]); },
-     openTransitConsole: () => { navigate('/TransitControl'); setMessages(prev => [...prev, { role: "system", content: "🚌 Transit Console opened — Manage bus lines, stops, drivers and real-time operations" }]); },
+     openTransitConsole: () => { navigate('/TransitControl'); setMessages(prev => [...prev, { role: "system", content: "🚌 Transit Control opened — Manage bus lines, stops, drivers and real-time operations" }]); },
       openAirportOps: () => { openWindow('airport_ops', { x: 60, y: 50 }); setMessages(prev => [...prev, { role: "system", content: "✈️ Airport Ops Center opened as hologram — Full AI-powered airport operations" }]); },
       openPortCommand: () => { openWindow('port_command', { x: 80, y: 60 }); setMessages(prev => [...prev, { role: "system", content: "🚢 Port Command Center opened as hologram — Full AI-powered port operations" }]); },
       openEnergyOps: () => { navigate('/EnergyOpsCenter'); setMessages(prev => [...prev, { role: "system", content: "⚡ Energy & Utilities Ops opened — Neural grid control, load forecast, AI dispatch and resilience simulation" }]); },
@@ -961,7 +961,7 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
     }
 
     // Airport Ops detection
-    const airportMatch = currentCommand.match(/(?:airport|lufthavn|airport ops|åbn airport|open airport|vis airport|airport command)/i);
+    const airportMatch = currentCommand.match(/(?:airport|open airport|airport ops|airport command)/i);
     if (airportMatch) {
       setMessages(prev => [...prev, { role: "user", content: currentCommand }]);
       setInput("");
@@ -970,7 +970,7 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
     }
 
     // Energy Ops detection
-    const energyMatch = currentCommand.match(/(?:energy|energi|grid|elnet|utilities|dispatch grid|load forecast|islanding|outage planner|power grid|strøm|el-net)/i);
+    const energyMatch = currentCommand.match(/(?:energy|grid|utilities|dispatch grid|load forecast|power grid)/i);
     if (energyMatch) {
       setMessages(prev => [...prev, { role: "user", content: currentCommand }]);
       setInput("");
@@ -979,7 +979,7 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
     }
 
     // Port Command detection
-    const portMatch = currentCommand.match(/(?:port command|portkommando|åbn port|open port|vis port|havn|port center|port ops)/i);
+    const portMatch = currentCommand.match(/(?:port command|open port|port center|port ops)/i);
     if (portMatch) {
       setMessages(prev => [...prev, { role: "user", content: currentCommand }]);
       setInput("");
@@ -987,8 +987,8 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
       return;
     }
 
-    // AI Dev IDE detection — intentional/explicit only, not broad "code" or "generate"
-    const ideMatch = currentCommand.match(/(?:\bide\b|code editor|devops orchestrator|ai ide|fleet ide|deploy pipeline|ci.?cd pipeline|codegen|kode editor|byg pipeline|fleet ai ide)/i);
+    // AI Dev IDE detection — intentional/explicit only
+    const ideMatch = currentCommand.match(/(?:\bide\b|code editor|devops orchestrator|ai ide|fleet ide|deploy pipeline|ci.?cd pipeline|codegen)/i);
     if (ideMatch) {
       setMessages(prev => [...prev, { role: "user", content: currentCommand }]);
       setInput("");
@@ -997,7 +997,7 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
     }
 
     // H.A.R.B.O.R App Builder detection
-    const harborAppMatch = currentCommand.match(/(?:harbor\s+app|build\s+(?:an?\s+)?app|create\s+(?:an?\s+)?app|app\s+builder|lav\s+(?:en?\s+)?app|byg\s+(?:en?\s+)?app|h\.?a\.?r\.?b\.?o\.?r\s+builder)/i);
+    const harborAppMatch = currentCommand.match(/(?:harbor\s+app|build\s+(?:an?\s+)?app|create\s+(?:an?\s+)?app|app\s+builder|h\.?a\.?r\.?b\.?o\.?r\s+builder)/i);
     if (harborAppMatch) {
       setMessages(prev => [...prev, { role: "user", content: currentCommand }]);
       setInput("");
@@ -1007,7 +1007,7 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
     }
 
     // Vehicle builder / simulator detection
-    const builderMatch = currentCommand.match(/(?:byg\s+(?:en?\s+)?(?:lastbil|skib|fly|tog|k.retøj)|transport(?:bygger|simulator)|simulator|brændstof(?:beregn|simuler)|co2\s+beregn|simuler\s+(?:tur|rute|transport|forbrug)|beregn\s+(?:brændstof|forbrug|co2)|konfigurer\s+(?:lastbil|skib|fly|tog)|build\s+(?:truck|ship|aircraft|train)|vehicle\s+builder|vehicle\s+simulator)/i);
+    const builderMatch = currentCommand.match(/(?:build\s+(?:a\s+)?(?:truck|ship|aircraft|train)|vehicle\s+(?:builder|simulator)|simulator|fuel\s+(?:calc|simul)|co2\s+(?:calc|simul)|configure\s+(?:truck|ship|aircraft|train)|byg\s+(?:en?\s+)?(?:lastbil|skib|fly|tog)|transport(?:bygger|simulator)|brændstof|beregn|konfigurer)/i);
     if (builderMatch) {
       setMessages(prev => [...prev, { role: "user", content: currentCommand }]);
       setInput("");
@@ -1017,7 +1017,7 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
     }
 
     // 3D model viewer detection
-    const viewer3DMatch = currentCommand.match(/(?:vis\s+3d|3d\s+model|3d\s+viewer|show\s+3d|fleet\s+3d|lastbil\s+3d|truck\s+3d|skib\s+3d|drone\s+3d|fly\s+3d|vis\s+k.retøj|vis\s+lastbil|vis\s+skib|volvo|scania|mercedes\s+actros|man\s+tgx|daf\s+xf|containerskib|tankskib|cargo\s+drone|fragtfly)/i);
+    const viewer3DMatch = currentCommand.match(/(?:show\s+3d|3d\s+(?:model|viewer)|fleet\s+3d|truck\s+3d|ship\s+3d|drone\s+3d|aircraft\s+3d|volvo|scania|mercedes|man\s+tgx|daf\s+xf|container\s+ship|tanker|cargo\s+drone|cargo\s+aircraft|vis\s+3d|lastbil|skib|fly|containerskib|tankskib|fragtfly)/i);
     if (viewer3DMatch) {
       setMessages(prev => [...prev, { role: "user", content: currentCommand }]);
       setInput("");
@@ -1027,8 +1027,8 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
     }
 
     // Image generation detection
-    const imageMatch = currentCommand.match(/(?:generer(?:er)?\s+(?:et\s+)?billede(?:\s+af)?[:\s]*|generate\s+(?:an?\s+)?image(?:\s+of)?[:\s]*|lav\s+(?:et\s+)?billede(?:\s+af)?[:\s]*|create\s+(?:an?\s+)?image(?:\s+of)?[:\s]*)(.+)/i);
-    if (imageMatch || currentCommand.toLowerCase().match(/^(?:billede|image|generer billede|generate image)$/)) {
+    const imageMatch = currentCommand.match(/(?:generate\s+(?:an?\s+)?image|create\s+(?:an?\s+)?image|generer\s+(?:et\s+)?billede|lav\s+(?:et\s+)?billede|generate\s+image|create\s+image)(?:\s+(?:of|af))?[:\s]*(.+)?/i);
+    if (imageMatch || currentCommand.toLowerCase().match(/^(?:image|billede|generate image|generer billede)$/)) {
       setMessages(prev => [...prev, { role: "user", content: currentCommand }]);
       setInput("");
       openWindow('image_generator', { x: 100, y: 80 });
@@ -1037,13 +1037,13 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
     }
 
     // Company analysis detection
-    const companyMatch = currentCommand.match(/(?:analyser(?:er)?\s+virksomheden?\s+|company analysis[:\s]+|analyze company[:\s]+)(.+)/i);
+    const companyMatch = currentCommand.match(/(?:analyze\s+company|company\s+analysis|analyser\s+virksomheden)(?:\s+)?[:\s]*(.+)?/i);
     if (companyMatch) {
       setMessages(prev => [...prev, { role: "user", content: currentCommand }]);
       setInput("");
-      setCompanyAnalysisTarget(companyMatch[1].trim());
+      setCompanyAnalysisTarget(companyMatch[1]?.trim() || '');
       setShowCompanyAnalysis(true);
-      setMessages(prev => [...prev, { role: "system", content: `🏢 Opening holographic analysis for "${companyMatch[1].trim()}"...` }]);
+      setMessages(prev => [...prev, { role: "system", content: `🏢 Opening holographic analysis for "${companyMatch[1]?.trim() || 'company'}"...` }]);
       return;
     }
 
