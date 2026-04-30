@@ -1609,7 +1609,7 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
           boxShadow: "0 0 30px rgba(16,185,129,0.2)"
         }}>
         <Zap className="w-4 h-4" />
-        AI Udfør
+        AI Execute
         <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
       </motion.button>
 
