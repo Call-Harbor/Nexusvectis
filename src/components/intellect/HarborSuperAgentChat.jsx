@@ -1080,9 +1080,25 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
                 </motion.span>
               )}
             </div>
-            <p className="text-[9px] font-mono tracking-widest" style={{ color: "rgba(6,182,212,0.35)" }}>
-              Multi-Agent AI · Claude Sonnet 4.6 · 7 Orchestration Modes
-            </p>
+            <div className="flex items-center gap-2">
+              <p className="text-[9px] font-mono tracking-widest" style={{ color: "rgba(6,182,212,0.35)" }}>
+                Multi-Agent AI · Claude Sonnet 4.6 · 7 Orchestration Modes
+              </p>
+              {orgId && (
+                <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[8px] font-mono uppercase tracking-widest"
+                  style={{ background: "rgba(22,163,74,0.12)", border: "1px solid rgba(22,163,74,0.3)", color: "#16a34a" }}>
+                  <div className="w-1.5 h-1.5 rounded-full" style={{ background: "#16a34a", boxShadow: "0 0 4px #16a34a" }} />
+                  ORG: {orgId.slice(0, 8)}...
+                </div>
+              )}
+              {!orgId && (
+                <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[8px] font-mono uppercase tracking-widest"
+                  style={{ background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.3)", color: "#ef4444" }}>
+                  <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "#ef4444" }} />
+                  No Org
+                </div>
+              )}
+            </div>
           </div>
         </div>
         <div className="flex items-center gap-1">
