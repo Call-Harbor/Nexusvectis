@@ -793,19 +793,35 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
     const init = async () => {
       try {
         const user = await base44.auth.me();
-        const cached = localStorage.getItem(`harbor_org_id_${user.email}`);
-        if (cached) { setOrgId(cached); return; }
+        if (!user) return;
         
+        const cached = localStorage.getItem(`harbor_org_id_${user.email}`);
+        if (cached) { setOrgId(cached); console.log('[OrgID] Loaded from cache:', cached); return; }
+        
+        // Try user object first (if it has organization_id)
+        if (user.organization_id) {
+          setOrgId(user.organization_id);
+          localStorage.setItem(`harbor_org_id_${user.email}`, user.organization_id);
+          console.log('[OrgID] Found on user object:', user.organization_id);
+          return;
+        }
+
+        // Try OrganizationMember
         let members = await base44.entities.OrganizationMember.filter({ user_email: user.email });
         if (!members?.length) {
           members = await base44.entities.OrganizationMember.list();
           members = members?.filter(m => m.user_email === user.email);
         }
+        
         if (members?.length > 0) {
-          setOrgId(members[0].organization_id);
-          localStorage.setItem(`harbor_org_id_${user.email}`, members[0].organization_id);
+          const orgId = members[0].organization_id;
+          setOrgId(orgId);
+          localStorage.setItem(`harbor_org_id_${user.email}`, orgId);
+          console.log('[OrgID] Found from OrganizationMember:', orgId);
+        } else {
+          console.warn('[OrgID] No OrganizationMember found for:', user.email);
         }
-      } catch (e) { console.error('Org load error:', e); }
+      } catch (e) { console.error('[OrgID] Load error:', e); }
       await loadConversations();
       await loadCustomWorkers();
     };
