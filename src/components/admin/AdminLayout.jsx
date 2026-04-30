@@ -24,7 +24,6 @@ const adminNavItems = [
     section: "ORGANIZATIONS",
     items: [
       { name: "Org Intelligence", icon: Building2, page: "AdminOrganizations" },
-      { name: "User Management", icon: Users, page: "UserManagement" },
     ]
   },
   {
