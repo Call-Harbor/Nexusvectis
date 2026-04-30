@@ -1069,6 +1069,11 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
 
     try {
       isWaitingForAgentRef.current = true;
+      if (!intellectConversationRef.current) {
+        setMessages(prev => [...prev.filter(m => m.content !== '⚡ H.A.R.B.O.R analyzing...'), { role: 'system', content: '❌ Agent not initialized' }]);
+        setIsProcessing(false);
+        return;
+      }
       const messageContent = validOrgId 
         ? `[ORG:${validOrgId}]\n\n${currentCommand}`
         : currentCommand;
