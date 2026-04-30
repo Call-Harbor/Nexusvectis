@@ -982,8 +982,8 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
       return;
     }
 
-    // AI Dev IDE detection
-    const ideMatch = currentCommand.match(/(?:ide|code editor|devops|orchestrator|ai ide|fleet ide|deploy pipeline|ci.?cd|codegen|generate code|kode editor|skriv kode|byg pipeline)/i);
+    // AI Dev IDE detection — intentional/explicit only, not broad "code" or "generate"
+    const ideMatch = currentCommand.match(/(?:\bide\b|code editor|devops orchestrator|ai ide|fleet ide|deploy pipeline|ci.?cd pipeline|codegen|kode editor|byg pipeline|fleet ai ide)/i);
     if (ideMatch) {
       setMessages(prev => [...prev, { role: "user", content: currentCommand }]);
       setInput("");

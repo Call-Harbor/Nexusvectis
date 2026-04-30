@@ -633,8 +633,10 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
       const currentDeletedIds = getDeletedIds();
       const active = (convs || []).filter(c => !currentDeletedIds.has(c.id));
       setConversations(active);
-      if (active.length > 0) await selectConversation(active[0]);
-      else await createNewConversation();
+      if (active.length > 0) {
+        await selectConversation(active[0]);
+      }
+      // Do NOT auto-create a conversation here — only create when user explicitly starts one
     } catch { toast.error("Could not load conversations"); }
     setIsLoading(false);
   };
@@ -918,7 +920,12 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
 
   const sendMessage = useCallback(async (text) => {
     const msg = (text || input).trim();
-    if ((!msg && attachments.length === 0) || isSending || !activeConversation) return;
+    if ((!msg && attachments.length === 0) || isSending) return;
+    // Auto-create a conversation if none exists yet
+    if (!activeConversation) {
+      await createNewConversation();
+      return; // Will re-trigger on next send
+    }
     const fileUrls = attachments.map(a => a.url);
     setIsSending(true);
 
