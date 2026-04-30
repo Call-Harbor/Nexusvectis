@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Activity, Zap, Network, Brain, RefreshCw, Pause, Play, TrendingUp } from "lucide-react";
+import { base44 } from "@/api/base44Client";
 
-// ─── All 50+ agents grouped by domain ─────────────────────────────────────────
+// ─── All agents grouped by domain ──────────────────────────────────────────
 const AGENT_GROUPS = [
   {
     label: "Fleet", color: "#06b6d4",
@@ -35,11 +36,11 @@ const AGENT_GROUPS = [
   {
     label: "Analytics", color: "#f59e0b",
     agents: [
-      { id: "harbor_demand_forecaster","name": "Demand Forecast" },
-      { id: "harbor_data_miner",       name: "Data Miner" },
-      { id: "harbor_kpi_engine",       name: "KPI Engine" },
-      { id: "harbor_benchmark_ai",     name: "Benchmark AI" },
-      { id: "harbor_trend_spotter",    name: "Trend Spotter" },
+      { id: "harbor_demand_forecaster", name: "Demand Forecast" },
+      { id: "harbor_data_miner",        name: "Data Miner" },
+      { id: "harbor_kpi_engine",        name: "KPI Engine" },
+      { id: "harbor_benchmark_ai",      name: "Benchmark AI" },
+      { id: "harbor_trend_spotter",     name: "Trend Spotter" },
     ],
   },
   {
@@ -54,9 +55,9 @@ const AGENT_GROUPS = [
   {
     label: "ESG", color: "#22c55e",
     agents: [
-      { id: "harbor_sustainability_ai","name": "Sustainability AI" },
-      { id: "harbor_co2_tracker",      name: "CO₂ Tracker" },
-      { id: "harbor_green_router",     name: "Green Router" },
+      { id: "harbor_sustainability_ai", name: "Sustainability AI" },
+      { id: "harbor_co2_tracker",       name: "CO₂ Tracker" },
+      { id: "harbor_green_router",      name: "Green Router" },
     ],
   },
   {
@@ -99,55 +100,144 @@ const AGENT_GROUPS = [
   },
 ];
 
-// Flatten all agents with group metadata
 const ALL_AGENTS = AGENT_GROUPS.flatMap(g =>
   g.agents.map(a => ({ ...a, group: g.label, color: g.color }))
 );
 
-// ─── Deterministic seeded pseudo-random (reproducible per tick) ─────────────
-function seededRand(seed) {
-  let x = Math.sin(seed + 1) * 43758.5453123;
-  return x - Math.floor(x);
-}
+// ─── Map agent IDs to FleetAI action keywords ─────────────────────────────
+const AGENT_ACTION_KEYWORDS = {
+  harbor_fleet_analyst:    ["fleet", "vehicle", "truck", "flåde"],
+  harbor_maintenance_bot:  ["maintenance", "predictive", "vedligehold"],
+  harbor_vehicle_tracker:  ["track", "gps", "location", "spor"],
+  harbor_fuel_optimizer:   ["fuel", "brændstof", "efficiency"],
+  harbor_fleet_scheduler:  ["schedule", "planlæg"],
+  harbor_route_optimizer:  ["route", "rute", "optimize", "optimer"],
+  harbor_multimodal_ai:    ["multimodal", "ship", "aircraft", "train"],
+  harbor_eta_predictor:    ["eta", "arrival", "ankomst"],
+  harbor_traffic_ai:       ["traffic", "trafik"],
+  harbor_risk_engine:      ["risk", "risiko"],
+  harbor_security_ai:      ["security", "sikkerhed"],
+  harbor_anomaly_detector: ["anomaly", "anomali", "detect"],
+  harbor_fraud_guard:      ["fraud", "svig"],
+  harbor_demand_forecaster:["demand", "forecast", "efterspørgsel"],
+  harbor_data_miner:       ["data", "analysis", "analyse"],
+  harbor_kpi_engine:       ["kpi", "performance"],
+  harbor_benchmark_ai:     ["benchmark", "compare"],
+  harbor_trend_spotter:    ["trend"],
+  harbor_financial_ai:     ["financial", "økonomi", "finance"],
+  harbor_invoice_bot:      ["invoice", "faktura", "billing"],
+  harbor_tco_calculator:   ["tco", "cost", "omkostning"],
+  harbor_budget_ai:        ["budget"],
+  harbor_sustainability_ai:["sustainability", "bæredygtighed", "esg"],
+  harbor_co2_tracker:      ["co2", "emission", "carbon"],
+  harbor_green_router:     ["green", "grøn"],
+  harbor_compliance_guard: ["compliance", "overholdelse"],
+  harbor_regulatory_ai:    ["regulatory", "regulering", "rule"],
+  harbor_adr_checker:      ["adr", "hazard", "farligt"],
+  harbor_audit_bot:        ["audit", "revision"],
+  harbor_ops_commander:    ["ops", "operation", "command"],
+  harbor_dispatch_ai:      ["dispatch", "assignment"],
+  harbor_exception_mgr:    ["exception", "undtagelse", "alert"],
+  harbor_shift_planner:    ["shift", "vagt", "planlæg"],
+  harbor_customer_intel:   ["customer", "kunde", "crm"],
+  harbor_driver_coach:     ["driver", "chauffør", "coach"],
+  harbor_crm_ai:           ["crm", "deal", "pipeline"],
+  harbor_hr_analyst:       ["hr", "employee", "medarbejder"],
+  harbor_strategy_ai:      ["strategy", "strategi"],
+  harbor_market_scout:     ["market", "marked", "competitor"],
+  harbor_nlp_engine:       ["nlp", "language", "text", "tekst"],
+  harbor_document_ai:      ["document", "dokument", "pdf"],
+  harbor_api_integrator:   ["api", "integration", "webhook"],
+  harbor_visualizer:       ["visual", "chart", "diagram", "visualize"],
+};
 
-// ─── Generate a realistic load snapshot ────────────────────────────────────
-function generateLoad(tick) {
-  return ALL_AGENTS.map((agent, i) => {
-    const base = 20 + seededRand(i * 7.3) * 40;           // stable baseline per agent
-    const wave = Math.sin(tick * 0.08 + i * 0.9) * 18;    // slow oscillation
-    const spike = seededRand(tick * 3.1 + i) > 0.91 ? 35 + seededRand(tick + i) * 40 : 0; // rare spike
-    const noise = (seededRand(tick * 11 + i) - 0.5) * 12; // high-freq noise
-    return Math.min(99, Math.max(1, base + wave + spike + noise));
+// ─── Compute agent load from real data ────────────────────────────────────
+function computeAgentLoads(executions, fleetAIUsage, apiUsage) {
+  const now = Date.now();
+  const windowMs = 24 * 60 * 60 * 1000; // last 24h
+
+  // Count recent executions involving each agent (from agents_involved field)
+  const executionCounts = {};
+  const runningCounts = {};
+  executions.forEach(ex => {
+    const ts = ex.started_at ? new Date(ex.started_at).getTime() : (ex.created_date ? new Date(ex.created_date).getTime() : 0);
+    if (now - ts > windowMs) return;
+    (ex.agents_involved || []).forEach(agentId => {
+      executionCounts[agentId] = (executionCounts[agentId] || 0) + 1;
+      if (ex.status === "running") {
+        runningCounts[agentId] = (runningCounts[agentId] || 0) + 1;
+      }
+    });
+  });
+
+  // Count FleetAI usage commands mapped to agents by keyword
+  const fleetAICounts = {};
+  fleetAIUsage.forEach(usage => {
+    const ts = usage.created_date ? new Date(usage.created_date).getTime() : 0;
+    if (now - ts > windowMs) return;
+    const cmd = (usage.command || "").toLowerCase();
+    ALL_AGENTS.forEach(agent => {
+      const keywords = AGENT_ACTION_KEYWORDS[agent.id] || [];
+      if (keywords.some(kw => cmd.includes(kw))) {
+        fleetAICounts[agent.id] = (fleetAICounts[agent.id] || 0) + 1;
+      }
+    });
+  });
+
+  // Count API usage mapped to agents by endpoint keyword
+  const apiCounts = {};
+  apiUsage.forEach(usage => {
+    const ts = usage.created_date ? new Date(usage.created_date).getTime() : 0;
+    if (now - ts > windowMs) return;
+    const ep = (usage.endpoint || "").toLowerCase();
+    ALL_AGENTS.forEach(agent => {
+      const keywords = AGENT_ACTION_KEYWORDS[agent.id] || [];
+      if (keywords.some(kw => ep.includes(kw))) {
+        apiCounts[agent.id] = (apiCounts[agent.id] || 0) + 1;
+      }
+    });
+  });
+
+  // Normalize to 0-99 load score
+  const maxExec = Math.max(1, ...Object.values(executionCounts));
+  const maxFleet = Math.max(1, ...Object.values(fleetAICounts));
+  const maxApi = Math.max(1, ...Object.values(apiCounts));
+
+  return ALL_AGENTS.map(agent => {
+    const execScore = ((executionCounts[agent.id] || 0) / maxExec) * 60;
+    const runScore = (runningCounts[agent.id] || 0) * 15; // +15 per currently running
+    const fleetScore = ((fleetAICounts[agent.id] || 0) / maxFleet) * 25;
+    const apiScore = ((apiCounts[agent.id] || 0) / maxApi) * 15;
+    return Math.min(99, Math.max(2, execScore + runScore + fleetScore + apiScore));
   });
 }
 
-// ─── Heat color based on load ──────────────────────────────────────────────
+// ─── Heat color ────────────────────────────────────────────────────────────
 function heatColor(load) {
-  if (load < 25) return "#1e293b"; // idle — dark slate
-  if (load < 45) return "#0e7490"; // low  — teal
-  if (load < 65) return "#0891b2"; // med  — cyan
-  if (load < 80) return "#f59e0b"; // high — amber
-  if (load < 92) return "#ef4444"; // hot  — red
-  return "#7c3aed";                // overload — violet
+  if (load < 10) return "#1e293b";
+  if (load < 30) return "#0e7490";
+  if (load < 55) return "#0891b2";
+  if (load < 75) return "#f59e0b";
+  if (load < 90) return "#ef4444";
+  return "#7c3aed";
 }
 
 function loadLabel(l) {
-  if (l < 25) return "idle";
-  if (l < 45) return "low";
-  if (l < 65) return "med";
-  if (l < 80) return "high";
-  if (l < 92) return "hot";
+  if (l < 10) return "idle";
+  if (l < 30) return "low";
+  if (l < 55) return "med";
+  if (l < 75) return "high";
+  if (l < 90) return "hot";
   return "OVLD";
 }
 
-// ─── Sparkline history display ──────────────────────────────────────────────
+// ─── Sparkline ────────────────────────────────────────────────────────────
 function Sparkline({ history, color }) {
   if (!history || history.length < 2) return null;
   const h = 28, w = 80;
-  const max = 100, min = 0;
   const pts = history.map((v, i) => {
     const x = (i / (history.length - 1)) * w;
-    const y = h - ((v - min) / (max - min)) * h;
+    const y = h - (v / 100) * h;
     return `${x},${y}`;
   }).join(" ");
   return (
@@ -159,42 +249,55 @@ function Sparkline({ history, color }) {
 
 // ─── Main component ────────────────────────────────────────────────────────
 export default function OrchestratorLoadMap() {
-  const [tick, setTick] = useState(0);
-  const [paused, setPaused] = useState(false);
-  const [loads, setLoads] = useState(() => generateLoad(0));
+  const [loads, setLoads] = useState(() => ALL_AGENTS.map(() => 2));
   const [historyMap, setHistoryMap] = useState(() =>
-    Object.fromEntries(ALL_AGENTS.map(a => [a.id, [generateLoad(0)[ALL_AGENTS.indexOf(a)]]]))
+    Object.fromEntries(ALL_AGENTS.map(a => [a.id, []]))
   );
   const [hovered, setHovered] = useState(null);
-  const [viewMode, setViewMode] = useState("heatmap"); // heatmap | bars
+  const [viewMode, setViewMode] = useState("heatmap");
+  const [paused, setPaused] = useState(false);
+  const [lastRefresh, setLastRefresh] = useState(null);
+  const [loading, setLoading] = useState(true);
   const intervalRef = useRef(null);
 
-  // ── Tick engine ──────────────────────────────────────────────────────────
-  useEffect(() => {
+  // ── Fetch real data ──────────────────────────────────────────────────────
+  const fetchData = async () => {
     if (paused) return;
-    intervalRef.current = setInterval(() => {
-      setTick(t => {
-        const next = t + 1;
-        const newLoads = generateLoad(next);
-        setLoads(newLoads);
-        setHistoryMap(prev => {
-          const updated = { ...prev };
-          ALL_AGENTS.forEach((agent, i) => {
-            const arr = [...(prev[agent.id] || []), newLoads[i]];
-            updated[agent.id] = arr.slice(-40); // keep last 40 ticks
-          });
-          return updated;
+    try {
+      const [executions, fleetAIUsage, apiUsage] = await Promise.all([
+        base44.entities.AgentExecution.list("-created_date", 200),
+        base44.entities.FleetAIUsage.list("-created_date", 300),
+        base44.entities.APIUsage.list("-created_date", 200),
+      ]);
+
+      const newLoads = computeAgentLoads(executions, fleetAIUsage, apiUsage);
+      setLoads(newLoads);
+      setHistoryMap(prev => {
+        const updated = { ...prev };
+        ALL_AGENTS.forEach((agent, i) => {
+          const arr = [...(prev[agent.id] || []), newLoads[i]];
+          updated[agent.id] = arr.slice(-40);
         });
-        return next;
+        return updated;
       });
-    }, 600);
+      setLastRefresh(new Date());
+    } catch (e) {
+      console.error("OrchestratorLoadMap fetch error:", e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+    intervalRef.current = setInterval(fetchData, 15000); // refresh every 15s
     return () => clearInterval(intervalRef.current);
   }, [paused]);
 
   // ── Derived stats ────────────────────────────────────────────────────────
   const totalLoad = loads.reduce((a, b) => a + b, 0) / loads.length;
-  const activeAgents = loads.filter(l => l >= 25).length;
-  const hotAgents = loads.filter(l => l >= 80).length;
+  const activeAgents = loads.filter(l => l >= 10).length;
+  const hotAgents = loads.filter(l => l >= 75).length;
   const topAgent = ALL_AGENTS[loads.indexOf(Math.max(...loads))];
 
   return (
@@ -208,9 +311,14 @@ export default function OrchestratorLoadMap() {
             <span className="text-[11px] font-mono font-black tracking-widest uppercase" style={{ color: "#a78bfa" }}>Orchestrator Load Map</span>
           </div>
           <span className="flex items-center gap-1 text-[9px] font-mono px-2 py-0.5 rounded" style={{ background: "rgba(16,185,129,0.12)", color: "#10b981", border: "1px solid rgba(16,185,129,0.25)" }}>
-            <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "#10b981" }} />
-            {paused ? "PAUSED" : "LIVE"}
+            <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: loading ? "#f59e0b" : "#10b981" }} />
+            {loading ? "LOADING" : paused ? "PAUSED" : "LIVE"}
           </span>
+          {lastRefresh && (
+            <span className="text-[9px] font-mono" style={{ color: "#334155" }}>
+              Updated {lastRefresh.toLocaleTimeString("da-DK")}
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-2">
           {["heatmap", "bars"].map(m => (
@@ -220,6 +328,11 @@ export default function OrchestratorLoadMap() {
               {m}
             </button>
           ))}
+          <button onClick={fetchData} title="Refresh now"
+            className="w-7 h-7 flex items-center justify-center rounded-lg transition-all"
+            style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "#64748b" }}>
+            <RefreshCw className="w-3.5 h-3.5" />
+          </button>
           <button onClick={() => setPaused(p => !p)}
             className="w-7 h-7 flex items-center justify-center rounded-lg transition-all"
             style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "#64748b" }}>
@@ -231,7 +344,7 @@ export default function OrchestratorLoadMap() {
       {/* KPI strip */}
       <div className="grid grid-cols-4 gap-px flex-shrink-0" style={{ background: "rgba(255,255,255,0.04)" }}>
         {[
-          { label: "Avg Load", value: `${totalLoad.toFixed(0)}%`, color: totalLoad > 70 ? "#ef4444" : totalLoad > 45 ? "#f59e0b" : "#10b981", icon: Activity },
+          { label: "Avg Load", value: `${totalLoad.toFixed(0)}%`, color: totalLoad > 70 ? "#ef4444" : totalLoad > 40 ? "#f59e0b" : "#10b981", icon: Activity },
           { label: "Active", value: `${activeAgents}/${ALL_AGENTS.length}`, color: "#06b6d4", icon: Zap },
           { label: "Hot Agents", value: hotAgents, color: hotAgents > 3 ? "#ef4444" : "#f59e0b", icon: TrendingUp },
           { label: "Peak Agent", value: topAgent?.name || "—", color: "#a78bfa", icon: Brain },
@@ -240,22 +353,29 @@ export default function OrchestratorLoadMap() {
             <Icon className="w-3.5 h-3.5 flex-shrink-0" style={{ color }} />
             <div>
               <p className="text-[8px] font-mono uppercase tracking-widest leading-none" style={{ color: "#334155" }}>{label}</p>
-              <p className="text-xs font-black leading-tight mt-0.5" style={{ color }}>{value}</p>
+              <p className="text-xs font-black leading-tight mt-0.5 truncate max-w-[80px]" style={{ color }}>{value}</p>
             </div>
           </div>
         ))}
       </div>
 
+      {/* Data source note */}
+      <div className="flex items-center gap-2 px-4 py-1 border-b flex-shrink-0" style={{ borderColor: "rgba(255,255,255,0.04)", background: "rgba(0,0,0,0.3)" }}>
+        <span className="text-[8px] font-mono" style={{ color: "#334155" }}>
+          Data: AgentExecution · FleetAIUsage · APIUsage · 24h window · refresh 15s
+        </span>
+      </div>
+
       {/* Legend */}
-      <div className="flex items-center gap-3 px-4 py-1.5 border-b flex-shrink-0" style={{ borderColor: "rgba(255,255,255,0.04)", background: "rgba(0,0,0,0.3)" }}>
+      <div className="flex items-center gap-3 px-4 py-1.5 border-b flex-shrink-0" style={{ borderColor: "rgba(255,255,255,0.04)", background: "rgba(0,0,0,0.2)" }}>
         <span className="text-[9px] font-mono uppercase tracking-widest" style={{ color: "#334155" }}>Load:</span>
         {[
-          { label: "Idle <25%", color: "#1e293b" },
-          { label: "Low <45%", color: "#0e7490" },
-          { label: "Med <65%", color: "#0891b2" },
-          { label: "High <80%", color: "#f59e0b" },
-          { label: "Hot <92%", color: "#ef4444" },
-          { label: "OVLD 92%+", color: "#7c3aed" },
+          { label: "Idle", color: "#1e293b" },
+          { label: "Low", color: "#0e7490" },
+          { label: "Med", color: "#0891b2" },
+          { label: "High", color: "#f59e0b" },
+          { label: "Hot", color: "#ef4444" },
+          { label: "OVLD", color: "#7c3aed" },
         ].map(({ label, color }) => (
           <div key={label} className="flex items-center gap-1">
             <span className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ background: color, border: "1px solid rgba(255,255,255,0.1)" }} />
@@ -266,24 +386,28 @@ export default function OrchestratorLoadMap() {
 
       {/* Main visualizer */}
       <div className="flex-1 overflow-auto p-3">
-        {viewMode === "heatmap" ? (
+        {loading ? (
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center">
+              <div className="w-8 h-8 border-2 border-purple-500/30 border-t-purple-400 rounded-full animate-spin mx-auto mb-3" />
+              <p className="text-[10px] font-mono" style={{ color: "#334155" }}>Loading platform data...</p>
+            </div>
+          </div>
+        ) : viewMode === "heatmap" ? (
           <div className="space-y-3">
             {AGENT_GROUPS.map((group) => (
               <div key={group.label}>
-                {/* Group label */}
                 <div className="flex items-center gap-2 mb-1.5">
                   <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: group.color }} />
                   <span className="text-[9px] font-mono uppercase tracking-widest font-bold" style={{ color: group.color }}>{group.label}</span>
                   <div className="flex-1 h-px" style={{ background: `${group.color}20` }} />
                 </div>
-
-                {/* Agent cells */}
                 <div className="grid gap-1" style={{ gridTemplateColumns: `repeat(${Math.min(group.agents.length, 5)}, 1fr)` }}>
                   {group.agents.map((agent) => {
                     const idx = ALL_AGENTS.findIndex(a => a.id === agent.id);
                     const load = loads[idx] ?? 0;
                     const bgColor = heatColor(load);
-                    const isHot = load >= 80;
+                    const isHot = load >= 75;
                     const isHovered = hovered === agent.id;
 
                     return (
@@ -301,7 +425,6 @@ export default function OrchestratorLoadMap() {
                           minHeight: 64,
                         }}
                       >
-                        {/* Pulse glow for hot agents */}
                         {isHot && (
                           <motion.div
                             animate={{ opacity: [0.3, 0.7, 0.3] }}
@@ -310,24 +433,22 @@ export default function OrchestratorLoadMap() {
                             style={{ background: `${bgColor}40` }}
                           />
                         )}
-
                         <div className="relative z-10">
                           <p className="text-[9px] font-mono font-bold leading-tight text-white truncate">{agent.name}</p>
                           <div className="flex items-end justify-between mt-1.5">
-                            <span className="text-[11px] font-black" style={{ color: load > 45 ? "#fff" : "#94a3b8" }}>
+                            <span className="text-[11px] font-black" style={{ color: load > 30 ? "#fff" : "#94a3b8" }}>
                               {load.toFixed(0)}%
                             </span>
-                            <span className="text-[7px] font-mono uppercase" style={{ color: load > 45 ? "rgba(255,255,255,0.7)" : "#334155" }}>
+                            <span className="text-[7px] font-mono uppercase" style={{ color: load > 30 ? "rgba(255,255,255,0.7)" : "#334155" }}>
                               {loadLabel(load)}
                             </span>
                           </div>
-                          {/* Mini bar */}
                           <div className="mt-1 h-0.5 rounded-full overflow-hidden" style={{ background: "rgba(0,0,0,0.3)" }}>
                             <motion.div
                               animate={{ width: `${load}%` }}
-                              transition={{ duration: 0.4 }}
+                              transition={{ duration: 0.6 }}
                               className="h-full rounded-full"
-                              style={{ background: load > 80 ? "#fff" : "rgba(255,255,255,0.6)" }}
+                              style={{ background: load > 75 ? "#fff" : "rgba(255,255,255,0.6)" }}
                             />
                           </div>
                         </div>
@@ -339,45 +460,34 @@ export default function OrchestratorLoadMap() {
             ))}
           </div>
         ) : (
-          /* BAR VIEW */
           <div className="space-y-1">
             {ALL_AGENTS.map((agent, i) => {
               const load = loads[i] ?? 0;
               const history = historyMap[agent.id] || [];
-
               return (
                 <motion.div
                   key={agent.id}
                   onMouseEnter={() => setHovered(agent.id)}
                   onMouseLeave={() => setHovered(null)}
-                  className="flex items-center gap-3 px-3 py-1.5 rounded-lg group transition-all"
+                  className="flex items-center gap-3 px-3 py-1.5 rounded-lg transition-all"
                   style={{
                     background: hovered === agent.id ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.015)",
                     border: "1px solid rgba(255,255,255,0.04)",
                   }}
                 >
-                  {/* Group dot */}
                   <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: agent.color }} />
-
-                  {/* Name */}
                   <span className="text-[10px] font-mono w-32 flex-shrink-0 truncate" style={{ color: "#64748b" }}>{agent.name}</span>
-
-                  {/* Bar track */}
                   <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.05)" }}>
                     <motion.div
                       animate={{ width: `${load}%` }}
-                      transition={{ duration: 0.4, ease: "easeOut" }}
+                      transition={{ duration: 0.6, ease: "easeOut" }}
                       className="h-full rounded-full"
-                      style={{ background: heatColor(load), boxShadow: load > 80 ? `0 0 6px ${heatColor(load)}` : "none" }}
+                      style={{ background: heatColor(load), boxShadow: load > 75 ? `0 0 6px ${heatColor(load)}` : "none" }}
                     />
                   </div>
-
-                  {/* Sparkline */}
                   <div className="flex-shrink-0">
                     <Sparkline history={history} color={heatColor(load)} />
                   </div>
-
-                  {/* Load % */}
                   <span className="text-[10px] font-black w-8 text-right flex-shrink-0" style={{ color: heatColor(load) }}>
                     {load.toFixed(0)}%
                   </span>
@@ -408,17 +518,17 @@ export default function OrchestratorLoadMap() {
               </div>
               <div className="flex items-center gap-4">
                 <div>
-                  <p className="text-[9px] font-mono" style={{ color: "#475569" }}>Current Load</p>
+                  <p className="text-[9px] font-mono" style={{ color: "#475569" }}>Activity Score</p>
                   <p className="text-xl font-black" style={{ color: heatColor(load) }}>{load.toFixed(1)}%</p>
                   <p className="text-[9px] font-mono uppercase" style={{ color: heatColor(load) }}>{loadLabel(load)}</p>
                 </div>
                 <div>
-                  <p className="text-[9px] font-mono mb-1" style={{ color: "#475569" }}>40-tick history</p>
+                  <p className="text-[9px] font-mono mb-1" style={{ color: "#475569" }}>History</p>
                   <Sparkline history={history} color={heatColor(load)} />
                 </div>
               </div>
               <div className="mt-2 pt-2 border-t" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
-                <p className="text-[9px] font-mono" style={{ color: "#334155" }}>ID: <span style={{ color: "#475569" }}>{agent.id}</span></p>
+                <p className="text-[9px] font-mono" style={{ color: "#334155" }}>Based on real executions & API calls (24h)</p>
               </div>
             </motion.div>
           );
@@ -428,7 +538,7 @@ export default function OrchestratorLoadMap() {
       {/* Bottom ticker */}
       <div className="flex items-center justify-between px-4 py-1.5 border-t flex-shrink-0" style={{ borderColor: "rgba(255,255,255,0.05)", background: "rgba(0,0,0,0.4)" }}>
         <span className="text-[9px] font-mono" style={{ color: "#1e293b" }}>
-          Tick #{tick} · {ALL_AGENTS.length} agents monitored · 600ms refresh
+          {ALL_AGENTS.length} agents · real platform data · 15s refresh
         </span>
         <div className="flex items-center gap-3">
           {AGENT_GROUPS.map(g => (
