@@ -175,7 +175,7 @@ function MessageBubble({ message, allWorkers }) {
   const handleCopy = () => {
     navigator.clipboard.writeText(message.content || "");
     setCopied(true);
-    toast.success("Kopieret!");
+    toast.success("Copied!");
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -280,7 +280,7 @@ function MessageBubble({ message, allWorkers }) {
             <button onClick={handleCopy}
               className="px-2 py-0.5 rounded-lg text-[10px] font-mono flex items-center gap-1 transition-all"
               style={{ color: "#64748b", background: "rgba(15,23,42,0.6)" }}>
-              {copied ? <><CheckCheck className="w-3 h-3 text-green-400" />Kopieret</> : <><Copy className="w-3 h-3" />Kopier</>}
+              {copied ? <><CheckCheck className="w-3 h-3 text-green-400" />Copied</> : <><Copy className="w-3 h-3" />Copy</>}
             </button>
           </div>
         )}
@@ -609,12 +609,12 @@ function ConversationSidebar({ conversations, activeId, onSelect, onCreate, onDe
       <div className="p-3 border-b" style={{ borderColor: "rgba(6,182,212,0.1)" }}>
         <button onClick={onCreate} className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-mono font-bold tracking-wider uppercase transition-all"
           style={{ background: "rgba(6,182,212,0.08)", border: "1px solid rgba(6,182,212,0.25)", color: "#06b6d4" }}>
-          <Plus className="w-4 h-4" /> Ny samtale
+          <Plus className="w-4 h-4" /> New Conversation
         </button>
       </div>
       <div className="flex-1 overflow-y-auto p-2 space-y-1">
         {conversations.length === 0 && (
-          <p className="text-center py-8 text-slate-600 text-xs font-mono">Ingen samtaler endnu</p>
+          <p className="text-center py-8 text-slate-600 text-xs font-mono">No conversations yet</p>
         )}
         {conversations.map(conv => (
           <div key={conv.id} onClick={() => editingId !== conv.id && onSelect(conv)}
@@ -628,10 +628,10 @@ function ConversationSidebar({ conversations, activeId, onSelect, onCreate, onDe
                 onClick={e => e.stopPropagation()}
                 className="flex-1 bg-transparent border-b border-cyan-500/50 text-white text-[11px] font-mono outline-none" />
             ) : (
-              <span className="flex-1 truncate font-mono text-[11px]">{conv.metadata?.name || "Samtale"}</span>
+              <span className="flex-1 truncate font-mono text-[11px]">{conv.metadata?.name || "Chat"}</span>
             )}
             <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
-              <button onClick={e => { e.stopPropagation(); setEditingId(conv.id); setEditValue(conv.metadata?.name || "Samtale"); }}
+              <button onClick={e => { e.stopPropagation(); setEditingId(conv.id); setEditValue(conv.metadata?.name || "Chat"); }}
                 className="p-1 rounded hover:bg-cyan-500/20 hover:text-cyan-400"><Pencil className="w-2.5 h-2.5" /></button>
               <button onClick={e => { e.stopPropagation(); onDelete(conv.id); }}
                 className="p-1 rounded hover:bg-red-500/20 hover:text-red-400"><Trash2 className="w-2.5 h-2.5" /></button>
@@ -670,7 +670,7 @@ When you want to scroll: [SCROLL:down] or [SCROLL:up]
 
 Available windows: fleet_map, route_optimizer, predictive_maintenance, demand_forecast, risk_assessment, performance_analytics, satellite_weather, news_intelligence, swarm_intelligence, digital_twin, document_editor, spreadsheet_editor, image_generator, project_management, airport_ops, port_command, vehicle_builder, deep_analysis, fleet_3d_viewer.
 
-Narrate every action you take like a skilled human operator. Be decisive and insightful. Speak in both English and Danish when appropriate.`;
+Narrate every action you take like a skilled human operator. Be decisive and insightful. Always respond in English.`;
 
 const dispatchAIAction = (type, label, selector, value) => {
   window.dispatchEvent(new CustomEvent("harbor_ai_action", { detail: { type, label, selector, value } }));
@@ -813,7 +813,7 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
       const active = (convs || []).filter(c => !currentDeletedIds.has(c.id));
       setConversations(active);
       if (active.length > 0) await selectConversation(active[0]);
-    } catch { toast.error("Kunne ikke indlæse samtaler"); }
+    } catch { toast.error("Could not load conversations"); }
     setIsLoading(false);
   };
 
@@ -860,7 +860,7 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
     setIsSending(false);
     const conv = await base44.agents.createConversation({
       agent_name: AGENT_NAME,
-      metadata: { name: `Chat ${new Date().toLocaleTimeString("da-DK", { hour: "2-digit", minute: "2-digit" })}` }
+      metadata: { name: `Chat ${new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}` }
     });
     setConversations(prev => [conv, ...prev]);
     setActiveConversation(conv);
@@ -872,7 +872,7 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
     })();
 
     const systemMsg = resolvedOrgId
-      ? `${HOLOGRAM_SYSTEM_CONTEXT}\n\nSYSTEM CONTEXT: organization_id="${resolvedOrgId}". Filtrer altid entiteter med dette organization_id.`
+      ? `${HOLOGRAM_SYSTEM_CONTEXT}\n\nSYSTEM CONTEXT: organization_id="${resolvedOrgId}". Always filter entities by this organization_id.`
       : HOLOGRAM_SYSTEM_CONTEXT;
     base44.agents.addMessage(conv, { role: "system", content: systemMsg }).catch(() => {});
     return conv;
@@ -907,13 +907,13 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
       try {
         const res = await base44.integrations.Core.UploadFile({ file });
         const file_url = res?.data?.file_url || res?.file_url;
-        if (!file_url) throw new Error("Upload fejlede");
+        if (!file_url) throw new Error("Upload failed");
         const type = file.type.startsWith("image") ? "image" : file.type.startsWith("video") ? "video" : "file";
         setAttachments(prev => [...prev, { url: file_url, name: file.name, type }]);
         if (orgId) {
           base44.entities.FleetDriveFile.create({ organization_id: orgId, name: file.name, file_url, file_type: type, file_size_bytes: file.size, mime_type: file.type, folder: "chat_uploads", source: "chat" }).catch(() => {});
         }
-      } catch { toast.error(`Upload fejlede: ${file.name}`); }
+      } catch { toast.error(`Upload failed: ${file.name}`); }
     }
     setIsUploading(false);
     e.target.value = "";
@@ -924,11 +924,11 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
     setIsGeneratingImage(true);
     const prompt = imageGenPrompt.trim();
     setImageGenPrompt(""); setShowImageGen(false);
-    await base44.agents.addMessage(activeConversation, { role: "user", content: `Generer et billede: ${prompt}` });
+    await base44.agents.addMessage(activeConversation, { role: "user", content: `Generate an image: ${prompt}` });
     try {
       const { url } = await base44.integrations.Core.GenerateImage({ prompt });
-      await base44.agents.addMessage(activeConversation, { role: "assistant", content: `Her er dit genererede billede:\n\n![${prompt}](${url})`, file_urls: [url] });
-    } catch { toast.error("Billedgenerering fejlede"); }
+      await base44.agents.addMessage(activeConversation, { role: "assistant", content: `Here is your generated image:\n\n![${prompt}](${url})`, file_urls: [url] });
+    } catch { toast.error("Image generation failed"); }
     setIsGeneratingImage(false);
   };
 
@@ -948,14 +948,14 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
 
       const data = response.data;
       setOrchestrationResults(prev => [{ id: orchId, data, timestamp: Date.now() }, ...prev]);
-      toast.success(`⚡ ${data.agents_invoked || 1} agent${(data.agents_invoked || 1) > 1 ? "er" : ""} fuldførte`);
+      toast.success(`⚡ ${data.agents_invoked || 1} agent${(data.agents_invoked || 1) > 1 ? "s" : ""} completed`);
 
       // Track performance
       if (data.results) {
         data.results.forEach(r => setPerformanceHistory(prev => [...prev.slice(-200), { workerId: r.agent_id, success: !r.error, timestamp: Date.now() }]));
       }
     } catch (err) {
-      toast.error(`Orchestrering fejlede: ${err.message}`);
+      toast.error(`Orchestration failed: ${err.message}`);
     }
     setIsOrchestrating(false);
   }, []);
@@ -976,10 +976,10 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
     scrollToBottom(true);
 
     try {
-      await base44.agents.addMessage(conv, { role: "user", content: msg || "(filer vedhæftet)", ...(fileUrls.length > 0 && { file_urls: fileUrls }) });
+      await base44.agents.addMessage(conv, { role: "user", content: msg || "(files attached)", ...(fileUrls.length > 0 && { file_urls: fileUrls }) });
       if (orgId) base44.entities.FleetAIUsage.create({ organization_id: orgId, command: msg || "(files)", action: "HARBOR_SUPER_AGENT_CHAT", success: true }).catch(() => {});
     } catch (err) {
-      toast.error(`Besked ikke sendt: ${err?.message}`);
+      toast.error(`Message not sent: ${err?.message}`);
       if (msg) setInput(msg);
       setIsSending(false);
     }
@@ -1181,7 +1181,7 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
                   <Brain className="w-8 h-8 animate-pulse" style={{ color: "#06b6d4" }} />
                   <motion.div className="absolute inset-0 rounded-2xl border" animate={{ scale: [1, 1.3, 1], opacity: [0.5, 0, 0.5] }} transition={{ duration: 2, repeat: Infinity }} style={{ borderColor: "#06b6d4" }} />
                 </div>
-                <p className="text-xs font-mono tracking-widest uppercase" style={{ color: "rgba(6,182,212,0.6)" }}>Initialiserer H.A.R.B.O.R...</p>
+                <p className="text-xs font-mono tracking-widest uppercase" style={{ color: "rgba(6,182,212,0.6)" }}>Initializing H.A.R.B.O.R...</p>
               </div>
             </div>
           ) : (
@@ -1198,9 +1198,9 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
                       <Sparkles className="w-8 h-8" style={{ color: "#06b6d4" }} />
                     </motion.div>
                     <div className="text-center space-y-2">
-                      <h3 className="text-lg font-black font-mono tracking-widest uppercase" style={{ color: "#06b6d4" }}>Klar til kommando</h3>
+                      <h3 className="text-lg font-black font-mono tracking-widest uppercase" style={{ color: "#06b6d4" }}>Ready for command</h3>
                       <p className="text-xs text-slate-500 max-w-xs leading-relaxed">
-                        {allWorkers.length}+ specialiserede AI-workers klar. Brug ORCHESTRATE til multi-agent analyse, eller chat direkte med H.A.R.B.O.R Intellect.
+                        {allWorkers.length}+ specialized AI workers standing by. Use ORCHESTRATE for multi-agent analysis, or chat directly with H.A.R.B.O.R Intellect.
                       </p>
                     </div>
                     <div className="grid grid-cols-2 gap-2 max-w-lg w-full">
@@ -1242,12 +1242,12 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
                 {/* Smart Router */}
                 {showSmartRouter && (
                   <AgentSmartRouter task={input} allWorkers={allWorkers} performanceHistory={performanceHistory}
-                    onSelectWorker={(worker) => { setShowSmartRouter(false); toast.success(`${worker.emoji} ${worker.name} valgt`); }}
+                    onSelectWorker={(worker) => { setShowSmartRouter(false); toast.success(`${worker.emoji} ${worker.name} selected`); }}
                     onClose={() => setShowSmartRouter(false)} />
                 )}
                 {showObservability && <AgentObservabilityPanel orchestrations={orchestrations} onClose={() => setShowObservability(false)} />}
                 {showVersionManager && <WorkflowVersionManager currentTasks={pendingTasks} currentOptions={pendingOptions}
-                  onLoadVersion={(v) => { setPendingTasks(v.tasks); setPendingOptions(v.options || {}); setShowVersionManager(false); setShowOrchestrationPanel(true); toast.success(`Indlæst: ${v.name}`); }}
+                  onLoadVersion={(v) => { setPendingTasks(v.tasks); setPendingOptions(v.options || {}); setShowVersionManager(false); setShowOrchestrationPanel(true); toast.success(`Loaded: ${v.name}`); }}
                   onClose={() => setShowVersionManager(false)} />}
                 {showEvalSuite && <AgentEvalSuite allWorkers={allWorkers} orgId={orgId} onClose={() => setShowEvalSuite(false)} />}
                 {showMemoryPanel && <AgentSharedMemoryPanel orgId={orgId} onClose={() => setShowMemoryPanel(false)} />}
@@ -1261,7 +1261,7 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
                     </div>
                     <div className="rounded-2xl px-4 py-3 flex items-center gap-3" style={{ background: "rgba(10,15,35,0.9)", border: "1px solid rgba(6,182,212,0.12)" }}>
                       <ThinkingDots />
-                      <span className="text-[10px] text-slate-500 font-mono">H.A.R.B.O.R tænker...</span>
+                      <span className="text-[10px] text-slate-500 font-mono">H.A.R.B.O.R thinking...</span>
                     </div>
                   </motion.div>
                 )}
@@ -1305,10 +1305,10 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
                     <Wand2 className="w-4 h-4 flex-shrink-0" style={{ color: "#8b5cf6" }} />
                     <input autoFocus value={imageGenPrompt} onChange={e => setImageGenPrompt(e.target.value)}
                       onKeyDown={e => { if (e.key === "Enter") generateImage(); if (e.key === "Escape") setShowImageGen(false); }}
-                      placeholder="Beskriv billedet... (Enter)"
+                      placeholder="Describe the image... (Enter)"
                       className="flex-1 bg-transparent text-sm text-white placeholder-violet-400/40 outline-none" />
                     {isGeneratingImage ? <Loader2 className="w-4 h-4 animate-spin" style={{ color: "#8b5cf6" }} />
-                      : <button onClick={generateImage} className="text-[10px] font-mono px-2 py-1 rounded-lg" style={{ color: "#8b5cf6", background: "rgba(139,92,246,0.15)" }}>Generer</button>}
+                      : <button onClick={generateImage} className="text-[10px] font-mono px-2 py-1 rounded-lg" style={{ color: "#8b5cf6", background: "rgba(139,92,246,0.15)" }}>Generate</button>}
                     <button onClick={() => setShowImageGen(false)}><XCircle className="w-4 h-4 text-slate-500 hover:text-red-400" /></button>
                   </motion.div>
                 )}
@@ -1352,7 +1352,7 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
                     </motion.button>
                   </div>
                   <textarea ref={inputRef} value={input} onChange={e => setInput(e.target.value)} onKeyDown={handleKeyDown}
-                    placeholder="Kommandér H.A.R.B.O.R... eller tryk ⚡ for multi-agent orkestration"
+                    placeholder="Command H.A.R.B.O.R... or press ⚡ for multi-agent orchestration"
                     disabled={isSending} rows={1}
                     className="flex-1 bg-transparent text-sm text-white placeholder-slate-600 resize-none outline-none leading-relaxed"
                     style={{ minHeight: 24, maxHeight: 140, overflowY: "auto" }}
