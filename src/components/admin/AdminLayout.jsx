@@ -30,7 +30,7 @@ const adminNavItems = [
     section: "REVENUE",
     items: [
       { name: "Invoices", icon: FileText, page: "AdminInvoices" },
-      { name: "Billing Analytics", icon: BarChart2, page: "BillingDashboard" },
+      { name: "Revenue Engine", icon: Database, page: "AdminRevenueEngine" },
     ]
   },
   {
@@ -45,7 +45,7 @@ const adminNavItems = [
     items: [
       { name: "CEO Intelligence", icon: Brain, page: "CEODashboard" },
       { name: "Competitive Intel", icon: TrendingUp, page: "AdminCompetitiveIntel" },
-      { name: "Revenue Engine", icon: Database, page: "AdminRevenueEngine" },
+      { name: "Customer Health", icon: Users, page: "AdminCustomerHealth" },
       { name: "Scenario Simulator", icon: Layers, page: "AdminScenarioSimulator" },
     ]
   }
