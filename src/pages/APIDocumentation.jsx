@@ -248,59 +248,69 @@ export default function APIDocumentation() {
         </div>
 
         {activeSection === "endpoints" && (
-          <div className="grid grid-cols-1 xl:grid-cols-[300px_1fr] gap-0 rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(255,255,255,0.07)" }}>
-
-            {/* Left sidebar */}
-            <div className="flex flex-col" style={{ background: "rgba(255,255,255,0.015)", borderRight: "1px solid rgba(255,255,255,0.07)" }}>
-              {/* Search */}
-              <div className="p-3 border-b" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5" style={{ color: "#475569" }} />
-                  <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search endpoints..."
-                    className="w-full pl-9 pr-4 py-2 rounded-lg text-xs outline-none"
-                    style={{ background: "rgba(0,0,0,0.3)", border: "1px solid rgba(255,255,255,0.07)", color: "#e2e8f0" }} />
-                </div>
-              </div>
-
-              {/* Category tabs — vertical */}
-              <div className="p-2 border-b space-y-0.5" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
-                {CATEGORIES.map(cat => {
-                  const Icon = cat.icon;
-                  const count = ENDPOINTS.filter(e => cat.id === "all" || e.category === cat.id).length;
-                  return (
-                    <button key={cat.id} onClick={() => setActiveCategory(cat.id)}
-                      className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-bold transition-all group"
-                      style={{ background: activeCategory === cat.id ? `${cat.color}15` : "transparent", color: activeCategory === cat.id ? cat.color : "#475569" }}>
-                      <div className="flex items-center gap-2">
-                        <Icon className="w-3.5 h-3.5" />
-                        <span className="font-mono tracking-wide uppercase text-[10px]">{cat.label}</span>
-                      </div>
-                      <span className="text-[9px] font-mono px-1.5 py-0.5 rounded" style={{ background: activeCategory === cat.id ? `${cat.color}20` : "rgba(255,255,255,0.05)", color: activeCategory === cat.id ? cat.color : "#334155" }}>{count}</span>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Endpoint list */}
-              <div className="flex-1 overflow-auto p-2 space-y-1">
-                {filtered.map(ep => (
-                  <motion.button key={ep.id} onClick={() => setSelectedId(ep.id)} whileHover={{ x: 1 }}
-                    className="w-full text-left px-3 py-2.5 rounded-lg transition-all group"
-                    style={{ background: selectedId === ep.id ? `${ep.tagColor}12` : "transparent", borderLeft: selectedId === ep.id ? `2px solid ${ep.tagColor}` : "2px solid transparent" }}>
-                    <div className="flex items-center gap-2 mb-1">
-                      <MethodBadge method={ep.method} />
-                      <TagBadge label={ep.tag} color={ep.tagColor} />
-                    </div>
-                    <p className="text-[12px] font-bold text-white leading-tight">{ep.name}</p>
-                    <p className="text-[10px] font-mono mt-0.5 truncate" style={{ color: "#334155" }}>{ep.endpoint}</p>
-                  </motion.button>
-                ))}
+          <div className="space-y-6">
+            {/* Search + Filter Bar */}
+            <div className="flex flex-col md:flex-row gap-4 items-stretch md:items-center">
+              <div className="flex-1 relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "#475569" }} />
+                <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search by name, description or endpoint URL..."
+                  className="w-full pl-12 pr-4 py-3 rounded-xl text-sm outline-none"
+                  style={{ background: "rgba(0,0,0,0.3)", border: "1px solid rgba(255,255,255,0.08)", color: "#e2e8f0" }} />
               </div>
             </div>
 
-            {/* Right detail panel */}
+            {/* Category Pills */}
+            <div className="flex flex-wrap gap-2">
+              {CATEGORIES.map(cat => {
+                const Icon = cat.icon;
+                const count = ENDPOINTS.filter(e => cat.id === "all" || e.category === cat.id).length;
+                return (
+                  <motion.button key={cat.id} onClick={() => setActiveCategory(cat.id)} whileHover={{ scale: 1.02 }}
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all"
+                    style={{ 
+                      background: activeCategory === cat.id ? `${cat.color}20` : "rgba(255,255,255,0.04)", 
+                      border: `1px solid ${activeCategory === cat.id ? cat.color + "40" : "rgba(255,255,255,0.08)"}`,
+                      color: activeCategory === cat.id ? cat.color : "#64748b"
+                    }}>
+                    <Icon className="w-4 h-4" />
+                    <span className="text-sm font-bold">{cat.label}</span>
+                    <span className="text-xs px-2 py-0.5 rounded-lg" style={{ background: activeCategory === cat.id ? cat.color + "15" : "rgba(255,255,255,0.05)" }}>
+                      {count}
+                    </span>
+                  </motion.button>
+                );
+              })}
+            </div>
+
+            {/* Endpoints Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {filtered.map(ep => (
+                <motion.button key={ep.id} onClick={() => setSelectedId(ep.id)} whileHover={{ y: -2 }}
+                  className="text-left p-5 rounded-2xl transition-all group"
+                  style={{ background: "rgba(255,255,255,0.02)", border: selectedId === ep.id ? `2px solid ${ep.tagColor}` : "1px solid rgba(255,255,255,0.06)" }}>
+                  <div className="flex items-start justify-between gap-3 mb-2">
+                    <div className="flex items-center gap-2">
+                      <MethodBadge method={ep.method} />
+                      <TagBadge label={ep.tag} color={ep.tagColor} />
+                    </div>
+                    {ep.premium && <Star className="w-4 h-4" style={{ color: "#f59e0b" }} />}
+                  </div>
+                  <h3 className="text-sm font-black text-white mb-1">{ep.name}</h3>
+                  <p className="text-xs mb-3 leading-relaxed" style={{ color: "#64748b" }}>{ep.description}</p>
+                  <div className="flex items-center justify-between text-[11px] font-mono">
+                    <code style={{ color: "#475569" }}>{ep.endpoint}</code>
+                    <div className="flex items-center gap-2" style={{ color: "#10b981" }}>
+                      <Activity className="w-3 h-3" />
+                      {ep.latency}
+                    </div>
+                  </div>
+                </motion.button>
+              ))}
+            </div>
+
+            {/* Detail Panel */}
             {selected && (
-              <motion.div key={selected.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="overflow-auto" style={{ maxHeight: "80vh" }}>
+              <motion.div key={selected.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="p-8 rounded-2xl" style={{ background: "rgba(255,255,255,0.01)", border: "1px solid rgba(255,255,255,0.06)" }}>
 
                 {/* Header */}
                 <div className="p-6 border-b" style={{ borderColor: "rgba(255,255,255,0.06)", background: "rgba(255,255,255,0.01)" }}>
