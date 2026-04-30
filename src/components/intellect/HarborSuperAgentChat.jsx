@@ -584,9 +584,11 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
   const [showMemoryPanel, setShowMemoryPanel] = useState(false);
 
   const messagesEndRef = useRef(null);
+  const scrollContainerRef = useRef(null);
   const inputRef = useRef(null);
   const fileInputRef = useRef(null);
   const unsubscribeRef = useRef(null);
+  const isUserScrolledUpRef = useRef(false);
 
   // Load custom workers
   const loadCustomWorkers = useCallback(async () => {
@@ -620,11 +622,27 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
     return () => { unsubscribeRef.current?.(); };
   }, []);
 
-  const scrollToBottom = useCallback((behavior = "smooth") => {
-    setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior }), 50);
+  const scrollToBottom = useCallback((force = false) => {
+    if (!force && isUserScrolledUpRef.current) return;
+    requestAnimationFrame(() => {
+      const el = scrollContainerRef.current;
+      if (el) el.scrollTop = el.scrollHeight;
+    });
   }, []);
 
-  useEffect(() => { scrollToBottom(); }, [messages, orchestrations]);
+  // Track whether user has scrolled up manually
+  const handleScrollContainerScroll = useCallback(() => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+    isUserScrolledUpRef.current = distanceFromBottom > 100;
+  }, []);
+
+  // Auto-scroll when new messages arrive (only if user hasn't scrolled up)
+  useEffect(() => { scrollToBottom(); }, [messages]);
+
+  // Always scroll when orchestrations update (these are new events)
+  useEffect(() => { scrollToBottom(true); }, [orchestrations]);
 
   const loadConversations = async () => {
     setIsLoading(true);
@@ -677,6 +695,7 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
     unsubscribeRef.current?.();
     setIsSending(false); // Reset any stuck sending state
     lastAssistantMsgIdRef.current = null;
+    isUserScrolledUpRef.current = false;
     setActiveConversation(conv);
     const full = await base44.agents.getConversation(conv.id);
     const msgs = full.messages || [];
@@ -952,10 +971,12 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
 
     const fileUrls = attachments.map(a => a.url);
     setIsSending(true);
+    isUserScrolledUpRef.current = false; // Reset scroll guard — always follow new messages
     // Optimistically clear input
     setInput("");
     setAttachments([]);
     if (inputRef.current) inputRef.current.style.height = '24px';
+    scrollToBottom(true);
 
     try {
       await base44.agents.addMessage(conv, {
@@ -1249,8 +1270,12 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
           ) : (
             <>
               {/* Messages + Orchestration feed */}
-              <div className="flex-1 overflow-y-auto p-5 flex flex-col" style={{ gap: '1.25rem' }}>
-                <div className="flex-1" />
+              <div
+                ref={scrollContainerRef}
+                onScroll={handleScrollContainerScroll}
+                className="flex-1 overflow-y-auto p-5 space-y-5"
+                style={{ overflowAnchor: 'none' }}
+              >
                 {visibleMessages.length === 0 && orchestrations.length === 0 && (
                   <div className="flex flex-col items-center justify-center flex-1 py-12 gap-6">
                     <motion.div animate={{ rotate: [0, 360] }} transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
@@ -1375,7 +1400,6 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
                     </div>
                   </motion.div>
                 )}
-                <div ref={messagesEndRef} />
               </div>
 
               {/* ── ORCHESTRATION PANEL ── */}
