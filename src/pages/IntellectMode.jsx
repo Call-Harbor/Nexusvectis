@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { useNavigate } from "react-router-dom";
+import { ensureOrgId, getOrgId, safeCreate } from "@/lib/entitySecurityHelper";
 import { createPageUrl } from "../utils";
 import ReactMarkdown from "react-markdown";
 import { 
@@ -671,15 +672,14 @@ export default function IntellectMode() {
           const line = cmd.busLines.find(l => l.line_number === cmd.lineId || l.id === cmd.lineId);
           if (!line) return { role: "system", content: `❌ Line ${cmd.lineId} not found` };
           
-          await base44.entities.Alert.create({
-            organization_id: orgId,
+          await safeCreate('Alert', {
             title: `Breakdown on Line ${line.line_number}`,
             message: `Vehicle breakdown reported on line ${line.line_number}. Maintenance required.`,
             type: 'critical',
             category: 'maintenance',
             is_read: false,
             is_resolved: false
-          });
+          }, orgId);
           return { role: "system", content: `✅ Breakdown reported on line ${line.line_number}. Maintenance alert created.` };
         }
         
@@ -727,15 +727,12 @@ export default function IntellectMode() {
         
         case 'create_line': {
           const lineNumber = cmd.lineNumber === 'NEW' ? `L${Math.floor(Math.random() * 100)}` : cmd.lineNumber;
-          const newLine = {
-            organization_id: orgId,
+          const created = await safeCreate('BusLine', {
             line_number: lineNumber,
             line_name: cmd.lineName,
             status: 'active',
             directions: []
-          };
-          
-          const created = await base44.entities.BusLine.create(newLine);
+          }, orgId);
           return { role: "assistant", content: `✅ Created new bus line **${lineNumber}** - ${cmd.lineName}\n\nLine ID: ${created.id}\nStatus: active\n\nYou can now add stops to this line using "add stop [stop name] to line ${lineNumber}"` };
         }
         
@@ -781,8 +778,7 @@ export default function IntellectMode() {
             return { role: "system", content: `❌ Please provide coordinates: "create stop ${cmd.stopName} at coordinates 55.6761, 12.5683"` };
           }
           
-          const newStop = {
-            organization_id: orgId,
+          const created = await safeCreate('BusStop', {
             stop_id: stopId,
             stop_name: cmd.stopName,
             latitude: cmd.lat,
@@ -798,9 +794,7 @@ export default function IntellectMode() {
               bike_parking: false,
               lighting: true
             }
-          };
-          
-          const created = await base44.entities.BusStop.create(newStop);
+          }, orgId);
           return { role: "assistant", content: `✅ Created new bus stop **${cmd.stopName}**\n\nStop ID: ${stopId}\nCoordinates: ${cmd.lat}, ${cmd.lng}\nStatus: operational\n\nAdd it to a line with "add stop ${cmd.stopName} to line [line number]"` };
         }
         
