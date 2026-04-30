@@ -656,53 +656,63 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
     }
   }, [onOpenWindow]);
 
+  const lastAssistantMsgIdRef = useRef(null);
+
   const subscribeToConversation = (convId) => {
     unsubscribeRef.current?.();
     unsubscribeRef.current = base44.agents.subscribeToConversation(convId, (data) => {
       const msgs = data.messages || [];
       setMessages(msgs);
       const last = msgs[msgs.length - 1];
-      if (last?.role === "assistant") {
+      // Only act on new assistant messages (not re-processing old ones)
+      if (last?.role === "assistant" && last.id !== lastAssistantMsgIdRef.current) {
+        lastAssistantMsgIdRef.current = last.id;
         setIsSending(false);
-        processHologramCommands(last.content);
+        if (last.content) processHologramCommands(last.content);
       }
     });
   };
 
   const selectConversation = async (conv) => {
     unsubscribeRef.current?.();
+    setIsSending(false); // Reset any stuck sending state
+    lastAssistantMsgIdRef.current = null;
     setActiveConversation(conv);
     const full = await base44.agents.getConversation(conv.id);
-    setMessages(full.messages || []);
+    const msgs = full.messages || [];
+    setMessages(msgs);
+    // Track last assistant message so subscription doesn't re-fire on it
+    const lastAsst = [...msgs].reverse().find(m => m.role === "assistant");
+    if (lastAsst?.id) lastAssistantMsgIdRef.current = lastAsst.id;
     subscribeToConversation(conv.id);
   };
 
   const createNewConversation = async () => {
+    lastAssistantMsgIdRef.current = null;
+    setIsSending(false);
     const conv = await base44.agents.createConversation({
       agent_name: AGENT_NAME,
-      metadata: { name: `Chat ${new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}` }
+      metadata: { name: `Chat ${new Date().toLocaleTimeString("da-DK", { hour: "2-digit", minute: "2-digit" })}` }
     });
     setConversations(prev => [conv, ...prev]);
     setActiveConversation(conv);
     setMessages([]);
     subscribeToConversation(conv.id);
-    await base44.agents.addMessage(conv, {
-      role: "system",
-      content: HOLOGRAM_SYSTEM_CONTEXT
-    });
-    // Inject orgId — use state or cached value
+
+    // Inject system context (fire and forget — don't block UI)
     const resolvedOrgId = orgId || (() => {
       try {
         const keys = Object.keys(localStorage).filter(k => k.startsWith("harbor_org_id_"));
         return keys.length > 0 ? localStorage.getItem(keys[0]) : null;
       } catch { return null; }
     })();
-    if (resolvedOrgId) {
-      await base44.agents.addMessage(conv, {
-        role: "system",
-        content: `SYSTEM CONTEXT: organization_id="${resolvedOrgId}". Always filter entities by this ID.`
-      });
-    }
+
+    const systemMsg = resolvedOrgId
+      ? `${HOLOGRAM_SYSTEM_CONTEXT}\n\nSYSTEM CONTEXT: organization_id="${resolvedOrgId}". Always filter entities by this organization_id.`
+      : HOLOGRAM_SYSTEM_CONTEXT;
+
+    base44.agents.addMessage(conv, { role: "system", content: systemMsg }).catch(() => {});
+    return conv;
   };
 
   const renameConversation = (convId, newName) => {
@@ -717,9 +727,16 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
     setDeletedIds(updated);
     setConversations(prev => {
       const remaining = prev.filter(c => c.id !== convId);
-      if (activeConversation?.id === convId) {
+      if (activeConversationRef.current?.id === convId) {
+        unsubscribeRef.current?.();
+        setIsSending(false);
+        lastAssistantMsgIdRef.current = null;
         if (remaining.length > 0) selectConversation(remaining[0]);
-        else createNewConversation();
+        else {
+          setActiveConversation(null);
+          setMessages([]);
+          activeConversationRef.current = null;
+        }
       }
       return remaining;
     });
@@ -918,56 +935,60 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
     toast.success(`⚡ ${parallelTasks.length} AI workers completed`);
   }, [activeConversation]);
 
+  // Use a ref to track the active conversation to avoid stale closure issues
+  const activeConversationRef = useRef(null);
+  useEffect(() => { activeConversationRef.current = activeConversation; }, [activeConversation]);
+
   const sendMessage = useCallback(async (text) => {
-    const msg = (text || input).trim();
+    const msg = (text !== undefined ? text : input).trim();
     if ((!msg && attachments.length === 0) || isSending) return;
-    // Auto-create a conversation if none exists yet
-    if (!activeConversation) {
-      await createNewConversation();
-      return; // Will re-trigger on next send
+
+    // Auto-create conversation if needed
+    let conv = activeConversationRef.current;
+    if (!conv) {
+      conv = await createNewConversation();
+      if (!conv) return;
     }
+
     const fileUrls = attachments.map(a => a.url);
     setIsSending(true);
+    // Optimistically clear input
+    setInput("");
+    setAttachments([]);
+    if (inputRef.current) inputRef.current.style.height = '24px';
 
     try {
-      await base44.agents.addMessage(activeConversation, {
+      await base44.agents.addMessage(conv, {
         role: "user",
         content: msg || "(attached files)",
         ...(fileUrls.length > 0 && { file_urls: fileUrls })
       });
-      // ONLY clear after successful send
-      setInput("");
-      setAttachments([]);
-      // Reset textarea height
-      if (inputRef.current) {
-        inputRef.current.style.height = '24px';
-      }
-      
+
+      // Track usage (fire and forget)
       if (orgId) {
         base44.entities.FleetAIUsage.create({
           organization_id: orgId,
-          user_email: (await base44.auth.me()).email,
           command: msg || "(attached files)",
           action: "HARBOR_SUPER_AGENT_CHAT",
           success: true,
         }).catch(() => {});
       }
     } catch (err) {
-      toast.error(`Failed to send: ${err?.message || 'Unknown error'}`);
-      setMessages(prev => [...prev, { role: "system", content: `❌ Error: ${err?.message || 'Request failed'}` }]);
-      // Keep input & attachments on error so user can retry
-    } finally {
+      toast.error(`Besked ikke sendt: ${err?.message || 'Ukendt fejl'}`);
+      // Restore input on failure
+      if (msg) setInput(msg);
       setIsSending(false);
     }
     inputRef.current?.focus();
-  }, [input, attachments, activeConversation, isSending, messages, orgId]);
+  }, [input, attachments, isSending, orgId]);
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
   };
 
   const visibleMessages = messages.filter(m => m.role !== "system");
-  const isThinking = messages.length > 0 && messages[messages.length - 1]?.role === "user" && isSending;
+  // isThinking = waiting for AI reply (isSending is true and not yet received assistant response)
+  const isThinking = isSending;
 
   // Merged worker list (built-in + custom)
   const allWorkers = [
