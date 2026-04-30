@@ -9,7 +9,7 @@ import {
   Sparkles, Send, Mic, Brain, Zap, TrendingUp, AlertTriangle, 
   Truck, Route, Package, Activity, X, LayoutDashboard, Paperclip, FileText,
   Settings, Warehouse, Satellite, Globe, BarChart3, Building2, Monitor, ChevronDown, Users,
-  Lightbulb, Network, Shield, MessageSquare, Video, FileCode, CalculatorIcon, Search, GraduationCap
+  Lightbulb, Network, Shield, MessageSquare, Video, FileCode, CalculatorIcon, Search, GraduationCap, Sliders
 } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
@@ -51,6 +51,7 @@ import HarborSuperAgentChat from "@/components/intellect/HarborSuperAgentChat";
 import AIAgentCursor from "@/components/intellect/AIAgentCursor";
 import { useHologramAIAgent } from "@/components/intellect/HologramAIAgent";
 import AITaskRunner from "@/components/intellect/AITaskRunner";
+import AgentControlPanel from "@/components/intellect/AgentControlPanel";
 
 const THINKING_STEPS = ["Querying fleet data", "Running neural analysis", "Cross-referencing modules", "Generating response"];
 
@@ -135,6 +136,7 @@ export default function IntellectMode() {
   const [showFleetAITrainer, setShowFleetAITrainer] = useState(false);
   const [showHarborAgentChat, setShowHarborAgentChat] = useState(false);
   const [showAITaskRunner, setShowAITaskRunner] = useState(false);
+  const [showAgentControlPanel, setShowAgentControlPanel] = useState(false);
   const intellectConversationRef = useRef(null);
   const intellectUnsubRef = useRef(null);
   const [installedAppIds, setInstalledAppIds] = useState(new Set());
@@ -1545,6 +1547,32 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
           />
         )}
       </AnimatePresence>
+
+      {/* Agent Control Panel */}
+      <AnimatePresence>
+        {showAgentControlPanel && (
+          <AgentControlPanel onClose={() => setShowAgentControlPanel(false)} />
+        )}
+      </AnimatePresence>
+
+      {/* Agent Control Button */}
+      <motion.button
+        onClick={() => setShowAgentControlPanel(prev => !prev)}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        className="fixed bottom-64 right-6 z-40 flex items-center gap-2.5 px-4 py-3 rounded-2xl font-mono font-bold text-xs tracking-widest uppercase transition-all"
+        style={{
+          background: showAgentControlPanel
+            ? "linear-gradient(135deg, rgba(139,92,246,0.3), rgba(6,182,212,0.3))"
+            : "linear-gradient(135deg, rgba(139,92,246,0.15), rgba(6,182,212,0.15))",
+          border: "1px solid rgba(139,92,246,0.5)",
+          color: "#8b5cf6",
+          boxShadow: "0 0 30px rgba(139,92,246,0.2)"
+        }}>
+        <Sliders className="w-4 h-4" />
+        Agents
+        <span className="w-2 h-2 rounded-full bg-violet-400 animate-pulse" />
+      </motion.button>
 
       {/* AI Task Runner Button */}
       <motion.button
