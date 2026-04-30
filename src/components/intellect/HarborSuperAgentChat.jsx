@@ -22,6 +22,7 @@ import {
   Workflow, MessageCircle, Bot, Gauge, ArrowRight, Lock, Globe
 } from "lucide-react";
 import { toast } from "sonner";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 const AGENT_NAME = "harbor_intellect";
 
@@ -93,6 +94,17 @@ const QUICK_PROMPTS = [
   { text: "Give compliance overview — EU law, CSRD, GDPR", icon: "🛡️" },
   { text: "What's total CO₂ exposure and reduction pathway?", icon: "🌍" },
   { text: "Customer health report — who's at risk of churn?", icon: "👥" },
+];
+
+const PROMPT_TEMPLATES = [
+  { label: "Fleet Status", prompt: "Analyze complete fleet status and performance metrics" },
+  { label: "Predictive Maintenance", prompt: "Analyze predictive maintenance for all vehicles" },
+  { label: "Route Optimization", prompt: "Optimize all active routes for efficiency and cost" },
+  { label: "Cost Analysis", prompt: "Perform detailed cost analysis of current operations" },
+  { label: "Demand Forecast", prompt: "Forecast demand for the next 30/60/90 days" },
+  { label: "Risk Assessment", prompt: "Assess operational risks and provide mitigation strategies" },
+  { label: "Performance Analytics", prompt: "Generate performance analytics and KPI report" },
+  { label: "Sustainability Report", prompt: "Generate sustainability and CO2 emissions report" },
 ];
 
 const ORCHESTRATION_MODES = [
@@ -1403,6 +1415,23 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
                       style={{ color: showImageGen ? "#8b5cf6" : "#475569" }}>
                       <ImagePlus className="w-3.5 h-3.5" />
                     </button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button
+                          className="w-7 h-7 rounded-lg flex items-center justify-center transition-all hover:bg-cyan-500/20"
+                          style={{ color: "#475569" }}
+                          title="Quick prompts">
+                          <ChevronDown className="w-3.5 h-3.5" />
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-56">
+                        {PROMPT_TEMPLATES.map((template) => (
+                          <DropdownMenuItem key={template.label} onClick={() => setInput(template.prompt)}>
+                            <span className="text-sm">{template.label}</span>
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                     <motion.button onClick={() => setShowOrchestrationPanel(p => !p)} whileHover={{ scale: 1.1 }}
                       className="w-7 h-7 rounded-lg flex items-center justify-center transition-all"
                       style={{ color: showOrchestrationPanel ? "#06b6d4" : "#475569", background: showOrchestrationPanel ? "rgba(6,182,212,0.15)" : "transparent" }}
