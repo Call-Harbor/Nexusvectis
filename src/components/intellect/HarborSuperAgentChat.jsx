@@ -794,13 +794,18 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
       try {
         const user = await base44.auth.me();
         const cached = localStorage.getItem(`harbor_org_id_${user.email}`);
-        if (cached) setOrgId(cached);
-        const members = await base44.entities.OrganizationMember.filter({ user_email: user.email });
+        if (cached) { setOrgId(cached); return; }
+        
+        let members = await base44.entities.OrganizationMember.filter({ user_email: user.email });
+        if (!members?.length) {
+          members = await base44.entities.OrganizationMember.list();
+          members = members?.filter(m => m.user_email === user.email);
+        }
         if (members?.length > 0) {
           setOrgId(members[0].organization_id);
           localStorage.setItem(`harbor_org_id_${user.email}`, members[0].organization_id);
         }
-      } catch {}
+      } catch (e) { console.error('Org load error:', e); }
       await loadConversations();
       await loadCustomWorkers();
     };
