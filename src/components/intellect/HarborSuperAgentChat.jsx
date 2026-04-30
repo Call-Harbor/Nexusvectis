@@ -719,6 +719,11 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
   const [showImageGen, setShowImageGen] = useState(false);
   const [imageGenPrompt, setImageGenPrompt] = useState("");
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  const [contextEnrichment, setContextEnrichment] = useState(true);
+  const [confidenceScores, setConfidenceScores] = useState(true);
+  const [outputFormat, setOutputFormat] = useState("markdown");
+  const [temperatureHint, setTemperatureHint] = useState("balanced");
+  const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
 
   // Custom workers
   const [customWorkers, setCustomWorkers] = useState([]);
@@ -936,7 +941,7 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
   };
 
   // ── ORCHESTRATOR EXECUTION ─────────────────────────────────────────────────
-  const executeOrchestration = useCallback(async (params) => {
+   const executeOrchestration = useCallback(async (params) => {
     setIsOrchestrating(true);
     setShowOrchestrationPanel(false);
     const orchId = `orch_${Date.now()}`;
@@ -944,7 +949,10 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
     try {
       const response = await base44.functions.invoke("harborOrchestratorAPI", {
         ...params,
-        context_enrichment: true,
+        context_enrichment: contextEnrichment,
+        confidence_scores: confidenceScores,
+        output_format: outputFormat,
+        temperature_hint: temperatureHint,
         retry_on_fail: true,
         request_id: orchId,
       });
@@ -979,7 +987,17 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
     scrollToBottom(true);
 
     try {
-      await base44.agents.addMessage(conv, { role: "user", content: msg || "(files attached)", ...(fileUrls.length > 0 && { file_urls: fileUrls }) });
+      // Send message with advanced parameters to intellect API
+      await base44.agents.addMessage(conv, { 
+        role: "user", 
+        content: msg || "(files attached)", 
+        ...(fileUrls.length > 0 && { file_urls: fileUrls }),
+        // Advanced features from Intellect API
+        confidence_scores: confidenceScores,
+        context_enrichment: contextEnrichment,
+        output_format: outputFormat,
+        temperature_hint: temperatureHint
+      });
       if (orgId) base44.entities.FleetAIUsage.create({ organization_id: orgId, command: msg || "(files)", action: "HARBOR_SUPER_AGENT_CHAT", success: true }).catch(() => {});
     } catch (err) {
       toast.error(`Message not sent: ${err?.message}`);
@@ -1283,9 +1301,45 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
                 )}
               </AnimatePresence>
 
+              {/* Advanced Options Panel */}
+              {showAdvancedOptions && visibleMessages.length > 0 && (
+                <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
+                  className="px-5 pb-2 flex gap-3 overflow-x-auto flex-shrink-0 text-[10px] font-mono"
+                  style={{ borderTop: "1px solid rgba(6,182,212,0.08)", paddingTop: 12 }}>
+                  <label className="flex items-center gap-1.5 cursor-pointer">
+                    <input type="checkbox" checked={contextEnrichment} onChange={e => setContextEnrichment(e.target.checked)} className="w-3 h-3 accent-cyan-500" />
+                    <span style={{ color: contextEnrichment ? "#06b6d4" : "#64748b" }}>Context</span>
+                  </label>
+                  <label className="flex items-center gap-1.5 cursor-pointer">
+                    <input type="checkbox" checked={confidenceScores} onChange={e => setConfidenceScores(e.target.checked)} className="w-3 h-3 accent-cyan-500" />
+                    <span style={{ color: confidenceScores ? "#06b6d4" : "#64748b" }}>Confidence</span>
+                  </label>
+                  <select value={outputFormat} onChange={e => setOutputFormat(e.target.value)}
+                    className="px-2 py-0.5 rounded-lg bg-black/40 text-slate-300 outline-none"
+                    style={{ border: "1px solid rgba(6,182,212,0.15)" }}>
+                    <option value="text">Text</option>
+                    <option value="markdown">Markdown</option>
+                    <option value="json">JSON</option>
+                    <option value="executive">Executive</option>
+                  </select>
+                  <select value={temperatureHint} onChange={e => setTemperatureHint(e.target.value)}
+                    className="px-2 py-0.5 rounded-lg bg-black/40 text-slate-300 outline-none"
+                    style={{ border: "1px solid rgba(6,182,212,0.15)" }}>
+                    <option value="precise">Precise</option>
+                    <option value="balanced">Balanced</option>
+                    <option value="creative">Creative</option>
+                  </select>
+                </motion.div>
+              )}
+
               {/* Quick prompts strip */}
               {visibleMessages.length > 0 && (
                 <div className="px-5 pb-2 flex gap-1.5 overflow-x-auto flex-shrink-0">
+                  <button onClick={() => setShowAdvancedOptions(p => !p)}
+                    className="flex-shrink-0 flex items-center gap-1.5 px-2 py-1.5 rounded-xl text-[10px] font-mono transition-all whitespace-nowrap"
+                    style={{ color: showAdvancedOptions ? "#06b6d4" : "#64748b", border: `1px solid ${showAdvancedOptions ? "rgba(6,182,212,0.3)" : "rgba(6,182,212,0.1)"}`, background: showAdvancedOptions ? "rgba(6,182,212,0.08)" : "rgba(6,182,212,0.03)" }}>
+                    ⚙️ {showAdvancedOptions ? "Hide" : "Show"}
+                  </button>
                   {QUICK_PROMPTS.slice(0, 3).map((p, i) => (
                     <button key={i} onClick={() => sendMessage(p.text)}
                       className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-mono transition-all whitespace-nowrap"
@@ -1371,7 +1425,7 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
                   </motion.button>
                 </div>
                 <p className="text-[9px] font-mono text-slate-700 text-center mt-1.5 tracking-wider">
-                  {allWorkers.length}+ AI Workers · Claude Sonnet 4.6 · 7 orchestration modes · Confidence scoring
+                  {allWorkers.length}+ AI Workers · Claude Sonnet 4.6 · 7 modes · Confidence · Context · Advanced Options
                 </p>
               </div>
             </>
