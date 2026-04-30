@@ -28,6 +28,9 @@ import EnergyOpsCenter from './pages/EnergyOpsCenter';
 import MobileAppPublisher from './pages/MobileAppPublisher';
 import HarborIntellectProduct from './pages/HarborIntellectProduct';
 import GridManagement from './pages/GridManagement';
+import AdminPlatformHealth from './pages/AdminPlatformHealth';
+import AdminOrganizations from './pages/AdminOrganizations';
+import AdminSecurityCenter from './pages/AdminSecurityCenter';
 
 
 const { Pages, Layout, mainPage } = pagesConfig;
@@ -235,6 +238,9 @@ const AuthenticatedApp = () => {
         }
       />
 
+      <Route path="/AdminPlatformHealth" element={<LayoutWrapper currentPageName="AdminPlatformHealth"><AdminPlatformHealth /></LayoutWrapper>} />
+      <Route path="/AdminOrganizations" element={<LayoutWrapper currentPageName="AdminOrganizations"><AdminOrganizations /></LayoutWrapper>} />
+      <Route path="/AdminSecurityCenter" element={<LayoutWrapper currentPageName="AdminSecurityCenter"><AdminSecurityCenter /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
