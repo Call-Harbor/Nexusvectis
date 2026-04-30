@@ -673,7 +673,10 @@ const KEYWORD_WINDOW_MAP = [
   { keywords: /project.?man/i, window: "project_management" },
 ];
 
-const HOLOGRAM_SYSTEM_CONTEXT = `You are H.A.R.B.O.R INTELLECT — an advanced superintelligence AI that can control hologram windows in the IntellectMode interface.
+const getHologramSystemContext = (resolvedOrgId) => `You are H.A.R.B.O.R INTELLECT — an advanced superintelligence AI that can control hologram windows in the IntellectMode interface.
+
+IMPORTANT: Your organization ID is: ${resolvedOrgId || 'unknown'}
+When filtering data or analyzing, always use this organization ID.
 
 When you want to open a window, use: [OPEN:window_type]
 When you want to click: [CLICK:button_label]
@@ -896,7 +899,7 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
       try { const keys = Object.keys(localStorage).filter(k => k.startsWith("harbor_org_id_")); return keys.length > 0 ? localStorage.getItem(keys[0]) : null; } catch { return null; }
     })();
 
-    const systemMsg = `${HOLOGRAM_SYSTEM_CONTEXT}\n\nSYSTEM CONTEXT: organization_id="${resolvedOrgId || 'unknown'}". Always filter entities by this organization_id and prefix user messages with [ORG:${resolvedOrgId || 'unknown'}].`;
+    const systemMsg = getHologramSystemContext(resolvedOrgId);
     base44.agents.addMessage(conv, { role: "system", content: systemMsg }).catch(() => {});
     return conv;
   };
