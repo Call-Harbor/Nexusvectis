@@ -36,6 +36,7 @@ import FleetStore from "@/components/intellect/FleetStore";
 import AIDevOrchestrator from "@/components/intellect/AIDevOrchestrator";
 import FleetAnalysisFormatter from "@/components/intellect/FleetAnalysisFormatter";
 import AdvancedFleetAnalysisHologram from "@/components/intellect/AdvancedFleetAnalysisHologram";
+import AnalysisHologram from "@/components/intellect/AnalysisHologram";
 import OrchestratorLoadMap from "@/components/intellect/OrchestratorLoadMap";
 
 const CHART_COLORS = ['#06b6d4', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444'];
@@ -383,17 +384,10 @@ export default function WindowContentRenderer({ type, data, vehicles, routes, sh
   if (type === 'spreadsheet_editor') return <AISpreadsheetEditor initialGrid={data?.initialGrid} initialTitle={data?.initialTitle} initialFileUrl={data?.initialFileUrl} initialFileId={data?.initialFileId} orgId={orgId} onSaved={onSaved} />;
 
   if (type.startsWith('chart_')) {
-    // Always use AdvancedFleetAnalysisHologram — it handles all analysis types generically
     const cfg = data?.chartConfig;
-    const hasRichData = cfg && (
-      cfg.recommendations || cfg.findings || cfg.insights?.length > 0 ||
-      cfg.advanced_metrics?.length > 0 || cfg.forecasts?.length > 0 ||
-      cfg.risks?.length > 0 || cfg.correlations?.length > 0 ||
-      cfg.summary || cfg.technical_details ||
-      (data?.chartData && data.chartData.length > 0)
-    );
-    if (hasRichData) {
-      return <AdvancedFleetAnalysisHologram data={cfg} chartData={data?.chartData} />;
+    // Use the full mega AnalysisHologram whenever we have structured AI data
+    if (cfg && cfg.title) {
+      return <AnalysisHologram data={cfg} chartData={data?.chartData} />;
     }
     return <ChartWindow data={data?.chartData} config={cfg} />;
   }
