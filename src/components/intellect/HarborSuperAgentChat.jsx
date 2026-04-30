@@ -1426,7 +1426,7 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-56">
                         {PROMPT_TEMPLATES.map((template) => (
-                          <DropdownMenuItem key={template.label} onClick={() => setInput(template.prompt)}>
+                          <DropdownMenuItem key={template.label} onClick={() => setInput(orgId ? `[ORG:${orgId}]\n\n${template.prompt}` : template.prompt)}>
                             <span className="text-sm">{template.label}</span>
                           </DropdownMenuItem>
                         ))}
