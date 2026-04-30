@@ -810,7 +810,10 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
     try {
       const convs = await base44.agents.listConversations({ agent_name: AGENT_NAME });
       const currentDeletedIds = getDeletedIds();
-      const active = (convs || []).filter(c => !currentDeletedIds.has(c.id));
+      // Only show conversations created from HarborSuperAgentChat (tagged with source)
+      const active = (convs || []).filter(c =>
+        !currentDeletedIds.has(c.id) && c.metadata?.source === "super_agent_chat"
+      );
       setConversations(active);
       if (active.length > 0) await selectConversation(active[0]);
     } catch { toast.error("Could not load conversations"); }
@@ -860,7 +863,7 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
     setIsSending(false);
     const conv = await base44.agents.createConversation({
       agent_name: AGENT_NAME,
-      metadata: { name: `Chat ${new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}` }
+      metadata: { name: `Chat ${new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}`, source: "super_agent_chat" }
     });
     setConversations(prev => [conv, ...prev]);
     setActiveConversation(conv);
