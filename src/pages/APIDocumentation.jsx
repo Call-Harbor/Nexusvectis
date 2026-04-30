@@ -169,7 +169,7 @@ export default function APIDocumentation() {
               </div>
             </div>
             <div className="hidden md:flex gap-1">
-              {["endpoints", "sdks", "pricing", "errors"].map(s => (
+              {["endpoints", "sdks", "errors"].map(s => (
                 <button key={s} onClick={() => setActiveSection(s)}
                   className="px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-widest transition-all"
                   style={{ background: activeSection === s ? "rgba(6,182,212,0.15)" : "transparent", color: activeSection === s ? "#06b6d4" : "#475569", border: activeSection === s ? "1px solid rgba(6,182,212,0.3)" : "1px solid transparent" }}>
@@ -414,48 +414,7 @@ export default function APIDocumentation() {
           </div>
         )}
 
-        {activeSection === "pricing" && (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-black text-white">API Pricing</h2>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              {RATE_LIMITS.map(tier => (
-                <div key={tier.tier} className="p-5 rounded-2xl relative overflow-hidden" style={{ background: "rgba(255,255,255,0.02)", border: `1px solid ${tier.color}30` }}>
-                  <div className="absolute top-0 left-0 right-0 h-0.5" style={{ background: `linear-gradient(90deg, transparent, ${tier.color}, transparent)` }} />
-                  <p className="text-[10px] font-mono uppercase tracking-widest mb-1" style={{ color: tier.color }}>{tier.tier}</p>
-                  <p className="text-2xl font-black text-white mb-4">{tier.price}</p>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-xs"><span style={{ color: "#64748b" }}>Requests/sec</span><span className="font-bold text-white">{tier.rps}</span></div>
-                    <div className="flex justify-between text-xs"><span style={{ color: "#64748b" }}>Monthly calls</span><span className="font-bold text-white">{tier.monthly}</span></div>
-                    <div className="flex justify-between text-xs"><span style={{ color: "#64748b" }}>Standard calls</span><span className="font-bold" style={{ color: tier.color }}>€0.05</span></div>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="p-6 rounded-2xl" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}>
-              <h3 className="text-sm font-black text-white mb-4">Premium AI Endpoints</h3>
-              <div className="space-y-3">
-                {[
-                  { name: "Standard Endpoints", price: "€0.05/call", color: "#64748b", desc: "Fleet tracking, analytics, shipments, alerts" },
-                  { name: "Fleet AI Chat", price: "€0.05/call", color: "#06b6d4", desc: "Natural language fleet intelligence via Mistral-7B" },
-                  { name: "Harbor Core Intelligence", price: "€0.25/call", color: "#f59e0b", desc: "Strategic analysis via Mistral Large with live fleet enrichment" },
-                  { name: "H.A.R.B.O.R. Intellect", price: "€0.50/call", color: "#8b5cf6", desc: "Claude Sonnet 4.6 — multi-turn, structured JSON" },
-                  { name: "H.A.R.B.O.R. Orchestrator", price: "€0.50/call", color: "#a78bfa", desc: "50+ AI agents in parallel/sequential/auto mode" },
-                ].map(ep => (
-                  <div key={ep.name} className="flex items-center justify-between p-3 rounded-xl" style={{ background: "rgba(0,0,0,0.3)", border: "1px solid rgba(255,255,255,0.06)" }}>
-                    <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 rounded-full" style={{ background: ep.color }} />
-                      <div>
-                        <p className="text-sm font-bold text-white">{ep.name}</p>
-                        <p className="text-[11px]" style={{ color: "#475569" }}>{ep.desc}</p>
-                      </div>
-                    </div>
-                    <span className="text-sm font-black" style={{ color: ep.color }}>{ep.price}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
+
 
         {activeSection === "errors" && (
           <div className="space-y-6">
