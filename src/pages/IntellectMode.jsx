@@ -456,9 +456,9 @@ export default function IntellectMode() {
      }, [openWindow, vehicles, routes, setMessages, installedAppIds]);
 
   const executePrompt = useCallback((prompt) => {
-    pendingPromptRef.current = prompt;
-    setInput(prompt);
-  }, []);
+    // Run pre-commands directly as deep analysis hologram (no typing needed)
+    runDeepAnalysis(prompt);
+  }, [vehicles, routes, shipments, alerts, orgId]);
 
   // ── File Upload ────────────────────────────────────────────────────────────
   const detectFleetFileType = (name) => {
