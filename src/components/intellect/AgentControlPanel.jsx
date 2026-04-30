@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Sliders, Zap, ChevronUp, ChevronDown, RefreshCw, AlertTriangle, Check, Loader2 } from "lucide-react";
+import { X, Sliders, Zap, ChevronUp, ChevronDown, RefreshCw, AlertTriangle, Check, Loader2, Cpu, HardDrive, Activity, Gauge, Lock, Unlock } from "lucide-react";
 import { toast } from "sonner";
 import { base44 } from "@/api/base44Client";
 
@@ -96,6 +96,8 @@ export default function AgentControlPanel({ onClose }) {
   const [selectedId, setSelectedId] = useState(null);
   const [pendingChanges, setPendingChanges] = useState({});
   const [overrides, setOverrides] = useState({}); // local priority/token overrides
+  const [showResourceManager, setShowResourceManager] = useState(false);
+  const [resourceAllocs, setResourceAllocs] = useState({}); // { agent_id: { cpu, memory, priority, tokensPerMin } }
 
   const fetchData = async () => {
     try {
@@ -127,6 +129,37 @@ export default function AgentControlPanel({ onClose }) {
     setPendingChanges(prev => ({ ...prev, [id]: true }));
   };
 
+  // Advanced resource allocation
+  const updateResourceAlloc = (id, field, val) => {
+    setResourceAllocs(prev => ({
+      ...prev,
+      [id]: { ...(prev[id] || {}), [field]: val }
+    }));
+    setPendingChanges(prev => ({ ...prev, [id]: true }));
+  };
+
+  const applyResourceChanges = async (id) => {
+    try {
+      const alloc = resourceAllocs[id];
+      if (!alloc) {
+        toast.error("No changes to apply");
+        return;
+      }
+      // Simulate resource allocation change
+      setAgents(prev => prev.map(a => a.id === id ? {
+        ...a,
+        priority: alloc.priority ?? a.priority,
+        cpu: alloc.cpu ?? a.cpu,
+        memory: alloc.memory ?? a.memory,
+        tokensPerMin: alloc.tokensPerMin ?? a.tokensPerMin
+      } : a));
+      toast.success(`Resource allocation applied to ${agents.find(a => a.id === id)?.name}`);
+      applyChanges(id);
+    } catch (e) {
+      toast.error("Failed to apply resource allocation");
+    }
+  };
+
   const applyChanges = (id) => {
     setPendingChanges(prev => { const next = { ...prev }; delete next[id]; return next; });
     toast.success(`Applied changes to ${agents.find(a => a.id === id)?.name}`);
@@ -152,38 +185,137 @@ export default function AgentControlPanel({ onClose }) {
       style={{ background: "rgba(8,15,30,0.97)", border: "1px solid rgba(6,182,212,0.25)", backdropFilter: "blur(24px)", boxShadow: "0 0 60px rgba(6,182,212,0.1)" }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-5 py-4 flex-shrink-0" style={{ borderBottom: "1px solid rgba(6,182,212,0.12)" }}>
-        <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "rgba(6,182,212,0.15)", border: "1px solid rgba(6,182,212,0.3)" }}>
-            <Sliders className="w-3.5 h-3.5" style={{ color: "#06b6d4" }} />
-          </div>
-          <div>
-            <p className="text-white font-black text-sm tracking-widest uppercase font-mono">Agent Control</p>
-            <p className="text-[10px] font-mono" style={{ color: "#475569" }}>
-              {loading ? "Loading..." : `${runningCount} running · ${agents.length} total · real data`}
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <button onClick={fetchData} title="Refresh" className="p-1.5 rounded-lg hover:bg-white/5 transition-colors">
-            <RefreshCw className="w-3.5 h-3.5 text-slate-400" />
-          </button>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-white/5 transition-colors">
-            <X className="w-4 h-4 text-slate-400" />
-          </button>
-        </div>
-      </div>
+       <div className="flex items-center justify-between px-5 py-4 flex-shrink-0" style={{ borderBottom: "1px solid rgba(6,182,212,0.12)" }}>
+         <div className="flex items-center gap-2.5">
+           <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "rgba(6,182,212,0.15)", border: "1px solid rgba(6,182,212,0.3)" }}>
+             <Sliders className="w-3.5 h-3.5" style={{ color: "#06b6d4" }} />
+           </div>
+           <div>
+             <p className="text-white font-black text-sm tracking-widest uppercase font-mono">Agent Control</p>
+             <p className="text-[10px] font-mono" style={{ color: "#475569" }}>
+               {loading ? "Loading..." : `${runningCount} running · ${agents.length} total · real data`}
+             </p>
+           </div>
+         </div>
+         <div className="flex items-center gap-2">
+           <button onClick={() => setShowResourceManager(!showResourceManager)} title="Resource Manager" className="p-1.5 rounded-lg hover:bg-white/5 transition-colors" style={{ color: showResourceManager ? "#06b6d4" : "#64748b" }}>
+             <Gauge className="w-3.5 h-3.5" />
+           </button>
+           <button onClick={fetchData} title="Refresh" className="p-1.5 rounded-lg hover:bg-white/5 transition-colors">
+             <RefreshCw className="w-3.5 h-3.5 text-slate-400" />
+           </button>
+           <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-white/5 transition-colors">
+             <X className="w-4 h-4 text-slate-400" />
+           </button>
+         </div>
+       </div>
 
       <div className="flex-1 overflow-y-auto min-h-0">
-        {loading ? (
-          <div className="flex items-center justify-center py-16">
-            <div className="text-center">
-              <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" style={{ color: "#06b6d4" }} />
-              <p className="text-[10px] font-mono" style={{ color: "#334155" }}>Loading platform data...</p>
-            </div>
-          </div>
-        ) : (
-          <div className="p-3 space-y-1.5">
+         {loading ? (
+           <div className="flex items-center justify-center py-16">
+             <div className="text-center">
+               <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" style={{ color: "#06b6d4" }} />
+               <p className="text-[10px] font-mono" style={{ color: "#334155" }}>Loading platform data...</p>
+             </div>
+           </div>
+         ) : showResourceManager ? (
+           <div className="p-4 space-y-4">
+             <div className="flex items-center gap-2 mb-3">
+               <Gauge className="w-4 h-4" style={{ color: "#06b6d4" }} />
+               <p className="text-xs font-mono uppercase tracking-widest" style={{ color: "#475569" }}>Global Resource Manager</p>
+             </div>
+
+             {/* Global Stats */}
+             <div className="grid grid-cols-2 gap-2">
+               <div className="p-3 rounded-lg" style={{ background: "rgba(59,130,246,0.08)", border: "1px solid rgba(59,130,246,0.2)" }}>
+                 <p className="text-[9px] font-mono mb-1" style={{ color: "#64748b" }}>Total CPU</p>
+                 <p className="text-lg font-black" style={{ color: "#3b82f6" }}>{agents.reduce((s, a) => s + (a.cpu || 0), 0)}%</p>
+               </div>
+               <div className="p-3 rounded-lg" style={{ background: "rgba(139,92,246,0.08)", border: "1px solid rgba(139,92,246,0.2)" }}>
+                 <p className="text-[9px] font-mono mb-1" style={{ color: "#64748b" }}>Total Memory</p>
+                 <p className="text-lg font-black" style={{ color: "#8b5cf6" }}>{agents.reduce((s, a) => s + (a.memory || 128), 0)}MB</p>
+               </div>
+               <div className="p-3 rounded-lg" style={{ background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.2)" }}>
+                 <p className="text-[9px] font-mono mb-1" style={{ color: "#64748b" }}>Running Agents</p>
+                 <p className="text-lg font-black" style={{ color: "#22c55e" }}>{runningCount}/{agents.length}</p>
+               </div>
+               <div className="p-3 rounded-lg" style={{ background: "rgba(16,185,129,0.08)", border: "1px solid rgba(16,185,129,0.2)" }}>
+                 <p className="text-[9px] font-mono mb-1" style={{ color: "#64748b" }}>Token Usage</p>
+                 <p className="text-lg font-black" style={{ color: "#10b981" }}>{(agents.reduce((s, a) => s + (a.tokensPerMin || 0), 0) / 1000).toFixed(1)}k/min</p>
+               </div>
+             </div>
+
+             {/* Per-Agent Resource Editor */}
+             <div className="border-t border-white/10 pt-3">
+               <p className="text-[9px] font-mono uppercase tracking-widest mb-2" style={{ color: "#475569" }}>Agent Allocations</p>
+               <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                 {agents.map(agent => (
+                   <div key={agent.id} className="p-2.5 rounded-lg" style={{ background: `${agent.color}08`, border: `1px solid ${agent.color}20` }}>
+                     <div className="flex items-center justify-between mb-2">
+                       <span className="text-xs font-bold truncate flex-1">{agent.name}</span>
+                       <span className="text-[9px] font-mono px-1.5 py-0.5 rounded" style={{ background: `${agent.color}18`, color: agent.color }}>{agent.category}</span>
+                     </div>
+                     <div className="grid grid-cols-2 gap-2 text-[9px]">
+                       <div>
+                         <div className="flex justify-between mb-0.5">
+                           <span style={{ color: "#64748b" }}>CPU</span>
+                           <span style={{ color: agent.color, fontWeight: "bold" }}>{resourceAllocs[agent.id]?.cpu ?? agent.cpu}%</span>
+                         </div>
+                         <input type="range" min={5} max={100} step={5} value={resourceAllocs[agent.id]?.cpu ?? agent.cpu}
+                           onChange={e => updateResourceAlloc(agent.id, "cpu", parseInt(e.target.value))}
+                           className="w-full accent-blue-400 cursor-pointer h-1.5" />
+                       </div>
+                       <div>
+                         <div className="flex justify-between mb-0.5">
+                           <span style={{ color: "#64748b" }}>Memory</span>
+                           <span style={{ color: agent.color, fontWeight: "bold" }}>{resourceAllocs[agent.id]?.memory ?? agent.memory}MB</span>
+                         </div>
+                         <input type="range" min={128} max={2048} step={128} value={resourceAllocs[agent.id]?.memory ?? agent.memory}
+                           onChange={e => updateResourceAlloc(agent.id, "memory", parseInt(e.target.value))}
+                           className="w-full accent-purple-400 cursor-pointer h-1.5" />
+                       </div>
+                     </div>
+                   </div>
+                 ))}
+               </div>
+             </div>
+
+             {/* Quick presets */}
+             <div className="border-t border-white/10 pt-3">
+               <p className="text-[9px] font-mono uppercase tracking-widest mb-2" style={{ color: "#475569" }}>Presets</p>
+               <div className="flex gap-2">
+                 <button onClick={() => {
+                   agents.forEach(a => {
+                     updateResourceAlloc(a.id, "cpu", 20);
+                     updateResourceAlloc(a.id, "memory", 256);
+                   });
+                   toast.success("Applied low-resource preset");
+                 }} className="flex-1 py-1.5 rounded-lg text-[9px] font-mono transition-all" style={{ background: "rgba(6,182,212,0.15)", border: "1px solid rgba(6,182,212,0.3)", color: "#06b6d4" }}>
+                   Low
+                 </button>
+                 <button onClick={() => {
+                   agents.forEach(a => {
+                     updateResourceAlloc(a.id, "cpu", 50);
+                     updateResourceAlloc(a.id, "memory", 768);
+                   });
+                   toast.success("Applied balanced preset");
+                 }} className="flex-1 py-1.5 rounded-lg text-[9px] font-mono transition-all" style={{ background: "rgba(16,185,129,0.15)", border: "1px solid rgba(16,185,129,0.3)", color: "#10b981" }}>
+                   Balanced
+                 </button>
+                 <button onClick={() => {
+                   agents.forEach(a => {
+                     updateResourceAlloc(a.id, "cpu", 85);
+                     updateResourceAlloc(a.id, "memory", 1024);
+                   });
+                   toast.success("Applied high-performance preset");
+                 }} className="flex-1 py-1.5 rounded-lg text-[9px] font-mono transition-all" style={{ background: "rgba(245,158,11,0.15)", border: "1px solid rgba(245,158,11,0.3)", color: "#f59e0b" }}>
+                   High
+                 </button>
+               </div>
+             </div>
+           </div>
+         ) : (
+           <div className="p-3 space-y-1.5">
             {agents.map(agent => (
               <motion.div key={agent.id} layout
                 onClick={() => setSelectedId(selectedId === agent.id ? null : agent.id)}
@@ -261,15 +393,58 @@ export default function AgentControlPanel({ onClose }) {
                         </div>
 
                         {/* Token Budget slider */}
-                        <div>
-                          <p className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{ color: "#475569" }}>Token Budget (k/min)</p>
-                          <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
-                            <input type="range" min={100} max={5000} step={100} value={agent.tokensPerMin}
-                              onChange={e => setResourceAlloc(agent.id, "tokensPerMin", parseInt(e.target.value))}
-                              className="flex-1 accent-cyan-400 cursor-pointer" />
-                            <span className="text-xs font-mono font-bold w-16 text-right" style={{ color: agent.color }}>{(agent.tokensPerMin / 1000).toFixed(1)}k</span>
-                          </div>
-                        </div>
+                         <div>
+                           <p className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{ color: "#475569" }}>Token Budget (k/min)</p>
+                           <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
+                             <input type="range" min={100} max={5000} step={100} value={agent.tokensPerMin}
+                               onChange={e => setResourceAlloc(agent.id, "tokensPerMin", parseInt(e.target.value))}
+                               className="flex-1 accent-cyan-400 cursor-pointer" />
+                             <span className="text-xs font-mono font-bold w-16 text-right" style={{ color: agent.color }}>{(agent.tokensPerMin / 1000).toFixed(1)}k</span>
+                           </div>
+                         </div>
+
+                         {/* CPU & Memory allocation (advanced) */}
+                         <div className="border-t border-white/10 pt-4">
+                           <p className="text-[10px] font-mono uppercase tracking-widest mb-3 flex items-center gap-2" style={{ color: "#475569" }}>
+                             <Cpu className="w-3 h-3" /> CPU & Memory Allocation
+                           </p>
+
+                           {/* CPU Allocation */}
+                           <div className="mb-3">
+                             <div className="flex items-center justify-between mb-1">
+                               <span className="text-[9px] font-mono" style={{ color: "#64748b" }}>CPU Limit (%)</span>
+                               <span className="text-xs font-bold" style={{ color: agent.color }}>{resourceAllocs[agent.id]?.cpu ?? agent.cpu}%</span>
+                             </div>
+                             <input type="range" min={5} max={100} step={5} value={resourceAllocs[agent.id]?.cpu ?? agent.cpu}
+                               onChange={e => updateResourceAlloc(agent.id, "cpu", parseInt(e.target.value))}
+                               onClick={e => e.stopPropagation()}
+                               className="w-full accent-blue-400 cursor-pointer" />
+                           </div>
+
+                           {/* Memory Allocation */}
+                           <div className="mb-3">
+                             <div className="flex items-center justify-between mb-1">
+                               <span className="text-[9px] font-mono" style={{ color: "#64748b" }}>Memory (MB)</span>
+                               <span className="text-xs font-bold" style={{ color: agent.color }}>{resourceAllocs[agent.id]?.memory ?? agent.memory}MB</span>
+                             </div>
+                             <input type="range" min={128} max={2048} step={128} value={resourceAllocs[agent.id]?.memory ?? agent.memory}
+                               onChange={e => updateResourceAlloc(agent.id, "memory", parseInt(e.target.value))}
+                               onClick={e => e.stopPropagation()}
+                               className="w-full accent-purple-400 cursor-pointer" />
+                           </div>
+
+                           {/* Max Concurrent Tasks */}
+                           <div>
+                             <div className="flex items-center justify-between mb-1">
+                               <span className="text-[9px] font-mono" style={{ color: "#64748b" }}>Max Tasks</span>
+                               <span className="text-xs font-bold" style={{ color: agent.color }}>{resourceAllocs[agent.id]?.maxTasks ?? 5}</span>
+                             </div>
+                             <input type="range" min={1} max={20} step={1} value={resourceAllocs[agent.id]?.maxTasks ?? 5}
+                               onChange={e => updateResourceAlloc(agent.id, "maxTasks", parseInt(e.target.value))}
+                               onClick={e => e.stopPropagation()}
+                               className="w-full accent-emerald-400 cursor-pointer" />
+                           </div>
+                         </div>
 
                         {/* Real Stats */}
                         <div className="grid grid-cols-3 gap-2">
@@ -289,22 +464,22 @@ export default function AgentControlPanel({ onClose }) {
                         </div>
 
                         {/* Actions */}
-                        <div className="flex gap-2" onClick={e => e.stopPropagation()}>
-                          <button onClick={() => toggleStatus(agent.id)}
-                            className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[11px] font-bold font-mono transition-all"
-                            style={{ background: agent.status === "running" ? "rgba(239,68,68,0.12)" : "rgba(16,185,129,0.12)", border: agent.status === "running" ? "1px solid rgba(239,68,68,0.3)" : "1px solid rgba(16,185,129,0.3)", color: agent.status === "running" ? "#ef4444" : "#10b981" }}>
-                            <RefreshCw className="w-3 h-3" />
-                            {agent.status === "running" ? "Pause" : "Resume"}
-                          </button>
-                          {pendingChanges[agent.id] && (
-                            <button onClick={() => applyChanges(agent.id)}
-                              className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[11px] font-bold font-mono transition-all"
-                              style={{ background: "rgba(6,182,212,0.15)", border: "1px solid rgba(6,182,212,0.4)", color: "#06b6d4" }}>
-                              <Check className="w-3 h-3" />
-                              Apply
-                            </button>
-                          )}
-                        </div>
+                         <div className="flex gap-2" onClick={e => e.stopPropagation()}>
+                           <button onClick={() => toggleStatus(agent.id)}
+                             className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[11px] font-bold font-mono transition-all"
+                             style={{ background: agent.status === "running" ? "rgba(239,68,68,0.12)" : "rgba(16,185,129,0.12)", border: agent.status === "running" ? "1px solid rgba(239,68,68,0.3)" : "1px solid rgba(16,185,129,0.3)", color: agent.status === "running" ? "#ef4444" : "#10b981" }}>
+                             <RefreshCw className="w-3 h-3" />
+                             {agent.status === "running" ? "Pause" : "Resume"}
+                           </button>
+                           {pendingChanges[agent.id] && (
+                             <button onClick={() => resourceAllocs[agent.id] ? applyResourceChanges(agent.id) : applyChanges(agent.id)}
+                               className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[11px] font-bold font-mono transition-all"
+                               style={{ background: "rgba(6,182,212,0.15)", border: "1px solid rgba(6,182,212,0.4)", color: "#06b6d4" }}>
+                               <Check className="w-3 h-3" />
+                               Apply
+                             </button>
+                           )}
+                         </div>
                       </div>
                     </motion.div>
                   )}
