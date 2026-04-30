@@ -896,9 +896,7 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
       try { const keys = Object.keys(localStorage).filter(k => k.startsWith("harbor_org_id_")); return keys.length > 0 ? localStorage.getItem(keys[0]) : null; } catch { return null; }
     })();
 
-    const systemMsg = resolvedOrgId
-      ? `${HOLOGRAM_SYSTEM_CONTEXT}\n\nSYSTEM CONTEXT: organization_id="${resolvedOrgId}". Always filter entities by this organization_id.`
-      : HOLOGRAM_SYSTEM_CONTEXT;
+    const systemMsg = `${HOLOGRAM_SYSTEM_CONTEXT}\n\nSYSTEM CONTEXT: organization_id="${resolvedOrgId || 'unknown'}". Always filter entities by this organization_id and prefix user messages with [ORG:${resolvedOrgId || 'unknown'}].`;
     base44.agents.addMessage(conv, { role: "system", content: systemMsg }).catch(() => {});
     return conv;
   };
