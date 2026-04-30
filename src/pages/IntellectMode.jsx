@@ -286,7 +286,7 @@ export default function IntellectMode() {
 
   // ── Init Harbor Intellect conversation (persistent) ────────────────────────────────────
   useEffect(() => {
-    if (isLoadingUser) return;
+    if (isLoadingUser || !currentUser) return;
 
     const init = async () => {
       try {
@@ -306,7 +306,10 @@ export default function IntellectMode() {
         if (!conv) {
           conv = await base44.agents.createConversation({
             agent_name: 'harbor_intellect',
-            metadata: { name: 'IntellectMode Session' }
+            metadata: { 
+              name: 'IntellectMode Session',
+              organization_id: orgId
+            }
           });
           localStorage.setItem('harbor_intellect_conv_id', conv.id);
         }
@@ -333,7 +336,7 @@ export default function IntellectMode() {
     };
     init();
     return () => { intellectUnsubRef.current?.(); };
-  }, [isLoadingUser]);
+  }, [isLoadingUser, currentUser, orgId]);
 
   // Clear conversation on logout
   useEffect(() => {
