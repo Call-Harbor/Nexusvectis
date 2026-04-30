@@ -457,6 +457,8 @@ export default function IntellectMode() {
 
   const executePrompt = useCallback((prompt) => {
     // Run pre-commands directly as deep analysis hologram (no typing needed)
+    setIsProcessing(true);
+    setShowThinkingTerminal(true);
     runDeepAnalysis(prompt);
   }, [vehicles, routes, shipments, alerts, orgId]);
 
