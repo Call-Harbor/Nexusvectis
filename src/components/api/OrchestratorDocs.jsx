@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Copy, Check, Brain, Zap, ChevronDown, ChevronRight, Network, Shield, BarChart3, Truck, Route, Users, Globe, FileText, Code2, Activity, Star, Layers } from "lucide-react";
 import { toast } from "sonner";
+import OrchestratorFlowVisualizer from "./OrchestratorFlowVisualizer";
 
 function CopyButton({ text }) {
   const [copied, setCopied] = useState(false);
@@ -223,6 +224,9 @@ export default function OrchestratorDocs() {
           ))}
         </div>
       </div>
+
+      {/* Flow Visualizer */}
+      <OrchestratorFlowVisualizer />
 
       {/* Orchestration Modes */}
       <div>
