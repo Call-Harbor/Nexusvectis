@@ -109,19 +109,66 @@ export default function AdminCompetitiveIntel() {
     queryFn: () => base44.entities.Invoice.list(),
   });
 
+  const { data: fleetAIUsage = [] } = useQuery({
+    queryKey: ["fleetAIUsage"],
+    queryFn: () => base44.entities.FleetAIUsage.list("-created_date", 500),
+  });
+
+  const { data: vehicles = [] } = useQuery({
+    queryKey: ["allVehicles"],
+    queryFn: () => base44.entities.Vehicle.list(),
+  });
+
+  const { data: auditLogs = [] } = useQuery({
+    queryKey: ["securityAudit"],
+    queryFn: () => base44.entities.SecurityAudit.list("-created_date", 100),
+  });
+
   const totalRevenue = invoices.filter(i => i.status === "paid").reduce((s, i) => s + (i.total_amount || 0), 0);
 
-  // Our competitive scores (out of 100)
-  const ourScores = [92, 88, 85, 72, 45, 94, 81, 89];
+  // Real derived metrics
+  const aiSuccessRate = fleetAIUsage.length > 0
+    ? Math.round((fleetAIUsage.filter(f => f.success !== false).length / fleetAIUsage.length) * 100)
+    : null;
 
-  // Market position timeline
-  const positionData = Array.from({ length: 12 }, (_, i) => ({
-    month: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][i],
-    nexus: 35 + i * 2 + Math.floor(Math.sin(i) * 3),
-    samsara: 78 - i * 0.5,
-    motive: 65 - i * 0.3,
-    project44: 55 + Math.floor(Math.sin(i * 0.8) * 2),
-  }));
+  const overdueInvoices = invoices.filter(i => i.status === "overdue").length;
+  const totalInvoices = invoices.filter(i => i.status !== "cancelled").length;
+  const churnRiskPct = totalInvoices > 0
+    ? ((overdueInvoices / organizations.length) * 100).toFixed(1)
+    : null;
+
+  const addonCount = organizations.filter(o => o.addon_airport_ops || o.addon_port_command || o.addon_transit_control).length;
+  const addonRate = organizations.length > 0 ? Math.round((addonCount / organizations.length) * 100) : 0;
+
+  // Monthly org growth to approximate market trajectory
+  const now = new Date();
+  const positionData = Array.from({ length: 12 }, (_, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - (11 - i), 1);
+    const end = new Date(now.getFullYear(), now.getMonth() - (10 - i), 0, 23, 59, 59);
+    const cumulativeOrgs = organizations.filter(o => new Date(o.created_date) <= end).length;
+    const revUpTo = invoices.filter(inv => inv.status === "paid" && new Date(inv.created_date) <= end)
+      .reduce((s, inv) => s + (inv.total_amount || 0), 0);
+    return {
+      month: d.toLocaleString("en-US", { month: "short" }),
+      nexus_orgs: cumulativeOrgs,
+      nexus_revenue: Math.round(revUpTo / 1000),
+    };
+  });
+
+  // Our competitive scores derived from real data (out of 100)
+  const aiScore = aiSuccessRate ?? 80;
+  const integrationScore = Math.min(100, 60 + addonRate);
+  const marketScore = Math.min(100, 20 + organizations.length * 5);
+  const ourScores = [
+    aiScore,                          // AI Capability
+    88,                               // UX Quality (product-defined)
+    85,                               // API Richness (product-defined)
+    72,                               // Pricing
+    marketScore,                      // Market Reach (based on org count)
+    Math.min(100, aiScore + 2),       // Innovation Speed
+    Math.min(100, 70 + addonRate / 2), // Customer NPS proxy
+    integrationScore,                 // Integration Depth
+  ];
 
   const runAIScan = async () => {
     setScanRunning(true);
@@ -182,11 +229,11 @@ export default function AdminCompetitiveIntel() {
         {/* Top metrics */}
         <div className="grid grid-cols-5 gap-4 mb-8">
           {[
-            { label: "Market Position", value: "#7", sub: "EU Fleet AI", icon: Target, color: "#06b6d4", trend: "+2" },
-            { label: "Customers", value: organizations.length, sub: "active orgs", icon: Globe, color: "#10b981", trend: `+${Math.max(0, organizations.length - 5)}` },
-            { label: "Revenue (EUR)", value: `€${(totalRevenue / 1000).toFixed(0)}K`, sub: "total billed", icon: TrendingUp, color: "#f59e0b", trend: "+18%" },
-            { label: "Innovation Score", value: "94/100", sub: "AI-first index", icon: Zap, color: "#8b5cf6", trend: "+6" },
-            { label: "Churn Risk", value: "2.1%", sub: "last 90 days", icon: Shield, color: "#10b981", trend: "-0.4%" },
+            { label: "Customer Orgs", value: organizations.length, sub: "active on platform", icon: Globe, color: "#06b6d4" },
+            { label: "Total Revenue", value: `€${(totalRevenue / 1000).toFixed(0)}K`, sub: "all-time paid invoices", icon: TrendingUp, color: "#f59e0b" },
+            { label: "AI Success Rate", value: aiSuccessRate !== null ? `${aiSuccessRate}%` : "—", sub: `${fleetAIUsage.length} AI commands`, icon: Zap, color: "#8b5cf6" },
+            { label: "Addon Adoption", value: `${addonRate}%`, sub: `${addonCount} orgs w/ modules`, icon: Activity, color: "#10b981" },
+            { label: "Overdue Risk", value: churnRiskPct !== null ? `${churnRiskPct}%` : "—", sub: `${overdueInvoices} overdue invoices`, icon: Shield, color: overdueInvoices > 0 ? "#ef4444" : "#10b981" },
           ].map((m, i) => (
             <motion.div key={i} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}>
               <NeonCard color={m.color}>
@@ -194,10 +241,6 @@ export default function AdminCompetitiveIntel() {
                 <p className="text-2xl font-black text-white">{m.value}</p>
                 <p className="text-xs text-slate-400">{m.label}</p>
                 <p className="text-[10px] text-slate-600 mt-1">{m.sub}</p>
-                <div className="flex items-center gap-1 mt-2">
-                  <ArrowUpRight className="w-3 h-3 text-green-400" />
-                  <span className="text-[10px] text-green-400 font-mono">{m.trend}</span>
-                </div>
               </NeonCard>
             </motion.div>
           ))}
@@ -235,15 +278,19 @@ export default function AdminCompetitiveIntel() {
             <NeonCard color="#8b5cf6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-white font-semibold">EU Market Share (est.)</h3>
-                  <p className="text-slate-500 text-xs">Enterprise Fleet AI segment</p>
+                  <h3 className="text-white font-semibold">Platform Strength</h3>
+                  <p className="text-slate-500 text-xs">Addon adoption rate</p>
                 </div>
-                <MarketShareGauge share={8} />
+                <MarketShareGauge share={addonRate} />
               </div>
               <div className="grid grid-cols-3 gap-2 mt-3">
-                {[{ name: "Samsara", pct: 31, color: "#ef4444" }, { name: "Motive", pct: 24, color: "#f59e0b" }, { name: "Others", pct: 37, color: "#475569" }].map(c => (
+                {[
+                  { name: "Airport Ops", count: organizations.filter(o => o.addon_airport_ops).length, color: "#06b6d4" },
+                  { name: "Port Cmd", count: organizations.filter(o => o.addon_port_command).length, color: "#8b5cf6" },
+                  { name: "Transit", count: organizations.filter(o => o.addon_transit_control).length, color: "#10b981" },
+                ].map(c => (
                   <div key={c.name} className="text-center">
-                    <p className="text-xs font-bold" style={{ color: c.color }}>{c.pct}%</p>
+                    <p className="text-xs font-bold" style={{ color: c.color }}>{c.count}</p>
                     <p className="text-[9px] text-slate-600">{c.name}</p>
                   </div>
                 ))}
@@ -251,16 +298,15 @@ export default function AdminCompetitiveIntel() {
             </NeonCard>
 
             <NeonCard color="#10b981">
-              <h3 className="text-white font-semibold mb-3 text-sm">Market Position Trajectory (12m)</h3>
-              <ResponsiveContainer width="100%" height={130}>
+              <h3 className="text-white font-semibold mb-1 text-sm">Platform Growth Trajectory (12m)</h3>
+              <p className="text-slate-500 text-[10px] mb-3">Cumulative organizations & revenue (€K)</p>
+              <ResponsiveContainer width="100%" height={120}>
                 <LineChart data={positionData}>
                   <XAxis dataKey="month" stroke="#334155" tick={{ fontSize: 8 }} />
-                  <YAxis stroke="#334155" tick={{ fontSize: 8 }} domain={[0, 100]} />
+                  <YAxis stroke="#334155" tick={{ fontSize: 8 }} />
                   <Tooltip contentStyle={{ background: "#0f172a", border: "1px solid #334155", borderRadius: 8, fontSize: 10 }} />
-                  <Line dataKey="nexus" stroke="#06b6d4" strokeWidth={2.5} dot={false} name="NexusVectis" />
-                  {visibleCompetitors.map(c => (
-                    <Line key={c.id} dataKey={c.id} stroke={c.color} strokeWidth={1} dot={false} strokeDasharray="4 2" name={c.name} />
-                  ))}
+                  <Line dataKey="nexus_orgs" stroke="#06b6d4" strokeWidth={2.5} dot={false} name="Orgs" />
+                  <Line dataKey="nexus_revenue" stroke="#10b981" strokeWidth={1.5} dot={false} strokeDasharray="4 2" name="Revenue (€K)" />
                 </LineChart>
               </ResponsiveContainer>
             </NeonCard>
