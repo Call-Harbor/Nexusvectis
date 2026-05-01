@@ -839,13 +839,13 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
     try {
       const convs = await base44.agents.listConversations({ agent_name: AGENT_NAME });
       const currentDeletedIds = getDeletedIds();
-      // Only show conversations created from HarborSuperAgentChat (tagged with source)
       const active = (convs || []).filter(c =>
         !currentDeletedIds.has(c.id) && c.metadata?.source === "super_agent_chat"
       );
       setConversations(active);
-      if (active.length > 0) await selectConversation(active[0]);
-    } catch { toast.error("Could not load conversations"); }
+      // Don't await — load first conversation in background, show UI immediately
+      if (active.length > 0) selectConversation(active[0]).catch(() => {});
+    } catch { /* silent fail */ }
     setIsLoading(false);
   };
 
