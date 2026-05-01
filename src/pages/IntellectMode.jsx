@@ -939,6 +939,7 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
     }
     
     closeProcessTerminal(processId);
+    setIsProcessing(false);
   };
 
   // ── Main Command Processor ─────────────────────────────────────────────────
