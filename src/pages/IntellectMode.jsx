@@ -28,7 +28,6 @@ import CircularBrainMenu from "@/components/intellect/CircularBrainMenu";
 import IntellectHeader from "@/components/intellect/IntellectHeader";
 import IntellectCommandBar from "@/components/intellect/IntellectCommandBar";
 import DashboardGlobeFrame from "@/components/holographic/DashboardGlobeFrame";
-import ThinkingTerminalVisual from "@/components/intellect/ThinkingTerminalVisual";
 import CompanyAnalysisHologram from "@/components/intellect/CompanyAnalysisHologram";
 import ProfileSearch from "@/components/intellect/ProfileSearch";
 import CandidateMatcher from "@/components/intellect/CandidateMatcher";
@@ -1300,9 +1299,6 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
               />
             </motion.div>
           )}
-
-          {/* AI Thinking Terminal */}
-          <ThinkingTerminalVisual isActive={showThinkingTerminal && isProcessing} logs={thinkingLogs} onClose={() => setShowThinkingTerminal(false)} />
 
           {/* Standby */}
           {activeWindows.length === 0 && (
