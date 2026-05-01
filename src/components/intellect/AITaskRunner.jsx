@@ -293,15 +293,15 @@ export default function AITaskRunner({ onOpenWindow, windowRefs, orgId, onClose 
         message: err.message || "Unknown error",
         type: err.name || "Error",
         suggestions: generateSuggestions(err.message, currentWindowType),
-        timestamp: new Date().toLocaleString("da-DK")
+        timestamp: new Date().toLocaleString()
       };
       setError(errorDetails);
       addStep(`❌ Error: ${errorDetails.message}`, "error");
       setPhase("error");
       toast.error(errorDetails.message);
+    } finally {
+      setRunning(false);
     }
-
-    setRunning(false);
   };
 
   const generateSuggestions = (errorMsg, wType) => {
