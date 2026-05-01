@@ -79,20 +79,20 @@ const PHASE_COLORS = {
 };
 
 const EXAMPLES = [
-  "Lav en ny rute fra København til Aarhus med truck",
-  "Åbn fleet map og find alle aktive lastbiler",
-  "Åbn vedligeholdelse og vis køretøjer med kritisk service snart",
-  "Opret en ny forsendelse fra Hamburg til London",
-  "Åbn HR og tilføj en ny medarbejder",
-  "Åbn CRM og opret en ny deal",
-  "Vis performance analytics og tjek CO₂-emissioner",
-  "Åbn port command og se vessel queue status",
-  "Åbn airport ops og tjek gate status",
-  "Generer et nyt dokument — CMR waybill",
-  "Åbn demand forecast og analyser næste måneds kapacitet",
-  "Start et nyt projekt i project management",
-  "Søg i global search efter alle kritiske alerts",
-  "Åbn Fleet Drive og upload en ny fil",
+  "Create a new route from Copenhagen to Aarhus by truck",
+  "Open fleet map and find all active vehicles",
+  "Open maintenance and show vehicles with critical service due soon",
+  "Create a new shipment from Hamburg to London",
+  "Open HR and add a new employee",
+  "Open CRM and create a new deal",
+  "Show performance analytics and check CO₂ emissions",
+  "Open port command and view vessel queue status",
+  "Open airport ops and check gate status",
+  "Generate a new document — CMR waybill",
+  "Open demand forecast and analyze next month's capacity",
+  "Start a new project in project management",
+  "Search global search for all critical alerts",
+  "Open Fleet Drive and upload a new file",
 ];
 
 export default function AITaskRunner({ onOpenWindow, windowRefs, orgId, onClose }) {
@@ -126,7 +126,7 @@ export default function AITaskRunner({ onOpenWindow, windowRefs, orgId, onClose 
 
     try {
       // Phase 1: Determine window
-      addStep("Forstår opgaven...", "think");
+      addStep("Understanding task...", "think");
       setPhase("planning");
 
       let windowType;
@@ -238,11 +238,11 @@ export default function AITaskRunner({ onOpenWindow, windowRefs, orgId, onClose 
       }
 
       setCurrentWindowType(windowType);
-      addStep(`Åbner modul: ${windowType.replace(/_/g, " ")}`, "scan");
+      addStep(`Opening module: ${windowType.replace(/_/g, " ")}`, "scan");
 
       // Phase 2: Open window (instant, don't wait)
       onOpenWindow(windowType, preciseTask);
-      addStep(`Hologram aktiveret ✓`, "narrate");
+      addStep(`Hologram activated ✓`, "narrate");
       await new Promise(r => setTimeout(r, 200));
 
       // Phase 3: Wait for window ref to exist (hologram is open)
@@ -253,18 +253,18 @@ export default function AITaskRunner({ onOpenWindow, windowRefs, orgId, onClose 
           newestRef = refs[refs.length - 1][1];
           if (newestRef && newestRef.offsetHeight > 0) break;
         }
-        addStep(`Åbner hologram (${attempt + 1}/10)...`, "think");
+        addStep(`Opening hologram (${attempt + 1}/10)...`, "think");
         await new Promise(r => setTimeout(r, 300));
       }
 
       if (!newestRef) {
-        addStep("Hologrammet åbnede ikke", "error");
+        addStep("Hologram did not open", "error");
         setPhase("error");
         setRunning(false);
         return;
-      }
+        }
 
-      addStep("✓ Hologram åbnet", "narrate");
+        addStep("✓ Hologram opened", "narrate");
 
       // Phase 4: Run agent with live step reporting
       let result;
@@ -284,19 +284,19 @@ export default function AITaskRunner({ onOpenWindow, windowRefs, orgId, onClose 
         });
       }
 
-      addStep(`✅ ${result?.summary || "Opgave fuldført"}`, "narrate");
+      addStep(`✅ ${result?.summary || "Task completed"}`, "narrate");
       setPhase("done");
-      toast.success(`✅ ${result?.summary || "Opgave fuldført"}`);
+      toast.success(`✅ ${result?.summary || "Task completed"}`);
 
     } catch (err) {
       const errorDetails = {
-        message: err.message || "Ukendt fejl",
+        message: err.message || "Unknown error",
         type: err.name || "Error",
         suggestions: generateSuggestions(err.message, currentWindowType),
         timestamp: new Date().toLocaleString("da-DK")
       };
       setError(errorDetails);
-      addStep(`❌ Fejl: ${errorDetails.message}`, "error");
+      addStep(`❌ Error: ${errorDetails.message}`, "error");
       setPhase("error");
       toast.error(errorDetails.message);
     }
@@ -308,12 +308,12 @@ export default function AITaskRunner({ onOpenWindow, windowRefs, orgId, onClose 
     const suggestions = [];
     const msg = errorMsg?.toLowerCase() || "";
     
-    if (msg.includes("not found")) suggestions.push("Elementet blev ikke fundet - prøv at specificere opgaven mere klart");
-    if (msg.includes("timeout")) suggestions.push("Timeout - vinduet tager for lang tid at loade. Prøv igen eller åbn modulet manuelt");
-    if (msg.includes("undefined")) suggestions.push("Modulet er ikke helt loadet. Vent et øjeblik og prøv igen");
-    if (msg.includes("disabled")) suggestions.push("Feltet er deaktiveret - tjek formens vilkår eller krav");
-    if (msg.includes("permission")) suggestions.push("Adgang nægtet - du har muligvis ikke rettigheder til denne handling");
-    if (!suggestions.length) suggestions.push("Prøv at formulere opgaven anderledes eller åbn modulet manuelt");
+    if (msg.includes("not found")) suggestions.push("Element not found - try to specify the task more clearly");
+    if (msg.includes("timeout")) suggestions.push("Timeout - the window is taking too long to load. Try again or open the module manually");
+    if (msg.includes("undefined")) suggestions.push("Module is not fully loaded. Wait a moment and try again");
+    if (msg.includes("disabled")) suggestions.push("Field is disabled - check the form's conditions or requirements");
+    if (msg.includes("permission")) suggestions.push("Access denied - you may not have permissions for this action");
+    if (!suggestions.length) suggestions.push("Try rephrasing the task or open the module manually");
     
     return suggestions;
   };
@@ -336,18 +336,18 @@ export default function AITaskRunner({ onOpenWindow, windowRefs, orgId, onClose 
   };
 
   const handleReport = () => {
-    const report = `Error Report\nTidspunkt: ${error?.timestamp}\nFejl: ${error?.message}\nType: ${error?.type}\nOpgave: ${task}\nModul: ${currentWindowType || "unknown"}`;
+    const report = `Error Report\nTimestamp: ${error?.timestamp}\nError: ${error?.message}\nType: ${error?.type}\nTask: ${task}\nModule: ${currentWindowType || "unknown"}`;
     navigator.clipboard.writeText(report);
-    toast.success("Fejlrapport kopieret til clipboard");
+    toast.success("Error report copied to clipboard");
   };
 
   const phaseLabel = {
-    idle: "Klar",
-    scanning: "Scanner interface...",
-    planning: "Planlægger handlinger...",
-    executing: "Udfører opgave...",
-    done: "Fuldført ✓",
-    error: "Fejl",
+    idle: "Ready",
+    scanning: "Scanning interface...",
+    planning: "Planning actions...",
+    executing: "Executing task...",
+    done: "Completed ✓",
+    error: "Error",
   }[phase];
 
   const phaseColor = {
@@ -426,7 +426,7 @@ export default function AITaskRunner({ onOpenWindow, windowRefs, orgId, onClose 
                     value={task}
                     onChange={e => setTask(e.target.value)}
                     onKeyDown={e => e.key === "Enter" && !e.shiftKey && (e.preventDefault(), execute())}
-                    placeholder="Beskriv hvad AI'en skal gøre i systemet..."
+                    placeholder="Describe what the AI should do in the system..."
                     disabled={running}
                     rows={2}
                     className="flex-1 bg-transparent text-sm text-white placeholder-slate-600 outline-none resize-none leading-relaxed"
@@ -494,7 +494,7 @@ export default function AITaskRunner({ onOpenWindow, windowRefs, orgId, onClose 
             ) : (
               /* Example prompts */
               <div className="px-4 pb-3">
-                <p className="text-[9px] font-mono uppercase tracking-widest text-slate-600 mb-2">Eksempler — klik for at bruge</p>
+                <p className="text-[9px] font-mono uppercase tracking-widest text-slate-600 mb-2">Examples — click to use</p>
                 <div className="space-y-1">
                   {EXAMPLES.map((ex, i) => (
                     <motion.button key={i} onClick={() => { setTask(ex); setTimeout(() => inputRef.current?.focus(), 50); }}
@@ -520,13 +520,13 @@ export default function AITaskRunner({ onOpenWindow, windowRefs, orgId, onClose 
                   <div className="flex items-start gap-2 mb-2.5">
                     <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: "#ef4444" }} />
                     <div className="flex-1">
-                      <p className="text-[11px] font-semibold" style={{ color: "#ef4444" }}>Fejl opstod</p>
+                      <p className="text-[11px] font-semibold" style={{ color: "#ef4444" }}>An error occurred</p>
                       <p className="text-[9px] text-slate-400 mt-1">{error.message}</p>
                     </div>
                   </div>
                   {error.suggestions && error.suggestions.length > 0 && (
                     <div className="mb-2.5 pl-5 border-l" style={{ borderColor: "rgba(239,68,68,0.2)" }}>
-                      <p className="text-[8px] font-mono uppercase tracking-wider text-slate-500 mb-1.5">Forslag:</p>
+                      <p className="text-[8px] font-mono uppercase tracking-wider text-slate-500 mb-1.5">Suggestions:</p>
                       {error.suggestions.map((sug, i) => (
                         <p key={i} className="text-[9px] text-slate-400 mb-1">• {sug}</p>
                       ))}
@@ -538,21 +538,21 @@ export default function AITaskRunner({ onOpenWindow, windowRefs, orgId, onClose 
                       style={{ background: "rgba(59,130,246,0.2)", color: "#3b82f6" }}
                       onMouseEnter={e => e.currentTarget.style.background = "rgba(59,130,246,0.3)"}
                       onMouseLeave={e => e.currentTarget.style.background = "rgba(59,130,246,0.2)"}>
-                      ↻ Prøv igen
+                      ↻ Retry
                     </motion.button>
                     <motion.button onClick={handleReport} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
                       className="flex-1 px-2.5 py-1.5 rounded-lg text-[9px] font-semibold transition-all"
                       style={{ background: "rgba(168,85,247,0.2)", color: "#a855f7" }}
                       onMouseEnter={e => e.currentTarget.style.background = "rgba(168,85,247,0.3)"}
                       onMouseLeave={e => e.currentTarget.style.background = "rgba(168,85,247,0.2)"}>
-                      📋 Rapportér
+                      📋 Report
                     </motion.button>
                     <motion.button onClick={reset} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
                       className="px-2.5 py-1.5 rounded-lg text-[9px] font-semibold transition-all"
                       style={{ background: "rgba(100,116,139,0.2)", color: "#64748b" }}
                       onMouseEnter={e => e.currentTarget.style.background = "rgba(100,116,139,0.3)"}
                       onMouseLeave={e => e.currentTarget.style.background = "rgba(100,116,139,0.2)"}>
-                      Lukket
+                      Close
                     </motion.button>
                   </div>
                 </div>
@@ -563,7 +563,7 @@ export default function AITaskRunner({ onOpenWindow, windowRefs, orgId, onClose 
             {!error && (
               <div className="px-4 pb-3 flex-shrink-0">
                 <p className="text-[9px] font-mono text-slate-700 text-center">
-                  AI åbner det rigtige modul · scanner interface · klikker og skriver som et menneske
+                  AI opens the right module · scans interface · clicks and types like a human
                 </p>
               </div>
             )}
