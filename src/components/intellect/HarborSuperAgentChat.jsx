@@ -213,8 +213,9 @@ function MessageBubble({ message, allWorkers }) {
         {!isUser && (
           <div className="flex items-center gap-2">
             <span className="text-[10px] font-mono tracking-widest uppercase" style={{ color: agentEmoji ? agentColor : "#8b5cf6" }}>
-              {agentName || "H.A.R.B.O.R INTELLECT"}
+            {agentName || "H.A.R.B.O.R INTELLECT"}
             </span>
+
             {confidence != null && <ConfidenceBadge score={confidence} />}
           </div>
         )}
@@ -257,11 +258,12 @@ function MessageBubble({ message, allWorkers }) {
                         <pre className="rounded-xl p-4 overflow-x-auto" style={{ background: "rgba(0,0,0,0.5)", border: "1px solid rgba(100,116,139,0.2)" }}>
                           <code className="text-xs text-slate-300 font-mono">{children}</code>
                         </pre>
-                        <button onClick={() => { navigator.clipboard.writeText(String(children)); toast.success("Kopieret!"); }}
+                        <button onClick={() => { navigator.clipboard.writeText(String(children)); toast.success("Copied!"); }}
                           className="absolute top-2 right-2 opacity-0 group-hover/code:opacity-100 transition-opacity p-1.5 rounded-lg text-[10px] font-mono flex items-center gap-1"
                           style={{ background: "rgba(6,182,212,0.15)", color: "#06b6d4", border: "1px solid rgba(6,182,212,0.3)" }}>
                           <Copy className="w-3 h-3" />
                         </button>
+
                       </div>
                     );
                   }
