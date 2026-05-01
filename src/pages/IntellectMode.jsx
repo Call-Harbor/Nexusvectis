@@ -54,6 +54,7 @@ import AITaskRunner from "@/components/intellect/AITaskRunner";
 import AgentControlPanel from "@/components/intellect/AgentControlPanel";
 import OutcomeIntelligencePanel from "@/components/intellect/OutcomeIntelligencePanel";
 import GovernanceCenter from "@/components/intellect/GovernanceCenter";
+import IntellectSidebar from "@/components/intellect/IntellectSidebar";
 
 const THINKING_STEPS = ["Querying fleet data", "Running neural analysis", "Cross-referencing modules", "Generating response"];
 
@@ -1598,117 +1599,22 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
         )}
       </AnimatePresence>
 
-      {/* Digital COO / Outcome Intelligence Button */}
-      <motion.button
-        onClick={() => { setShowOutcomePanel(p => !p); setShowGovernanceCenter(false); }}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        className="fixed bottom-96 right-6 z-40 flex items-center gap-2.5 px-4 py-3 rounded-2xl font-mono font-bold text-xs tracking-widest uppercase transition-all"
-        style={{
-          background: showOutcomePanel
-            ? "linear-gradient(135deg, rgba(6,182,212,0.3), rgba(16,185,129,0.3))"
-            : "linear-gradient(135deg, rgba(6,182,212,0.15), rgba(16,185,129,0.15))",
-          border: "1px solid rgba(6,182,212,0.5)",
-          color: "#06b6d4",
-          boxShadow: "0 0 30px rgba(6,182,212,0.2)"
-        }}>
-        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
-        Digital COO
-        <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-      </motion.button>
-
-      {/* Governance Center Button */}
-      <motion.button
-        onClick={() => { setShowGovernanceCenter(p => !p); setShowOutcomePanel(false); }}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        className="fixed bottom-[22rem] right-6 z-40 flex items-center gap-2.5 px-4 py-3 rounded-2xl font-mono font-bold text-xs tracking-widest uppercase transition-all"
-        style={{
-          background: showGovernanceCenter
-            ? "linear-gradient(135deg, rgba(16,185,129,0.3), rgba(6,182,212,0.3))"
-            : "linear-gradient(135deg, rgba(16,185,129,0.15), rgba(6,182,212,0.15))",
-          border: "1px solid rgba(16,185,129,0.5)",
-          color: "#10b981",
-          boxShadow: "0 0 30px rgba(16,185,129,0.2)"
-        }}>
-        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-        Governance
-        <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-      </motion.button>
-
-      {/* Orchestrator Load Map Button */}
-      <motion.button
-        onClick={() => handleQuickAction('openOrchestratorLoadMap')}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        className="fixed bottom-80 right-6 z-40 flex items-center gap-2.5 px-4 py-3 rounded-2xl font-mono font-bold text-xs tracking-widest uppercase transition-all"
-        style={{
-          background: "linear-gradient(135deg, rgba(167,139,250,0.15), rgba(239,68,68,0.15))",
-          border: "1px solid rgba(167,139,250,0.5)",
-          color: "#a78bfa",
-          boxShadow: "0 0 30px rgba(167,139,250,0.2)"
-        }}>
-        <Network className="w-4 h-4" />
-        Load Map
-        <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" />
-      </motion.button>
-
-      {/* Agent Control Button */}
-      <motion.button
-        onClick={() => setShowAgentControlPanel(prev => !prev)}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        className="fixed bottom-64 right-6 z-40 flex items-center gap-2.5 px-4 py-3 rounded-2xl font-mono font-bold text-xs tracking-widest uppercase transition-all"
-        style={{
-          background: showAgentControlPanel
-            ? "linear-gradient(135deg, rgba(139,92,246,0.3), rgba(6,182,212,0.3))"
-            : "linear-gradient(135deg, rgba(139,92,246,0.15), rgba(6,182,212,0.15))",
-          border: "1px solid rgba(139,92,246,0.5)",
-          color: "#8b5cf6",
-          boxShadow: "0 0 30px rgba(139,92,246,0.2)"
-        }}>
-        <Sliders className="w-4 h-4" />
-        Agents
-        <span className="w-2 h-2 rounded-full bg-violet-400 animate-pulse" />
-      </motion.button>
-
-      {/* AI Task Runner Button */}
-      <motion.button
-        onClick={() => setShowAITaskRunner(prev => !prev)}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        className="fixed bottom-48 right-6 z-40 flex items-center gap-2.5 px-4 py-3 rounded-2xl font-mono font-bold text-xs tracking-widest uppercase transition-all"
-        style={{
-          background: showAITaskRunner
-            ? "linear-gradient(135deg, rgba(16,185,129,0.3), rgba(6,182,212,0.3))"
-            : "linear-gradient(135deg, rgba(16,185,129,0.15), rgba(6,182,212,0.15))",
-          border: "1px solid rgba(16,185,129,0.5)",
-          color: "#10b981",
-          boxShadow: "0 0 30px rgba(16,185,129,0.2)"
-        }}>
-        <Zap className="w-4 h-4" />
-        AI Execute
-        <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-      </motion.button>
-
-      {/* Harbor Agent Button */}
-      <motion.button
-        onClick={() => setShowHarborAgentChat(prev => !prev)}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        className="fixed bottom-32 right-6 z-40 flex items-center gap-2.5 px-4 py-3 rounded-2xl font-mono font-bold text-xs tracking-widest uppercase transition-all"
-        style={{
-          background: showHarborAgentChat
-            ? "linear-gradient(135deg, rgba(6,182,212,0.3), rgba(139,92,246,0.3))"
-            : "linear-gradient(135deg, rgba(6,182,212,0.15), rgba(139,92,246,0.15))",
-          border: "1px solid rgba(6,182,212,0.5)",
-          color: "#06b6d4",
-          boxShadow: "0 0 30px rgba(6,182,212,0.2), 0 0 60px rgba(139,92,246,0.1)"
-        }}>
-        <Brain className="w-4 h-4" />
-        H.A.R.B.O.R Chat
-        <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-      </motion.button>
+      {/* Unified Sidebar */}
+      <IntellectSidebar
+        showOutcomePanel={showOutcomePanel}
+        showGovernanceCenter={showGovernanceCenter}
+        showAgentControlPanel={showAgentControlPanel}
+        showAITaskRunner={showAITaskRunner}
+        showHarborAgentChat={showHarborAgentChat}
+        onToggle={(key) => {
+          if (key === "outcome") { setShowOutcomePanel(p => !p); setShowGovernanceCenter(false); }
+          else if (key === "governance") { setShowGovernanceCenter(p => !p); setShowOutcomePanel(false); }
+          else if (key === "loadmap") handleQuickAction('openOrchestratorLoadMap');
+          else if (key === "agents") setShowAgentControlPanel(p => !p);
+          else if (key === "execute") setShowAITaskRunner(p => !p);
+          else if (key === "chat") setShowHarborAgentChat(p => !p);
+        }}
+      />
 
       {/* AI Coach */}
       <AICoach openWindows={activeWindows} fleetData={{ vehicles, routes, shipments, alerts }} courseSession={null} userLevel={currentUser?.role === 'admin' ? 4 : 2} performanceHistory={[]} />
