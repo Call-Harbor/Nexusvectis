@@ -317,12 +317,15 @@ export default function IntellectMode() {
         intellectConversationRef.current = conv;
 
         // Subscribe for agent responses
+        const seenMsgIds = new Set();
         intellectUnsubRef.current = base44.agents.subscribeToConversation(conv.id, (data) => {
           if (!isWaitingForAgentRef.current) return;
           const agentMsgs = (data.messages || []).filter(m => m.role !== 'system');
           const last = agentMsgs[agentMsgs.length - 1];
-          if (last?.role === 'assistant' && last.content) {
+          if (last?.role === 'assistant' && last.id && !seenMsgIds.has(last.id) && last.content) {
+            seenMsgIds.add(last.id);
             isWaitingForAgentRef.current = false;
+            clearTimeout(window._intellectProcessingTimeout);
             setIsProcessing(false);
             setMessages(prev => [
               ...prev.filter(m => m.content !== '⚡ H.A.R.B.O.R analyzing...'),
@@ -1066,11 +1069,19 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
       return;
     }
 
+    // Safety timeout: always clear processing after 60s
+    clearTimeout(window._intellectProcessingTimeout);
+    window._intellectProcessingTimeout = setTimeout(() => {
+      isWaitingForAgentRef.current = false;
+      setIsProcessing(false);
+    }, 60000);
+
     try {
       isWaitingForAgentRef.current = true;
       if (!intellectConversationRef.current) {
         setMessages(prev => [...prev.filter(m => m.content !== '⚡ H.A.R.B.O.R analyzing...'), { role: 'system', content: '❌ Agent not initialized' }]);
         setIsProcessing(false);
+        clearTimeout(window._intellectProcessingTimeout);
         return;
       }
       const messageContent = validOrgId 
