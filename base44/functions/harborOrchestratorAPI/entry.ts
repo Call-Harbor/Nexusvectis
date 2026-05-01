@@ -1503,6 +1503,46 @@ Deno.serve(async (req) => {
       ? Math.round(confidenceScoresArr.reduce((a, b) => a + b, 0) / confidenceScoresArr.length)
       : null;
 
+    // ── CLOSED-LOOP OUTCOME LEARNING: Log this decision for future measurement ──
+    // Extract KPI predictions from synthesis if available
+    const synthesisResult = results.find(r => r.tier === 'synthesis');
+    if (synthesisResult?.reply && organization_id) {
+      try {
+        const kpiPrediction = await base44.asServiceRole.integrations.Core.InvokeLLM({
+          prompt: `From this AI analysis output, extract if there is a quantified KPI prediction. 
+Output: ${synthesisResult.reply.substring(0, 1200)}
+
+If there's a clear KPI prediction, respond with JSON: { "found": true, "kpi_type": "co2_reduction|cost_savings|sla_compliance|fuel_efficiency|route_optimization|maintenance_prevention|revenue_impact|delay_reduction", "predicted_value": number, "predicted_unit": "%, EUR, kg, min" }
+If no clear quantified prediction, respond: { "found": false }`,
+          response_json_schema: { type: "object", properties: { found: { type: "boolean" }, kpi_type: { type: "string" }, predicted_value: { type: "number" }, predicted_unit: { type: "string" } } }
+        });
+
+        if (kpiPrediction?.found && kpiPrediction?.kpi_type) {
+          base44.asServiceRole.entities.OutcomeLearning.create({
+            organization_id,
+            recommendation_text: message.substring(0, 300),
+            agent_ids: results.filter(r => r.agent_id).map(r => r.agent_id),
+            kpi_type: kpiPrediction.kpi_type,
+            predicted_value: kpiPrediction.predicted_value,
+            predicted_unit: kpiPrediction.predicted_unit,
+            status: 'pending_feedback',
+          }).catch(() => {});
+        }
+      } catch {}
+    }
+
+    // Log ALL decisions to AIDecisionLog for governance/audit trail
+    base44.asServiceRole.entities.AIDecisionLog.create({
+      organization_id,
+      decision_type: mode,
+      agents_used: results.filter(r => r.agent_id).map(r => r.agent_id),
+      input_summary: message.substring(0, 200),
+      output_summary: (synthesisResult?.reply || results[0]?.reply || '').substring(0, 300),
+      kpi_impact: { co2_kg: 0, cost_eur: 0, sla_percent: 0, risk_score: 0 },
+      governance_checks: [],
+      status: 'auto_approved',
+    }).catch(() => {});
+
     // Track usage async
     base44.asServiceRole.entities.APIUsage.create({
       organization_id,

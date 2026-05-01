@@ -1,0 +1,96 @@
+{
+  "name": "OutcomeLearning",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string"
+    },
+    "recommendation_id": {
+      "type": "string",
+      "description": "ID of the original orchestrator recommendation"
+    },
+    "recommendation_text": {
+      "type": "string",
+      "description": "What the AI recommended"
+    },
+    "agent_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Which agents were involved"
+    },
+    "kpi_type": {
+      "type": "string",
+      "enum": [
+        "co2_reduction",
+        "cost_savings",
+        "sla_compliance",
+        "fuel_efficiency",
+        "route_optimization",
+        "maintenance_prevention",
+        "revenue_impact",
+        "delay_reduction"
+      ],
+      "description": "Which KPI this outcome tracks"
+    },
+    "predicted_value": {
+      "type": "number",
+      "description": "What the AI predicted (e.g. 12% reduction)"
+    },
+    "predicted_unit": {
+      "type": "string",
+      "description": "Unit of measurement (%, EUR, kg, minutes)"
+    },
+    "measured_value": {
+      "type": "number",
+      "description": "Actual measured outcome"
+    },
+    "measurement_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the outcome was measured"
+    },
+    "was_implemented": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the recommendation was followed"
+    },
+    "implementation_date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "outcome_score": {
+      "type": "number",
+      "description": "0-100: how well the prediction matched reality"
+    },
+    "learning_note": {
+      "type": "string",
+      "description": "AI-generated learning note for future routing decisions"
+    },
+    "agent_trust_adjustments": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Trust score adjustments per agent based on outcome"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending_feedback",
+        "implemented",
+        "skipped",
+        "measured",
+        "archived"
+      ],
+      "default": "pending_feedback"
+    }
+  },
+  "required": [
+    "organization_id",
+    "kpi_type",
+    "predicted_value",
+    "predicted_unit"
+  ]
+}

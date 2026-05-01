@@ -1,0 +1,77 @@
+{
+  "name": "AIDecisionLog",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string"
+    },
+    "decision_type": {
+      "type": "string",
+      "description": "What kind of decision was made"
+    },
+    "agents_used": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "input_summary": {
+      "type": "string",
+      "description": "What was asked"
+    },
+    "output_summary": {
+      "type": "string",
+      "description": "What was decided/recommended"
+    },
+    "kpi_impact": {
+      "type": "object",
+      "properties": {
+        "co2_kg": {
+          "type": "number"
+        },
+        "cost_eur": {
+          "type": "number"
+        },
+        "sla_percent": {
+          "type": "number"
+        },
+        "risk_score": {
+          "type": "number"
+        }
+      },
+      "description": "Estimated KPI impacts at time of decision"
+    },
+    "governance_checks": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Which policies were checked and their outcome"
+    },
+    "approved_by": {
+      "type": "string",
+      "description": "User who approved (if approval required)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "auto_approved",
+        "pending_approval",
+        "approved",
+        "rejected",
+        "blocked"
+      ],
+      "default": "auto_approved"
+    },
+    "outcome_id": {
+      "type": "string",
+      "description": "Link to OutcomeLearning record after measurement"
+    }
+  },
+  "required": [
+    "organization_id",
+    "decision_type",
+    "input_summary",
+    "output_summary"
+  ]
+}

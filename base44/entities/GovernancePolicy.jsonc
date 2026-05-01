@@ -1,0 +1,73 @@
+{
+  "name": "GovernancePolicy",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string",
+      "description": "Policy name"
+    },
+    "description": {
+      "type": "string"
+    },
+    "policy_type": {
+      "type": "string",
+      "enum": [
+        "rbac",
+        "data_protection",
+        "compliance_guardrail",
+        "budget_limit",
+        "agent_restriction",
+        "approval_required"
+      ],
+      "description": "Type of governance policy"
+    },
+    "applies_to_agents": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Which agent IDs this applies to (empty = all)"
+    },
+    "applies_to_roles": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Which user roles this applies to"
+    },
+    "rule": {
+      "type": "object",
+      "description": "The policy rule definition (JSON)"
+    },
+    "enforcement": {
+      "type": "string",
+      "enum": [
+        "block",
+        "warn",
+        "log",
+        "require_approval"
+      ],
+      "default": "warn"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    },
+    "violation_count": {
+      "type": "number",
+      "default": 0
+    },
+    "last_triggered": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "organization_id",
+    "name",
+    "policy_type"
+  ]
+}
