@@ -867,22 +867,21 @@ export default function HarborSuperAgentChat({ onClose, onOpenWindow }) {
       const msgs = data.messages || [];
       setMessages(msgs);
       const last = msgs[msgs.length - 1];
+
       if (last?.role === "assistant") {
-        // Always clear sending when we receive any assistant message (streaming complete)
-        if (last.id !== lastAssistantMsgIdRef.current) {
+        // New assistant message arrived (different ID = new complete message, not streaming update)
+        if (last.id && last.id !== lastAssistantMsgIdRef.current) {
           lastAssistantMsgIdRef.current = last.id;
-          if (last.content) processHologramCommands(last.content);
-        }
-        // If content is present (not empty/streaming), mark as done
-        if (last.content && last.content.trim().length > 0) {
           clearTimeout(window._harborSendTimeout);
           setIsSending(false);
+          if (last.content) processHologramCommands(last.content);
         }
       }
-      // Safety fallback: reset after 30s no matter what
+
+      // Safety fallback: reset after 60s no matter what
       if (last?.role === "user") {
         clearTimeout(window._harborSendTimeout);
-        window._harborSendTimeout = setTimeout(() => setIsSending(false), 30000);
+        window._harborSendTimeout = setTimeout(() => setIsSending(false), 60000);
       }
     });
   };
