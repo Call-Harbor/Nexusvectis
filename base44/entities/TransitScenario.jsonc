@@ -1,0 +1,80 @@
+{
+  "name": "TransitScenario",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string",
+      "description": "Organization running scenario"
+    },
+    "scenario_name": {
+      "type": "string",
+      "description": "Scenario identifier"
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional description of this transit scenario",
+      "maxLength": 1000
+    },
+    "scenario_type": {
+      "type": "string",
+      "enum": [
+        "storm_weather",
+        "metro_breakdown",
+        "strike",
+        "tourist_spike",
+        "event_concert",
+        "event_sports",
+        "new_line_design",
+        "frequency_test"
+      ],
+      "description": "Type of scenario"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "running",
+        "completed"
+      ],
+      "default": "draft"
+    },
+    "parameters": {
+      "type": "object",
+      "description": "Scenario configuration",
+      "additionalProperties": true
+    },
+    "simulation_results": {
+      "type": "object",
+      "properties": {
+        "predicted_delays": {
+          "type": "number"
+        },
+        "passenger_coverage": {
+          "type": "number"
+        },
+        "operating_cost": {
+          "type": "number"
+        },
+        "co2_impact": {
+          "type": "number"
+        },
+        "service_level_score": {
+          "type": "number"
+        }
+      }
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "run_date": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "organization_id",
+    "scenario_name",
+    "scenario_type"
+  ]
+}

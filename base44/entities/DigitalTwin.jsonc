@@ -1,0 +1,53 @@
+{
+  "name": "DigitalTwin",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string",
+      "description": "Organization this twin belongs to"
+    },
+    "twin_key": {
+      "type": "string",
+      "description": "Unique key for this twin (e.g., vehicle_<id>, shipment_<id>)"
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional description of this digital twin",
+      "maxLength": 1000
+    },
+    "entity_type": {
+      "type": "string",
+      "enum": [
+        "vehicle",
+        "shipment",
+        "resource"
+      ],
+      "description": "Type of entity being twinned"
+    },
+    "entity_id": {
+      "type": "string",
+      "description": "ID of the real entity"
+    },
+    "simulated_state": {
+      "type": "string",
+      "description": "JSON-encoded simulated state of the entity"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this twin is current"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this twin cycle was created"
+    }
+  },
+  "required": [
+    "organization_id",
+    "twin_key",
+    "entity_type",
+    "entity_id",
+    "simulated_state"
+  ]
+}

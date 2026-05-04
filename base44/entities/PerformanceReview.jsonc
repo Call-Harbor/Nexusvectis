@@ -1,0 +1,111 @@
+{
+  "name": "PerformanceReview",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string"
+    },
+    "employee_id": {
+      "type": "string"
+    },
+    "employee_name": {
+      "type": "string"
+    },
+    "reviewer_id": {
+      "type": "string"
+    },
+    "reviewer_name": {
+      "type": "string"
+    },
+    "review_period": {
+      "type": "string",
+      "description": "e.g. Q1 2026, Annual 2025"
+    },
+    "review_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional description or summary of this performance review",
+      "maxLength": 1000
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "submitted",
+        "completed"
+      ],
+      "default": "draft"
+    },
+    "overall_rating": {
+      "type": "number",
+      "description": "1-5 rating"
+    },
+    "goals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "achieved": {
+            "type": "boolean"
+          },
+          "rating": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "competencies": {
+      "type": "object",
+      "properties": {
+        "teamwork": {
+          "type": "number"
+        },
+        "communication": {
+          "type": "number"
+        },
+        "initiative": {
+          "type": "number"
+        },
+        "technical_skills": {
+          "type": "number"
+        },
+        "leadership": {
+          "type": "number"
+        }
+      }
+    },
+    "strengths": {
+      "type": "string"
+    },
+    "areas_for_improvement": {
+      "type": "string"
+    },
+    "development_plan": {
+      "type": "string"
+    },
+    "manager_comments": {
+      "type": "string"
+    },
+    "employee_comments": {
+      "type": "string"
+    },
+    "next_review_date": {
+      "type": "string",
+      "format": "date"
+    }
+  },
+  "required": [
+    "organization_id",
+    "employee_id",
+    "review_period"
+  ]
+}

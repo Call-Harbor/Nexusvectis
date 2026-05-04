@@ -15,6 +15,11 @@
       "type": "string",
       "description": "Unikt anl\u00f8bsnummer"
     },
+    "description": {
+      "type": "string",
+      "description": "Optional description of this port call",
+      "maxLength": 1000
+    },
     "eta": {
       "type": "string",
       "format": "date-time",

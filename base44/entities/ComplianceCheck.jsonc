@@ -10,6 +10,11 @@
       "type": "string",
       "description": "Reference to RegulatoryRule"
     },
+    "description": {
+      "type": "string",
+      "description": "Optional description of this compliance check",
+      "maxLength": 1000
+    },
     "domain": {
       "type": "string",
       "enum": [

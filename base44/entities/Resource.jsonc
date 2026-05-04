@@ -1,0 +1,71 @@
+{
+  "name": "Resource",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string",
+      "description": "Organization this resource belongs to"
+    },
+    "name": {
+      "type": "string",
+      "description": "Resource name"
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional description of this resource",
+      "maxLength": 1000
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "fuel_depot",
+        "warehouse",
+        "charging_station",
+        "maintenance_hub",
+        "port"
+      ],
+      "default": "warehouse",
+      "description": "Type of resource"
+    },
+    "location": {
+      "type": "string",
+      "description": "Physical location"
+    },
+    "latitude": {
+      "type": "number",
+      "description": "Latitude coordinate"
+    },
+    "longitude": {
+      "type": "number",
+      "description": "Longitude coordinate"
+    },
+    "capacity": {
+      "type": "number",
+      "description": "Maximum units that can be stationed"
+    },
+    "current_level": {
+      "type": "number",
+      "description": "Number of units currently stationed"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "operational",
+        "limited",
+        "offline"
+      ],
+      "default": "operational",
+      "description": "Resource status"
+    },
+    "last_resupply": {
+      "type": "string",
+      "format": "date",
+      "description": "Last resupply date"
+    }
+  },
+  "required": [
+    "name",
+    "type",
+    "organization_id"
+  ]
+}

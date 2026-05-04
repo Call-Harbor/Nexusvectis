@@ -8,6 +8,11 @@
     "name": {
       "type": "string"
     },
+    "description": {
+      "type": "string",
+      "description": "Optional description or notes about this staff member",
+      "maxLength": 1000
+    },
     "role": {
       "type": "string",
       "enum": [

@@ -1,0 +1,72 @@
+{
+  "name": "ABTestConversion",
+  "type": "object",
+  "properties": {
+    "anonymous_id": {
+      "type": "string",
+      "description": "Unique ID for the anonymous visitor (from localStorage)"
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional description of this A/B test conversion record",
+      "maxLength": 1000
+    },
+    "variant_type": {
+      "type": "string",
+      "enum": [
+        "title",
+        "meta_description",
+        "hero_headline",
+        "hero_subline",
+        "cta_text"
+      ],
+      "description": "Which SEO element was tested"
+    },
+    "variant_index": {
+      "type": "number",
+      "description": "Index of the variant shown (0 = control, 1+ = variants)"
+    },
+    "variant_value": {
+      "type": "string",
+      "description": "The actual text of the variant shown"
+    },
+    "seo_metrics_id": {
+      "type": "string",
+      "description": "ID of the SEOMetrics record the variants came from"
+    },
+    "converted": {
+      "type": "boolean",
+      "default": false,
+      "description": "True if this visitor became a registered user"
+    },
+    "converted_user_email": {
+      "type": "string",
+      "description": "Email of the user after conversion"
+    },
+    "time_to_convert_minutes": {
+      "type": "number",
+      "description": "Minutes between first visit and conversion"
+    },
+    "visit_count": {
+      "type": "number",
+      "default": 1,
+      "description": "How many times this anonymous visitor visited the home page"
+    },
+    "first_seen_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "First time this anonymous visitor was seen"
+    },
+    "converted_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the visitor converted to a user"
+    }
+  },
+  "required": [
+    "anonymous_id",
+    "variant_type",
+    "variant_index",
+    "variant_value"
+  ]
+}

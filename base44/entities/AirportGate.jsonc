@@ -9,6 +9,11 @@
       "type": "string",
       "description": "e.g. B14"
     },
+    "description": {
+      "type": "string",
+      "description": "Optional description of this airport gate",
+      "maxLength": 1000
+    },
     "terminal": {
       "type": "string"
     },

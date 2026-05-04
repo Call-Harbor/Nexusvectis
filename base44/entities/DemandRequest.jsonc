@@ -1,0 +1,92 @@
+{
+  "name": "DemandRequest",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string",
+      "description": "Organization"
+    },
+    "request_id": {
+      "type": "string",
+      "description": "Unique request ID"
+    },
+    "passenger_count": {
+      "type": "number",
+      "description": "Number of passengers"
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional description of this demand request",
+      "maxLength": 1000
+    },
+    "pickup_location": {
+      "type": "object",
+      "properties": {
+        "latitude": {
+          "type": "number"
+        },
+        "longitude": {
+          "type": "number"
+        },
+        "address": {
+          "type": "string"
+        }
+      }
+    },
+    "dropoff_location": {
+      "type": "object",
+      "properties": {
+        "latitude": {
+          "type": "number"
+        },
+        "longitude": {
+          "type": "number"
+        },
+        "address": {
+          "type": "string"
+        }
+      }
+    },
+    "requested_time": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When service is requested"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "matched",
+        "assigned",
+        "in_transit",
+        "completed",
+        "cancelled"
+      ],
+      "default": "pending"
+    },
+    "assigned_vehicle_id": {
+      "type": "string",
+      "description": "Assigned DRT vehicle"
+    },
+    "estimated_pickup": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "estimated_dropoff": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "estimated_cost": {
+      "type": "number",
+      "description": "Estimated fare"
+    }
+  },
+  "required": [
+    "organization_id",
+    "request_id",
+    "passenger_count",
+    "pickup_location",
+    "dropoff_location",
+    "requested_time"
+  ]
+}

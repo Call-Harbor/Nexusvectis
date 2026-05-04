@@ -1,0 +1,69 @@
+{
+  "name": "TSPSuggestion",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string",
+      "description": "Organization"
+    },
+    "intersection_id": {
+      "type": "string",
+      "description": "Traffic signal intersection ID"
+    },
+    "line_id": {
+      "type": "string",
+      "description": "Bus line requesting priority"
+    },
+    "bus_id": {
+      "type": "string",
+      "description": "Specific bus in transit"
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional description of this TSP suggestion",
+      "maxLength": 1000
+    },
+    "delay_minutes_current": {
+      "type": "number",
+      "description": "Current delay in minutes"
+    },
+    "suggested_extension": {
+      "type": "number",
+      "description": "Suggested green light extension (seconds)"
+    },
+    "expected_time_saved": {
+      "type": "number",
+      "description": "Expected time saved (seconds)"
+    },
+    "expected_regularity_gain": {
+      "type": "number",
+      "description": "Expected regularity improvement percentage"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "sent",
+        "approved",
+        "executed",
+        "rejected"
+      ],
+      "default": "pending"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "validity_end": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "organization_id",
+    "intersection_id",
+    "line_id",
+    "bus_id",
+    "suggested_extension"
+  ]
+}

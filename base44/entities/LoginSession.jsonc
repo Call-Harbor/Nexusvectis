@@ -14,6 +14,11 @@
       "type": "string",
       "description": "User email who logged in"
     },
+    "description": {
+      "type": "string",
+      "description": "Optional description of this login session",
+      "maxLength": 1000
+    },
     "expires_at": {
       "type": "string",
       "format": "date-time",

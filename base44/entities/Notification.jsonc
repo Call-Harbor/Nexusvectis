@@ -1,0 +1,78 @@
+{
+  "name": "Notification",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string",
+      "description": "Organization this notification belongs to"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "Recipient user email"
+    },
+    "rule_id": {
+      "type": "string",
+      "description": "NotificationRule that triggered this"
+    },
+    "title": {
+      "type": "string",
+      "description": "Notification title"
+    },
+    "message": {
+      "type": "string",
+      "description": "Detailed notification message"
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional additional description of this notification",
+      "maxLength": 1000
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "info",
+        "warning",
+        "critical"
+      ],
+      "default": "info"
+    },
+    "entity_type": {
+      "type": "string",
+      "description": "Entity type that triggered this"
+    },
+    "entity_id": {
+      "type": "string",
+      "description": "ID of the entity that triggered this"
+    },
+    "entity_name": {
+      "type": "string",
+      "description": "Display name of the entity"
+    },
+    "entity_details": {
+      "type": "object",
+      "description": "Snapshot of relevant entity fields at trigger time",
+      "additionalProperties": true
+    },
+    "is_read": {
+      "type": "boolean",
+      "default": false
+    },
+    "channels_sent": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Which channels were used (in_app, email)"
+    },
+    "action_url": {
+      "type": "string",
+      "description": "Deep link to the relevant page"
+    }
+  },
+  "required": [
+    "organization_id",
+    "user_email",
+    "title",
+    "message"
+  ]
+}

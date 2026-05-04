@@ -1,0 +1,55 @@
+{
+  "name": "APIUsage",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string",
+      "description": "Organization making the API call"
+    },
+    "api_key_id": {
+      "type": "string",
+      "description": "API key used for the call"
+    },
+    "endpoint": {
+      "type": "string",
+      "description": "API endpoint called"
+    },
+    "method": {
+      "type": "string",
+      "enum": [
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE"
+      ],
+      "description": "HTTP method"
+    },
+    "status_code": {
+      "type": "number",
+      "description": "Response status code"
+    },
+    "response_time_ms": {
+      "type": "number",
+      "description": "Response time in milliseconds"
+    },
+    "ip_address": {
+      "type": "string",
+      "description": "Client IP address"
+    },
+    "error_message": {
+      "type": "string",
+      "description": "Error message if failed"
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional description of this API usage record",
+      "maxLength": 1000
+    }
+  },
+  "required": [
+    "organization_id",
+    "endpoint",
+    "method",
+    "status_code"
+  ]
+}

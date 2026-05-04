@@ -1,0 +1,194 @@
+{
+  "name": "SEOMetrics",
+  "type": "object",
+  "properties": {
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of the SEO analysis"
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional description of this SEO metrics record",
+      "maxLength": 1000
+    },
+    "trending_keywords": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Trending keywords with volume, difficulty, CPC, and trend velocity"
+    },
+    "content_gaps": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Topics competitors rank for but we don't"
+    },
+    "home_page_seo_score": {
+      "type": "number",
+      "description": "Overall home page SEO score 0-100"
+    },
+    "home_page_suggestions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "AI suggestions for home page improvements"
+    },
+    "faq_suggestions": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "New FAQ questions AI recommends adding"
+    },
+    "meta_description_variants": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "A/B test variants for meta descriptions"
+    },
+    "title_tag_variants": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "A/B test variants for title tags"
+    },
+    "hero_headline_variants": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "A/B test variants for the hero H1 headline on home page"
+    },
+    "hero_subline_variants": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "A/B test variants for the hero subline/description"
+    },
+    "cta_text_variants": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "A/B test variants for the primary CTA button text"
+    },
+    "recommended_blog_topics": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "AI recommended blog post topics with priority scores"
+    },
+    "competitor_analysis": {
+      "type": "object",
+      "description": "Deep competitor keyword, backlink profile, and technical SEO analysis"
+    },
+    "internal_linking_suggestions": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Suggested internal links between pages with anchor text"
+    },
+    "schema_markup_suggestions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Recommended schema markup additions"
+    },
+    "serp_features_opportunities": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Featured snippet, PAA, and rich result opportunities"
+    },
+    "backlink_opportunities": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "High-value domains and guest post opportunities with outreach templates"
+    },
+    "page_speed_suggestions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Core Web Vitals and page speed improvement suggestions"
+    },
+    "semantic_clusters": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Topic clusters and pillar content strategy recommendations"
+    },
+    "conversion_rate_suggestions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "CRO suggestions derived from SEO intent analysis"
+    },
+    "ab_test_winner": {
+      "type": "object",
+      "description": "Current winning A/B variant per type based on conversion data"
+    },
+    "ab_extended_suggestions": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Extended A/B test suggestions for UI/UX elements"
+    },
+    "projected_organic_traffic": {
+      "type": "number",
+      "description": "AI-projected monthly organic traffic if all recommendations implemented"
+    },
+    "top_performing_keywords": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Keywords we are already ranking for with growth potential"
+    },
+    "technical_seo_audit": {
+      "type": "object",
+      "description": "Technical SEO audit: Core Web Vitals, mobile, canonicals, structured data, broken links"
+    },
+    "linkbuilding_outreach": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Specific outreach targets with contact strategy and pitch"
+    },
+    "proactive_content_drafts": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "AI-generated content outlines and drafts for top-priority topics"
+    },
+    "algorithm_monitor": {
+      "type": "object",
+      "description": "Real-time Google algorithm update detection, E-E-A-T assessment, AI Overview strategy, and adaptation plan"
+    },
+    "ai_summary": {
+      "type": "string",
+      "description": "AI narrative summary of full SEO status and strategy"
+    }
+  },
+  "required": [
+    "date"
+  ]
+}

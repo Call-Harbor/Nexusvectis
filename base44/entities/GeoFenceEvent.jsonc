@@ -1,0 +1,67 @@
+{
+  "name": "GeoFenceEvent",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string",
+      "description": "Organization this event belongs to"
+    },
+    "geofence_id": {
+      "type": "string",
+      "description": "ID of the geofence that triggered this event"
+    },
+    "geofence_name": {
+      "type": "string",
+      "description": "Name of the geofence"
+    },
+    "vehicle_id": {
+      "type": "string",
+      "description": "ID of the vehicle that triggered the event"
+    },
+    "driver_email": {
+      "type": "string",
+      "description": "Email of the driver"
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "entry",
+        "exit"
+      ],
+      "description": "Whether vehicle entered or exited the zone"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the event occurred"
+    },
+    "location": {
+      "type": "object",
+      "properties": {
+        "lat": {
+          "type": "number"
+        },
+        "lng": {
+          "type": "number"
+        }
+      },
+      "description": "Vehicle location when event triggered"
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional description of this geofence event",
+      "maxLength": 1000
+    },
+    "notified": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether driver was notified"
+    }
+  },
+  "required": [
+    "organization_id",
+    "geofence_id",
+    "event_type",
+    "timestamp"
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "name": "ChatSession",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string",
+      "description": "Organization this chat belongs to"
+    },
+    "title": {
+      "type": "string",
+      "description": "Chat session title"
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional description of this chat session",
+      "maxLength": 1000
+    },
+    "messages": {
+      "type": "array",
+      "description": "Chat messages",
+      "items": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this is the active chat session"
+    }
+  },
+  "required": [
+    "organization_id",
+    "messages"
+  ]
+}

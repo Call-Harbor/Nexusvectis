@@ -1,0 +1,172 @@
+{
+  "name": "BusDriver",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string",
+      "description": "Organization employing this driver"
+    },
+    "driver_id": {
+      "type": "string",
+      "description": "Unique driver identifier"
+    },
+    "first_name": {
+      "type": "string",
+      "description": "Driver first name"
+    },
+    "last_name": {
+      "type": "string",
+      "description": "Driver last name"
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional description or notes about this bus driver",
+      "maxLength": 1000
+    },
+    "employee_number": {
+      "type": "string",
+      "description": "Employee ID"
+    },
+    "license_number": {
+      "type": "string",
+      "description": "Bus driving license number"
+    },
+    "license_categories": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "License categories (D, D1, etc.)"
+    },
+    "license_expiry": {
+      "type": "string",
+      "format": "date",
+      "description": "License expiration date"
+    },
+    "certifications": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "cert_name": {
+            "type": "string"
+          },
+          "issued_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "expiry_date": {
+            "type": "string",
+            "format": "date"
+          }
+        }
+      }
+    },
+    "authorized_lines": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Lines this driver is authorized to operate"
+    },
+    "home_depot_id": {
+      "type": "string",
+      "description": "Home depot"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "on_leave",
+        "sick",
+        "suspended",
+        "off_duty"
+      ],
+      "default": "active"
+    },
+    "current_shift": {
+      "type": "object",
+      "properties": {
+        "shift_start": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "shift_end": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "hours_worked_today": {
+          "type": "number"
+        },
+        "breaks_taken": {
+          "type": "number"
+        }
+      }
+    },
+    "performance_metrics": {
+      "type": "object",
+      "properties": {
+        "on_time_percentage": {
+          "type": "number"
+        },
+        "eco_score_avg": {
+          "type": "number"
+        },
+        "passenger_feedback_score": {
+          "type": "number"
+        },
+        "safety_incidents": {
+          "type": "number"
+        },
+        "total_trips_completed": {
+          "type": "number"
+        },
+        "total_km_driven": {
+          "type": "number"
+        }
+      }
+    },
+    "rest_compliance": {
+      "type": "object",
+      "properties": {
+        "hours_this_week": {
+          "type": "number"
+        },
+        "hours_this_month": {
+          "type": "number"
+        },
+        "consecutive_days_worked": {
+          "type": "number"
+        },
+        "last_rest_day": {
+          "type": "string",
+          "format": "date"
+        }
+      }
+    },
+    "contact": {
+      "type": "object",
+      "properties": {
+        "phone": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "emergency_contact": {
+          "type": "string"
+        },
+        "emergency_phone": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "required": [
+    "organization_id",
+    "driver_id",
+    "first_name",
+    "last_name",
+    "license_number"
+  ]
+}

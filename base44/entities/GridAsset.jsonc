@@ -9,6 +9,11 @@
       "type": "string",
       "description": "Asset name/identifier"
     },
+    "description": {
+      "type": "string",
+      "description": "Optional description of this grid asset",
+      "maxLength": 1000
+    },
     "asset_type": {
       "type": "string",
       "enum": [

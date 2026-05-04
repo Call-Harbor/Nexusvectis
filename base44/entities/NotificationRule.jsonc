@@ -1,0 +1,128 @@
+{
+  "name": "NotificationRule",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string",
+      "description": "Organization this rule belongs to"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "User who owns this rule"
+    },
+    "name": {
+      "type": "string",
+      "description": "Rule name"
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional description of this notification rule",
+      "maxLength": 1000
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this rule is active"
+    },
+    "entity_type": {
+      "type": "string",
+      "enum": [
+        "Vehicle",
+        "Shipment",
+        "Route",
+        "Alert",
+        "Maintenance",
+        "Exception"
+      ],
+      "description": "Entity type to watch"
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "create",
+        "update",
+        "status_change",
+        "threshold"
+      ],
+      "description": "Type of event to trigger on"
+    },
+    "conditions": {
+      "type": "array",
+      "description": "List of conditions that must match",
+      "items": {
+        "type": "object",
+        "properties": {
+          "field": {
+            "type": "string"
+          },
+          "operator": {
+            "type": "string",
+            "enum": [
+              "equals",
+              "not_equals",
+              "contains",
+              "less_than",
+              "greater_than",
+              "changes_to"
+            ]
+          },
+          "value": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "channels": {
+      "type": "object",
+      "description": "Delivery channels",
+      "properties": {
+        "in_app": {
+          "type": "boolean",
+          "default": true
+        },
+        "email": {
+          "type": "boolean",
+          "default": false
+        },
+        "email_address": {
+          "type": "string"
+        }
+      }
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "info",
+        "warning",
+        "critical"
+      ],
+      "default": "info"
+    },
+    "message_template": {
+      "type": "string",
+      "description": "Custom message template with {{field}} placeholders"
+    },
+    "cooldown_minutes": {
+      "type": "number",
+      "default": 60,
+      "description": "Minimum minutes between same-rule notifications"
+    },
+    "last_triggered": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this rule last fired"
+    },
+    "trigger_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Total times this rule has fired"
+    }
+  },
+  "required": [
+    "organization_id",
+    "user_email",
+    "name",
+    "entity_type",
+    "event_type"
+  ]
+}

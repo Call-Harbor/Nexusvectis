@@ -1,0 +1,64 @@
+{
+  "name": "Alert",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string",
+      "description": "Organization this alert belongs to"
+    },
+    "title": {
+      "type": "string"
+    },
+    "message": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional additional description of this alert",
+      "maxLength": 1000
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "info",
+        "warning",
+        "critical",
+        "success"
+      ],
+      "default": "info"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "maintenance",
+        "delay",
+        "weather",
+        "fuel",
+        "route",
+        "system"
+      ],
+      "default": "system"
+    },
+    "vehicle_id": {
+      "type": "string",
+      "description": "Related vehicle ID if applicable"
+    },
+    "is_read": {
+      "type": "boolean",
+      "default": false
+    },
+    "is_resolved": {
+      "type": "boolean",
+      "default": false
+    },
+    "ai_recommendation": {
+      "type": "string",
+      "description": "AI suggested action"
+    }
+  },
+  "required": [
+    "title",
+    "message",
+    "organization_id"
+  ]
+}

@@ -6,6 +6,11 @@
       "type": "string",
       "description": "Organization name"
     },
+    "description": {
+      "type": "string",
+      "description": "Optional description of this organization",
+      "maxLength": 1000
+    },
     "admin_email": {
       "type": "string",
       "description": "Email of organization admin"

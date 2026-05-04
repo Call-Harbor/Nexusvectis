@@ -1,0 +1,71 @@
+{
+  "name": "FleetAIModel",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string",
+      "description": "Organization that owns this model"
+    },
+    "name": {
+      "type": "string",
+      "description": "Model name"
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional description of this AI model",
+      "maxLength": 1000
+    },
+    "snapshot_id": {
+      "type": "string",
+      "description": "Unique snapshot identifier"
+    },
+    "accuracy": {
+      "type": "number",
+      "description": "Model accuracy percentage"
+    },
+    "version": {
+      "type": "string",
+      "description": "Model version"
+    },
+    "config": {
+      "type": "object",
+      "description": "Hyperparameters and training config",
+      "additionalProperties": true
+    },
+    "training_data_count": {
+      "type": "number",
+      "description": "Number of training data items"
+    },
+    "training_data": {
+      "type": "array",
+      "description": "All training data items (links, FAQ, guides, files) embedded into the model",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "archived"
+      ],
+      "default": "active"
+    }
+  },
+  "required": [
+    "name",
+    "snapshot_id",
+    "organization_id"
+  ]
+}

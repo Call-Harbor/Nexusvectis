@@ -1,0 +1,90 @@
+{
+  "name": "CrowdingPrediction",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string",
+      "description": "Organization"
+    },
+    "trip_id": {
+      "type": "string",
+      "description": "Bus trip ID"
+    },
+    "bus_id": {
+      "type": "string",
+      "description": "Bus vehicle ID"
+    },
+    "line_id": {
+      "type": "string",
+      "description": "Bus line ID"
+    },
+    "predicted_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When prediction was made"
+    },
+    "prediction_timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "For which time the prediction is"
+    },
+    "crowding_level": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "description": "Crowding classification"
+    },
+    "occupancy_percentage": {
+      "type": "number",
+      "description": "Predicted occupancy percentage 0-100"
+    },
+    "standing_passengers": {
+      "type": "number",
+      "description": "Predicted standing passengers"
+    },
+    "capacity_total": {
+      "type": "number",
+      "description": "Bus total capacity"
+    },
+    "left_behind_risk": {
+      "type": "boolean",
+      "description": "Risk of passengers left behind"
+    },
+    "confidence": {
+      "type": "number",
+      "description": "Prediction confidence 0-100"
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional description of this crowding prediction",
+      "maxLength": 1000
+    },
+    "factors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "factor": {
+            "type": "string"
+          },
+          "impact": {
+            "type": "number"
+          }
+        }
+      },
+      "description": "Contributing factors"
+    }
+  },
+  "required": [
+    "organization_id",
+    "trip_id",
+    "bus_id",
+    "predicted_at",
+    "prediction_timestamp",
+    "crowding_level",
+    "occupancy_percentage"
+  ]
+}

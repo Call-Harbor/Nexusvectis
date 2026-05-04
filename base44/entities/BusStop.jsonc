@@ -1,0 +1,134 @@
+{
+  "name": "BusStop",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string",
+      "description": "Organization managing this stop (optional - can be global)"
+    },
+    "stop_id": {
+      "type": "string",
+      "description": "Unique stop identifier"
+    },
+    "stop_name": {
+      "type": "string",
+      "description": "Public stop name"
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional description of this bus stop",
+      "maxLength": 1000
+    },
+    "stop_type": {
+      "type": "string",
+      "enum": [
+        "regular",
+        "terminal",
+        "interchange",
+        "request_stop",
+        "brt_station"
+      ],
+      "default": "regular"
+    },
+    "latitude": {
+      "type": "number",
+      "description": "GPS latitude"
+    },
+    "longitude": {
+      "type": "number",
+      "description": "GPS longitude"
+    },
+    "facilities": {
+      "type": "object",
+      "properties": {
+        "shelter": {
+          "type": "boolean"
+        },
+        "seating": {
+          "type": "boolean"
+        },
+        "realtime_display": {
+          "type": "boolean"
+        },
+        "ticket_machine": {
+          "type": "boolean"
+        },
+        "wheelchair_accessible": {
+          "type": "boolean"
+        },
+        "bike_parking": {
+          "type": "boolean"
+        },
+        "lighting": {
+          "type": "boolean"
+        }
+      }
+    },
+    "connections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "mode": {
+            "type": "string",
+            "enum": [
+              "bus",
+              "metro",
+              "train",
+              "tram",
+              "ferry"
+            ]
+          },
+          "line": {
+            "type": "string"
+          },
+          "distance_meters": {
+            "type": "number"
+          }
+        }
+      },
+      "description": "Connections to other transport modes"
+    },
+    "boarding_data": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "hour": {
+            "type": "number"
+          },
+          "day_type": {
+            "type": "string"
+          },
+          "avg_boardings": {
+            "type": "number"
+          },
+          "avg_alightings": {
+            "type": "number"
+          }
+        }
+      },
+      "description": "Historical boarding/alighting data"
+    },
+    "daily_passengers_avg": {
+      "type": "number",
+      "description": "Average daily passenger count"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "operational",
+        "temporary_closure",
+        "relocated",
+        "out_of_service"
+      ],
+      "default": "operational"
+    }
+  },
+  "required": [
+    "stop_id",
+    "stop_name",
+    "latitude",
+    "longitude"
+  ]
+}

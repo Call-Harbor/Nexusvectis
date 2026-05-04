@@ -9,6 +9,11 @@
       "type": "string",
       "description": "Container nummer (f.eks. MSCU1234567)"
     },
+    "description": {
+      "type": "string",
+      "description": "Optional description of this container",
+      "maxLength": 1000
+    },
     "size": {
       "type": "string",
       "enum": [

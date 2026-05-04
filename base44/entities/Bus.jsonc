@@ -1,0 +1,182 @@
+{
+  "name": "Bus",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string",
+      "description": "Organization this bus belongs to"
+    },
+    "bus_number": {
+      "type": "string",
+      "description": "Bus fleet number/identifier"
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional description of this bus",
+      "maxLength": 1000
+    },
+    "vehicle_type": {
+      "type": "string",
+      "enum": [
+        "standard_12m",
+        "articulated_18m",
+        "minibus",
+        "double_decker",
+        "brt",
+        "electric",
+        "hybrid",
+        "diesel"
+      ],
+      "default": "standard_12m",
+      "description": "Type of bus vehicle"
+    },
+    "capacity_seated": {
+      "type": "number",
+      "description": "Number of seated passengers"
+    },
+    "capacity_standing": {
+      "type": "number",
+      "description": "Number of standing passengers"
+    },
+    "fuel_type": {
+      "type": "string",
+      "enum": [
+        "diesel",
+        "electric",
+        "hybrid",
+        "cng",
+        "hydrogen"
+      ],
+      "default": "diesel"
+    },
+    "battery_level": {
+      "type": "number",
+      "description": "Battery percentage (for electric/hybrid)"
+    },
+    "battery_range_km": {
+      "type": "number",
+      "description": "Remaining range in km (electric)"
+    },
+    "fuel_level": {
+      "type": "number",
+      "description": "Fuel percentage (diesel/CNG)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "in_service",
+        "idle",
+        "charging",
+        "maintenance",
+        "out_of_service"
+      ],
+      "default": "idle"
+    },
+    "latitude": {
+      "type": "number",
+      "description": "Current GPS latitude"
+    },
+    "longitude": {
+      "type": "number",
+      "description": "Current GPS longitude"
+    },
+    "heading": {
+      "type": "number",
+      "description": "Current heading in degrees"
+    },
+    "speed": {
+      "type": "number",
+      "description": "Current speed in km/h"
+    },
+    "current_line_id": {
+      "type": "string",
+      "description": "Currently assigned bus line"
+    },
+    "current_trip_id": {
+      "type": "string",
+      "description": "Active trip/departure"
+    },
+    "driver_id": {
+      "type": "string",
+      "description": "Currently assigned driver"
+    },
+    "depot_id": {
+      "type": "string",
+      "description": "Home depot/garage"
+    },
+    "passenger_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Current passenger count (live)"
+    },
+    "door_status": {
+      "type": "string",
+      "enum": [
+        "closed",
+        "open",
+        "malfunction"
+      ],
+      "default": "closed"
+    },
+    "climate_status": {
+      "type": "string",
+      "description": "HVAC system status"
+    },
+    "eco_score": {
+      "type": "number",
+      "description": "Eco-driving score 0-100"
+    },
+    "odometer_km": {
+      "type": "number",
+      "description": "Total kilometers driven"
+    },
+    "last_maintenance": {
+      "type": "string",
+      "format": "date",
+      "description": "Last maintenance date"
+    },
+    "next_maintenance": {
+      "type": "string",
+      "format": "date",
+      "description": "Next scheduled maintenance"
+    },
+    "maintenance_km_interval": {
+      "type": "number",
+      "default": 15000,
+      "description": "KM between maintenance"
+    },
+    "onboard_systems": {
+      "type": "object",
+      "properties": {
+        "passenger_counter": {
+          "type": "boolean"
+        },
+        "ticketing_machine": {
+          "type": "boolean"
+        },
+        "wifi": {
+          "type": "boolean"
+        },
+        "usb_charging": {
+          "type": "boolean"
+        },
+        "accessibility_ramp": {
+          "type": "boolean"
+        },
+        "realtime_display": {
+          "type": "boolean"
+        }
+      }
+    },
+    "telemetry": {
+      "type": "object",
+      "description": "Live sensor data",
+      "additionalProperties": true
+    }
+  },
+  "required": [
+    "organization_id",
+    "bus_number",
+    "vehicle_type"
+  ]
+}

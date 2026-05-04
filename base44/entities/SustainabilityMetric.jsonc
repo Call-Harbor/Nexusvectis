@@ -1,0 +1,56 @@
+{
+  "name": "SustainabilityMetric",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string",
+      "description": "Organization"
+    },
+    "metric_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional description of this sustainability metric",
+      "maxLength": 1000
+    },
+    "line_id": {
+      "type": "string",
+      "description": "Bus line (optional, null = network-wide)"
+    },
+    "co2_per_passenger_km": {
+      "type": "number",
+      "description": "CO2 emissions per passenger-km"
+    },
+    "total_co2_kg": {
+      "type": "number",
+      "description": "Total CO2 for line/network"
+    },
+    "electric_percentage": {
+      "type": "number",
+      "description": "Percentage of trips using electric buses"
+    },
+    "fuel_consumption_liter": {
+      "type": "number",
+      "description": "Total fuel consumed"
+    },
+    "passengers_transported": {
+      "type": "number"
+    },
+    "optimization_suggestion": {
+      "type": "string",
+      "description": "AI suggestion for improvement"
+    },
+    "potential_co2_reduction": {
+      "type": "number",
+      "description": "Expected CO2 reduction % from suggestion"
+    }
+  },
+  "required": [
+    "organization_id",
+    "metric_date",
+    "co2_per_passenger_km",
+    "total_co2_kg"
+  ]
+}

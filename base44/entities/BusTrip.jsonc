@@ -1,0 +1,156 @@
+{
+  "name": "BusTrip",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string",
+      "description": "Organization running this trip"
+    },
+    "trip_id": {
+      "type": "string",
+      "description": "Unique trip identifier"
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional description of this bus trip",
+      "maxLength": 1000
+    },
+    "line_id": {
+      "type": "string",
+      "description": "Bus line for this trip"
+    },
+    "direction_id": {
+      "type": "string",
+      "description": "Direction identifier"
+    },
+    "variant_code": {
+      "type": "string",
+      "description": "Route variant if applicable"
+    },
+    "scheduled_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of operation"
+    },
+    "scheduled_departure": {
+      "type": "string",
+      "format": "time",
+      "description": "Planned departure time"
+    },
+    "scheduled_arrival": {
+      "type": "string",
+      "format": "time",
+      "description": "Planned arrival time"
+    },
+    "actual_departure": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Actual departure time"
+    },
+    "actual_arrival": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Actual arrival time"
+    },
+    "assigned_bus_id": {
+      "type": "string",
+      "description": "Assigned bus vehicle"
+    },
+    "assigned_driver_id": {
+      "type": "string",
+      "description": "Assigned driver"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "scheduled",
+        "in_progress",
+        "completed",
+        "cancelled",
+        "delayed",
+        "short_turned"
+      ],
+      "default": "scheduled"
+    },
+    "delay_minutes": {
+      "type": "number",
+      "description": "Current delay in minutes (negative = early)"
+    },
+    "total_passengers": {
+      "type": "number",
+      "description": "Total passengers on this trip"
+    },
+    "max_load": {
+      "type": "number",
+      "description": "Maximum simultaneous passengers"
+    },
+    "revenue": {
+      "type": "number",
+      "description": "Revenue from this trip"
+    },
+    "distance_km": {
+      "type": "number",
+      "description": "Actual distance traveled"
+    },
+    "fuel_consumed": {
+      "type": "number",
+      "description": "Fuel/energy consumed"
+    },
+    "co2_kg": {
+      "type": "number",
+      "description": "CO2 emissions"
+    },
+    "stop_performance": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "stop_id": {
+            "type": "string"
+          },
+          "scheduled_arrival": {
+            "type": "string"
+          },
+          "actual_arrival": {
+            "type": "string"
+          },
+          "boardings": {
+            "type": "number"
+          },
+          "alightings": {
+            "type": "number"
+          },
+          "dwell_time_seconds": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "incidents": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "timestamp": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "location": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "organization_id",
+    "trip_id",
+    "line_id",
+    "scheduled_date"
+  ]
+}

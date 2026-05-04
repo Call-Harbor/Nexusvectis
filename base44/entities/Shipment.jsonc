@@ -1,0 +1,119 @@
+{
+  "name": "Shipment",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string",
+      "description": "Organization this shipment belongs to"
+    },
+    "tracking_number": {
+      "type": "string",
+      "description": "Unique tracking number"
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional description of this shipment",
+      "maxLength": 1000
+    },
+    "origin": {
+      "type": "string",
+      "description": "Origin location"
+    },
+    "destination": {
+      "type": "string",
+      "description": "Destination location"
+    },
+    "vehicle_id": {
+      "type": "string",
+      "description": "Assigned vehicle"
+    },
+    "route_id": {
+      "type": "string",
+      "description": "Assigned route"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "in_transit",
+        "delayed",
+        "delivered",
+        "cancelled"
+      ],
+      "default": "pending"
+    },
+    "cargo_type": {
+      "type": "string",
+      "enum": [
+        "general",
+        "cold_chain",
+        "hazardous",
+        "fragile",
+        "bulk"
+      ],
+      "default": "general"
+    },
+    "weight_kg": {
+      "type": "number",
+      "description": "Weight in kilograms"
+    },
+    "temperature_min": {
+      "type": "number",
+      "description": "Minimum required temperature (\u00b0C)"
+    },
+    "temperature_max": {
+      "type": "number",
+      "description": "Maximum required temperature (\u00b0C)"
+    },
+    "current_temperature": {
+      "type": "number",
+      "description": "Current temperature reading (\u00b0C)"
+    },
+    "humidity_current": {
+      "type": "number",
+      "description": "Current humidity percentage"
+    },
+    "eta": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Estimated time of arrival"
+    },
+    "eta_confidence": {
+      "type": "number",
+      "description": "ETA prediction confidence 0-100"
+    },
+    "actual_delivery": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Actual delivery time"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "low",
+        "normal",
+        "high",
+        "urgent"
+      ],
+      "default": "normal"
+    },
+    "customer_name": {
+      "type": "string",
+      "description": "Customer name"
+    },
+    "customer_email": {
+      "type": "string",
+      "description": "Customer email"
+    },
+    "co2_emissions_kg": {
+      "type": "number",
+      "description": "CO2 emissions for this shipment"
+    }
+  },
+  "required": [
+    "tracking_number",
+    "origin",
+    "destination",
+    "organization_id"
+  ]
+}

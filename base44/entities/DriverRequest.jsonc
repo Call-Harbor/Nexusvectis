@@ -18,6 +18,11 @@
       "type": "string",
       "description": "Phone number of driver"
     },
+    "description": {
+      "type": "string",
+      "description": "Optional description or notes about this driver request",
+      "maxLength": 1000
+    },
     "request_type": {
       "type": "string",
       "enum": [

@@ -87,7 +87,7 @@ import Invoices from './pages/Invoices';
 import LiveTrackingPage from './pages/LiveTrackingPage';
 import MaintenanceManagement from './pages/MaintenanceManagement';
 import MapMonitor from './pages/MapMonitor';
-import Newsroom from './pages/Newsroom';
+import PressAndMedia from './pages/PressAndMedia';
 import NotificationSettings from './pages/NotificationSettings';
 import OrganizationSetup from './pages/OrganizationSetup';
 import PeopleSearch from './pages/PeopleSearch';
@@ -147,7 +147,7 @@ export const PAGES = {
     "LiveTrackingPage": LiveTrackingPage,
     "MaintenanceManagement": MaintenanceManagement,
     "MapMonitor": MapMonitor,
-    "Newsroom": Newsroom,
+    "PressAndMedia": PressAndMedia,
     "NotificationSettings": NotificationSettings,
     "OrganizationSetup": OrganizationSetup,
     "PeopleSearch": PeopleSearch,

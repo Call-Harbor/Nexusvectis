@@ -1,0 +1,114 @@
+{
+  "name": "SwarmCoordination",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string",
+      "description": "Organization this swarm cycle belongs to"
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional description of this swarm coordination cycle",
+      "maxLength": 1000
+    },
+    "algorithm": {
+      "type": "string",
+      "enum": [
+        "ACO",
+        "PSO"
+      ],
+      "description": "Algorithm used in this cycle"
+    },
+    "cycle_number": {
+      "type": "number",
+      "description": "Iteration/generation counter"
+    },
+    "vehicles_in_swarm": {
+      "type": "number",
+      "description": "Number of vehicle agents active in swarm"
+    },
+    "routes_optimized": {
+      "type": "number",
+      "description": "Number of routes optimized this cycle"
+    },
+    "pheromone_signals": {
+      "type": "number",
+      "description": "Number of pheromone/velocity signals broadcast"
+    },
+    "efficiency_gain_percent": {
+      "type": "number",
+      "description": "Estimated efficiency gain over baseline (0-100)"
+    },
+    "swarm_health_score": {
+      "type": "number",
+      "description": "Overall swarm health score (0-100)"
+    },
+    "bottlenecks_detected": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Bottlenecks detected and flagged by swarm"
+    },
+    "rerouted_vehicles": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Vehicle names/IDs that were rerouted this cycle"
+    },
+    "scout_agents": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Vehicles designated as scout agents"
+    },
+    "stigmergic_signals": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Types of stigmergic signals broadcast this cycle"
+    },
+    "genetic_generation": {
+      "type": "number",
+      "description": "Current genetic algorithm generation"
+    },
+    "fitness_score": {
+      "type": "number",
+      "description": "Current genetic fitness score (0-100)"
+    },
+    "convergence_data": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "description": "Cost values over iterations for convergence curve"
+    },
+    "ai_summary": {
+      "type": "string",
+      "description": "AI-generated summary of this swarm cycle"
+    },
+    "actions_taken": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Specific actions taken by the swarm engine"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "running",
+        "completed",
+        "failed"
+      ],
+      "default": "completed"
+    }
+  },
+  "required": [
+    "organization_id",
+    "algorithm"
+  ]
+}

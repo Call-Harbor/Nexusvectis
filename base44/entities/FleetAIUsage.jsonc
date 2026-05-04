@@ -1,0 +1,41 @@
+{
+  "name": "FleetAIUsage",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string",
+      "description": "Organization using FLEET AI"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "User who executed the command"
+    },
+    "command": {
+      "type": "string",
+      "description": "Command sent to FLEET AI"
+    },
+    "action": {
+      "type": "string",
+      "description": "Action executed by AI"
+    },
+    "success": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether the command succeeded"
+    },
+    "error_message": {
+      "type": "string",
+      "description": "Error message if failed"
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional description of this usage record",
+      "maxLength": 1000
+    }
+  },
+  "required": [
+    "organization_id",
+    "user_email",
+    "command"
+  ]
+}

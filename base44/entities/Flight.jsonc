@@ -9,6 +9,11 @@
       "type": "string",
       "description": "e.g. SK204"
     },
+    "description": {
+      "type": "string",
+      "description": "Optional description of this flight",
+      "maxLength": 1000
+    },
     "airline": {
       "type": "string"
     },

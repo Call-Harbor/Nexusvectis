@@ -1,0 +1,94 @@
+{
+  "name": "Route",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string",
+      "description": "Organization this route belongs to"
+    },
+    "name": {
+      "type": "string",
+      "description": "Route name"
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional description of this route",
+      "maxLength": 1000
+    },
+    "origin": {
+      "type": "string",
+      "description": "Starting location"
+    },
+    "destination": {
+      "type": "string",
+      "description": "End location"
+    },
+    "waypoints": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "lat": {
+            "type": "number"
+          },
+          "lng": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "distance_km": {
+      "type": "number"
+    },
+    "estimated_duration_hours": {
+      "type": "number"
+    },
+    "transport_type": {
+      "type": "string",
+      "enum": [
+        "truck",
+        "ship",
+        "drone",
+        "train",
+        "aircraft"
+      ]
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "low",
+        "normal",
+        "high",
+        "critical"
+      ],
+      "default": "normal"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "planned",
+        "active",
+        "completed",
+        "delayed"
+      ],
+      "default": "planned"
+    },
+    "ai_optimized": {
+      "type": "boolean",
+      "default": false
+    },
+    "co2_estimate": {
+      "type": "number",
+      "description": "Estimated CO2 in kg"
+    }
+  },
+  "required": [
+    "name",
+    "origin",
+    "destination",
+    "organization_id"
+  ]
+}

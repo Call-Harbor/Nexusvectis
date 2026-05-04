@@ -1,0 +1,134 @@
+{
+  "name": "BusDepot",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string",
+      "description": "Organization operating this depot"
+    },
+    "depot_name": {
+      "type": "string",
+      "description": "Depot name"
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional description of this bus depot",
+      "maxLength": 1000
+    },
+    "location": {
+      "type": "string",
+      "description": "Physical address"
+    },
+    "latitude": {
+      "type": "number",
+      "description": "GPS latitude"
+    },
+    "longitude": {
+      "type": "number",
+      "description": "GPS longitude"
+    },
+    "capacity_buses": {
+      "type": "number",
+      "description": "Maximum number of buses"
+    },
+    "current_buses": {
+      "type": "number",
+      "description": "Currently parked buses"
+    },
+    "charging_stations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "station_id": {
+            "type": "string"
+          },
+          "power_kw": {
+            "type": "number"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "available",
+              "occupied",
+              "out_of_service"
+            ]
+          },
+          "current_bus_id": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "fuel_pumps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "pump_id": {
+            "type": "string"
+          },
+          "fuel_type": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "workshop_bays": {
+      "type": "number",
+      "description": "Number of maintenance bays"
+    },
+    "mechanics_on_duty": {
+      "type": "number",
+      "description": "Current mechanic count"
+    },
+    "parking_zones": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "zone_name": {
+            "type": "string"
+          },
+          "capacity": {
+            "type": "number"
+          },
+          "priority": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "operating_hours": {
+      "type": "object",
+      "properties": {
+        "open_24_7": {
+          "type": "boolean"
+        },
+        "weekday_hours": {
+          "type": "string"
+        },
+        "weekend_hours": {
+          "type": "string"
+        }
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "operational",
+        "limited",
+        "closed"
+      ],
+      "default": "operational"
+    }
+  },
+  "required": [
+    "organization_id",
+    "depot_name",
+    "capacity_buses"
+  ]
+}

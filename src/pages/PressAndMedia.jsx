@@ -5,7 +5,7 @@ import { Newspaper, TrendingUp, Download, Calendar, ArrowRight, ChevronDown } fr
 import { base44 } from "@/api/base44Client";
 import { useEffect, useState } from "react";
 
-export default function Newsroom() {
+export default function PressAndMedia() {
   const { scrollY } = useScroll();
   const y1 = useTransform(scrollY, [0, 300], [0, 100]);
   const y2 = useTransform(scrollY, [0, 300], [0, -100]);
@@ -70,7 +70,7 @@ export default function Newsroom() {
             
             <h1 className="text-6xl md:text-7xl font-black text-white mb-6 leading-tight">
               <span className="bg-gradient-to-r from-blue-400 via-cyan-400 to-emerald-400 bg-clip-text text-transparent">
-                Newsroom
+                Press & Media
               </span>
             </h1>
             
@@ -191,7 +191,7 @@ export default function Newsroom() {
             <div>
               <h4 className="text-white font-bold mb-4">Company</h4>
               <ul className="space-y-2 text-slate-400">
-                <li><Link to={createPageUrl("Newsroom")} className="hover:text-blue-400 transition-colors">Newsroom</Link></li>
+                <li><Link to="/PressAndMedia" className="hover:text-blue-400 transition-colors">Press & Media</Link></li>
                 <li><Link to={createPageUrl("Careers")} className="hover:text-blue-400 transition-colors">Careers</Link></li>
                 <li><Link to={createPageUrl("Contact")} className="hover:text-blue-400 transition-colors">Contact</Link></li>
                 <li><Link to={createPageUrl("Blog")} className="hover:text-blue-400 transition-colors">Blog</Link></li>

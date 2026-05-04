@@ -1,0 +1,157 @@
+{
+  "name": "BusLine",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string",
+      "description": "Organization operating this line"
+    },
+    "line_number": {
+      "type": "string",
+      "description": "Public line number (e.g. '5A', '42', 'Express 1')"
+    },
+    "line_name": {
+      "type": "string",
+      "description": "Line name/description"
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional description of this bus line",
+      "maxLength": 1000
+    },
+    "directions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "direction_id": {
+            "type": "string"
+          },
+          "direction_name": {
+            "type": "string"
+          },
+          "stop_sequence": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "stop_id": {
+                  "type": "string"
+                },
+                "sequence_order": {
+                  "type": "number"
+                },
+                "planned_travel_time_minutes": {
+                  "type": "number"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "variants": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "variant_code": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "applies_to": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Route variants (e.g. school detours, short turns)"
+    },
+    "service_windows": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "window_type": {
+            "type": "string",
+            "enum": [
+              "peak",
+              "off_peak",
+              "night",
+              "weekend",
+              "school"
+            ]
+          },
+          "days_of_week": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "start_time": {
+            "type": "string"
+          },
+          "end_time": {
+            "type": "string"
+          },
+          "frequency_minutes": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "sla_targets": {
+      "type": "object",
+      "properties": {
+        "max_delay_minutes": {
+          "type": "number"
+        },
+        "min_frequency_peak": {
+          "type": "number"
+        },
+        "min_frequency_offpeak": {
+          "type": "number"
+        },
+        "on_time_target_percentage": {
+          "type": "number"
+        }
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "suspended",
+        "seasonal",
+        "planned"
+      ],
+      "default": "active"
+    },
+    "route_length_km": {
+      "type": "number",
+      "description": "Total route length"
+    },
+    "average_trip_time_minutes": {
+      "type": "number",
+      "description": "Average complete trip duration"
+    },
+    "daily_trips": {
+      "type": "number",
+      "description": "Typical number of trips per day"
+    },
+    "annual_passengers": {
+      "type": "number",
+      "description": "Annual ridership"
+    },
+    "contract_reference": {
+      "type": "string",
+      "description": "Public service contract reference"
+    }
+  },
+  "required": [
+    "organization_id",
+    "line_number",
+    "line_name"
+  ]
+}

@@ -1,0 +1,91 @@
+{
+  "name": "TransitKPI",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string",
+      "description": "Organization"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date for these KPIs"
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional description of this KPI record",
+      "maxLength": 1000
+    },
+    "period_type": {
+      "type": "string",
+      "enum": [
+        "daily",
+        "weekly",
+        "monthly"
+      ],
+      "default": "daily"
+    },
+    "on_time_performance": {
+      "type": "number",
+      "description": "% of trips on time"
+    },
+    "average_load_factor": {
+      "type": "number",
+      "description": "Average passengers vs capacity"
+    },
+    "total_passengers": {
+      "type": "number",
+      "description": "Total passengers transported"
+    },
+    "total_trips_planned": {
+      "type": "number"
+    },
+    "total_trips_completed": {
+      "type": "number"
+    },
+    "cancellations": {
+      "type": "number",
+      "description": "Number of cancelled trips"
+    },
+    "delays_total_minutes": {
+      "type": "number",
+      "description": "Total delay minutes"
+    },
+    "co2_per_passenger_km": {
+      "type": "number",
+      "description": "CO2 emissions per passenger-km"
+    },
+    "fuel_consumption": {
+      "type": "number",
+      "description": "Total fuel/energy consumed"
+    },
+    "operating_cost": {
+      "type": "number",
+      "description": "Total operating cost"
+    },
+    "revenue": {
+      "type": "number",
+      "description": "Total revenue from tickets"
+    },
+    "incidents": {
+      "type": "number",
+      "description": "Total incidents reported"
+    },
+    "driver_feedback_count": {
+      "type": "number",
+      "description": "Number of driver feedbacks"
+    },
+    "passenger_complaints": {
+      "type": "number",
+      "description": "Passenger complaints"
+    },
+    "headway_adherence": {
+      "type": "number",
+      "description": "% adherence to planned frequency"
+    }
+  },
+  "required": [
+    "organization_id",
+    "date"
+  ]
+}

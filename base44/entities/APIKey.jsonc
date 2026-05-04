@@ -1,0 +1,51 @@
+{
+  "name": "APIKey",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string",
+      "description": "Organization this API key belongs to"
+    },
+    "name": {
+      "type": "string",
+      "description": "Friendly name for the API key"
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional description of this API key",
+      "maxLength": 1000
+    },
+    "key_prefix": {
+      "type": "string",
+      "description": "First 8 characters of the key for identification"
+    },
+    "key_hash": {
+      "type": "string",
+      "description": "Hashed version of the full API key"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "revoked"
+      ],
+      "default": "active",
+      "description": "API key status"
+    },
+    "last_used": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Last time this key was used"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Expiration date"
+    }
+  },
+  "required": [
+    "organization_id",
+    "name",
+    "key_hash"
+  ]
+}

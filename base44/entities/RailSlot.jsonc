@@ -12,6 +12,11 @@
       "type": "string",
       "description": "Sporidentifikation"
     },
+    "description": {
+      "type": "string",
+      "description": "Optional description of this rail slot",
+      "maxLength": 1000
+    },
     "direction": {
       "type": "string",
       "enum": [

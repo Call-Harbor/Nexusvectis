@@ -1,0 +1,43 @@
+{
+  "name": "OrganizationMember",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string",
+      "description": "Organization this member belongs to"
+    },
+    "user_email": {
+      "type": "string",
+      "format": "email",
+      "description": "Email of the organization member"
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional description or notes about this member",
+      "maxLength": 1000
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "admin",
+        "user"
+      ],
+      "default": "user",
+      "description": "Role within this organization"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "invited",
+        "active",
+        "removed"
+      ],
+      "default": "invited",
+      "description": "Membership status"
+    }
+  },
+  "required": [
+    "organization_id",
+    "user_email"
+  ]
+}
