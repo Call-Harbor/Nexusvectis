@@ -60,7 +60,14 @@ import {
   normalizeHarborExecutionRecord,
   INTELLECT_RUN_KIND,
   stackRoleFromRunKind,
+  PIPELINE_PHASE,
 } from "@/lib/harborIntelligenceModel";
+import {
+  startRun,
+  completeRun,
+  failRun,
+  agentExecutionToLocalRow,
+} from "@/lib/agentRunLifecycle";
 
 // IA: IntellectMode — Harbor Intellect UI (thinking); orchestration runs surface here when delegated — see src/lib/harborIntelligenceModel.js.
 
@@ -135,10 +142,10 @@ export default function IntellectMode() {
   const pendingAgentTaskRef = useRef(null); // { windowType, task }
   const pendingHarborRunIdRef = useRef(null);
   const pendingHarborStartedAtRef = useRef(null);
+  const pendingHarborAgentExecRef = useRef(null);
   const { runTask } = useHologramAIAgent();
 
-  // Session execution queue — canonical shape via normalizeHarborExecutionRecord (intellect vs orchestration).
-  // TODO(persistent execution log): base44.entities.AgentExecution.create(toAgentExecutionPayload(row, orgId)) from a secured function; TODO(audit trail): immutable append per transition.
+  // Execution queue: sessionStorage + optional AgentExecution rows via agentRunLifecycle.startRun / completeRun / failRun.
   const [executionLog, setExecutionLog] = useState(() => {
     try {
       const raw = sessionStorage.getItem(EXEC_LOG_STORAGE_KEY);
@@ -186,6 +193,9 @@ export default function IntellectMode() {
         const next = prev.map((e) => {
           if (e.id !== id) return e;
           const merged = { ...e, ...patch };
+          if (patch.meta && typeof patch.meta === "object") {
+            merged.meta = { ...(e.meta || {}), ...patch.meta };
+          }
           return normalizeHarborExecutionRecord({
             ...merged,
             kind: merged.kind || merged.type || "unknown",
@@ -381,6 +391,39 @@ export default function IntellectMode() {
 
   const isWaitingForAgentRef = useRef(false);
 
+  // Hydrate execution queue from persisted AgentExecution (recent runs only).
+  useEffect(() => {
+    if (!orgId) return;
+    let alive = true;
+    (async () => {
+      try {
+        const rows = await base44.entities.AgentExecution.filter({ organization_id: orgId }, "-created_date", 30);
+        if (!alive || !rows?.length) return;
+        setExecutionLog((prev) => {
+          const remote = rows.map(agentExecutionToLocalRow);
+          const seen = new Set(prev.map((p) => p.meta?.agentExecutionId).filter(Boolean));
+          const merged = [...prev];
+          remote.forEach((r) => {
+            const ae = r.meta?.agentExecutionId;
+            if (ae && !seen.has(ae)) {
+              merged.unshift(r);
+              seen.add(ae);
+            }
+          });
+          merged.sort((a, b) => (b.startedAt || 0) - (a.startedAt || 0));
+          const sliced = merged.slice(0, MAX_EXEC_LOG);
+          persistExecutionLog(sliced);
+          return sliced;
+        });
+      } catch (e) {
+        console.warn("IntellectMode: AgentExecution hydrate failed", e);
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [orgId, persistExecutionLog]);
+
   // ── Init Harbor Intellect conversation (persistent) ────────────────────────────────────
   useEffect(() => {
     if (isLoadingUser || !currentUser || !validOrgId) return;
@@ -426,18 +469,26 @@ export default function IntellectMode() {
             setIsProcessing(false);
             const rid = pendingHarborRunIdRef.current;
             const t0 = pendingHarborStartedAtRef.current;
+            const ae = pendingHarborAgentExecRef.current;
             if (rid) {
-              updateExecutionRun(rid, {
-                status: "completed",
-                finishedAt: Date.now(),
+              const latencyMs = t0 ? Date.now() - t0 : null;
+              completeRun({
+                base44,
+                organizationId: validOrgId,
+                updateExecutionRun,
+                localId: rid,
+                success: true,
                 outputPreview: (last.content || "").slice(0, 240),
-                meta: { messageId: last.id, latencyMs: t0 ? Date.now() - t0 : null },
+                error: null,
+                latencyMs,
+                agentExecutionId: ae,
               });
               pendingHarborRunIdRef.current = null;
               pendingHarborStartedAtRef.current = null;
+              pendingHarborAgentExecRef.current = null;
             }
             setMessages(prev => [
-              ...prev.filter(m => m.content !== '⚡ Agent executing…'),
+              ...prev.filter(m => m.content !== 'Agent executing…'),
               { role: 'assistant', content: last.content }
             ]);
           }
@@ -926,16 +977,26 @@ export default function IntellectMode() {
     setMessages(prev => [...prev, { role: "user", content: currentCommand }]);
     setInput("");
     const processId = createProcessTerminal(currentCommand.substring(0, 40) + '...');
-    appendExecutionRun({
-      id: processId,
-      kind: INTELLECT_RUN_KIND.DEEP_ANALYSIS,
-      status: "running",
-      label: currentCommand.slice(0, 80) + (currentCommand.length > 80 ? "…" : ""),
-      startedAt: Date.now(),
-      error: null,
-      outputPreview: null,
-      meta: { window: "analysis_chart", phase: "execute", correlationId: processId },
-    });
+    let deepAeId = null;
+    try {
+      const sr = await startRun({
+        base44,
+        organizationId: validOrgId,
+        appendExecutionRun,
+        updateExecutionRun,
+        localId: processId,
+        kind: INTELLECT_RUN_KIND.DEEP_ANALYSIS,
+        label: currentCommand.slice(0, 80) + (currentCommand.length > 80 ? "…" : ""),
+        meta: {
+          window: "analysis_chart",
+          phase: PIPELINE_PHASE.EXECUTE,
+          correlationId: processId,
+        },
+      });
+      deepAeId = sr.agentExecutionId;
+    } catch (e) {
+      console.warn("startRun (deep_analysis) local only:", e);
+    }
     addThinkingLog('parse', `Deep analysis started`, null, 0, null, processId);
     addThinkingLog('analyze', 'Gathering fleet telemetry & historical records', { vehicles: vehicles.length, routes: routes.length, shipments: shipments.length }, 200, 20, processId);
     addThinkingLog('think', 'Running multi-dimensional statistical models & predictive algorithms', null, 300, 40, processId);
@@ -944,6 +1005,7 @@ export default function IntellectMode() {
     const fleetContext = `Fleet Statistics: ${vehicles.length} vehicles (${vehicles.filter(v => v.status === 'active').length} active), ${routes.length} routes, ${shipments.length} shipments, ${alerts.length} active alerts. Transport types: ${[...new Set(vehicles.map(v => v.type))].join(', ')}`;
     
     try {
+       const analysisT0 = Date.now();
        setMessages(prev => [...prev, { role: "system", content: "Running deep analysis — review progress in the execution log or floating terminal." }]);
 
        const result = await base44.integrations.Core.InvokeLLM({
@@ -1053,16 +1115,28 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
        const preview = `${result.title || "Analysis"} — ${(result.summary || result.description || "").slice(0, 160)}`;
        setMessages(prev => [...prev, { role: "assistant", content: `**${result.title}**\n\n${result.summary || result.description}\n\nAnalysis dashboard opened in workspace — inspect charts and recommendations in the window.` }]);
        addThinkingLog('complete', 'Analysis completed', null, 100, 100, processId);
-       updateExecutionRun(processId, {
-         status: "completed",
-         finishedAt: Date.now(),
+       await completeRun({
+         base44,
+         organizationId: validOrgId,
+         updateExecutionRun,
+         localId: processId,
+         success: true,
          outputPreview: preview,
-         meta: { chartTitle: result.title },
+         error: null,
+         latencyMs: Date.now() - analysisT0,
+         agentExecutionId: deepAeId,
        });
     } catch (error) {
       addThinkingLog('error', `Analysis failed: ${error.message}`, null, 100, null, processId);
       setMessages(prev => [...prev, { role: "system", content: `Deep analysis failed: ${error.message}` }]);
-      updateExecutionRun(processId, { status: "failed", finishedAt: Date.now(), error: error.message || String(error) });
+      await failRun({
+        base44,
+        organizationId: validOrgId,
+        updateExecutionRun,
+        localId: processId,
+        error: error.message || String(error),
+        agentExecutionId: deepAeId,
+      });
     }
     
     closeProcessTerminal(processId);
@@ -1199,14 +1273,25 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
 
     // Safety timeout: always clear processing after 60s
     clearTimeout(window._intellectProcessingTimeout);
-    window._intellectProcessingTimeout = setTimeout(() => {
+    window._intellectProcessingTimeout = setTimeout(async () => {
       isWaitingForAgentRef.current = false;
       setIsProcessing(false);
       const rid = pendingHarborRunIdRef.current;
+      const ae = pendingHarborAgentExecRef.current;
+      const t0 = pendingHarborStartedAtRef.current;
       if (rid) {
-        updateExecutionRun(rid, { status: "failed", finishedAt: Date.now(), error: "Timeout waiting for agent response" });
+        await failRun({
+          base44,
+          organizationId: validOrgId,
+          updateExecutionRun,
+          localId: rid,
+          error: "Timeout waiting for agent response",
+          agentExecutionId: ae,
+          latencyMs: t0 ? Date.now() - t0 : null,
+        });
         pendingHarborRunIdRef.current = null;
         pendingHarborStartedAtRef.current = null;
+        pendingHarborAgentExecRef.current = null;
       }
       setMessages((prev) => prev.filter((m) => m.content !== "Agent executing…"));
     }, 60000);
@@ -1215,28 +1300,42 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
     const startedAt = Date.now();
     pendingHarborRunIdRef.current = runId;
     pendingHarborStartedAtRef.current = startedAt;
-    appendExecutionRun({
-      id: runId,
-      kind: INTELLECT_RUN_KIND.HARBOR_AGENT,
-      status: "running",
-      label: currentCommand.slice(0, 72) + (currentCommand.length > 72 ? "…" : ""),
-      startedAt,
-      error: null,
-      outputPreview: null,
-      meta: {
-        attachmentCount: currentFiles.length,
-        correlationId: runId,
-        phase: "execute",
-      },
-    });
+    pendingHarborAgentExecRef.current = null;
+    try {
+      const sr = await startRun({
+        base44,
+        organizationId: validOrgId,
+        appendExecutionRun,
+        updateExecutionRun,
+        localId: runId,
+        kind: INTELLECT_RUN_KIND.HARBOR_AGENT,
+        label: currentCommand.slice(0, 72) + (currentCommand.length > 72 ? "…" : ""),
+        meta: {
+          attachmentCount: currentFiles.length,
+          correlationId: runId,
+          phase: PIPELINE_PHASE.EXECUTE,
+        },
+      });
+      pendingHarborAgentExecRef.current = sr.agentExecutionId || null;
+    } catch (e) {
+      console.warn("startRun harbor_intellect:", e);
+    }
 
     try {
       isWaitingForAgentRef.current = true;
       if (!intellectConversationRef.current) {
         setMessages(prev => [...prev.filter(m => m.content !== 'Agent executing…'), { role: 'system', content: "Agent not initialized." }]);
-        updateExecutionRun(runId, { status: "failed", finishedAt: Date.now(), error: "No conversation" });
+        await failRun({
+          base44,
+          organizationId: validOrgId,
+          updateExecutionRun,
+          localId: runId,
+          error: "No conversation",
+          agentExecutionId: pendingHarborAgentExecRef.current,
+        });
         pendingHarborRunIdRef.current = null;
         pendingHarborStartedAtRef.current = null;
+        pendingHarborAgentExecRef.current = null;
         setIsProcessing(false);
         clearTimeout(window._intellectProcessingTimeout);
         return;
@@ -1251,9 +1350,18 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
       });
     } catch (err) {
       isWaitingForAgentRef.current = false;
+      await failRun({
+        base44,
+        organizationId: validOrgId,
+        updateExecutionRun,
+        localId: runId,
+        error: err.message || String(err),
+        agentExecutionId: pendingHarborAgentExecRef.current,
+        latencyMs: pendingHarborStartedAtRef.current ? Date.now() - pendingHarborStartedAtRef.current : null,
+      });
       pendingHarborRunIdRef.current = null;
       pendingHarborStartedAtRef.current = null;
-      updateExecutionRun(runId, { status: "failed", finishedAt: Date.now(), error: err.message || String(err) });
+      pendingHarborAgentExecRef.current = null;
       setMessages(prev => [
         ...prev.filter(m => m.content !== 'Agent executing…'),
         { role: 'system', content: `Agent error: ${err.message}` }
@@ -1602,6 +1710,12 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
                       <p className="text-[10px] text-slate-600 mt-1 font-mono">
                         {/* TODO(cost/latency): replace wall clock with provider latency + token/cost */}
                         Round-trip: {run.meta.latencyMs} ms
+                      </p>
+                    )}
+                    {run.meta?.evaluation && (
+                      <p className="text-[10px] text-slate-500 mt-1">
+                        Quality: {run.meta.evaluation.quality} · {run.meta.evaluation.outcome}
+                        {run.meta.evaluation.failureReason ? ` · ${run.meta.evaluation.failureReason}` : ""}
                       </p>
                     )}
                   </li>
