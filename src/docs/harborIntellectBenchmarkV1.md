@@ -64,23 +64,38 @@ Set `BENCHMARK_USE_LIVE=1` and pass `base44` when running programmatically.
 
 ## Hugging Face dataset upload
 
-Publish the **eval case JSONL**, optional **benchmark v1 JSONL** runs, and the **Harbor Intellect agent definition** to a Hub dataset repo:
+The Hub target is always a **dataset** repository (not a model). The uploader builds a **bundle** documented by a dataset card (`README.md` with YAML front matter), `manifest.json`, and JSONL files.
 
-1. Create a token with **write** access at [https://huggingface.co/settings/tokens](https://huggingface.co/settings/tokens).
-2. First push (create repo + upload):
+**Typical bundle files**
+
+| File | Role |
+|------|------|
+| `harbor_eval_cases.jsonl` | Always — seed `HarborEvalCase` rows |
+| `harbor_intellect_benchmark_v1.eval.jsonl` | Optional — `harbor.eval_run.v1` rows (validated before upload) |
+| `harbor_intellect_benchmark_v1.training.jsonl` | Optional — `harbor.training_export.v1` rows |
+| `agent_definition.json` | Optional — agent card from `base44/agents/harbor_intellect.jsonc` when present |
+| `manifest.json` | Bundle metadata: `bundle_schema_version`, `eval_case_schema_version`, `stack_version`, `seed_case_count`, `suite_counts`, `benchmark_jsonl_stats`, `includes`, `generated_at` |
+| `README.md` | Dataset card (suites, examples, intended use, limitations, governance) |
+
+**Steps**
+
+1. Create a token with **write** access: [https://huggingface.co/settings/tokens](https://huggingface.co/settings/tokens).
+2. (Recommended) Generate benchmark JSONL locally: `npm run harbor:benchmark:v1`
+3. Preview bundle locally without uploading: `npm run harbor:hf:upload -- --repo org/name --dry-run`
+4. First Hub push (creates dataset repo if needed):
 
 ```bash
 export HF_TOKEN=hf_...
 npm run harbor:hf:upload -- --repo YOUR_USERNAME/harbor-intellect-eval-v1 --create
 ```
 
-Or use your HF username automatically (repo is created under your account when using `--create`):
+Or resolve the user namespace via Hub API (short repo name):
 
 ```bash
 export HF_TOKEN=hf_...
 npm run harbor:hf:upload -- --repo harbor-intellect-eval-v1 --create
 ```
 
-Optional: `HF_ORG=my-org` for org-owned repos, `HF_PRIVATE=1` for private datasets, `HF_SKIP_BENCHMARK=1` to ship eval cases only, `HF_SKIP_AGENT=1` to omit `agent_definition.json`.
+**Environment flags:** `HF_ORG`, `HF_PRIVATE=1`, `HF_SKIP_BENCHMARK=1` (eval cases + card only), `HF_SKIP_AGENT=1` (omit agent JSON). CLI: `--help`, `--dry-run`.
 
-Implementation: `scripts/harbor-intellect-upload-hf.mjs`, `src/lib/harborIntellectHfDataset.js`. A local copy of the bundle is written under `artifacts/hf-upload/` (gitignored).
+Implementation: `scripts/harbor-intellect-upload-hf.mjs`, `src/lib/harborIntellectHfDataset.js`. A copy of the pushed files is written under `artifacts/hf-upload/` (gitignored).

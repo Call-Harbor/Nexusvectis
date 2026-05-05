@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Build Harbor Intellect eval/benchmark JSONL and push to a Hugging Face dataset repo.
+ * Build Harbor Intellect eval/benchmark JSONL and push to a Hugging Face **dataset** repo.
  *
  * Requires HF_TOKEN (or HUGGING_FACE_HUB_TOKEN) with write access.
  *
@@ -26,27 +26,59 @@ import {
   hfCreateRepo,
 } from "../src/lib/harborIntellectHfDataset.js";
 
+function printHelp() {
+  console.log(`harbor-intellect-upload-hf — push Harbor Intellect eval bundle to Hugging Face Hub (dataset repo)
+
+USAGE
+  HF_TOKEN=hf_... node scripts/harbor-intellect-upload-hf.mjs --repo <name|org/name> [options]
+
+OPTIONS
+  --repo <id>     Dataset repo: short name (under your user or HF_ORG) or full namespace/name
+  --create        Call Hub API to create the dataset repo first (idempotent if repo exists)
+  --dry-run       Build bundle under artifacts/hf-upload/ only; do not create repo or commit
+  -h, --help      Show this help
+
+ENVIRONMENT
+  HF_TOKEN | HUGGING_FACE_HUB_TOKEN   Required unless --dry-run (write token for upload)
+  HF_ORG                              Organization slug when using a short --repo name
+  HF_PRIVATE=1                        With --create: private dataset
+  HF_SKIP_BENCHMARK=1                 Ship eval cases + README + manifest only (no benchmark JSONL)
+  HF_SKIP_AGENT=1                     Omit agent_definition.json
+
+NOTES
+  - Repo type is always **dataset**, not model.
+  - Benchmark JSONL is validated (JSON lines + schema field) before commit.
+  - See src/docs/harborIntellectBenchmarkV1.md for benchmark details.
+`);
+}
+
 async function hfWhoamiUsername(token) {
   const res = await fetch(`${HF_API}/api/whoami-v2`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!res.ok) {
     const t = await res.text();
-    throw new Error(`HF whoami failed ${res.status}: ${t.slice(0, 200)}`);
+    throw new Error(
+      `[harbor-hf-upload] Hugging Face whoami failed (HTTP ${res.status}). Check HF_TOKEN. Body: ${t.slice(0, 200)}`,
+    );
   }
   const j = await res.json();
   const name = typeof j?.name === "string" ? j.name : null;
   if (!name) {
-    throw new Error("HF whoami: missing name; use --repo namespace/dataset-name");
+    throw new Error(
+      "[harbor-hf-upload] whoami returned no user name; use --repo org/dataset-name explicitly.",
+    );
   }
   return name;
 }
 
 function parseArgs(argv) {
-  const out = { create: false, repo: null };
+  const out = { create: false, repo: null, dryRun: false, help: false };
   for (let i = 2; i < argv.length; i += 1) {
     const a = argv[i];
-    if (a === "--create") out.create = true;
+    if (a === "-h" || a === "--help") out.help = true;
+    else if (a === "--create") out.create = true;
+    else if (a === "--dry-run") out.dryRun = true;
     else if (a === "--repo" && argv[i + 1]) {
       out.repo = argv[i + 1];
       i += 1;
@@ -55,15 +87,24 @@ function parseArgs(argv) {
   return out;
 }
 
+const { create, repo: repoArg, dryRun, help } = parseArgs(process.argv);
 const token = process.env.HF_TOKEN || process.env.HUGGING_FACE_HUB_TOKEN;
-const { create, repo: repoArg } = parseArgs(process.argv);
 
-if (!token) {
-  console.error("Set HF_TOKEN or HUGGING_FACE_HUB_TOKEN with write access.");
+if (help) {
+  printHelp();
+  process.exit(0);
+}
+
+if (!repoArg) {
+  console.error("[harbor-hf-upload] Missing --repo.\n");
+  printHelp();
   process.exit(1);
 }
-if (!repoArg) {
-  console.error("Usage: node scripts/harbor-intellect-upload-hf.mjs --repo <dataset-name|namespace/name> [--create]");
+
+if (!token && !dryRun) {
+  console.error(
+    "[harbor-hf-upload] Set HF_TOKEN or HUGGING_FACE_HUB_TOKEN (write access), or use --dry-run to build locally only.",
+  );
   process.exit(1);
 }
 
@@ -81,13 +122,24 @@ if (namespace) {
   fullRepoId = `${namespace}/${repoShort}`;
 } else if (repoArg.includes("/")) {
   fullRepoId = repoArg.trim();
+} else if (!token && dryRun) {
+  fullRepoId = `<hf_user>/${repoShort}`;
+  console.warn(
+    "[harbor-hf-upload] dry-run: using placeholder repo id; pass namespace/name or HF_TOKEN for a resolved id.",
+  );
 } else {
+  if (!token) {
+    console.error(
+      "[harbor-hf-upload] For a short --repo name, set HF_TOKEN (whoami) or use namespace/name or HF_ORG.",
+    );
+    process.exit(1);
+  }
   const user = await hfWhoamiUsername(token);
   fullRepoId = `${user}/${repoShort}`;
   namespace = user;
 }
 
-if (create) {
+if (create && !dryRun) {
   const priv = process.env.HF_PRIVATE === "1" || process.env.HF_PRIVATE === "true";
   console.log(`[hf] creating dataset repo ${fullRepoId} (private=${priv})`);
   try {
@@ -128,10 +180,26 @@ if (process.env.HF_SKIP_BENCHMARK !== "1") {
   }
 }
 
-const { files, manifest } = buildHarborIntellectHfDatasetFiles({
-  benchmarkJsonl,
-  includeAgentDefinition: process.env.HF_SKIP_AGENT !== "1",
-});
+let files;
+let manifest;
+try {
+  const built = buildHarborIntellectHfDatasetFiles({
+    benchmarkJsonl,
+    includeAgentDefinition: process.env.HF_SKIP_AGENT !== "1",
+  });
+  files = built.files;
+  manifest = built.manifest;
+} catch (e) {
+  const msg = e instanceof Error ? e.message : String(e);
+  console.error(`[harbor-hf-upload] Bundle build failed: ${msg}`);
+  process.exit(1);
+}
+
+if (manifest.agent_definition_status === "skipped_not_found") {
+  console.warn(
+    `[hf] agent_definition.json not bundled (file missing). Set HF_SKIP_AGENT=1 to silence, or add base44/agents/harbor_intellect.jsonc.`,
+  );
+}
 
 const outDir = path.resolve(process.cwd(), "artifacts/hf-upload");
 fs.mkdirSync(outDir, { recursive: true });
@@ -141,11 +209,16 @@ for (const f of files) {
   fs.writeFileSync(path.join(outDir, safe), f.content, "utf8");
 }
 
+if (dryRun) {
+  console.log(`[hf] dry-run: wrote ${files.length} files to ${outDir} (no Hub commit).`);
+  process.exit(0);
+}
+
 console.log(`[hf] committing ${files.length} files to datasets/${fullRepoId} …`);
 const commit = await hfCommitDatasetFiles(token, {
   repoId: fullRepoId,
   files,
-  summary: "Harbor Intellect: eval cases + benchmark JSONL bundle",
+  summary: "Harbor Intellect Eval/Benchmark v1: dataset bundle",
 });
 console.log("[hf] done", commit?.commit || commit);
 console.log(`[hf] local copy: ${outDir}`);
