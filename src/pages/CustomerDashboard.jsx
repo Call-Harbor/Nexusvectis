@@ -24,6 +24,7 @@ import {
 import { toast } from "sonner";
 import moment from "moment";
 
+// TODO(P1-RBAC): customer session view — keep separate from internal Fleet/CRM routes; enforce CUSTOMER_USER when RBAC lands.
 export default function CustomerDashboard() {
   const [customer, setCustomer] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");

@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import moment from "moment";
 
+// TODO(P1-RBAC): "alpha" / memberRole === 'alpha' is used here but OrganizationMember schema only defines admin|user — align model + UI.
 export default function UserManagement() {
   const [showInviteDialog, setShowInviteDialog] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
@@ -132,6 +133,7 @@ export default function UserManagement() {
       return;
     }
 
+    // TODO(P1-RBAC): platform admin (user.role) vs org admin (OrganizationMember.role) should be explicit roles (e.g. PLATFORM_ADMIN vs ORG_ADMIN).
     // Only platform admins can invite other admins
     if (inviteRole === "admin" && currentUser?.role !== 'admin') {
       toast.error("Only admins can invite other admins");

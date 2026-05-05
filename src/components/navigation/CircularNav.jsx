@@ -12,6 +12,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import NotificationCenter from "../notifications/NotificationCenter";
 
+// IA: CircularNav lists tenant workspace modules only — public/marketing/legal lives outside this shell (see routeZones.js + Layout.jsx).
+
 const menuCategories = [
   { 
     name: "Dashboard", icon: Home, color: "cyan",

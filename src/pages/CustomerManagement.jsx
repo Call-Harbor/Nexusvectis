@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import CustomerEditor from "../components/customers/CustomerEditor.jsx";
 import CustomerDetails from "../components/customers/CustomerDetails.jsx";
 
+// TODO(P1-RBAC): internal CRM view — should be ORG_ADMIN/ORG_USER only; do not conflate with CustomerPortal / CustomerDashboard (CUSTOMER_USER).
 export default function CustomerManagement() {
   const [user, setUser] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
