@@ -91,6 +91,12 @@ export const HARBOR_EVAL_SUITE = {
   FAILURE_MODES: /** @type {const} */ ("failure_modes"),
 };
 
+/**
+ * Regression runs re-execute a frozen case set (see getHarborRegressionBaselineCaseIds in harborModelStack.js)
+ * after model, RAG, or policy changes — not a separate "suite" in every case file.
+ */
+export const HARBOR_EVAL_REGRESSION_REF = "regression_baseline";
+
 /** Normalized failure-mode tags for harnesses and filters. */
 export const FAILURE_MODE_TAG = {
   WRONG_TOOL_SELECTION: "wrong_tool_selection",
