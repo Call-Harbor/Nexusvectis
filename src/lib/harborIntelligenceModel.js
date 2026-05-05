@@ -118,7 +118,7 @@ export function toAgentExecutionPayload(row, organizationId) {
     routing_decision: JSON.stringify({
       kind: row.kind,
       stack_role: row.stackRole,
-      correlation_hint: row.meta?.correlationId || row.id,
+      correlation_id: row.meta?.correlationId || row.id,
     }),
     result: row.outputPreview || undefined,
     error: row.error || undefined,
@@ -130,6 +130,42 @@ export function toAgentExecutionPayload(row, organizationId) {
     agents_involved:
       row.kind === INTELLECT_RUN_KIND.HARBOR_AGENT ? ["harbor_intellect"] : [],
     steps: [],
+  };
+}
+
+/**
+ * Parse AgentExecution.routing_decision JSON — tolerant of legacy / partial blobs.
+ * @param {string|Record<string, unknown>|null|undefined} raw
+ * @returns {Record<string, unknown>}
+ */
+export function parseHarborRoutingDecision(raw) {
+  if (raw == null) return {};
+  if (typeof raw === "object" && raw !== null && !Array.isArray(raw)) {
+    return /** @type {Record<string, unknown>} */ ({ ...raw });
+  }
+  if (typeof raw !== "string") return {};
+  try {
+    const o = JSON.parse(raw);
+    return o && typeof o === "object" && !Array.isArray(o)
+      ? /** @type {Record<string, unknown>} */ (o)
+      : {};
+  } catch {
+    return {};
+  }
+}
+
+/**
+ * Shallow-merge routing metadata so complete/fail updates do not erase start-time fields
+ * (kind, stack_role, correlation_id, phase from execute).
+ *
+ * @param {string|Record<string, unknown>|null|undefined} existingRaw
+ * @param {Record<string, unknown>} patch
+ * @returns {Record<string, unknown>}
+ */
+export function mergeHarborRoutingDecision(existingRaw, patch) {
+  return {
+    ...parseHarborRoutingDecision(existingRaw),
+    ...patch,
   };
 }
 

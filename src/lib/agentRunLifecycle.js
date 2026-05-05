@@ -4,6 +4,7 @@
  * TODO(ApprovalRequest): when mutation requires approval, startRun returns awaiting_approval and blocks execution until approved.
  * TODO(AgentPlan persistence): store planner output in routing_decision.steps or dedicated entity when orchestrateCommands runs.
  * TODO(OutcomeEvaluation): link completed runs to OutcomeLearning / KPI measurement jobs.
+ * TODO(export / eval): join AgentExecution + harborEvalCaseSchema for benchmark JSONL.
  * TODO(audit trail): emit immutable audit row with correlation_id on each transition (service role function).
  */
 
@@ -13,6 +14,7 @@ import {
   stackRoleFromRunKind,
   toAgentExecutionPayload,
   PIPELINE_PHASE,
+  mergeHarborRoutingDecision,
 } from "@/lib/harborIntelligenceModel";
 
 /** @typedef {'success'|'failure'|'partial'} RunOutcome */
@@ -202,17 +204,31 @@ export async function completeRun(ctx) {
   const aeId = explicitAeId;
   if (aeId && organizationId) {
     try {
+      let routingDecisionStr;
+      try {
+        const doc = await base44.entities.AgentExecution.get(aeId);
+        const merged = mergeHarborRoutingDecision(doc?.routing_decision, {
+          phase: PIPELINE_PHASE.EVALUATE,
+          correlation_id: localId,
+          evaluation,
+        });
+        routingDecisionStr = JSON.stringify(merged);
+      } catch {
+        routingDecisionStr = JSON.stringify(
+          mergeHarborRoutingDecision(null, {
+            phase: PIPELINE_PHASE.EVALUATE,
+            correlation_id: localId,
+            evaluation,
+          })
+        );
+      }
       const rowPatch = {
         status: success ? "completed" : "failed",
         result: outputPreview ? String(outputPreview).slice(0, 12000) : undefined,
         error: success ? undefined : error || evaluation.failureReason,
         latency_ms: latencyMs ?? undefined,
         completed_at: new Date().toISOString(),
-        routing_decision: JSON.stringify({
-          phase: PIPELINE_PHASE.EVALUATE,
-          correlation_id: localId,
-          evaluation,
-        }),
+        routing_decision: routingDecisionStr,
       };
       await patchAgentExecution(base44, aeId, rowPatch);
     } catch (e) {
@@ -290,7 +306,10 @@ export function agentExecutionToLocalRow(doc) {
     error: doc.error || null,
     meta: {
       agentExecutionId: doc.id,
-      correlationId: routing.correlation_id || doc.id,
+      correlationId:
+        routing.correlation_id ||
+        routing.correlation_hint ||
+        doc.id,
       fromRemote: true,
       phase: routing.phase || PIPELINE_PHASE.EVALUATE,
     },
