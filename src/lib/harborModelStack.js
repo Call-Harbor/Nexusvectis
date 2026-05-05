@@ -11,7 +11,7 @@
  *   convention when Intellect vs Orchestration adapters are stored as separate records.
  */
 
-import { HARBOR_EVAL_SEED_CASES } from "@/lib/harborEvalSeedCases";
+import { HARBOR_EVAL_SEED_CASES } from "./harborEvalSeedCases.js";
 
 /** Bump when layer contracts or export row shapes change incompatibly. */
 export const HARBOR_MODEL_STACK_VERSION = "0.1.0";

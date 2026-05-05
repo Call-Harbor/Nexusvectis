@@ -29,6 +29,13 @@ export {
 
 export { buildTrainingExportRowV1, buildEvalRunRecordV1 } from "@/lib/harborTraceExport";
 
+export {
+  TOOL_ROUTING_NOT_VALIDATED_REASON,
+  scoreHarborEvalCaseOutput,
+  runHarborEvalSeedCasesAgainstModel,
+  harnessSummaryToEvalRunRecords,
+} from "@/lib/harborEvalHarness";
+
 import { HARBOR_EVAL_SEED_CASES } from "@/lib/harborEvalSeedCases";
 import {
   HARBOR_EVAL_CASE_SCHEMA_VERSION,
@@ -47,3 +54,21 @@ export function getHarborEvalStarterKitSummary(opts = {}) {
     validation_failures: validation.failures,
   };
 }
+
+export {
+  TOOL_ROUTING_NO_TRACE_NOTE,
+  normalizeBenchmarkToolTrace,
+  evaluateHarborOutputAgainstCase,
+  runHarborIntellectBenchmarkV1,
+  formatHarborIntellectBenchmarkConsoleLines,
+} from "@/lib/harborIntellectBenchmarkV1";
+
+export {
+  TOOL_ROUTING_NO_TRACE_NOTE,
+  normalizeBenchmarkToolTrace,
+  scoreReasoningRubric,
+  evaluateHarborOutputAgainstCase,
+  runHarborIntellectBenchmarkV1,
+  formatHarborIntellectBenchmarkConsoleLines,
+  benchmarkSummaryToJsonlArtifacts,
+} from "@/lib/harborIntellectBenchmarkV1";

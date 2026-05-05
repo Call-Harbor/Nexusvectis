@@ -7,7 +7,7 @@ import {
   createHarborEvalCaseDraft,
   HARBOR_EVAL_SUITE,
   FAILURE_MODE_TAG,
-} from "@/lib/harborEvalCaseSchema";
+} from "./harborEvalCaseSchema.js";
 
 /** @type {import('@/lib/harborEvalCaseSchema').HarborEvalCase[]} */
 export const HARBOR_EVAL_SEED_CASES = [

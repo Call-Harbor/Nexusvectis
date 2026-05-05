@@ -13,7 +13,8 @@
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc -p ./jsconfig.json",
     "preview": "vite preview",
-    "harbor:eval:dev": "node scripts/harbor-eval-dev.mjs"
+    "harbor:eval:dev": "node scripts/harbor-eval-dev.mjs",
+    "harbor:benchmark:v1": "node scripts/harbor-intellect-benchmark.mjs"
   },
   "dependencies": {
     "@base44/sdk": "^0.8.27",
