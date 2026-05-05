@@ -4,7 +4,7 @@
  * TODO(ApprovalRequest): when mutation requires approval, startRun returns awaiting_approval and blocks execution until approved.
  * TODO(AgentPlan persistence): store planner output in routing_decision.steps or dedicated entity when orchestrateCommands runs.
  * TODO(OutcomeEvaluation): link completed runs to OutcomeLearning / KPI measurement jobs.
- * TODO(export / eval): join AgentExecution + harborEvalCaseSchema for benchmark JSONL.
+ * TODO(export / eval): join AgentExecution + harborEvalStarterKit (seed cases + labels) for benchmark JSONL.
  * TODO(audit trail): emit immutable audit row with correlation_id on each transition (service role function).
  */
 
