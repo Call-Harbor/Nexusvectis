@@ -8,7 +8,7 @@ import { createPageUrl } from "../utils";
 import ReactMarkdown from "react-markdown";
 import { 
   Sparkles, Send, Mic, Brain, Zap, TrendingUp, AlertTriangle, 
-  Truck, Route, Package, Activity, X, LayoutDashboard, Paperclip, FileText,
+  Truck, Route, Package, Activity, X, LayoutDashboard, Paperclip, FileText, Clock,
   Settings, Warehouse, Satellite, Globe, BarChart3, Building2, Monitor, ChevronDown, Users,
   Lightbulb, Network, Shield, MessageSquare, Video, FileCode, CalculatorIcon, Search, GraduationCap, Sliders
 } from "lucide-react";
@@ -57,11 +57,23 @@ import GovernanceCenter from "@/components/intellect/GovernanceCenter";
 import IntellectSidebar from "@/components/intellect/IntellectSidebar";
 import MissionControlStrip from "@/components/intellect/MissionControlStrip";
 
-// IA: IntellectMode is structured as a 4-zone AI operations workspace (see layout regions below).
+// IA: IntellectMode — 4-zone operations workspace (overview / task composer / execution log / actions).
+
+const EXEC_LOG_STORAGE_KEY = "nv_intellect_execution_log_v1";
+const MAX_EXEC_LOG = 40;
 
 const INITIAL_MESSAGES = [
-  { role: "system", content: "NexusVectis AI operations workspace online. Use the task composer to run fleet commands, open analysis windows from **Apps** / **Command**, or trigger agent runs from the action center. Context is scoped to your organization." }
+  { role: "system", content: "Operations workspace ready. Use the task composer for commands and attachments; open modules from **Apps** / **Command** in the header. Organization context applies to all queries." }
 ];
+
+function formatRunTime(ts) {
+  if (!ts) return "—";
+  try {
+    return new Date(ts).toLocaleString(undefined, { hour: "2-digit", minute: "2-digit", month: "short", day: "numeric" });
+  } catch {
+    return "—";
+  }
+}
 
 export default function IntellectMode() {
   const [input, setInput] = useState("");
@@ -116,7 +128,77 @@ export default function IntellectMode() {
   const [installedAppIds, setInstalledAppIds] = useState(new Set());
   const windowRefsRef = useRef({});
   const pendingAgentTaskRef = useRef(null); // { windowType, task }
+  const pendingHarborRunIdRef = useRef(null);
+  const pendingHarborStartedAtRef = useRef(null);
   const { runTask } = useHologramAIAgent();
+
+  // Client-side execution history (session). TODO(persistent execution log): replace with AgentExecution entity + API.
+  const [executionLog, setExecutionLog] = useState(() => {
+    try {
+      const raw = sessionStorage.getItem(EXEC_LOG_STORAGE_KEY);
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const persistExecutionLog = useCallback((entries) => {
+    try {
+      sessionStorage.setItem(EXEC_LOG_STORAGE_KEY, JSON.stringify(entries.slice(0, MAX_EXEC_LOG)));
+    } catch {
+      /* quota */
+    }
+  }, []);
+
+  const appendExecutionRun = useCallback(
+    (entry) => {
+      setExecutionLog((prev) => {
+        const row = { ts: Date.now(), ...entry };
+        const next = [row, ...prev.filter((e) => e.id !== entry.id)].slice(0, MAX_EXEC_LOG);
+        persistExecutionLog(next);
+        return next;
+      });
+    },
+    [persistExecutionLog]
+  );
+
+  const updateExecutionRun = useCallback(
+    (id, patch) => {
+      if (!id) return;
+      setExecutionLog((prev) => {
+        const next = prev.map((e) => (e.id === id ? { ...e, ...patch } : e));
+        persistExecutionLog(next);
+        return next;
+      });
+    },
+    [persistExecutionLog]
+  );
+
+  const handleKpiClick = useCallback(
+    (key) => {
+      const routesNav = {
+        vehicles: "Fleet",
+        alerts: "Alerts",
+        routes: "Routes",
+        shipments: "Shipments",
+      };
+      const page = routesNav[key];
+      if (!page) return;
+      navigate(createPageUrl(page));
+    },
+    [navigate]
+  );
+
+  const sortedExecutionRuns = useMemo(() => {
+    return [...executionLog].sort((a, b) => (b.startedAt || b.ts || 0) - (a.startedAt || a.ts || 0)).slice(0, 14);
+  }, [executionLog]);
+
+  const runTypeLabel = (t) => {
+    if (t === "harbor_intellect") return "Harbor agent";
+    if (t === "deep_analysis") return "Deep analysis";
+    return t || "Run";
+  };
 
   const messagesEndRef = useRef(null);
   const queryClient = useQueryClient();
@@ -301,8 +383,20 @@ export default function IntellectMode() {
             isWaitingForAgentRef.current = false;
             clearTimeout(window._intellectProcessingTimeout);
             setIsProcessing(false);
+            const rid = pendingHarborRunIdRef.current;
+            const t0 = pendingHarborStartedAtRef.current;
+            if (rid) {
+              updateExecutionRun(rid, {
+                status: "completed",
+                finishedAt: Date.now(),
+                outputPreview: (last.content || "").slice(0, 240),
+                meta: { messageId: last.id, latencyMs: t0 ? Date.now() - t0 : null },
+              });
+              pendingHarborRunIdRef.current = null;
+              pendingHarborStartedAtRef.current = null;
+            }
             setMessages(prev => [
-              ...prev.filter(m => m.content !== '⚡ H.A.R.B.O.R analyzing...'),
+              ...prev.filter(m => m.content !== '⚡ Agent executing…'),
               { role: 'assistant', content: last.content }
             ]);
           }
@@ -791,7 +885,17 @@ export default function IntellectMode() {
     setMessages(prev => [...prev, { role: "user", content: currentCommand }]);
     setInput("");
     const processId = createProcessTerminal(currentCommand.substring(0, 40) + '...');
-    addThinkingLog('parse', `🔬 Deep research analysis initiated`, null, 0, null, processId);
+    appendExecutionRun({
+      id: processId,
+      type: "deep_analysis",
+      status: "running",
+      label: currentCommand.slice(0, 80) + (currentCommand.length > 80 ? "…" : ""),
+      startedAt: Date.now(),
+      error: null,
+      outputPreview: null,
+      meta: { window: "analysis_chart" },
+    });
+    addThinkingLog('parse', `Deep analysis started`, null, 0, null, processId);
     addThinkingLog('analyze', 'Gathering fleet telemetry & historical records', { vehicles: vehicles.length, routes: routes.length, shipments: shipments.length }, 200, 20, processId);
     addThinkingLog('think', 'Running multi-dimensional statistical models & predictive algorithms', null, 300, 40, processId);
     addThinkingLog('model', 'Initializing predictive engines and correlation matrices', null, 250, 55, processId);
@@ -799,7 +903,7 @@ export default function IntellectMode() {
     const fleetContext = `Fleet Statistics: ${vehicles.length} vehicles (${vehicles.filter(v => v.status === 'active').length} active), ${routes.length} routes, ${shipments.length} shipments, ${alerts.length} active alerts. Transport types: ${[...new Set(vehicles.map(v => v.type))].join(', ')}`;
     
     try {
-       setMessages(prev => [...prev, { role: "system", content: "🔬 Running deep analysis... this may take a moment..." }]);
+       setMessages(prev => [...prev, { role: "system", content: "Running deep analysis — review progress in the execution log or floating terminal." }]);
 
        const result = await base44.integrations.Core.InvokeLLM({
          prompt: `You are an elite fleet intelligence strategist & operations scientist. Generate COMPELLING, INSIGHTFUL analysis for: "${currentCommand}"
@@ -894,7 +998,7 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
       }
     });
 
-      addThinkingLog('visualize', 'Rendering advanced holographic dashboard with multi-dimensional analysis', null, 150, 85, processId);
+      addThinkingLog('visualize', 'Rendering analysis dashboard', null, 150, 85, processId);
        const chartId = `chart_${Date.now()}`;
 
        // Open hologram window with analysis data
@@ -905,11 +1009,19 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
        });
 
        // Add message to chat
-       setMessages(prev => [...prev, { role: "assistant", content: `**🔬 ${result.title}**\n\n${result.summary || result.description}\n\n📊 **Advanced holographic research dashboard opened** — Explore detailed statistical analysis, predictive models, risk assessment, KPIs, and strategic recommendations with ROI calculations.` }]);
-       addThinkingLog('complete', 'Deep research analysis rendered successfully', null, 100, 100, processId);
+       const preview = `${result.title || "Analysis"} — ${(result.summary || result.description || "").slice(0, 160)}`;
+       setMessages(prev => [...prev, { role: "assistant", content: `**${result.title}**\n\n${result.summary || result.description}\n\nAnalysis dashboard opened in workspace — inspect charts and recommendations in the window.` }]);
+       addThinkingLog('complete', 'Analysis completed', null, 100, 100, processId);
+       updateExecutionRun(processId, {
+         status: "completed",
+         finishedAt: Date.now(),
+         outputPreview: preview,
+         meta: { chartTitle: result.title },
+       });
     } catch (error) {
-      addThinkingLog('error', `Deep analysis failed: ${error.message}`, null, 100, null, processId);
-      setMessages(prev => [...prev, { role: "system", content: `❌ Deep analysis failed: ${error.message}` }]);
+      addThinkingLog('error', `Analysis failed: ${error.message}`, null, 100, null, processId);
+      setMessages(prev => [...prev, { role: "system", content: `Deep analysis failed: ${error.message}` }]);
+      updateExecutionRun(processId, { status: "failed", finishedAt: Date.now(), error: error.message || String(error) });
     }
     
     closeProcessTerminal(processId);
@@ -1035,11 +1147,11 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
     setUploadedFiles([]);
     setIsProcessing(true);
 
-    // ── H.A.R.B.O.R Intellect — via Agent SDK ────────────────────────────────
-    setMessages(prev => [...prev, { role: "system", content: "⚡ H.A.R.B.O.R analyzing..." }]);
+    // Harbor Intellect — Agent SDK
+    setMessages(prev => [...prev, { role: "system", content: "Agent executing…" }]);
 
     if (!intellectConversationRef.current) {
-      setMessages(prev => [...prev.filter(m => m.content !== '⚡ H.A.R.B.O.R analyzing...'), { role: 'system', content: '❌ Agent not ready yet, try again' }]);
+      setMessages(prev => [...prev.filter(m => m.content !== 'Agent executing…'), { role: 'system', content: "Agent not ready — try again in a moment." }]);
       setIsProcessing(false);
       return;
     }
@@ -1049,12 +1161,37 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
     window._intellectProcessingTimeout = setTimeout(() => {
       isWaitingForAgentRef.current = false;
       setIsProcessing(false);
+      const rid = pendingHarborRunIdRef.current;
+      if (rid) {
+        updateExecutionRun(rid, { status: "failed", finishedAt: Date.now(), error: "Timeout waiting for agent response" });
+        pendingHarborRunIdRef.current = null;
+        pendingHarborStartedAtRef.current = null;
+      }
+      setMessages((prev) => prev.filter((m) => m.content !== "Agent executing…"));
     }, 60000);
+
+    const runId = `harbor_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    const startedAt = Date.now();
+    pendingHarborRunIdRef.current = runId;
+    pendingHarborStartedAtRef.current = startedAt;
+    appendExecutionRun({
+      id: runId,
+      type: "harbor_intellect",
+      status: "running",
+      label: currentCommand.slice(0, 72) + (currentCommand.length > 72 ? "…" : ""),
+      startedAt,
+      error: null,
+      outputPreview: null,
+      meta: { attachmentCount: currentFiles.length },
+    });
 
     try {
       isWaitingForAgentRef.current = true;
       if (!intellectConversationRef.current) {
-        setMessages(prev => [...prev.filter(m => m.content !== '⚡ H.A.R.B.O.R analyzing...'), { role: 'system', content: '❌ Agent not initialized' }]);
+        setMessages(prev => [...prev.filter(m => m.content !== 'Agent executing…'), { role: 'system', content: "Agent not initialized." }]);
+        updateExecutionRun(runId, { status: "failed", finishedAt: Date.now(), error: "No conversation" });
+        pendingHarborRunIdRef.current = null;
+        pendingHarborStartedAtRef.current = null;
         setIsProcessing(false);
         clearTimeout(window._intellectProcessingTimeout);
         return;
@@ -1069,9 +1206,12 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
       });
     } catch (err) {
       isWaitingForAgentRef.current = false;
+      pendingHarborRunIdRef.current = null;
+      pendingHarborStartedAtRef.current = null;
+      updateExecutionRun(runId, { status: "failed", finishedAt: Date.now(), error: err.message || String(err) });
       setMessages(prev => [
-        ...prev.filter(m => m.content !== '⚡ H.A.R.B.O.R analyzing...'),
-        { role: 'system', content: `❌ H.A.R.B.O.R error: ${err.message}` }
+        ...prev.filter(m => m.content !== 'Agent executing…'),
+        { role: 'system', content: `Agent error: ${err.message}` }
       ]);
       setIsProcessing(false);
     }
@@ -1134,6 +1274,7 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
           routes={routes}
           shipments={shipments}
           orgId={orgId}
+          onKpiClick={handleKpiClick}
         />
 
         <div className="flex-1 flex flex-col lg:flex-row min-h-0 overflow-hidden">
@@ -1317,9 +1458,9 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
                   />
                 </div>
                 <div>
-                  <h2 className="text-2xl sm:text-3xl font-semibold text-white tracking-tight">AI operations workspace</h2>
+                  <h2 className="text-2xl sm:text-3xl font-semibold text-white tracking-tight">Operations workspace</h2>
                   <p className="mt-2 text-sm text-slate-400 leading-relaxed">
-                    Open analysis modules from the wheel, run commands in the task composer, or launch agents from the action center.
+                    Launch modules from the wheel, enter commands in the task composer, and review execution status in the panel.
                   </p>
                 </div>
               </div>
@@ -1358,52 +1499,99 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
             />
           </div>
 
-          {/* Zone 3 — Agent runs: deep analysis & Harbor agent trace (TODO: unify into persisted AgentExecution feed) */}
-          <div className="flex-1 min-h-0 overflow-y-auto px-3 py-3 space-y-3 border-b border-slate-800/80">
-            <p className="text-[10px] font-mono uppercase tracking-widest text-slate-500 px-1">Agent runs</p>
-            <div className="rounded-lg border border-slate-700/60 bg-slate-900/50 p-3 space-y-2">
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-xs text-slate-300">Deep analysis jobs</span>
-                <Badge variant="outline" className="text-[10px] border-cyan-500/30 text-cyan-400">{processTerminals.length} active</Badge>
-              </div>
-              <p className="text-[11px] text-slate-500 leading-snug">
-                Long-running analyses log to floating terminals (bottom-right). TODO: merge with agent SDK traces + approval gates for write actions.
-              </p>
-            </div>
-            <div className="rounded-lg border border-slate-700/60 bg-slate-900/50 p-3 space-y-2">
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-xs text-slate-300">H.A.R.B.O.R agent</span>
-                <Badge variant="outline" className={`text-[10px] ${isProcessing ? 'border-amber-500/40 text-amber-400' : 'border-slate-600 text-slate-500'}`}>
-                  {isProcessing ? 'Running' : 'Idle'}
+          {/* Zone 3 — Execution queue: session log + live terminals (TODO persistent execution log: AgentExecution entity) */}
+          <div className="flex-1 min-h-0 overflow-y-auto px-3 py-3 space-y-2 border-b border-slate-800/80">
+            <div className="flex items-center justify-between gap-2 px-1">
+              <p className="text-[10px] font-mono uppercase tracking-widest text-slate-500">Execution queue</p>
+              {processTerminals.length > 0 && (
+                <Badge variant="outline" className="text-[10px] border-slate-600 text-slate-400">
+                  {processTerminals.length} terminal{processTerminals.length !== 1 ? "s" : ""} open
                 </Badge>
-              </div>
-              <p className="text-[11px] text-slate-500 leading-snug">
-                {/* TODO(agent-observability): show last agent message id, latency, token usage */}
-                Conversation-backed agent — replies appear in task composer history. Subscribe hook: harbor_intellect.
-              </p>
+              )}
             </div>
+            <p className="text-[10px] text-slate-600 px-1 leading-snug">
+              Session-scoped history (sessionStorage). TODO(audit trail): append-only server log with actor + correlation id.
+            </p>
+            {sortedExecutionRuns.length === 0 ? (
+              <div className="rounded-lg border border-dashed border-slate-700/80 bg-slate-900/40 px-3 py-4 text-center">
+                <p className="text-xs text-slate-500">No runs yet. Send a command or start deep analysis from Command in the header.</p>
+              </div>
+            ) : (
+              <ul className="space-y-2">
+                {sortedExecutionRuns.map((run) => (
+                  <li
+                    key={run.id}
+                    className="rounded-lg border border-slate-700/60 bg-slate-900/60 p-2.5 text-left"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <span className="text-[10px] font-mono text-slate-500 flex items-center gap-1">
+                        <Clock className="w-3 h-3 shrink-0" aria-hidden />
+                        {formatRunTime(run.startedAt || run.ts)}
+                      </span>
+                      <Badge
+                        variant="outline"
+                        className={`text-[9px] shrink-0 ${
+                          run.status === "completed"
+                            ? "border-emerald-500/40 text-emerald-400"
+                            : run.status === "failed"
+                              ? "border-red-500/40 text-red-400"
+                              : "border-amber-500/40 text-amber-400"
+                        }`}
+                      >
+                        {run.status === "running" ? "Running" : run.status === "completed" ? "Completed" : run.status === "failed" ? "Failed" : run.status || "—"}
+                      </Badge>
+                    </div>
+                    <p className="text-[10px] uppercase tracking-wide text-slate-500 mt-1">{runTypeLabel(run.type)}</p>
+                    <p className="text-xs text-slate-200 mt-0.5 line-clamp-2">{run.label || "—"}</p>
+                    {run.error && <p className="text-[11px] text-red-400/90 mt-1 break-words">Error: {run.error}</p>}
+                    {run.outputPreview && !run.error && (
+                      <p className="text-[11px] text-slate-500 mt-1 line-clamp-2">{run.outputPreview}</p>
+                    )}
+                    {run.meta?.latencyMs != null && run.status === "completed" && (
+                      <p className="text-[10px] text-slate-600 mt-1 font-mono">
+                        {/* TODO(cost/latency): replace wall clock with provider latency + token/cost */}
+                        Round-trip: {run.meta.latencyMs} ms
+                      </p>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
-          {/* Zone 4 — Action center: deterministic shortcuts (TODO: approval workflow for mutations) */}
+          {/* Zone 4 — Actions: read vs execution (TODO approval workflow for elevated runs) */}
           <div className="flex-shrink-0 p-3 pb-4 border-t border-slate-800/80 bg-slate-950/95">
-            <p className="text-[10px] font-mono uppercase tracking-widest text-slate-500 mb-2 px-1">Action center</p>
+            <p className="text-[10px] font-mono uppercase tracking-widest text-slate-500 mb-1 px-1">Quick navigation</p>
+            <p className="text-[10px] text-slate-600 mb-2 px-1">Read-only — opens module for review.</p>
             <div className="grid grid-cols-2 gap-2">
-              <Button type="button" variant="outline" size="sm" className="h-auto py-2 text-[11px] border-cyan-500/25 text-cyan-200 hover:bg-cyan-500/10" onClick={() => navigate(createPageUrl('Fleet'))}>
+              <Button type="button" variant="outline" size="sm" className="h-auto py-2 text-[11px] border-slate-600/80 text-slate-200 hover:bg-slate-800/80" onClick={() => navigate(createPageUrl('Fleet'))}>
                 <Truck className="w-3.5 h-3.5 mr-1.5 shrink-0" /> Fleet
               </Button>
-              <Button type="button" variant="outline" size="sm" className="h-auto py-2 text-[11px] border-cyan-500/25 text-cyan-200 hover:bg-cyan-500/10" onClick={() => navigate(createPageUrl('Alerts'))}>
+              <Button type="button" variant="outline" size="sm" className="h-auto py-2 text-[11px] border-slate-600/80 text-slate-200 hover:bg-slate-800/80" onClick={() => navigate(createPageUrl('Alerts'))}>
                 <AlertTriangle className="w-3.5 h-3.5 mr-1.5 shrink-0" /> Alerts
               </Button>
-              <Button type="button" variant="outline" size="sm" className="h-auto py-2 text-[11px] border-cyan-500/25 text-cyan-200 hover:bg-cyan-500/10" onClick={() => navigate(createPageUrl('Shipments'))}>
+              <Button type="button" variant="outline" size="sm" className="h-auto py-2 text-[11px] border-slate-600/80 text-slate-200 hover:bg-slate-800/80" onClick={() => navigate(createPageUrl('Shipments'))}>
                 <Package className="w-3.5 h-3.5 mr-1.5 shrink-0" /> Shipments
               </Button>
-              <Button type="button" variant="outline" size="sm" className="h-auto py-2 text-[11px] border-violet-500/25 text-violet-200 hover:bg-violet-500/10" onClick={() => setShowAITaskRunner(true)}>
-                <Zap className="w-3.5 h-3.5 mr-1.5 shrink-0" /> AI Execute
+              <Button type="button" variant="outline" size="sm" className="h-auto py-2 text-[11px] border-slate-600/80 text-slate-200 hover:bg-slate-800/80" onClick={() => navigate(createPageUrl('Routes'))}>
+                <Route className="w-3.5 h-3.5 mr-1.5 shrink-0" /> Routes
               </Button>
             </div>
+            <p className="text-[10px] font-mono uppercase tracking-widest text-amber-600/90 mt-3 mb-1 px-1">Elevated execution</p>
+            <p className="text-[10px] text-slate-600 mb-2 px-1">May change data or drive UI — approval workflow not enforced yet.</p>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="w-full h-auto py-2.5 text-[11px] border-amber-500/35 text-amber-100 hover:bg-amber-950/50"
+              onClick={() => setShowAITaskRunner(true)}
+            >
+              <Zap className="w-3.5 h-3.5 mr-2 shrink-0 text-amber-400" />
+              Agent task runner
+            </Button>
             <p className="text-[10px] text-slate-600 mt-2 px-1">
-              {/* TODO(human-review): require confirmation before entity writes from agent */}
-              Sidebar toggles open chat, governance, and load map — keep using those for multi-agent flows.
+              {/* TODO(approval workflow): gate runner + entity writes behind role + confirmation */}
+              Sidebar: agent chat, governance, load map.
             </p>
           </div>
         </aside>
@@ -1421,7 +1609,7 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
             >
               <div className="max-w-7xl mx-auto flex items-center gap-2 text-xs text-cyan-200/90 font-mono">
                 <Activity className="w-3.5 h-3.5 animate-pulse text-cyan-400" />
-                Processing agent request…
+                Agent request in queue…
               </div>
             </motion.div>
           )}
