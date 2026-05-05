@@ -61,3 +61,26 @@ Set `BENCHMARK_USE_LIVE=1` and pass `base44` when running programmatically.
 - Improve tool-trace capture from runtime/orchestration for stricter routing checks.
 - Add CI job using this script as regression gate.
 - Expand case set and add stronger rubric keyword maps.
+
+## Hugging Face dataset upload
+
+Publish the **eval case JSONL**, optional **benchmark v1 JSONL** runs, and the **Harbor Intellect agent definition** to a Hub dataset repo:
+
+1. Create a token with **write** access at [https://huggingface.co/settings/tokens](https://huggingface.co/settings/tokens).
+2. First push (create repo + upload):
+
+```bash
+export HF_TOKEN=hf_...
+npm run harbor:hf:upload -- --repo YOUR_USERNAME/harbor-intellect-eval-v1 --create
+```
+
+Or use your HF username automatically (repo is created under your account when using `--create`):
+
+```bash
+export HF_TOKEN=hf_...
+npm run harbor:hf:upload -- --repo harbor-intellect-eval-v1 --create
+```
+
+Optional: `HF_ORG=my-org` for org-owned repos, `HF_PRIVATE=1` for private datasets, `HF_SKIP_BENCHMARK=1` to ship eval cases only, `HF_SKIP_AGENT=1` to omit `agent_definition.json`.
+
+Implementation: `scripts/harbor-intellect-upload-hf.mjs`, `src/lib/harborIntellectHfDataset.js`. A local copy of the bundle is written under `artifacts/hf-upload/` (gitignored).

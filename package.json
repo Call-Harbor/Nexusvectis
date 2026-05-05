@@ -14,7 +14,8 @@
     "typecheck": "tsc -p ./jsconfig.json",
     "preview": "vite preview",
     "harbor:eval:dev": "node scripts/harbor-eval-dev.mjs",
-    "harbor:benchmark:v1": "node scripts/harbor-intellect-benchmark.mjs"
+    "harbor:benchmark:v1": "node scripts/harbor-intellect-benchmark.mjs",
+    "harbor:hf:upload": "node scripts/harbor-intellect-upload-hf.mjs"
   },
   "dependencies": {
     "@base44/sdk": "^0.8.27",
