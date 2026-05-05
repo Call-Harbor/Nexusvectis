@@ -56,8 +56,13 @@ import OutcomeIntelligencePanel from "@/components/intellect/OutcomeIntelligence
 import GovernanceCenter from "@/components/intellect/GovernanceCenter";
 import IntellectSidebar from "@/components/intellect/IntellectSidebar";
 import MissionControlStrip from "@/components/intellect/MissionControlStrip";
+import {
+  normalizeHarborExecutionRecord,
+  INTELLECT_RUN_KIND,
+  stackRoleFromRunKind,
+} from "@/lib/harborIntelligenceModel";
 
-// IA: IntellectMode — 4-zone operations workspace (overview / task composer / execution log / actions).
+// IA: IntellectMode — Harbor Intellect UI (thinking); orchestration runs surface here when delegated — see src/lib/harborIntelligenceModel.js.
 
 const EXEC_LOG_STORAGE_KEY = "nv_intellect_execution_log_v1";
 const MAX_EXEC_LOG = 40;
@@ -132,7 +137,8 @@ export default function IntellectMode() {
   const pendingHarborStartedAtRef = useRef(null);
   const { runTask } = useHologramAIAgent();
 
-  // Client-side execution history (session). TODO(persistent execution log): replace with AgentExecution entity + API.
+  // Session execution queue — canonical shape via normalizeHarborExecutionRecord (intellect vs orchestration).
+  // TODO(persistent execution log): base44.entities.AgentExecution.create(toAgentExecutionPayload(row, orgId)) from a secured function; TODO(audit trail): immutable append per transition.
   const [executionLog, setExecutionLog] = useState(() => {
     try {
       const raw = sessionStorage.getItem(EXEC_LOG_STORAGE_KEY);
@@ -154,8 +160,18 @@ export default function IntellectMode() {
   const appendExecutionRun = useCallback(
     (entry) => {
       setExecutionLog((prev) => {
-        const row = { ts: Date.now(), ...entry };
-        const next = [row, ...prev.filter((e) => e.id !== entry.id)].slice(0, MAX_EXEC_LOG);
+        const kind = entry.kind || entry.type || "unknown";
+        const row = normalizeHarborExecutionRecord({
+          id: entry.id,
+          kind,
+          status: entry.status || "running",
+          label: entry.label,
+          startedAt: entry.startedAt,
+          error: entry.error ?? null,
+          outputPreview: entry.outputPreview ?? null,
+          meta: { ...(entry.meta || {}), legacyTs: entry.ts },
+        });
+        const next = [row, ...prev.filter((e) => e.id !== row.id)].slice(0, MAX_EXEC_LOG);
         persistExecutionLog(next);
         return next;
       });
@@ -167,7 +183,14 @@ export default function IntellectMode() {
     (id, patch) => {
       if (!id) return;
       setExecutionLog((prev) => {
-        const next = prev.map((e) => (e.id === id ? { ...e, ...patch } : e));
+        const next = prev.map((e) => {
+          if (e.id !== id) return e;
+          const merged = { ...e, ...patch };
+          return normalizeHarborExecutionRecord({
+            ...merged,
+            kind: merged.kind || merged.type || "unknown",
+          });
+        });
         persistExecutionLog(next);
         return next;
       });
@@ -191,13 +214,31 @@ export default function IntellectMode() {
   );
 
   const sortedExecutionRuns = useMemo(() => {
-    return [...executionLog].sort((a, b) => (b.startedAt || b.ts || 0) - (a.startedAt || a.ts || 0)).slice(0, 14);
+    return [...executionLog]
+      .map((e) =>
+        e.stackRole
+          ? e
+          : normalizeHarborExecutionRecord({
+              id: e.id,
+              kind: e.kind || e.type || "unknown",
+              status: e.status,
+              label: e.label,
+              startedAt: e.startedAt || e.ts,
+              finishedAt: e.finishedAt,
+              error: e.error,
+              outputPreview: e.outputPreview,
+              meta: e.meta || {},
+            })
+      )
+      .sort((a, b) => (b.startedAt || 0) - (a.startedAt || 0))
+      .slice(0, 14);
   }, [executionLog]);
 
-  const runTypeLabel = (t) => {
-    if (t === "harbor_intellect") return "Harbor agent";
-    if (t === "deep_analysis") return "Deep analysis";
-    return t || "Run";
+  const runKindLabel = (run) => {
+    const k = run.kind || run.type;
+    if (k === INTELLECT_RUN_KIND.HARBOR_AGENT) return "Intellect · agent reply";
+    if (k === INTELLECT_RUN_KIND.DEEP_ANALYSIS) return "Intellect · analysis job";
+    return k || "Run";
   };
 
   const messagesEndRef = useRef(null);
@@ -887,13 +928,13 @@ export default function IntellectMode() {
     const processId = createProcessTerminal(currentCommand.substring(0, 40) + '...');
     appendExecutionRun({
       id: processId,
-      type: "deep_analysis",
+      kind: INTELLECT_RUN_KIND.DEEP_ANALYSIS,
       status: "running",
       label: currentCommand.slice(0, 80) + (currentCommand.length > 80 ? "…" : ""),
       startedAt: Date.now(),
       error: null,
       outputPreview: null,
-      meta: { window: "analysis_chart" },
+      meta: { window: "analysis_chart", phase: "execute", correlationId: processId },
     });
     addThinkingLog('parse', `Deep analysis started`, null, 0, null, processId);
     addThinkingLog('analyze', 'Gathering fleet telemetry & historical records', { vehicles: vehicles.length, routes: routes.length, shipments: shipments.length }, 200, 20, processId);
@@ -1176,13 +1217,17 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
     pendingHarborStartedAtRef.current = startedAt;
     appendExecutionRun({
       id: runId,
-      type: "harbor_intellect",
+      kind: INTELLECT_RUN_KIND.HARBOR_AGENT,
       status: "running",
       label: currentCommand.slice(0, 72) + (currentCommand.length > 72 ? "…" : ""),
       startedAt,
       error: null,
       outputPreview: null,
-      meta: { attachmentCount: currentFiles.length },
+      meta: {
+        attachmentCount: currentFiles.length,
+        correlationId: runId,
+        phase: "execute",
+      },
     });
 
     try {
@@ -1499,7 +1544,7 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
             />
           </div>
 
-          {/* Zone 3 — Execution queue: session log + live terminals (TODO persistent execution log: AgentExecution entity) */}
+          {/* Zone 3 — Execution queue: Intellect + (future) Orchestration runs; session until AgentExecution API exists */}
           <div className="flex-1 min-h-0 overflow-y-auto px-3 py-3 space-y-2 border-b border-slate-800/80">
             <div className="flex items-center justify-between gap-2 px-1">
               <p className="text-[10px] font-mono uppercase tracking-widest text-slate-500">Execution queue</p>
@@ -1510,7 +1555,8 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
               )}
             </div>
             <p className="text-[10px] text-slate-600 px-1 leading-snug">
-              Session-scoped history (sessionStorage). TODO(audit trail): append-only server log with actor + correlation id.
+              Session buffer — Intellect runs above; orchestration runs when wired from task runner / orchestrator API.
+              TODO(memory layer): hydrate recent AgentExecution rows per org on load.
             </p>
             {sortedExecutionRuns.length === 0 ? (
               <div className="rounded-lg border border-dashed border-slate-700/80 bg-slate-900/40 px-3 py-4 text-center">
@@ -1523,25 +1569,30 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
                     key={run.id}
                     className="rounded-lg border border-slate-700/60 bg-slate-900/60 p-2.5 text-left"
                   >
-                    <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-start justify-between gap-2 flex-wrap">
                       <span className="text-[10px] font-mono text-slate-500 flex items-center gap-1">
                         <Clock className="w-3 h-3 shrink-0" aria-hidden />
                         {formatRunTime(run.startedAt || run.ts)}
                       </span>
-                      <Badge
-                        variant="outline"
-                        className={`text-[9px] shrink-0 ${
-                          run.status === "completed"
-                            ? "border-emerald-500/40 text-emerald-400"
-                            : run.status === "failed"
-                              ? "border-red-500/40 text-red-400"
-                              : "border-amber-500/40 text-amber-400"
-                        }`}
-                      >
-                        {run.status === "running" ? "Running" : run.status === "completed" ? "Completed" : run.status === "failed" ? "Failed" : run.status || "—"}
-                      </Badge>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <Badge variant="outline" className="text-[9px] border-slate-600 text-slate-400 font-normal">
+                          {(run.stackRole || stackRoleFromRunKind(run.kind || run.type)) === "intellect" ? "Intellect" : "Orchestration"}
+                        </Badge>
+                        <Badge
+                          variant="outline"
+                          className={`text-[9px] ${
+                            run.status === "completed"
+                              ? "border-emerald-500/40 text-emerald-400"
+                              : run.status === "failed"
+                                ? "border-red-500/40 text-red-400"
+                                : "border-amber-500/40 text-amber-400"
+                          }`}
+                        >
+                          {run.status === "running" ? "Running" : run.status === "completed" ? "Completed" : run.status === "failed" ? "Failed" : run.status || "—"}
+                        </Badge>
+                      </div>
                     </div>
-                    <p className="text-[10px] uppercase tracking-wide text-slate-500 mt-1">{runTypeLabel(run.type)}</p>
+                    <p className="text-[10px] uppercase tracking-wide text-slate-500 mt-1">{runKindLabel(run)}</p>
                     <p className="text-xs text-slate-200 mt-0.5 line-clamp-2">{run.label || "—"}</p>
                     {run.error && <p className="text-[11px] text-red-400/90 mt-1 break-words">Error: {run.error}</p>}
                     {run.outputPreview && !run.error && (
