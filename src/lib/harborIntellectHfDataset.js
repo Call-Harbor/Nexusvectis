@@ -17,7 +17,7 @@ import { HARBOR_MODEL_STACK_VERSION } from "./harborModelStack.js";
 const HF_API = "https://huggingface.co";
 
 /** Stable version for manifest.json shape and Hub README contract (bump when manifest fields change). */
-export const HARBOR_HF_DATASET_BUNDLE_VERSION = "1.0.0";
+export const HARBOR_HF_DATASET_BUNDLE_VERSION = "1.0.1";
 
 /** Benchmark harness id aligned with file prefixes and docs. */
 export const HARBOR_INTELLECT_BENCHMARK_V1_ID = "harbor_intellect_benchmark_v1";
@@ -119,7 +119,7 @@ export function countHarborEvalRunsBySuiteFromEvalJsonl(evalJsonlRaw) {
  * @param {object} [opts]
  * @param {import('./harborEvalCaseSchema.js').HarborEvalCase[]} [opts.cases]
  * @param {{ eval_jsonl?: string, training_jsonl?: string }} [opts.benchmarkJsonl]
- * @param {boolean} [opts.includeAgentDefinition]
+ * @param {boolean} [opts.includeAgentDefinition] - default **false** (opt-in: avoids leaking system prompts)
  * @param {string} [opts.agentDefinitionPath] - default: base44/agents/harbor_intellect.jsonc
  * @param {boolean} [opts.validateBenchmarkJsonl] - default true when benchmark strings are non-empty
  * @returns {{ files: HarborHfRepoFile[], manifest: Record<string, unknown> }}
@@ -168,7 +168,7 @@ export function buildHarborIntellectHfDatasetFiles(opts = {}) {
     content: `${evalCasesJsonl}\n`,
   });
 
-  const includeAgent = opts.includeAgentDefinition !== false;
+  const includeAgent = opts.includeAgentDefinition === true;
   let agentStatus = /** @type {"included"|"skipped_not_found"|"skipped_disabled"} */ ("skipped_disabled");
   const relAgent = opts.agentDefinitionPath ?? path.join("base44", "agents", "harbor_intellect.jsonc");
   const absAgent = path.isAbsolute(relAgent) ? relAgent : path.join(process.cwd(), relAgent);
@@ -249,6 +249,12 @@ export function buildHarborIntellectHfDatasetFiles(opts = {}) {
     includes: includesMap,
     agent_definition_status: agentStatus,
     agent_definition_source_path: agentStatus === "included" ? relAgent.replace(/\\/g, "/") : null,
+    /** Pre-release review hints (not a security guarantee). */
+    sensitivity: {
+      contains_benchmark_model_outputs: Boolean(evalJsonlRaw || trainJsonlRaw),
+      contains_agent_system_instructions: agentStatus === "included",
+      seed_cases_are_synthetic: true,
+    },
     files_in_bundle: [],
     generated_at: new Date().toISOString(),
     source: {
@@ -313,16 +319,17 @@ function buildDatasetReadme(ctx) {
 
   const exampleRunBlock = ctx.exampleEvalRunLine
     ? "```json\n" + ctx.exampleEvalRunLine + "\n```"
-    : "_Not included in this revision — run `npm run harbor:benchmark:v1` and re-upload with benchmark JSONL, or omit benchmark files._";
+    : "_Not included in this revision — run npm run harbor:benchmark:v1 and re-upload with benchmark JSONL, or omit benchmark files._";
 
   const agentNote =
     ctx.agentStatus === "included"
-      ? "This revision includes `agent_definition.json` (system prompt / agent metadata from the Harbor app repo)."
+      ? "This revision **includes** agent_definition.json (system prompt / agent instructions). Treat as **confidential** unless you have explicitly approved public release."
       : ctx.agentStatus === "skipped_not_found"
-        ? "`agent_definition.json` is **not** in this bundle (source file was not found at build time)."
-        : "`agent_definition.json` was omitted (export disabled).";
+        ? "agent_definition.json is **not** in this bundle (source file was not found at build time). Default upload flow **omits** the agent file unless you opt in — see upload docs."
+        : "agent_definition.json was **not** bundled (default is opt-in for safer pre-release uploads).";
 
   const yamlCard = `---
+# Align repo Settings → License on the Hub with your legal review (pre-release often stays private).
 license: apache-2.0
 language:
   - en
@@ -346,6 +353,13 @@ size_categories:
 
 Harbor Intellect is the domain-tuned reasoning and analysis layer in the Harbor / NexusVectis stack (prioritization, disruption handling, policy-aware responses). This dataset packages **frozen eval cases** and optional **v1 benchmark run exports** for reproducible scoring and training-data preparation.
 
+## Privacy & pre-release
+
+- **Prefer a private Hub dataset** for the first upload; review **artifacts/hf-upload/** after a local **--dry-run** before any public release.
+- **Benchmark JSONL** may contain **model-generated output_text** (stub or live). Review for accidental PII or internal wording before publishing.
+- **agent_definition.json** is **opt-in** in the default upload CLI — it can expose **system prompts** and product wording; do not enable unless legal/product approves.
+- **Seed cases** use synthetic **organization_id** values; still treat bundled content as your intellectual property until you decide otherwise.
+
 ## Dataset contents
 
 | File | Description |
@@ -353,7 +367,7 @@ Harbor Intellect is the domain-tuned reasoning and analysis layer in the Harbor 
 | \`harbor_eval_cases.jsonl\` | One JSON object per line: \`HarborEvalCase\` (schema **${HARBOR_EVAL_CASE_SCHEMA_VERSION}**). Primary artifact for benchmarks and supervised labels. |
 | \`harbor_intellect_benchmark_v1.eval.jsonl\` | Optional: one row per model run with \`schema: harbor.eval_run.v1\` (pass/fail, score, output snippet). |
 | \`harbor_intellect_benchmark_v1.training.jsonl\` | Optional: \`harbor.training_export.v1\` rows for finetune pipelines. |
-| \`agent_definition.json\` | Optional: agent card JSON (instructions / metadata) for prompt recovery — **not** a trained model. |
+| \`agent_definition.json\` | **Opt-in** on upload: agent card (instructions / metadata). May be **confidential** — not a trained model. |
 | \`manifest.json\` | Machine-readable bundle metadata (versions, suite counts, which files are present). |
 
 ## Benchmark suites (seed distribution)
@@ -416,7 +430,9 @@ ${agentNote}
 
 ## License & attribution
 
-Dataset card license in YAML is **Apache-2.0** (align with Hub repo settings). Verify license and attribution requirements for your use case. Source: NexusVectis / Harbor codebase (\`harborEvalSeedCases\`, Harbor Intellect Benchmark v1).
+The YAML \`license\` field is **Apache-2.0** as a default for open distribution; for **private** or **gated** repos you must still set **Hub repo → Settings → License** and dataset visibility to match your legal review. Source: NexusVectis / Harbor codebase (\`harborEvalSeedCases\`, Harbor Intellect Benchmark v1).
+
+See \`manifest.json\` → \`sensitivity\` for a machine-readable hint about whether this revision includes model outputs or agent instructions.
 `;
 }
 
