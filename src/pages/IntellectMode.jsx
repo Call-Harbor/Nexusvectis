@@ -55,44 +55,12 @@ import AgentControlPanel from "@/components/intellect/AgentControlPanel";
 import OutcomeIntelligencePanel from "@/components/intellect/OutcomeIntelligencePanel";
 import GovernanceCenter from "@/components/intellect/GovernanceCenter";
 import IntellectSidebar from "@/components/intellect/IntellectSidebar";
+import MissionControlStrip from "@/components/intellect/MissionControlStrip";
 
-const THINKING_STEPS = ["Querying fleet data", "Running neural analysis", "Cross-referencing modules", "Generating response"];
-
-function HarborThinkingBar() {
-  const [stepIdx, setStepIdx] = React.useState(0);
-  React.useEffect(() => {
-    const t = setInterval(() => setStepIdx(i => (i + 1) % THINKING_STEPS.length), 1400);
-    return () => clearInterval(t);
-  }, []);
-  return (
-    <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl" style={{ background: "rgba(6,182,212,0.07)", border: "1px solid rgba(6,182,212,0.2)" }}>
-      <div className="relative flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "linear-gradient(135deg, rgba(6,182,212,0.2), rgba(139,92,246,0.2))", border: "1px solid rgba(6,182,212,0.3)" }}>
-        <motion.div animate={{ opacity: [0.5, 1, 0.5] }} transition={{ duration: 1.2, repeat: Infinity }}>
-          <Brain className="w-3.5 h-3.5" style={{ color: "#06b6d4" }} />
-        </motion.div>
-        <motion.div className="absolute inset-0 rounded-lg border" animate={{ scale: [1, 1.5, 1], opacity: [0.4, 0, 0.4] }} transition={{ duration: 1.5, repeat: Infinity }} style={{ borderColor: "#06b6d4" }} />
-      </div>
-      <div className="flex items-center gap-1">
-        {[0, 0.15, 0.3].map((delay, i) => (
-          <motion.div key={i} className="w-1.5 h-1.5 rounded-full" animate={{ y: [0, -5, 0], opacity: [0.4, 1, 0.4] }} transition={{ duration: 0.7, repeat: Infinity, delay }} style={{ background: "#06b6d4", boxShadow: "0 0 6px rgba(6,182,212,0.6)" }} />
-        ))}
-      </div>
-      <div className="flex-1 overflow-hidden">
-        <AnimatePresence mode="wait">
-          <motion.span key={stepIdx} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} transition={{ duration: 0.3 }} className="text-[10px] font-mono tracking-widest uppercase block" style={{ color: "rgba(6,182,212,0.8)" }}>
-            ⚡ {THINKING_STEPS[stepIdx]}...
-          </motion.span>
-        </AnimatePresence>
-      </div>
-      <div className="w-24 h-1 rounded-full overflow-hidden flex-shrink-0" style={{ background: "rgba(6,182,212,0.1)" }}>
-        <motion.div className="h-full rounded-full" animate={{ x: ["-100%", "150%"] }} transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }} style={{ background: "linear-gradient(90deg, transparent, #06b6d4, #8b5cf6, transparent)", width: "40%" }} />
-      </div>
-    </div>
-  );
-}
+// IA: IntellectMode is structured as a 4-zone AI operations workspace (see layout regions below).
 
 const INITIAL_MESSAGES = [
-  { role: "system", content: "⚡ FLEET AI online. World's most advanced logistics intelligence system ready. I can: perform predictive maintenance analysis, forecast demand, optimize routes multi-modally, generate CO2 reports, detect anomalies, assess risks, benchmark performance, and execute any fleet operation. Command me." }
+  { role: "system", content: "NexusVectis AI operations workspace online. Use the task composer to run fleet commands, open analysis windows from **Apps** / **Command**, or trigger agent runs from the action center. Context is scoped to your organization." }
 ];
 
 export default function IntellectMode() {
@@ -110,6 +78,7 @@ export default function IntellectMode() {
   const [commandHistory, setCommandHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [streamingMessage, setStreamingMessage] = useState("");
+  const [isListening, setIsListening] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
   const [show3DVisualization, setShow3DVisualization] = useState(null);
@@ -1158,8 +1127,18 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
            onShow3DGlobe={() => setShow3DVisualization({ vehicles, routes, resources })}
          />
 
-        {/* Main Canvas */}
-        <div className="flex-1 overflow-hidden relative">
+        {/* Zone 1 — Mission control: live fleet snapshot (TODO: deeper telemetry + agent health) */}
+        <MissionControlStrip
+          vehicles={vehicles}
+          alerts={alerts}
+          routes={routes}
+          shipments={shipments}
+          orgId={orgId}
+        />
+
+        <div className="flex-1 flex flex-col lg:flex-row min-h-0 overflow-hidden">
+        {/* Center: workspace canvas / hologram windows */}
+        <div className="flex-1 overflow-hidden relative min-h-[40vh] lg:min-h-0 border-b lg:border-b-0 lg:border-r border-cyan-500/10">
           {/* Advanced Intelligence Panel */}
           {showAdvancedPanel && (
             <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
@@ -1317,184 +1296,136 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
             </motion.div>
           )}
 
-          {/* Standby */}
+          {/* Empty workspace: launcher + brain menu (reduced motion vs former sci-fi standby) */}
           {activeWindows.length === 0 && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center overflow-hidden">
-              {/* Enhanced background effects */}
-               <div className="absolute inset-0 pointer-events-none">
-                 {/* Ambient glow orbs */}
-                 <motion.div
-                   animate={{ scale: [1, 1.2, 1], rotate: [0, 360] }}
-                   transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                   className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full opacity-20"
-                   style={{ background: "radial-gradient(circle, #06b6d4 0%, transparent 70%)" }}
-                 />
-                 <motion.div
-                   animate={{ scale: [1.2, 1, 1.2], rotate: [360, 0] }}
-                   transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-                   className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full opacity-15"
-                   style={{ background: "radial-gradient(circle, #8b5cf6 0%, transparent 70%)" }}
-                 />
-
-                 {/* Floating stars */}
-                 {[...Array(8)].map((_, i) => (
-                   <motion.div
-                     key={`star-${i}`}
-                     className="absolute w-1 h-1 rounded-full"
-                     animate={{
-                       y: [0, -100, 0],
-                       x: [0, Math.cos((i / 8) * Math.PI * 2) * 50, 0],
-                       opacity: [0.3, 1, 0.3],
-                     }}
-                     transition={{
-                       duration: 6 + i,
-                       repeat: Infinity,
-                       ease: "easeInOut",
-                     }}
-                     style={{
-                       background: i % 2 === 0 ? "#06b6d4" : "#8b5cf6",
-                       boxShadow: i % 2 === 0 ? "0 0 10px #06b6d4" : "0 0 10px #8b5cf6",
-                       left: `${20 + i * 10}%`,
-                       top: `${30 + Math.random() * 40}%`,
-                     }}
-                   />
-                 ))}
-
-                 {/* Gradient light beams */}
-                 <motion.div
-                   animate={{ rotate: [0, 360] }}
-                   transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-                   className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full"
-                   style={{
-                     background: "conic-gradient(from 0deg, rgba(6,182,212,0.1) 0deg, transparent 90deg, rgba(139,92,246,0.1) 180deg, transparent 270deg)",
-                   }}
-                 />
-               </div>
-
-              {/* Main content */}
-              <div className="relative z-10 flex flex-col items-center">
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.5 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.8, delay: 0.2 }}
-                  className="relative mb-16"
-                >
-                  {/* Orbiting rings */}
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    {[1, 2, 3].map((ring) => (
-                      <motion.div
-                        key={ring}
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 10 + ring * 5, repeat: Infinity, ease: "linear" }}
-                        className="absolute rounded-full border"
-                        style={{
-                          width: 120 + ring * 60,
-                          height: 120 + ring * 60,
-                          borderColor: `rgba(6,182,212,${0.2 - ring * 0.05})`,
-                          borderWidth: 1,
-                        }}
-                      />
-                    ))}
-                  </div>
-
-                  {/* Brain menu */}
-                  <div className="relative z-20">
-                    <CircularBrainMenu 
-                      size="lg" 
-                      showMenuByDefault={true}
-                      onAction={(action) => {
-                        if (action === 'advanced_intelligence') setShowAdvancedPanel(true);
-                        else if (action === 'deep_analysis') openWindow('deep_analysis', { x: 100, y: 80 });
-                        else if (action === 'company_analysis') setShowCompanyAnalysis(true);
-                        else openWindow(action, { x: 100 + Math.random() * 100, y: 80 + Math.random() * 100 });
-                      }}
-                      onMenuToggle={setIsCircularMenuOpen}
-                    />
-                  </div>
-                </motion.div>
-
-                {/* Title and description */}
-                <motion.div
-                   initial={{ opacity: 0, y: 20 }}
-                   animate={{ opacity: activeWindows.length === 0 ? 1 : 0, y: activeWindows.length === 0 ? 0 : 20 }}
-                   transition={{ duration: 0.3 }}
-                   className="text-center max-w-xl px-4 space-y-4"
-                 >
-                  <div className="relative inline-block">
-                    <div className="absolute inset-0 blur-2xl opacity-50" style={{ background: "linear-gradient(135deg, #06b6d4, #8b5cf6)" }} />
-                    <h1 className="relative text-6xl font-black font-mono tracking-widest uppercase bg-clip-text text-transparent"
-                      style={{
-                        backgroundImage: "linear-gradient(135deg, #06b6d4 0%, #8b5cf6 100%)",
-                        textShadow: "0 0 30px rgba(6,182,212,0.3), 0 0 60px rgba(139,92,246,0.2)",
-                      }}>
-                      FLEET AI
-                    </h1>
-                  </div>
-
-                  <p className="text-lg text-slate-300 font-light tracking-wide">
-                    Neural Logistics Intelligence Platform
+            <div className="absolute inset-0 flex flex-col items-center justify-center overflow-hidden px-4">
+              <div className="absolute inset-0 pointer-events-none opacity-40">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[28rem] h-[28rem] rounded-full blur-3xl" style={{ background: "radial-gradient(circle, rgba(6,182,212,0.12) 0%, transparent 70%)" }} />
+              </div>
+              <div className="relative z-10 flex flex-col items-center max-w-lg text-center space-y-6">
+                <div className="relative mb-4">
+                  <CircularBrainMenu
+                    size="lg"
+                    showMenuByDefault={true}
+                    onAction={(action) => {
+                      if (action === 'advanced_intelligence') setShowAdvancedPanel(true);
+                      else if (action === 'deep_analysis') openWindow('deep_analysis', { x: 100, y: 80 });
+                      else if (action === 'company_analysis') setShowCompanyAnalysis(true);
+                      else openWindow(action, { x: 100 + Math.random() * 100, y: 80 + Math.random() * 100 });
+                    }}
+                    onMenuToggle={setIsCircularMenuOpen}
+                  />
+                </div>
+                <div>
+                  <h2 className="text-2xl sm:text-3xl font-semibold text-white tracking-tight">AI operations workspace</h2>
+                  <p className="mt-2 text-sm text-slate-400 leading-relaxed">
+                    Open analysis modules from the wheel, run commands in the task composer, or launch agents from the action center.
                   </p>
-
-                  <p className="text-sm text-slate-400 leading-relaxed">
-                    Multi-dimensional analysis • Real-time optimization • Predictive reasoning
-                  </p>
-
-                  {/* Pulse indicators */}
-                   <div className="flex items-center justify-center gap-2 pt-6">
-                     {[0, 0.2, 0.4].map((delay) => (
-                       <motion.div
-                         key={delay}
-                         className="w-1 h-1 rounded-full"
-                         animate={{ scale: [1, 2, 1], opacity: [1, 0.3, 1] }}
-                         transition={{ duration: 1.5, repeat: Infinity, delay }}
-                         style={{ background: "#06b6d4", boxShadow: "0 0 8px rgba(6,182,212,0.4)" }}
-                       />
-                     ))}
-                   </div>
-
-                   {/* Floating particles effect */}
-                   <div className="pt-8 flex gap-1 justify-center items-center h-8">
-                     {[...Array(5)].map((_, i) => (
-                       <motion.div
-                         key={i}
-                         className="w-0.5 h-0.5 rounded-full"
-                         animate={{
-                           y: [0, -20, 0],
-                           opacity: [0, 1, 0],
-                           x: Math.cos((i / 5) * Math.PI * 2) * 15,
-                         }}
-                         transition={{
-                           duration: 2.5,
-                           repeat: Infinity,
-                           delay: i * 0.3,
-                         }}
-                         style={{ background: "#8b5cf6", boxShadow: "0 0 6px rgba(139,92,246,0.6)" }}
-                       />
-                     ))}
-                   </div>
-                  </motion.div>
+                </div>
               </div>
             </div>
           )}
         </div>
 
-        {/* Thinking animation */}
+        {/* Zone 2–4 — Task composer, agent runs log, action shortcuts (stacked on desktop right rail) */}
+        <aside className="w-full lg:w-[420px] xl:w-[460px] flex-shrink-0 flex flex-col border-t lg:border-t-0 lg:border-l border-cyan-500/10 bg-slate-950/90 backdrop-blur-md max-h-[55vh] lg:max-h-none lg:h-auto overflow-hidden">
+          {/* Zone 2 — Task composer (primary command input was previously not mounted — restoring for ops UX) */}
+          <div className="flex-shrink-0 border-b border-slate-800/80">
+            <IntellectCommandBar
+              input={input}
+              setInput={setInput}
+              messages={messages}
+              streamingMessage={streamingMessage}
+              messagesEndRef={messagesEndRef}
+              uploadedFiles={uploadedFiles}
+              setUploadedFiles={setUploadedFiles}
+              isUploading={isUploading}
+              setIsUploading={setIsUploading}
+              isListening={isListening}
+              setIsListening={setIsListening}
+              fileInputRef={fileInputRef}
+              processCommand={processCommand}
+              setShowCompanyAnalysis={setShowCompanyAnalysis}
+              setShowProfileSearch={setShowProfileSearch}
+              handleQuickAction={handleQuickAction}
+              openWindow={openWindow}
+              vehicles={vehicles}
+              alerts={alerts}
+              routes={routes}
+              onNavigate={(path) => navigate(path.startsWith('/') ? path : `/${path}`)}
+              onCloseWindows={() => setActiveWindows([])}
+              isProcessing={isProcessing}
+            />
+          </div>
+
+          {/* Zone 3 — Agent runs: deep analysis & Harbor agent trace (TODO: unify into persisted AgentExecution feed) */}
+          <div className="flex-1 min-h-0 overflow-y-auto px-3 py-3 space-y-3 border-b border-slate-800/80">
+            <p className="text-[10px] font-mono uppercase tracking-widest text-slate-500 px-1">Agent runs</p>
+            <div className="rounded-lg border border-slate-700/60 bg-slate-900/50 p-3 space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-xs text-slate-300">Deep analysis jobs</span>
+                <Badge variant="outline" className="text-[10px] border-cyan-500/30 text-cyan-400">{processTerminals.length} active</Badge>
+              </div>
+              <p className="text-[11px] text-slate-500 leading-snug">
+                Long-running analyses log to floating terminals (bottom-right). TODO: merge with agent SDK traces + approval gates for write actions.
+              </p>
+            </div>
+            <div className="rounded-lg border border-slate-700/60 bg-slate-900/50 p-3 space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-xs text-slate-300">H.A.R.B.O.R agent</span>
+                <Badge variant="outline" className={`text-[10px] ${isProcessing ? 'border-amber-500/40 text-amber-400' : 'border-slate-600 text-slate-500'}`}>
+                  {isProcessing ? 'Running' : 'Idle'}
+                </Badge>
+              </div>
+              <p className="text-[11px] text-slate-500 leading-snug">
+                {/* TODO(agent-observability): show last agent message id, latency, token usage */}
+                Conversation-backed agent — replies appear in task composer history. Subscribe hook: harbor_intellect.
+              </p>
+            </div>
+          </div>
+
+          {/* Zone 4 — Action center: deterministic shortcuts (TODO: approval workflow for mutations) */}
+          <div className="flex-shrink-0 p-3 pb-4 border-t border-slate-800/80 bg-slate-950/95">
+            <p className="text-[10px] font-mono uppercase tracking-widest text-slate-500 mb-2 px-1">Action center</p>
+            <div className="grid grid-cols-2 gap-2">
+              <Button type="button" variant="outline" size="sm" className="h-auto py-2 text-[11px] border-cyan-500/25 text-cyan-200 hover:bg-cyan-500/10" onClick={() => navigate(createPageUrl('Fleet'))}>
+                <Truck className="w-3.5 h-3.5 mr-1.5 shrink-0" /> Fleet
+              </Button>
+              <Button type="button" variant="outline" size="sm" className="h-auto py-2 text-[11px] border-cyan-500/25 text-cyan-200 hover:bg-cyan-500/10" onClick={() => navigate(createPageUrl('Alerts'))}>
+                <AlertTriangle className="w-3.5 h-3.5 mr-1.5 shrink-0" /> Alerts
+              </Button>
+              <Button type="button" variant="outline" size="sm" className="h-auto py-2 text-[11px] border-cyan-500/25 text-cyan-200 hover:bg-cyan-500/10" onClick={() => navigate(createPageUrl('Shipments'))}>
+                <Package className="w-3.5 h-3.5 mr-1.5 shrink-0" /> Shipments
+              </Button>
+              <Button type="button" variant="outline" size="sm" className="h-auto py-2 text-[11px] border-violet-500/25 text-violet-200 hover:bg-violet-500/10" onClick={() => setShowAITaskRunner(true)}>
+                <Zap className="w-3.5 h-3.5 mr-1.5 shrink-0" /> AI Execute
+              </Button>
+            </div>
+            <p className="text-[10px] text-slate-600 mt-2 px-1">
+              {/* TODO(human-review): require confirmation before entity writes from agent */}
+              Sidebar toggles open chat, governance, and load map — keep using those for multi-agent flows.
+            </p>
+          </div>
+        </aside>
+
+        </div>
+
+        {/* Processing indicator — subtle, ops-style */}
         <AnimatePresence>
           {isProcessing && (
             <motion.div
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 8 }}
-              className="px-6 pb-4"
+              className="flex-shrink-0 px-4 py-2 border-t border-cyan-500/10 bg-slate-950/80"
             >
-              <div className="max-w-sm mx-auto">
-                <HarborThinkingBar />
+              <div className="max-w-7xl mx-auto flex items-center gap-2 text-xs text-cyan-200/90 font-mono">
+                <Activity className="w-3.5 h-3.5 animate-pulse text-cyan-400" />
+                Processing agent request…
               </div>
             </motion.div>
           )}
         </AnimatePresence>
-
-        <div className="pb-10" />
       </div>
 
       {/* Process Terminals */}
