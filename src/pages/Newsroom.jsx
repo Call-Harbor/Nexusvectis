@@ -1,6 +1,7 @@
 import PressAndMedia from "./PressAndMedia";
 
-// IA: /Newsroom is an alias URL for the press page — same component, single route source in pages.config.
+// IA: /Newsroom aliases PressAndMedia — thin wrapper so pages.config has one route per path.
+// TODO(IA): merge to a single canonical URL + redirect, or pass slug as route param when CMS supports it.
 
 export default function Newsroom() {
   return <PressAndMedia />;

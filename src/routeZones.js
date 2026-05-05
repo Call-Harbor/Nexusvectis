@@ -13,7 +13,6 @@ export const PUBLIC_PAGE_KEYS = new Set([
   "Careers",
   "Contact",
   "HarborInfo",
-  "HarborIntellectProduct",
   "PressAndMedia",
   "Newsroom",
   "SecurityPage",
@@ -44,16 +43,10 @@ export const ADMIN_SHELL_PAGE_KEYS = new Set([
   "MobileAppPublisher",
 ]);
 
-/** Tenant workspace: root Layout + CircularNav (nav visibility still refined per page in Layout.jsx). */
-export function isWorkspacePageKey(pageKey) {
-  return (
-    !PUBLIC_PAGE_KEYS.has(pageKey) && !ADMIN_SHELL_PAGE_KEYS.has(pageKey)
-  );
-}
-
 /**
  * Full-screen experiences that ship their own chrome (no root Layout / CircularNav).
- * Routing: single entry in pages.config — still excluded from LayoutWrapper here.
+ * Routing: single entry in pages.config — excluded from LayoutWrapper in App.jsx.
+ * HarborIntellectProduct: standalone only (not in PUBLIC_PAGE_KEYS — avoids double shell).
  */
 export const STANDALONE_PAGE_KEYS = new Set([
   "StaffPortal",
@@ -61,3 +54,17 @@ export const STANDALONE_PAGE_KEYS = new Set([
   "NexusOrbit",
   "HarborIntellectProduct",
 ]);
+
+/**
+ * Tenant workspace: root Layout + CircularNav (nav visibility still refined per page in Layout.jsx).
+ * Not used by App.jsx yet — kept for future IA guards.
+ */
+export function isWorkspacePageKey(pageKey) {
+  return (
+    !PUBLIC_PAGE_KEYS.has(pageKey) &&
+    !ADMIN_SHELL_PAGE_KEYS.has(pageKey) &&
+    !STANDALONE_PAGE_KEYS.has(pageKey)
+  );
+}
+
+// Sync: zone keys must match `PAGES` keys in pages.config.js (verify when adding routes).

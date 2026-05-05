@@ -5,7 +5,7 @@ import { useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import NavigationTracker from '@/lib/NavigationTracker'
 import { pagesConfig } from './pages.config'
-import { ADMIN_SHELL_PAGE_KEYS, STANDALONE_PAGE_KEYS } from './routeZones'
+import { ADMIN_SHELL_PAGE_KEYS, STANDALONE_PAGE_KEYS } from './routeZones';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
@@ -23,7 +23,7 @@ const LayoutWrapper = ({ children, currentPageName }) => Layout ?
   <Layout currentPageName={currentPageName}>{children}</Layout>
   : <>{children}</>;
 
-/** Admin-zone pages embed AdminLayout internally — skip root LayoutWrapper to avoid double chrome. */
+/** Admin shell + standalone pages: skip root LayoutWrapper (AdminLayout or full-screen chrome inside page). */
 function renderPageElement(pageKey, PageComponent) {
   if (ADMIN_SHELL_PAGE_KEYS.has(pageKey) || STANDALONE_PAGE_KEYS.has(pageKey)) {
     return <PageComponent />;
@@ -77,13 +77,14 @@ const AuthenticatedApp = () => {
     }
   }
 
-  const rootElement = ADMIN_SHELL_PAGE_KEYS.has(mainPageKey)
-    ? <MainPage />
-    : (
-      <LayoutWrapper currentPageName={mainPageKey}>
-        <MainPage />
-      </LayoutWrapper>
-    );
+  const rootElement =
+    ADMIN_SHELL_PAGE_KEYS.has(mainPageKey) || STANDALONE_PAGE_KEYS.has(mainPageKey)
+      ? <MainPage />
+      : (
+        <LayoutWrapper currentPageName={mainPageKey}>
+          <MainPage />
+        </LayoutWrapper>
+      );
 
   return (
     <Routes>
