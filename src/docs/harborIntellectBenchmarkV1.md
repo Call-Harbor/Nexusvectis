@@ -80,9 +80,10 @@ The Hub target is always a **dataset** repository (not a model). The uploader bu
 **Safer defaults (pre-release)**
 
 - **Private-first:** with `--create`, new repos default to **private** unless `HF_PUBLIC=1`.
-- **No implicit benchmark run:** the script does not auto-run the benchmark unless `HF_INCLUDE_BENCHMARK=1`. If `artifacts/benchmark/*.jsonl` already exists, those files are attached unless `HF_SKIP_BENCHMARK=1`.
+- **Minimal bundle by default:** benchmark JSONL is **not** included unless `HF_INCLUDE_BENCHMARK=1` (existing files under `artifacts/benchmark/` are **not** auto-attached). `HF_SKIP_BENCHMARK=1` forces no benchmark even if `HF_INCLUDE_BENCHMARK=1`.
 - **No agent file by default:** set `HF_INCLUDE_AGENT=1` only after legal/product review.
 - **Explicit upload consent:** real Hub commits require `HF_I_UNDERSTAND_UPLOAD=1` after you inspect `artifacts/hf-upload/`.
+- **Preflight:** the CLI prints a boxed summary (target repo, visibility/license when creating, benchmark on/off, agent on/off, file list) before any Hub commit.
 
 ### Pre-release checklist (before first Hub upload)
 
@@ -98,7 +99,7 @@ The Hub target is always a **dataset** repository (not a model). The uploader bu
 **Steps**
 
 1. Create a token with **write** access: [https://huggingface.co/settings/tokens](https://huggingface.co/settings/tokens).
-2. (Optional) Generate benchmark JSONL: `npm run harbor:benchmark:v1`, or upload eval-only with `HF_SKIP_BENCHMARK=1`.
+2. (Optional) For a larger bundle later: `npm run harbor:benchmark:v1` then upload with `HF_INCLUDE_BENCHMARK=1`. First upload needs no benchmark step.
 3. Preview: `npm run harbor:hf:upload -- --repo org/name --dry-run`
 4. First Hub push (private dataset by default):
 

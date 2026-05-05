@@ -2,8 +2,9 @@
 /**
  * Build Harbor Intellect eval/benchmark JSONL and push to a Hugging Face **dataset** repo.
  *
- * Safer defaults for pre-release: **private** repo on `--create`, no auto-benchmark run,
- * **no agent_definition.json** unless HF_INCLUDE_AGENT=1, real upload requires HF_I_UNDERSTAND_UPLOAD=1.
+ * Safer defaults: **private** repo on `--create`, **minimal bundle** (eval cases + README + manifest only),
+ * benchmark JSONL only with HF_INCLUDE_BENCHMARK=1, **no agent_definition.json** unless HF_INCLUDE_AGENT=1,
+ * real upload requires HF_I_UNDERSTAND_UPLOAD=1. Prints a preflight summary before commit.
  *
  * Requires HF_TOKEN (or HUGGING_FACE_HUB_TOKEN) with write access.
  */
@@ -41,18 +42,65 @@ ENVIRONMENT — repo creation (--create)
   HF_LICENSE                          Optional Hub license id for create (default: apache-2.0)
 
 ENVIRONMENT — bundle contents
-  HF_INCLUDE_BENCHMARK=1              Attach benchmark JSONL from artifacts/ OR auto-run benchmark if missing
-  HF_SKIP_BENCHMARK=1                 Force no benchmark files (eval cases + card + manifest only)
-  HF_INCLUDE_AGENT=1                  Include agent_definition.json (opt-in; contains system instructions)
+  HF_INCLUDE_BENCHMARK=1              Add benchmark JSONL (from artifacts/benchmark/*.jsonl or auto-run if missing)
+  HF_SKIP_BENCHMARK=1               Forces no benchmark even if HF_INCLUDE_BENCHMARK=1 (explicit minimal)
+  HF_INCLUDE_AGENT=1                Include agent_definition.json (opt-in; system instructions)
 
 NOTES
   - Repo type is always **dataset**, not model.
-  - Default: **does not** run the benchmark implicitly; use HF_INCLUDE_BENCHMARK=1 or run npm run harbor:benchmark:v1 first.
-  - Default: **does not** include agent_definition.json (use HF_INCLUDE_AGENT=1 after legal/product review).
-  - Benchmark JSONL is validated (JSON lines + schema field) before commit when included.
+  - **Default bundle is minimal:** eval cases + README + manifest only (no benchmark JSONL, no agent file).
+  - Benchmark JSONL is never attached unless HF_INCLUDE_BENCHMARK=1 (existing artifact files are ignored otherwise).
   - After any run, inspect artifacts/hf-upload/ before a real upload.
 
 See src/docs/harborIntellectBenchmarkV1.md (pre-release checklist).
+`);
+}
+
+/**
+ * @param {object} p
+ * @param {string} p.fullRepoId
+ * @param {boolean} p.dryRun
+ * @param {boolean} p.willCreate
+ * @param {boolean} [p.createPrivate]
+ * @param {string|null} [p.createLicense]
+ * @param {{ path: string }[]} p.files
+ * @param {boolean} p.benchmarkIncluded
+ * @param {boolean} p.agentIncluded
+ */
+function printPreflightSummary(p) {
+  const paths = p.files.map((f) => f.path).sort();
+  const bench = p.benchmarkIncluded ? "YES (harbor_intellect_benchmark_v1.*.jsonl)" : "NO (default minimal — set HF_INCLUDE_BENCHMARK=1 to add)";
+  const agent = p.agentIncluded ? "YES (agent_definition.json)" : "NO (default — set HF_INCLUDE_AGENT=1 to add)";
+
+  let visLine;
+  let licLine;
+  if (p.willCreate) {
+    visLine = `  Repo visibility (--create): ${p.createPrivate ? "private (default)" : "public (HF_PUBLIC=1)"}`;
+    licLine = `  License (--create API): ${p.createLicense ?? "(not set)"}`;
+  } else {
+    visLine =
+      "  Repo visibility: unchanged by this upload (check Hub → Settings on an existing dataset)";
+    licLine = "  License: unchanged by this upload (check Hub → Settings)";
+  }
+
+  console.log(`
+══════════════════════════════════════════════════════════════════
+  HARBOR INTELLECT — PREFLIGHT (HF dataset bundle)
+══════════════════════════════════════════════════════════════════
+  Target:     datasets/${p.fullRepoId}
+  Mode:       ${p.dryRun ? "DRY-RUN (no Hub commit)" : "UPLOAD (will commit to Hub)"}
+${visLine}
+${licLine}
+
+  Benchmark JSONL in bundle:  ${bench}
+  agent_definition in bundle: ${agent}
+
+  Files (${paths.length}):
+${paths.map((x) => `    - ${x}`).join("\n")}
+  Local copy: artifacts/hf-upload/
+
+  Consent required for upload: HF_I_UNDERSTAND_UPLOAD=1
+══════════════════════════════════════════════════════════════════
 `);
 }
 
@@ -143,24 +191,25 @@ if (namespace) {
   namespace = user;
 }
 
+const isPublicFlag =
+  process.env.HF_PUBLIC === "1" || process.env.HF_PUBLIC === "true";
+const createPrivateDefault =
+  process.env.HF_PRIVATE === "1" ||
+  process.env.HF_PRIVATE === "true" ||
+  !isPublicFlag;
+const createLicense = (process.env.HF_LICENSE || "apache-2.0").trim() || "apache-2.0";
+
 if (create && !dryRun) {
-  const isPublic =
-    process.env.HF_PUBLIC === "1" || process.env.HF_PUBLIC === "true";
-  const isPrivate =
-    process.env.HF_PRIVATE === "1" ||
-    process.env.HF_PRIVATE === "true" ||
-    !isPublic;
-  const license = (process.env.HF_LICENSE || "apache-2.0").trim() || "apache-2.0";
   console.log(
-    `[hf] creating dataset repo ${fullRepoId} (private=${isPrivate}, license=${license}) — set HF_PUBLIC=1 for a public repo`,
+    `[hf] creating dataset repo ${fullRepoId} (private=${createPrivateDefault}, license=${createLicense}) — set HF_PUBLIC=1 for a public repo`,
   );
   try {
     await hfCreateRepo(token, {
       repo: repoShort,
       type: "dataset",
       organization: org || (repoArg.includes("/") ? namespace : null),
-      private: isPrivate,
-      license,
+      private: createPrivateDefault,
+      license: createLicense,
     });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
@@ -171,12 +220,19 @@ if (create && !dryRun) {
   }
 }
 
-const skipBench = process.env.HF_SKIP_BENCHMARK === "1";
-const includeBench =
+const skipBenchForced = process.env.HF_SKIP_BENCHMARK === "1";
+const includeBenchRequested =
   process.env.HF_INCLUDE_BENCHMARK === "1" || process.env.HF_INCLUDE_BENCHMARK === "true";
+const includeBench = includeBenchRequested && !skipBenchForced;
+
+if (skipBenchForced && includeBenchRequested) {
+  console.warn(
+    "[hf] HF_SKIP_BENCHMARK=1 overrides HF_INCLUDE_BENCHMARK=1 — bundle will not include benchmark JSONL.",
+  );
+}
 
 let benchmarkJsonl = {};
-if (!skipBench && includeBench) {
+if (includeBench) {
   const benchDir = path.resolve(process.cwd(), "artifacts/benchmark");
   const evalPath = path.join(benchDir, "harbor-intellect-benchmark-v1.eval.jsonl");
   const trainPath = path.join(benchDir, "harbor-intellect-benchmark-v1.training.jsonl");
@@ -185,7 +241,7 @@ if (!skipBench && includeBench) {
       eval_jsonl: fs.readFileSync(evalPath, "utf8"),
       training_jsonl: fs.readFileSync(trainPath, "utf8"),
     };
-    console.log(`[hf] using benchmark JSONL from ${benchDir}`);
+    console.log(`[hf] HF_INCLUDE_BENCHMARK=1: using benchmark JSONL from ${benchDir}`);
   } else {
     console.warn(
       "[hf] HF_INCLUDE_BENCHMARK=1 but artifacts missing — running benchmark once to generate JSONL (review outputs before re-upload).",
@@ -196,25 +252,10 @@ if (!skipBench && includeBench) {
     fs.writeFileSync(trainPath, `${training_jsonl}\n`, "utf8");
     benchmarkJsonl = { eval_jsonl, training_jsonl };
   }
-} else if (!skipBench && !includeBench) {
-  const benchDir = path.resolve(process.cwd(), "artifacts/benchmark");
-  const evalPath = path.join(benchDir, "harbor-intellect-benchmark-v1.eval.jsonl");
-  const trainPath = path.join(benchDir, "harbor-intellect-benchmark-v1.training.jsonl");
-  if (fs.existsSync(evalPath) && fs.existsSync(trainPath)) {
-    benchmarkJsonl = {
-      eval_jsonl: fs.readFileSync(evalPath, "utf8"),
-      training_jsonl: fs.readFileSync(trainPath, "utf8"),
-    };
-    console.log(
-      `[hf] attaching existing benchmark JSONL from ${benchDir} (set HF_SKIP_BENCHMARK=1 to exclude; set HF_INCLUDE_BENCHMARK=1 to allow auto-run when missing)`,
-    );
-  } else {
-    console.log(
-      "[hf] benchmark JSONL not attached (no artifacts/benchmark/*.jsonl). Ship eval cases only, or run: npm run harbor:benchmark:v1 then re-run upload, or HF_INCLUDE_BENCHMARK=1 to auto-generate.",
-    );
-  }
 } else {
-  console.log("[hf] HF_SKIP_BENCHMARK=1 — bundle will not include benchmark JSONL.");
+  console.log(
+    "[hf] default minimal bundle: benchmark JSONL omitted (ignored even if artifacts/benchmark exists). Set HF_INCLUDE_BENCHMARK=1 to attach.",
+  );
 }
 
 const includeAgent =
@@ -254,6 +295,22 @@ for (const f of files) {
   const safe = f.path.replace(/\//g, "__");
   fs.writeFileSync(path.join(outDir, safe), f.content, "utf8");
 }
+
+const benchmarkIncluded = files.some((f) =>
+  f.path.startsWith("harbor_intellect_benchmark_v1."),
+);
+const agentIncluded = files.some((f) => f.path === "agent_definition.json");
+
+printPreflightSummary({
+  fullRepoId,
+  dryRun,
+  willCreate: create,
+  createPrivate: createPrivateDefault,
+  createLicense: create ? createLicense : null,
+  files,
+  benchmarkIncluded,
+  agentIncluded,
+});
 
 if (dryRun) {
   console.log(`[hf] dry-run: wrote ${files.length} files to ${outDir} (no Hub commit).`);
