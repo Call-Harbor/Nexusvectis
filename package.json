@@ -3,13 +3,18 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "imports": {
+    "@/*": "./src/*"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint . --quiet",
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc -p ./jsconfig.json",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "harbor:eval:dev": "node scripts/harbor-eval-dev.mjs",
+    "harbor:benchmark:v1": "node scripts/harbor-intellect-benchmark.mjs"
   },
   "dependencies": {
     "@base44/sdk": "^0.8.27",
@@ -26,7 +31,7 @@
     "@radix-ui/react-dialog": "^1.1.6",
     "@radix-ui/react-dropdown-menu": "^2.1.6",
     "@radix-ui/react-hover-card": "^1.1.6",
-    "@radix-ui/react-label": "^2.1.2",
+    "@radix-ui/react-label": "^2.1.8",
     "@radix-ui/react-menubar": "^1.1.6",
     "@radix-ui/react-navigation-menu": "^1.2.5",
     "@radix-ui/react-popover": "^1.1.6",

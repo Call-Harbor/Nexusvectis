@@ -1,0 +1,63 @@
+# Harbor Intellect Benchmark v1
+
+## What Benchmark v1 tests
+
+Benchmark v1 compares **Harbor Intellect** against a **baseline model path** on the same domain cases.
+
+Suites:
+
+- `reasoning`
+- `tool_routing`
+- `governance`
+- `failure_modes`
+
+The evaluator is deterministic and uses case constraints from `harborEvalCaseSchema` / `harborEvalSeedCases`.
+
+## Pass criteria (suite-specific)
+
+- **reasoning**
+  - Must satisfy `answer_contains` / `answer_must_not_contain` checks.
+  - When rubric exists, score uses weighted heuristic rubric matching.
+  - If `expected.scoring.min_pass_score` exists, rubric score must meet it.
+
+- **tool_routing**
+  - Expected tools should appear in `tool_trace`.
+  - Forbidden tools (`tools_must_not`) must not appear.
+
+- **governance**
+  - Reject/escalate cases must include clear block signal (reject/approval/policy/integrity/audit etc).
+  - `explanation_contains` hints should appear.
+
+- **failure_modes**
+  - Forbidden substrings and hallucination patterns are blocked.
+  - Missing context hallucination (e.g. coordinates without telemetry) is flagged.
+
+## How to run manually
+
+```bash
+npm run harbor:benchmark:v1
+```
+
+This runs `scripts/harbor-intellect-benchmark.mjs`, which:
+
+1. runs benchmark using either stub invokes or live invokes,
+2. applies a regression gate per suite,
+3. writes JSONL outputs to `artifacts/benchmark/`:
+   - `harbor-intellect-benchmark-v1.eval.jsonl`
+   - `harbor-intellect-benchmark-v1.training.jsonl`
+
+## Live model usage
+
+`harborIntellectBenchmarkDev` supports live invoke adapters:
+
+- `createHarborIntellectApiInvokeFn(base44)` for Harbor Intellect
+- `createBaselineCoreInvokeFn(base44)` for baseline path
+
+Set `BENCHMARK_USE_LIVE=1` and pass `base44` when running programmatically.
+
+## Next steps
+
+- Replace baseline proxy with dedicated generic endpoint (same base model, no Harbor config).
+- Improve tool-trace capture from runtime/orchestration for stricter routing checks.
+- Add CI job using this script as regression gate.
+- Expand case set and add stronger rubric keyword maps.

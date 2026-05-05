@@ -225,7 +225,7 @@ export default function IntellectCommandBar({
           <div className="flex gap-3 sm:gap-4">
             <input type="text" value={input} onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); processCommand(); } }}
-              placeholder="COMMAND FLEET AI..."
+              placeholder="Enter operation or question…"
               className="flex-1 px-4 py-3 sm:px-5 sm:py-3.5 bg-slate-950 border-2 rounded-lg sm:rounded-xl text-sm sm:text-base text-cyan-400 placeholder:text-slate-600 focus:outline-none focus:border-cyan-500 focus:shadow-lg focus:shadow-cyan-500/30 font-mono tracking-wide backdrop-blur transition-all"
               style={{ borderColor: "rgba(6,182,212,0.5)" }}
             />

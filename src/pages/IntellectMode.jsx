@@ -8,7 +8,7 @@ import { createPageUrl } from "../utils";
 import ReactMarkdown from "react-markdown";
 import { 
   Sparkles, Send, Mic, Brain, Zap, TrendingUp, AlertTriangle, 
-  Truck, Route, Package, Activity, X, LayoutDashboard, Paperclip, FileText,
+  Truck, Route, Package, Activity, X, LayoutDashboard, Paperclip, FileText, Clock,
   Settings, Warehouse, Satellite, Globe, BarChart3, Building2, Monitor, ChevronDown, Users,
   Lightbulb, Network, Shield, MessageSquare, Video, FileCode, CalculatorIcon, Search, GraduationCap, Sliders
 } from "lucide-react";
@@ -55,45 +55,37 @@ import AgentControlPanel from "@/components/intellect/AgentControlPanel";
 import OutcomeIntelligencePanel from "@/components/intellect/OutcomeIntelligencePanel";
 import GovernanceCenter from "@/components/intellect/GovernanceCenter";
 import IntellectSidebar from "@/components/intellect/IntellectSidebar";
+import MissionControlStrip from "@/components/intellect/MissionControlStrip";
+import {
+  normalizeHarborExecutionRecord,
+  INTELLECT_RUN_KIND,
+  stackRoleFromRunKind,
+  PIPELINE_PHASE,
+} from "@/lib/harborIntelligenceModel";
+import {
+  startRun,
+  completeRun,
+  failRun,
+  agentExecutionToLocalRow,
+} from "@/lib/agentRunLifecycle";
 
-const THINKING_STEPS = ["Querying fleet data", "Running neural analysis", "Cross-referencing modules", "Generating response"];
+// IA: IntellectMode — Harbor Intellect UI (thinking); orchestration runs surface here when delegated — see src/lib/harborIntelligenceModel.js.
 
-function HarborThinkingBar() {
-  const [stepIdx, setStepIdx] = React.useState(0);
-  React.useEffect(() => {
-    const t = setInterval(() => setStepIdx(i => (i + 1) % THINKING_STEPS.length), 1400);
-    return () => clearInterval(t);
-  }, []);
-  return (
-    <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl" style={{ background: "rgba(6,182,212,0.07)", border: "1px solid rgba(6,182,212,0.2)" }}>
-      <div className="relative flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "linear-gradient(135deg, rgba(6,182,212,0.2), rgba(139,92,246,0.2))", border: "1px solid rgba(6,182,212,0.3)" }}>
-        <motion.div animate={{ opacity: [0.5, 1, 0.5] }} transition={{ duration: 1.2, repeat: Infinity }}>
-          <Brain className="w-3.5 h-3.5" style={{ color: "#06b6d4" }} />
-        </motion.div>
-        <motion.div className="absolute inset-0 rounded-lg border" animate={{ scale: [1, 1.5, 1], opacity: [0.4, 0, 0.4] }} transition={{ duration: 1.5, repeat: Infinity }} style={{ borderColor: "#06b6d4" }} />
-      </div>
-      <div className="flex items-center gap-1">
-        {[0, 0.15, 0.3].map((delay, i) => (
-          <motion.div key={i} className="w-1.5 h-1.5 rounded-full" animate={{ y: [0, -5, 0], opacity: [0.4, 1, 0.4] }} transition={{ duration: 0.7, repeat: Infinity, delay }} style={{ background: "#06b6d4", boxShadow: "0 0 6px rgba(6,182,212,0.6)" }} />
-        ))}
-      </div>
-      <div className="flex-1 overflow-hidden">
-        <AnimatePresence mode="wait">
-          <motion.span key={stepIdx} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} transition={{ duration: 0.3 }} className="text-[10px] font-mono tracking-widest uppercase block" style={{ color: "rgba(6,182,212,0.8)" }}>
-            ⚡ {THINKING_STEPS[stepIdx]}...
-          </motion.span>
-        </AnimatePresence>
-      </div>
-      <div className="w-24 h-1 rounded-full overflow-hidden flex-shrink-0" style={{ background: "rgba(6,182,212,0.1)" }}>
-        <motion.div className="h-full rounded-full" animate={{ x: ["-100%", "150%"] }} transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }} style={{ background: "linear-gradient(90deg, transparent, #06b6d4, #8b5cf6, transparent)", width: "40%" }} />
-      </div>
-    </div>
-  );
-}
+const EXEC_LOG_STORAGE_KEY = "nv_intellect_execution_log_v1";
+const MAX_EXEC_LOG = 40;
 
 const INITIAL_MESSAGES = [
-  { role: "system", content: "⚡ FLEET AI online. World's most advanced logistics intelligence system ready. I can: perform predictive maintenance analysis, forecast demand, optimize routes multi-modally, generate CO2 reports, detect anomalies, assess risks, benchmark performance, and execute any fleet operation. Command me." }
+  { role: "system", content: "Operations workspace ready. Use the task composer for commands and attachments; open modules from **Apps** / **Command** in the header. Organization context applies to all queries." }
 ];
+
+function formatRunTime(ts) {
+  if (!ts) return "—";
+  try {
+    return new Date(ts).toLocaleString(undefined, { hour: "2-digit", minute: "2-digit", month: "short", day: "numeric" });
+  } catch {
+    return "—";
+  }
+}
 
 export default function IntellectMode() {
   const [input, setInput] = useState("");
@@ -110,6 +102,7 @@ export default function IntellectMode() {
   const [commandHistory, setCommandHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [streamingMessage, setStreamingMessage] = useState("");
+  const [isListening, setIsListening] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
   const [show3DVisualization, setShow3DVisualization] = useState(null);
@@ -147,7 +140,116 @@ export default function IntellectMode() {
   const [installedAppIds, setInstalledAppIds] = useState(new Set());
   const windowRefsRef = useRef({});
   const pendingAgentTaskRef = useRef(null); // { windowType, task }
+  const pendingHarborRunIdRef = useRef(null);
+  const pendingHarborStartedAtRef = useRef(null);
+  const pendingHarborAgentExecRef = useRef(null);
   const { runTask } = useHologramAIAgent();
+
+  // Execution queue: sessionStorage + optional AgentExecution rows via agentRunLifecycle.startRun / completeRun / failRun.
+  const [executionLog, setExecutionLog] = useState(() => {
+    try {
+      const raw = sessionStorage.getItem(EXEC_LOG_STORAGE_KEY);
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const persistExecutionLog = useCallback((entries) => {
+    try {
+      sessionStorage.setItem(EXEC_LOG_STORAGE_KEY, JSON.stringify(entries.slice(0, MAX_EXEC_LOG)));
+    } catch {
+      /* quota */
+    }
+  }, []);
+
+  const appendExecutionRun = useCallback(
+    (entry) => {
+      setExecutionLog((prev) => {
+        const kind = entry.kind || entry.type || "unknown";
+        const row = normalizeHarborExecutionRecord({
+          id: entry.id,
+          kind,
+          status: entry.status || "running",
+          label: entry.label,
+          startedAt: entry.startedAt,
+          error: entry.error ?? null,
+          outputPreview: entry.outputPreview ?? null,
+          meta: { ...(entry.meta || {}), legacyTs: entry.ts },
+        });
+        const next = [row, ...prev.filter((e) => e.id !== row.id)].slice(0, MAX_EXEC_LOG);
+        persistExecutionLog(next);
+        return next;
+      });
+    },
+    [persistExecutionLog]
+  );
+
+  const updateExecutionRun = useCallback(
+    (id, patch) => {
+      if (!id) return;
+      setExecutionLog((prev) => {
+        const next = prev.map((e) => {
+          if (e.id !== id) return e;
+          const merged = { ...e, ...patch };
+          if (patch.meta && typeof patch.meta === "object") {
+            merged.meta = { ...(e.meta || {}), ...patch.meta };
+          }
+          return normalizeHarborExecutionRecord({
+            ...merged,
+            kind: merged.kind || merged.type || "unknown",
+          });
+        });
+        persistExecutionLog(next);
+        return next;
+      });
+    },
+    [persistExecutionLog]
+  );
+
+  const handleKpiClick = useCallback(
+    (key) => {
+      const routesNav = {
+        vehicles: "Fleet",
+        alerts: "Alerts",
+        routes: "Routes",
+        shipments: "Shipments",
+      };
+      const page = routesNav[key];
+      if (!page) return;
+      navigate(createPageUrl(page));
+    },
+    [navigate]
+  );
+
+  const sortedExecutionRuns = useMemo(() => {
+    return [...executionLog]
+      .map((e) =>
+        e.stackRole
+          ? e
+          : normalizeHarborExecutionRecord({
+              id: e.id,
+              kind: e.kind || e.type || "unknown",
+              status: e.status,
+              label: e.label,
+              startedAt: e.startedAt || e.ts,
+              finishedAt: e.finishedAt,
+              error: e.error,
+              outputPreview: e.outputPreview,
+              meta: e.meta || {},
+            })
+      )
+      .sort((a, b) => (b.startedAt || 0) - (a.startedAt || 0))
+      .slice(0, 14);
+  }, [executionLog]);
+
+  const runKindLabel = (run) => {
+    const k = run.kind || run.type;
+    if (k === INTELLECT_RUN_KIND.HARBOR_AGENT) return "Intellect · agent reply";
+    if (k === INTELLECT_RUN_KIND.DEEP_ANALYSIS) return "Intellect · analysis job";
+    return k || "Run";
+  };
 
   const messagesEndRef = useRef(null);
   const queryClient = useQueryClient();
@@ -289,6 +391,39 @@ export default function IntellectMode() {
 
   const isWaitingForAgentRef = useRef(false);
 
+  // Hydrate execution queue from persisted AgentExecution (recent runs only).
+  useEffect(() => {
+    if (!orgId) return;
+    let alive = true;
+    (async () => {
+      try {
+        const rows = await base44.entities.AgentExecution.filter({ organization_id: orgId }, "-created_date", 30);
+        if (!alive || !rows?.length) return;
+        setExecutionLog((prev) => {
+          const remote = rows.map(agentExecutionToLocalRow);
+          const seen = new Set(prev.map((p) => p.meta?.agentExecutionId).filter(Boolean));
+          const merged = [...prev];
+          remote.forEach((r) => {
+            const ae = r.meta?.agentExecutionId;
+            if (ae && !seen.has(ae)) {
+              merged.unshift(r);
+              seen.add(ae);
+            }
+          });
+          merged.sort((a, b) => (b.startedAt || 0) - (a.startedAt || 0));
+          const sliced = merged.slice(0, MAX_EXEC_LOG);
+          persistExecutionLog(sliced);
+          return sliced;
+        });
+      } catch (e) {
+        console.warn("IntellectMode: AgentExecution hydrate failed", e);
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [orgId, persistExecutionLog]);
+
   // ── Init Harbor Intellect conversation (persistent) ────────────────────────────────────
   useEffect(() => {
     if (isLoadingUser || !currentUser || !validOrgId) return;
@@ -332,8 +467,28 @@ export default function IntellectMode() {
             isWaitingForAgentRef.current = false;
             clearTimeout(window._intellectProcessingTimeout);
             setIsProcessing(false);
+            const rid = pendingHarborRunIdRef.current;
+            const t0 = pendingHarborStartedAtRef.current;
+            const ae = pendingHarborAgentExecRef.current;
+            if (rid) {
+              const latencyMs = t0 ? Date.now() - t0 : null;
+              completeRun({
+                base44,
+                organizationId: validOrgId,
+                updateExecutionRun,
+                localId: rid,
+                success: true,
+                outputPreview: (last.content || "").slice(0, 240),
+                error: null,
+                latencyMs,
+                agentExecutionId: ae,
+              });
+              pendingHarborRunIdRef.current = null;
+              pendingHarborStartedAtRef.current = null;
+              pendingHarborAgentExecRef.current = null;
+            }
             setMessages(prev => [
-              ...prev.filter(m => m.content !== '⚡ H.A.R.B.O.R analyzing...'),
+              ...prev.filter(m => m.content !== 'Agent executing…'),
               { role: 'assistant', content: last.content }
             ]);
           }
@@ -822,7 +977,27 @@ export default function IntellectMode() {
     setMessages(prev => [...prev, { role: "user", content: currentCommand }]);
     setInput("");
     const processId = createProcessTerminal(currentCommand.substring(0, 40) + '...');
-    addThinkingLog('parse', `🔬 Deep research analysis initiated`, null, 0, null, processId);
+    let deepAeId = null;
+    try {
+      const sr = await startRun({
+        base44,
+        organizationId: validOrgId,
+        appendExecutionRun,
+        updateExecutionRun,
+        localId: processId,
+        kind: INTELLECT_RUN_KIND.DEEP_ANALYSIS,
+        label: currentCommand.slice(0, 80) + (currentCommand.length > 80 ? "…" : ""),
+        meta: {
+          window: "analysis_chart",
+          phase: PIPELINE_PHASE.EXECUTE,
+          correlationId: processId,
+        },
+      });
+      deepAeId = sr.agentExecutionId;
+    } catch (e) {
+      console.warn("startRun (deep_analysis) local only:", e);
+    }
+    addThinkingLog('parse', `Deep analysis started`, null, 0, null, processId);
     addThinkingLog('analyze', 'Gathering fleet telemetry & historical records', { vehicles: vehicles.length, routes: routes.length, shipments: shipments.length }, 200, 20, processId);
     addThinkingLog('think', 'Running multi-dimensional statistical models & predictive algorithms', null, 300, 40, processId);
     addThinkingLog('model', 'Initializing predictive engines and correlation matrices', null, 250, 55, processId);
@@ -830,7 +1005,8 @@ export default function IntellectMode() {
     const fleetContext = `Fleet Statistics: ${vehicles.length} vehicles (${vehicles.filter(v => v.status === 'active').length} active), ${routes.length} routes, ${shipments.length} shipments, ${alerts.length} active alerts. Transport types: ${[...new Set(vehicles.map(v => v.type))].join(', ')}`;
     
     try {
-       setMessages(prev => [...prev, { role: "system", content: "🔬 Running deep analysis... this may take a moment..." }]);
+       const analysisT0 = Date.now();
+       setMessages(prev => [...prev, { role: "system", content: "Running deep analysis — review progress in the execution log or floating terminal." }]);
 
        const result = await base44.integrations.Core.InvokeLLM({
          prompt: `You are an elite fleet intelligence strategist & operations scientist. Generate COMPELLING, INSIGHTFUL analysis for: "${currentCommand}"
@@ -925,7 +1101,7 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
       }
     });
 
-      addThinkingLog('visualize', 'Rendering advanced holographic dashboard with multi-dimensional analysis', null, 150, 85, processId);
+      addThinkingLog('visualize', 'Rendering analysis dashboard', null, 150, 85, processId);
        const chartId = `chart_${Date.now()}`;
 
        // Open hologram window with analysis data
@@ -936,11 +1112,31 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
        });
 
        // Add message to chat
-       setMessages(prev => [...prev, { role: "assistant", content: `**🔬 ${result.title}**\n\n${result.summary || result.description}\n\n📊 **Advanced holographic research dashboard opened** — Explore detailed statistical analysis, predictive models, risk assessment, KPIs, and strategic recommendations with ROI calculations.` }]);
-       addThinkingLog('complete', 'Deep research analysis rendered successfully', null, 100, 100, processId);
+       const preview = `${result.title || "Analysis"} — ${(result.summary || result.description || "").slice(0, 160)}`;
+       setMessages(prev => [...prev, { role: "assistant", content: `**${result.title}**\n\n${result.summary || result.description}\n\nAnalysis dashboard opened in workspace — inspect charts and recommendations in the window.` }]);
+       addThinkingLog('complete', 'Analysis completed', null, 100, 100, processId);
+       await completeRun({
+         base44,
+         organizationId: validOrgId,
+         updateExecutionRun,
+         localId: processId,
+         success: true,
+         outputPreview: preview,
+         error: null,
+         latencyMs: Date.now() - analysisT0,
+         agentExecutionId: deepAeId,
+       });
     } catch (error) {
-      addThinkingLog('error', `Deep analysis failed: ${error.message}`, null, 100, null, processId);
-      setMessages(prev => [...prev, { role: "system", content: `❌ Deep analysis failed: ${error.message}` }]);
+      addThinkingLog('error', `Analysis failed: ${error.message}`, null, 100, null, processId);
+      setMessages(prev => [...prev, { role: "system", content: `Deep analysis failed: ${error.message}` }]);
+      await failRun({
+        base44,
+        organizationId: validOrgId,
+        updateExecutionRun,
+        localId: processId,
+        error: error.message || String(error),
+        agentExecutionId: deepAeId,
+      });
     }
     
     closeProcessTerminal(processId);
@@ -1066,26 +1262,80 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
     setUploadedFiles([]);
     setIsProcessing(true);
 
-    // ── H.A.R.B.O.R Intellect — via Agent SDK ────────────────────────────────
-    setMessages(prev => [...prev, { role: "system", content: "⚡ H.A.R.B.O.R analyzing..." }]);
+    // Harbor Intellect — Agent SDK
+    setMessages(prev => [...prev, { role: "system", content: "Agent executing…" }]);
 
     if (!intellectConversationRef.current) {
-      setMessages(prev => [...prev.filter(m => m.content !== '⚡ H.A.R.B.O.R analyzing...'), { role: 'system', content: '❌ Agent not ready yet, try again' }]);
+      setMessages(prev => [...prev.filter(m => m.content !== 'Agent executing…'), { role: 'system', content: "Agent not ready — try again in a moment." }]);
       setIsProcessing(false);
       return;
     }
 
     // Safety timeout: always clear processing after 60s
     clearTimeout(window._intellectProcessingTimeout);
-    window._intellectProcessingTimeout = setTimeout(() => {
+    window._intellectProcessingTimeout = setTimeout(async () => {
       isWaitingForAgentRef.current = false;
       setIsProcessing(false);
+      const rid = pendingHarborRunIdRef.current;
+      const ae = pendingHarborAgentExecRef.current;
+      const t0 = pendingHarborStartedAtRef.current;
+      if (rid) {
+        await failRun({
+          base44,
+          organizationId: validOrgId,
+          updateExecutionRun,
+          localId: rid,
+          error: "Timeout waiting for agent response",
+          agentExecutionId: ae,
+          latencyMs: t0 ? Date.now() - t0 : null,
+        });
+        pendingHarborRunIdRef.current = null;
+        pendingHarborStartedAtRef.current = null;
+        pendingHarborAgentExecRef.current = null;
+      }
+      setMessages((prev) => prev.filter((m) => m.content !== "Agent executing…"));
     }, 60000);
+
+    const runId = `harbor_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    const startedAt = Date.now();
+    pendingHarborRunIdRef.current = runId;
+    pendingHarborStartedAtRef.current = startedAt;
+    pendingHarborAgentExecRef.current = null;
+    try {
+      const sr = await startRun({
+        base44,
+        organizationId: validOrgId,
+        appendExecutionRun,
+        updateExecutionRun,
+        localId: runId,
+        kind: INTELLECT_RUN_KIND.HARBOR_AGENT,
+        label: currentCommand.slice(0, 72) + (currentCommand.length > 72 ? "…" : ""),
+        meta: {
+          attachmentCount: currentFiles.length,
+          correlationId: runId,
+          phase: PIPELINE_PHASE.EXECUTE,
+        },
+      });
+      pendingHarborAgentExecRef.current = sr.agentExecutionId || null;
+    } catch (e) {
+      console.warn("startRun harbor_intellect:", e);
+    }
 
     try {
       isWaitingForAgentRef.current = true;
       if (!intellectConversationRef.current) {
-        setMessages(prev => [...prev.filter(m => m.content !== '⚡ H.A.R.B.O.R analyzing...'), { role: 'system', content: '❌ Agent not initialized' }]);
+        setMessages(prev => [...prev.filter(m => m.content !== 'Agent executing…'), { role: 'system', content: "Agent not initialized." }]);
+        await failRun({
+          base44,
+          organizationId: validOrgId,
+          updateExecutionRun,
+          localId: runId,
+          error: "No conversation",
+          agentExecutionId: pendingHarborAgentExecRef.current,
+        });
+        pendingHarborRunIdRef.current = null;
+        pendingHarborStartedAtRef.current = null;
+        pendingHarborAgentExecRef.current = null;
         setIsProcessing(false);
         clearTimeout(window._intellectProcessingTimeout);
         return;
@@ -1100,9 +1350,21 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
       });
     } catch (err) {
       isWaitingForAgentRef.current = false;
+      await failRun({
+        base44,
+        organizationId: validOrgId,
+        updateExecutionRun,
+        localId: runId,
+        error: err.message || String(err),
+        agentExecutionId: pendingHarborAgentExecRef.current,
+        latencyMs: pendingHarborStartedAtRef.current ? Date.now() - pendingHarborStartedAtRef.current : null,
+      });
+      pendingHarborRunIdRef.current = null;
+      pendingHarborStartedAtRef.current = null;
+      pendingHarborAgentExecRef.current = null;
       setMessages(prev => [
-        ...prev.filter(m => m.content !== '⚡ H.A.R.B.O.R analyzing...'),
-        { role: 'system', content: `❌ H.A.R.B.O.R error: ${err.message}` }
+        ...prev.filter(m => m.content !== 'Agent executing…'),
+        { role: 'system', content: `Agent error: ${err.message}` }
       ]);
       setIsProcessing(false);
     }
@@ -1158,8 +1420,19 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
            onShow3DGlobe={() => setShow3DVisualization({ vehicles, routes, resources })}
          />
 
-        {/* Main Canvas */}
-        <div className="flex-1 overflow-hidden relative">
+        {/* Zone 1 — Mission control: live fleet snapshot (TODO: deeper telemetry + agent health) */}
+        <MissionControlStrip
+          vehicles={vehicles}
+          alerts={alerts}
+          routes={routes}
+          shipments={shipments}
+          orgId={orgId}
+          onKpiClick={handleKpiClick}
+        />
+
+        <div className="flex-1 flex flex-col lg:flex-row min-h-0 overflow-hidden">
+        {/* Center: workspace canvas / hologram windows */}
+        <div className="flex-1 overflow-hidden relative min-h-[40vh] lg:min-h-0 border-b lg:border-b-0 lg:border-r border-cyan-500/10">
           {/* Advanced Intelligence Panel */}
           {showAdvancedPanel && (
             <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
@@ -1317,184 +1590,195 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
             </motion.div>
           )}
 
-          {/* Standby */}
+          {/* Empty workspace: launcher + brain menu (reduced motion vs former sci-fi standby) */}
           {activeWindows.length === 0 && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center overflow-hidden">
-              {/* Enhanced background effects */}
-               <div className="absolute inset-0 pointer-events-none">
-                 {/* Ambient glow orbs */}
-                 <motion.div
-                   animate={{ scale: [1, 1.2, 1], rotate: [0, 360] }}
-                   transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                   className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full opacity-20"
-                   style={{ background: "radial-gradient(circle, #06b6d4 0%, transparent 70%)" }}
-                 />
-                 <motion.div
-                   animate={{ scale: [1.2, 1, 1.2], rotate: [360, 0] }}
-                   transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-                   className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full opacity-15"
-                   style={{ background: "radial-gradient(circle, #8b5cf6 0%, transparent 70%)" }}
-                 />
-
-                 {/* Floating stars */}
-                 {[...Array(8)].map((_, i) => (
-                   <motion.div
-                     key={`star-${i}`}
-                     className="absolute w-1 h-1 rounded-full"
-                     animate={{
-                       y: [0, -100, 0],
-                       x: [0, Math.cos((i / 8) * Math.PI * 2) * 50, 0],
-                       opacity: [0.3, 1, 0.3],
-                     }}
-                     transition={{
-                       duration: 6 + i,
-                       repeat: Infinity,
-                       ease: "easeInOut",
-                     }}
-                     style={{
-                       background: i % 2 === 0 ? "#06b6d4" : "#8b5cf6",
-                       boxShadow: i % 2 === 0 ? "0 0 10px #06b6d4" : "0 0 10px #8b5cf6",
-                       left: `${20 + i * 10}%`,
-                       top: `${30 + Math.random() * 40}%`,
-                     }}
-                   />
-                 ))}
-
-                 {/* Gradient light beams */}
-                 <motion.div
-                   animate={{ rotate: [0, 360] }}
-                   transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-                   className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full"
-                   style={{
-                     background: "conic-gradient(from 0deg, rgba(6,182,212,0.1) 0deg, transparent 90deg, rgba(139,92,246,0.1) 180deg, transparent 270deg)",
-                   }}
-                 />
-               </div>
-
-              {/* Main content */}
-              <div className="relative z-10 flex flex-col items-center">
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.5 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.8, delay: 0.2 }}
-                  className="relative mb-16"
-                >
-                  {/* Orbiting rings */}
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    {[1, 2, 3].map((ring) => (
-                      <motion.div
-                        key={ring}
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 10 + ring * 5, repeat: Infinity, ease: "linear" }}
-                        className="absolute rounded-full border"
-                        style={{
-                          width: 120 + ring * 60,
-                          height: 120 + ring * 60,
-                          borderColor: `rgba(6,182,212,${0.2 - ring * 0.05})`,
-                          borderWidth: 1,
-                        }}
-                      />
-                    ))}
-                  </div>
-
-                  {/* Brain menu */}
-                  <div className="relative z-20">
-                    <CircularBrainMenu 
-                      size="lg" 
-                      showMenuByDefault={true}
-                      onAction={(action) => {
-                        if (action === 'advanced_intelligence') setShowAdvancedPanel(true);
-                        else if (action === 'deep_analysis') openWindow('deep_analysis', { x: 100, y: 80 });
-                        else if (action === 'company_analysis') setShowCompanyAnalysis(true);
-                        else openWindow(action, { x: 100 + Math.random() * 100, y: 80 + Math.random() * 100 });
-                      }}
-                      onMenuToggle={setIsCircularMenuOpen}
-                    />
-                  </div>
-                </motion.div>
-
-                {/* Title and description */}
-                <motion.div
-                   initial={{ opacity: 0, y: 20 }}
-                   animate={{ opacity: activeWindows.length === 0 ? 1 : 0, y: activeWindows.length === 0 ? 0 : 20 }}
-                   transition={{ duration: 0.3 }}
-                   className="text-center max-w-xl px-4 space-y-4"
-                 >
-                  <div className="relative inline-block">
-                    <div className="absolute inset-0 blur-2xl opacity-50" style={{ background: "linear-gradient(135deg, #06b6d4, #8b5cf6)" }} />
-                    <h1 className="relative text-6xl font-black font-mono tracking-widest uppercase bg-clip-text text-transparent"
-                      style={{
-                        backgroundImage: "linear-gradient(135deg, #06b6d4 0%, #8b5cf6 100%)",
-                        textShadow: "0 0 30px rgba(6,182,212,0.3), 0 0 60px rgba(139,92,246,0.2)",
-                      }}>
-                      FLEET AI
-                    </h1>
-                  </div>
-
-                  <p className="text-lg text-slate-300 font-light tracking-wide">
-                    Neural Logistics Intelligence Platform
+            <div className="absolute inset-0 flex flex-col items-center justify-center overflow-hidden px-4">
+              <div className="absolute inset-0 pointer-events-none opacity-40">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[28rem] h-[28rem] rounded-full blur-3xl" style={{ background: "radial-gradient(circle, rgba(6,182,212,0.12) 0%, transparent 70%)" }} />
+              </div>
+              <div className="relative z-10 flex flex-col items-center max-w-lg text-center space-y-6">
+                <div className="relative mb-4">
+                  <CircularBrainMenu
+                    size="lg"
+                    showMenuByDefault={true}
+                    onAction={(action) => {
+                      if (action === 'advanced_intelligence') setShowAdvancedPanel(true);
+                      else if (action === 'deep_analysis') openWindow('deep_analysis', { x: 100, y: 80 });
+                      else if (action === 'company_analysis') setShowCompanyAnalysis(true);
+                      else openWindow(action, { x: 100 + Math.random() * 100, y: 80 + Math.random() * 100 });
+                    }}
+                    onMenuToggle={setIsCircularMenuOpen}
+                  />
+                </div>
+                <div>
+                  <h2 className="text-2xl sm:text-3xl font-semibold text-white tracking-tight">Operations workspace</h2>
+                  <p className="mt-2 text-sm text-slate-400 leading-relaxed">
+                    Launch modules from the wheel, enter commands in the task composer, and review execution status in the panel.
                   </p>
-
-                  <p className="text-sm text-slate-400 leading-relaxed">
-                    Multi-dimensional analysis • Real-time optimization • Predictive reasoning
-                  </p>
-
-                  {/* Pulse indicators */}
-                   <div className="flex items-center justify-center gap-2 pt-6">
-                     {[0, 0.2, 0.4].map((delay) => (
-                       <motion.div
-                         key={delay}
-                         className="w-1 h-1 rounded-full"
-                         animate={{ scale: [1, 2, 1], opacity: [1, 0.3, 1] }}
-                         transition={{ duration: 1.5, repeat: Infinity, delay }}
-                         style={{ background: "#06b6d4", boxShadow: "0 0 8px rgba(6,182,212,0.4)" }}
-                       />
-                     ))}
-                   </div>
-
-                   {/* Floating particles effect */}
-                   <div className="pt-8 flex gap-1 justify-center items-center h-8">
-                     {[...Array(5)].map((_, i) => (
-                       <motion.div
-                         key={i}
-                         className="w-0.5 h-0.5 rounded-full"
-                         animate={{
-                           y: [0, -20, 0],
-                           opacity: [0, 1, 0],
-                           x: Math.cos((i / 5) * Math.PI * 2) * 15,
-                         }}
-                         transition={{
-                           duration: 2.5,
-                           repeat: Infinity,
-                           delay: i * 0.3,
-                         }}
-                         style={{ background: "#8b5cf6", boxShadow: "0 0 6px rgba(139,92,246,0.6)" }}
-                       />
-                     ))}
-                   </div>
-                  </motion.div>
+                </div>
               </div>
             </div>
           )}
         </div>
 
-        {/* Thinking animation */}
+        {/* Zone 2–4 — Task composer, agent runs log, action shortcuts (stacked on desktop right rail) */}
+        <aside className="w-full lg:w-[420px] xl:w-[460px] flex-shrink-0 flex flex-col border-t lg:border-t-0 lg:border-l border-cyan-500/10 bg-slate-950/90 backdrop-blur-md max-h-[55vh] lg:max-h-none lg:h-auto overflow-hidden">
+          {/* Zone 2 — Task composer (primary command input was previously not mounted — restoring for ops UX) */}
+          <div className="flex-shrink-0 border-b border-slate-800/80">
+            <IntellectCommandBar
+              input={input}
+              setInput={setInput}
+              messages={messages}
+              streamingMessage={streamingMessage}
+              messagesEndRef={messagesEndRef}
+              uploadedFiles={uploadedFiles}
+              setUploadedFiles={setUploadedFiles}
+              isUploading={isUploading}
+              setIsUploading={setIsUploading}
+              isListening={isListening}
+              setIsListening={setIsListening}
+              fileInputRef={fileInputRef}
+              processCommand={processCommand}
+              setShowCompanyAnalysis={setShowCompanyAnalysis}
+              setShowProfileSearch={setShowProfileSearch}
+              handleQuickAction={handleQuickAction}
+              openWindow={openWindow}
+              vehicles={vehicles}
+              alerts={alerts}
+              routes={routes}
+              onNavigate={(path) => navigate(path.startsWith('/') ? path : `/${path}`)}
+              onCloseWindows={() => setActiveWindows([])}
+              isProcessing={isProcessing}
+            />
+          </div>
+
+          {/* Zone 3 — Execution queue: Intellect + (future) Orchestration runs; session until AgentExecution API exists */}
+          <div className="flex-1 min-h-0 overflow-y-auto px-3 py-3 space-y-2 border-b border-slate-800/80">
+            <div className="flex items-center justify-between gap-2 px-1">
+              <p className="text-[10px] font-mono uppercase tracking-widest text-slate-500">Execution queue</p>
+              {processTerminals.length > 0 && (
+                <Badge variant="outline" className="text-[10px] border-slate-600 text-slate-400">
+                  {processTerminals.length} terminal{processTerminals.length !== 1 ? "s" : ""} open
+                </Badge>
+              )}
+            </div>
+            <p className="text-[10px] text-slate-600 px-1 leading-snug">
+              Session buffer — Intellect runs above; orchestration runs when wired from task runner / orchestrator API.
+              TODO(memory layer): hydrate recent AgentExecution rows per org on load.
+            </p>
+            {sortedExecutionRuns.length === 0 ? (
+              <div className="rounded-lg border border-dashed border-slate-700/80 bg-slate-900/40 px-3 py-4 text-center">
+                <p className="text-xs text-slate-500">No runs yet. Send a command or start deep analysis from Command in the header.</p>
+              </div>
+            ) : (
+              <ul className="space-y-2">
+                {sortedExecutionRuns.map((run) => (
+                  <li
+                    key={run.id}
+                    className="rounded-lg border border-slate-700/60 bg-slate-900/60 p-2.5 text-left"
+                  >
+                    <div className="flex items-start justify-between gap-2 flex-wrap">
+                      <span className="text-[10px] font-mono text-slate-500 flex items-center gap-1">
+                        <Clock className="w-3 h-3 shrink-0" aria-hidden />
+                        {formatRunTime(run.startedAt || run.ts)}
+                      </span>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <Badge variant="outline" className="text-[9px] border-slate-600 text-slate-400 font-normal">
+                          {(run.stackRole || stackRoleFromRunKind(run.kind || run.type)) === "intellect" ? "Intellect" : "Orchestration"}
+                        </Badge>
+                        <Badge
+                          variant="outline"
+                          className={`text-[9px] ${
+                            run.status === "completed"
+                              ? "border-emerald-500/40 text-emerald-400"
+                              : run.status === "failed"
+                                ? "border-red-500/40 text-red-400"
+                                : "border-amber-500/40 text-amber-400"
+                          }`}
+                        >
+                          {run.status === "running" ? "Running" : run.status === "completed" ? "Completed" : run.status === "failed" ? "Failed" : run.status || "—"}
+                        </Badge>
+                      </div>
+                    </div>
+                    <p className="text-[10px] uppercase tracking-wide text-slate-500 mt-1">{runKindLabel(run)}</p>
+                    <p className="text-xs text-slate-200 mt-0.5 line-clamp-2">{run.label || "—"}</p>
+                    {run.error && <p className="text-[11px] text-red-400/90 mt-1 break-words">Error: {run.error}</p>}
+                    {run.outputPreview && !run.error && (
+                      <p className="text-[11px] text-slate-500 mt-1 line-clamp-2">{run.outputPreview}</p>
+                    )}
+                    {run.meta?.latencyMs != null && run.status === "completed" && (
+                      <p className="text-[10px] text-slate-600 mt-1 font-mono">
+                        {/* TODO(cost/latency): replace wall clock with provider latency + token/cost */}
+                        Round-trip: {run.meta.latencyMs} ms
+                      </p>
+                    )}
+                    {run.meta?.evaluation && (
+                      <p className="text-[10px] text-slate-500 mt-1">
+                        Quality: {run.meta.evaluation.quality} · {run.meta.evaluation.outcome}
+                        {run.meta.evaluation.failureReason ? ` · ${run.meta.evaluation.failureReason}` : ""}
+                      </p>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          {/* Zone 4 — Actions: read vs execution (TODO approval workflow for elevated runs) */}
+          <div className="flex-shrink-0 p-3 pb-4 border-t border-slate-800/80 bg-slate-950/95">
+            <p className="text-[10px] font-mono uppercase tracking-widest text-slate-500 mb-1 px-1">Quick navigation</p>
+            <p className="text-[10px] text-slate-600 mb-2 px-1">Read-only — opens module for review.</p>
+            <div className="grid grid-cols-2 gap-2">
+              <Button type="button" variant="outline" size="sm" className="h-auto py-2 text-[11px] border-slate-600/80 text-slate-200 hover:bg-slate-800/80" onClick={() => navigate(createPageUrl('Fleet'))}>
+                <Truck className="w-3.5 h-3.5 mr-1.5 shrink-0" /> Fleet
+              </Button>
+              <Button type="button" variant="outline" size="sm" className="h-auto py-2 text-[11px] border-slate-600/80 text-slate-200 hover:bg-slate-800/80" onClick={() => navigate(createPageUrl('Alerts'))}>
+                <AlertTriangle className="w-3.5 h-3.5 mr-1.5 shrink-0" /> Alerts
+              </Button>
+              <Button type="button" variant="outline" size="sm" className="h-auto py-2 text-[11px] border-slate-600/80 text-slate-200 hover:bg-slate-800/80" onClick={() => navigate(createPageUrl('Shipments'))}>
+                <Package className="w-3.5 h-3.5 mr-1.5 shrink-0" /> Shipments
+              </Button>
+              <Button type="button" variant="outline" size="sm" className="h-auto py-2 text-[11px] border-slate-600/80 text-slate-200 hover:bg-slate-800/80" onClick={() => navigate(createPageUrl('Routes'))}>
+                <Route className="w-3.5 h-3.5 mr-1.5 shrink-0" /> Routes
+              </Button>
+            </div>
+            <p className="text-[10px] font-mono uppercase tracking-widest text-amber-600/90 mt-3 mb-1 px-1">Elevated execution</p>
+            <p className="text-[10px] text-slate-600 mb-2 px-1">May change data or drive UI — approval workflow not enforced yet.</p>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="w-full h-auto py-2.5 text-[11px] border-amber-500/35 text-amber-100 hover:bg-amber-950/50"
+              onClick={() => setShowAITaskRunner(true)}
+            >
+              <Zap className="w-3.5 h-3.5 mr-2 shrink-0 text-amber-400" />
+              Agent task runner
+            </Button>
+            <p className="text-[10px] text-slate-600 mt-2 px-1">
+              {/* TODO(approval workflow): gate runner + entity writes behind role + confirmation */}
+              Sidebar: agent chat, governance, load map.
+            </p>
+          </div>
+        </aside>
+
+        </div>
+
+        {/* Processing indicator — subtle, ops-style */}
         <AnimatePresence>
           {isProcessing && (
             <motion.div
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 8 }}
-              className="px-6 pb-4"
+              className="flex-shrink-0 px-4 py-2 border-t border-cyan-500/10 bg-slate-950/80"
             >
-              <div className="max-w-sm mx-auto">
-                <HarborThinkingBar />
+              <div className="max-w-7xl mx-auto flex items-center gap-2 text-xs text-cyan-200/90 font-mono">
+                <Activity className="w-3.5 h-3.5 animate-pulse text-cyan-400" />
+                Agent request in queue…
               </div>
             </motion.div>
           )}
         </AnimatePresence>
-
-        <div className="pb-10" />
       </div>
 
       {/* Process Terminals */}
