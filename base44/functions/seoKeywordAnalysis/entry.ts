@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 /**
  * SEO KEYWORD & COMPETITOR ANALYSIS ENGINE
@@ -7,12 +8,15 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
  */
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
   const base44 = createClientFromRequest(req);
 
   try {
     const user = await base44.auth.me();
     if (user && user.role !== 'admin') {
-      return Response.json({ error: 'Forbidden' }, { status: 403 });
+      return nvError(requestId, String('Forbidden'), 403);
+
     }
   } catch (_) {
     // Automation / service role — proceed
@@ -160,7 +164,7 @@ Data-driven for 2026.`,
       ai_summary: trendAnalysis.ai_summary || '',
     });
 
-    return Response.json({
+    return nvJson(requestId, {
       success: true,
       date: today,
       metrics_id: metricsRecord.id,
@@ -174,12 +178,14 @@ Data-driven for 2026.`,
       action_items: trendAnalysis.action_items || [],
       ai_summary: trendAnalysis.ai_summary || ''
     });
+
   } catch (error) {
     console.error('SEO Keyword Analysis Error:', error);
-    return Response.json({ 
+    return nvJson(requestId, { 
       success: false, 
       error: error.message,
       stack: error.stack 
-    }, { status: 500 });
+    }, 500);
+
   }
 });

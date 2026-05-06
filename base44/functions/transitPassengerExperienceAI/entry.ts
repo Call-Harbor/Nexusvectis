@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 /**
  * PASSENGER EXPERIENCE AI
@@ -7,12 +8,15 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
  */
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
   const base44 = createClientFromRequest(req);
 
   try {
     const user = await base44.auth.me();
     if (!user || user.role !== 'admin') {
-      return Response.json({ error: 'Forbidden' }, { status: 403 });
+      return nvError(requestId, String('Forbidden'), 403);
+
     }
 
     const { organization_id } = await req.json();
@@ -87,7 +91,7 @@ Focus on actionable recommendations that improve passenger satisfaction.`,
       }
     });
 
-    return Response.json({
+    return nvJson(requestId, {
       success: true,
       analysis,
       data_analyzed: {
@@ -95,11 +99,13 @@ Focus on actionable recommendations that improve passenger satisfaction.`,
         kpi_days: kpis.length
       }
     });
+
   } catch (error) {
     console.error('Passenger Experience AI Error:', error);
-    return Response.json({ 
+    return nvJson(requestId, { 
       success: false, 
       error: error.message 
-    }, { status: 500 });
+    }, 500);
+
   }
 });

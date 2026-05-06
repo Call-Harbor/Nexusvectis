@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 // Realistic load fluctuation based on time of day and asset type
 function simulateLoad(asset, now) {
@@ -127,6 +128,8 @@ async function checkAndCreateAlerts(base44, asset, newLoad, orgId) {
 }
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
   try {
     const base44 = createClientFromRequest(req);
 
@@ -134,7 +137,8 @@ Deno.serve(async (req) => {
     const assets = await base44.asServiceRole.entities.GridAsset.list();
 
     if (!assets.length) {
-      return Response.json({ message: 'No grid assets found', updated: 0 });
+      return nvJson(requestId, { message: 'No grid assets found', updated: 0 });
+
     }
 
     const now = new Date();
@@ -158,13 +162,15 @@ Deno.serve(async (req) => {
       await checkAndCreateAlerts(base44, asset, newLoad, orgId);
     }));
 
-    return Response.json({
+    return nvJson(requestId, {
       success: true,
       updated,
       timestamp: now.toISOString(),
       message: `Updated ${updated} grid assets`,
     });
+
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return nvError(requestId, String(error.message), 500);
+
   }
 });

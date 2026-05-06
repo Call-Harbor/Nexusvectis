@@ -1,12 +1,16 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
 
     if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+      return nvError(requestId, String('Unauthorized'), 401);
+
     }
 
     const { type, category, is_resolved, limit = 50 } = await req.json();
@@ -20,7 +24,7 @@ Deno.serve(async (req) => {
 
     const alerts = await base44.asServiceRole.entities.Alert.filter(filter, '-created_date', limit);
 
-    return Response.json({
+    return nvJson(requestId, {
       success: true,
       count: alerts.length,
       alerts: alerts.map(a => ({
@@ -36,7 +40,9 @@ Deno.serve(async (req) => {
         created_date: a.created_date
       }))
     });
+
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return nvError(requestId, String(error.message), 500);
+
   }
 });

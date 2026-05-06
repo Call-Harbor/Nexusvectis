@@ -1,19 +1,24 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
 
     if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+      return nvError(requestId, String('Unauthorized'), 401);
+
     }
 
     const { tasks } = await req.json();
     const orgId = user.organization_id || user.data?.organization_id;
 
     if (!orgId || !tasks?.length) {
-      return Response.json({ error: 'Invalid input' }, { status: 400 });
+      return nvError(requestId, String('Invalid input'), 400);
+
     }
 
     const results = new Map();
@@ -93,14 +98,16 @@ Deno.serve(async (req) => {
       finalResults[taskId] = result;
     }
 
-    return Response.json({
+    return nvJson(requestId, {
       success: true,
       results: finalResults,
       executionLog,
       taskStatuses: Object.fromEntries(taskStatuses)
     });
+
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return nvError(requestId, String(error.message), 500);
+
   }
 });
 

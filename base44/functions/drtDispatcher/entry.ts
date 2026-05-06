@@ -1,12 +1,16 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
     
     if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+      return nvError(requestId, String('Unauthorized'), 401);
+
     }
 
     const { organizationId } = await req.json();
@@ -18,7 +22,8 @@ Deno.serve(async (req) => {
     }, '-requested_time', 50);
 
     if (pendingRequests.length === 0) {
-      return Response.json({ assignments: [] });
+      return nvJson(requestId, { assignments: [] });
+
     }
 
     // Fetch available DRT vehicles (minibuses, shuttles)
@@ -29,7 +34,8 @@ Deno.serve(async (req) => {
     }, null, 10);
 
     if (vehicles.length === 0) {
-      return Response.json({ assignments: [], message: 'No available vehicles' });
+      return nvJson(requestId, { assignments: [], message: 'No available vehicles' });
+
     }
 
     // Simple greedy assignment: match each request to nearest vehicle
@@ -89,8 +95,10 @@ Deno.serve(async (req) => {
       }
     }
 
-    return Response.json({ success: true, assignments, count: assignments.length });
+    return nvJson(requestId, { success: true, assignments, count: assignments.length });
+
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return nvError(requestId, String(error.message), 500);
+
   }
 });

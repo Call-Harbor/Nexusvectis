@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 /**
  * GOOGLE ALGORITHM MONITOR
@@ -8,12 +9,15 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
  */
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
   const base44 = createClientFromRequest(req);
 
   try {
     const user = await base44.auth.me();
     if (user && user.role !== 'admin') {
-      return Response.json({ error: 'Forbidden' }, { status: 403 });
+      return nvError(requestId, String('Forbidden'), 403);
+
     }
   } catch (_) {
     // Automation / service role — proceed
@@ -118,7 +122,7 @@ Also assess E-E-A-T status for nexusvectis.com and how to appear in Google AI Ov
       });
     }
 
-    return Response.json({
+    return nvJson(requestId, {
       success: true,
       date: today,
       updates_detected: (algorithmMonitor.latest_updates || []).length,
@@ -127,12 +131,14 @@ Also assess E-E-A-T status for nexusvectis.com and how to appear in Google AI Ov
       immediate_actions: algorithmMonitor.adaptation_plan?.immediate_actions || [],
       summary: algorithmMonitor.adaptation_plan?.summary || ''
     });
+
   } catch (error) {
     console.error('Algorithm Monitor Error:', error);
-    return Response.json({ 
+    return nvJson(requestId, { 
       success: false, 
       error: error.message,
       stack: error.stack 
-    }, { status: 500 });
+    }, 500);
+
   }
 });

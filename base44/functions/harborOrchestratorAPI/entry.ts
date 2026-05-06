@@ -41,7 +41,7 @@
  */
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
-import { apiHeaders, nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 const API_VERSION = '3.5.0';
 const MAX_RETRIES = 2;
@@ -1254,12 +1254,12 @@ Deno.serve(async (req) => {
     } = body;
 
     if (!message) {
-      return Response.json({
-        error: 'message is required',
-        hint: 'POST { mode: "auto", message: "Your question here" }',
-        docs: 'GET /functions/harborOrchestratorAPI',
-        request_id: requestId,
-      }, { status: 400, headers: apiHeaders(requestId) });
+      return nvError(
+        requestId,
+        'message is required. Example: POST { "mode": "auto", "message": "Your question here" }. Discovery: GET this endpoint.',
+        400,
+        'BAD_REQUEST',
+      );
     }
 
     // Options bundle for agent invocations
@@ -1487,11 +1487,12 @@ Deno.serve(async (req) => {
     }
 
     else {
-      return Response.json({
-        error: `Unknown mode: "${mode}"`,
-        valid_modes: ['single', 'parallel', 'sequential', 'auto', 'broadcast', 'hierarchical', 'debate'],
-        request_id: requestId,
-      }, { status: 400, headers: apiHeaders(requestId) });
+      return nvError(
+        requestId,
+        `Unknown mode: "${mode}". Valid modes: single, parallel, sequential, auto, broadcast, hierarchical, debate.`,
+        400,
+        'BAD_REQUEST',
+      );
     }
 
     const responseTime = Date.now() - startTime;
@@ -1609,11 +1610,7 @@ If no clear quantified prediction, respond: { "found": false }`,
       }
     };
 
-    const payload =
-      response !== null && typeof response === 'object' && !Array.isArray(response)
-        ? { ...response, request_id: requestId }
-        : { data: response, request_id: requestId };
-    return Response.json(payload, { headers: apiHeaders(requestId) });
+    return nvJson(requestId, response);
 
   } catch (error) {
     console.error('[H.A.R.B.O.R. Orchestrator] Fatal error:', error, { requestId });

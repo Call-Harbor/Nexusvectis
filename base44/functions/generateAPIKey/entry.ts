@@ -1,24 +1,30 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
 
     if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+      return nvError(requestId, String('Unauthorized'), 401);
+
     }
 
     const { name } = await req.json();
 
     if (!name) {
-      return Response.json({ error: 'API key name is required' }, { status: 400 });
+      return nvError(requestId, String('API key name is required'), 400);
+
     }
 
     // Get user's organization
     const userData = await base44.entities.User.filter({ email: user.email });
     if (!userData || userData.length === 0 || !userData[0].organization_id) {
-      return Response.json({ error: 'User must be assigned to an organization' }, { status: 400 });
+      return nvError(requestId, String('User must be assigned to an organization'), 400);
+
     }
 
     const organization_id = userData[0].organization_id;
@@ -46,14 +52,16 @@ Deno.serve(async (req) => {
       status: 'active'
     });
 
-    return Response.json({
+    return nvJson(requestId, {
       success: true,
       api_key: apiKey,
       key_id: apiKeyRecord.id,
       key_prefix,
       message: 'Save this API key securely - it will not be shown again'
     });
+
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return nvError(requestId, String(error.message), 500);
+
   }
 });

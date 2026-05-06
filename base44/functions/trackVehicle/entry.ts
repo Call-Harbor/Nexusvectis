@@ -1,18 +1,23 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
 
     if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+      return nvError(requestId, String('Unauthorized'), 401);
+
     }
 
     const { vehicle_id, organization_id } = await req.json();
 
     if (!vehicle_id) {
-      return Response.json({ error: 'vehicle_id required' }, { status: 400 });
+      return nvError(requestId, String('vehicle_id required'), 400);
+
     }
 
     const vehicles = await base44.asServiceRole.entities.Vehicle.filter({ 
@@ -21,12 +26,13 @@ Deno.serve(async (req) => {
     });
 
     if (vehicles.length === 0) {
-      return Response.json({ error: 'Vehicle not found' }, { status: 404 });
+      return nvError(requestId, String('Vehicle not found'), 404);
+
     }
 
     const vehicle = vehicles[0];
 
-    return Response.json({
+    return nvJson(requestId, {
       success: true,
       vehicle: {
         id: vehicle.id,
@@ -56,7 +62,9 @@ Deno.serve(async (req) => {
         last_updated: vehicle.updated_date
       }
     });
+
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return nvError(requestId, String(error.message), 500);
+
   }
 });

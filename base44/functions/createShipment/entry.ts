@@ -1,21 +1,24 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
 
     if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+      return nvError(requestId, String('Unauthorized'), 401);
+
     }
 
     const shipmentData = await req.json();
 
     // Validate required fields
     if (!shipmentData.origin || !shipmentData.destination) {
-      return Response.json({ 
-        error: 'origin and destination are required' 
-      }, { status: 400 });
+      return nvError(requestId, String('origin and destination are required'), 400);
+
     }
 
     // Generate tracking number if not provided
@@ -34,7 +37,7 @@ Deno.serve(async (req) => {
     // Create shipment
     const shipment = await base44.asServiceRole.entities.Shipment.create(shipmentData);
 
-    return Response.json({
+    return nvJson(requestId, {
       success: true,
       shipment: {
         id: shipment.id,
@@ -44,8 +47,10 @@ Deno.serve(async (req) => {
         status: shipment.status,
         created_date: shipment.created_date
       }
-    }, { status: 201 });
+    }, 201);
+
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return nvError(requestId, String(error.message), 500);
+
   }
 });

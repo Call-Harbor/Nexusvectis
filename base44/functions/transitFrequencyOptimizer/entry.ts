@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 /**
  * FREQUENCY & TIMETABLE OPTIMIZER
@@ -7,12 +8,15 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
  */
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
   const base44 = createClientFromRequest(req);
 
   try {
     const user = await base44.auth.me();
     if (!user || user.role !== 'admin') {
-      return Response.json({ error: 'Forbidden' }, { status: 403 });
+      return nvError(requestId, String('Forbidden'), 403);
+
     }
 
     const { organization_id, line_id } = await req.json();
@@ -25,7 +29,8 @@ Deno.serve(async (req) => {
     ]);
 
     if (!line || line.length === 0) {
-      return Response.json({ error: 'Line not found' }, { status: 404 });
+      return nvError(requestId, String('Line not found'), 404);
+
     }
 
     const lineData = line[0];
@@ -94,17 +99,19 @@ Provide specific frequencies in minutes (e.g., "5 min headway during peak").`,
       }
     });
 
-    return Response.json({
+    return nvJson(requestId, {
       success: true,
       line: lineData.line_number,
       optimization,
       analyzed_trips: trips.length
     });
+
   } catch (error) {
     console.error('Frequency Optimizer Error:', error);
-    return Response.json({ 
+    return nvJson(requestId, { 
       success: false, 
       error: error.message 
-    }, { status: 500 });
+    }, 500);
+
   }
 });

@@ -1,6 +1,9 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
   try {
     const base44 = createClientFromRequest(req);
 
@@ -52,29 +55,33 @@ Deno.serve(async (req) => {
         results.push({ organization_id: org.id, invoice_number: inv.invoice_number });
       }
 
-      return Response.json({
+      return nvJson(requestId, {
         success: true,
         mode: 'scheduled',
         processed: results.length,
         suspended: results
       });
+
     }
 
     // ── MANUAL MODE: suspend a specific organization/invoice ─────────────────
     const user = await base44.auth.me();
     if (user?.role !== 'admin') {
-      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+      return nvError(requestId, String('Forbidden: Admin access required'), 403);
+
     }
 
     const orgs = await base44.asServiceRole.entities.Organization.filter({ id: organization_id });
     if (!orgs || orgs.length === 0) {
-      return Response.json({ error: 'Organization not found' }, { status: 404 });
+      return nvError(requestId, String('Organization not found'), 404);
+
     }
     const org = orgs[0];
 
     const invoices = await base44.asServiceRole.entities.Invoice.filter({ id: invoice_id });
     if (!invoices || invoices.length === 0) {
-      return Response.json({ error: 'Invoice not found' }, { status: 404 });
+      return nvError(requestId, String('Invoice not found'), 404);
+
     }
     const inv = invoices[0];
 
@@ -94,7 +101,7 @@ Deno.serve(async (req) => {
       body: buildEmailBody(org, inv)
     });
 
-    return Response.json({
+    return nvJson(requestId, {
       success: true,
       mode: 'manual',
       message: 'Organization suspended successfully',
@@ -102,9 +109,11 @@ Deno.serve(async (req) => {
       invoice_id
     });
 
+
   } catch (error) {
     console.error('Error suspending organization:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return nvError(requestId, String(error.message), 500);
+
   }
 });
 

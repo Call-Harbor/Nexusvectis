@@ -1,13 +1,17 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
 
     // Only admins can trigger test
     if (user?.role !== 'admin') {
-      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+      return nvError(requestId, String('Forbidden: Admin access required'), 403);
+
     }
 
     const testResults = [];
@@ -61,14 +65,16 @@ Deno.serve(async (req) => {
       result: scenario3Billable ? '✅ BILLABLE (48h >= 48h)' : '❌ NOT BILLABLE'
     });
 
-    return Response.json({
+    return nvJson(requestId, {
       success: true,
       message: 'Invoice generation logic test completed',
       testDate: now.toISOString(),
       periodMonth: `${now.getFullYear()}-${String(now.getMonth()).padStart(2, '0')}`,
       tests: testResults
     });
+
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return nvError(requestId, String(error.message), 500);
+
   }
 });

@@ -1,14 +1,18 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 /**
  * Sandboxed agent execution — isolated per-task context, timeout enforcement,
  * resource tracking, and shared memory RBAC injection.
  */
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
-    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!user) return nvError(requestId, String('Unauthorized'), 401);
+
 
     const body = await req.json();
     const {
@@ -120,7 +124,7 @@ Respond with a thorough, structured analysis. Use markdown formatting.`;
       }).catch(() => {});
     }
 
-    return Response.json({
+    return nvJson(requestId, {
       output,
       metadata: {
         workerId: workerType,
@@ -134,13 +138,15 @@ Respond with a thorough, structured analysis. Use markdown formatting.`;
       }
     });
 
+
   } catch (error) {
     const isTimeout = error.name === 'AbortError';
-    return Response.json({
+    return nvJson(requestId, {
       output: isTimeout
         ? '⏱️ Task timed out — agent did not respond within the allowed window.'
         : `❌ Sandbox error: ${error.message}`,
       metadata: { sandboxed: true, timedOut: isTimeout, error: error.message }
-    }, { status: isTimeout ? 408 : 500 });
+    });
+
   }
 });

@@ -1,12 +1,16 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
     try {
         const base44 = createClientFromRequest(req);
         const user = await base44.auth.me();
 
         if (!user) {
-            return Response.json({ error: 'Unauthorized' }, { status: 401 });
+            return nvError(requestId, String('Unauthorized'), 401);
+
         }
 
         // Fetch real aircraft data from OpenSky Network API (free tier)
@@ -32,9 +36,11 @@ Deno.serve(async (req) => {
             })).filter(a => a.latitude && a.longitude); // Only include aircraft with position
         }
 
-        return Response.json({ traffic: aircraftTraffic });
+        return nvJson(requestId, { traffic: aircraftTraffic });
+
     } catch (error) {
         console.error('Aircraft Error:', error);
-        return Response.json({ traffic: [] });
+        return nvJson(requestId, { traffic: [] });
+
     }
 });

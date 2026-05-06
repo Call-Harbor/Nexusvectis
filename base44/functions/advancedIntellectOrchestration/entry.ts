@@ -1,13 +1,17 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
   try {
     const base44 = createClientFromRequest(req);
     const body = await req.json();
     const { command, context } = body;
 
     if (!command || !command.type) {
-      return Response.json({ error: 'Missing command type' }, { status: 400 });
+      return nvError(requestId, String('Missing command type'), 400);
+
     }
 
     // Fetch live fleet data
@@ -147,8 +151,10 @@ Deno.serve(async (req) => {
       };
     }
 
-    return Response.json(result);
+    return nvJson(requestId, result);
+
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return nvError(requestId, String(error.message), 500);
+
   }
 });

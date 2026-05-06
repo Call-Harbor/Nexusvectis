@@ -1,6 +1,9 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
     try {
         const base44 = createClientFromRequest(req);
         
@@ -21,18 +24,20 @@ Deno.serve(async (req) => {
         const { vehicle_id, latitude, longitude, speed, heading, altitude, fuel_level, signal_strength } = gpsData;
         
         if (!vehicle_id || latitude === undefined || longitude === undefined) {
-            return Response.json({ 
+            return nvJson(requestId, { 
                 error: 'Missing required fields: vehicle_id, latitude, longitude' 
-            }, { status: 400 });
+            }, 400);
+
         }
         
         // Find and update the vehicle
         const vehicles = await base44.asServiceRole.entities.Vehicle.filter({ name: vehicle_id });
         
         if (vehicles.length === 0) {
-            return Response.json({ 
+            return nvJson(requestId, { 
                 error: `Vehicle not found: ${vehicle_id}` 
-            }, { status: 404 });
+            }, 404);
+
         }
         
         const vehicle = vehicles[0];
@@ -50,17 +55,17 @@ Deno.serve(async (req) => {
         
         await base44.asServiceRole.entities.Vehicle.update(vehicle.id, updateData);
         
-        return Response.json({ 
+        return nvJson(requestId, { 
             success: true,
             message: `Vehicle ${vehicle_id} updated successfully`,
             vehicle_id: vehicle.id,
             position: { latitude, longitude }
         });
+
         
     } catch (error) {
         console.error('GPS Webhook Error:', error);
-        return Response.json({ 
-            error: error.message 
-        }, { status: 500 });
+        return nvError(requestId, String(error.message), 500);
+
     }
 });

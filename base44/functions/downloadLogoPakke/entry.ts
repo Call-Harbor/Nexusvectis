@@ -1,4 +1,7 @@
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
   try {
     // Logo data - we'll create a simple JSON with logo URLs and info
     const logoData = {
@@ -50,6 +53,7 @@ Deno.serve(async (req) => {
       }
     });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return nvError(requestId, String(error.message), 500);
+
   }
 });

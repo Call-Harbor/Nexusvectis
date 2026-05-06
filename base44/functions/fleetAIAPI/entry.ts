@@ -13,6 +13,7 @@
  */
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 const API_VERSION = '2.0.0';
 
@@ -36,21 +37,18 @@ async function verifyApiKey(base44, authHeader) {
   return { organization_id: matchedKey.organization_id, api_key_id: matchedKey.id };
 }
 
-const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-API-Key',
-};
-
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
   if (req.method === 'OPTIONS') {
-    return new Response(null, { status: 204, headers: CORS_HEADERS });
+    return nvOptions(requestId);
   }
 
   const base44 = createClientFromRequest(req);
   const authHeader = req.headers.get('Authorization') || req.headers.get('authorization');
   const auth = await verifyApiKey(base44, authHeader);
-  if (auth.error) return Response.json({ error: auth.error }, { status: auth.status, headers: CORS_HEADERS });
+  if (auth.error) return nvError(requestId, String(auth.error), auth.status ?? 401, 'UNAUTHORIZED');
+
 
   const { organization_id, api_key_id } = auth;
 
@@ -74,7 +72,7 @@ Deno.serve(async (req) => {
       base44.asServiceRole.entities.Alert.filter({ organization_id, is_resolved: false }, '-created_date', 5).catch(() => []),
     ]);
 
-    return Response.json({
+    return nvJson(requestId, {
       status: 'operational',
       api_version: API_VERSION,
       platform: 'NexusVectis Fleet Intelligence',
@@ -94,11 +92,13 @@ Deno.serve(async (req) => {
         'GET /usage': 'API usage statistics',
       },
       timestamp: new Date().toISOString(),
-    }, { headers: CORS_HEADERS });
+    });
+
   }
 
   if (req.method !== 'POST') {
-    return Response.json({ error: 'Method not allowed. Use GET or POST.' }, { status: 405, headers: CORS_HEADERS });
+    return nvError(requestId, String('Method not allowed. Use GET or POST.'), 405);
+
   }
 
   const body = await req.json().catch(() => ({}));
@@ -114,12 +114,13 @@ Deno.serve(async (req) => {
       params: params.params || params,
     }).catch(e => ({ error: e.message }));
 
-    return Response.json({
+    return nvJson(requestId, {
       success: !result.error,
       calculation_type: params.calculation_type,
       data: result.data || result,
       timestamp: new Date().toISOString(),
-    }, { headers: CORS_HEADERS });
+    });
+
   }
 
   // ── POST /optimize ────────────────────────────────────────────────────────
@@ -158,12 +159,13 @@ Return structured optimization results with specific, quantified recommendations
       }
     }).catch(e => ({ optimization_type, error: e.message, recommendations: [] }));
 
-    return Response.json({
+    return nvJson(requestId, {
       success: true,
       optimization_type,
       data: optimizationResult,
       timestamp: new Date().toISOString(),
-    }, { headers: CORS_HEADERS });
+    });
+
   }
 
   // ── POST /predict ─────────────────────────────────────────────────────────
@@ -195,12 +197,13 @@ Provide a precise, quantified prediction with confidence intervals.`,
       }
     }).catch(e => ({ prediction_type, error: e.message }));
 
-    return Response.json({
+    return nvJson(requestId, {
       success: true,
       prediction_type,
       data: predictionResult,
       timestamp: new Date().toISOString(),
-    }, { headers: CORS_HEADERS });
+    });
+
   }
 
   // ── POST /analyze ─────────────────────────────────────────────────────────
@@ -248,13 +251,14 @@ Provide quantified insights, KPIs, and actionable recommendations. All costs in 
       }
     }).catch(e => ({ analysis_type, error: e.message }));
 
-    return Response.json({
+    return nvJson(requestId, {
       success: true,
       analysis_type,
       fleet_snapshot: fleetData,
       data: analysisResult,
       timestamp: new Date().toISOString(),
-    }, { headers: CORS_HEADERS });
+    });
+
   }
 
   // ── POST /usage (in body) ─────────────────────────────────────────────────
@@ -269,7 +273,7 @@ Provide quantified insights, KPIs, and actionable recommendations. All costs in 
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const monthlyRecords = usageRecords.filter(r => new Date(r.created_date) >= startOfMonth);
 
-    return Response.json({
+    return nvJson(requestId, {
       organization_id,
       usage_this_month: monthlyRecords.length,
       usage_total: usageRecords.length,
@@ -278,11 +282,13 @@ Provide quantified insights, KPIs, and actionable recommendations. All costs in 
         return acc;
       }, {}),
       timestamp: new Date().toISOString(),
-    }, { headers: CORS_HEADERS });
+    });
+
   }
 
-  return Response.json({
+  return nvJson(requestId, {
     error: 'Unknown request. Specify calculation_type, optimization_type, prediction_type, or analysis_type.',
     hint: 'GET /functions/fleetAIAPI for full endpoint documentation.',
-  }, { status: 400, headers: CORS_HEADERS });
+  }, 400);
+
 });

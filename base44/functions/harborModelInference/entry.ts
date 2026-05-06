@@ -1,13 +1,18 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
   // Health check
   if (req.method === 'GET') {
-    return Response.json({ status: 'HARBOR Model Inference API — online', version: '2.1', engine: 'mistral-large-2411' });
+    return nvJson(requestId, { status: 'HARBOR Model Inference API — online', version: '2.1', engine: 'mistral-large-2411' });
+
   }
 
   if (req.method !== 'POST') {
-    return Response.json({ error: 'Method not allowed' }, { status: 405 });
+    return nvError(requestId, String('Method not allowed'), 405);
+
   }
 
   const startTime = Date.now();
@@ -37,7 +42,8 @@ Deno.serve(async (req) => {
 
       if (!matchedKey) {
         await trackUsage(base44, null, null, 401, Date.now() - startTime, clientIP, 'Invalid API key');
-        return Response.json({ error: 'Invalid or revoked API key' }, { status: 401 });
+        return nvError(requestId, String('Invalid or revoked API key'), 401);
+
       }
 
       organization_id = matchedKey.organization_id;
@@ -52,7 +58,8 @@ Deno.serve(async (req) => {
       // Fallback: Base44 session auth (for internal use from the app)
       const user = await base44.auth.me();
       if (!user) {
-        return Response.json({ error: 'Unauthorized — provide Authorization: Bearer <api_key>' }, { status: 401 });
+        return nvError(requestId, String('Unauthorized — provide Authorization: Bearer <api_key>'), 401);
+
       }
       // Get organization from user
       const users = await base44.asServiceRole.entities.User.filter({ email: user.email });
@@ -64,14 +71,16 @@ Deno.serve(async (req) => {
 
     if (!model_id) {
       await trackUsage(base44, organization_id, api_key_id, 400, Date.now() - startTime, clientIP, 'Missing model_id');
-      return Response.json({ error: 'model_id is required' }, { status: 400 });
+      return nvError(requestId, String('model_id is required'), 400);
+
     }
 
     // Fetch model from DB
     const models = await base44.asServiceRole.entities.FleetAIModel.filter({ snapshot_id: model_id });
     if (!models || models.length === 0) {
       await trackUsage(base44, organization_id, api_key_id, 404, Date.now() - startTime, clientIP, `Model not found: ${model_id}`);
-      return Response.json({ error: `Model not found: ${model_id}` }, { status: 404 });
+      return nvError(requestId, `Model not found: ${model_id}`, 404, 'NOT_FOUND');
+
     }
 
     const model = models[0];
@@ -79,7 +88,8 @@ Deno.serve(async (req) => {
     // Verify model belongs to this organization
     if (model.organization_id !== organization_id) {
       await trackUsage(base44, organization_id, api_key_id, 403, Date.now() - startTime, clientIP, 'Model belongs to different organization');
-      return Response.json({ error: 'Forbidden — model does not belong to your organization' }, { status: 403 });
+      return nvError(requestId, String('Forbidden — model does not belong to your organization'), 403);
+
     }
 
     // Route through HARBOR Core Engine — it automatically loads training data + live context
@@ -109,7 +119,7 @@ Deno.serve(async (req) => {
     // Track successful API usage
     await trackUsage(base44, organization_id, api_key_id, 200, responseTime, clientIP, null);
 
-    return Response.json({
+    return nvJson(requestId, {
       status: 'success',
       model: {
         id: model.snapshot_id,
@@ -127,9 +137,11 @@ Deno.serve(async (req) => {
       }
     });
 
+
   } catch (error) {
     await trackUsage(base44, null, null, 500, Date.now() - startTime, clientIP, error.message).catch(() => {});
-    return Response.json({ error: error.message }, { status: 500 });
+    return nvError(requestId, String(error.message), 500);
+
   }
 });
 

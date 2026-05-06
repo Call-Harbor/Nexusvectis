@@ -1,10 +1,14 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
-    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!user) return nvError(requestId, String('Unauthorized'), 401);
+
 
     const body = await req.json();
     const { organization_id } = body;
@@ -125,7 +129,7 @@ ${symbolicRules.filter(r => r.triggered).map(r => r.rule).join('\n')}
       try { aiReport = JSON.parse(reply); } catch { aiReport = { overall_risk_score: riskScore, risk_level: riskScore > 70 ? 'CRITICAL' : riskScore > 40 ? 'ELEVATED' : 'NOMINAL', compound_risks: [], cyber_threats: [], supply_chain_signals: [], hedging_actions: [], sixth_sense_alert: '', summary: typeof reply === 'string' ? reply : 'Risk analysis completed.' }; }
     }
 
-    return Response.json({
+    return nvJson(requestId, {
       risk_score: riskScore,
       ai_report: aiReport,
       real_signals: realSignals,
@@ -142,8 +146,10 @@ ${symbolicRules.filter(r => r.triggered).map(r => r.rule).join('\n')}
       }
     });
 
+
   } catch (error) {
     console.error('neuroRiskFusion error:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return nvError(requestId, String(error.message), 500);
+
   }
 });

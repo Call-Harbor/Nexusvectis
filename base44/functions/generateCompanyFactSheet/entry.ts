@@ -1,6 +1,9 @@
 import { jsPDF } from 'npm:jspdf@4.0.0';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
   try {
     const pdf = new jsPDF({
       orientation: 'portrait',
@@ -212,6 +215,7 @@ Deno.serve(async (req) => {
       }
     });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return nvError(requestId, String(error.message), 500);
+
   }
 });

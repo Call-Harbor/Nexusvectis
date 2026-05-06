@@ -1,13 +1,18 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
-    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!user) return nvError(requestId, String('Unauthorized'), 401);
+
 
     const { query } = await req.json();
-    if (!query?.trim()) return Response.json({ error: 'No query provided' }, { status: 400 });
+    if (!query?.trim()) return nvError(requestId, String('No query provided'), 400);
+
 
     // DuckDuckGo Instant Answer API (free, no key)
     const ddgUrl = `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1&t=nexusvectis`;
@@ -40,7 +45,7 @@ Deno.serve(async (req) => {
       supplementLinks = llmResult?.links || [];
     }
 
-    return Response.json({
+    return nvJson(requestId, {
       abstract: ddgData.AbstractText || null,
       abstract_source: ddgData.AbstractSource || null,
       abstract_url: ddgData.AbstractURL || null,
@@ -51,7 +56,9 @@ Deno.serve(async (req) => {
       related_topics: relatedTopics,
       supplement_links: supplementLinks
     });
+
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return nvError(requestId, String(error.message), 500);
+
   }
 });

@@ -1,7 +1,10 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 // Platform Orchestrator - Updates all dynamic data based on real-time input
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
     try {
         const base44 = createClientFromRequest(req);
         
@@ -200,16 +203,16 @@ Deno.serve(async (req) => {
             }
         }
         
-        return Response.json({ 
+        return nvJson(requestId, { 
             success: true,
             timestamp: new Date().toISOString(),
             updates
         });
+
         
     } catch (error) {
         console.error('Platform Orchestrator Error:', error);
-        return Response.json({ 
-            error: error.message 
-        }, { status: 500 });
+        return nvError(requestId, String(error.message), 500);
+
     }
 });

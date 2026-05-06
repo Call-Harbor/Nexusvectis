@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // AUTONOMOUS ROUTE MONITOR v1.0
@@ -210,6 +211,8 @@ Respond ONLY with JSON:
 
 // ── Main handler ───────────────────────────────────────────────────────────
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
   try {
     const base44 = createClientFromRequest(req);
 
@@ -253,14 +256,16 @@ Deno.serve(async (req) => {
 
     console.log(`[ROUTE-MONITOR] Cycle complete. Checked: ${summary.routes_checked}, Adapted: ${summary.routes_adapted}`);
 
-    return Response.json({
+    return nvJson(requestId, {
       status: 'route_monitor_cycle_complete',
       timestamp: now,
       ...summary,
     });
 
+
   } catch (error) {
     console.error('[ROUTE-MONITOR] Engine error:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return nvError(requestId, String(error.message), 500);
+
   }
 });

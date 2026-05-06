@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 const MISTRAL_KEY = Deno.env.get("MISTRAL_API_KEY");
 
@@ -13,10 +14,13 @@ const MISTRAL_KEY = Deno.env.get("MISTRAL_API_KEY");
 // ═══════════════════════════════════════════════════════════════════════════
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
-    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!user) return nvError(requestId, String('Unauthorized'), 401);
+
 
     const { organization_id } = await req.json();
 
@@ -238,7 +242,7 @@ Deno.serve(async (req) => {
       fleet_health_score: fleetHealthScore,
     });
 
-    return Response.json({
+    return nvJson(requestId, {
       success: true,
       duration_ms: Date.now() - startTime,
       fleet_health_score: fleetHealthScore,
@@ -256,7 +260,9 @@ Deno.serve(async (req) => {
       timestamp: new Date().toISOString(),
     });
 
+
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return nvError(requestId, String(error.message), 500);
+
   }
 });

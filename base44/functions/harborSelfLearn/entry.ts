@@ -6,6 +6,7 @@
  */
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 const MISTRAL_API = 'https://api.mistral.ai/v1';
 
@@ -80,6 +81,8 @@ Focus on practical, actionable insights that a fleet manager or logistics profes
 }
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
   try {
     const base44 = createClientFromRequest(req);
 
@@ -89,7 +92,8 @@ Deno.serve(async (req) => {
     try {
       const user = await base44.auth.me();
       if (user && user.role !== 'admin') {
-        return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+        return nvError(requestId, String('Forbidden: Admin access required'), 403);
+
       }
     } catch (_) {
       // No user = called by scheduler
@@ -98,7 +102,8 @@ Deno.serve(async (req) => {
 
     const mistralApiKey = Deno.env.get('MISTRAL_API_KEY');
     if (!mistralApiKey) {
-      return Response.json({ error: 'MISTRAL_API_KEY not configured' }, { status: 500 });
+      return nvError(requestId, String('MISTRAL_API_KEY not configured'), 500);
+
     }
 
     const body = req.method === 'POST' ? await req.json().catch(() => ({})) : {};
@@ -132,11 +137,12 @@ Deno.serve(async (req) => {
     }
 
     if (learnedEntries.length === 0) {
-      return Response.json({ 
+      return nvJson(requestId, { 
         success: false, 
         message: 'No knowledge acquired this run',
         errors 
-      }, { status: 500 });
+      }, 500);
+
     }
 
     // Find or create the HARBOR auto-learning model
@@ -176,7 +182,7 @@ Deno.serve(async (req) => {
       console.log(`[HARBOR] Created auto-learn model with ${newEntries.length} initial entries`);
     }
 
-    return Response.json({
+    return nvJson(requestId, {
       success: true,
       topics_learned: learnedEntries.map(e => e.topic),
       entries_added: learnedEntries.length,
@@ -184,8 +190,10 @@ Deno.serve(async (req) => {
       message: `H.A.R.B.O.R acquired knowledge on ${learnedEntries.length} topic(s)`,
     });
 
+
   } catch (error) {
     console.error('[HARBOR Self-Learn] Fatal error:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return nvError(requestId, String(error.message), 500);
+
   }
 });

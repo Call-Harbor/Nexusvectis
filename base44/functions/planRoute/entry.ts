@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // NEXUSVECTIS ROUTE PLANNING ENGINE v3.0
@@ -415,13 +416,17 @@ const TRANSPORT_FACTORS = {
 // MAIN HANDLER
 // ══════════════════════════════════════════════════════════════════════════
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
-    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!user) return nvError(requestId, String('Unauthorized'), 401);
+
 
     const { origin, destination, transport_type = 'truck' } = await req.json();
-    if (!origin || !destination) return Response.json({ error: 'Origin and destination required' }, { status: 400 });
+    if (!origin || !destination) return nvError(requestId, String('Origin and destination required'), 400);
+
 
     const factors = TRANSPORT_FACTORS[transport_type] || TRANSPORT_FACTORS.truck;
     const mistralApiKey = Deno.env.get('MISTRAL_API_KEY');
@@ -516,7 +521,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    return Response.json({
+    return nvJson(requestId, {
       success: true,
       route_data: {
         waypoints,
@@ -556,7 +561,9 @@ Deno.serve(async (req) => {
       } : null,
     });
 
+
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return nvError(requestId, String(error.message), 500);
+
   }
 });

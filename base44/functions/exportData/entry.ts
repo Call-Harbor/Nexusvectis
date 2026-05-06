@@ -1,25 +1,31 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
 
     if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+      return nvError(requestId, String('Unauthorized'), 401);
+
     }
 
     const { entity_type, format = 'json', filters = {} } = await req.json();
 
     if (!entity_type) {
-      return Response.json({ error: 'entity_type required' }, { status: 400 });
+      return nvError(requestId, String('entity_type required'), 400);
+
     }
 
     const validEntities = ['Vehicle', 'Route', 'Shipment', 'Resource', 'Alert', 'Maintenance', 'Exception'];
     if (!validEntities.includes(entity_type)) {
-      return Response.json({ 
+      return nvJson(requestId, { 
         error: `Invalid entity_type. Must be one of: ${validEntities.join(', ')}` 
-      }, { status: 400 });
+      }, 400);
+
     }
 
     const orgId = user.organization_id || user.data?.organization_id;
@@ -65,14 +71,16 @@ Deno.serve(async (req) => {
     }
 
     // JSON format (default)
-    return Response.json({
+    return nvJson(requestId, {
       success: true,
       entity_type,
       count: data.length,
       exported_at: new Date().toISOString(),
       data
     });
+
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return nvError(requestId, String(error.message), 500);
+
   }
 });

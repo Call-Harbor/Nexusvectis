@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // SWARM INTELLIGENCE COORDINATION ENGINE v1.0
@@ -17,6 +18,8 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 // ═══════════════════════════════════════════════════════════════════════════
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
   try {
     const base44 = createClientFromRequest(req);
 
@@ -39,16 +42,18 @@ Deno.serve(async (req) => {
       results.push(result);
     }
 
-    return Response.json({
+    return nvJson(requestId, {
       status: 'swarm_cycle_complete',
       timestamp: new Date().toISOString(),
       organizations_processed: organizationIds.length,
       results,
     });
 
+
   } catch (error) {
     console.error('[SWARM] Engine error:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return nvError(requestId, String(error.message), 500);
+
   }
 });
 

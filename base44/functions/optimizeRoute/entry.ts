@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 // ── Geocode a city name → lat/lng ─────────────────────────────────────────
 async function geocode(query) {
@@ -134,10 +135,13 @@ async function fetchWeatherData(originCoords, destCoords) {
 
 // ── Main handler ───────────────────────────────────────────────────────────
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
-    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!user) return nvError(requestId, String('Unauthorized'), 401);
+
 
     const {
       origin,
@@ -153,7 +157,8 @@ Deno.serve(async (req) => {
     } = await req.json();
 
     if (!origin || !destination) {
-      return Response.json({ error: 'origin and destination required' }, { status: 400 });
+      return nvError(requestId, String('origin and destination required'), 400);
+
     }
 
     const now = new Date();
@@ -286,7 +291,7 @@ Return ONLY valid JSON:
       try { parsed = JSON.parse(reply); } catch { parsed = { route_data: { origin, destination, transport_type, optimization_priority, distance_km: 0, estimated_duration_hours: 0, co2_estimate_kg: 0, fuel_cost_eur: 0, toll_cost_eur: 0, total_cost_eur: 0, live_data_delay_minutes: 0, waypoints: [], rest_stops: [], traffic_conditions: { level: 'moderate', notes: '' }, weather_conditions: { impact: 'none', description: '' }, driver_compliance: { compliant: true, notes: '', required_breaks: 0 }, live_incidents: [], alternatives: [], optimization_score: { time: 80, cost: 80, co2: 80, overall: 80 }, ai_recommendations: [typeof reply === 'string' ? reply : 'Route planned via HARBOR'], risks: [] } } }; }
     }
 
-    return Response.json({
+    return nvJson(requestId, {
       success: true,
       ...parsed,
       optimization_date: new Date().toISOString(),
@@ -299,7 +304,9 @@ Return ONLY valid JSON:
       },
     });
 
+
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return nvError(requestId, String(error.message), 500);
+
   }
 });
