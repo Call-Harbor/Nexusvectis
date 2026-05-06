@@ -46,6 +46,21 @@ This runs `scripts/harbor-intellect-benchmark.mjs`, which:
    - `harbor-intellect-benchmark-v1.eval.jsonl`
    - `harbor-intellect-benchmark-v1.training.jsonl`
 
+### Local runner (single model, developer tool)
+
+For a **minimal** local loop without the full dev harness wiring:
+
+```bash
+npm run harbor:benchmark:local
+npm run harbor:benchmark:local -- --json
+npm run harbor:benchmark:local -- --write-jsonl
+```
+
+- Uses **stub** invoke by default (`createStubIntellectInvoke` from `harborIntellectBenchmarkDev.js`).
+- Prints **per-suite pass counts** and optional JSON summary; `--write-jsonl` writes `artifacts/benchmark/harbor-intellect-benchmark-local.eval.jsonl` with **`harbor.eval_run.v1`** rows (same shape as the main benchmark export).
+
+Programmatic: import `runHarborIntellectBenchmarkLocal` and `benchmarkLocalSummaryToEvalJsonl` from `src/lib/harborIntellectBenchmarkLocal.js`, pass your own `invoke(prompt, context, evalCase)`.
+
 ## Live model usage
 
 `harborIntellectBenchmarkDev` supports live invoke adapters:

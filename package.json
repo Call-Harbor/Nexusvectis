@@ -15,6 +15,7 @@
     "preview": "vite preview",
     "harbor:eval:dev": "node scripts/harbor-eval-dev.mjs",
     "harbor:benchmark:v1": "node scripts/harbor-intellect-benchmark.mjs",
+    "harbor:benchmark:local": "node scripts/harbor-intellect-benchmark-local.mjs",
     "harbor:hf:upload": "node scripts/harbor-intellect-upload-hf.mjs"
   },
   "dependencies": {
