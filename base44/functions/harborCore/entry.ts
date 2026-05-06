@@ -13,6 +13,7 @@
  */
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 const HARBOR_IDENTITY = `You are H.A.R.B.O.R. — Holistic Autonomous Reasoning & Business Operations Resource.
 
@@ -70,12 +71,18 @@ PERSONALITY:
 - Zero vague answers — specific, correct, actionable`;
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
+  if (req.method === 'OPTIONS') {
+    return nvOptions(requestId);
+  }
+
   if (req.method === 'GET') {
-    return Response.json({ status: 'HARBOR Core Engine — online', version: '2.0', model: 'mistral-large-2411' });
+    return nvJson(requestId, { status: 'HARBOR Core Engine — online', version: '2.0', model: 'mistral-large-2411' });
   }
 
   if (req.method !== 'POST') {
-    return Response.json({ error: 'Method not allowed' }, { status: 405 });
+    return nvError(requestId, 'Method not allowed', 405, 'METHOD_NOT_ALLOWED');
   }
 
   try {
@@ -96,7 +103,7 @@ Deno.serve(async (req) => {
       const apiKeys = await base44.asServiceRole.entities.APIKey.filter({ key_prefix: keyPrefix, status: 'active' });
       const matchedKey = apiKeys.find(k => k.key_hash === providedHash);
       if (!matchedKey) {
-        return Response.json({ error: 'Invalid or revoked API key' }, { status: 401 });
+        return nvError(requestId, 'Invalid or revoked API key', 401, 'UNAUTHORIZED');
       }
       organization_id = matchedKey.organization_id;
       await base44.asServiceRole.entities.APIKey.update(matchedKey.id, { last_used: new Date().toISOString() });
@@ -104,12 +111,17 @@ Deno.serve(async (req) => {
       // Session auth
       user = await base44.auth.me();
       if (!user) {
-        return Response.json({ error: 'Unauthorized' }, { status: 401 });
+        return nvError(requestId, 'Unauthorized', 401, 'UNAUTHORIZED');
       }
       organization_id = user.organization_id || user.id;
     }
 
-    const body = await req.json();
+    let body;
+    try {
+      body = await req.json();
+    } catch {
+      return nvError(requestId, 'Invalid JSON body', 400, 'BAD_REQUEST');
+    }
     const {
       prompt,             // The user's message / command / query
       mode,               // 'chat' | 'command' | 'inference' — determines response format
@@ -121,12 +133,12 @@ Deno.serve(async (req) => {
     } = body;
 
     if (!prompt) {
-      return Response.json({ error: 'prompt is required' }, { status: 400 });
+      return nvError(requestId, 'prompt is required', 400, 'BAD_REQUEST');
     }
 
     const mistralApiKey = Deno.env.get('MISTRAL_API_KEY');
     if (!mistralApiKey) {
-      return Response.json({ error: 'MISTRAL_API_KEY not configured' }, { status: 500 });
+      return nvError(requestId, 'MISTRAL_API_KEY not configured', 500, 'NOT_CONFIGURED');
     }
 
     // ─── 1. LOAD HARBOR KNOWLEDGE BASE (org model + auto-learn model) ──────────
@@ -336,15 +348,15 @@ Be concise, actionable, and structured with headers/bullets where appropriate.`;
 
     if (!response.ok) {
       const err = await response.text();
-      console.error('Mistral error:', err);
-      return Response.json({ error: 'AI service unavailable' }, { status: 502 });
+      console.error('Mistral error:', err, { requestId });
+      return nvError(requestId, 'AI service unavailable', 502, 'UPSTREAM_ERROR');
     }
 
     const data = await response.json();
     const rawReply = data.choices?.[0]?.message?.content;
 
     if (!rawReply) {
-      return Response.json({ error: 'No response from AI' }, { status: 500 });
+      return nvError(requestId, 'No response from AI', 500, 'EMPTY_AI_RESPONSE');
     }
 
     // Parse and self-heal response based on mode
@@ -389,15 +401,15 @@ Be concise, actionable, and structured with headers/bullets where appropriate.`;
       result = rawReply;
     }
 
-    return Response.json({
+    return nvJson(requestId, {
       harbor_version: '2.0',
       mode: mode || 'chat',
       reply: result,
-      usage: data.usage || null
+      usage: data.usage || null,
     });
-
   } catch (error) {
-    console.error('HARBOR Core error:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    console.error('HARBOR Core error:', error, { requestId });
+    const msg = error instanceof Error ? error.message : String(error);
+    return nvError(requestId, msg, 500, 'INTERNAL_ERROR');
   }
 });

@@ -15,6 +15,7 @@
  */
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 const API_VERSION = '2.0';
 
@@ -61,8 +62,14 @@ PERSONALITY:
 - Language: Respond in same language as user (EN or DA)`;
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
+  if (req.method === 'OPTIONS') {
+    return nvOptions(requestId);
+  }
+
   if (req.method === 'GET') {
-    return Response.json({
+    return nvJson(requestId, {
       status: 'H.A.R.B.O.R. Intellect API — online',
       version: '1.0',
       model: 'claude_sonnet_4_6',
@@ -71,7 +78,7 @@ Deno.serve(async (req) => {
   }
 
   if (req.method !== 'POST') {
-    return Response.json({ error: 'Method not allowed' }, { status: 405 });
+    return nvError(requestId, 'Method not allowed', 405, 'METHOD_NOT_ALLOWED');
   }
 
   const startTime = Date.now();
@@ -97,7 +104,7 @@ Deno.serve(async (req) => {
       const matchedKey = apiKeys.find(k => k.key_hash === providedHash);
 
       if (!matchedKey) {
-        return Response.json({ error: 'Invalid or revoked API key' }, { status: 401 });
+        return nvError(requestId, 'Invalid or revoked API key', 401, 'UNAUTHORIZED');
       }
 
       organization_id = matchedKey.organization_id;
@@ -108,12 +115,17 @@ Deno.serve(async (req) => {
       // Session auth (internal app usage)
       const user = await base44.auth.me();
       if (!user) {
-        return Response.json({ error: 'Unauthorized — provide Authorization: Bearer <nvx_api_key>' }, { status: 401 });
+        return nvError(requestId, 'Unauthorized — provide Authorization: Bearer <nvx_api_key>', 401, 'UNAUTHORIZED');
       }
       organization_id = user.organization_id || user.id;
     }
 
-    const body = await req.json();
+    let body;
+    try {
+      body = await req.json();
+    } catch {
+      return nvError(requestId, 'Invalid JSON body', 400, 'BAD_REQUEST');
+    }
     const { 
       message, 
       conversation_history, 
@@ -129,7 +141,7 @@ Deno.serve(async (req) => {
     } = body;
 
     if (!message) {
-      return Response.json({ error: 'message is required' }, { status: 400 });
+      return nvError(requestId, 'message is required', 400, 'BAD_REQUEST');
     }
 
     // Smart domain tagging — auto-detect specialized expertise needed
@@ -279,7 +291,7 @@ Deno.serve(async (req) => {
     // Estimate tokens
     const estimatedTokens = Math.ceil(fullPrompt.length / 4) + Math.ceil((typeof parsedResponse === 'string' ? parsedResponse : JSON.stringify(parsedResponse)).length / 4);
 
-    return Response.json({
+    return nvJson(requestId, {
       harbor_version: API_VERSION,
       model: 'claude_sonnet_4_6',
       reply: parsedResponse,
@@ -300,8 +312,9 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     const responseTime = Date.now() - startTime;
-    console.error('H.A.R.B.O.R. Intellect API error:', error);
+    console.error('H.A.R.B.O.R. Intellect API error:', error, { requestId });
 
-    return Response.json({ error: error.message }, { status: 500 });
+    const msg = error instanceof Error ? error.message : String(error);
+    return nvError(requestId, msg, 500, 'INTERNAL_ERROR');
   }
 });
