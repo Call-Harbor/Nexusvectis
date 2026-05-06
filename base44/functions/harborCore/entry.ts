@@ -12,7 +12,7 @@
  * - Returns structured AI response
  */
 
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 const HARBOR_IDENTITY = `You are H.A.R.B.O.R. — Holistic Autonomous Reasoning & Business Operations Resource.
 

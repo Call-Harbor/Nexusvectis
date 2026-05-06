@@ -1,271 +1,288 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+/**
+ * Fleet AI API — NexusVectis Public REST API v2
+ * 
+ * Endpoints:
+ *   GET  /                    — Health check & API info
+ *   POST /calculate           — Fleet calculations (route, cost, CO2, ETA, etc.)
+ *   POST /optimize            — Fleet/route/inventory optimization via AI
+ *   POST /predict             — Predictive analytics (ETA, demand, failure, cost)
+ *   POST /analyze             — Fleet analytics (performance, costs, emissions, efficiency)
+ *   GET  /usage               — API usage statistics for this org
+ * 
+ * Authentication: Authorization: Bearer nvx_<api_key>
+ */
 
-// Rate limits removed - all API usage is metered and billed monthly based on actual consumption
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+
+const API_VERSION = '2.0.0';
+
+// Secure SHA-256 API key verification (matches harborCore / harborOrchestratorAPI)
+async function verifyApiKey(base44, authHeader) {
+  if (!authHeader || !authHeader.startsWith('Bearer nvx_')) {
+    return { error: 'Missing or invalid Authorization header. Use: Authorization: Bearer nvx_<api_key>', status: 401 };
+  }
+  const providedKey = authHeader.slice(7).trim();
+  const encoder = new TextEncoder();
+  const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(providedKey));
+  const providedHash = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+  const keyPrefix = providedKey.substring(0, 12);
+
+  const apiKeys = await base44.asServiceRole.entities.APIKey.filter({ key_prefix: keyPrefix, status: 'active' });
+  const matchedKey = apiKeys.find(k => k.key_hash === providedHash);
+
+  if (!matchedKey) return { error: 'Invalid or revoked API key', status: 401 };
+
+  await base44.asServiceRole.entities.APIKey.update(matchedKey.id, { last_used: new Date().toISOString() }).catch(() => {});
+  return { organization_id: matchedKey.organization_id, api_key_id: matchedKey.id };
+}
+
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-API-Key',
+};
 
 Deno.serve(async (req) => {
-  // Handle CORS
   if (req.method === 'OPTIONS') {
-    return new Response(null, {
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-API-Key',
+    return new Response(null, { status: 204, headers: CORS_HEADERS });
+  }
+
+  const base44 = createClientFromRequest(req);
+  const authHeader = req.headers.get('Authorization') || req.headers.get('authorization');
+  const auth = await verifyApiKey(base44, authHeader);
+  if (auth.error) return Response.json({ error: auth.error }, { status: auth.status, headers: CORS_HEADERS });
+
+  const { organization_id, api_key_id } = auth;
+
+  // Log usage async
+  base44.asServiceRole.entities.APIUsage.create({
+    organization_id,
+    api_key_id,
+    endpoint: '/functions/fleetAIAPI',
+    method: req.method,
+    status_code: 200,
+    response_time_ms: 0,
+    ip_address: req.headers.get('x-forwarded-for') || 'unknown',
+  }).catch(() => {});
+
+  // ── GET: Health & discovery ───────────────────────────────────────────────
+  if (req.method === 'GET') {
+    const [vehicles, routes, shipments, alerts] = await Promise.all([
+      base44.asServiceRole.entities.Vehicle.filter({ organization_id }, '-updated_date', 5).catch(() => []),
+      base44.asServiceRole.entities.Route.filter({ organization_id }, '-created_date', 5).catch(() => []),
+      base44.asServiceRole.entities.Shipment.filter({ organization_id }, '-created_date', 5).catch(() => []),
+      base44.asServiceRole.entities.Alert.filter({ organization_id, is_resolved: false }, '-created_date', 5).catch(() => []),
+    ]);
+
+    return Response.json({
+      status: 'operational',
+      api_version: API_VERSION,
+      platform: 'NexusVectis Fleet Intelligence',
+      organization_id,
+      fleet_snapshot: {
+        vehicles: vehicles.length,
+        active_vehicles: vehicles.filter(v => v.status === 'active').length,
+        routes: routes.length,
+        shipments_in_transit: shipments.filter(s => s.status === 'in_transit').length,
+        open_alerts: alerts.length,
       },
-    });
+      endpoints: {
+        'POST /calculate': 'Fleet calculations — calculation_type: ROUTE_OPTIMIZATION | COST_ANALYSIS | CO2_EMISSIONS | ETA_PREDICTION | FUEL_EFFICIENCY | FLEET_PERFORMANCE | MAINTENANCE_PREDICTION | SHIPMENT_OPTIMIZATION | INVENTORY_FORECAST | PREDICTIVE_MAINTENANCE',
+        'POST /optimize': 'AI-powered optimization — optimization_type: routes | fleet | inventory',
+        'POST /predict': 'Predictive analytics — prediction_type: eta | demand | failure | cost',
+        'POST /analyze': 'Fleet analysis — analysis_type: performance | costs | emissions | efficiency',
+        'GET /usage': 'API usage statistics',
+      },
+      timestamp: new Date().toISOString(),
+    }, { headers: CORS_HEADERS });
   }
 
-  try {
-    const apiKey = req.headers.get('X-API-Key') || req.headers.get('Authorization')?.replace('Bearer ', '');
-    
-    if (!apiKey) {
-      return Response.json({ error: 'Missing API key' }, { status: 401 });
-    }
-
-    const base44 = createClientFromRequest(req);
-    
-    // Verify API key
-    const apiKeyRecord = await base44.entities.APIKey.filter({ key_hash: hashKey(apiKey) });
-    
-    if (!apiKeyRecord || apiKeyRecord.length === 0) {
-      return Response.json({ error: 'Invalid API key' }, { status: 401 });
-    }
-
-    const apiKeyData = apiKeyRecord[0];
-    if (apiKeyData.status === 'revoked') {
-      return Response.json({ error: 'API key revoked' }, { status: 403 });
-    }
-
-    // Get request path
-    const url = new URL(req.url);
-    const path = url.pathname.replace('/api/v1/', '');
-    const [resource, action] = path.split('/');
-
-    // Route requests
-    if (req.method === 'POST') {
-      const body = await req.json();
-
-      if (resource === 'calculate') {
-        return handleCalculation(body, apiKeyData.organization_id);
-      } else if (resource === 'optimize') {
-        return handleOptimization(body, apiKeyData.organization_id);
-      } else if (resource === 'predict') {
-        return handlePrediction(body, apiKeyData.organization_id);
-      } else if (resource === 'analyze') {
-        return handleAnalysis(body, apiKeyData.organization_id);
-      }
-    }
-
-    if (req.method === 'GET') {
-      if (resource === 'health') {
-        return Response.json({ status: 'operational', timestamp: new Date().toISOString() });
-      } else if (resource === 'usage') {
-        return handleUsageStats(apiKeyData.organization_id);
-      }
-    }
-
-    return Response.json({ error: 'Endpoint not found' }, { status: 404 });
-  } catch (error) {
-    console.error('API error:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+  if (req.method !== 'POST') {
+    return Response.json({ error: 'Method not allowed. Use GET or POST.' }, { status: 405, headers: CORS_HEADERS });
   }
+
+  const body = await req.json().catch(() => ({}));
+  const { endpoint, ...params } = body;
+
+  // Route based on 'endpoint' field in body (since functions only have one URL path)
+  const routeKey = endpoint || Object.keys(params)[0];
+
+  // ── POST /calculate ───────────────────────────────────────────────────────
+  if (params.calculation_type) {
+    const result = await base44.asServiceRole.functions.invoke('fleetAICalculations', {
+      calculation_type: params.calculation_type,
+      params: params.params || params,
+    }).catch(e => ({ error: e.message }));
+
+    return Response.json({
+      success: !result.error,
+      calculation_type: params.calculation_type,
+      data: result.data || result,
+      timestamp: new Date().toISOString(),
+    }, { headers: CORS_HEADERS });
+  }
+
+  // ── POST /optimize ────────────────────────────────────────────────────────
+  if (params.optimization_type) {
+    const { optimization_type, data = {} } = params;
+
+    // Fetch live org data for AI-powered optimization
+    const [vehicles, routes, shipments] = await Promise.all([
+      base44.asServiceRole.entities.Vehicle.filter({ organization_id }).catch(() => []),
+      base44.asServiceRole.entities.Route.filter({ organization_id }).catch(() => []),
+      base44.asServiceRole.entities.Shipment.filter({ organization_id, status: 'pending' }).catch(() => []),
+    ]);
+
+    const liveData = { ...data, vehicles: data.vehicles || vehicles, routes: data.routes || routes, shipments: data.shipments || shipments };
+
+    const optimizationResult = await base44.asServiceRole.integrations.Core.InvokeLLM({
+      prompt: `You are a fleet optimization AI. Perform ${optimization_type} optimization for this fleet data.
+      
+Fleet data: ${JSON.stringify({ vehicles: liveData.vehicles.length, routes: liveData.routes.length, shipments: liveData.shipments.length })}
+Parameters: ${JSON.stringify(data)}
+
+Return structured optimization results with specific, quantified recommendations in EUR.`,
+      response_json_schema: {
+        type: 'object',
+        properties: {
+          optimization_type: { type: 'string' },
+          current_state: { type: 'object', additionalProperties: true },
+          optimized_state: { type: 'object', additionalProperties: true },
+          savings_eur: { type: 'number' },
+          savings_percent: { type: 'number' },
+          recommendations: { type: 'array', items: { type: 'string' } },
+          implementation_steps: { type: 'array', items: { type: 'string' } },
+          payback_period_months: { type: 'number' },
+          confidence_percent: { type: 'number' },
+        }
+      }
+    }).catch(e => ({ optimization_type, error: e.message, recommendations: [] }));
+
+    return Response.json({
+      success: true,
+      optimization_type,
+      data: optimizationResult,
+      timestamp: new Date().toISOString(),
+    }, { headers: CORS_HEADERS });
+  }
+
+  // ── POST /predict ─────────────────────────────────────────────────────────
+  if (params.prediction_type) {
+    const { prediction_type, data = {} } = params;
+
+    const [vehicles, shipments] = await Promise.all([
+      base44.asServiceRole.entities.Vehicle.filter({ organization_id }, '-updated_date', 20).catch(() => []),
+      base44.asServiceRole.entities.Shipment.filter({ organization_id }, '-created_date', 20).catch(() => []),
+    ]);
+
+    const predictionResult = await base44.asServiceRole.integrations.Core.InvokeLLM({
+      prompt: `You are a fleet predictive analytics AI. Generate a ${prediction_type} prediction.
+      
+Fleet context: ${vehicles.length} vehicles, ${shipments.length} shipments
+Input data: ${JSON.stringify(data)}
+
+Provide a precise, quantified prediction with confidence intervals.`,
+      response_json_schema: {
+        type: 'object',
+        properties: {
+          prediction_type: { type: 'string' },
+          prediction: { type: 'object', additionalProperties: true },
+          confidence_percent: { type: 'number' },
+          key_factors: { type: 'array', items: { type: 'string' } },
+          scenarios: { type: 'object', additionalProperties: true },
+          valid_until: { type: 'string' },
+        }
+      }
+    }).catch(e => ({ prediction_type, error: e.message }));
+
+    return Response.json({
+      success: true,
+      prediction_type,
+      data: predictionResult,
+      timestamp: new Date().toISOString(),
+    }, { headers: CORS_HEADERS });
+  }
+
+  // ── POST /analyze ─────────────────────────────────────────────────────────
+  if (params.analysis_type) {
+    const { analysis_type, data = {} } = params;
+
+    const [vehicles, routes, shipments, alerts] = await Promise.all([
+      base44.asServiceRole.entities.Vehicle.filter({ organization_id }).catch(() => []),
+      base44.asServiceRole.entities.Route.filter({ organization_id }).catch(() => []),
+      base44.asServiceRole.entities.Shipment.filter({ organization_id }).catch(() => []),
+      base44.asServiceRole.entities.Alert.filter({ organization_id, is_resolved: false }).catch(() => []),
+    ]);
+
+    const fleetData = {
+      vehicles: vehicles.length,
+      active_vehicles: vehicles.filter(v => v.status === 'active').length,
+      avg_efficiency: vehicles.length > 0 ? Math.round(vehicles.reduce((s, v) => s + (v.efficiency_score || 0), 0) / vehicles.length) : 0,
+      total_co2: vehicles.reduce((s, v) => s + (v.co2_emissions || 0), 0),
+      routes: routes.length,
+      active_routes: routes.filter(r => r.status === 'active').length,
+      shipments: shipments.length,
+      delivered: shipments.filter(s => s.status === 'delivered').length,
+      delayed: shipments.filter(s => s.status === 'delayed').length,
+      critical_alerts: alerts.filter(a => a.type === 'critical').length,
+    };
+
+    const analysisResult = await base44.asServiceRole.integrations.Core.InvokeLLM({
+      prompt: `You are a fleet performance analyst. Perform a ${analysis_type} analysis.
+      
+Live fleet data: ${JSON.stringify(fleetData)}
+Additional parameters: ${JSON.stringify(data)}
+
+Provide quantified insights, KPIs, and actionable recommendations. All costs in EUR.`,
+      response_json_schema: {
+        type: 'object',
+        properties: {
+          analysis_type: { type: 'string' },
+          kpis: { type: 'object', additionalProperties: true },
+          findings: { type: 'array', items: { type: 'string' } },
+          recommendations: { type: 'array', items: { type: 'object', additionalProperties: true } },
+          benchmarks: { type: 'object', additionalProperties: true },
+          total_opportunity_eur: { type: 'number' },
+          priority_actions: { type: 'array', items: { type: 'string' } },
+        }
+      }
+    }).catch(e => ({ analysis_type, error: e.message }));
+
+    return Response.json({
+      success: true,
+      analysis_type,
+      fleet_snapshot: fleetData,
+      data: analysisResult,
+      timestamp: new Date().toISOString(),
+    }, { headers: CORS_HEADERS });
+  }
+
+  // ── POST /usage (in body) ─────────────────────────────────────────────────
+  if (params.get_usage || body.endpoint === 'usage') {
+    const usageRecords = await base44.asServiceRole.entities.APIUsage.filter(
+      { organization_id },
+      '-created_date',
+      100
+    ).catch(() => []);
+
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const monthlyRecords = usageRecords.filter(r => new Date(r.created_date) >= startOfMonth);
+
+    return Response.json({
+      organization_id,
+      usage_this_month: monthlyRecords.length,
+      usage_total: usageRecords.length,
+      endpoint_breakdown: monthlyRecords.reduce((acc, r) => {
+        acc[r.endpoint] = (acc[r.endpoint] || 0) + 1;
+        return acc;
+      }, {}),
+      timestamp: new Date().toISOString(),
+    }, { headers: CORS_HEADERS });
+  }
+
+  return Response.json({
+    error: 'Unknown request. Specify calculation_type, optimization_type, prediction_type, or analysis_type.',
+    hint: 'GET /functions/fleetAIAPI for full endpoint documentation.',
+  }, { status: 400, headers: CORS_HEADERS });
 });
-
-async function handleCalculation(body, organizationId) {
-  const { calculation_type, params } = body;
-
-  const response = await fetch('http://localhost:8000', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ calculation_type, params }),
-  });
-
-  const result = await response.json();
-
-  return Response.json({
-    success: true,
-    data: result.data,
-    timestamp: new Date().toISOString(),
-  });
-}
-
-async function handleOptimization(body, organizationId) {
-  const { optimization_type, data } = body;
-  
-  const optimizations = {
-    routes: optimizeRoutes(data),
-    fleet: optimizeFleet(data),
-    inventory: optimizeInventory(data),
-  };
-
-  return Response.json({
-    success: true,
-    optimization_type,
-    data: optimizations[optimization_type] || optimizations.routes,
-  });
-}
-
-async function handlePrediction(body, organizationId) {
-  const { prediction_type, data } = body;
-  
-  const predictions = {
-    eta: predictETA(data),
-    demand: predictDemand(data),
-    failure: predictFailure(data),
-    cost: predictCost(data),
-  };
-
-  return Response.json({
-    success: true,
-    prediction_type,
-    data: predictions[prediction_type] || {},
-  });
-}
-
-async function handleAnalysis(body, organizationId) {
-  const { analysis_type, data } = body;
-  
-  const analyses = {
-    performance: analyzePerformance(data),
-    costs: analyzeCosts(data),
-    emissions: analyzeEmissions(data),
-    efficiency: analyzeEfficiency(data),
-  };
-
-  return Response.json({
-    success: true,
-    analysis_type,
-    data: analyses[analysis_type] || {},
-  });
-}
-
-async function handleUsageStats(organizationId) {
-  return Response.json({
-    organization_id: organizationId,
-    api_calls_this_month: Math.floor(Math.random() * 5000),
-    rate_limit: 10000,
-    rate_limit_remaining: Math.floor(Math.random() * 5000),
-  });
-}
-
-function optimizeRoutes(data) {
-  const { routes = [], vehicles = [] } = data;
-  return {
-    original_routes: routes.length,
-    optimized_routes: Math.ceil(routes.length * 0.7),
-    estimated_savings_percent: Math.round((routes.length - Math.ceil(routes.length * 0.7)) / routes.length * 100),
-    time_saved_hours: Math.round(routes.length * 2.5),
-  };
-}
-
-function optimizeFleet(data) {
-  const { vehicles = [], utilization_target = 0.85 } = data;
-  return {
-    current_utilization: Math.round(Math.random() * 100),
-    target_utilization: Math.round(utilization_target * 100),
-    vehicles_to_reallocate: Math.ceil(vehicles.length * 0.1),
-    estimated_cost_savings_eur: Math.round(Math.random() * 50000),
-  };
-}
-
-function optimizeInventory(data) {
-  const { warehouses = [], shipments = [] } = data;
-  return {
-    current_inventory_cost: Math.round(Math.random() * 500000),
-    optimized_inventory_cost: Math.round(Math.random() * 400000),
-    cost_reduction_percent: Math.round(Math.random() * 20),
-    reorder_point_adjustments: Math.ceil(warehouses.length * 0.3),
-  };
-}
-
-function predictETA(data) {
-  const { current_position = {}, destination = {}, distance_km = 100 } = data;
-  const hours_remaining = distance_km / 80;
-  return {
-    estimated_arrival: new Date(Date.now() + hours_remaining * 3600000).toISOString(),
-    confidence_percent: Math.round(50 + Math.random() * 45),
-    delay_risk_percent: Math.round(Math.random() * 30),
-  };
-}
-
-function predictDemand(data) {
-  const { historical_data = [], forecast_days = 30 } = data;
-  return {
-    forecast_days,
-    predicted_demand: Math.round(Math.random() * 10000),
-    confidence_interval: [Math.round(Math.random() * 8000), Math.round(Math.random() * 12000)],
-    seasonality_factor: (Math.random() * 0.4 + 0.8).toFixed(2),
-  };
-}
-
-function predictFailure(data) {
-  const { vehicle_sensors = {}, maintenance_history = [] } = data;
-  return {
-    failure_probability_percent: Math.round(Math.random() * 100),
-    days_to_failure: Math.round(Math.random() * 365),
-    critical_components: ['engine', 'transmission', 'brakes'].filter(() => Math.random() > 0.6),
-  };
-}
-
-function predictCost(data) {
-  const { shipments = [], routes = [] } = data;
-  return {
-    estimated_total_cost_eur: Math.round(Math.random() * 50000),
-    cost_per_shipment: Math.round(Math.random() * 1000),
-    potential_savings_percent: Math.round(Math.random() * 25),
-  };
-}
-
-function analyzePerformance(data) {
-  return {
-    overall_score: Math.round(50 + Math.random() * 50),
-    on_time_delivery_percent: Math.round(70 + Math.random() * 30),
-    fleet_efficiency: Math.round(60 + Math.random() * 40),
-    customer_satisfaction: Math.round(70 + Math.random() * 30),
-  };
-}
-
-function analyzeCosts(data) {
-  return {
-    total_operational_cost: Math.round(Math.random() * 1000000),
-    cost_breakdown: {
-      fuel: Math.round(Math.random() * 300000),
-      maintenance: Math.round(Math.random() * 200000),
-      labor: Math.round(Math.random() * 400000),
-      depreciation: Math.round(Math.random() * 200000),
-    },
-    cost_per_km: Math.round(Math.random() * 2 * 100) / 100,
-  };
-}
-
-function analyzeEmissions(data) {
-  return {
-    total_co2_kg: Math.round(Math.random() * 1000000),
-    per_vehicle_average: Math.round(Math.random() * 100000),
-    reduction_opportunity_percent: Math.round(Math.random() * 30),
-    carbon_offset_cost: Math.round(Math.random() * 50000),
-  };
-}
-
-function analyzeEfficiency(data) {
-  return {
-    fuel_efficiency_score: Math.round(50 + Math.random() * 50),
-    route_efficiency: Math.round(50 + Math.random() * 50),
-    vehicle_utilization: Math.round(50 + Math.random() * 50),
-    recommendations: [
-      'Optimize route planning',
-      'Upgrade vehicle fleet',
-      'Improve load consolidation',
-    ].filter(() => Math.random() > 0.5),
-  };
-}
-
-function hashKey(key) {
-  // Simple hash for demonstration - use proper hashing in production
-  let hash = 0;
-  for (let i = 0; i < key.length; i++) {
-    const char = key.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash;
-  }
-  return hash.toString();
-}
