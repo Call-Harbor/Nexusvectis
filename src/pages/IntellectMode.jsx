@@ -68,8 +68,48 @@ import {
   failRun,
   agentExecutionToLocalRow,
 } from "@/lib/agentRunLifecycle";
+import {
+  createHarborToolTraceDraft,
+  harborToolTraceFromOrchestrationExecutionLog,
+} from "@/lib/harborToolTrace";
 
 // IA: IntellectMode — Harbor Intellect UI (thinking); orchestration runs surface here when delegated — see src/lib/harborIntelligenceModel.js.
+
+/** Build observability traces from agent message metadata (best-effort). */
+function buildIntellectAgentToolTraces(last, correlationId) {
+  const traces = [];
+  traces.push(
+    createHarborToolTraceDraft({
+      correlation_id: correlationId,
+      phase: "execute",
+      action: "agent.harbor_intellect.reply",
+      status: "success",
+      tool_name: "harbor_intellect",
+    }),
+  );
+  const raw = last?.tool_calls ?? last?.toolCalls;
+  if (!Array.isArray(raw)) return traces;
+  for (const tc of raw) {
+    if (!tc || typeof tc !== "object") continue;
+    const name =
+      tc.name ||
+      tc.tool_name ||
+      tc.function?.name ||
+      "agent_tool";
+    const err = tc.error ?? tc.err;
+    traces.push(
+      createHarborToolTraceDraft({
+        correlation_id: correlationId,
+        phase: "execute",
+        action: `agent_tool:${String(name)}`,
+        status: err ? "failure" : "success",
+        tool_name: String(name),
+        error: err ? String(err) : null,
+      }),
+    );
+  }
+  return traces;
+}
 
 const EXEC_LOG_STORAGE_KEY = "nv_intellect_execution_log_v1";
 const MAX_EXEC_LOG = 40;
@@ -472,6 +512,7 @@ export default function IntellectMode() {
             const ae = pendingHarborAgentExecRef.current;
             if (rid) {
               const latencyMs = t0 ? Date.now() - t0 : null;
+              const toolTraces = buildIntellectAgentToolTraces(last, rid);
               completeRun({
                 base44,
                 organizationId: validOrgId,
@@ -482,6 +523,7 @@ export default function IntellectMode() {
                 error: null,
                 latencyMs,
                 agentExecutionId: ae,
+                toolTraces,
               });
               pendingHarborRunIdRef.current = null;
               pendingHarborStartedAtRef.current = null;
@@ -1009,7 +1051,7 @@ export default function IntellectMode() {
        setMessages(prev => [...prev, { role: "system", content: "Running deep analysis — review progress in the execution log or floating terminal." }]);
 
        const result = await base44.integrations.Core.InvokeLLM({
-         prompt: `You are an elite fleet intelligence strategist & operations scientist. Generate COMPELLING, INSIGHTFUL analysis for: "${currentCommand}"
+         prompt: `You are Harbor Intellect — an elite logistics and fleet intelligence strategist. Ground every claim in the fleet context below; flag data gaps; quantify in EUR/DKK where sensible; separate recommendations from irreversible actions. Generate COMPELLING, INSIGHTFUL analysis for: "${currentCommand}"
 
 FLEET CONTEXT: ${fleetContext}
 
@@ -1115,6 +1157,35 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
        const preview = `${result.title || "Analysis"} — ${(result.summary || result.description || "").slice(0, 160)}`;
        setMessages(prev => [...prev, { role: "assistant", content: `**${result.title}**\n\n${result.summary || result.description}\n\nAnalysis dashboard opened in workspace — inspect charts and recommendations in the window.` }]);
        addThinkingLog('complete', 'Analysis completed', null, 100, 100, processId);
+       const deepTraces = [
+         createHarborToolTraceDraft({
+           correlation_id: processId,
+           phase: "plan",
+           action: "deep_analysis.fleet_context",
+           status: "success",
+           tool_name: "IntellectMode",
+           outputs_redacted: {
+             vehicles: vehicles.length,
+             routes: routes.length,
+             shipments: shipments.length,
+             alerts: alerts.length,
+           },
+         }),
+         createHarborToolTraceDraft({
+           correlation_id: processId,
+           phase: "execute",
+           action: "integrations.Core.InvokeLLM",
+           status: "success",
+           tool_name: "InvokeLLM",
+         }),
+         createHarborToolTraceDraft({
+           correlation_id: processId,
+           phase: "evaluate",
+           action: "deep_analysis.open_analysis_window",
+           status: "success",
+           tool_name: "HologramWindow",
+         }),
+       ];
        await completeRun({
          base44,
          organizationId: validOrgId,
@@ -1125,6 +1196,7 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
          error: null,
          latencyMs: Date.now() - analysisT0,
          agentExecutionId: deepAeId,
+         toolTraces: deepTraces,
        });
     } catch (error) {
       addThinkingLog('error', `Analysis failed: ${error.message}`, null, 100, null, processId);
@@ -1136,6 +1208,16 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
         localId: processId,
         error: error.message || String(error),
         agentExecutionId: deepAeId,
+        toolTraces: [
+          createHarborToolTraceDraft({
+            correlation_id: processId,
+            phase: "execute",
+            action: "integrations.Core.InvokeLLM",
+            status: "failure",
+            tool_name: "InvokeLLM",
+            error: error.message || String(error),
+          }),
+        ],
       });
     }
     

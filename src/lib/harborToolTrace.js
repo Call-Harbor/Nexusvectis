@@ -125,7 +125,11 @@ export function harborToolTraceFromOrchestrationExecutionLog(
   for (const entry of executionLog) {
     if (!entry || typeof entry !== "object") continue;
     const e = /** @type {Record<string, unknown>} */ (entry);
+    const taskId = typeof e.taskId === "string" ? e.taskId : null;
+    const taskType = typeof e.type === "string" ? e.type : null;
     const action =
+      (taskType && taskId && `orchestrate_task:${taskType}:${taskId}`) ||
+      (taskType && `orchestrate_task:${taskType}`) ||
       (typeof e.step === "string" && e.step) ||
       (typeof e.task === "string" && e.task) ||
       (typeof e.action === "string" && e.action) ||
@@ -152,7 +156,7 @@ export function harborToolTraceFromOrchestrationExecutionLog(
             ? e.tool
             : typeof e.function === "string"
               ? e.function
-              : null,
+              : taskType || "executeOrchestration",
         latency_ms:
           typeof e.duration_ms === "number"
             ? e.duration_ms

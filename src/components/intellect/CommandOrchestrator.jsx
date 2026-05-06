@@ -3,6 +3,10 @@ import { base44 } from '@/api/base44Client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Zap, CheckCircle2, AlertCircle, Clock, ChevronRight, Play, Pause } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  createHarborToolTraceDraft,
+  harborToolTraceFromOrchestrationExecutionLog,
+} from '@/lib/harborToolTrace';
 
 export default function CommandOrchestrator({ prompt, onComplete }) {
   const [orchestrationState, setOrchestrationState] = useState({
@@ -22,15 +26,35 @@ export default function CommandOrchestrator({ prompt, onComplete }) {
       });
 
       if (parseResponse.data.tasks) {
+        const tasks = parseResponse.data.tasks;
         setOrchestrationState(prev => ({
           ...prev,
-          tasks: parseResponse.data.tasks
+          tasks
         }));
+
+        const orchCorr = `orch_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+        const planTraces = [
+          createHarborToolTraceDraft({
+            correlation_id: orchCorr,
+            phase: 'plan',
+            action: 'functions.orchestrateCommands',
+            status: 'success',
+            tool_name: 'orchestrateCommands',
+            outputs_redacted: { task_count: tasks.length },
+          }),
+        ];
 
         // Execute orchestrated tasks
         const execResponse = await base44.functions.invoke('executeOrchestration', {
-          tasks: parseResponse.data.tasks
+          tasks
         });
+
+        const execLog = execResponse.data?.executionLog;
+        const stepTraces = harborToolTraceFromOrchestrationExecutionLog(
+          execLog,
+          orchCorr,
+        );
+        const toolTraces = [...planTraces, ...stepTraces];
 
         setOrchestrationState(prev => ({
           ...prev,
@@ -39,7 +63,7 @@ export default function CommandOrchestrator({ prompt, onComplete }) {
         }));
 
         if (onComplete) {
-          onComplete(execResponse.data);
+          onComplete({ ...execResponse.data, toolTraces });
         }
       }
     } catch (error) {

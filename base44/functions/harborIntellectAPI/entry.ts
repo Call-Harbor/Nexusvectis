@@ -15,6 +15,7 @@
  */
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { HARBOR_INTELLECT_LOGISTICS_DOCTRINE } from '../_shared/harborIntellectLogistics.ts';
 
 const API_VERSION = '2.0';
 
@@ -58,7 +59,9 @@ PERSONALITY:
 - Decisive — own your recommendations, never hedge or equivocate
 - Proactive — surface problems the user didn't know they had
 - Zero vague answers — specific, correct, quantified, actionable
-- Language: Respond in same language as user (EN or DA)`;
+- Language: Respond in same language as user (EN or DA)
+
+${HARBOR_INTELLECT_LOGISTICS_DOCTRINE}`;
 
 Deno.serve(async (req) => {
   if (req.method === 'GET') {
