@@ -16,6 +16,7 @@ import {
   PIPELINE_PHASE,
   mergeHarborRoutingDecision,
 } from "@/lib/harborIntelligenceModel";
+import { normalizeHarborToolTrace } from "@/lib/harborToolTrace";
 
 /** @typedef {'success'|'failure'|'partial'} RunOutcome */
 
@@ -169,6 +170,7 @@ export async function startRun(ctx) {
  * @param {string|null} [ctx.error]
  * @param {number|null} [ctx.latencyMs]
  * @param {string|null} [ctx.agentExecutionId] - if not passed, read from current row by caller via meta merge
+ * @param {import('@/lib/harborToolTrace').HarborToolTrace[]|unknown[]} [ctx.toolTraces]
  */
 export async function completeRun(ctx) {
   const {
@@ -181,6 +183,7 @@ export async function completeRun(ctx) {
     error,
     latencyMs,
     agentExecutionId: explicitAeId,
+    toolTraces: rawToolTraces,
   } = ctx;
 
   const evaluation = evaluateRun({
@@ -190,6 +193,10 @@ export async function completeRun(ctx) {
     latencyMs,
   });
 
+  const normalizedTraces = Array.isArray(rawToolTraces)
+    ? rawToolTraces.map(normalizeHarborToolTrace).filter(Boolean)
+    : [];
+
   updateExecutionRun(localId, {
     status: success ? "completed" : "failed",
     finishedAt: Date.now(),
@@ -198,6 +205,7 @@ export async function completeRun(ctx) {
     meta: {
       phase: PIPELINE_PHASE.EVALUATE,
       evaluation,
+      ...(normalizedTraces.length ? { tool_traces: normalizedTraces } : {}),
     },
   });
 
@@ -211,6 +219,9 @@ export async function completeRun(ctx) {
           phase: PIPELINE_PHASE.EVALUATE,
           correlation_id: localId,
           evaluation,
+          ...(normalizedTraces.length
+            ? { tool_traces: normalizedTraces }
+            : {}),
         });
         routingDecisionStr = JSON.stringify(merged);
       } catch {
@@ -219,6 +230,9 @@ export async function completeRun(ctx) {
             phase: PIPELINE_PHASE.EVALUATE,
             correlation_id: localId,
             evaluation,
+            ...(normalizedTraces.length
+              ? { tool_traces: normalizedTraces }
+              : {}),
           })
         );
       }
@@ -249,6 +263,7 @@ export async function failRun(ctx) {
     error,
     agentExecutionId,
     latencyMs,
+    toolTraces,
   } = ctx;
 
   await completeRun({
@@ -261,6 +276,7 @@ export async function failRun(ctx) {
     error: error || "failed",
     latencyMs: latencyMs ?? null,
     agentExecutionId,
+    toolTraces,
   });
 }
 

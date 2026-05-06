@@ -11,7 +11,7 @@
 import { HARBOR_MODEL_STACK_VERSION } from "./harborModelStack.js";
 
 /**
- * @typedef {import('@/lib/harborToolTrace').HarborToolTrace} HarborToolTrace
+ * @typedef {import('./harborToolTrace.js').HarborToolTrace} HarborToolTrace
  */
 
 /**
