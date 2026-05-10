@@ -96,7 +96,7 @@ const APP_CATEGORIES = [
     ['vehicle_builder', Calculator, '🔧 Vehicle Builder'],
     ['harbor_app_builder', Zap, '⚡ H.A.R.B.O.R App Builder'],
     ['fleet_store', Store, '🛒 Fleet Store'],
-    ['ai_dev_ide', Code2, '🖥️ Fleet AI IDE & DevOps'],
+    ['ai_dev_ide', Code2, '🖥️ Fleet AI IDE v4'],
   ]],
   ['Productivity', [
     ['document_editor', FileText, 'FleetDocs'],

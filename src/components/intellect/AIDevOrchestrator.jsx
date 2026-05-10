@@ -4,6 +4,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
 import {
+  loadFleetIdeWorkspace,
+  saveFleetIdeWorkspace,
+  clearFleetIdeWorkspace,
+} from "@/lib/fleetIdeWorkspace";
+import {
   Code2, Terminal, GitBranch, Play, Plus, X, Copy, Download,
   Cpu, Zap, ChevronRight, Folder, FolderOpen, Package,
   Check, AlertCircle, Loader2, Cloud, Lock,
@@ -13,7 +18,7 @@ import {
   Wand2, MessageSquare, Network, Eye, Gauge, Bug,
   Boxes, Sparkles, ChevronDown, Send, KeyRound,
   Globe, Replace, Import, EyeOff, Database,
-  Link, Cpu as CpuIcon, Save, FolderGit2, CloudUpload
+  Link, Cpu as CpuIcon, Save, FolderGit2, CloudUpload, Command, HelpCircle, GripHorizontal, Braces
 } from "lucide-react";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -38,6 +43,45 @@ const PIPELINE_STAGES = [
 ];
 
 const DEFAULT_FILES = [
+  {
+    id: "welcome",
+    name: "welcome.html",
+    lang: "html",
+    content: `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Fleet AI IDE — Welcome</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; font-family: ui-sans-serif, system-ui, sans-serif;
+      background: linear-gradient(145deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+      color: #e2e8f0; display: flex; align-items: center; justify-content: center; padding: 24px; }
+    .card { max-width: 520px; padding: 28px; border-radius: 16px;
+      background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(34, 211, 238, 0.25);
+      box-shadow: 0 0 40px rgba(34, 211, 238, 0.12); }
+    h1 { margin: 0 0 8px; font-size: 1.35rem; color: #22d3ee; }
+    p { margin: 0 0 12px; line-height: 1.55; color: #94a3b8; font-size: 0.9rem; }
+    ul { margin: 12px 0 0; padding-left: 1.2rem; color: #cbd5e1; font-size: 0.85rem; line-height: 1.7; }
+    .badge { display: inline-block; margin-top: 16px; padding: 6px 12px; border-radius: 999px;
+      background: rgba(139, 92, 246, 0.2); color: #c4b5fd; font-size: 0.75rem; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>NexusVectis · Fleet AI IDE</h1>
+    <p>Live preview is active. Edit this file or use the <strong>Preview</strong> panel for responsive frames.</p>
+    <ul>
+      <li><kbd>Ctrl/⌘ + S</kbd> — save workspace locally</li>
+      <li><kbd>Ctrl/⌘ + P</kbd> — quick open file</li>
+      <li><kbd>Ctrl/⌘ + Enter</kbd> — run current file</li>
+    </ul>
+    <span class="badge">HTML · Live Preview ready</span>
+  </div>
+</body>
+</html>`,
+  },
   {
     id: "main", name: "main.py", lang: "python",
     content: `# NexusVectis AI Orchestrator\nimport asyncio\nfrom dataclasses import dataclass\nfrom typing import List\n\n@dataclass\nclass OrchestrationTask:\n    id: str\n    name: str\n    priority: int\n    dependencies: List[str]\n    status: str = "pending"\n\nasync def orchestrate_fleet_ops(tasks):\n    """AI-powered fleet orchestration engine."""\n    completed = set()\n    for task in sorted(tasks, key=lambda t: t.priority):\n        if all(d in completed for d in task.dependencies):\n            task.status = "running"\n            await asyncio.sleep(0.1)\n            task.status = "completed"\n            completed.add(task.id)\n    return completed\n\nif __name__ == "__main__":\n    tasks = [\n        OrchestrationTask("t1", "Load fleet telemetry", 1, []),\n        OrchestrationTask("t2", "Anomaly detection", 2, ["t1"]),\n        OrchestrationTask("t3", "Optimize routes", 3, ["t1"]),\n        OrchestrationTask("t4", "Generate report", 4, ["t2", "t3"]),\n    ]\n    asyncio.run(orchestrate_fleet_ops(tasks))\n`
@@ -135,7 +179,7 @@ function PipelineVisualizer({ activeStage, stageStatus }) {
 
 function FileExplorer({ files, activeFileId, onSelect, onNew, onDelete, onRename }) {
   return (
-    <div className="h-full bg-slate-950 border-r border-slate-800 flex flex-col" style={{ width: 148, minWidth: 148, maxWidth: 148 }}>
+    <div className="h-full bg-slate-950 border-r border-slate-800 flex flex-col w-[168px] min-w-[168px] max-w-[168px] flex-shrink-0">
       <div className="flex items-center justify-between px-2 py-1.5 border-b border-slate-800">
         <span className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Files</span>
         <button onClick={onNew} className="text-slate-500 hover:text-cyan-400 transition-colors"><Plus className="w-3.5 h-3.5" /></button>
@@ -278,12 +322,21 @@ Answer concisely and technically. Use code blocks where helpful.`,
 
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function AIDevOrchestrator({ onClose }) {
-  const [files, setFiles] = useState(DEFAULT_FILES);
-  const [activeFileId, setActiveFileId] = useState("main");
+  const [files, setFiles] = useState(() => {
+    const saved = loadFleetIdeWorkspace();
+    return saved?.files?.length ? saved.files : DEFAULT_FILES;
+  });
+  const [activeFileId, setActiveFileId] = useState(() => {
+    const saved = loadFleetIdeWorkspace();
+    if (saved?.activeFileId && saved.files?.some((f) => f.id === saved.activeFileId)) {
+      return saved.activeFileId;
+    }
+    return "welcome";
+  });
   const [terminalOutput, setTerminalOutput] = useState([
-    { type: "system", text: "NexusVectis Fleet AI IDE — DevOps Orchestrator v3.0" },
-    { type: "info", text: "12 AI features available. Select from the AI toolbar or chat." },
-    { type: "success", text: "✓ Environment initialized" },
+    { type: "system", text: "NexusVectis Fleet AI IDE v4 — workspace persists in this browser (auto-save)" },
+    { type: "info", text: "Open welcome.html for instant Live Preview · Ctrl+P quick open · Ctrl+Enter run" },
+    { type: "success", text: "✓ Editor, terminal, CI/CD panel, DevOps generators, API tester ready" },
   ]);
   const [isRunning, setIsRunning] = useState(false);
   const [aiPrompt, setAiPrompt] = useState("");
@@ -449,8 +502,27 @@ export default function AIDevOrchestrator({ onClose }) {
   const [dbResult, setDbResult] = useState(null);
   const [dbLoading, setDbLoading] = useState(false);
 
-  // Auto-save status (manual only — no background polling to avoid rate limits)
   const [autoSaveStatus, setAutoSaveStatus] = useState(null);
+  const [previewViewport, setPreviewViewport] = useState("desktop");
+  const [showCommandPalette, setShowCommandPalette] = useState(false);
+  const [commandFilter, setCommandFilter] = useState("");
+  const [showShortcuts, setShowShortcuts] = useState(false);
+  const [bottomPanelHeight, setBottomPanelHeight] = useState(200);
+
+  useEffect(() => {
+    setAutoSaveStatus("saving");
+    const t = setTimeout(() => {
+      saveFleetIdeWorkspace({ files, activeFileId });
+      setAutoSaveStatus("saved");
+    }, 450);
+    return () => clearTimeout(t);
+  }, [files, activeFileId]);
+
+  useEffect(() => {
+    if (autoSaveStatus !== "saved") return;
+    const t = setTimeout(() => setAutoSaveStatus(null), 1600);
+    return () => clearTimeout(t);
+  }, [autoSaveStatus]);
 
   // ── Run file (real execution via codeExecutor backend) ─────────────────
   const runFile = async () => {
@@ -477,6 +549,38 @@ export default function AIDevOrchestrator({ onClose }) {
     }
     setIsRunning(false);
   };
+
+  const runFileRef = useRef(runFile);
+  runFileRef.current = runFile;
+
+  useEffect(() => {
+    const onKey = (e) => {
+      const meta = e.ctrlKey || e.metaKey;
+      if (meta && e.key.toLowerCase() === "s") {
+        e.preventDefault();
+        saveFleetIdeWorkspace({ files, activeFileId });
+        toast.success("Workspace saved locally");
+        return;
+      }
+      if (meta && e.key.toLowerCase() === "p") {
+        e.preventDefault();
+        setShowCommandPalette(true);
+        setCommandFilter("");
+        return;
+      }
+      if (meta && e.key === "Enter") {
+        e.preventDefault();
+        if (!isRunning) runFileRef.current();
+        return;
+      }
+      if (e.key === "Escape") {
+        setShowCommandPalette(false);
+        setShowShortcuts(false);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [files, activeFileId, isRunning]);
 
   // ── Lint file ────────────────────────────────────────────────────
   const lintFile = async () => {
@@ -751,6 +855,45 @@ Generate 4-6 files covering: main logic, API/interface, config/docker, tests, an
     toast.success(`Replaced ${count} occurrence${count !== 1 ? "s" : ""}`);
   };
 
+  const formatCurrentFile = useCallback(() => {
+    if (!activeFile) return;
+    const { content, lang } = activeFile;
+    try {
+      if (lang === "json" || activeFile.name.endsWith(".json")) {
+        const parsed = JSON.parse(content);
+        const pretty = `${JSON.stringify(parsed, null, 2)}\n`;
+        setFiles((prev) => prev.map((f) => (f.id === activeFileId ? { ...f, content: pretty } : f)));
+        toast.success("Formatted JSON");
+        return;
+      }
+      if (lang === "javascript" || lang === "typescript") {
+        const lines = content.split("\n").map((l) => l.trimEnd());
+        setFiles((prev) => prev.map((f) => (f.id === activeFileId ? { ...f, content: lines.join("\n") } : f)));
+        toast.success("Trimmed trailing whitespace");
+        return;
+      }
+      toast.message("Format: use JSON file or JS/TS for trim");
+    } catch {
+      toast.error("Invalid JSON — cannot format");
+    }
+  }, [activeFile, activeFileId]);
+
+  const beginPanelResize = useCallback((e) => {
+    e.preventDefault();
+    const startY = e.clientY;
+    const startH = bottomPanelHeight;
+    const onMove = (ev) => {
+      const dy = startY - ev.clientY;
+      setBottomPanelHeight(Math.min(520, Math.max(96, startH + dy)));
+    };
+    const onUp = () => {
+      document.removeEventListener("mousemove", onMove);
+      document.removeEventListener("mouseup", onUp);
+    };
+    document.addEventListener("mousemove", onMove);
+    document.addEventListener("mouseup", onUp);
+  }, [bottomPanelHeight]);
+
   const installPackage = async () => {
     if (!packageInput.trim() || packageInstalling) return;
     setPackageInstalling(true);
@@ -810,12 +953,13 @@ Generate 4-6 files covering: main logic, API/interface, config/docker, tests, an
   };
 
   return (
-    <div className="flex flex-col h-full bg-slate-950 text-white overflow-hidden">
+    <div className="flex flex-col h-full bg-slate-950 text-white overflow-hidden relative">
       {/* ── Top toolbar ───────────────────────────────────────────── */}
       <div className="flex items-center gap-1 px-2 py-1.5 border-b border-slate-800 bg-slate-900 flex-shrink-0 flex-wrap">
         <div className="flex items-center gap-1.5 mr-1">
           <Bot className="w-4 h-4 text-cyan-400" />
           <span className="text-xs font-bold text-cyan-400 tracking-widest uppercase font-mono hidden sm:inline">Fleet AI IDE</span>
+          <span className="text-[9px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-500 border border-slate-700 hidden md:inline">v4</span>
         </div>
         <div className="flex items-center gap-1 flex-wrap">
         {[
@@ -848,6 +992,9 @@ Generate 4-6 files covering: main logic, API/interface, config/docker, tests, an
         <button onClick={() => { setShowImport(!showImport); setShowSearch(false); setShowReplace(false); }} className={`p-1.5 rounded transition-all ${showImport ? "text-green-400 bg-green-500/10" : "text-slate-500 hover:text-slate-300 hover:bg-slate-800"}`} title="Import from URL/GitHub"><Import className="w-3.5 h-3.5" /></button>
         <button onClick={() => setShowStats(!showStats)} className={`p-1.5 rounded transition-all ${showStats ? "text-cyan-400 bg-cyan-500/10" : "text-slate-500 hover:text-slate-300 hover:bg-slate-800"}`} title="Stats"><BarChart3 className="w-3.5 h-3.5" /></button>
         <button onClick={() => setShowChat(!showChat)} className={`p-1.5 rounded transition-all ${showChat ? "text-violet-400 bg-violet-500/10" : "text-slate-500 hover:text-slate-300 hover:bg-slate-800"}`} title="AI Chat"><MessageSquare className="w-3.5 h-3.5" /></button>
+        <button onClick={formatCurrentFile} className="p-1.5 rounded text-slate-500 hover:text-emerald-400 hover:bg-slate-800" title="Format document (JSON pretty-print)"><Braces className="w-3.5 h-3.5" /></button>
+        <button onClick={() => { setShowCommandPalette(true); setCommandFilter(""); }} className="p-1.5 rounded text-slate-500 hover:text-cyan-400 hover:bg-slate-800" title="Quick open (Ctrl+P)"><Command className="w-3.5 h-3.5" /></button>
+        <button onClick={() => setShowShortcuts(true)} className="p-1.5 rounded text-slate-500 hover:text-slate-300 hover:bg-slate-800" title="Keyboard shortcuts"><HelpCircle className="w-3.5 h-3.5" /></button>
         <button onClick={() => setShowProjectGen(true)} className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-medium bg-amber-600/80 hover:bg-amber-500 text-white transition-all" title="Generate entire project">
           <Sparkles className="w-3 h-3" /><span className="hidden sm:inline">Project</span>
         </button>
@@ -1014,20 +1161,44 @@ Generate 4-6 files covering: main logic, API/interface, config/docker, tests, an
             <span className="text-xs text-slate-500">— {activeFile?.name}</span>
             <div className="ml-auto flex items-center gap-2">
               <div className="flex gap-1">
-                {["desktop", "tablet", "mobile"].map(v => (
-                  <button key={v} onClick={() => {}} className="px-2 py-1 rounded text-[10px] text-slate-500 hover:text-slate-300 hover:bg-slate-800 transition-all capitalize">{v}</button>
+                {[
+                  { id: "desktop", w: "100%" },
+                  { id: "tablet", w: "768px" },
+                  { id: "mobile", w: "390px" },
+                ].map(({ id, w }) => (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => setPreviewViewport(id)}
+                    className={`px-2 py-1 rounded text-[10px] transition-all capitalize ${
+                      previewViewport === id
+                        ? "text-cyan-300 bg-cyan-500/15 border border-cyan-500/40"
+                        : "text-slate-500 hover:text-slate-300 hover:bg-slate-800 border border-transparent"
+                    }`}
+                  >
+                    {id} <span className="opacity-50 hidden lg:inline">({w})</span>
+                  </button>
                 ))}
               </div>
             </div>
           </div>
-          <div className="flex-1 flex items-center justify-center bg-slate-950">
+          <div className="flex-1 flex items-center justify-center bg-slate-950 p-2 overflow-auto">
             {activeFile?.lang === "html" || activeFile?.content?.includes("<!DOCTYPE") || activeFile?.content?.includes("<html") ? (
-              <iframe
-                srcDoc={activeFile.content}
-                className="w-full h-full border-0"
-                sandbox="allow-scripts"
-                title="Live Preview"
-              />
+              <div
+                className="h-full flex items-start justify-center transition-all duration-200"
+                style={{
+                  width: previewViewport === "mobile" ? 390 : previewViewport === "tablet" ? 768 : "100%",
+                  maxWidth: "100%",
+                }}
+              >
+                <iframe
+                  srcDoc={activeFile.content}
+                  className="w-full min-h-[360px] rounded-lg border border-slate-800 shadow-lg bg-white"
+                  style={{ height: "calc(100% - 8px)", minHeight: 320 }}
+                  sandbox="allow-scripts"
+                  title="Live Preview"
+                />
+              </div>
             ) : (
               <div className="text-center">
                 <Globe className="w-10 h-10 text-slate-700 mx-auto mb-3" />
@@ -1628,6 +1799,110 @@ Return JSON: { "entityName": "PascalCase", "schema": { ...the complete entity JS
         )}
       </AnimatePresence>
 
+      <AnimatePresence>
+        {showCommandPalette && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-40 flex items-start justify-center pt-[12vh] bg-slate-950/70 backdrop-blur-sm"
+            onClick={() => setShowCommandPalette(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.96, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.96, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-lg mx-4 rounded-xl border border-cyan-500/30 bg-slate-900 shadow-2xl overflow-hidden"
+            >
+              <div className="flex items-center gap-2 px-3 py-2 border-b border-slate-800">
+                <Command className="w-4 h-4 text-cyan-400" />
+                <input
+                  autoFocus
+                  value={commandFilter}
+                  onChange={(e) => setCommandFilter(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Escape") setShowCommandPalette(false);
+                  }}
+                  placeholder="Go to file…"
+                  className="flex-1 bg-transparent text-sm text-white placeholder-slate-500 outline-none font-mono"
+                />
+                <span className="text-[10px] text-slate-600">Esc</span>
+              </div>
+              <div className="max-h-72 overflow-auto py-1">
+                {files
+                  .filter((f) => f.name.toLowerCase().includes(commandFilter.toLowerCase()))
+                  .map((f) => (
+                    <button
+                      key={f.id}
+                      type="button"
+                      onClick={() => {
+                        setActiveFileId(f.id);
+                        setActivePanel("editor");
+                        setShowCommandPalette(false);
+                        setCommandFilter("");
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-2 text-left text-xs font-mono hover:bg-cyan-500/10 text-slate-300"
+                    >
+                      <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: LANG_COLORS[f.lang] || "#94a3b8" }} />
+                      {f.name}
+                    </button>
+                  ))}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showShortcuts && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-40 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4"
+            onClick={() => setShowShortcuts(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-md rounded-2xl border border-slate-700 bg-slate-900 p-5 shadow-2xl"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                  <HelpCircle className="w-4 h-4 text-cyan-400" />
+                  Fleet AI IDE — shortcuts
+                </h3>
+                <button type="button" onClick={() => setShowShortcuts(false)} className="text-slate-500 hover:text-white">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              <ul className="space-y-2 text-xs text-slate-300 font-mono">
+                <li><kbd className="px-1.5 py-0.5 rounded bg-slate-800 text-cyan-300">Ctrl/⌘ S</kbd> Save workspace locally</li>
+                <li><kbd className="px-1.5 py-0.5 rounded bg-slate-800 text-cyan-300">Ctrl/⌘ P</kbd> Quick open file</li>
+                <li><kbd className="px-1.5 py-0.5 rounded bg-slate-800 text-cyan-300">Ctrl/⌘ Enter</kbd> Run current file</li>
+                <li><kbd className="px-1.5 py-0.5 rounded bg-slate-800 text-cyan-300">Esc</kbd> Close palette / this dialog</li>
+              </ul>
+              <button
+                type="button"
+                onClick={() => {
+                  clearFleetIdeWorkspace();
+                  setFiles(DEFAULT_FILES);
+                  setActiveFileId("welcome");
+                  setShowShortcuts(false);
+                  toast.success("Workspace reset to defaults");
+                }}
+                className="mt-4 w-full py-2 rounded-lg border border-red-500/40 text-red-300 text-xs hover:bg-red-500/10 transition-colors"
+              >
+                Reset workspace (clear local save)
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* ── Main area ─────────────────────────────────────────────── */}
       <div className="flex flex-1 min-h-0 overflow-hidden">
         <div className="hidden sm:flex flex-shrink-0">
@@ -1700,8 +1975,17 @@ Return JSON: { "entityName": "PascalCase", "schema": { ...the complete entity JS
             <span className="text-[10px] text-slate-600 font-mono">{activeFile?.lang} · {activeFile?.content?.split("\n").length || 0} lines</span>
           </div>
 
-          {/* Bottom panel content */}
-          <div className="flex-shrink-0" style={{ height: 160 }}>
+          {/* Bottom panel — resizable */}
+          <button
+            type="button"
+            onMouseDown={beginPanelResize}
+            className="flex-shrink-0 w-full h-2 cursor-ns-resize bg-slate-900 hover:bg-cyan-950/80 border-t border-slate-800 flex items-center justify-center group"
+            title="Drag to resize terminal panel"
+            aria-label="Resize bottom panel"
+          >
+            <GripHorizontal className="w-5 h-3 text-slate-600 group-hover:text-cyan-500/80" />
+          </button>
+          <div className="flex-shrink-0 border-t border-slate-800" style={{ height: bottomPanelHeight }}>
             {bottomPanel === "terminal" && <TerminalEmulator output={terminalOutput} isRunning={isRunning} onClear={() => setTerminalOutput([])} />}
             {bottomPanel === "problems" && (
               <div className="h-full bg-slate-950 overflow-auto p-2 font-mono text-xs">
@@ -1720,7 +2004,7 @@ Return JSON: { "entityName": "PascalCase", "schema": { ...the complete entity JS
             )}
             {bottomPanel === "output" && (
               <div className="h-full bg-slate-950 p-3 font-mono text-xs overflow-auto">
-                <p className="text-slate-600">[Fleet AI IDE v3.0] Real JS execution • Python/bash simulated • Lint • Bundle analysis</p>
+                <p className="text-slate-600">[Fleet AI IDE v4] Workspace persists locally • Run/Lint/Bundle via codeExecutor • HTML live preview</p>
                 <p className="text-cyan-400">{files.length} files · {files.reduce((s,f) => s + f.content.split("\n").length, 0)} lines total</p>
               </div>
             )}

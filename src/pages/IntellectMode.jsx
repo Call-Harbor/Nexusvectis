@@ -461,7 +461,7 @@ export default function IntellectMode() {
       openAirportOps: () => { openWindow('airport_ops', { x: 60, y: 50 }); setMessages(prev => [...prev, { role: "system", content: "✈️ Airport Ops Center opened as hologram — Full AI-powered airport operations" }]); },
       openPortCommand: () => { openWindow('port_command', { x: 80, y: 60 }); setMessages(prev => [...prev, { role: "system", content: "🚢 Port Command Center opened as hologram — Full AI-powered port operations" }]); },
       openEnergyOps: () => { navigate('/EnergyOpsCenter'); setMessages(prev => [...prev, { role: "system", content: "⚡ Energy & Utilities Ops opened — Neural grid control, load forecast, AI dispatch and resilience simulation" }]); },
-      openAIDevIDE: () => { openWindow('ai_dev_ide', { x: 40, y: 30 }); setMessages(prev => [...prev, { role: "system", content: "🖥️ Fleet AI IDE & DevOps Orchestrator activated — Advanced code generation, CI/CD pipelines and AI agent orchestration" }]); },
+      openAIDevIDE: () => { openWindow('ai_dev_ide', { x: 40, y: 30 }); setMessages(prev => [...prev, { role: "system", content: "🖥️ Fleet AI IDE v4 — full workspace: editor, Git-style status, terminal, DevOps generators, API tester, local persistence (Ctrl+S)." }]); },
       openOrchestratorLoadMap: () => { openWindow('orchestrator_load_map', { x: 60, y: 50 }); setMessages(prev => [...prev, { role: "system", content: "📡 Orchestrator Load Map opened — Real-time heatmap of all 50+ AI agents' system load" }]); },
       };
      actionMap[action]?.();
