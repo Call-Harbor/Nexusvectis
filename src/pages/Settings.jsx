@@ -82,6 +82,7 @@ export default function Settings() {
 
   const toggleAddon = async (addonKey, currentValue) => {
     if (!organization?.id) { toast.error("Organization not found"); return; }
+    // TODO(P1-RBAC): uses platform user.role === 'admin'; org-level admins (OrganizationMember) may need the same capability without platform role.
     if (user?.role !== 'admin') { toast.error("Only admins can manage add-ons"); return; }
     
     setAddonSaving(addonKey);

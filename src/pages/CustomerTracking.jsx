@@ -32,6 +32,7 @@ L.Icon.Default.mergeOptions({
   shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
 });
 
+// TODO(P1-RBAC): customer tracking view — same app shell as staff today; isolate when CUSTOMER_USER auth exists.
 export default function CustomerTracking() {
   const [trackingNumber, setTrackingNumber] = useState("");
   const navigate = useNavigate();

@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Package, TruckIcon, MapPin, Clock, Search, LogIn } from "lucide-react";
 import { toast } from "sonner";
 
+// TODO(P1-RBAC): customer-facing entry — align auth (CUSTOMER_USER) vs same-app login as carrier staff.
 export default function CustomerPortal() {
   const [trackingNumber, setTrackingNumber] = useState("");
   const [email, setEmail] = useState("");

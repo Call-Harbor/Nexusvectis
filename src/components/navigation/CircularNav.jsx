@@ -7,10 +7,12 @@ import {
   Truck, Route, Warehouse, Sparkles, 
   Settings, Users, Shield, FileText, Package, 
   DollarSign, Target, Menu, X, Zap, Home, AlertCircle, Code2, BarChart2, Brain, Bus,
-  Wrench, Receipt, BarChart3, Leaf, Satellite, Bell, TrendingUp, GitBranch, Box, GraduationCap, MapPin, ChevronRight, Anchor, Plane, Scale, Wind, Battery, Smartphone
+  Wrench, Receipt, BarChart3, Leaf, Satellite, Bell, TrendingUp, GitBranch, Box, GraduationCap, MapPin, ChevronRight, Anchor, Plane, Scale, Battery
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import NotificationCenter from "../notifications/NotificationCenter";
+
+// IA: CircularNav lists tenant workspace modules only — public/marketing/legal lives outside this shell (see routeZones.js + Layout.jsx).
 
 const menuCategories = [
   { 

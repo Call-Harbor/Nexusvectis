@@ -108,7 +108,7 @@ const APP_CATEGORIES = [
     ['profile_search', Search, 'People Intelligence'],
   ]],
   ['Creative', [
-    ['image_generator', Image, 'AI Image Generator'],
+    ['image_generator', Image, 'AI Image Studio'],
     ['image_editor', Image, 'AI Image Editor'],
   ]],
   ['Intelligence & Analysis', [
