@@ -450,7 +450,7 @@ export default function IntellectMode() {
      openSpreadsheet: () => { openWindow('spreadsheet_editor', { x: 140, y: 100 }); setMessages(prev => [...prev, { role: "system", content: "📊 Spreadsheet Editor opened" }]); },
      openSatelliteWeather: () => { openWindow('satellite_weather', { x: 100, y: 80 }); setMessages(prev => [...prev, { role: "system", content: "🛰️ Satellite & Weather Intelligence activated" }]); },
      openNewsIntelligence: () => { openWindow('news_intelligence', { x: 120, y: 80 }); setMessages(prev => [...prev, { role: "system", content: "📰 News Intelligence activated — fetching live logistics news" }]); },
-     openImageGenerator: () => { openWindow('image_generator', { x: 120, y: 80 }); setMessages(prev => [...prev, { role: "system", content: "🎨 AI Image Generator opened" }]); },
+     openImageGenerator: () => { openWindow('image_generator', { x: 120, y: 80 }); setMessages(prev => [...prev, { role: "system", content: "🎨 AI Image Studio opened — generate with styles, aspect ratios, and advanced controls." }]); },
      openProjectManagement: () => { openWindow('project_management', { x: 120, y: 80 }); setMessages(prev => [...prev, { role: "system", content: "📋 Project Management AI opened — generate tasks, summaries and risk registers" }]); },
      openFleetAITrainer: () => { setShowFleetAITrainer(true); setMessages(prev => [...prev, { role: "system", content: "⚡ HARBOR AI Trainer activated — Train your own AI models and deploy via API" }]); },
      open3DViewer: () => { openWindow('fleet_3d_viewer', { x: 60, y: 50 }); setMessages(prev => [...prev, { role: "system", content: "🚛 Fleet 3D Viewer opened — Explore realistic 3D models of trucks, ships, drones and aircraft" }]); },
@@ -1038,7 +1038,7 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
       setMessages(prev => [...prev, { role: "user", content: currentCommand }]);
       setInput("");
       openWindow('image_generator', { x: 100, y: 80 });
-      setMessages(prev => [...prev, { role: "system", content: `🎨 AI Image Generator opened — enter your prompt to generate an image` }]);
+      setMessages(prev => [...prev, { role: "system", content: "🎨 AI Image Studio opened — prompts, logistics quick ideas, multi-variation, reference image (Advanced)." }]);
       return;
     }
 
