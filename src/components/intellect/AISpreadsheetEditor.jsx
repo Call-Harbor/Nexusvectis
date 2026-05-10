@@ -4,10 +4,18 @@ import { base44 } from "@/api/base44Client";
 import {
   Download, Plus, Sparkles, Loader2, X,
   BarChart3, Bold, Italic, AlignLeft, AlignCenter, AlignRight,
-  Code2, Sigma, FunctionSquare, Undo2, Cloud
+  Code2, Sigma, FunctionSquare, Undo2, Cloud, Link2, Send,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  subscribeFleetOfficeBridge,
+  postToFleetOffice,
+  parseCsvToStringMatrix,
+  readFleetOfficeClip,
+  escapeHtml,
+} from "@/lib/fleetOfficeBridge";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts";
 
 const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -766,7 +774,7 @@ function SDivider() {
   return <div className="w-px h-4 bg-slate-700/50 mx-0.5 flex-shrink-0" />;
 }
 
-export default function AISpreadsheetEditor({ initialGrid, initialTitle, initialFileUrl, initialFileId, orgId, onSaved }) {
+export default function AISpreadsheetEditor({ initialGrid, initialTitle, initialFileUrl, initialFileId, orgId, onSaved, openWindow }) {
   const [sheetName, setSheetName] = useState(initialTitle?.replace(/\.[^.]+$/, '') || "Untitled Spreadsheet");
   const existingFileId = useRef(initialFileId || null);
   const [grid, setGrid] = useState(() => {
@@ -802,6 +810,23 @@ export default function AISpreadsheetEditor({ initialGrid, initialTitle, initial
       }
     }).catch(() => {});
   }, [initialFileUrl]);
+
+  useEffect(() => {
+    return subscribeFleetOfficeBridge((detail) => {
+      if (detail.target !== "any" && detail.target !== "spreadsheet_editor") return;
+      if (detail.kind === "grid_csv" && detail.data?.csv) {
+        const matrix = parseCsvToStringMatrix(detail.data.csv);
+        if (matrix.length > 0) {
+          const rows = matrix.map((row) => row.map((val) => makeCell(String(val ?? ""))));
+          while (rows.length < INITIAL_ROWS) rows.push(Array(rows[0].length || INITIAL_COLS).fill(null).map(() => makeCell()));
+          rows.forEach((row) => { while (row.length < (rows[0].length || INITIAL_COLS)) row.push(makeCell()); });
+          setGrid(rows);
+          if (detail.data.title) setSheetName(String(detail.data.title).replace(/\.[^.]+$/, ""));
+          toast.success("Ark opdateret fra Office bridge");
+        }
+      }
+    });
+  }, []);
 
   const [selected, setSelected] = useState({ r: 0, c: 0 });
   const [selection, setSelection] = useState(null); // {r1,c1,r2,c2} — multi-cell drag selection
@@ -964,6 +989,113 @@ export default function AISpreadsheetEditor({ initialGrid, initialTitle, initial
     finally { setIsSaving(false); }
   };
 
+  const applyOfficeBridgeClip = () => {
+    const clip = readFleetOfficeClip();
+    if (clip?.kind === "grid_csv" && clip.data?.csv) {
+      const matrix = parseCsvToStringMatrix(clip.data.csv);
+      if (matrix.length > 0) {
+        const rows = matrix.map((row) => row.map((val) => makeCell(String(val ?? ""))));
+        while (rows.length < INITIAL_ROWS) rows.push(Array(rows[0].length || INITIAL_COLS).fill(null).map(() => makeCell()));
+        rows.forEach((row) => { while (row.length < (rows[0].length || INITIAL_COLS)) row.push(makeCell()); });
+        setGrid(rows);
+        if (clip.data.title) setSheetName(String(clip.data.title).replace(/\.[^.]+$/, ""));
+        toast.success("CSV fra bridge indlæst");
+        return;
+      }
+    }
+    toast.error("Ingen CSV på bridge — send fra Fleet Drive");
+  };
+
+  const pushSelectionToFleetDocs = () => {
+    const sel = selection || { r1: selected.r, c1: selected.c, r2: selected.r, c2: selected.c };
+    const r1 = Math.min(sel.r1, sel.r2);
+    const r2 = Math.max(sel.r1, sel.r2);
+    const c1 = Math.min(sel.c1, sel.c2);
+    const c2 = Math.max(sel.c1, sel.c2);
+    let html = '<table style="border-collapse:collapse;width:100%"><tbody>';
+    for (let r = r1; r <= r2; r++) {
+      html += "<tr>";
+      for (let c = c1; c <= c2; c++) {
+        html += `<td style="border:1px solid #ccc;padding:6px">${escapeHtml(getDisplayValue(r, c))}</td>`;
+      }
+      html += "</tr>";
+    }
+    html += "</tbody></table>";
+    postToFleetOffice({
+      target: "document_editor",
+      kind: "html_fragment",
+      data: { html },
+      meta: { from: "fleetsheet", range: selectionToRef(sel) },
+    });
+    toast.success("Tabel sendt til FleetDocs");
+    openWindow?.("document_editor", { x: 125, y: 82 }, {});
+  };
+
+  const pushChartToFleetSlide = () => {
+    const data = chartData.map((d) => ({ label: String(d.name), value: Number(d.value) || 0 }));
+    if (!data.length) {
+      toast.error("Ingen diagramdata — udfyld kolonne A og B");
+      return;
+    }
+    postToFleetOffice({
+      target: "hologram_presentation",
+      kind: "chart_payload",
+      data: {
+        title: `${sheetName} — data`,
+        chartType: "bar",
+        chartData: data,
+        chartInsight: "Fra FleetSheet",
+        body: "",
+      },
+      meta: { sheet: sheetName },
+    });
+    toast.success("Diagram sendt til FleetSlide");
+    openWindow?.("hologram_presentation", { x: 145, y: 88 }, {});
+  };
+
+  const aiColumnInsights = async () => {
+    setAiLoading(true);
+    try {
+      const header = grid[0]?.map((_, ci) => getDisplayValue(0, ci)).join(" | ");
+      const sample = grid.slice(1, 9).map((row, ri) =>
+        row.map((_, ci) => getDisplayValue(ri + 1, ci)).join(" | ")
+      ).join("\n");
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `Analyze this logistics/operations spreadsheet. Header: ${header}\nRows:\n${sample}\nInfer column meanings, point out data quality issues, suggest 2-4 extra formulas.`,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            column_roles: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  column: { type: "string" },
+                  inferred_type: { type: "string" },
+                  note: { type: "string" },
+                },
+              },
+            },
+            data_quality_issues: { type: "array", items: { type: "string" } },
+            extra_formulas: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: { formula: { type: "string" }, description: { type: "string" } },
+              },
+            },
+          },
+        },
+      });
+      setAiData((prev) => ({ ...(prev && typeof prev === "object" ? prev : {}), ...result }));
+      setShowAI(true);
+    } catch {
+      toast.error("AI kolonne-analyse fejlede");
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
   const generateAI = async () => {
     setAiLoading(true);
     try {
@@ -1091,7 +1223,36 @@ export default function AISpreadsheetEditor({ initialGrid, initialTitle, initial
           </span>
         </div>
 
-        <div className="flex items-center gap-1 ml-auto">
+        <div className="flex items-center gap-1 ml-auto flex-wrap justify-end">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className="px-2.5 py-1 text-[9px] font-bold tracking-widest uppercase font-mono transition-all"
+                style={{ color: "#06b6d4", border: "1px solid rgba(6,182,212,0.35)", background: "rgba(6,182,212,0.06)" }}
+              >
+                <Link2 className="w-3 h-3 inline mr-1" />OFFICE
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="bg-slate-900 border-slate-700 text-slate-200 min-w-[220px]">
+              <DropdownMenuItem onClick={applyOfficeBridgeClip} className="cursor-pointer">
+                Indlæs seneste CSV fra bridge
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={pushSelectionToFleetDocs} className="cursor-pointer">
+                Markering → FleetDocs (tabel)
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={pushChartToFleetSlide} className="cursor-pointer">
+                <Send className="w-3.5 h-3.5 inline mr-1 text-cyan-400" />
+                Diagram → FleetSlide
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => openWindow?.("document_editor", { x: 120, y: 80 }, {})} className="cursor-pointer">
+                Åbn FleetDocs
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => openWindow?.("fleet_drive", { x: 100, y: 70 }, {})} className="cursor-pointer">
+                Åbn Fleet Drive
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <button onClick={saveSpreadsheet}
             className="px-2.5 py-1 text-[9px] font-bold tracking-widest uppercase font-mono transition-all"
             style={{ color: "#10b981", border: "1px solid rgba(16,185,129,0.3)", background: "rgba(16,185,129,0.05)" }}>
@@ -1151,6 +1312,12 @@ export default function AISpreadsheetEditor({ initialGrid, initialTitle, initial
             </AnimatePresence>
           </div>
 
+          <button onClick={aiColumnInsights} disabled={aiLoading}
+            className="px-2.5 py-1 text-[9px] font-bold tracking-widest uppercase font-mono transition-all disabled:opacity-40"
+            style={{ color: "#f59e0b", border: "1px solid rgba(245,158,11,0.35)", background: "rgba(245,158,11,0.06)" }}>
+            {aiLoading ? <Loader2 className="w-3 h-3 inline mr-1 animate-spin" /> : <Sigma className="w-3 h-3 inline mr-1" />}
+            AI SCHEMA
+          </button>
           <button onClick={generateAI} disabled={aiLoading}
             className="px-3 py-1 text-[9px] font-bold tracking-widest uppercase font-mono transition-all disabled:opacity-40"
             style={{ color: "#8b5cf6", border: "1px solid rgba(139,92,246,0.4)", background: "rgba(139,92,246,0.08)" }}>
@@ -1372,7 +1539,7 @@ export default function AISpreadsheetEditor({ initialGrid, initialTitle, initial
 
         {/* AI Analysis Side Panel */}
         <AnimatePresence>
-          {showAI && aiData && (
+          {showAI && aiData && Object.keys(aiData).length > 0 && (
             <motion.div
               initial={{ width: 0, opacity: 0 }}
               animate={{ width: 260, opacity: 1 }}
@@ -1428,6 +1595,47 @@ export default function AISpreadsheetEditor({ initialGrid, initialTitle, initial
                           onClick={() => { setCell(selected.r, selected.c, f.formula); setFormulaBarValue(f.formula); toast.success('Formula inserted'); }}
                           title={f.description}
                           className="w-full text-left px-2.5 py-2 rounded-xl border border-emerald-500/25 bg-emerald-500/5 text-emerald-300 text-[11px] font-mono hover:bg-emerald-500/15 transition-all flex items-center gap-2"
+                        >
+                          <Code2 className="w-3 h-3 flex-shrink-0" />
+                          {f.formula}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {aiData.column_roles?.length > 0 && (
+                  <div>
+                    <p className="text-[10px] font-bold text-amber-500/90 uppercase tracking-wider mb-1.5">Kolonner (AI)</p>
+                    <div className="space-y-1.5">
+                      {aiData.column_roles.map((col, i) => (
+                        <div key={i} className="text-xs text-slate-300 p-2 rounded-lg bg-slate-800/40 border border-amber-500/15">
+                          <span className="font-mono text-amber-400">{col.column}</span>
+                          <span className="text-slate-500"> · {col.inferred_type}</span>
+                          {col.note && <p className="text-slate-500 mt-0.5">{col.note}</p>}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {aiData.data_quality_issues?.length > 0 && (
+                  <div>
+                    <p className="text-[10px] font-bold text-red-400/90 uppercase tracking-wider mb-1.5">Datakvalitet</p>
+                    <div className="space-y-1">
+                      {aiData.data_quality_issues.map((issue, i) => (
+                        <p key={i} className="text-xs text-slate-300 p-2 rounded-lg bg-red-500/5 border border-red-500/20">{issue}</p>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {aiData.extra_formulas?.length > 0 && (
+                  <div>
+                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Ekstra formler (schema)</p>
+                    <div className="space-y-1.5">
+                      {aiData.extra_formulas.map((f, i) => (
+                        <button key={i}
+                          onClick={() => { setCell(selected.r, selected.c, f.formula); setFormulaBarValue(f.formula); toast.success("Formel indsat"); }}
+                          title={f.description}
+                          className="w-full text-left px-2.5 py-2 rounded-xl border border-amber-500/25 bg-amber-500/5 text-amber-200 text-[11px] font-mono hover:bg-amber-500/10 transition-all flex items-center gap-2"
                         >
                           <Code2 className="w-3 h-3 flex-shrink-0" />
                           {f.formula}

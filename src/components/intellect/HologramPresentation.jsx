@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
+import { subscribeFleetOfficeBridge, readFleetOfficeClip } from "@/lib/fleetOfficeBridge";
 import { base44 } from "@/api/base44Client";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -8,7 +9,8 @@ import {
   Copy, MoveUp, MoveDown, Timer, Mic, MicOff, RefreshCw,
   Settings, Download, FileText, Lightbulb, TrendingUp, Eye,
   ArrowUp, ArrowDown, Grid, PanelLeft, Maximize, Minimize,
-  LayoutDashboard, Clock, Keyboard, ChevronDown, ChevronUp, Plus
+  LayoutDashboard, Clock, Keyboard, ChevronDown, ChevronUp, Plus,
+  Link2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -488,7 +490,7 @@ function PresenterMode({ slides, current, setCurrent, theme, fontSize, onExit })
   );
 }
 
-export default function HologramPresentation({ orgId, initialFileUrl, onSaved }) {
+export default function HologramPresentation({ orgId, initialFileUrl, onSaved, openWindow }) {
   const [slides, setSlides] = useState([
     { id: 1, type: "title", title: "Fleet Intelligence 2026", subtitle: "Strategic Briefing", body: "AI-Powered Operations & Business Intelligence", notes: "Welcome everyone. Today we'll walk through our fleet performance and strategic outlook for 2026." },
   ]);
@@ -608,6 +610,93 @@ export default function HologramPresentation({ orgId, initialFileUrl, onSaved })
   const updateCurrentSlide = (updates) => {
     setSlides(prev => prev.map((s, i) => i === current ? { ...s, ...updates } : s));
   };
+
+  const ingestOfficeBridgeDetail = useCallback((detail) => {
+    if (!detail?.kind) return;
+
+    if (detail.kind === "replace_deck" && detail.data?.file_url) {
+      fetch(detail.data.file_url)
+        .then((r) => r.json())
+        .then((parsed) => {
+          if (parsed.slides?.length > 0) {
+            setSlides(parsed.slides.map((s, i) => ({ ...s, id: s.id || Date.now() + i })));
+            if (parsed.theme) setTheme(parsed.theme);
+            if (parsed.fontSize) setFontSize(parsed.fontSize);
+            if (parsed.transition) setTransition(parsed.transition);
+            setCurrent(0);
+            toast.success(`Deck fra bridge: ${parsed.slides.length} slides`);
+          }
+        })
+        .catch(() => toast.error("Kunne ikke læse .fleetslide fra bridge"));
+      return;
+    }
+
+    const forSlide = detail.target === "any" || detail.target === "hologram_presentation";
+    if (!forSlide) return;
+
+    if (detail.kind === "slides_from_outline" && detail.data?.slides?.length) {
+      const mapped = detail.data.slides.map((s, i) => ({
+        ...s,
+        id: Date.now() + i,
+        type: s.type || "content",
+        bullets: s.bullets || [],
+      }));
+      const insertAt = current + 1;
+      setSlides((prev) => [...prev.slice(0, insertAt), ...mapped, ...prev.slice(insertAt)]);
+      setCurrent(insertAt);
+      toast.success(`${mapped.length} slides fra FleetDocs-outline`);
+      return;
+    }
+
+    if (detail.kind === "chart_payload" && detail.data) {
+      const d = detail.data;
+      const newSlide = {
+        id: Date.now(),
+        type: "chart",
+        title: d.title || "Data",
+        chartType: d.chartType || "bar",
+        chartData: Array.isArray(d.chartData) ? d.chartData : [],
+        chartInsight: d.chartInsight || "",
+        body: d.body || "",
+        notes: "",
+      };
+      const insertAt = current + 1;
+      setSlides((prev) => [...prev.slice(0, insertAt), newSlide, ...prev.slice(insertAt)]);
+      setCurrent(insertAt);
+      toast.success("Diagram-slide fra FleetSheet");
+      return;
+    }
+
+    if (detail.kind === "html_fragment" && detail.data?.html) {
+      const div = document.createElement("div");
+      div.innerHTML = detail.data.html;
+      const text = (div.textContent || "").trim();
+      const bullets = text.split(/\n+/).map((l) => l.trim()).filter(Boolean).slice(0, 14);
+      const newSlide = {
+        id: Date.now(),
+        type: "content",
+        title: detail.meta?.docTitle || detail.meta?.title || "Fra FleetDocs",
+        bullets: bullets.length ? bullets : ["(tom tekst)"],
+        body: "",
+        notes: "",
+      };
+      const insertAt = current + 1;
+      setSlides((prev) => [...prev.slice(0, insertAt), newSlide, ...prev.slice(insertAt)]);
+      setCurrent(insertAt);
+      toast.success("Tekst fra FleetDocs som slide");
+    }
+  }, [current]);
+
+  useEffect(() => subscribeFleetOfficeBridge(ingestOfficeBridgeDetail), [ingestOfficeBridgeDetail]);
+
+  const importOfficeBridgeClip = useCallback(() => {
+    const clip = readFleetOfficeClip();
+    if (!clip?.kind) {
+      toast.error("Office bridge er tom");
+      return;
+    }
+    ingestOfficeBridgeDetail(clip);
+  }, [ingestOfficeBridgeDetail]);
 
   const saveToFleetDrive = async () => {
     if (!orgId) { toast.error("Ingen organisation fundet"); return; }
@@ -958,6 +1047,28 @@ Return JSON: { "notes": "...speaker notes text..." }`,
             className="px-2.5 py-1 text-[9px] font-bold tracking-widest uppercase font-mono transition-all"
             style={{ color: "#06b6d4", border: "1px solid rgba(6,182,212,0.3)", background: "rgba(6,182,212,0.05)" }}>
             <Download className="w-3 h-3 inline mr-1" />SAVE
+          </button>
+          <button onClick={importOfficeBridgeClip}
+            className="px-2.5 py-1 text-[9px] font-bold tracking-widest uppercase font-mono transition-all"
+            style={{ color: "#8b5cf6", border: "1px solid rgba(139,92,246,0.35)", background: "rgba(139,92,246,0.06)" }}
+            title="Indlæs seneste payload fra Fleet Drive / FleetDocs / FleetSheet">
+            <Link2 className="w-3 h-3 inline mr-1" />BRIDGE
+          </button>
+          <button
+            type="button"
+            onClick={() => openWindow?.("document_editor", { x: 120, y: 80 }, {})}
+            className="px-2 py-1 text-[9px] font-bold tracking-widest uppercase font-mono transition-all hidden sm:inline"
+            style={{ color: "rgba(148,163,184,0.7)", border: "1px solid rgba(148,163,184,0.2)", background: "transparent" }}
+          >
+            DOCS
+          </button>
+          <button
+            type="button"
+            onClick={() => openWindow?.("spreadsheet_editor", { x: 130, y: 85 }, {})}
+            className="px-2 py-1 text-[9px] font-bold tracking-widest uppercase font-mono transition-all hidden sm:inline"
+            style={{ color: "rgba(148,163,184,0.7)", border: "1px solid rgba(148,163,184,0.2)", background: "transparent" }}
+          >
+            SHEET
           </button>
           <button onClick={() => { setIsPresenting(true); openPresenterWindow(); }}
             className="px-3 py-1 text-[9px] font-bold tracking-widest uppercase font-mono transition-all"

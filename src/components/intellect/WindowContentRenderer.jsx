@@ -380,8 +380,8 @@ function ArticleIframeViewer({ url, onClose }) {
 export default function WindowContentRenderer({ type, data, vehicles, routes, shipments, alerts, currentUser, orgId, customers, setInput, openWindow }) {
   const queryClient = useQueryClient();
   const onSaved = () => queryClient.invalidateQueries({ queryKey: ['fleet-drive', orgId] });
-  if (type === 'document_editor') return <AIDocumentEditor initialContent={data?.initialContent} initialTitle={data?.initialTitle} initialFileUrl={data?.initialFileUrl} initialFileId={data?.initialFileId} orgId={orgId} onSaved={onSaved} />;
-  if (type === 'spreadsheet_editor') return <AISpreadsheetEditor initialGrid={data?.initialGrid} initialTitle={data?.initialTitle} initialFileUrl={data?.initialFileUrl} initialFileId={data?.initialFileId} orgId={orgId} onSaved={onSaved} />;
+  if (type === 'document_editor') return <AIDocumentEditor initialContent={data?.initialContent} initialTitle={data?.initialTitle} initialFileUrl={data?.initialFileUrl} initialFileId={data?.initialFileId} orgId={orgId} onSaved={onSaved} openWindow={openWindow} />;
+  if (type === 'spreadsheet_editor') return <AISpreadsheetEditor initialGrid={data?.initialGrid} initialTitle={data?.initialTitle} initialFileUrl={data?.initialFileUrl} initialFileId={data?.initialFileId} orgId={orgId} onSaved={onSaved} openWindow={openWindow} />;
 
   if (type.startsWith('chart_')) {
     const cfg = data?.chartConfig;
@@ -419,7 +419,7 @@ export default function WindowContentRenderer({ type, data, vehicles, routes, sh
   if (type === 'alerts') return <iframe src={`/Alerts?hologram=true`} className="w-full h-full border-0" title="Alerts" />;
   if (type === 'project_management') return <ProjectManagementPanel orgId={orgId} />;
   if (type === 'fleet_drive') return <FleetDrivePanel orgId={orgId} openWindow={openWindow} />;
-  if (type === 'hologram_presentation') return <HologramPresentation orgId={orgId} initialFileUrl={data?.initialFileUrl} onSaved={onSaved} />;
+  if (type === 'hologram_presentation') return <HologramPresentation orgId={orgId} initialFileUrl={data?.initialFileUrl} onSaved={onSaved} openWindow={openWindow} />;
   if (type === 'fleet_ai_trainer') return <FleetAITrainer onClose={data?.onClose} />;
   if (type === 'parallel_processor') return <ParallelTaskProcessor onClose={data?.onClose} externalTasks={data?.tasks || []} />;
   if (type === 'fleet_3d_viewer') return <Fleet3DViewer onClose={data?.onClose} initialVehicleId={data?.vehicleId} vehicles={vehicles} />;

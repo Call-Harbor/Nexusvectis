@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactQuill from "react-quill";
 import { base44 } from "@/api/base44Client";
@@ -6,10 +6,19 @@ import {
   Download, Sparkles, Loader2, X, Cloud,
   FileText, Bold, Italic, Underline, AlignLeft, AlignCenter,
   AlignRight, List, ListOrdered, Link, Undo2, Redo2,
-  ChevronDown, Minus, Plus, Wand2, Brain, CheckCircle, Zap, BookOpen
+  ChevronDown, Minus, Plus, Wand2, Brain, CheckCircle, Zap, BookOpen,
+  Link2, Send,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  subscribeFleetOfficeBridge,
+  postToFleetOffice,
+  readFleetOfficeClip,
+  htmlToOutline,
+  outlineToSlideStubs,
+} from "@/lib/fleetOfficeBridge";
 
 const modules = {
   toolbar: false,
@@ -100,7 +109,7 @@ function HeadingDrop({ value, onChange }) {
   );
 }
 
-export default function AIDocumentEditor({ initialContent, initialTitle, initialFileUrl, initialFileId, orgId, onSaved }) {
+export default function AIDocumentEditor({ initialContent, initialTitle, initialFileUrl, initialFileId, orgId, onSaved, openWindow }) {
   const [content, setContent] = useState(initialContent || `<h1>Document Title</h1><p>Start typing your document here...</p>`);
   const [documentTitle, setDocumentTitle] = useState(initialTitle?.replace(/\.[^.]+$/, '') || "Untitled Document");
   const existingFileId = useRef(initialFileId || null);
@@ -124,6 +133,37 @@ export default function AIDocumentEditor({ initialContent, initialTitle, initial
   const [selectedFmt, setSelectedFmt] = useState({ heading: false, bold: false, italic: false, underline: false });
   const quillRef = useRef(null);
   const autoSaveRef = useRef(null);
+
+  const insertHtmlAtCursor = useCallback((html) => {
+    const editor = quillRef.current?.getEditor();
+    if (!editor) {
+      setContent((c) => c + html);
+      return;
+    }
+    const range = editor.getSelection(true);
+    const idx = range?.index ?? editor.getLength();
+    editor.clipboard.dangerouslyPasteHTML(idx, html);
+  }, []);
+
+  useEffect(() => {
+    return subscribeFleetOfficeBridge((detail) => {
+      if (detail.target !== "any" && detail.target !== "document_editor") return;
+      if (detail.kind === "html_fragment" && detail.data?.html) {
+        insertHtmlAtCursor(detail.data.html);
+        toast.success("Indsat fra Office bridge");
+      }
+      if (detail.kind === "file_reference" && detail.data?.file_url) {
+        fetch(detail.data.file_url)
+          .then((r) => r.text())
+          .then((t) => {
+            const html = t.includes("<") ? t : `<p>${t.split("\n").join("</p><p>")}</p>`;
+            insertHtmlAtCursor(html);
+            toast.success("Fil indlæst fra bridge");
+          })
+          .catch(() => toast.error("Kunne ikke hente fil"));
+      }
+    });
+  }, [insertHtmlAtCursor]);
 
   useEffect(() => {
     const text = content.replace(/<[^>]*>/g, '').trim();
@@ -225,6 +265,66 @@ export default function AIDocumentEditor({ initialContent, initialTitle, initial
     }
   };
 
+  const applyOfficeBridgeClip = () => {
+    const clip = readFleetOfficeClip();
+    if (!clip?.kind) {
+      toast.error("Office bridge er tom — send fra Fleet Drive først");
+      return;
+    }
+    if (clip.kind === "html_fragment" && clip.data?.html) {
+      insertHtmlAtCursor(clip.data.html);
+      toast.success("Seneste bridge-indhold indsat");
+      return;
+    }
+    if (clip.kind === "file_reference" && clip.data?.file_url) {
+      fetch(clip.data.file_url)
+        .then((r) => r.text())
+        .then((t) => {
+          const html = t.includes("<") ? t : `<p>${t.split("\n").join("</p><p>")}</p>`;
+          insertHtmlAtCursor(html);
+          toast.success("Bridge-fil indsat");
+        })
+        .catch(() => toast.error("Kunne ikke hente fil"));
+      return;
+    }
+    toast.message("Send HTML/CSV eller fil fra Fleet Drive med Office-menuen");
+  };
+
+  const pushOutlineToFleetSlide = () => {
+    const outline = htmlToOutline(content);
+    const slideStubs = outlineToSlideStubs(outline);
+    postToFleetOffice({
+      target: "hologram_presentation",
+      kind: "slides_from_outline",
+      data: { slides: slideStubs },
+      meta: { docTitle: documentTitle },
+    });
+    toast.success("Outline sendt til FleetSlide");
+    openWindow?.("hologram_presentation", { x: 140, y: 90 }, {});
+  };
+
+  const aiExecutiveBrief = async () => {
+    setAiLoading(true);
+    try {
+      const plain = content.replace(/<[^>]*>/g, "").trim().substring(0, 2000);
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `Convert this operations or logistics document into a concise executive brief. Output HTML fragment only: <h2>, <p>, <ul><li>. No markdown, no preamble. Text:\n${plain}`,
+        response_json_schema: {
+          type: "object",
+          properties: { html: { type: "string" } },
+        },
+      });
+      if (result?.html) {
+        insertHtmlAtCursor(`<hr/><h2>Executive brief (AI)</h2>${result.html}`);
+        toast.success("Executive brief indsat");
+      }
+    } catch {
+      toast.error("AI brief fejlede");
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
   const downloadDocument = () => {
     const blob = new Blob([`<!DOCTYPE html><html><head><title>${documentTitle}</title><style>body{font-family:Georgia,serif;max-width:800px;margin:40px auto;padding:0 20px;line-height:1.6;color:#333}</style></head><body>${content}</body></html>`], { type: "text/html" });
     const a = document.createElement("a");
@@ -278,7 +378,38 @@ export default function AIDocumentEditor({ initialContent, initialTitle, initial
           </span>
         </div>
 
-        <div className="flex items-center gap-1.5 ml-auto">
+        <div className="flex items-center gap-1.5 ml-auto flex-wrap justify-end">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className="relative px-2.5 py-1 text-[9px] font-bold tracking-widest uppercase transition-all font-mono"
+                style={{ color: "#06b6d4", border: "1px solid rgba(6,182,212,0.35)", background: "rgba(6,182,212,0.06)" }}
+              >
+                <Link2 className="w-3 h-3 inline mr-1" />OFFICE
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="bg-slate-900 border-slate-700 text-slate-200 min-w-[220px]">
+              <DropdownMenuItem onClick={applyOfficeBridgeClip} className="gap-2 cursor-pointer">
+                Indsæt seneste bridge
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={pushOutlineToFleetSlide} className="gap-2 cursor-pointer">
+                <Send className="w-3.5 h-3.5 text-cyan-400" /> Outline → FleetSlide
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => openWindow?.("spreadsheet_editor", { x: 130, y: 85 }, {})}
+                className="gap-2 cursor-pointer"
+              >
+                Åbn FleetSheet
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => openWindow?.("fleet_drive", { x: 100, y: 70 }, {})}
+                className="gap-2 cursor-pointer"
+              >
+                Åbn Fleet Drive
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <button onClick={saveDocument}
             className="relative px-2.5 py-1 text-[9px] font-bold tracking-widest uppercase transition-all font-mono"
             style={{ color: "#3b82f6", border: "1px solid rgba(59,130,246,0.3)", background: "rgba(59,130,246,0.05)" }}>
@@ -288,6 +419,12 @@ export default function AIDocumentEditor({ initialContent, initialTitle, initial
             className="relative px-2.5 py-1 text-[9px] font-bold tracking-widest uppercase transition-all font-mono"
             style={{ color: "rgba(148,163,184,0.6)", border: "1px solid rgba(148,163,184,0.15)", background: "transparent" }}>
             <Download className="w-3 h-3 inline mr-1" />EXPORT
+          </button>
+          <button onClick={aiExecutiveBrief} disabled={aiLoading}
+            className="relative px-2.5 py-1 text-[9px] font-bold tracking-widest uppercase transition-all font-mono disabled:opacity-40"
+            style={{ color: "#f59e0b", border: "1px solid rgba(245,158,11,0.35)", background: "rgba(245,158,11,0.06)" }}>
+            {aiLoading ? <Loader2 className="w-3 h-3 inline mr-1 animate-spin" /> : <Zap className="w-3 h-3 inline mr-1" />}
+            AI BRIEF
           </button>
           <button onClick={generateAI} disabled={aiLoading}
             className="relative px-3 py-1 text-[9px] font-bold tracking-widest uppercase transition-all font-mono disabled:opacity-40"

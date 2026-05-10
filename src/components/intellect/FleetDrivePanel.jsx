@@ -4,11 +4,13 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   File, FileText, FileImage, Video, Archive, Search, Trash2, 
-  Download, Pin, PinOff, Plus, CloudUpload, CheckCircle, Star, ExternalLink
+  Download, Pin, PinOff, Plus, CloudUpload, CheckCircle, Star, ExternalLink,
+  MoreVertical, Table, MonitorPlay, Share2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { postToFleetOffice, escapeHtml } from "@/lib/fleetOfficeBridge";
 
 const FILE_ICONS = {
   document: FileText, spreadsheet: FileText, image: FileImage,
@@ -192,6 +194,59 @@ export default function FleetDrivePanel({ orgId, openWindow }) {
   // Type distribution
   const typeCounts = files.reduce((acc, f) => { acc[f.file_type || "other"] = (acc[f.file_type || "other"] || 0) + 1; return acc; }, {});
 
+  const bridgeFileToOffice = async (file) => {
+    const ext = file.name?.split(".").pop()?.toLowerCase();
+    try {
+      if (ext === "csv" || file.file_type === "spreadsheet") {
+        const r = await fetch(file.file_url);
+        const csv = await r.text();
+        postToFleetOffice({
+          target: "spreadsheet_editor",
+          kind: "grid_csv",
+          data: { csv, title: file.name },
+          meta: { sourceFileId: file.id, name: file.name },
+        });
+        toast.success("Data sendt til FleetSheet (Office bridge)");
+        return;
+      }
+      if (file.file_type === "document" || ["html", "htm", "txt", "md"].includes(ext)) {
+        const r = await fetch(file.file_url);
+        const t = await r.text();
+        let html = t;
+        if (ext === "txt" || ext === "md") {
+          html = `<p>${escapeHtml(t).split("\n").join("</p><p>")}</p>`;
+        }
+        postToFleetOffice({
+          target: "document_editor",
+          kind: "html_fragment",
+          data: { html },
+          meta: { title: file.name, sourceFileId: file.id },
+        });
+        toast.success("Indhold sendt til FleetDocs (Office bridge)");
+        return;
+      }
+      if (ext === "fleetslide" || file.file_type === "presentation") {
+        postToFleetOffice({
+          target: "hologram_presentation",
+          kind: "replace_deck",
+          data: { file_url: file.file_url },
+          meta: { title: file.name, sourceFileId: file.id },
+        });
+        toast.success("Præsentation på bridge — åbn FleetSlide og tryk Import");
+        return;
+      }
+      postToFleetOffice({
+        target: "any",
+        kind: "file_reference",
+        data: { file_url: file.file_url, name: file.name, file_type: file.file_type },
+        meta: { sourceFileId: file.id },
+      });
+      toast.success("Filreference på Office bridge");
+    } catch {
+      toast.error("Office bridge fejlede");
+    }
+  };
+
   return (
     <div className="flex flex-col h-full overflow-hidden select-none"
       style={{ background: "radial-gradient(ellipse at 50% 0%, rgba(6,182,212,0.04) 0%, rgba(0,5,15,0.98) 60%)", fontFamily: "monospace" }}>
@@ -345,7 +400,7 @@ export default function FleetDrivePanel({ orgId, openWindow }) {
               <span className="text-[9px] tracking-[0.2em] uppercase" style={{ color: "rgba(245,158,11,0.6)" }}>PINNED</span>
               <div className="flex-1 h-px" style={{ background: "rgba(245,158,11,0.15)" }} />
             </div>
-            {pinned.map(f => <JarvisFileRow key={f.id} file={f} onDelete={deleteMutation.mutate} onPin={pinMutation.mutate} openWindow={openWindow} selected={selectedFile === f.id} onSelect={setSelectedFile} />)}
+            {pinned.map(f => <JarvisFileRow key={f.id} file={f} onDelete={deleteMutation.mutate} onPin={pinMutation.mutate} openWindow={openWindow} onBridgeSend={bridgeFileToOffice} selected={selectedFile === f.id} onSelect={setSelectedFile} />)}
           </>
         )}
 
@@ -356,7 +411,7 @@ export default function FleetDrivePanel({ orgId, openWindow }) {
           </div>
         )}
 
-        {unpinned.map(f => <JarvisFileRow key={f.id} file={f} onDelete={deleteMutation.mutate} onPin={pinMutation.mutate} openWindow={openWindow} selected={selectedFile === f.id} onSelect={setSelectedFile} />)}
+        {unpinned.map(f => <JarvisFileRow key={f.id} file={f} onDelete={deleteMutation.mutate} onPin={pinMutation.mutate} openWindow={openWindow} onBridgeSend={bridgeFileToOffice} selected={selectedFile === f.id} onSelect={setSelectedFile} />)}
       </div>
 
       {/* BOTTOM BAR */}
@@ -380,7 +435,7 @@ export default function FleetDrivePanel({ orgId, openWindow }) {
   );
 }
 
-function JarvisFileRow({ file, onDelete, onPin, openWindow, selected, onSelect }) {
+function JarvisFileRow({ file, onDelete, onPin, openWindow, onBridgeSend, selected, onSelect }) {
   const color = TYPE_COLOR[file.file_type] || TYPE_COLOR.other;
   const isSelected = selected === file.id;
 
@@ -393,6 +448,12 @@ function JarvisFileRow({ file, onDelete, onPin, openWindow, selected, onSelect }
     else if (ft === 'document' || ['doc','docx','txt','rtf','odt','html'].includes(ext)) windowType = 'document_editor';
     else if (ft === 'spreadsheet' || ['xls','xlsx','csv','ods'].includes(ext)) windowType = 'spreadsheet_editor';
     else windowType = 'hologram_presentation';
+    openWindow(windowType, { x: 120, y: 80 }, { initialFileUrl: file.file_url, initialTitle: file.name, initialFileId: file.id });
+  };
+
+  const openAs = (windowType, e) => {
+    e?.stopPropagation();
+    if (!openWindow) return;
     openWindow(windowType, { x: 120, y: 80 }, { initialFileUrl: file.file_url, initialTitle: file.name, initialFileId: file.id });
   };
 
@@ -445,6 +506,38 @@ function JarvisFileRow({ file, onDelete, onPin, openWindow, selected, onSelect }
       <div className={`flex items-center gap-1 transition-all ${isSelected ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}>
         <ActionBtn icon={ExternalLink} color={color} onClick={(e) => { e.stopPropagation(); handleOpen(); }} title="Open" />
         <ActionBtn icon={Download} color="#06b6d4" onClick={(e) => { e.stopPropagation(); window.open(file.file_url, "_blank"); }} title="Download" />
+        {openWindow && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                onClick={(e) => e.stopPropagation()}
+                title="Office hub"
+                className="w-6 h-6 flex items-center justify-center transition-all hover:scale-110"
+                style={{ border: `1px solid ${color}30`, background: `${color}08` }}
+              >
+                <MoreVertical className="w-3 h-3" style={{ color }} />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="bg-slate-900 border-slate-700 text-slate-200 min-w-[200px]">
+              <DropdownMenuItem onClick={(e) => openAs("document_editor", e)} className="gap-2 cursor-pointer">
+                <FileText className="w-3.5 h-3.5 text-blue-400" /> Åbn i FleetDocs
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={(e) => openAs("spreadsheet_editor", e)} className="gap-2 cursor-pointer">
+                <Table className="w-3.5 h-3.5 text-emerald-400" /> Åbn i FleetSheet
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={(e) => openAs("hologram_presentation", e)} className="gap-2 cursor-pointer">
+                <MonitorPlay className="w-3.5 h-3.5 text-cyan-400" /> Åbn i FleetSlide
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={(e) => { e.stopPropagation(); onBridgeSend?.(file); }}
+                className="gap-2 cursor-pointer text-violet-200 focus:text-violet-100"
+              >
+                <Share2 className="w-3.5 h-3.5 text-violet-400" /> Send til Office bridge
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
         <ActionBtn icon={file.is_pinned ? PinOff : Pin} color="#f59e0b" onClick={(e) => { e.stopPropagation(); onPin({ id: file.id, pinned: !file.is_pinned }); }} title="Pin" />
         <ActionBtn icon={Trash2} color="#ef4444" onClick={(e) => { e.stopPropagation(); onDelete(file.id); }} title="Delete" />
       </div>
