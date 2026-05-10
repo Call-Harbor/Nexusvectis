@@ -10,6 +10,87 @@ import {
 import { toast } from "sonner";
 import DatabaseDesigner from "./DatabaseDesigner";
 
+/** Pick serializable user fields so iframe JSON never throws (avoids blank preview). */
+function safePickUser(u) {
+  if (!u || typeof u !== "object") return null;
+  return {
+    id: u.id,
+    email: u.email,
+    full_name: u.full_name ?? u.name ?? u.display_name,
+    role: u.role,
+    organization_id: u.organization_id ?? u.data?.organization_id,
+  };
+}
+
+function slimList(arr, max = 100) {
+  return Array.isArray(arr) ? arr.slice(0, max) : [];
+}
+
+/** Safe payload for blob-URL iframe — prevents JSON.stringify failures from breaking the sandbox. */
+function buildSandboxOrgData(orgId, vehicles, routes, shipments, alerts, customers, currentUser) {
+  const payload = {
+    orgId: orgId ?? null,
+    vehicles: slimList(vehicles),
+    routes: slimList(routes),
+    shipments: slimList(shipments),
+    alerts: slimList(alerts, 60),
+    customers: slimList(customers),
+    currentUser: safePickUser(currentUser),
+  };
+  try {
+    JSON.stringify(payload);
+    return payload;
+  } catch {
+    return {
+      orgId: payload.orgId,
+      vehicles: [],
+      routes: [],
+      shipments: [],
+      alerts: [],
+      customers: [],
+      currentUser: safePickUser(currentUser),
+    };
+  }
+}
+
+/** Unwrap Base44 / InvokeLLM JSON results (string, markdown fences, or nested objects). */
+function normalizeJsonFromLlm(raw) {
+  const parseString = (s) => {
+    if (typeof s !== "string") return null;
+    let t = s.trim().replace(/^```(?:json)?\s*\n?/i, "").replace(/\n?```\s*$/i, "").trim();
+    try {
+      return JSON.parse(t);
+    } catch {
+      const m = t.match(/\{[\s\S]*\}/);
+      try {
+        return m ? JSON.parse(m[0]) : null;
+      } catch {
+        return null;
+      }
+    }
+  };
+  if (raw == null) return null;
+  if (typeof raw === "string") return parseString(raw);
+  if (typeof raw === "object") {
+    if (!Array.isArray(raw) && raw.entities !== undefined) return raw;
+    for (const k of ["content", "text", "message", "response", "output", "result", "data"]) {
+      if (raw[k] != null) {
+        const inner = typeof raw[k] === "string" ? parseString(raw[k]) : normalizeJsonFromLlm(raw[k]);
+        if (inner && typeof inner === "object") return inner;
+      }
+    }
+  }
+  return typeof raw === "object" ? raw : null;
+}
+
+function normalizeCodeFromLlm(raw) {
+  if (raw == null) return "";
+  let code = typeof raw === "string" ? raw : (raw && typeof raw === "object" ? (raw.content || raw.text || raw.message || raw.code || "") : "");
+  if (typeof code !== "string") code = String(code ?? "");
+  code = code.replace(/^```(?:jsx?|javascript|js)?\n?/gm, "").replace(/```\s*$/gm, "").trim();
+  return code;
+}
+
 function LiveAppSandbox({ code, orgId, vehicles, routes, shipments, alerts, customers, currentUser, onCodeFixed }) {
   const iframeRef = useRef(null);
   const [autoFixing, setAutoFixing] = useState(false);
@@ -40,9 +121,8 @@ Rules:
 - Fix only the error, keep all other functionality intact`,
             response_json_schema: null
           });
-          let fixed = typeof result === "string" ? result : JSON.stringify(result);
-          fixed = fixed.replace(/^```(?:jsx?|javascript|js)?\n?/gm, "").replace(/```\s*$/gm, "").trim();
-          if (fixed.includes("function GeneratedApp") || fixed.includes("GeneratedApp")) {
+          const fixed = normalizeCodeFromLlm(result);
+          if (fixed && (fixed.includes("function GeneratedApp") || fixed.includes("GeneratedApp"))) {
             onCodeFixed?.(fixed);
           }
         } catch (e) {
@@ -63,9 +143,10 @@ Rules:
 
   useEffect(() => {
     if (!code || !iframeRef.current) return;
-    const orgDataScript = `window.__ORG_DATA__ = ${JSON.stringify({ orgId, vehicles, routes, shipments, alerts, customers, currentUser })};`;
-    // NexusVectis auth — injected into every generated app
-    const nvUser = currentUser ? JSON.stringify(currentUser) : 'null';
+    const orgPayload = buildSandboxOrgData(orgId, vehicles, routes, shipments, alerts, customers, currentUser);
+    const orgDataScript = `window.__ORG_DATA__ = ${JSON.stringify(orgPayload)};`;
+    // NexusVectis auth — injected into every generated app (minimal fields only)
+    const nvUser = orgPayload.currentUser ? JSON.stringify(orgPayload.currentUser) : "null";
     const html = `<!DOCTYPE html>
 <html>
 <head>
@@ -372,8 +453,13 @@ export default function HarborAppBuilderV3({ onClose, vehicles = [], routes = []
 
   const loadApps = async () => {
     if (!orgId) return;
-    const apps = await base44.entities.HarborApp.filter({ organization_id: orgId }, '-created_date', 50);
-    setSavedApps(apps);
+    try {
+      const apps = await base44.entities.HarborApp.filter({ organization_id: orgId }, '-created_date', 50);
+      setSavedApps(apps || []);
+    } catch (e) {
+      console.error("HarborApp load failed", e);
+      setSavedApps([]);
+    }
   };
 
   const addLog = (msg, type = "info") => setBuildLog(prev => [...prev, { msg, type, ts: Date.now() }]);
@@ -381,11 +467,20 @@ export default function HarborAppBuilderV3({ onClose, vehicles = [], routes = []
   const handleBuild = async (promptOverride) => {
     const prompt = promptOverride || userPrompt;
     if (!prompt.trim()) return;
+    if (!orgId) {
+      toast.error("Ingen organisation — log ind med en konto der har organisation_id for at bygge og gemme apps.");
+      return;
+    }
 
     setPhase("analyzing");
     setBuildLog([]);
     setBuildProgress(5);
     addLog("🤖 Understanding your requirements...", "system");
+    let tickAnalyze = null;
+    let tickCodegen = null;
+    tickAnalyze = setInterval(() => {
+      setBuildProgress((p) => (p < 92 ? p + 2 : p));
+    }, 900);
 
     try {
       // Step 1: Analyze
@@ -414,28 +509,61 @@ Return JSON:
         }
       });
 
-      const schema = typeof analysis === "string" ? JSON.parse(analysis) : analysis;
-      setEntities(schema.entities || []);
-      setPages(schema.pages || []);
-      setAppMeta({ name: schema.appName, description: schema.appDescription, icon: schema.icon || "⚡" });
+      clearInterval(tickAnalyze);
+      tickAnalyze = null;
+
+      const schema = normalizeJsonFromLlm(analysis);
+      if (!schema || typeof schema !== "object") {
+        throw new Error("AI kunne ikke levere et gyldigt skema (JSON). Prøv igen.");
+      }
+      let entities = Array.isArray(schema.entities) ? schema.entities : [];
+      let pages = Array.isArray(schema.pages) ? schema.pages : [];
+      if (!entities.length) {
+        entities = [{
+          name: "Record",
+          description: "Standard poster",
+          fields: [
+            { name: "title", type: "string", required: true, description: "Titel" },
+            { name: "status", type: "enum", required: false, description: "Status", options: ["active", "paused"] },
+          ],
+        }];
+      }
+      if (!pages.length) {
+        pages = [
+          { name: "Dashboard", route: "dashboard", type: "dashboard", description: "Overblik", primary_entity: entities[0]?.name || "Record" },
+          { name: "Liste", route: "list", type: "list", description: "Poster", primary_entity: entities[0]?.name || "Record" },
+        ];
+      }
+      setEntities(entities);
+      setPages(pages);
+      setAppMeta({
+        name: schema.appName || "Harbor App",
+        description: schema.appDescription || "",
+        icon: schema.icon || "⚡",
+      });
       setBuildProgress(30);
-      addLog(`✅ Schema: ${schema.entities?.length} entities, ${schema.pages?.length} pages`, "success");
+      addLog(`✅ Schema: ${entities.length} entities, ${pages.length} pages`, "success");
 
       // Step 2: Build
       setPhase("building");
       setBuildProgress(50);
       addLog("🎨 Generating premium UI...", "info");
+      tickCodegen = setInterval(() => {
+        setBuildProgress((p) => (p < 95 ? p + 1 : p));
+      }, 1200);
 
-      const entityDefs = (schema.entities || []).map(e =>
+      const appTitleSafe = String(schema.appName || "Harbor App").replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+
+      const entityDefs = (entities || []).map(e =>
         `${e.name}: [${e.fields?.map(f => `${f.name}:${f.type}${f.required ? '*' : ''}${f.options ? `(${f.options.join('|')})` : ''}`).join(', ')}]`
       ).join('\n');
-      const pageDefs = (schema.pages || []).map(p => `${p.name} (${p.type}): ${p.description}`).join('\n');
+      const pageDefs = (pages || []).map(p => `${p.name} (${p.type}): ${p.description}`).join('\n');
 
       const result = await base44.integrations.Core.InvokeLLM({
         prompt: `You are a senior React engineer building a production-ready H.A.R.B.O.R enterprise app with a cyberpunk/terminal aesthetic. Every button, form, modal, and interaction MUST work 100%. No placeholders, no TODOs, no broken handlers.
 
-APP: ${schema.appName}
-DESCRIPTION: ${schema.appDescription}
+APP: ${schema.appName || "Harbor App"}
+DESCRIPTION: ${schema.appDescription || ""}
 
 ENTITIES:
 ${entityDefs}
@@ -487,11 +615,11 @@ FONTS: fontFamily: "'Courier New', Courier, monospace" for ALL text. This is a t
 LAYOUT STRUCTURE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 function GeneratedApp(props) {
-  const [currentTab, setCurrentTab] = React.useState("${(schema.pages || [])[0]?.name || 'Dashboard'}");
+  const [currentTab, setCurrentTab] = React.useState("${(pages || [])[0]?.name || "Dashboard"}");
   // ALL entity state here
   return (
     <div style={{display:"flex",flexDirection:"column",height:"100vh",background:"#030a0e",color:"#e0f4ff",overflow:"hidden",fontFamily:"'Courier New',Courier,monospace",backgroundImage:"radial-gradient(ellipse at 20% 50%, rgba(0,50,80,0.15) 0%, transparent 60%)"}}>
-      <TopBar appName="${schema.appName}" />
+      <TopBar appName="${appTitleSafe}" />
       <TabNav tabs={[...pageNames]} currentTab={currentTab} setCurrentTab={setCurrentTab} />
       <div style={{flex:1,overflowY:"auto",padding:"16px 20px"}}>
         {/* render page based on currentTab */}
@@ -585,8 +713,13 @@ ABSOLUTE RULES — NO EXCEPTIONS
         response_json_schema: null
       });
 
-      let code = typeof result === "string" ? result : JSON.stringify(result);
-      code = code.replace(/^```(?:jsx?|javascript|js)?\n?/gm, "").replace(/```\s*$/gm, "").trim();
+      clearInterval(tickCodegen);
+      tickCodegen = null;
+
+      let code = normalizeCodeFromLlm(result);
+      if (!code || code.length < 80) {
+        throw new Error("AI returnerede ingen brugbar kode. Prøv igen eller brug en kortere beskrivelse.");
+      }
       if (!code.includes("function GeneratedApp")) {
         code = `function GeneratedApp(props) {\n  const { useState, useEffect } = React;\n${code}\n}`;
       }
@@ -598,8 +731,13 @@ ABSOLUTE RULES — NO EXCEPTIONS
       setPhase("preview");
 
     } catch (err) {
-      addLog(`❌ Error: ${err.message}`, "error");
+      const msg = err?.message || String(err);
+      addLog(`❌ Error: ${msg}`, "error");
+      toast.error(msg);
       setPhase("idle");
+    } finally {
+      if (tickAnalyze) clearInterval(tickAnalyze);
+      if (tickCodegen) clearInterval(tickCodegen);
     }
   };
 
@@ -621,8 +759,7 @@ Requirements:
 - Return ONLY complete updated JavaScript code, no markdown, no backticks`,
         response_json_schema: null
       });
-      let code = typeof result === "string" ? result : JSON.stringify(result);
-      code = code.replace(/^```(?:jsx?|javascript|js)?\n?/gm, "").replace(/```\s*$/gm, "").trim();
+      let code = normalizeCodeFromLlm(result);
       if (!code.includes("function GeneratedApp")) {
         code = `function GeneratedApp(props) {\n${code}\n}`;
       }
@@ -664,32 +801,6 @@ Requirements:
     setSaving(false);
   };
 
-  const handleInstallFromStore = async (appId) => {
-    // Find the app from the store and copy it into this org's library
-    try {
-      const storeApp = await base44.entities.HarborApp.filter({ id: appId }, null, 1);
-      const app = storeApp?.[0];
-      if (!app) return;
-      // Create a copy in the current org
-      const saved = await base44.entities.HarborApp.create({
-        organization_id: orgId,
-        name: app.name,
-        description: app.description,
-        prompt: app.prompt || "",
-        code: app.code,
-        category: app.category,
-        icon_emoji: app.icon_emoji,
-        created_by_name: app.created_by_name,
-      });
-      await loadApps();
-      // Auto-open the installed app
-      handleLoadApp({ ...app, id: saved.id });
-      toast.success(`✅ "${app.name}" er nu tilgængelig i dine apps!`);
-    } catch (err) {
-      console.error("Install from store failed:", err);
-    }
-  };
-
   const handleDelete = async (app, e) => {
     e.stopPropagation();
     await base44.entities.HarborApp.delete(app.id);
@@ -704,6 +815,37 @@ Requirements:
     setAppMeta({ name: app.name, description: app.description, icon: app.icon_emoji });
     setUserPrompt(app.prompt || "");
     setPhase("preview");
+  };
+
+  const handleInstallFromStore = async (appId) => {
+    if (!orgId || !appId) {
+      toast.error("Mangler organisation eller app — log ind og prøv igen.");
+      return;
+    }
+    try {
+      const rows = await base44.entities.HarborApp.filter({ id: appId }, "-created_date", 10);
+      const app = rows?.[0];
+      if (!app?.code) {
+        toast.error("Kunne ikke finde app-koden. Prøv at åbne Fleet Store igen.");
+        return;
+      }
+      const saved = await base44.entities.HarborApp.create({
+        organization_id: orgId,
+        name: app.name,
+        description: app.description,
+        prompt: app.prompt || "",
+        code: app.code,
+        category: app.category || "custom",
+        icon_emoji: app.icon_emoji,
+        created_by_name: app.created_by_name || currentUser?.full_name || currentUser?.email || "Unknown",
+      });
+      await loadApps();
+      handleLoadApp({ ...app, id: saved.id });
+      toast.success(`✅ "${app.name}" er kopieret til din organisations bibliotek`);
+    } catch (err) {
+      console.error("Install from store failed:", err);
+      toast.error("Installation fejlede: " + (err?.message || "ukendt fejl"));
+    }
   };
 
   const filteredApps = savedApps.filter(app => app.name.toLowerCase().includes(searchApps.toLowerCase()));
@@ -936,7 +1078,7 @@ Requirements:
                     </div>
                   ) : (
                     <div className="flex-1 overflow-y-auto">
-                      <EmptyState onStart={(p) => { setUserPrompt(p); }} />
+                      <EmptyState onStart={(p) => { setUserPrompt(p); handleBuild(p); }} />
                     </div>
                   )}
 

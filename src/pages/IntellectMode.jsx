@@ -1007,7 +1007,17 @@ Return JSON with rich insights, NOT generic analysis. Make each insight worth th
     if (harborAppMatch) {
       setMessages(prev => [...prev, { role: "user", content: currentCommand }]);
       setInput("");
-      openWindow('harbor_app_builder', { x: 60, y: 50 });
+      openWindow('harbor_app_builder', { x: 60, y: 50 }, {
+        installedAppIds,
+        onInstall: (appId) => updateInstalledApps(new Set([...installedAppIds, appId])),
+        vehicles,
+        routes,
+        shipments,
+        alerts,
+        customers,
+        currentUser,
+        orgId,
+      });
       setMessages(prev => [...prev, { role: "system", content: "⚡ H.A.R.B.O.R App Builder activated — Describe any app and AI will code it live with your organisation's data" }]);
       return;
     }
