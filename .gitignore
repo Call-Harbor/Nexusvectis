@@ -2,6 +2,9 @@
 .env
 .env.*
 
+# Generated benchmark / HF bundle artifacts (keep out of git)
+artifacts/
+
 # Logs
 logs
 *.log
