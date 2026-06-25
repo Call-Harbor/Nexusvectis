@@ -5,22 +5,28 @@
  */
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
   if (req.method !== 'POST') {
-    return Response.json({ error: 'Method not allowed' }, { status: 405 });
+    return nvError(requestId, String('Method not allowed'), 405);
+
   }
 
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
     if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+      return nvError(requestId, String('Unauthorized'), 401);
+
     }
 
     const { urls } = await req.json();
     if (!urls || !Array.isArray(urls) || urls.length === 0) {
-      return Response.json({ error: 'Provide an array of URLs to crawl' }, { status: 400 });
+      return nvError(requestId, String('Provide an array of URLs to crawl'), 400);
+
     }
 
     const results = [];
@@ -95,7 +101,7 @@ Deno.serve(async (req) => {
     const successful = results.filter(r => r.success);
     const failed = results.filter(r => !r.success);
 
-    return Response.json({
+    return nvJson(requestId, {
       results,
       summary: {
         total: urls.length,
@@ -105,8 +111,10 @@ Deno.serve(async (req) => {
       }
     });
 
+
   } catch (error) {
     console.error('Crawl error:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return nvError(requestId, String(error.message), 500);
+
   }
 });

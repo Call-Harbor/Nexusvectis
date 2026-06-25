@@ -1,13 +1,17 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
   try {
     const base44 = createClientFromRequest(req);
     const body = await req.json();
     const { file_urls } = body;
 
     if (!file_urls || file_urls.length === 0) {
-      return Response.json({ processed_files: [] });
+      return nvJson(requestId, { processed_files: [] });
+
     }
 
     const processedFiles = [];
@@ -99,9 +103,11 @@ Deno.serve(async (req) => {
       }
     }
 
-    return Response.json({ processed_files: processedFiles });
+    return nvJson(requestId, { processed_files: processedFiles });
+
   } catch (error) {
     console.error('processFileContent error:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return nvError(requestId, String(error.message), 500);
+
   }
 });

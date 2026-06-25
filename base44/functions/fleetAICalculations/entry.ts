@@ -6,6 +6,7 @@
  */
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 const CALCULATION_CONFIGS = {
   // EUR per liter × liters per km = EUR per km
@@ -22,21 +23,26 @@ const CALCULATION_CONFIGS = {
 };
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'Content-Type, Authorization' } });
+    return nvOptions(requestId);
   }
 
   if (req.method !== 'POST') {
-    return Response.json({ error: 'Method not allowed' }, { status: 405 });
+    return nvError(requestId, String('Method not allowed'), 405);
+
   }
 
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
-    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!user) return nvError(requestId, String('Unauthorized'), 401);
+
 
     const { calculation_type, params } = await req.json();
-    if (!calculation_type) return Response.json({ error: 'calculation_type is required' }, { status: 400 });
+    if (!calculation_type) return nvError(requestId, String('calculation_type is required'), 400);
+
 
     const orgId = user.organization_id || user.id;
     const secureParams = { ...params, _orgId: orgId };
@@ -56,18 +62,21 @@ Deno.serve(async (req) => {
 
     const calculator = calculators[calculation_type];
     if (!calculator) {
-      return Response.json({
+      return nvJson(requestId, {
         error: `Unknown calculation_type: ${calculation_type}`,
         available: Object.keys(calculators),
-      }, { status: 400 });
+      }, 400);
+
     }
 
     const result = calculator(secureParams);
-    return Response.json({ success: true, calculation_type, data: result, timestamp: new Date().toISOString() });
+    return nvJson(requestId, { success: true, calculation_type, data: result, timestamp: new Date().toISOString() });
+
 
   } catch (error) {
     console.error('Calculation error:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return nvError(requestId, String(error.message), 500);
+
   }
 });
 

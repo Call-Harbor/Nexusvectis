@@ -1,18 +1,23 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
 
     if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+      return nvError(requestId, String('Unauthorized'), 401);
+
     }
 
     // Get user's organization
     const userData = await base44.entities.User.filter({ email: user.email });
     if (!userData || userData.length === 0 || !userData[0].organization_id) {
-      return Response.json({ error: 'User must be assigned to an organization' }, { status: 400 });
+      return nvError(requestId, String('User must be assigned to an organization'), 400);
+
     }
 
     const organization_id = userData[0].organization_id;
@@ -64,7 +69,7 @@ Deno.serve(async (req) => {
       .slice(0, 10)
       .map(([endpoint, count]) => ({ endpoint, count }));
 
-    return Response.json({
+    return nvJson(requestId, {
       success: true,
       stats: {
         total_calls: totalCalls,
@@ -77,7 +82,9 @@ Deno.serve(async (req) => {
         top_endpoints: topEndpoints
       }
     });
+
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return nvError(requestId, String(error.message), 500);
+
   }
 });

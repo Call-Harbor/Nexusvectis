@@ -1,13 +1,18 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
     try {
         const base44 = createClientFromRequest(req);
         const user = await base44.auth.me();
-        if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+        if (!user) return nvError(requestId, String('Unauthorized'), 401);
+
 
         const orgId = user.organization_id;
-        if (!orgId) return Response.json({ error: 'No organization' }, { status: 400 });
+        if (!orgId) return nvError(requestId, String('No organization'), 400);
+
 
         // Get all org members using service role
         const members = await base44.asServiceRole.entities.OrganizationMember.filter({
@@ -58,8 +63,10 @@ Deno.serve(async (req) => {
             ...pendingMembers,
         ];
 
-        return Response.json({ users: result });
+        return nvJson(requestId, { users: result });
+
     } catch (error) {
-        return Response.json({ error: error.message }, { status: 500 });
+        return nvError(requestId, String(error.message), 500);
+
     }
 });

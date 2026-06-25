@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 /**
  * SEO POST RE-OPTIMIZER — HIGH QUALITY EDITION
@@ -7,6 +8,8 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
  */
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
   try {
     const base44 = createClientFromRequest(req);
 
@@ -20,11 +23,12 @@ Deno.serve(async (req) => {
     );
 
     if (stalePosts.length === 0) {
-      return Response.json({
+      return nvJson(requestId, {
         success: true,
         message: 'No posts need re-optimization',
         posts_rewritten: 0
       });
+
     }
 
     const results = [];
@@ -117,16 +121,18 @@ RULES:
     });
   }
 
-    return Response.json({
+    return nvJson(requestId, {
       success: true,
       posts_rewritten: results.length,
       results
     });
+
   } catch (error) {
     console.error('[SEO Re-optimizer Error]', error.message);
-    return Response.json({ 
+    return nvJson(requestId, { 
       success: false, 
       error: error.message 
-    }, { status: 500 });
+    }, 500);
+
   }
 });

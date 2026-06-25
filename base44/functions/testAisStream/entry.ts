@@ -1,9 +1,13 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
   const base44 = createClientFromRequest(req);
   const user = await base44.auth.me().catch(() => null);
-  if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!user) return nvError(requestId, String('Unauthorized'), 401);
+
 
   const apiKey = Deno.env.get("AISSTREAM_API_KEY") || "";
   const log = [];
@@ -57,5 +61,6 @@ Deno.serve(async (req) => {
     };
   });
 
-  return Response.json({ result, log });
+  return nvJson(requestId, { result, log });
+
 });

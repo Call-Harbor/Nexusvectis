@@ -41,6 +41,7 @@
  */
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 const API_VERSION = '3.5.0';
 const MAX_RETRIES = 2;
@@ -1149,18 +1150,12 @@ Your role:
 
 // ── MAIN HANDLER ──────────────────────────────────────────────────────────────
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
   const startTime = Date.now();
   const clientIP = req.headers.get('x-forwarded-for') || req.headers.get('cf-connecting-ip') || 'unknown';
 
-  // CORS
-  const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Request-ID',
-  };
-
   if (req.method === 'OPTIONS') {
-    return new Response(null, { status: 204, headers: corsHeaders });
+    return nvOptions(requestId);
   }
 
   // GET — Discovery endpoint
@@ -1176,7 +1171,7 @@ Deno.serve(async (req) => {
       tierGroups[a.tier].push(a.id);
     }
 
-    return Response.json({
+    return nvJson(requestId, {
       orchestrator: 'H.A.R.B.O.R. Orchestrator API',
       version: API_VERSION,
       status: 'operational',
@@ -1210,11 +1205,11 @@ Deno.serve(async (req) => {
       authentication: 'Authorization: Bearer nvx_<api_key>',
       endpoint: 'POST /functions/harborOrchestratorAPI',
       pricing: { standard_per_call: 0.50, model: 'claude_sonnet_4_6' },
-    }, { headers: corsHeaders });
+    });
   }
 
   if (req.method !== 'POST') {
-    return Response.json({ error: 'Method not allowed. Use GET or POST.' }, { status: 405, headers: corsHeaders });
+    return nvError(requestId, 'Method not allowed. Use GET or POST.', 405, 'METHOD_NOT_ALLOWED');
   }
 
   try {
@@ -1222,10 +1217,15 @@ Deno.serve(async (req) => {
 
     // Auth
     const auth = await authenticate(req, base44);
-    if (auth.error) return Response.json({ error: auth.error }, { status: auth.status, headers: corsHeaders });
+    if (auth.error) return nvError(requestId, auth.error, auth.status, 'UNAUTHORIZED');
     const { organization_id, api_key_id } = auth;
 
-    const body = await req.json();
+    let body;
+    try {
+      body = await req.json();
+    } catch {
+      return nvError(requestId, 'Invalid JSON body', 400, 'BAD_REQUEST');
+    }
     const {
       mode = 'auto',
       message,
@@ -1254,11 +1254,12 @@ Deno.serve(async (req) => {
     } = body;
 
     if (!message) {
-      return Response.json({
-        error: 'message is required',
-        hint: 'POST { mode: "auto", message: "Your question here" }',
-        docs: 'GET /functions/harborOrchestratorAPI'
-      }, { status: 400, headers: corsHeaders });
+      return nvError(
+        requestId,
+        'message is required. Example: POST { "mode": "auto", "message": "Your question here" }. Discovery: GET this endpoint.',
+        400,
+        'BAD_REQUEST',
+      );
     }
 
     // Options bundle for agent invocations
@@ -1317,9 +1318,9 @@ Deno.serve(async (req) => {
 
     // ── MODE: SINGLE ──────────────────────────────────────────────────────────
     if (mode === 'single') {
-      if (!agent) return Response.json({ error: 'agent is required for mode=single' }, { status: 400, headers: corsHeaders });
+      if (!agent) return nvError(requestId, 'agent is required for mode=single', 400, 'BAD_REQUEST');
       const agentDef = allAgents[agent];
-      if (!agentDef) return Response.json({ error: `Unknown agent: ${agent}. GET /functions/harborOrchestratorAPI for full agent list.` }, { status: 400, headers: corsHeaders });
+      if (!agentDef) return nvError(requestId, `Unknown agent: ${agent}. GET /functions/harborOrchestratorAPI for full agent list.`, 400, 'BAD_REQUEST');
       const result = await invokeAgent(base44, agent, agentDef, message, conversation_history, enrichedContext, response_json_schema, null, invocationOptions);
       results = [result];
     }
@@ -1327,9 +1328,9 @@ Deno.serve(async (req) => {
     // ── MODE: PARALLEL ────────────────────────────────────────────────────────
     else if (mode === 'parallel') {
       const agentIds = (agents || []).filter(id => !exclude_agents.includes(id)).slice(0, max_agents);
-      if (!agentIds.length) return Response.json({ error: 'agents array is required for mode=parallel' }, { status: 400, headers: corsHeaders });
+      if (!agentIds.length) return nvError(requestId, 'agents array is required for mode=parallel', 400, 'BAD_REQUEST');
       const unknownAgents = agentIds.filter(id => !allAgents[id]);
-      if (unknownAgents.length) return Response.json({ error: `Unknown agents: ${unknownAgents.join(', ')}` }, { status: 400, headers: corsHeaders });
+      if (unknownAgents.length) return nvError(requestId, `Unknown agents: ${unknownAgents.join(', ')}`, 400, 'BAD_REQUEST');
 
       // Priority agents run first, then the rest in parallel
       const priorityIds = agentIds.filter(id => priority_agents.includes(id));
@@ -1352,9 +1353,9 @@ Deno.serve(async (req) => {
     // ── MODE: SEQUENTIAL ──────────────────────────────────────────────────────
     else if (mode === 'sequential') {
       const agentIds = (agents || []).filter(id => !exclude_agents.includes(id)).slice(0, max_agents);
-      if (!agentIds.length) return Response.json({ error: 'agents array is required for mode=sequential' }, { status: 400, headers: corsHeaders });
+      if (!agentIds.length) return nvError(requestId, 'agents array is required for mode=sequential', 400, 'BAD_REQUEST');
       const unknownAgents = agentIds.filter(id => !allAgents[id]);
-      if (unknownAgents.length) return Response.json({ error: `Unknown agents: ${unknownAgents.join(', ')}` }, { status: 400, headers: corsHeaders });
+      if (unknownAgents.length) return nvError(requestId, `Unknown agents: ${unknownAgents.join(', ')}`, 400, 'BAD_REQUEST');
 
       let prevOutput = null;
       for (const id of agentIds) {
@@ -1463,10 +1464,10 @@ Deno.serve(async (req) => {
     // ── MODE: HIERARCHICAL ────────────────────────────────────────────────────
     else if (mode === 'hierarchical') {
       const workerIds = (agents || []).filter(id => !exclude_agents.includes(id)).slice(0, max_agents);
-      if (!workerIds.length) return Response.json({ error: 'agents (worker IDs) required for hierarchical mode' }, { status: 400, headers: corsHeaders });
+      if (!workerIds.length) return nvError(requestId, 'agents (worker IDs) required for hierarchical mode', 400, 'BAD_REQUEST');
 
       const unknownAgents = [...workerIds, supervisor_agent].filter(id => !allAgents[id]);
-      if (unknownAgents.length) return Response.json({ error: `Unknown agents: ${unknownAgents.join(', ')}` }, { status: 400, headers: corsHeaders });
+      if (unknownAgents.length) return nvError(requestId, `Unknown agents: ${unknownAgents.join(', ')}`, 400, 'BAD_REQUEST');
 
       hierarchicalData = await runHierarchical(base44, supervisor_agent, workerIds, message, conversation_history, enrichedContext, allAgents, invocationOptions);
       results = [...hierarchicalData.workers, hierarchicalData.supervisor];
@@ -1479,17 +1480,19 @@ Deno.serve(async (req) => {
         .slice(0, 4); // Max 4 debaters for quality
 
       const unknownAgents = debaterIds.filter(id => !allAgents[id]);
-      if (unknownAgents.length) return Response.json({ error: `Unknown agents: ${unknownAgents.join(', ')}` }, { status: 400, headers: corsHeaders });
+      if (unknownAgents.length) return nvError(requestId, `Unknown agents: ${unknownAgents.join(', ')}`, 400, 'BAD_REQUEST');
 
       debateData = await runDebate(base44, debaterIds, message, debate_topic, conversation_history, enrichedContext, allAgents, invocationOptions);
       results = [...debateData.positions, ...debateData.rebuttals, debateData.verdict];
     }
 
     else {
-      return Response.json({
-        error: `Unknown mode: "${mode}"`,
-        valid_modes: ['single', 'parallel', 'sequential', 'auto', 'broadcast', 'hierarchical', 'debate']
-      }, { status: 400, headers: corsHeaders });
+      return nvError(
+        requestId,
+        `Unknown mode: "${mode}". Valid modes: single, parallel, sequential, auto, broadcast, hierarchical, debate.`,
+        400,
+        'BAD_REQUEST',
+      );
     }
 
     const responseTime = Date.now() - startTime;
@@ -1607,15 +1610,11 @@ If no clear quantified prediction, respond: { "found": false }`,
       }
     };
 
-    return Response.json(response, { headers: corsHeaders });
+    return nvJson(requestId, response);
 
   } catch (error) {
-    console.error('[H.A.R.B.O.R. Orchestrator] Fatal error:', error);
-    return Response.json({
-      error: error.message,
-      code: 'ORCHESTRATOR_ERROR',
-      timestamp: new Date().toISOString(),
-      support: 'Contact support if this persists'
-    }, { status: 500, headers: corsHeaders });
+    console.error('[H.A.R.B.O.R. Orchestrator] Fatal error:', error, { requestId });
+    const msg = error instanceof Error ? error.message : String(error);
+    return nvError(requestId, msg, 500, 'ORCHESTRATOR_ERROR');
   }
 });

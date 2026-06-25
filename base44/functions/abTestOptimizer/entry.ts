@@ -1,7 +1,10 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 // Scheduled function: Analyzes A/B test results and updates SEOMetrics with winning variants
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
     try {
         const base44 = createClientFromRequest(req);
 
@@ -16,14 +19,16 @@ Deno.serve(async (req) => {
         }
 
         if (!isAdmin) {
-            return Response.json({ error: 'Forbidden' }, { status: 403 });
+            return nvError(requestId, String('Forbidden'), 403);
+
         }
 
         // Fetch all A/B test records
         const allRecords = await base44.asServiceRole.entities.ABTestConversion.list();
 
         if (!allRecords || allRecords.length === 0) {
-            return Response.json({ success: true, message: 'No A/B test data yet' });
+            return nvJson(requestId, { success: true, message: 'No A/B test data yet' });
+
         }
 
         // Group by variant_type and variant_index
@@ -69,7 +74,8 @@ Deno.serve(async (req) => {
         // Get the latest SEOMetrics record
         const seoMetrics = await base44.asServiceRole.entities.SEOMetrics.list('-created_date', 1);
         if (!seoMetrics || seoMetrics.length === 0) {
-            return Response.json({ success: true, message: 'No SEOMetrics found', stats, winners });
+            return nvJson(requestId, { success: true, message: 'No SEOMetrics found', stats, winners });
+
         }
 
         const latestMetrics = seoMetrics[0];
@@ -93,15 +99,17 @@ Deno.serve(async (req) => {
             await base44.asServiceRole.entities.SEOMetrics.update(latestMetrics.id, updates);
         }
 
-        return Response.json({
+        return nvJson(requestId, {
             success: true,
             stats,
             winners,
             updates_applied: Object.keys(updates)
         });
 
+
     } catch (error) {
         console.error('AB Test Optimizer Error:', error);
-        return Response.json({ error: error.message }, { status: 500 });
+        return nvError(requestId, String(error.message), 500);
+
     }
 });

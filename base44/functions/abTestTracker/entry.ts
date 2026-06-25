@@ -1,7 +1,10 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 // Handles both recording a variant impression and recording a conversion
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
     try {
         const base44 = createClientFromRequest(req);
         const body = await req.json();
@@ -23,7 +26,8 @@ Deno.serve(async (req) => {
                 await base44.asServiceRole.entities.ABTestConversion.update(record.id, {
                     visit_count: (record.visit_count || 1) + 1
                 });
-                return Response.json({ success: true, action: 'updated_visit_count', id: record.id });
+                return nvJson(requestId, { success: true, action: 'updated_visit_count', id: record.id });
+
             } else {
                 // Create new impression record
                 const created = await base44.asServiceRole.entities.ABTestConversion.create({
@@ -36,7 +40,8 @@ Deno.serve(async (req) => {
                     visit_count: 1,
                     first_seen_at: new Date().toISOString()
                 });
-                return Response.json({ success: true, action: 'created', id: created.id });
+                return nvJson(requestId, { success: true, action: 'created', id: created.id });
+
             }
 
         } else if (action === 'record_conversion') {
@@ -50,7 +55,8 @@ Deno.serve(async (req) => {
             });
 
             if (!records || records.length === 0) {
-                return Response.json({ success: true, action: 'no_impressions_found' });
+                return nvJson(requestId, { success: true, action: 'no_impressions_found' });
+
             }
 
             const converted_at = new Date().toISOString();
@@ -69,14 +75,17 @@ Deno.serve(async (req) => {
                 });
             }
 
-            return Response.json({ success: true, action: 'conversion_recorded', count: records.length });
+            return nvJson(requestId, { success: true, action: 'conversion_recorded', count: records.length });
+
 
         } else {
-            return Response.json({ error: 'Unknown action' }, { status: 400 });
+            return nvError(requestId, String('Unknown action'), 400);
+
         }
 
     } catch (error) {
         console.error('AB Test Tracker Error:', error);
-        return Response.json({ error: error.message }, { status: 500 });
+        return nvError(requestId, String(error.message), 500);
+
     }
 });

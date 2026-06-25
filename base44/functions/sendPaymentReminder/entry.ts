@@ -1,6 +1,9 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
   try {
     const base44 = createClientFromRequest(req);
 
@@ -24,7 +27,8 @@ Deno.serve(async (req) => {
       const toRemind = overdueInvoices.filter(inv => inv.due_date && inv.due_date < cutoff);
 
       if (toRemind.length === 0) {
-        return Response.json({ success: true, mode: 'scheduled', processed: 0, reminders_sent: [] });
+        return nvJson(requestId, { success: true, mode: 'scheduled', processed: 0, reminders_sent: [] });
+
       }
 
       // Fetch all unique orgs in parallel
@@ -56,29 +60,33 @@ Deno.serve(async (req) => {
 
       const results = (await Promise.all(emailPromises)).filter(Boolean);
 
-      return Response.json({
+      return nvJson(requestId, {
         success: true,
         mode: 'scheduled',
         processed: results.length,
         reminders_sent: results
       });
+
     }
 
     // ── MANUAL MODE: send reminder for a specific invoice ──────────────────
     const user = await base44.auth.me();
     if (user?.role !== 'admin') {
-      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+      return nvError(requestId, String('Forbidden: Admin access required'), 403);
+
     }
 
     const invoices = await base44.asServiceRole.entities.Invoice.filter({ id: invoice_id });
     if (!invoices || invoices.length === 0) {
-      return Response.json({ error: 'Invoice not found' }, { status: 404 });
+      return nvError(requestId, String('Invoice not found'), 404);
+
     }
     const inv = invoices[0];
 
     const orgs = await base44.asServiceRole.entities.Organization.filter({ id: inv.organization_id });
     if (!orgs || orgs.length === 0) {
-      return Response.json({ error: 'Organization not found' }, { status: 404 });
+      return nvError(requestId, String('Organization not found'), 404);
+
     }
     const org = orgs[0];
 
@@ -90,16 +98,18 @@ Deno.serve(async (req) => {
       body: buildEmailBody(org, inv, daysOverdue)
     });
 
-    return Response.json({
+    return nvJson(requestId, {
       success: true,
       mode: 'manual',
       message: 'Payment reminder sent successfully',
       days_overdue: daysOverdue
     });
 
+
   } catch (error) {
     console.error('Error sending payment reminder:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return nvError(requestId, String(error.message), 500);
+
   }
 });
 

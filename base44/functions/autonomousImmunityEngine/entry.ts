@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // FLEET AUTONOMOUS IMMUNITY ENGINE v3.0 — FULL SECURITY PAGE COMPLIANCE
@@ -38,6 +39,8 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 // ═══════════════════════════════════════════════════════════════════════════
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
   try {
     const base44 = createClientFromRequest(req);
 
@@ -64,7 +67,7 @@ Deno.serve(async (req) => {
       totalActions += orgActions;
     }
 
-    return Response.json({
+    return nvJson(requestId, {
       status: 'immunity_cycle_complete',
       timestamp: now,
       organizations_processed: organizationIds.length,
@@ -72,9 +75,11 @@ Deno.serve(async (req) => {
       immunity_log: immunityLog,
     });
 
+
   } catch (error) {
     console.error('[IMMUNITY] Engine error:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return nvError(requestId, String(error.message), 500);
+
   }
 });
 

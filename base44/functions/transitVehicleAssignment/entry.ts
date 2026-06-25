@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 /**
  * VEHICLE & DRIVER ASSIGNMENT AI
@@ -7,12 +8,15 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
  */
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
   const base44 = createClientFromRequest(req);
 
   try {
     const user = await base44.auth.me();
     if (!user || user.role !== 'admin') {
-      return Response.json({ error: 'Forbidden' }, { status: 403 });
+      return nvError(requestId, String('Forbidden'), 403);
+
     }
 
     const { organization_id, date } = await req.json();
@@ -111,7 +115,7 @@ Provide specific trip → bus → driver assignments.`,
       }
     }
 
-    return Response.json({
+    return nvJson(requestId, {
       success: true,
       date,
       total_trips: scheduledTrips.length,
@@ -119,11 +123,13 @@ Provide specific trip → bus → driver assignments.`,
       unassigned: assignments.unassigned_trips?.length || 0,
       warnings: assignments.warnings || []
     });
+
   } catch (error) {
     console.error('Vehicle Assignment AI Error:', error);
-    return Response.json({ 
+    return nvJson(requestId, { 
       success: false, 
       error: error.message 
-    }, { status: 500 });
+    }, 500);
+
   }
 });

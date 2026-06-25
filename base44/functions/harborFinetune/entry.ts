@@ -12,6 +12,7 @@
  */
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 const MISTRAL_API = 'https://api.mistral.ai/v1';
 
@@ -44,20 +45,25 @@ RESPONSE STANDARDS:
 PERSONALITY: McKinsey partner with 30 years fleet operations experience. Decisive. Proactive. Zero vague answers — specific, correct, actionable.`;
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
   if (req.method !== 'POST') {
-    return Response.json({ error: 'Method not allowed' }, { status: 405 });
+    return nvError(requestId, String('Method not allowed'), 405);
+
   }
 
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
     if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+      return nvError(requestId, String('Unauthorized'), 401);
+
     }
 
     const mistralApiKey = Deno.env.get('MISTRAL_API_KEY');
     if (!mistralApiKey) {
-      return Response.json({ error: 'MISTRAL_API_KEY not configured' }, { status: 500 });
+      return nvError(requestId, String('MISTRAL_API_KEY not configured'), 500);
+
     }
 
     const headers = {
@@ -76,9 +82,8 @@ Deno.serve(async (req) => {
       // so the fine-tuned model IS HARBOR, not just a generic Mistral model.
 
       if (!training_data || training_data.length < 8) {
-        return Response.json({
-          error: 'Mistral fine-tuning requires at least 8 training examples. Please add more Q&A pairs to your training data.'
-        }, { status: 400 });
+        return nvError(requestId, String('Mistral fine-tuning requires at least 8 training examples. Please add more Q&A pairs to your training data.'), 400);
+
       }
 
       // Inject HARBOR system prompt into every training example
@@ -105,11 +110,13 @@ Deno.serve(async (req) => {
 
       if (!uploadRes.ok) {
         const err = await uploadRes.text();
-        return Response.json({ error: `File upload failed: ${err}` }, { status: 400 });
+        return nvError(requestId, `File upload failed: ${err}`.slice(0, 2000), 400, 'UPSTREAM_ERROR');
+
       }
 
       const fileData = await uploadRes.json();
-      return Response.json({ file_id: fileData.id, file: fileData, harbor_examples_count: harborExamples.length });
+      return nvJson(requestId, { file_id: fileData.id, file: fileData, harbor_examples_count: harborExamples.length });
+
     }
 
     // ─── CREATE FINE-TUNING JOB ───────────────────────────────────────────────
@@ -134,11 +141,13 @@ Deno.serve(async (req) => {
 
       if (!jobRes.ok) {
         const err = await jobRes.text();
-        return Response.json({ error: `Job creation failed: ${err}` }, { status: 400 });
+        return nvError(requestId, `Job creation failed: ${err}`.slice(0, 2000), 400, 'UPSTREAM_ERROR');
+
       }
 
       const jobData = await jobRes.json();
-      return Response.json({ job: jobData });
+      return nvJson(requestId, { job: jobData });
+
     }
 
     // ─── GET JOB STATUS ───────────────────────────────────────────────────────
@@ -147,10 +156,12 @@ Deno.serve(async (req) => {
       const res = await fetch(`${MISTRAL_API}/fine_tuning/jobs/${job_id}`, { headers });
       if (!res.ok) {
         const err = await res.text();
-        return Response.json({ error: err }, { status: 400 });
+        return nvError(requestId, String(err), 400);
+
       }
       const data = await res.json();
-      return Response.json({ job: data });
+      return nvJson(requestId, { job: data });
+
     }
 
     // ─── LIST JOBS ────────────────────────────────────────────────────────────
@@ -158,10 +169,12 @@ Deno.serve(async (req) => {
       const res = await fetch(`${MISTRAL_API}/fine_tuning/jobs?page_size=20`, { headers });
       if (!res.ok) {
         const err = await res.text();
-        return Response.json({ error: err }, { status: 400 });
+        return nvError(requestId, String(err), 400);
+
       }
       const data = await res.json();
-      return Response.json({ jobs: data.data || [] });
+      return nvJson(requestId, { jobs: data.data || [] });
+
     }
 
     // ─── CANCEL JOB ──────────────────────────────────────────────────────────
@@ -173,10 +186,12 @@ Deno.serve(async (req) => {
       });
       if (!res.ok) {
         const err = await res.text();
-        return Response.json({ error: err }, { status: 400 });
+        return nvError(requestId, String(err), 400);
+
       }
       const data = await res.json();
-      return Response.json({ job: data });
+      return nvJson(requestId, { job: data });
+
     }
 
     // ─── LIST FINE-TUNED MODELS ───────────────────────────────────────────────
@@ -184,17 +199,21 @@ Deno.serve(async (req) => {
       const res = await fetch(`${MISTRAL_API}/models`, { headers });
       if (!res.ok) {
         const err = await res.text();
-        return Response.json({ error: err }, { status: 400 });
+        return nvError(requestId, String(err), 400);
+
       }
       const data = await res.json();
       const fineTuned = (data.data || []).filter(m => m.type === 'fine-tuned');
-      return Response.json({ models: fineTuned });
+      return nvJson(requestId, { models: fineTuned });
+
     }
 
-    return Response.json({ error: `Unknown action: ${action}` }, { status: 400 });
+    return nvError(requestId, `Unknown action: ${action}`, 400, 'BAD_REQUEST');
+
 
   } catch (error) {
     console.error('HARBOR Fine-tune error:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return nvError(requestId, String(error.message), 500);
+
   }
 });

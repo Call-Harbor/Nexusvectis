@@ -1,12 +1,16 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
 
     if (user?.role !== 'admin') {
-      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+      return nvError(requestId, String('Forbidden: Admin access required'), 403);
+
     }
 
     const { invoice_id } = await req.json();
@@ -14,7 +18,8 @@ Deno.serve(async (req) => {
     // Get invoice and organization
     const invoice = await base44.asServiceRole.entities.Invoice.filter({ id: invoice_id });
     if (!invoice || invoice.length === 0) {
-      return Response.json({ error: 'Invoice not found' }, { status: 404 });
+      return nvError(requestId, String('Invoice not found'), 404);
+
     }
 
     const inv = invoice[0];
@@ -23,7 +28,8 @@ Deno.serve(async (req) => {
     });
     
     if (!organization || organization.length === 0) {
-      return Response.json({ error: 'Organization not found' }, { status: 404 });
+      return nvError(requestId, String('Organization not found'), 404);
+
     }
 
     const org = organization[0];
@@ -35,12 +41,13 @@ Deno.serve(async (req) => {
 
     // Skip email for test invoices (invoice numbers starting with 'TEST-')
     if (inv.invoice_number.startsWith('TEST-')) {
-      return Response.json({ 
+      return nvJson(requestId, { 
         success: true, 
         message: 'Test invoice cancelled (no email sent)',
         invoice_id,
         credited_amount: inv.total_amount
       });
+
     }
 
     // Send credit note email only for real invoices
@@ -149,15 +156,17 @@ Deno.serve(async (req) => {
       `
     });
 
-    return Response.json({ 
+    return nvJson(requestId, { 
       success: true, 
       message: 'Invoice cancelled and credit note sent',
       invoice_id,
       credited_amount: inv.total_amount
     });
 
+
   } catch (error) {
     console.error('Error cancelling invoice:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return nvError(requestId, String(error.message), 500);
+
   }
 });

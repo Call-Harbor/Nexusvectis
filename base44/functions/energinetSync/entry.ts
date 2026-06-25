@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 // Fetches real Danish grid data from Energinet's open DataHub API
 // Docs: https://api.energidataservice.dk/
@@ -54,13 +55,16 @@ async function fetchEnerginetData() {
 }
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
   try {
     const base44 = createClientFromRequest(req);
 
     const { latest, latestCO2 } = await fetchEnerginetData();
 
     if (!latest) {
-      return Response.json({ error: 'No data from Energinet API' }, { status: 502 });
+      return nvError(requestId, String('No data from Energinet API'), 502);
+
     }
 
     // Map Energinet data to our grid assets
@@ -136,7 +140,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    return Response.json({
+    return nvJson(requestId, {
       success: true,
       source: 'Energinet.dk DataHub API',
       timestamp: now,
@@ -152,7 +156,9 @@ Deno.serve(async (req) => {
       },
       updates,
     });
+
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return nvError(requestId, String(error.message), 500);
+
   }
 });

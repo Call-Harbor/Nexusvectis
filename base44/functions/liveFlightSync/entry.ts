@@ -1,14 +1,19 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
   const base44 = createClientFromRequest(req);
   const user = await base44.auth.me();
-  if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!user) return nvError(requestId, String('Unauthorized'), 401);
+
 
   const body = await req.json().catch(() => ({}));
   const { airport_iata, organization_id } = body;
 
-  if (!airport_iata) return Response.json({ error: 'airport_iata required' }, { status: 400 });
+  if (!airport_iata) return nvError(requestId, String('airport_iata required'), 400);
+
 
   const orgId = organization_id || user.organization_id;
   const apiKey = Deno.env.get("AVIATIONSTACK_API_KEY");
@@ -19,7 +24,8 @@ Deno.serve(async (req) => {
   const allFlights = depData.data || [];
 
   if (!allFlights.length) {
-    return Response.json({ synced: 0, message: "No flights returned from API - check IATA code and API plan", raw_error: depData.error });
+    return nvJson(requestId, { synced: 0, message: "No flights returned from API - check IATA code and API plan", raw_error: depData.error });
+
   }
 
   // Load existing flights and gates for this org
@@ -118,7 +124,7 @@ Deno.serve(async (req) => {
     await base44.asServiceRole.entities.AirportGate.update(gateId, data);
   }
 
-  return Response.json({
+  return nvJson(requestId, {
     synced,
     created,
     updated,
@@ -126,4 +132,5 @@ Deno.serve(async (req) => {
     airport: airport_iata,
     timestamp: new Date().toISOString()
   });
+
 });

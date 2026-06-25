@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 // ── JavaScript execution via new Function (sandboxed) ────────────────────────
 async function executeJS(code, env = {}) {
@@ -366,42 +367,65 @@ async function executeREPL(expression, language, context, base44) {
 
 // ── Main Deno handler ─────────────────────────────────────────────────────────
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
+  if (req.method === 'OPTIONS') return nvOptions(requestId);
+
   const base44 = createClientFromRequest(req);
   const user = await base44.auth.me();
-  if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!user) return nvError(requestId, String('Unauthorized'), 401);
 
-  const body = await req.json();
+
+  let body;
+  try {
+    body = await req.json();
+  } catch {
+    return nvError(requestId, 'Invalid JSON body', 400, 'BAD_REQUEST');
+  }
   const { mode = 'run', code, language = 'javascript', filename, files, expression, context, env } = body;
   const lang = language.toLowerCase();
 
   try {
     switch (mode) {
       case 'run':
-        if (!code) return Response.json({ error: 'No code provided' }, { status: 400 });
-        if (lang === 'json') return Response.json(lintJSON(code));
-        if (lang === 'javascript' || lang === 'typescript') return Response.json(await executeJS(code, env || {}));
-        return Response.json(await simulateExecution(code, lang, filename, base44));
+        if (!code) return nvError(requestId, String('No code provided'), 400);
+
+        if (lang === 'json') return nvJson(requestId, lintJSON(code));
+
+        if (lang === 'javascript' || lang === 'typescript') return nvJson(requestId, await executeJS(code, env || {}));
+
+        return nvJson(requestId, await simulateExecution(code, lang, filename, base44));
+
 
       case 'repl':
-        if (!expression) return Response.json({ error: 'No expression' }, { status: 400 });
-        return Response.json(await executeREPL(expression, lang, context, base44));
+        if (!expression) return nvError(requestId, String('No expression'), 400);
+
+        return nvJson(requestId, await executeREPL(expression, lang, context, base44));
+
 
       case 'lint':
-        if (!code) return Response.json({ error: 'No code provided' }, { status: 400 });
-        if (lang === 'json') return Response.json(lintJSON(code));
-        return Response.json(await lintCode(code, lang, filename || 'file', base44));
+        if (!code) return nvError(requestId, String('No code provided'), 400);
+
+        if (lang === 'json') return nvJson(requestId, lintJSON(code));
+
+        return nvJson(requestId, await lintCode(code, lang, filename || 'file', base44));
+
 
       case 'bundle':
-        if (!files?.length) return Response.json({ error: 'No files provided' }, { status: 400 });
-        return Response.json(await analyzeBundle(files, base44));
+        if (!files?.length) return nvError(requestId, String('No files provided'), 400);
+
+        return nvJson(requestId, await analyzeBundle(files, base44));
+
 
       default:
-        return Response.json({ error: `Unknown mode: ${mode}` }, { status: 400 });
+        return nvError(requestId, `Unknown mode: ${mode}`, 400, 'BAD_REQUEST');
+
     }
   } catch (error) {
-    return Response.json({
+    return nvJson(requestId, {
       output: [{ type: 'error', text: `Internal error: ${error.message}` }],
       exit_code: 1, duration_ms: 0,
     });
+
   }
 });

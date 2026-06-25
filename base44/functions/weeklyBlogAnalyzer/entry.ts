@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 /**
  * Weekly Blog Post Analyzer
@@ -7,6 +8,8 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
  */
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
   const base44 = createClientFromRequest(req);
 
   // Scheduled automation runs with service role — no user auth needed
@@ -19,7 +22,8 @@ Deno.serve(async (req) => {
   );
 
   if (!posts || posts.length === 0) {
-    return Response.json({ success: true, message: 'No published posts found.', analyzed: 0 });
+    return nvJson(requestId, { success: true, message: 'No published posts found.', analyzed: 0 });
+
   }
 
   let analyzed = 0;
@@ -108,10 +112,11 @@ Return exactly 3 suggestions ordered by priority (high first).`,
     }
   }
 
-  return Response.json({
+  return nvJson(requestId, {
     success: true,
     date: today,
     analyzed,
     results
   });
+
 });

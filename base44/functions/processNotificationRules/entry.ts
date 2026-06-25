@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 /**
  * Processes entity changes against NotificationRules and creates Notification records + sends emails.
@@ -76,6 +77,8 @@ function isInCooldown(rule, now) {
 }
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
   try {
     const base44 = createClientFromRequest(req);
 
@@ -92,12 +95,14 @@ Deno.serve(async (req) => {
     const { entity_type, entity_data, old_data, event_type } = body;
 
     if (!entity_type || !entity_data) {
-      return Response.json({ error: "entity_type and entity_data are required" }, { status: 400 });
+      return nvError(requestId, String("entity_type and entity_data are required"), 400);
+
     }
 
     const effectiveOrgId = orgId || entity_data.organization_id;
     if (!effectiveOrgId) {
-      return Response.json({ error: "Cannot determine organization_id" }, { status: 400 });
+      return nvError(requestId, String("Cannot determine organization_id"), 400);
+
     }
 
     // Fetch all active rules for this org + entity_type
@@ -215,8 +220,10 @@ Deno.serve(async (req) => {
       results.push({ rule_id: rule.id, rule_name: rule.name, channels: channelsSent });
     }
 
-    return Response.json({ processed: results.length, notifications: results });
+    return nvJson(requestId, { processed: results.length, notifications: results });
+
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return nvError(requestId, String(error.message), 500);
+
   }
 });

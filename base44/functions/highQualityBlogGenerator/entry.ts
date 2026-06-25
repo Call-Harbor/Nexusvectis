@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 /**
  * HIGH QUALITY BLOG GENERATOR — Anti-Bloat Edition
@@ -9,6 +10,8 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
  */
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
   const base44 = createClientFromRequest(req);
 
   // Scheduled automation runs with service role — no user auth needed
@@ -23,7 +26,8 @@ Deno.serve(async (req) => {
 
   const latestMetrics = metricsArr[0];
   if (!latestMetrics) {
-    return Response.json({ success: false, message: 'No SEO metrics found. Run SEO engine first.' });
+    return nvJson(requestId, { success: false, message: 'No SEO metrics found. Run SEO engine first.' });
+
   }
 
   // Build a compact summary of existing content for the uniqueness check
@@ -54,7 +58,8 @@ Deno.serve(async (req) => {
   ].filter(t => t.primary_keyword && !existingKeywords.has((t.primary_keyword || '').toLowerCase().trim()));
 
   if (allTopics.length === 0) {
-    return Response.json({ success: false, message: 'No unused topics available. Run SEO engine to refresh topic queue.' });
+    return nvJson(requestId, { success: false, message: 'No unused topics available. Run SEO engine to refresh topic queue.' });
+
   }
 
   // Sort by priority — take top 5 candidates to evaluate
@@ -90,12 +95,13 @@ Be strict. One high-quality unique post beats ten thin duplicates.`,
   });
 
   if (uniquenessCheck.selected_index === -1) {
-    return Response.json({
+    return nvJson(requestId, {
       success: false,
       skipped: true,
       reason: uniquenessCheck.reason,
       message: 'All candidate topics are too similar to existing content. Skipping to prevent content bloat.'
     });
+
   }
 
   const topic = candidates[uniquenessCheck.selected_index] || candidates[0];
@@ -197,7 +203,7 @@ CONTENT RULES (non-negotiable):
     }]
   });
 
-  return Response.json({
+  return nvJson(requestId, {
     success: true,
     post_id: newPost.id,
     title: newPost.title,
@@ -209,4 +215,5 @@ CONTENT RULES (non-negotiable):
     avoided_overlap_topics: avoidOverlap,
     remaining_candidates: allTopics.length - 1
   });
+
 });

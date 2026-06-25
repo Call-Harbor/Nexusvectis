@@ -1,20 +1,25 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
 
     if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+      return nvError(requestId, String('Unauthorized'), 401);
+
     }
 
     // If user already has organization_id, nothing to do
     if (user.organization_id) {
-      return Response.json({ 
+      return nvJson(requestId, { 
         needsOrganization: false,
         organization_id: user.organization_id
       });
+
     }
 
     // Check if user has a pending OrganizationMember invite
@@ -33,19 +38,22 @@ Deno.serve(async (req) => {
         await base44.asServiceRole.entities.OrganizationMember.update(activeMember.id, { status: 'active' });
       }
 
-      return Response.json({ 
+      return nvJson(requestId, { 
         needsOrganization: false,
         organization_id: activeMember.organization_id,
         joined: true
       });
+
     }
 
     // No organization found — user needs to create one
-    return Response.json({ 
+    return nvJson(requestId, { 
       needsOrganization: true,
       message: 'User needs to create or join an organization'
     });
+
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return nvError(requestId, String(error.message), 500);
+
   }
 });

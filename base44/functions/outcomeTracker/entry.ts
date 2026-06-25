@@ -5,19 +5,18 @@
  */
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 Deno.serve(async (req) => {
-  const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-  };
-  if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: corsHeaders });
+  const requestId = resolveRequestId(req);
+
+  if (req.method === 'OPTIONS') return nvOptions(requestId);
 
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
-    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401, headers: corsHeaders });
+    if (!user) return nvError(requestId, String('Unauthorized'), 401);
+
 
     const body = await req.json();
     const { action, organization_id } = body;
@@ -50,7 +49,8 @@ Deno.serve(async (req) => {
         outcome_id: outcome.id,
       });
 
-      return Response.json({ success: true, outcome_id: outcome.id }, { headers: corsHeaders });
+      return nvJson(requestId, { success: true, outcome_id: outcome.id });
+
     }
 
     // ── ACTION: Record actual measured outcome ──────────────────────────────
@@ -59,7 +59,8 @@ Deno.serve(async (req) => {
 
       const existing = await base44.asServiceRole.entities.OutcomeLearning.filter({ id: outcome_id });
       if (!existing || existing.length === 0) {
-        return Response.json({ error: 'Outcome record not found' }, { status: 404, headers: corsHeaders });
+        return nvError(requestId, String('Outcome record not found'), 404);
+
       }
       const rec = existing[0];
 
@@ -97,12 +98,13 @@ Write a concise (2-3 sentences) learning note that will help future routing deci
         status: 'measured',
       });
 
-      return Response.json({
+      return nvJson(requestId, {
         success: true,
         outcome_score: Math.round(accuracy),
         learning_note: learningNote,
         agent_adjustments: agentAdjustments,
-      }, { headers: corsHeaders });
+      });
+
     }
 
     // ── ACTION: Get learning summary for an org ─────────────────────────────
@@ -145,7 +147,7 @@ Write a concise (2-3 sentences) learning note that will help future routing deci
         }
       }
 
-      return Response.json({
+      return nvJson(requestId, {
         total_decisions: decisionLog.length,
         measured_outcomes: outcomes.length,
         pending_feedback: pending.length,
@@ -157,7 +159,8 @@ Write a concise (2-3 sentences) learning note that will help future routing deci
         recent_outcomes: outcomes.slice(0, 10),
         pending_recommendations: pending,
         recent_decisions: decisionLog.slice(0, 10),
-      }, { headers: corsHeaders });
+      });
+
     }
 
     // ── ACTION: Check governance policies ───────────────────────────────────
@@ -201,18 +204,21 @@ Write a concise (2-3 sentences) learning note that will help future routing deci
         }).catch(() => {});
       }
 
-      return Response.json({
+      return nvJson(requestId, {
         allowed: !blocked,
         violations,
         warnings,
         requires_approval: warnings.some(w => w.enforcement === 'require_approval'),
-      }, { headers: corsHeaders });
+      });
+
     }
 
-    return Response.json({ error: 'Unknown action. Use: record_recommendation, record_outcome, get_learning_summary, check_governance' }, { status: 400, headers: corsHeaders });
+    return nvError(requestId, 'Unknown action. Use: record_recommendation, record_outcome, get_learning_summary, check_governance', 400, 'BAD_REQUEST');
+
 
   } catch (error) {
     console.error('[Outcome Tracker]', error);
-    return Response.json({ error: error.message }, { status: 500, headers: corsHeaders });
+    return nvError(requestId, String(error.message), 500);
+
   }
 });

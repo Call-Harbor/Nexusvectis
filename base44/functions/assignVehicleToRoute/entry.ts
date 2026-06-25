@@ -1,20 +1,23 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
 
     if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+      return nvError(requestId, String('Unauthorized'), 401);
+
     }
 
     const { vehicle_id, route_id, driver_name } = await req.json();
 
     if (!vehicle_id || !route_id) {
-      return Response.json({ 
-        error: 'vehicle_id and route_id required' 
-      }, { status: 400 });
+      return nvError(requestId, String('vehicle_id and route_id required'), 400);
+
     }
 
     const orgId = user.organization_id || user.data?.organization_id;
@@ -26,11 +29,13 @@ Deno.serve(async (req) => {
     ]);
 
     if (vehicles.length === 0) {
-      return Response.json({ error: 'Vehicle not found' }, { status: 404 });
+      return nvError(requestId, String('Vehicle not found'), 404);
+
     }
 
     if (routes.length === 0) {
-      return Response.json({ error: 'Route not found' }, { status: 404 });
+      return nvError(requestId, String('Route not found'), 404);
+
     }
 
     const vehicle = vehicles[0];
@@ -38,9 +43,10 @@ Deno.serve(async (req) => {
 
     // Check if vehicle type matches route
     if (vehicle.type !== route.transport_type) {
-      return Response.json({ 
+      return nvJson(requestId, { 
         error: `Vehicle type (${vehicle.type}) does not match route transport type (${route.transport_type})` 
-      }, { status: 400 });
+      }, 400);
+
     }
 
     // Update vehicle
@@ -66,7 +72,7 @@ Deno.serve(async (req) => {
     // Update route status
     await base44.asServiceRole.entities.Route.update(route.id, { status: 'active' });
 
-    return Response.json({
+    return nvJson(requestId, {
       success: true,
       assignment: {
         vehicle: {
@@ -85,7 +91,9 @@ Deno.serve(async (req) => {
         eta: updatedVehicle.eta
       }
     });
+
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return nvError(requestId, String(error.message), 500);
+
   }
 });

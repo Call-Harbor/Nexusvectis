@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 const MISTRAL_KEY = Deno.env.get("MISTRAL_API_KEY");
 
@@ -60,10 +61,13 @@ ${JSON.stringify(summaryData)}
 }
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
-    if (!user) return Response.json({ error:'Unauthorized' }, { status:401 });
+    if (!user) return nvError(requestId, String('Unauthorized'), 401);
+
 
     const { organization_id } = await req.json();
 
@@ -139,7 +143,7 @@ Deno.serve(async (req) => {
     const healthScore = aiInsights?.fleet_health_score
       ?? Math.round(100 - vehicleAnalyses.reduce((s,v)=>s+v.overall_risk,0)/Math.max(vehicles.length,1));
 
-    return Response.json({
+    return nvJson(requestId, {
       summary: {
         total_vehicles: vehicles.length,
         critical_vehicles: criticalVehicles.length,
@@ -157,7 +161,9 @@ Deno.serve(async (req) => {
       timestamp: new Date().toISOString(),
     });
 
+
   } catch (error) {
-    return Response.json({ error: error.message }, { status:500 });
+    return nvError(requestId, String(error.message), 500);
+
   }
 });

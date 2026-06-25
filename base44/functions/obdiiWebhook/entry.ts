@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 // OBD-II PID mappings
 const OBD_PIDS = {
@@ -10,6 +11,8 @@ const OBD_PIDS = {
 };
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
     try {
         const base44 = createClientFromRequest(req);
         
@@ -36,9 +39,8 @@ Deno.serve(async (req) => {
         const { vin, device_id, data, gps, latitude, longitude, heading } = obdData;
         
         if (!vin && !device_id) {
-            return Response.json({ 
-                error: 'Missing VIN or device_id' 
-            }, { status: 400 });
+            return nvError(requestId, String('Missing VIN or device_id'), 400);
+
         }
         
         // Find vehicle by VIN or device ID
@@ -54,9 +56,10 @@ Deno.serve(async (req) => {
         }
         
         if (vehicles.length === 0) {
-            return Response.json({ 
+            return nvJson(requestId, { 
                 error: `Vehicle not found: ${vin || device_id}` 
-            }, { status: 404 });
+            }, 404);
+
         }
         
         const vehicle = vehicles[0];
@@ -101,17 +104,17 @@ Deno.serve(async (req) => {
         // Update vehicle
         await base44.asServiceRole.entities.Vehicle.update(vehicle.id, updateData);
         
-        return Response.json({ 
+        return nvJson(requestId, { 
             success: true,
             message: `Vehicle ${vin || device_id} updated from OBD-II`,
             vehicle_id: vehicle.id,
             data_received: Object.keys(data || {}).length,
         });
+
         
     } catch (error) {
         console.error('OBD-II Webhook Error:', error);
-        return Response.json({ 
-            error: error.message 
-        }, { status: 500 });
+        return nvError(requestId, String(error.message), 500);
+
     }
 });

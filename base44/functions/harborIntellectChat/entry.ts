@@ -1,15 +1,20 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
-    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!user) return nvError(requestId, String('Unauthorized'), 401);
+
 
     const body = await req.json();
     const { command, organization_id, conversation_history = [], file_urls } = body;
 
-    if (!command) return Response.json({ error: 'Missing command' }, { status: 400 });
+    if (!command) return nvError(requestId, String('Missing command'), 400);
+
 
     const orgId = organization_id;
 
@@ -113,8 +118,10 @@ ${history ? `\nConversation history:\n${history}` : ''}`;
       success: true,
     }).catch(() => {});
 
-    return Response.json({ response: responseText });
+    return nvJson(requestId, { response: responseText });
+
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return nvError(requestId, String(error.message), 500);
+
   }
 });

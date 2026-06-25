@@ -11,13 +11,9 @@
  */
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 const HARBOR_COST_PER_CALL = 0.25;
-const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-API-Key',
-};
 
 // Secure SHA-256 API key verification
 async function verifyApiKey(base44, authHeader) {
@@ -52,13 +48,15 @@ async function verifyApiKey(base44, authHeader) {
 }
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
   if (req.method === 'OPTIONS') {
-    return new Response(null, { status: 204, headers: CORS_HEADERS });
+    return nvOptions(requestId);
   }
 
   // GET: discovery
   if (req.method === 'GET') {
-    return Response.json({
+    return nvJson(requestId, {
       endpoint: 'Harbor Core Intelligence API',
       version: '2.1.0',
       status: 'operational',
@@ -79,11 +77,13 @@ Deno.serve(async (req) => {
         'Natural language fleet commands and automation',
         'Real-time data enrichment from live org fleet',
       ],
-    }, { headers: CORS_HEADERS });
+    });
+
   }
 
   if (req.method !== 'POST') {
-    return Response.json({ error: 'Method not allowed' }, { status: 405, headers: CORS_HEADERS });
+    return nvError(requestId, String('Method not allowed'), 405);
+
   }
 
   const base44 = createClientFromRequest(req);
@@ -93,7 +93,8 @@ Deno.serve(async (req) => {
     || req.headers.get('X-API-Key') || req.headers.get('x-api-key');
 
   const auth = await verifyApiKey(base44, authHeader);
-  if (auth.error) return Response.json({ error: auth.error }, { status: auth.status, headers: CORS_HEADERS });
+  if (auth.error) return nvError(requestId, String(auth.error), auth.status ?? 401, 'UNAUTHORIZED');
+
 
   const { organization_id, api_key_id, key_name } = auth;
   const startTime = Date.now();
@@ -102,7 +103,12 @@ Deno.serve(async (req) => {
   const { command, context = {}, mode = 'analyze' } = body;
 
   if (!command) {
-    return Response.json({ error: 'Missing required field: command', hint: 'POST { "command": "Analyze my fleet performance" }' }, { status: 400, headers: CORS_HEADERS });
+    return nvError(
+      requestId,
+      'Missing required field: command. Example body: { "command": "Analyze my fleet performance" }',
+      400,
+      'BAD_REQUEST',
+    );
   }
 
   // Log usage
@@ -165,7 +171,8 @@ Deno.serve(async (req) => {
 
   const mistralKey = Deno.env.get('MISTRAL_API_KEY');
   if (!mistralKey) {
-    return Response.json({ error: 'Harbor Intelligence service not configured' }, { status: 503, headers: CORS_HEADERS });
+    return nvError(requestId, String('Harbor Intelligence service not configured'), 503);
+
   }
 
   const systemPrompt = `You are H.A.R.B.O.R. Core Intelligence — NexusVectis's premium AI engine for logistics, fleet, and supply chain operations.
@@ -212,7 +219,7 @@ Always structure your response with:
   if (!mistralResponse.ok) {
     const err = await mistralResponse.text();
     console.error('Mistral error:', err);
-    return Response.json({ error: 'Harbor Intelligence AI service error', details: err }, { status: 502, headers: CORS_HEADERS });
+    return nvError(requestId, `Harbor Intelligence AI service error: ${err}`.slice(0, 2000), 502, 'UPSTREAM_ERROR');
   }
 
   const mistralData = await mistralResponse.json();
@@ -240,7 +247,7 @@ Always structure your response with:
     ip_address: req.headers.get('x-forwarded-for') || 'unknown',
   }).catch(() => {});
 
-  return Response.json({
+  return nvJson(requestId, {
     success: true,
     reply,
     model: 'harbor-core-intelligence-v2.1',
@@ -259,5 +266,6 @@ Always structure your response with:
     },
     response_time_ms: responseTime,
     timestamp: new Date().toISOString(),
-  }, { headers: CORS_HEADERS });
+  });
+
 });

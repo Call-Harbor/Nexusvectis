@@ -1,10 +1,14 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
   const base44 = createClientFromRequest(req);
   let user = null;
   try { user = await base44.auth.me(); } catch(e) { console.log('[auth] me() failed:', e.message); }
-  if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!user) return nvError(requestId, String('Unauthorized'), 401);
+
 
   const body = await req.json().catch(() => ({}));
   const { lat_min, lat_max, lon_min, lon_max, organization_id, duration_ms } = body;
@@ -13,7 +17,8 @@ Deno.serve(async (req) => {
   const apiKey = Deno.env.get("AISSTREAM_API_KEY");
 
   if (!apiKey) {
-    return Response.json({ synced: 0, error: "AISSTREAM_API_KEY not configured." });
+    return nvJson(requestId, { synced: 0, error: "AISSTREAM_API_KEY not configured." });
+
   }
 
   const latMin = lat_min ?? 54.5;
@@ -119,13 +124,15 @@ Deno.serve(async (req) => {
     });
   } catch (e) {
     console.log("[aisstream] exception:", e.message);
-    return Response.json({ synced: 0, error: e.message, wsStatus });
+    return nvJson(requestId, { synced: 0, error: e.message, wsStatus });
+
   }
 
   console.log(`[aisstream] done — vessels: ${vessels.size}, status: ${wsStatus}, firstMsg: ${firstMsgRaw}`);
 
   if (vessels.size === 0) {
-    return Response.json({ synced: 0, error: "No vessels received.", debug: { wsStatus, firstMsgRaw } });
+    return nvJson(requestId, { synced: 0, error: "No vessels received.", debug: { wsStatus, firstMsgRaw } });
+
   }
 
   const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -161,11 +168,12 @@ Deno.serve(async (req) => {
     if (i % 5 === 4) await sleep(200);
   }
 
-  return Response.json({
+  return nvJson(requestId, {
     synced: vessels.size,
     vessels_created: created,
     vessels_updated: updated,
     area: { latMin, latMax, lonMin, lonMax },
     timestamp: new Date().toISOString()
   });
+
 });

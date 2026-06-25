@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 // Country-specific VAT rates and legal requirements
 const TAX_RULES = {
@@ -15,6 +16,8 @@ const TAX_RULES = {
 };
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
   try {
     const base44 = createClientFromRequest(req);
     // Scheduled automation runs with service role — no user auth needed
@@ -458,12 +461,14 @@ Deno.serve(async (req) => {
       }
     }
 
-    return Response.json({
+    return nvJson(requestId, {
       success: true,
       message: `Generated ${generatedInvoices.length} invoices`,
       invoices: generatedInvoices
     });
+
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return nvError(requestId, String(error.message), 500);
+
   }
 });

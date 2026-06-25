@@ -1,21 +1,26 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
     try {
         const base44 = createClientFromRequest(req);
         const user = await base44.auth.me();
 
         if (!user) {
-            return Response.json({ error: 'Unauthorized' }, { status: 401 });
+            return nvError(requestId, String('Unauthorized'), 401);
+
         }
 
         const AISHUB_USERNAME = Deno.env.get("AISHUB_USERNAME");
         
         if (!AISHUB_USERNAME) {
-            return Response.json({ 
+            return nvJson(requestId, { 
                 error: 'AISHub credentials not configured',
                 traffic: [] 
             });
+
         }
 
         let aisTraffic = [];
@@ -62,9 +67,11 @@ Deno.serve(async (req) => {
             console.error('AISHub API failed:', e.message);
         }
 
-        return Response.json({ traffic: aisTraffic });
+        return nvJson(requestId, { traffic: aisTraffic });
+
     } catch (error) {
         console.error('AIS Error:', error);
-        return Response.json({ traffic: [] });
+        return nvJson(requestId, { traffic: [] });
+
     }
 });

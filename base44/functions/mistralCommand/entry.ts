@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 // Simple rate limiting
 const rateLimitMap = new Map();
@@ -36,12 +37,15 @@ function jsonToMarkdown(obj, depth = 0) {
 }
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
 
     if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+      return nvError(requestId, String('Unauthorized'), 401);
+
     }
 
     // Store user's organization for context
@@ -54,9 +58,8 @@ Deno.serve(async (req) => {
     const recentRequests = userRequests.filter((time: number) => now - time < RATE_WINDOW);
     
     if (recentRequests.length >= RATE_LIMIT) {
-      return Response.json({ 
-        error: 'Rate limit exceeded. Please wait before sending more commands.' 
-      }, { status: 429 });
+      return nvError(requestId, String('Rate limit exceeded. Please wait before sending more commands.'), 429);
+
     }
     
     recentRequests.push(now);
@@ -74,12 +77,14 @@ Deno.serve(async (req) => {
     
     // Input validation
     if (!command || typeof command !== 'string' || command.length > 1000) {
-      return Response.json({ error: 'Invalid command format' }, { status: 400 });
+      return nvError(requestId, String('Invalid command format'), 400);
+
     }
     
     const mistralApiKey = Deno.env.get("MISTRAL_API_KEY");
     if (!mistralApiKey) {
-      return Response.json({ error: 'MISTRAL_API_KEY not configured' }, { status: 500 });
+      return nvError(requestId, String('MISTRAL_API_KEY not configured'), 500);
+
     }
 
     // ─── LOAD HARBOR KNOWLEDGE BASE ───────────────────────────────────────────
@@ -551,7 +556,8 @@ EXAMPLES:
     if (!mistralResp.ok) {
       const err = await mistralResp.text();
       console.error('Mistral error:', err);
-      return Response.json({ action: 'ANSWER', parameters: {}, message: 'AI service temporarily unavailable. Please try again.', open_window: null });
+      return nvJson(requestId, { action: 'ANSWER', parameters: {}, message: 'AI service temporarily unavailable. Please try again.', open_window: null });
+
     }
 
     const aiData = await mistralResp.json();
@@ -587,14 +593,16 @@ EXAMPLES:
       }
     }
 
-    return Response.json(result);
+    return nvJson(requestId, result);
+
   } catch (error) {
     console.error('Command processing error:', error);
-    return Response.json({ 
+    return nvJson(requestId, { 
       action: 'ANSWER',
       parameters: {},
       message: `Error: ${error.message}. Please rephrase your command.`,
       open_window: null
-    }, { status: 200 }); // Return 200 to avoid retry loops
+    });
+ // Return 200 to avoid retry loops
   }
 });

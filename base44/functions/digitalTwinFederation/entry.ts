@@ -1,6 +1,9 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
   try {
     const base44 = createClientFromRequest(req);
     const body = await req.json().catch(() => ({}));
@@ -14,7 +17,8 @@ Deno.serve(async (req) => {
     }
 
     if (orgIds.length === 0) {
-      return Response.json({ status: 'success', message: 'No organizations found', total_twins_created: 0 });
+      return nvJson(requestId, { status: 'success', message: 'No organizations found', total_twins_created: 0 });
+
     }
 
     const allResults = [];
@@ -24,14 +28,16 @@ Deno.serve(async (req) => {
       allResults.push(result);
     }
 
-    return Response.json({
+    return nvJson(requestId, {
       status: 'success',
       organizations_processed: allResults.length,
       results: allResults,
     });
+
   } catch (error) {
     console.error('[DIGITAL-TWIN] Error:', error.message);
-    return Response.json({ error: error.message }, { status: 500 });
+    return nvError(requestId, String(error.message), 500);
+
   }
 });
 

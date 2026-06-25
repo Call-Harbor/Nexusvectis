@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 const WORKER_TO_AGENT_MAP = {
   'harbor_fleet_analyst': 'harbor_fleet_analyst',
@@ -24,13 +25,16 @@ const WORKER_TO_AGENT_MAP = {
 };
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
   try {
     const base44 = createClientFromRequest(req);
     const body = await req.json();
     const { task, workerType, orchestrationId, taskId, fileUrls = [] } = body;
 
     if (!task || !workerType) {
-      return Response.json({ error: 'Missing task or workerType' }, { status: 400 });
+      return nvError(requestId, String('Missing task or workerType'), 400);
+
     }
 
     const agentName = WORKER_TO_AGENT_MAP[workerType] || 'harbor_intellect';
@@ -94,7 +98,7 @@ Deno.serve(async (req) => {
         }
       }
 
-      return Response.json({
+      return nvJson(requestId, {
         orchestrationId,
         taskId,
         workerType,
@@ -105,18 +109,21 @@ Deno.serve(async (req) => {
         status: 'completed',
         filesProcessed: fileUrls ? fileUrls.length : 0
       });
+
     } catch (agentError) {
       console.error(`Agent ${agentName} error:`, agentError);
-      return Response.json({
+      return nvJson(requestId, {
         error: agentError.message || String(agentError),
         orchestrationId,
         taskId,
         workerType,
         status: 'failed'
-      }, { status: 500 });
+      }, 500);
+
     }
   } catch (error) {
     console.error('Orchestration error:', error);
-    return Response.json({ error: error.message || String(error) }, { status: 500 });
+    return nvError(requestId, String(error.message || String(error)), 500);
+
   }
 });

@@ -1,12 +1,16 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
     try {
         const base44 = createClientFromRequest(req);
         const user = await base44.auth.me();
 
         if (!user) {
-            return Response.json({ error: 'Unauthorized' }, { status: 401 });
+            return nvError(requestId, String('Unauthorized'), 401);
+
         }
 
         const { vehicle_id, shipment_id } = await req.json();
@@ -85,17 +89,19 @@ Return JSON with: eta_hours (number), eta_timestamp (ISO string), confidence (0-
             });
         }
 
-        return Response.json({
+        return nvJson(requestId, {
             success: true,
             prediction: aiResponse,
             context: context
         });
 
+
     } catch (error) {
         console.error('ETA Prediction Error:', error);
-        return Response.json({ 
+        return nvJson(requestId, { 
             error: error.message,
             success: false 
-        }, { status: 500 });
+        }, 500);
+
     }
 });

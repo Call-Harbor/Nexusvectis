@@ -1,6 +1,9 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
   try {
     const base44 = createClientFromRequest(req);
     const body = await req.json();
@@ -8,7 +11,8 @@ Deno.serve(async (req) => {
     const { name, email, company, message, subject } = body;
 
     if (!name || !email || !message) {
-      return Response.json({ error: 'Missing required fields' }, { status: 400 });
+      return nvError(requestId, String('Missing required fields'), 400);
+
     }
 
     // Save contact message to database
@@ -21,9 +25,11 @@ Deno.serve(async (req) => {
       status: 'new'
     });
 
-    return Response.json({ success: true, message: 'Message sent successfully' });
+    return nvJson(requestId, { success: true, message: 'Message sent successfully' });
+
   } catch (error) {
     console.error('Error sending contact message:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return nvError(requestId, String(error.message), 500);
+
   }
 });

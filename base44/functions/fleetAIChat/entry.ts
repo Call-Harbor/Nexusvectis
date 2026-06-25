@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 const SYSTEM_PROMPT = `You are FLEET AI — the world's most advanced logistics superintelligence, built into the NexusVectis platform. You do not just answer questions. You reason at a level that combines the analytical depth of a top-tier management consultant with the operational expertise of a 30-year veteran fleet director.
 
@@ -60,6 +61,8 @@ FORMATTING: Use markdown with headers, bullets, and bold for key numbers. Be com
 
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
   try {
     const base44 = createClientFromRequest(req);
 
@@ -73,14 +76,16 @@ Deno.serve(async (req) => {
 
     const mistralApiKey = Deno.env.get("MISTRAL_API_KEY");
     if (!mistralApiKey) {
-      return Response.json({ error: "MISTRAL_API_KEY not configured" }, { status: 500 });
+      return nvError(requestId, String("MISTRAL_API_KEY not configured"), 500);
+
     }
 
     const body = await req.json();
     const { message, conversation_history, context, file_urls } = body;
 
     if (!message || typeof message !== "string") {
-      return Response.json({ error: "message is required" }, { status: 400 });
+      return nvError(requestId, String("message is required"), 400);
+
     }
 
     // Detect image URLs vs other file URLs
@@ -164,18 +169,21 @@ Deno.serve(async (req) => {
     const reply = typeof harborData.reply === 'string' ? harborData.reply : harborData.reply?.message || JSON.stringify(harborData.reply);
 
     if (!reply) {
-      return Response.json({ error: "No response from HARBOR" }, { status: 500 });
+      return nvError(requestId, String("No response from HARBOR"), 500);
+
     }
 
-    return Response.json({
+    return nvJson(requestId, {
       reply,
       role: "assistant",
       model: harborData.model_used || 'HARBOR Core',
       usage: harborData.usage || null
     });
 
+
   } catch (error) {
     console.error("fleetAIChat error:", error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return nvError(requestId, String(error.message), 500);
+
   }
 });

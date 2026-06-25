@@ -1,17 +1,22 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
 
     if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+      return nvError(requestId, String('Unauthorized'), 401);
+
     }
 
     // Only admins can perform security checks
     if (user.role !== 'admin') {
-      return Response.json({ error: 'Forbidden' }, { status: 403 });
+      return nvError(requestId, String('Forbidden'), 403);
+
     }
 
     const { timeframe = 3600000 } = await req.json(); // Default 1 hour
@@ -70,9 +75,11 @@ Deno.serve(async (req) => {
       generated_at: new Date().toISOString()
     };
 
-    return Response.json(report);
+    return nvJson(requestId, report);
+
   } catch (error) {
     console.error('Security check error:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return nvError(requestId, String(error.message), 500);
+
   }
 });

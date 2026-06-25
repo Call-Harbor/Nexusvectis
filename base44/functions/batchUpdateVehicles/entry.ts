@@ -1,20 +1,23 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
 
     if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+      return nvError(requestId, String('Unauthorized'), 401);
+
     }
 
     const { vehicles } = await req.json();
 
     if (!Array.isArray(vehicles) || vehicles.length === 0) {
-      return Response.json({ 
-        error: 'vehicles array required with at least one vehicle' 
-      }, { status: 400 });
+      return nvError(requestId, String('vehicles array required with at least one vehicle'), 400);
+
     }
 
     const orgId = user.organization_id || user.data?.organization_id;
@@ -68,14 +71,16 @@ Deno.serve(async (req) => {
       }
     }
 
-    return Response.json({
+    return nvJson(requestId, {
       success: results.failed.length === 0,
       total: vehicles.length,
       succeeded: results.success.length,
       failed: results.failed.length,
       results
     });
+
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return nvError(requestId, String(error.message), 500);
+
   }
 });

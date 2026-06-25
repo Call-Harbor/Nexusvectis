@@ -1,12 +1,16 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
     try {
         const base44 = createClientFromRequest(req);
         const user = await base44.auth.me();
 
         if (!user) {
-            return Response.json({ error: 'Unauthorized' }, { status: 401 });
+            return nvError(requestId, String('Unauthorized'), 401);
+
         }
 
         const { resource_id, forecast_days = 30 } = await req.json();
@@ -91,18 +95,20 @@ Return JSON with: overall_forecast (string), warehouse_forecasts (array of {ware
             }
         }
 
-        return Response.json({
+        return nvJson(requestId, {
             success: true,
             forecast: forecast,
             analysis_context: analysisContext,
             generated_at: new Date().toISOString()
         });
 
+
     } catch (error) {
         console.error('Inventory Forecast Error:', error);
-        return Response.json({ 
+        return nvJson(requestId, { 
             error: error.message,
             success: false 
-        }, { status: 500 });
+        }, 500);
+
     }
 });

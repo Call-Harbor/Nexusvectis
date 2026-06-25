@@ -3,20 +3,25 @@
  */
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { nvError, nvJson, nvOptions, resolveRequestId } from '../_shared/apiHttp.ts';
 
 Deno.serve(async (req) => {
+  const requestId = resolveRequestId(req);
+
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'Content-Type, Authorization' } });
+    return nvOptions(requestId);
   }
 
   if (req.method !== 'POST') {
-    return Response.json({ error: 'Method not allowed' }, { status: 405 });
+    return nvError(requestId, String('Method not allowed'), 405);
+
   }
 
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
-    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!user) return nvError(requestId, String('Unauthorized'), 401);
+
 
     const body = await req.json().catch(() => ({}));
     const { organization_id, transport_type } = body;
@@ -122,7 +127,7 @@ Deno.serve(async (req) => {
     const alert_penalty = Math.min(20, alert_summary.critical * 5);
     const fleet_health_score = Math.max(0, Math.min(100, Math.round(active_pct * 40 + avg_eff * 0.4 + 20 - alert_penalty)));
 
-    return Response.json({
+    return nvJson(requestId, {
       success: true,
       analytics: {
         fleet_health_score,
@@ -149,9 +154,11 @@ Deno.serve(async (req) => {
       generated_at: new Date().toISOString(),
     });
 
+
   } catch (error) {
     console.error('Fleet analytics error:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return nvError(requestId, String(error.message), 500);
+
   }
 });
 
