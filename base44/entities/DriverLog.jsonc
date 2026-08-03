@@ -1,0 +1,82 @@
+{
+  "name": "DriverLog",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string",
+      "description": "Organization"
+    },
+    "driver_id": {
+      "type": "string",
+      "description": "Driver ID"
+    },
+    "shift_start": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Shift start time"
+    },
+    "shift_end": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Shift end time"
+    },
+    "vehicle_id": {
+      "type": "string",
+      "description": "Vehicle used"
+    },
+    "starting_location": {
+      "type": "string",
+      "description": "Starting location"
+    },
+    "ending_location": {
+      "type": "string",
+      "description": "Ending location"
+    },
+    "distance_km": {
+      "type": "number",
+      "description": "Distance driven"
+    },
+    "fuel_consumed": {
+      "type": "number",
+      "description": "Fuel consumed in liters"
+    },
+    "rest_breaks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "start": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "end": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "location": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Rest breaks taken"
+    },
+    "deliveries_completed": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of deliveries"
+    },
+    "incidents": {
+      "type": "string",
+      "description": "Any incidents during shift"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes"
+    }
+  },
+  "required": [
+    "organization_id",
+    "driver_id",
+    "shift_start"
+  ]
+}

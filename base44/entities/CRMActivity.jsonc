@@ -1,0 +1,64 @@
+{
+  "name": "CRMActivity",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string"
+    },
+    "deal_id": {
+      "type": "string"
+    },
+    "customer_id": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "call",
+        "email",
+        "meeting",
+        "note",
+        "task",
+        "demo",
+        "proposal_sent",
+        "follow_up",
+        "ai_insight"
+      ],
+      "default": "note"
+    },
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "outcome": {
+      "type": "string",
+      "description": "Outcome of the activity"
+    },
+    "scheduled_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "is_completed": {
+      "type": "boolean",
+      "default": false
+    },
+    "created_by": {
+      "type": "string"
+    },
+    "ai_generated": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "organization_id",
+    "type",
+    "title"
+  ]
+}

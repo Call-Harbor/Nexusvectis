@@ -1,0 +1,86 @@
+{
+  "name": "Maintenance",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string",
+      "description": "Organization this maintenance belongs to"
+    },
+    "vehicle_id": {
+      "type": "string",
+      "description": "Related vehicle ID"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "scheduled",
+        "predictive",
+        "emergency",
+        "completed"
+      ],
+      "default": "scheduled",
+      "description": "Maintenance type"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "default": "medium"
+    },
+    "component": {
+      "type": "string",
+      "description": "Component requiring maintenance"
+    },
+    "description": {
+      "type": "string",
+      "description": "Maintenance details"
+    },
+    "predicted_failure_date": {
+      "type": "string",
+      "format": "date",
+      "description": "AI-predicted failure date"
+    },
+    "scheduled_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Scheduled maintenance date"
+    },
+    "completed_date": {
+      "type": "string",
+      "format": "date",
+      "description": "When maintenance was completed"
+    },
+    "cost_estimate": {
+      "type": "number",
+      "description": "Estimated cost in local currency"
+    },
+    "downtime_hours": {
+      "type": "number",
+      "description": "Expected downtime in hours"
+    },
+    "ai_confidence": {
+      "type": "number",
+      "description": "AI prediction confidence 0-100"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "in_progress",
+        "completed",
+        "cancelled"
+      ],
+      "default": "pending"
+    }
+  },
+  "required": [
+    "vehicle_id",
+    "type",
+    "component",
+    "organization_id"
+  ]
+}

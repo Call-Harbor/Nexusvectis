@@ -1,0 +1,20 @@
+{
+  "name": "User",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string",
+      "description": "ID of the organization the user belongs to"
+    },
+    "installed_harbor_apps": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of installed Harbor app IDs"
+    }
+  },
+  "required": [
+    "organization_id"
+  ]
+}

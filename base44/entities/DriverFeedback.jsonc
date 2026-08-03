@@ -1,0 +1,78 @@
+{
+  "name": "DriverFeedback",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string",
+      "description": "Organization"
+    },
+    "driver_id": {
+      "type": "string",
+      "description": "Driver reporting"
+    },
+    "trip_id": {
+      "type": "string",
+      "description": "Related trip"
+    },
+    "stop_id": {
+      "type": "string",
+      "description": "Related stop"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "issue_type": {
+      "type": "string",
+      "enum": [
+        "dangerous_stop",
+        "poor_turnaround",
+        "overcrowding",
+        "road_condition",
+        "traffic_signal",
+        "passenger_incident",
+        "technical_issue"
+      ]
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "default": "medium"
+    },
+    "description": {
+      "type": "string",
+      "description": "Detailed description"
+    },
+    "location": {
+      "type": "object",
+      "properties": {
+        "latitude": {
+          "type": "number"
+        },
+        "longitude": {
+          "type": "number"
+        }
+      }
+    },
+    "ai_processed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether AI has analyzed this feedback"
+    },
+    "ai_recommendation": {
+      "type": "string",
+      "description": "AI-generated recommendation"
+    }
+  },
+  "required": [
+    "organization_id",
+    "driver_id",
+    "timestamp",
+    "issue_type"
+  ]
+}

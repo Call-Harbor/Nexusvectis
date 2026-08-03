@@ -1,0 +1,170 @@
+{
+  "name": "Contract",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string",
+      "description": "Organization that owns this contract"
+    },
+    "customer_id": {
+      "type": "string",
+      "description": "Customer linked to this contract"
+    },
+    "contract_number": {
+      "type": "string",
+      "description": "Unique contract identifier"
+    },
+    "contract_name": {
+      "type": "string",
+      "description": "Descriptive name for the contract"
+    },
+    "contract_type": {
+      "type": "string",
+      "enum": [
+        "spot",
+        "term",
+        "master",
+        "framework"
+      ],
+      "default": "term",
+      "description": "Type of contract"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "pending_approval",
+        "active",
+        "expired",
+        "terminated",
+        "suspended"
+      ],
+      "default": "draft",
+      "description": "Contract status"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Contract start date"
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Contract end date"
+    },
+    "auto_renew": {
+      "type": "boolean",
+      "default": false,
+      "description": "Automatically renew on expiry"
+    },
+    "renewal_notice_days": {
+      "type": "number",
+      "default": 30,
+      "description": "Days before expiry to send renewal notice"
+    },
+    "currency": {
+      "type": "string",
+      "default": "EUR",
+      "description": "Contract currency"
+    },
+    "payment_terms": {
+      "type": "string",
+      "description": "Payment terms (e.g., Net 30 days)"
+    },
+    "credit_limit": {
+      "type": "number",
+      "description": "Maximum credit allowed"
+    },
+    "minimum_volume": {
+      "type": "number",
+      "description": "Minimum shipment volume commitment"
+    },
+    "volume_unit": {
+      "type": "string",
+      "enum": [
+        "shipments",
+        "tons",
+        "pallets",
+        "containers"
+      ],
+      "default": "shipments",
+      "description": "Unit for volume measurement"
+    },
+    "discount_percentage": {
+      "type": "number",
+      "description": "Overall discount percentage"
+    },
+    "sla_delivery_time": {
+      "type": "number",
+      "description": "Service level agreement delivery time in hours"
+    },
+    "sla_on_time_percentage": {
+      "type": "number",
+      "description": "Target on-time delivery percentage"
+    },
+    "penalty_per_day": {
+      "type": "number",
+      "description": "Penalty amount per day for SLA breach"
+    },
+    "insurance_included": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether insurance is included"
+    },
+    "insurance_value_percentage": {
+      "type": "number",
+      "description": "Insurance coverage as percentage of cargo value"
+    },
+    "fuel_surcharge_applicable": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether fuel surcharge applies"
+    },
+    "fuel_surcharge_percentage": {
+      "type": "number",
+      "description": "Fuel surcharge percentage"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional contract notes"
+    },
+    "terms_conditions": {
+      "type": "string",
+      "description": "Full terms and conditions text"
+    },
+    "signed_by_customer": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether customer has signed"
+    },
+    "signed_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date contract was signed"
+    },
+    "approved_by": {
+      "type": "string",
+      "description": "Email of approving manager"
+    },
+    "approved_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date contract was approved"
+    },
+    "attachment_urls": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "URLs of contract attachments"
+    }
+  },
+  "required": [
+    "organization_id",
+    "customer_id",
+    "contract_number",
+    "contract_name",
+    "start_date",
+    "end_date"
+  ]
+}

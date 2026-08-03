@@ -1,0 +1,78 @@
+{
+  "name": "RecommendedAction",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string",
+      "description": "Organization"
+    },
+    "action_type": {
+      "type": "string",
+      "enum": [
+        "extra_trip",
+        "short_turn",
+        "reroute",
+        "frequency_increase",
+        "vehicle_rebalance",
+        "tsp_priority"
+      ],
+      "description": "Type of recommended action"
+    },
+    "line_id": {
+      "type": "string",
+      "description": "Related bus line"
+    },
+    "description": {
+      "type": "string",
+      "description": "Natural language description of action"
+    },
+    "expected_impact": {
+      "type": "object",
+      "properties": {
+        "metric": {
+          "type": "string"
+        },
+        "change_percentage": {
+          "type": "number"
+        },
+        "description": {
+          "type": "string"
+        }
+      },
+      "description": "Expected effect (e.g., -18% left-behind passengers)"
+    },
+    "confidence": {
+      "type": "number",
+      "description": "Confidence level 0-100"
+    },
+    "triggered_by": {
+      "type": "string",
+      "description": "Trigger: crowding_prediction, demand_spike, event, weather, etc."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "implemented",
+        "rejected"
+      ],
+      "default": "pending"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "valid_until": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When recommendation expires"
+    }
+  },
+  "required": [
+    "organization_id",
+    "action_type",
+    "description",
+    "expected_impact"
+  ]
+}

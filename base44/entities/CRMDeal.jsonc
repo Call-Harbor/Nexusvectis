@@ -1,0 +1,123 @@
+{
+  "name": "CRMDeal",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string"
+    },
+    "customer_id": {
+      "type": "string",
+      "description": "Linked customer"
+    },
+    "title": {
+      "type": "string",
+      "description": "Deal title"
+    },
+    "stage": {
+      "type": "string",
+      "enum": [
+        "lead",
+        "qualified",
+        "proposal",
+        "negotiation",
+        "won",
+        "lost"
+      ],
+      "default": "lead"
+    },
+    "value": {
+      "type": "number",
+      "description": "Deal value in EUR"
+    },
+    "currency": {
+      "type": "string",
+      "default": "EUR"
+    },
+    "probability": {
+      "type": "number",
+      "description": "Win probability 0-100"
+    },
+    "ai_score": {
+      "type": "number",
+      "description": "AI-calculated deal health score 0-100"
+    },
+    "ai_next_action": {
+      "type": "string",
+      "description": "AI recommended next action"
+    },
+    "ai_risk_level": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "default": "low"
+    },
+    "ai_insights": {
+      "type": "string",
+      "description": "AI-generated insights"
+    },
+    "contact_name": {
+      "type": "string"
+    },
+    "contact_email": {
+      "type": "string"
+    },
+    "contact_phone": {
+      "type": "string"
+    },
+    "company_name": {
+      "type": "string"
+    },
+    "expected_close_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "actual_close_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "inbound",
+        "outbound",
+        "referral",
+        "partner",
+        "website",
+        "linkedin",
+        "cold_call",
+        "other"
+      ],
+      "default": "inbound"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "notes": {
+      "type": "string"
+    },
+    "assigned_to": {
+      "type": "string",
+      "description": "User email"
+    },
+    "last_activity_date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "days_in_stage": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "organization_id",
+    "title",
+    "stage"
+  ]
+}

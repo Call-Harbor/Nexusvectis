@@ -1,0 +1,97 @@
+{
+  "name": "GeoFence",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string",
+      "description": "Organization this geofence belongs to"
+    },
+    "name": {
+      "type": "string",
+      "description": "Name of the geofenced zone"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description of the zone purpose"
+    },
+    "zone_type": {
+      "type": "string",
+      "enum": [
+        "loading",
+        "unloading",
+        "warehouse",
+        "checkpoint",
+        "restricted",
+        "service_area"
+      ],
+      "default": "checkpoint",
+      "description": "Type of geofenced zone"
+    },
+    "coordinates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "lat": {
+            "type": "number"
+          },
+          "lng": {
+            "type": "number"
+          }
+        }
+      },
+      "description": "Polygon coordinates defining the zone boundary"
+    },
+    "center": {
+      "type": "object",
+      "properties": {
+        "lat": {
+          "type": "number"
+        },
+        "lng": {
+          "type": "number"
+        }
+      },
+      "description": "Center point of the zone"
+    },
+    "radius": {
+      "type": "number",
+      "description": "Radius in meters (for circular zones)"
+    },
+    "notify_on_entry": {
+      "type": "boolean",
+      "default": true,
+      "description": "Send notification when vehicle enters zone"
+    },
+    "notify_on_exit": {
+      "type": "boolean",
+      "default": true,
+      "description": "Send notification when vehicle exits zone"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this geofence is currently active"
+    },
+    "entry_message": {
+      "type": "string",
+      "description": "Custom message to send on entry"
+    },
+    "exit_message": {
+      "type": "string",
+      "description": "Custom message to send on exit"
+    },
+    "assigned_routes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Route IDs this geofence applies to"
+    }
+  },
+  "required": [
+    "organization_id",
+    "name",
+    "coordinates"
+  ]
+}

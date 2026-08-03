@@ -1,0 +1,194 @@
+{
+  "name": "Employee",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string"
+    },
+    "first_name": {
+      "type": "string"
+    },
+    "last_name": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string",
+      "format": "email"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "employee_id": {
+      "type": "string"
+    },
+    "job_title": {
+      "type": "string"
+    },
+    "department": {
+      "type": "string",
+      "enum": [
+        "Operations",
+        "Logistics",
+        "Fleet",
+        "Finance",
+        "HR",
+        "IT",
+        "Sales",
+        "Management"
+      ]
+    },
+    "employment_type": {
+      "type": "string",
+      "enum": [
+        "full_time",
+        "part_time",
+        "contractor",
+        "intern"
+      ],
+      "default": "full_time"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "on_leave",
+        "terminated",
+        "probation"
+      ],
+      "default": "active"
+    },
+    "hire_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "salary": {
+      "type": "number"
+    },
+    "currency": {
+      "type": "string",
+      "default": "EUR"
+    },
+    "manager_id": {
+      "type": "string"
+    },
+    "manager_name": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string"
+    },
+    "date_of_birth": {
+      "type": "string",
+      "format": "date"
+    },
+    "nationality": {
+      "type": "string"
+    },
+    "address": {
+      "type": "string"
+    },
+    "emergency_contact_name": {
+      "type": "string"
+    },
+    "emergency_contact_phone": {
+      "type": "string"
+    },
+    "avatar_url": {
+      "type": "string"
+    },
+    "driver_id": {
+      "type": "string",
+      "description": "Linked driver entity if applicable"
+    },
+    "skills": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of skill tags"
+    },
+    "certifications": {
+      "type": "array",
+      "description": "Professional certifications",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "issuer": {
+            "type": "string"
+          },
+          "issued_date": {
+            "type": "string"
+          },
+          "expiry_date": {
+            "type": "string"
+          },
+          "credential_id": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "career_goals": {
+      "type": "string",
+      "description": "Free-text career goals and ambitions"
+    },
+    "desired_roles": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of roles the employee is interested in"
+    },
+    "career_interests": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Areas of interest (e.g. leadership, technical, customer-facing)"
+    },
+    "learning_preferences": {
+      "type": "string",
+      "description": "Preferred learning style or formats"
+    },
+    "leave_balance": {
+      "type": "object",
+      "properties": {
+        "annual": {
+          "type": "number",
+          "default": 25
+        },
+        "sick": {
+          "type": "number",
+          "default": 10
+        },
+        "personal": {
+          "type": "number",
+          "default": 3
+        }
+      }
+    },
+    "bank_account": {
+      "type": "string"
+    },
+    "tax_id": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "organization_id",
+    "first_name",
+    "last_name",
+    "email",
+    "department"
+  ]
+}

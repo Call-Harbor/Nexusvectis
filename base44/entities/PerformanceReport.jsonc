@@ -1,0 +1,81 @@
+{
+  "name": "PerformanceReport",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string",
+      "description": "Organization"
+    },
+    "driver_id": {
+      "type": "string",
+      "description": "Driver being reported on"
+    },
+    "shift_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "shift_start": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "shift_end": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "trips_completed": {
+      "type": "number"
+    },
+    "on_time_percentage": {
+      "type": "number",
+      "description": "On-time performance percentage"
+    },
+    "eco_score": {
+      "type": "number",
+      "description": "Eco-driving score 0-100"
+    },
+    "safety_incidents": {
+      "type": "number"
+    },
+    "boarding_efficiency": {
+      "type": "number",
+      "description": "Average boarding time score"
+    },
+    "passenger_feedback_score": {
+      "type": "number",
+      "description": "Average passenger feedback 0-10"
+    },
+    "hints_received": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "time": {
+            "type": "string"
+          },
+          "hint": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "summary": {
+      "type": "string",
+      "description": "AI-generated performance summary"
+    },
+    "recommendations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "organization_id",
+    "driver_id",
+    "shift_date",
+    "trips_completed"
+  ]
+}

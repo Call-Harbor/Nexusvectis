@@ -1,0 +1,63 @@
+{
+  "name": "SecurityAudit",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string",
+      "description": "Organization this audit log belongs to"
+    },
+    "action": {
+      "type": "string",
+      "description": "Type of action performed"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "Email of user who performed the action"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "ID of user who performed the action"
+    },
+    "resource_type": {
+      "type": "string",
+      "description": "Type of resource affected"
+    },
+    "resource_id": {
+      "type": "string",
+      "description": "ID of resource affected"
+    },
+    "ip_address": {
+      "type": "string",
+      "description": "IP address of the request"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "success",
+        "failed",
+        "blocked"
+      ],
+      "default": "success"
+    },
+    "details": {
+      "type": "string",
+      "description": "Additional details about the action"
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "default": "low"
+    }
+  },
+  "required": [
+    "action",
+    "user_email",
+    "status",
+    "organization_id"
+  ]
+}

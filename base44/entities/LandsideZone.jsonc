@@ -1,0 +1,73 @@
+{
+  "name": "LandsideZone",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string",
+      "description": "Zone name, e.g. 'Arrivals Taxi Rank'"
+    },
+    "facility_type": {
+      "type": "string",
+      "enum": [
+        "checkin",
+        "security",
+        "immigration",
+        "baggage_reclaim",
+        "taxi",
+        "bus",
+        "train",
+        "parking"
+      ],
+      "description": "Which facility this zone belongs to"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "closed",
+        "limited"
+      ],
+      "default": "open"
+    },
+    "queue_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Vehicles or pax in queue"
+    },
+    "wait_minutes": {
+      "type": "number",
+      "default": 0
+    },
+    "capacity": {
+      "type": "number",
+      "default": 100
+    },
+    "current_occupancy": {
+      "type": "number",
+      "default": 0
+    },
+    "staff_assigned": {
+      "type": "number",
+      "default": 0
+    },
+    "next_departure_minutes": {
+      "type": "number",
+      "description": "Minutes until next bus/train departure"
+    },
+    "delay_minutes": {
+      "type": "number",
+      "default": 0
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "facility_type",
+    "organization_id"
+  ]
+}

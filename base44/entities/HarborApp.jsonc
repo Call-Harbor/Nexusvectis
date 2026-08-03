@@ -1,0 +1,67 @@
+{
+  "name": "HarborApp",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string",
+      "description": "Organization that owns this app"
+    },
+    "name": {
+      "type": "string",
+      "description": "App name"
+    },
+    "description": {
+      "type": "string",
+      "description": "Short app description"
+    },
+    "prompt": {
+      "type": "string",
+      "description": "Original prompt used to generate the app"
+    },
+    "code": {
+      "type": "string",
+      "description": "Generated React component code"
+    },
+    "published_to_store": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this app is published to the FleetStore"
+    },
+    "store_installs": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of times installed from the store"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "analytics",
+        "monitoring",
+        "operations",
+        "crm",
+        "productivity",
+        "custom"
+      ],
+      "default": "custom"
+    },
+    "icon_emoji": {
+      "type": "string",
+      "default": "\u26a1"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "created_by_name": {
+      "type": "string",
+      "description": "Name of the creator"
+    }
+  },
+  "required": [
+    "organization_id",
+    "name",
+    "code"
+  ]
+}

@@ -1,0 +1,76 @@
+{
+  "name": "FleetDriveFile",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string",
+      "description": "File name"
+    },
+    "file_type": {
+      "type": "string",
+      "enum": [
+        "document",
+        "spreadsheet",
+        "image",
+        "video",
+        "pdf",
+        "archive",
+        "other"
+      ],
+      "default": "other"
+    },
+    "file_url": {
+      "type": "string",
+      "description": "URL to the file"
+    },
+    "file_size_bytes": {
+      "type": "number",
+      "description": "File size in bytes"
+    },
+    "mime_type": {
+      "type": "string"
+    },
+    "folder": {
+      "type": "string",
+      "default": "root",
+      "description": "Folder path"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "description": {
+      "type": "string"
+    },
+    "is_pinned": {
+      "type": "boolean",
+      "default": false
+    },
+    "shared_with": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Emails of users file is shared with"
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "uploaded",
+        "document_editor",
+        "spreadsheet_editor"
+      ],
+      "default": "uploaded"
+    }
+  },
+  "required": [
+    "name",
+    "organization_id",
+    "file_url"
+  ]
+}

@@ -1,0 +1,162 @@
+{
+  "name": "TrainingCourse",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string",
+      "description": "Course title"
+    },
+    "description": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "course",
+        "workshop",
+        "elearning",
+        "certification",
+        "mentoring",
+        "seminar"
+      ],
+      "default": "course"
+    },
+    "category": {
+      "type": "string",
+      "description": "e.g. Leadership, Technical, Compliance"
+    },
+    "provider": {
+      "type": "string",
+      "description": "External provider or internal"
+    },
+    "duration_hours": {
+      "type": "number"
+    },
+    "format": {
+      "type": "string",
+      "enum": [
+        "in_person",
+        "online",
+        "hybrid",
+        "self_paced"
+      ],
+      "default": "online"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "draft",
+        "archived"
+      ],
+      "default": "active"
+    },
+    "capacity": {
+      "type": "number"
+    },
+    "cost_per_person": {
+      "type": "number"
+    },
+    "currency": {
+      "type": "string",
+      "default": "DKK"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "location": {
+      "type": "string"
+    },
+    "url": {
+      "type": "string",
+      "description": "Link to external course or platform"
+    },
+    "target_departments": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "target_skills": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Skills this course develops"
+    },
+    "prerequisites": {
+      "type": "string"
+    },
+    "learning_objectives": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "enrollments": {
+      "type": "array",
+      "description": "Employee enrollment records",
+      "items": {
+        "type": "object",
+        "properties": {
+          "employee_id": {
+            "type": "string"
+          },
+          "employee_name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "requested",
+              "approved",
+              "in_progress",
+              "completed",
+              "cancelled"
+            ]
+          },
+          "requested_date": {
+            "type": "string"
+          },
+          "approved_date": {
+            "type": "string"
+          },
+          "completion_date": {
+            "type": "string"
+          },
+          "progress_pct": {
+            "type": "number"
+          },
+          "score": {
+            "type": "number"
+          },
+          "feedback": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "organization_id",
+    "title",
+    "type"
+  ]
+}

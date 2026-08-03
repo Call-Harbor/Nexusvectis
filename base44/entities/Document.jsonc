@@ -1,0 +1,117 @@
+{
+  "name": "Document",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string",
+      "description": "Organization that owns this document"
+    },
+    "document_type": {
+      "type": "string",
+      "enum": [
+        "CMR",
+        "BOL",
+        "POD",
+        "invoice",
+        "packing_list",
+        "customs",
+        "insurance",
+        "contract",
+        "other"
+      ],
+      "description": "Type of document"
+    },
+    "document_number": {
+      "type": "string",
+      "description": "Document reference number"
+    },
+    "title": {
+      "type": "string",
+      "description": "Document title"
+    },
+    "shipment_id": {
+      "type": "string",
+      "description": "Related shipment ID"
+    },
+    "contract_id": {
+      "type": "string",
+      "description": "Related contract ID"
+    },
+    "customer_id": {
+      "type": "string",
+      "description": "Related customer ID"
+    },
+    "file_url": {
+      "type": "string",
+      "description": "URL to the document file"
+    },
+    "file_name": {
+      "type": "string",
+      "description": "Original file name"
+    },
+    "file_size": {
+      "type": "number",
+      "description": "File size in bytes"
+    },
+    "mime_type": {
+      "type": "string",
+      "description": "File MIME type"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "pending_signature",
+        "signed",
+        "archived"
+      ],
+      "default": "draft",
+      "description": "Document status"
+    },
+    "version": {
+      "type": "number",
+      "default": 1,
+      "description": "Document version number"
+    },
+    "signed_by": {
+      "type": "string",
+      "description": "Email of person who signed"
+    },
+    "signed_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date when signed"
+    },
+    "issue_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Document issue date"
+    },
+    "expiry_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Document expiry date"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional document metadata",
+      "additionalProperties": true
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Document tags for organization"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes"
+    }
+  },
+  "required": [
+    "organization_id",
+    "document_type",
+    "title"
+  ]
+}

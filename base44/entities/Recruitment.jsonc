@@ -1,0 +1,124 @@
+{
+  "name": "Recruitment",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string"
+    },
+    "job_title": {
+      "type": "string"
+    },
+    "department": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "requirements": {
+      "type": "string"
+    },
+    "employment_type": {
+      "type": "string",
+      "enum": [
+        "full_time",
+        "part_time",
+        "contractor",
+        "intern"
+      ],
+      "default": "full_time"
+    },
+    "location": {
+      "type": "string"
+    },
+    "salary_min": {
+      "type": "number"
+    },
+    "salary_max": {
+      "type": "number"
+    },
+    "currency": {
+      "type": "string",
+      "default": "EUR"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "in_review",
+        "on_hold",
+        "filled",
+        "cancelled"
+      ],
+      "default": "open"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "urgent"
+      ],
+      "default": "medium"
+    },
+    "posted_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "deadline": {
+      "type": "string",
+      "format": "date"
+    },
+    "hiring_manager": {
+      "type": "string"
+    },
+    "candidates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "stage": {
+            "type": "string",
+            "enum": [
+              "applied",
+              "screening",
+              "interview",
+              "offer",
+              "hired",
+              "rejected"
+            ]
+          },
+          "cv_url": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "applied_date": {
+            "type": "string"
+          },
+          "rating": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "organization_id",
+    "job_title",
+    "department"
+  ]
+}

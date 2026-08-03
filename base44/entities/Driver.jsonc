@@ -1,0 +1,138 @@
+{
+  "name": "Driver",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string",
+      "description": "Organization this driver belongs to"
+    },
+    "employee_id": {
+      "type": "string",
+      "description": "Employee ID number"
+    },
+    "first_name": {
+      "type": "string",
+      "description": "Driver's first name"
+    },
+    "last_name": {
+      "type": "string",
+      "description": "Driver's last name"
+    },
+    "email": {
+      "type": "string",
+      "format": "email",
+      "description": "Driver's email"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Driver's phone number"
+    },
+    "date_of_birth": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of birth"
+    },
+    "hire_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date hired"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "on_leave",
+        "suspended",
+        "terminated"
+      ],
+      "default": "active",
+      "description": "Employment status"
+    },
+    "license_number": {
+      "type": "string",
+      "description": "Driving license number"
+    },
+    "license_type": {
+      "type": "string",
+      "description": "License type/class (e.g., CE, C1)"
+    },
+    "license_expiry": {
+      "type": "string",
+      "format": "date",
+      "description": "License expiry date"
+    },
+    "certifications": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "issued_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "expiry_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "issuer": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Professional certifications"
+    },
+    "current_vehicle_id": {
+      "type": "string",
+      "description": "Currently assigned vehicle"
+    },
+    "home_base": {
+      "type": "string",
+      "description": "Home base location"
+    },
+    "total_hours_worked": {
+      "type": "number",
+      "default": 0,
+      "description": "Total hours worked"
+    },
+    "total_trips_completed": {
+      "type": "number",
+      "default": 0,
+      "description": "Total trips completed"
+    },
+    "total_distance_km": {
+      "type": "number",
+      "default": 0,
+      "description": "Total distance driven in km"
+    },
+    "performance_rating": {
+      "type": "number",
+      "description": "Performance rating 0-5"
+    },
+    "safety_incidents": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of safety incidents"
+    },
+    "emergency_contact_name": {
+      "type": "string",
+      "description": "Emergency contact name"
+    },
+    "emergency_contact_phone": {
+      "type": "string",
+      "description": "Emergency contact phone"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes"
+    }
+  },
+  "required": [
+    "organization_id",
+    "first_name",
+    "last_name",
+    "email"
+  ]
+}

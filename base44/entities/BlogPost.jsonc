@@ -1,0 +1,163 @@
+{
+  "name": "BlogPost",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "SEO-optimized blog post title"
+    },
+    "slug": {
+      "type": "string",
+      "description": "URL-friendly slug"
+    },
+    "excerpt": {
+      "type": "string",
+      "description": "Short SEO meta description"
+    },
+    "content": {
+      "type": "string",
+      "description": "Full HTML/markdown content"
+    },
+    "category": {
+      "type": "string",
+      "description": "Blog category"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "SEO tags and keywords"
+    },
+    "primary_keyword": {
+      "type": "string",
+      "description": "Main target keyword for SEO"
+    },
+    "secondary_keywords": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Secondary target keywords"
+    },
+    "seo_score": {
+      "type": "number",
+      "description": "AI-calculated SEO score 0-100"
+    },
+    "readability_score": {
+      "type": "number",
+      "description": "Flesch readability score"
+    },
+    "read_time_minutes": {
+      "type": "number",
+      "description": "Estimated read time"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "published",
+        "archived",
+        "needs_update"
+      ],
+      "default": "draft"
+    },
+    "ai_generated": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether post was AI-generated"
+    },
+    "ai_model": {
+      "type": "string",
+      "description": "Which AI model generated it"
+    },
+    "published_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "featured_image_url": {
+      "type": "string",
+      "description": "Featured image URL"
+    },
+    "internal_links": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Internal page links included"
+    },
+    "word_count": {
+      "type": "number",
+      "description": "Total word count"
+    },
+    "search_intent": {
+      "type": "string",
+      "enum": [
+        "informational",
+        "commercial",
+        "transactional",
+        "navigational"
+      ],
+      "description": "Target search intent"
+    },
+    "competitor_gap": {
+      "type": "boolean",
+      "default": false,
+      "description": "Identified as competitor content gap"
+    },
+    "performance_clicks": {
+      "type": "number",
+      "default": 0,
+      "description": "Estimated organic clicks"
+    },
+    "last_optimized_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Last time AI re-optimized this post"
+    },
+    "optimization_history": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Log of AI optimization runs"
+    },
+    "ai_improvement_suggestions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "Suggestion type: internal_links, outdated_data, headings, keyword, readability, cta"
+          },
+          "priority": {
+            "type": "string",
+            "description": "high, medium, low"
+          },
+          "suggestion": {
+            "type": "string",
+            "description": "Concrete improvement suggestion"
+          },
+          "impact": {
+            "type": "string",
+            "description": "Expected SEO impact"
+          }
+        }
+      },
+      "description": "Weekly AI-generated improvement suggestions (top 3)"
+    },
+    "suggestions_generated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the latest improvement suggestions were generated"
+    }
+  },
+  "required": [
+    "title",
+    "excerpt",
+    "content",
+    "category",
+    "primary_keyword"
+  ]
+}

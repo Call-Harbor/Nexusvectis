@@ -1,0 +1,96 @@
+{
+  "name": "Exception",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string",
+      "description": "Organization this exception belongs to"
+    },
+    "title": {
+      "type": "string",
+      "description": "Exception title"
+    },
+    "description": {
+      "type": "string",
+      "description": "Detailed description"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "delay",
+        "shortage",
+        "damage",
+        "route_blocked",
+        "weather",
+        "mechanical",
+        "customs"
+      ],
+      "description": "Exception type"
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "default": "medium"
+    },
+    "vehicle_id": {
+      "type": "string",
+      "description": "Related vehicle ID"
+    },
+    "route_id": {
+      "type": "string",
+      "description": "Related route ID"
+    },
+    "detected_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When exception was detected"
+    },
+    "resolved_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When exception was resolved"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "detected",
+        "analyzing",
+        "action_taken",
+        "resolved",
+        "escalated"
+      ],
+      "default": "detected"
+    },
+    "ai_recommendation": {
+      "type": "string",
+      "description": "AI-suggested resolution"
+    },
+    "auto_resolved": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether AI auto-resolved the issue"
+    },
+    "impact_score": {
+      "type": "number",
+      "description": "Business impact score 0-100"
+    },
+    "estimated_delay_minutes": {
+      "type": "number",
+      "description": "Estimated delay in minutes"
+    },
+    "cost_impact": {
+      "type": "number",
+      "description": "Estimated cost impact"
+    }
+  },
+  "required": [
+    "title",
+    "type",
+    "organization_id"
+  ]
+}

@@ -1,0 +1,182 @@
+{
+  "name": "RateCard",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string",
+      "description": "Organization that owns this rate card"
+    },
+    "contract_id": {
+      "type": "string",
+      "description": "Contract this rate card belongs to"
+    },
+    "rate_name": {
+      "type": "string",
+      "description": "Descriptive name for this rate"
+    },
+    "rate_type": {
+      "type": "string",
+      "enum": [
+        "per_km",
+        "per_ton",
+        "per_pallet",
+        "per_container",
+        "per_shipment",
+        "flat_rate",
+        "zone_based"
+      ],
+      "default": "per_km",
+      "description": "Type of rate calculation"
+    },
+    "transport_mode": {
+      "type": "string",
+      "enum": [
+        "truck",
+        "ship",
+        "aircraft",
+        "train",
+        "multimodal"
+      ],
+      "description": "Transport mode this rate applies to"
+    },
+    "origin_zone": {
+      "type": "string",
+      "description": "Origin zone or location"
+    },
+    "destination_zone": {
+      "type": "string",
+      "description": "Destination zone or location"
+    },
+    "base_rate": {
+      "type": "number",
+      "description": "Base rate amount"
+    },
+    "currency": {
+      "type": "string",
+      "default": "EUR",
+      "description": "Rate currency"
+    },
+    "min_charge": {
+      "type": "number",
+      "description": "Minimum charge for this lane"
+    },
+    "max_charge": {
+      "type": "number",
+      "description": "Maximum charge for this lane"
+    },
+    "distance_brackets": {
+      "type": "array",
+      "description": "Distance-based pricing brackets",
+      "items": {
+        "type": "object",
+        "properties": {
+          "from_km": {
+            "type": "number"
+          },
+          "to_km": {
+            "type": "number"
+          },
+          "rate_per_km": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "weight_brackets": {
+      "type": "array",
+      "description": "Weight-based pricing brackets",
+      "items": {
+        "type": "object",
+        "properties": {
+          "from_kg": {
+            "type": "number"
+          },
+          "to_kg": {
+            "type": "number"
+          },
+          "rate": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "volume_discount_tiers": {
+      "type": "array",
+      "description": "Volume-based discount tiers",
+      "items": {
+        "type": "object",
+        "properties": {
+          "min_shipments": {
+            "type": "number"
+          },
+          "discount_percentage": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "cargo_type_multipliers": {
+      "type": "object",
+      "description": "Multipliers for different cargo types",
+      "additionalProperties": {
+        "type": "number"
+      }
+    },
+    "priority_surcharges": {
+      "type": "object",
+      "description": "Surcharges for priority levels",
+      "additionalProperties": {
+        "type": "number"
+      }
+    },
+    "accessorial_charges": {
+      "type": "array",
+      "description": "Additional service charges",
+      "items": {
+        "type": "object",
+        "properties": {
+          "service_name": {
+            "type": "string"
+          },
+          "charge_type": {
+            "type": "string",
+            "enum": [
+              "flat",
+              "percentage"
+            ]
+          },
+          "amount": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "valid_from": {
+      "type": "string",
+      "format": "date",
+      "description": "Rate validity start date"
+    },
+    "valid_until": {
+      "type": "string",
+      "format": "date",
+      "description": "Rate validity end date"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this rate is currently active"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional rate notes"
+    }
+  },
+  "required": [
+    "organization_id",
+    "rate_name",
+    "rate_type",
+    "base_rate",
+    "valid_from",
+    "valid_until"
+  ]
+}
