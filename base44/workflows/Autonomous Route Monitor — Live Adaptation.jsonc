@@ -1,0 +1,44 @@
+{
+  "name": "Autonomous Route Monitor \u2014 Live Adaptation",
+  "description": "Scans alle aktive og planlagte ruter hvert 30. minut. Henter live vejarbejde (OpenStreetMap), vejr (Open-Meteo) og bruger Mistral AI til at beslutte om ruter skal tilpasses autonomt \u2014 opdaterer distance, varighed og CO2 automatisk og opretter alerts til operat\u00f8rerne.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "interval",
+      "cron_expression": null,
+      "one_time_date": null,
+      "timezone": "UTC",
+      "interval_value": 30,
+      "interval_unit": "minutes",
+      "interval_anchor": "2026-03-02T01:30:39.243000",
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "autonomous_route_monitor_live_adaptation",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "autonomousRouteMonitor",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "autonomousRouteMonitor"
+  }
+}
